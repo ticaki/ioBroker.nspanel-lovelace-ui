@@ -5,7 +5,7 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
-import { Library } from './lib/library';
+import {Library} from './lib/library';
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
@@ -28,12 +28,12 @@ export class NspanelLovelaceUi extends utils.Adapter {
     /**
      * Is called when databases are connected and adapter received configuration.
      */
-    private async onReady(): Promise<void> {}
+    private async onReady (): Promise<void> { }
 
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
      */
-    private onUnload(callback: () => void): void {
+    private onUnload (callback: () => void): void {
         try {
             // Here you must clear all timeouts or intervals that may still be active
             // clearTimeout(timeout1);
@@ -65,7 +65,7 @@ export class NspanelLovelaceUi extends utils.Adapter {
     /**
      * Is called if a subscribed state changes
      */
-    private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+    private onStateChange (id: string, state: ioBroker.State | null | undefined): void {
         if (state) {
             // The state was changed
             this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
@@ -80,7 +80,7 @@ export class NspanelLovelaceUi extends utils.Adapter {
     //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
     //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
     //  */
-    private onMessage(obj: ioBroker.Message): void {
+    private onMessage (obj: ioBroker.Message): void {
         if (typeof obj === 'object' && obj.message) {
             if (obj.command === 'send') {
                 // e.g. send email or pushover or whatever

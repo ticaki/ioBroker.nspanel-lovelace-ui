@@ -35,5 +35,5 @@
         "inlineSourceMap": false
     },
     "include": ["src/**/*.ts"],
-    "exclude": ["build/**", "node_modules/**", "widgets/**"]
+    "exclude": ["build/**", "node_modules/**", "widgets/**", ".devData/*"]
 }

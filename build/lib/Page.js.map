@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/Page.ts"],
+  "sourcesContent": ["import {NspanelLovelaceUi} from '../main';\nimport {BaseClass} from './library';\nimport * as Nspanel from './types-d';\n\nexport class PageClass extends BaseClass {\n    config: Nspanel.PageType;\n    constructor(adapter: NspanelLovelaceUi, options: {config: Nspanel.PageType}) {\n        super(adapter, 'Page');\n        this.config = options.config;\n    }\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AACA,qBAAwB;AAGjB,MAAM,kBAAkB,yBAAU;AAAA,EACrC;AAAA,EACA,YAAY,SAA4B,SAAqC;AACzE,UAAM,SAAS,MAAM;AACrB,SAAK,SAAS,QAAQ;AAAA,EAC1B;AACJ;",
+  "names": []
+}
