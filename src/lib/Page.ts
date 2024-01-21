@@ -1,7 +1,7 @@
 import {write} from 'fs';
 import { NspanelLovelaceUi } from '../main';
 import { BaseClass } from './library';
-import * as Nspanel from './types-d';
+import * as Nspanel from './types';
 
 export class PageClass extends BaseClass {
     config: Nspanel.PageType;

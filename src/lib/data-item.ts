@@ -1,5 +1,6 @@
+import * as Color from './color';
 import { BaseClass } from './library';
-import * as NSPanel from './types-d';
+import * as NSPanel from './types';
 
 export class Dataitem extends BaseClass {
     private options: NSPanel.DataItemsOptions;
@@ -96,10 +97,28 @@ export class Dataitem extends BaseClass {
         }
         return null;
     }
+    async getRGBDec(): Promise<string | null> {
+        const value = await this.getRGBValue();
+        if (value) {
+            return String(Color.rgb_dec565(value));
+        }
+        return null;
+    }
     async getString(): Promise<string | null> {
         const state = await this.getRawValue();
-        return state && state.val !== null ? String(state.val) : null;
+        switch (this.options.type) {
+            case 'const':
+                return state && state.val !== null ? String(state.val) : null;
+            case 'state':
+            case 'triggered':
+                if (this.options.substring) {
+                    const args = this.options.substring;
+                    return state && state.val !== null ? String(state.val).substring(args[0], args[1]) : null;
+                }
+                return state && state.val !== null ? String(state.val) : null;
+        }
     }
+
     async getNumber(): Promise<number | null> {
         const result = await this.getRawValue();
         if (result && !isNaN(parseInt(result.val as string))) {

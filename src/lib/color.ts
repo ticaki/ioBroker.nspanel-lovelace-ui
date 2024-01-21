@@ -1,4 +1,4 @@
-import { RGB } from './types-d';
+import { RGB } from './types';
 
 export const HMIOff: RGB = { red: 68, green: 115, blue: 158 }; // Blue-Off - Original Entity Off
 export const HMIOn: RGB = { red: 3, green: 169, blue: 244 }; // Blue-On
@@ -92,7 +92,7 @@ export function rgb_dec565(rgb: RGB): number {
 }
 
 export function rgbHexToObject(rgb: string): RGB {
-    const result = { red: 0, green: 0, blue: 0 }
+    const result = { red: 0, green: 0, blue: 0 };
     if (rgb.startsWith('#') && rgb.length == 7) {
         result.red = parseInt(rgb.substring(1, 3), 16);
         result.green = parseInt(rgb.substring(3, 5), 16);

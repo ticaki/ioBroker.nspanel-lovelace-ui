@@ -36,6 +36,8 @@
     "aedes-persistence-level": "^8.0.1",
     "axios": "^1.6.4",
     "level": "^8.0.0",
+    "moment": "^2.30.1",
+    "moment-parseformat": "^4.0.0",
     "mqtt": "^5.3.4"
   },
   "devDependencies": {

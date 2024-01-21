@@ -10,12 +10,16 @@ import Aedes, { Client } from 'aedes';
 import { Server, createServer } from 'net';
 import { NspanelLovelaceUi } from '../main';
 
-type callbackMessageType = (topic: string, message: any) => void;
+type callbackMessageType = (topic: string, message: string) => void;
 
 export class MQTTClientClass extends BaseClass {
     client: mqtt.MqttClient;
     data: any = {};
+    ready: boolean = false;
     public messageCallback: callbackMessageType;
+
+    private subscriptDB: { topic: string; callback: callbackMessageType }[] = [];
+
     constructor(
         adapter: AdapterClassDefinition,
         ip: string,
@@ -34,58 +38,62 @@ export class MQTTClientClass extends BaseClass {
         this.client.on('connect', () => {
             this.log.info(`Connection is active.`);
             this.adapter.setState('info.connection', true, true);
-            this.client.subscribe('espresense/#', (err) => {
-                if (err) {
-                    this.log.error(`On subscribe: ${err}`);
-                }
-            });
+            this.ready = true;
         });
         this.client.on('disconnect', () => {
+            this.ready = false;
             this.adapter.setState('info.connection', false, true);
             this.log.debug(`disconnected`);
         });
         this.client.on('error', (err) => {
+            this.ready = false;
             this.log.error(`${err}`);
         });
 
         this.client.on('close', () => {
+            this.ready = false;
             this.adapter.setState('info.connection', false, true);
             this.log.info(`Connection is closed.`);
         });
 
         this.client.on('message', (topic, message) => {
-            let value: any;
-            let type: string = '';
-            try {
-                value = JSON.parse(message.toString());
-                if (typeof value == 'string') throw new Error('nope');
-                type = typeof value;
-            } catch (e: any) {
-                value = message.toString();
-                if (isNaN(value)) {
-                    if (value == 'ON' || value == 'OFF') {
-                        type = 'boolean';
-                        value = value == 'ON';
-                    } else {
-                        type = 'string';
-                    }
-                } else if (value == '') {
-                    type = 'string';
-                } else {
-                    type = 'number';
-                    value = parseFloat(value);
-                }
-            }
-            this.log.debug(`${topic}: ${type} - ${typeof value == 'object' ? JSON.stringify(value) : value}`);
-            this.messageCallback(topic, value);
+            this.log.debug(`Incoming message topic: ${topic} message: ${message}}`);
+            const callbacks = this.subscriptDB.filter((i) => {
+                return topic.startsWith(i.topic);
+            });
+            this.log.debug(`Incoming message for ${callbacks.length} subproceses`);
+            callbacks.forEach((c) => c.callback(topic, message.toString()));
         });
     }
 
-    async publish(topic: string, message: string, opt: IClientPublishOptions): Promise<void> {
+    async publish(topic: string, message: string, opt?: IClientPublishOptions): Promise<void> {
         this.log.debug(`Publishing topic: ${topic} with message: ${message}.`);
         await this.client.publishAsync(topic, message, opt);
     }
 
+    subscript(topic: string, callback: callbackMessageType): void {
+        if (this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback) !== -1) return;
+        if (!this.ready) {
+            setTimeout(
+                (topic, callback) => {
+                    this.subscript(topic, callback);
+                },
+                5000,
+                topic,
+                callback,
+            );
+            return;
+        }
+        const aNewOne = this.subscriptDB.findIndex((m) => m.topic === topic) !== -1;
+        this.subscriptDB.push({ topic, callback });
+        if (aNewOne) {
+            this.client.subscribe(topic, (err) => {
+                if (err) {
+                    this.log.error(`On subscribe: ${err}`);
+                }
+            });
+        }
+    }
     destroy(): void {
         this.client.end();
     }

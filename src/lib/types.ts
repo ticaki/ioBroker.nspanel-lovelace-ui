@@ -51,7 +51,7 @@ export function isEventMethod(F: string | EventMethod): F is EventMethod {
             return true;
         default:
             // Have to talk about this.
-            log(`Please report to developer: Unknown EventMethod: ${F} `, 'warn');
+            throw new Error(`Please report to developer: Unknown EventMethod: ${F} `);
             return false;
     }
 }
@@ -68,12 +68,11 @@ export function isPopupType(F: PopupType | string): F is PopupType {
         case 'popupTimer':
             return true;
         default:
-            log(`Please report to developer: Unknown PopupType: ${F} `, 'warn');
-            return false;
+            throw new Error(`Please report to developer: Unknown PopupType: ${F} `);
     }
 }
 // If u get a error here u forgot something in PagetypeType or PageType
-export function checkPageType(F: PagetypeType, A: PageType) {
+export function checkPageType(F: PagetypeType, A: PageType): void {
     A.type = F;
 }
 export function isPageMediaItem(F: PageItem | PageMediaItem): F is PageMediaItem {
@@ -87,7 +86,7 @@ export function isPageThermoItem(F: PageItem | PageThermoItem): F is PageThermoI
 export function isPageMedia(F: PageType | PageMedia): F is PageMedia {
     return F.type == 'cardMedia';
 }
-function isPagePower(F: PageType | PagePower): F is PagePower {
+export function isPagePower(F: PageType | PagePower): F is PagePower {
     return F.type == 'cardPower';
 }
 
@@ -431,11 +430,13 @@ export type Config = {
     panelRecvTopic: string;
     panelSendTopic: string;
     weatherEntity: string;
-    leftScreensaverEntity: leftScreensaverEntityType;
-    bottomScreensaverEntity: ScreenSaverElement[];
-    indicatorScreensaverEntity: indicatorScreensaverEntityType;
-    mrIcon1ScreensaverEntity: ScreenSaverMRElement;
-    mrIcon2ScreensaverEntity: ScreenSaverMRElement;
+    screensaver: {
+        favoritEntity: ScreenSaverElement[];
+        leftEntity: ScreenSaverElement[];
+        bottomEntity: ScreenSaverElement[];
+        indicatorEntity: ScreenSaverElement[];
+        mrIconEntity: [ScreenSaverElement, ScreenSaverElement];
+    };
     defaultColor: RGB;
     defaultOnColor: RGB;
     defaultOffColor: RGB;
@@ -488,29 +489,9 @@ export type ScreenSaverElement = {
     entityOffColor: ScreenSaverElementConfig;
     entityOnText: ScreenSaverElementConfig;
     entityOffText: ScreenSaverElementConfig;
+    entityIconSelect: ScreenSaverElementConfig;
 };
-type ScreenSaverElementConfig =
-    | {
-          name: string;
-          role: string;
-          type: 'triggered';
-          dp: string;
-      }
-    | {
-          name: string;
-          role: string;
-          type: 'state';
-          dp: string;
-          timespan: number;
-      }
-    | {
-          name: string;
-          role: string;
-          type: 'const';
-          constVal: ioBroker.StateValue;
-      };
-
-export type ScreenSaverMRElement = {
+/*export type ScreenSaverMRElement = {
     entity: string | null;
     entityIconOn: string | null;
     entityIconSelect?: { [key: string]: string } | null | undefined;
@@ -531,7 +512,27 @@ export type ScreenSaverMRDataElement = {
     entityOnColor: RGB;
     entityOffColor: RGB;
     entityIconSelect: { [key: string]: string } | null;
-};
+};*/
+type ScreenSaverElementConfig =
+    | {
+          name: string;
+          role: string;
+          type: 'triggered';
+          dp: string;
+      }
+    | {
+          name: string;
+          role: string;
+          type: 'state';
+          dp: string;
+          timespan: number;
+      }
+    | {
+          name: string;
+          role: string;
+          type: 'const';
+          constVal: ioBroker.StateValue;
+      };
 
 export type IconScaleElement = {
     val_min: number;
@@ -638,15 +639,27 @@ export type DataItemsOptions = { name: string } & (
       }
     | {
           type: 'state';
-          dp?: string; // used if there and then ignore value
+          dp: string;
           role?: string;
           value?: ioBroker.State | null;
           timespan: number | null;
+          substring?: [number, number | undefined];
       }
     | {
           type: 'triggered';
-          dp?: string; // used if there and then ignore value
+          dp: string; // used if there and then ignore value
           role?: string;
           value?: ioBroker.State | null;
+          substring?: [number, number | undefined];
       }
 );
+
+export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced';
+
+export type ScreensaverOptionsType = {
+    favoritEntity: Config['screensaver']['favoritEntity'];
+    leftEntity: Config['screensaver']['leftEntity'];
+    bottomEntity: Config['screensaver']['bottomEntity'];
+    indicatorEntity: Config['screensaver']['indicatorEntity'];
+    mrIconEntity: Config['screensaver']['mrIconEntity'];
+};

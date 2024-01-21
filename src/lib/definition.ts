@@ -1,14 +1,5 @@
-import {
-    settings,
-    device,
-    room,
-    Config,
-    PageEntities,
-    PageType,
-    PagetypeType,
-    RGB,
-    cardDefinitionType,
-} from './types-d';
+import { Off, On, HMIDark, Menu, MSRed, MSGreen, HMIOff, HMIOn, White, Yellow } from './color';
+import { Config, PageEntities, PageType, PagetypeType, ScreensaverModeType, ScreensaverOptionsType } from './types';
 
 type ChangeTypeToChannelAndState<Obj> = Obj extends object
     ? {
@@ -2142,6 +2133,78 @@ export const berry_driver_version = 9;
 
 export const tasmotaOtaUrl: string = 'http://ota.tasmota.com/tasmota32/release/';
 
+export const ScreenSaverPlaces: [
+    keyof Pick<ScreensaverOptionsType, 'favoritEntity'>,
+    keyof Pick<ScreensaverOptionsType, 'leftEntity'>,
+    keyof Pick<ScreensaverOptionsType, 'bottomEntity'>,
+    keyof Pick<ScreensaverOptionsType, 'indicatorEntity'>,
+] = ['favoritEntity', 'leftEntity', 'bottomEntity', 'indicatorEntity'];
+
+export const ScreenSaverAllPlaces: (keyof ScreensaverOptionsType)[] = [
+    'favoritEntity',
+    'leftEntity',
+    'bottomEntity',
+    'indicatorEntity',
+    'mrIconEntity',
+];
+
+export const ScreenSaverConst: Record<
+    ScreensaverModeType,
+    Record<keyof ScreensaverOptionsType, { maxEntries: number }>
+> = {
+    standard: {
+        leftEntity: {
+            maxEntries: 0,
+        },
+        bottomEntity: {
+            maxEntries: 4,
+        },
+        indicatorEntity: {
+            maxEntries: 0,
+        },
+        mrIconEntity: {
+            maxEntries: 2,
+        },
+        favoritEntity: {
+            maxEntries: 1,
+        },
+    },
+    alternate: {
+        leftEntity: {
+            maxEntries: 0,
+        },
+        bottomEntity: {
+            maxEntries: 5,
+        },
+        indicatorEntity: {
+            maxEntries: 0,
+        },
+        mrIconEntity: {
+            maxEntries: 2,
+        },
+        favoritEntity: {
+            maxEntries: 1,
+        },
+    },
+    advanced: {
+        leftEntity: {
+            maxEntries: 3,
+        },
+        bottomEntity: {
+            maxEntries: 7,
+        },
+        indicatorEntity: {
+            maxEntries: 5,
+        },
+        mrIconEntity: {
+            maxEntries: 2,
+        },
+        favoritEntity: {
+            maxEntries: 1,
+        },
+    },
+};
+
 export const PageTypeDefinition: Record<PagetypeType, cardDefinitionType> = {
     cardAlarm: {
         maxEntries: 1,
@@ -2177,6 +2240,7 @@ export const PageTypeDefinition: Record<PagetypeType, cardDefinitionType> = {
         maxEntries: 1,
     },
 };
+
 export function MSYellow(MSYellow: any) {
     throw new Error('Function not implemented.');
 }
