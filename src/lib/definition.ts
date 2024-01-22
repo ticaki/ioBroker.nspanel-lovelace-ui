@@ -2145,7 +2145,7 @@ export const ScreenSaverAllPlaces: (keyof ScreensaverOptionsType)[] = [
     'leftEntity',
     'bottomEntity',
     'indicatorEntity',
-    'mrIconEntity',
+    //'mrIconEntity',
 ];
 
 export const ScreenSaverConst: Record<

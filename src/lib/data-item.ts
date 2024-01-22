@@ -6,7 +6,7 @@ export class Dataitem extends BaseClass {
     private options: NSPanel.DataItemsOptions;
     private obj: ioBroker.Object | null | undefined;
 
-    type: ioBroker.StateValue | undefined = undefined;
+    type: ioBroker.CommonType | undefined = undefined;
     get: any;
     /**
      * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
@@ -86,13 +86,33 @@ export class Dataitem extends BaseClass {
         }
     }
     async getRGBValue(): Promise<NSPanel.RGB | null> {
-        let value = await this.getString();
-        if (value !== null && typeof value === 'string') {
-            try {
-                value = JSON.parse(value);
-                if (NSPanel.isRGB(value)) return value;
-            } catch (e) {
-                this.log.warn('incorrect json!');
+        const state = await this.getRawValue();
+        if (state) {
+            if (typeof state.val === 'string') {
+                try {
+                    const value = JSON.parse(state.val);
+                    if (NSPanel.isRGB(value)) return value;
+                } catch (e) {
+                    this.log.warn('incorrect json!');
+                }
+            } else if (typeof state.val === 'object') {
+                if (NSPanel.isRGB(state.val)) return state.val;
+            }
+        }
+        return null;
+    }
+    async getIconScale(): Promise<NSPanel.IconScaleElement | null> {
+        const state = await this.getRawValue();
+        if (state) {
+            if (typeof state.val === 'string') {
+                try {
+                    const value = JSON.parse(state.val);
+                    if (NSPanel.isIconScaleElement(value)) return value;
+                } catch (e) {
+                    this.log.warn('incorrect json!');
+                }
+            } else if (typeof state.val === 'object') {
+                if (NSPanel.isIconScaleElement(state.val)) return state.val;
             }
         }
         return null;

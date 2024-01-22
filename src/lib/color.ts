@@ -100,3 +100,36 @@ export function rgbHexToObject(rgb: string): RGB {
     }
     return result;
 }
+
+export function scale(number: number, inMin: number, inMax: number, outMin: number, outMax: number): number {
+    return outMax + outMin - (((number - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin);
+}
+
+export function HandleColorScale(valueScaletemp: string): number {
+    switch (valueScaletemp) {
+        case '0':
+            return rgb_dec565(colorScale0);
+        case '1':
+            return rgb_dec565(colorScale1);
+        case '2':
+            return rgb_dec565(colorScale2);
+        case '3':
+            return rgb_dec565(colorScale3);
+        case '4':
+            return rgb_dec565(colorScale4);
+        case '5':
+            return rgb_dec565(colorScale5);
+        case '6':
+            return rgb_dec565(colorScale6);
+        case '7':
+            return rgb_dec565(colorScale7);
+        case '8':
+            return rgb_dec565(colorScale8);
+        case '9':
+            return rgb_dec565(colorScale9);
+        case '10':
+            return rgb_dec565(colorScale10);
+        default:
+            return rgb_dec565(colorScale10);
+    }
+}

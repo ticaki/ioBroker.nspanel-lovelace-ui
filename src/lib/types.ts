@@ -485,6 +485,7 @@ export type ScreenSaverElement = {
     entityIconOff: ScreenSaverElementConfig;
     entityUnitText: ScreenSaverElementConfig;
     entityIconColor: ScreenSaverElementConfig;
+    entityIconColorScale: ScreenSaverElementConfig; // result rgb
     entityOnColor: ScreenSaverElementConfig;
     entityOffColor: ScreenSaverElementConfig;
     entityOnText: ScreenSaverElementConfig;
@@ -514,31 +515,40 @@ export type ScreenSaverMRDataElement = {
     entityIconSelect: { [key: string]: string } | null;
 };*/
 type ScreenSaverElementConfig =
-    | {
-          name: string;
-          role: string;
-          type: 'triggered';
-          dp: string;
-      }
-    | {
-          name: string;
-          role: string;
-          type: 'state';
-          dp: string;
-          timespan: number;
-      }
-    | {
-          name: string;
-          role: string;
-          type: 'const';
-          constVal: ioBroker.StateValue;
-      };
+    | ScreenSaverElementConfigTriggered
+    | ScreenSaverElementConfigState
+    | ScreenSaverElementConfigConst;
+
+type ScreenSaverElementConfigConst = {
+    name: string;
+    role: string;
+    type: 'const';
+    constVal: ioBroker.StateValue;
+};
+type ScreenSaverElementConfigState = {
+    name: string;
+    role: string;
+    type: 'state';
+    dp: string;
+    timespan: number;
+};
+
+type ScreenSaverElementConfigTriggered = {
+    name: string;
+    role: string;
+    type: 'triggered';
+    dp: string;
+};
 
 export type IconScaleElement = {
     val_min: number;
     val_max: number;
     val_best?: number;
 };
+
+export function isIconScaleElement(F: any | IconScaleElement): F is IconScaleElement {
+    return 'val_min' in (F as IconScaleElement) && 'val_max' in (F as IconScaleElement);
+}
 /** we need this to have a nice order when using switch() */
 export type adapterPlayerInstanceType =
     | 'alexa2.0.'
