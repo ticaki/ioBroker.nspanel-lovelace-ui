@@ -492,17 +492,18 @@ export type ScreenSaverElement = {
     entityOffText: ScreenSaverElementConfig;
     entityIconSelect: ScreenSaverElementConfig;
 };
-/*export type ScreenSaverMRElement = {
-    entity: string | null;
-    entityIconOn: string | null;
-    entityIconSelect?: { [key: string]: string } | null | undefined;
-    entityIconOff: string | null;
-    entityValue: string | null;
-    entityValueDecimalPlace: number | null | string;
-    entityValueUnit: string | null;
-    entityOnColor: RGB;
-    entityOffColor: RGB;
-};
+export type ScreenSaverMRDataItems = Record<keyof ScreenSaverMRElement, Dataitem | undefined>;
+export type ScreenSaverMRElement = {
+    entity: ScreenSaverElementConfig;
+    entityIconOn: ScreenSaverElementConfig;
+    entityIconSelect: ScreenSaverElementConfig;
+    entityIconOff: ScreenSaverElementConfig;
+    entityValue: ScreenSaverElementConfig;
+    entityValueDecimalPlace: ScreenSaverElementConfig;
+    entityValueUnit: ScreenSaverElementConfig;
+    entityOnColor: ScreenSaverElementConfig;
+    entityOffColor: ScreenSaverElementConfig;
+}; /*
 export type ScreenSaverMRDataElement = {
     entity: string | number | boolean | null;
     entityIconOn: string | null;

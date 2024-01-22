@@ -6,7 +6,7 @@ export class Dataitem extends BaseClass {
     private options: NSPanel.DataItemsOptions;
     private obj: ioBroker.Object | null | undefined;
 
-    type: ioBroker.CommonType | undefined = undefined;
+    type: ioBroker.CommonType | 'undefined' = 'undefined';
     get: any;
     /**
      * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
@@ -85,19 +85,28 @@ export class Dataitem extends BaseClass {
                 return this.options.value;
         }
     }
-    async getRGBValue(): Promise<NSPanel.RGB | null> {
+
+    async getObject(): Promise<object | null> {
         const state = await this.getRawValue();
         if (state) {
             if (typeof state.val === 'string') {
                 try {
                     const value = JSON.parse(state.val);
-                    if (NSPanel.isRGB(value)) return value;
+                    return value;
                 } catch (e) {
                     this.log.warn('incorrect json!');
                 }
             } else if (typeof state.val === 'object') {
-                if (NSPanel.isRGB(state.val)) return state.val;
+                return state.val;
             }
+        }
+        return null;
+    }
+
+    async getRGBValue(): Promise<NSPanel.RGB | null> {
+        const value = await this.getObject();
+        if (value) {
+            if (NSPanel.isRGB(value)) return value;
         }
         return null;
     }
@@ -174,11 +183,14 @@ export class Dataitem extends BaseClass {
                 this.type = 'number';
                 break;
             case 'boolean':
-            case 'symbol':
+                this.type = 'boolean';
+                break;
             case 'undefined':
+                this.type = 'undefined';
+            case 'symbol':
             case 'object':
             case 'function':
-                this.type = typeof val;
+                this.type = 'object';
         }
     }
 }
