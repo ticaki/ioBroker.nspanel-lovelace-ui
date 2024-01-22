@@ -1,7 +1,8 @@
 import { AdapterClassDefinition, BaseClass } from './library';
 import { MQTTClientClass } from './mqtt';
+import { BaseClassTriggerd } from './states-controler';
 
-export class BaseClassPanelSend extends BaseClass {
+export class BaseClassPanelSend extends BaseClassTriggerd {
     protected readonly panelSend: PanelSend;
     readonly sendToPanel: (payload: string) => void;
 

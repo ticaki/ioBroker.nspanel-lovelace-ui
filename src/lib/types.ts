@@ -653,7 +653,6 @@ export type DataItemsOptions = { name: string } & (
           dp: string;
           role?: string;
           value?: ioBroker.State | null;
-          timespan: number | null;
           substring?: [number, number | undefined];
       }
     | {

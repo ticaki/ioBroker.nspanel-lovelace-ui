@@ -1,23 +1,26 @@
 import * as Color from './color';
 import { BaseClass } from './library';
+import { BaseClassTriggerd, StatesDBReadOnly } from './states-controler';
 import * as NSPanel from './types';
 
 export class Dataitem extends BaseClass {
     private options: NSPanel.DataItemsOptions;
     private obj: ioBroker.Object | null | undefined;
-
+    readOnlyDB: StatesDBReadOnly;
     type: ioBroker.CommonType | 'undefined' = 'undefined';
-    get: any;
+    parent: BaseClassTriggerd;
     /**
      * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
      * @param adapter this of adapter
      * @param options {DataItemsOptions}
      * @param val must be valid for type 'const'
      */
-    constructor(adapter: any, options: NSPanel.DataItemsOptions) {
+    constructor(adapter: any, options: NSPanel.DataItemsOptions, that: BaseClassTriggerd, db: StatesDBReadOnly) {
         super(adapter, options.name);
         this.options = options;
         this.options.type = options.type;
+        this.readOnlyDB = db;
+        this.parent = that;
         switch (this.options.type) {
             case 'const':
                 if (!this.options.constVal) {
@@ -33,9 +36,6 @@ export class Dataitem extends BaseClass {
                 };
                 break;
             case 'state':
-                this.options.timespan = this.options.timespan ? this.options.timespan : 60000;
-                // all work is done in isValidAndInit
-                break;
             case 'triggered':
                 // all work is done in isValidAndInit
                 break;
@@ -59,9 +59,9 @@ export class Dataitem extends BaseClass {
                 }
                 this.type = this.obj.common.type;
                 this.options.role = this.obj.common.role || '';
-                this.options.value = await this.adapter.getForeignStateAsync(this.options.dp);
+                this.options.value = await this.readOnlyDB.getValue(this.options.dp);
                 if (this.options.type == 'state') return !!this.options.value;
-                this.adapter.subscribeForeignStatesAsync(this.options.dp);
+                this.readOnlyDB.setTrigger(this.options.dp, this.parent);
             // TODO: this.options.type == 'triggered' left - set current value to global db
         }
         return false;
@@ -71,19 +71,14 @@ export class Dataitem extends BaseClass {
             case 'const':
                 return this.options.value;
             case 'state':
-                if (
-                    this.options.timespan == null ||
-                    (this.options.value && Date.now() - this.options.value.ts + this.options.timespan > 0)
-                ) {
-                    if (this.options.dp === undefined) return this.options.value;
-                    this.options.value = await this.adapter.getForeignStateAsync(this.options.dp);
-                    if (this.options.value) this.options.value.ts = Date.now();
-                }
+                if (this.options.dp === undefined) return this.options.value;
+                this.options.value = await this.readOnlyDB.getValue(this.options.dp);
                 return this.options.value;
             case 'triggered':
-                // TODO get Value from global db
+                this.options.value = await this.readOnlyDB.getValue(this.options.dp);
                 return this.options.value;
         }
+        return null;
     }
 
     async getObject(): Promise<object | null> {

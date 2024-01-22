@@ -69,7 +69,7 @@ export class Screensaver extends BaseClassPanelSend {
                 for (const j1 in entry) {
                     const j = j1 as keyof typeof entry;
                     const data = entry[j];
-                    tempItem[j] = data !== undefined ? new Dataitem(this.adapter, data) : undefined;
+                    tempItem[j] = data !== undefined ? new Dataitem(this.adapter, data, this) : undefined;
                     if (tempItem[j] !== undefined && !(await tempItem[j]!.isValidAndInit())) {
                         tempItem[j] = undefined;
                     }
@@ -246,6 +246,12 @@ export class Screensaver extends BaseClassPanelSend {
         return s.join('~');
     }
 
+    onStateTrigger = async (): Promise<boolean> => {
+        if (!(await super.onStateTrigger())) return false;
+
+        this.update();
+        return true;
+    };
     async HandleScreensaverStatusIcons(): Promise<void> {
         const payload: Partial<sendTemplates['statusUpdate']> = { eventType: 'statusUpdate' };
         const maxItems = Definition.ScreenSaverConst[this.layout]['mrIconEntity'].maxEntries;
@@ -365,6 +371,7 @@ export class Screensaver extends BaseClassPanelSend {
             }
             payload[`icon${s}Font`] = this.config[`iconBig${s}`] ? '1' : '';
         }
+        this.sendStatusUpdate(payload as sendTemplates['statusUpdate'], this.layout);
     }
 }
 
