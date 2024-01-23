@@ -29,8 +29,14 @@ __export(main_exports, {
 module.exports = __toCommonJS(main_exports);
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_library = require("./lib/library");
+var MQTT = __toESM(require("./lib/mqtt"));
+var import_config = require("./lib/config");
+var import_panel_controller = require("./lib/panel-controller");
 class NspanelLovelaceUi extends utils.Adapter {
   library;
+  mqttClient;
+  mqttServer;
+  controller;
   constructor(options = {}) {
     super({
       ...options,
@@ -43,6 +49,12 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.on("unload", this.onUnload.bind(this));
   }
   async onReady() {
+    this.setTimeout(() => {
+      this.mqttClient = new MQTT.MQTTClientClass(this, "", 0, "", "", (topic, message) => {
+        this.log.debug(topic + " " + message);
+      });
+      this.controller = new import_panel_controller.Controller(this, { mqttClient: this.mqttClient, name: "myname", panels: import_config.Testconfig });
+    }, 1e3);
   }
   onUnload(callback) {
     try {

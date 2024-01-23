@@ -51,6 +51,7 @@ export class StatesDBReadOnly extends BaseClass {
                     ts: Date.now(),
                 };
             }
+            this.log.debug(`Set to new trigger to ${id}`);
         }
     }
 
@@ -74,6 +75,7 @@ export class StatesDBReadOnly extends BaseClass {
         if (dp && state && state.ack) {
             if (this.triggerDB[dp]) {
                 if (this.triggerDB[dp].state) {
+                    this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
                     this.triggerDB[dp].ts = Date.now();
                     if (this.triggerDB[dp].state.val !== state.val) {
                         this.triggerDB[dp].state = state;

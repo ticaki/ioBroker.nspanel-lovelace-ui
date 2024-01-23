@@ -24,9 +24,11 @@ module.exports = __toCommonJS(Page_exports);
 var import_library = require("./library");
 class PageClass extends import_library.BaseClass {
   config;
+  navigate;
   constructor(adapter, options) {
     super(adapter, "Page");
     this.config = options.config;
+    this.navigate = options.navigate;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

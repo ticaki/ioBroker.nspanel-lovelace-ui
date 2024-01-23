@@ -13,6 +13,7 @@ import { NspanelLovelaceUi } from '../main';
 type callbackMessageType = (topic: string, message: string) => void;
 
 export class MQTTClientClass extends BaseClass {
+    //@ts-expect-error testing
     client: mqtt.MqttClient;
     data: any = {};
     ready: boolean = false;
@@ -30,6 +31,7 @@ export class MQTTClientClass extends BaseClass {
     ) {
         super(adapter, 'mqttClient');
         this.messageCallback = callback;
+        return;
         this.client = mqtt.connect(`mqtt://${ip}:${port}`, {
             username: username,
             password: password,
@@ -68,6 +70,7 @@ export class MQTTClientClass extends BaseClass {
 
     async publish(topic: string, message: string, opt?: IClientPublishOptions): Promise<void> {
         this.log.debug(`Publishing topic: ${topic} with message: ${message}.`);
+        return;
         await this.client.publishAsync(topic, message, opt);
     }
 

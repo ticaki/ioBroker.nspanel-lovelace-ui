@@ -435,7 +435,7 @@ export type Config = {
         leftEntity: ScreenSaverElement[];
         bottomEntity: ScreenSaverElement[];
         indicatorEntity: ScreenSaverElement[];
-        mrIconEntity: [ScreenSaverElement, ScreenSaverElement];
+        mrIconEntity: [ScreenSaverMRElement, ScreenSaverMRElement];
     };
     defaultColor: RGB;
     defaultOnColor: RGB;
@@ -521,22 +521,21 @@ type ScreenSaverElementConfig =
     | ScreenSaverElementConfigConst;
 
 type ScreenSaverElementConfigConst = {
-    name: string;
-    role: string;
+    name?: string;
+    role?: string;
     type: 'const';
-    constVal: ioBroker.StateValue;
+    constVal: StateValue;
 };
 type ScreenSaverElementConfigState = {
-    name: string;
-    role: string;
+    name?: string;
+    role?: string;
     type: 'state';
     dp: string;
-    timespan: number;
 };
 
 type ScreenSaverElementConfigTriggered = {
-    name: string;
-    role: string;
+    name?: string;
+    role?: string;
     type: 'triggered';
     dp: string;
 };
@@ -548,7 +547,7 @@ export type IconScaleElement = {
 };
 
 export function isIconScaleElement(F: any | IconScaleElement): F is IconScaleElement {
-    return 'val_min' in (F as IconScaleElement) && 'val_max' in (F as IconScaleElement);
+    return F && 'val_min' in (F as IconScaleElement) && 'val_max' in (F as IconScaleElement);
 }
 /** we need this to have a nice order when using switch() */
 export type adapterPlayerInstanceType =
@@ -641,25 +640,25 @@ export type mediaOptional =
     | 'favorites';
 
 export type DataItemstype = DataItemsOptions['type'];
-export type DataItemsOptions = { name: string } & (
+export type DataItemsOptions = { name?: string } & (
     | {
           type: 'const';
-          role: string;
-          constVal: ioBroker.StateValue;
-          value?: ioBroker.State | null;
+          role?: string;
+          constVal: StateValue;
+          value?: State | null;
       }
     | {
           type: 'state';
           dp: string;
           role?: string;
-          value?: ioBroker.State | null;
+          value?: State | null;
           substring?: [number, number | undefined];
       }
     | {
           type: 'triggered';
           dp: string; // used if there and then ignore value
           role?: string;
-          value?: ioBroker.State | null;
+          value?: State | null;
           substring?: [number, number | undefined];
       }
 );
@@ -673,3 +672,7 @@ export type ScreensaverOptionsType = {
     indicatorEntity: Config['screensaver']['indicatorEntity'];
     mrIconEntity: Config['screensaver']['mrIconEntity'];
 };
+export interface State extends Omit<ioBroker.State, 'val'> {
+    val: StateValue;
+}
+export type StateValue = ioBroker.StateValue | object;

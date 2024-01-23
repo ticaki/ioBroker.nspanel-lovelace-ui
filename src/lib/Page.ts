@@ -1,20 +1,16 @@
-import {write} from 'fs';
 import { NspanelLovelaceUi } from '../main';
 import { BaseClass } from './library';
 import * as Nspanel from './types';
 
 export class PageClass extends BaseClass {
     config: Nspanel.PageType;
-    navigate: Nspanel.PageNavigationType = {};
-    constructor(
-        adapter: NspanelLovelaceUi,
-        options: { config: Nspanel.PageType; navigate?: Nspanel.PageNavigationType },
-    ) {
+    navigate: Nspanel.PageType; //Nspanel.PageNavigationType
+    constructor(adapter: NspanelLovelaceUi, options: { config: Nspanel.PageType; navigate: Nspanel.PageType }) {
         super(adapter, 'Page');
         this.config = options.config;
-        if (options.navigate) this.navigate = options.navigate;
+        this.navigate = options.navigate;
     }
-
+    /*
     GeneratePage (page: PageType): void {
         try {
             activePage = page;
@@ -67,5 +63,5 @@ export class PageClass extends BaseClass {
                 log('error at function GeneratePage: ' + err.message, 'warn');
             }
         }
-    }
+    }*/
 }

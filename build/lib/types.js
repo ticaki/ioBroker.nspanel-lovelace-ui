@@ -16,27 +16,33 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var types_d_exports = {};
-__export(types_d_exports, {
+var types_exports = {};
+__export(types_exports, {
+  buildNSPanelString: () => buildNSPanelString,
   checkPageType: () => checkPageType,
   checkSortedPlayerType: () => checkSortedPlayerType,
   isEventMethod: () => isEventMethod,
+  isIconScaleElement: () => isIconScaleElement,
   isMediaOptional: () => isMediaOptional,
+  isPageMedia: () => isPageMedia,
   isPageMediaItem: () => isPageMediaItem,
+  isPagePower: () => isPagePower,
   isPageThermoItem: () => isPageThermoItem,
   isPlayerWithMediaDevice: () => isPlayerWithMediaDevice,
-  isPopupType: () => isPopupType
+  isPopupType: () => isPopupType,
+  isRGB: () => isRGB
 });
-module.exports = __toCommonJS(types_d_exports);
+module.exports = __toCommonJS(types_exports);
+function buildNSPanelString(...tokens) {
+  return tokens.join("~");
+}
 const ArrayPlayerTypeWithMediaDevice = ["alexa2", "sonos", "squeezeboxrpc"];
 const ArrayPlayerTypeWithOutMediaDevice = ["spotify-premium", "volumio", "bosesoundtouch"];
 function isPlayerWithMediaDevice(F) {
   return ArrayPlayerTypeWithMediaDevice.indexOf(F) != -1;
 }
 function checkSortedPlayerType(F) {
-  const test = F;
-  if (test == F) {
-  }
+  return F;
 }
 function isMediaOptional(F) {
   switch (F) {
@@ -53,6 +59,9 @@ function isMediaOptional(F) {
       return false;
   }
 }
+function isRGB(F) {
+  return typeof F == "object" && "red" in F && "blue" in F && "green" in F;
+}
 function isEventMethod(F) {
   switch (F) {
     case "startup":
@@ -64,7 +73,7 @@ function isEventMethod(F) {
     case "button2":
       return true;
     default:
-      log(`Please report to developer: Unknown EventMethod: ${F} `, "warn");
+      throw new Error(`Please report to developer: Unknown EventMethod: ${F} `);
       return false;
   }
 }
@@ -80,8 +89,7 @@ function isPopupType(F) {
     case "popupTimer":
       return true;
     default:
-      log(`Please report to developer: Unknown PopupType: ${F} `, "warn");
-      return false;
+      throw new Error(`Please report to developer: Unknown PopupType: ${F} `);
   }
 }
 function checkPageType(F, A) {
@@ -93,15 +101,29 @@ function isPageMediaItem(F) {
 function isPageThermoItem(F) {
   return "popupThermoMode1" in F;
 }
+function isPageMedia(F) {
+  return F.type == "cardMedia";
+}
+function isPagePower(F) {
+  return F.type == "cardPower";
+}
+function isIconScaleElement(F) {
+  return F && "val_min" in F && "val_max" in F;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  buildNSPanelString,
   checkPageType,
   checkSortedPlayerType,
   isEventMethod,
+  isIconScaleElement,
   isMediaOptional,
+  isPageMedia,
   isPageMediaItem,
+  isPagePower,
   isPageThermoItem,
   isPlayerWithMediaDevice,
-  isPopupType
+  isPopupType,
+  isRGB
 });
-//# sourceMappingURL=types-d.js.map
+//# sourceMappingURL=types.js.map

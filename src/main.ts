@@ -10,12 +10,14 @@ import { Library } from './lib/library';
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 import * as MQTT from './lib/mqtt';
-
+import { Testconfig } from './lib/config';
+import { Controller } from './lib/panel-controller';
 
 export class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
     mqttClient: MQTT.MQTTClientClass | undefined;
     mqttServer: MQTT.MQTTServerClass | undefined;
+    controller: Controller | undefined;
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -27,13 +29,19 @@ export class NspanelLovelaceUi extends utils.Adapter {
         // this.on('objectChange', this.onObjectChange.bind(this));
         this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
+        // init some propertys so we dont need undefined checks
     }
 
     /**
      * Is called when databases are connected and adapter received configuration.
      */
     private async onReady(): Promise<void> {
-        this.setTimeout(() => {}, 1000);
+        this.setTimeout(() => {
+            this.mqttClient = new MQTT.MQTTClientClass(this, '', 0, '', '', (topic, message) => {
+                this.log.debug(topic + ' ' + message);
+            });
+            this.controller = new Controller(this, { mqttClient: this.mqttClient, name: 'myname', panels: Testconfig });
+        }, 1000);
     }
 
     /**

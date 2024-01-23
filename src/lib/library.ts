@@ -1,5 +1,5 @@
 import _fs from 'fs';
-import { genericStateObjects, statesObjectsType } from './definition';
+import { genericStateObjects } from './definition';
 import { NspanelLovelaceUi } from '../main';
 
 // only change this for other adapters
@@ -100,7 +100,7 @@ export class Library extends BaseClass {
         // provider.dwd.*warncellid*.warnung*1-5*
         prefix: string,
         objNode: string, // the json path to object def for jsonata
-        def: statesObjectsType,
+        def: /*statesObjectsType*/ any,
         data: any,
         expandTree: boolean = false,
     ): Promise<void> {

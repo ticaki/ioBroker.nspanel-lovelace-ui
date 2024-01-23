@@ -16,16 +16,16 @@ export class Dataitem extends BaseClass {
      * @param val must be valid for type 'const'
      */
     constructor(adapter: any, options: NSPanel.DataItemsOptions, that: BaseClassTriggerd, db: StatesDBReadOnly) {
-        super(adapter, options.name);
+        super(adapter, options.name || '');
         this.options = options;
         this.options.type = options.type;
         this.readOnlyDB = db;
         this.parent = that;
         switch (this.options.type) {
             case 'const':
-                if (!this.options.constVal) {
-                    this.log.error(`Error in constructor val == '' not allow in type const!`);
-                }
+                /*if (!this.options.constVal) {
+                    this.log.error(`Error 1001 in constructor val == '' not allow in type const!`);
+                }*/
                 this.setTypeFromValue(this.options.constVal);
                 this.options.value = {
                     val: this.options.constVal,
@@ -59,31 +59,29 @@ export class Dataitem extends BaseClass {
                 }
                 this.type = this.obj.common.type;
                 this.options.role = this.obj.common.role || '';
-                this.options.value = await this.readOnlyDB.getValue(this.options.dp);
-                if (this.options.type == 'state') return !!this.options.value;
+                const value = await this.readOnlyDB.getValue(this.options.dp);
+                if (this.options.type == 'state') return !!value;
                 this.readOnlyDB.setTrigger(this.options.dp, this.parent);
-            // TODO: this.options.type == 'triggered' left - set current value to global db
+                return !!value;
         }
         return false;
     }
-    async getRawValue(): Promise<ioBroker.State | null | undefined> {
+    async getRawValue(): Promise<NSPanel.State | null | undefined> {
         switch (this.options.type) {
             case 'const':
                 return this.options.value;
             case 'state':
-                if (this.options.dp === undefined) return this.options.value;
-                this.options.value = await this.readOnlyDB.getValue(this.options.dp);
-                return this.options.value;
             case 'triggered':
-                this.options.value = await this.readOnlyDB.getValue(this.options.dp);
-                return this.options.value;
+                if (this.options.dp === undefined)
+                    throw new Error(`Error 1002 type is ${this.options.type} but dp is undefined`);
+                return await this.readOnlyDB.getValue(this.options.dp);
         }
         return null;
     }
 
     async getObject(): Promise<object | null> {
         const state = await this.getRawValue();
-        if (state) {
+        if (state && state.val) {
             if (typeof state.val === 'string') {
                 try {
                     const value = JSON.parse(state.val);
@@ -106,18 +104,9 @@ export class Dataitem extends BaseClass {
         return null;
     }
     async getIconScale(): Promise<NSPanel.IconScaleElement | null> {
-        const state = await this.getRawValue();
-        if (state) {
-            if (typeof state.val === 'string') {
-                try {
-                    const value = JSON.parse(state.val);
-                    if (NSPanel.isIconScaleElement(value)) return value;
-                } catch (e) {
-                    this.log.warn('incorrect json!');
-                }
-            } else if (typeof state.val === 'object') {
-                if (NSPanel.isIconScaleElement(state.val)) return state.val;
-            }
+        const value = await this.getObject();
+        if (value) {
+            if (NSPanel.isIconScaleElement(value)) return value;
         }
         return null;
     }
@@ -145,7 +134,7 @@ export class Dataitem extends BaseClass {
 
     async getNumber(): Promise<number | null> {
         const result = await this.getRawValue();
-        if (result && !isNaN(parseInt(result.val as string))) {
+        if (result && !isNaN(parseInt(String(result.val)))) {
             return parseInt(result.val as string);
         }
         return null;
@@ -168,7 +157,7 @@ export class Dataitem extends BaseClass {
         return null;
     }
 
-    private setTypeFromValue(val: ioBroker.StateValue | undefined): void {
+    private setTypeFromValue(val: NSPanel.StateValue | undefined): void {
         switch (typeof val) {
             case 'string':
                 this.type = 'string';

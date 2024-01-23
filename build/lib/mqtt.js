@@ -37,10 +37,13 @@ var import_net = require("net");
 class MQTTClientClass extends import_library.BaseClass {
   client;
   data = {};
+  ready = false;
   messageCallback;
+  subscriptDB = [];
   constructor(adapter, ip, port, username, password, callback) {
     super(adapter, "mqttClient");
     this.messageCallback = callback;
+    return;
     this.client = import_mqtt.default.connect(`mqtt://${ip}:${port}`, {
       username,
       password,
@@ -49,54 +52,59 @@ class MQTTClientClass extends import_library.BaseClass {
     this.client.on("connect", () => {
       this.log.info(`Connection is active.`);
       this.adapter.setState("info.connection", true, true);
-      this.client.subscribe("espresense/#", (err) => {
-        if (err) {
-          this.log.error(`On subscribe: ${err}`);
-        }
-      });
+      this.ready = true;
     });
     this.client.on("disconnect", () => {
+      this.ready = false;
       this.adapter.setState("info.connection", false, true);
       this.log.debug(`disconnected`);
     });
     this.client.on("error", (err) => {
+      this.ready = false;
       this.log.error(`${err}`);
     });
     this.client.on("close", () => {
+      this.ready = false;
       this.adapter.setState("info.connection", false, true);
       this.log.info(`Connection is closed.`);
     });
     this.client.on("message", (topic, message) => {
-      let value;
-      let type = "";
-      try {
-        value = JSON.parse(message.toString());
-        if (typeof value == "string")
-          throw new Error("nope");
-        type = typeof value;
-      } catch (e) {
-        value = message.toString();
-        if (isNaN(value)) {
-          if (value == "ON" || value == "OFF") {
-            type = "boolean";
-            value = value == "ON";
-          } else {
-            type = "string";
-          }
-        } else if (value == "") {
-          type = "string";
-        } else {
-          type = "number";
-          value = parseFloat(value);
-        }
-      }
-      this.log.debug(`${topic}: ${type} - ${typeof value == "object" ? JSON.stringify(value) : value}`);
-      this.messageCallback(topic, value);
+      this.log.debug(`Incoming message topic: ${topic} message: ${message}}`);
+      const callbacks = this.subscriptDB.filter((i) => {
+        return topic.startsWith(i.topic);
+      });
+      this.log.debug(`Incoming message for ${callbacks.length} subproceses`);
+      callbacks.forEach((c) => c.callback(topic, message.toString()));
     });
   }
   async publish(topic, message, opt) {
     this.log.debug(`Publishing topic: ${topic} with message: ${message}.`);
+    return;
     await this.client.publishAsync(topic, message, opt);
+  }
+  subscript(topic, callback) {
+    if (this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback) !== -1)
+      return;
+    if (!this.ready) {
+      setTimeout(
+        (topic2, callback2) => {
+          this.subscript(topic2, callback2);
+        },
+        5e3,
+        topic,
+        callback
+      );
+      return;
+    }
+    const aNewOne = this.subscriptDB.findIndex((m) => m.topic === topic) !== -1;
+    this.subscriptDB.push({ topic, callback });
+    if (aNewOne) {
+      this.client.subscribe(topic, (err) => {
+        if (err) {
+          this.log.error(`On subscribe: ${err}`);
+        }
+      });
+    }
   }
   destroy() {
     this.client.end();
