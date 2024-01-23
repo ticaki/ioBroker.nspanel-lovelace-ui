@@ -40,8 +40,10 @@ class BaseClassTriggerd extends import_library.BaseClass {
         if (this.unload)
           return;
         this.updateTimeout = void 0;
-        if (this.doUpdate)
+        if (this.doUpdate) {
+          this.doUpdate = false;
           await this.onStateTrigger();
+        }
       }, this.minUpdateInterval);
       return true;
     }
@@ -56,7 +58,7 @@ class StatesDBReadOnly extends import_library.BaseClass {
   stateDB = {};
   timespan;
   constructor(adapter, name = "", timespan = 15e3) {
-    super(adapter, name);
+    super(adapter, name || "StatesDBReadOnly");
     this.timespan = timespan;
   }
   async setTrigger(id, from) {
@@ -88,8 +90,7 @@ class StatesDBReadOnly extends import_library.BaseClass {
     }
     const state = await this.adapter.getForeignStateAsync(id);
     if (state) {
-      this.stateDB[id].state = state;
-      this.stateDB[id].ts = Date.now();
+      this.stateDB[id] = { state, ts: Date.now() };
       return state;
     }
     throw new Error(`State id invalid ${id} no data!`);

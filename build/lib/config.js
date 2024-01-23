@@ -28,8 +28,8 @@ const Testconfig = {
     favoritEntity: [
       {
         entity: {
-          type: "const",
-          constVal: false
+          type: "triggered",
+          dp: "0_userdata.0.trigger1"
         },
         entityDateFormat: {
           type: "const",
@@ -93,8 +93,8 @@ const Testconfig = {
     bottomEntity: [
       {
         entity: {
-          type: "const",
-          constVal: "2"
+          type: "state",
+          dp: "0_userdata.0.test1"
         },
         entityDateFormat: {
           type: "const",

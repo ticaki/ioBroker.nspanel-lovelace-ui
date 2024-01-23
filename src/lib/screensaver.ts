@@ -76,7 +76,7 @@ export class Screensaver extends BaseClassPanelSend {
                         data !== undefined
                             ? new Dataitem(this.adapter, { ...data, name: j }, this, this.readOnlyDB)
                             : undefined;
-                    if (tempItem[j] !== undefined && !(await tempItem[j]!.isValidAndInit())) {
+                    if (tempItem[j] !== undefined && !(await tempItem[j].isValidAndInit())) {
                         tempItem[j] = undefined;
                     }
                 }

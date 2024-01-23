@@ -18,7 +18,10 @@ export class BaseClassTriggerd extends BaseClass {
             this.updateTimeout = this.adapter.setTimeout(async () => {
                 if (this.unload) return;
                 this.updateTimeout = undefined;
-                if (this.doUpdate) await this.onStateTrigger();
+                if (this.doUpdate) {
+                    this.doUpdate = false;
+                    await this.onStateTrigger();
+                }
             }, this.minUpdateInterval);
             return true;
         }
@@ -33,7 +36,7 @@ export class StatesDBReadOnly extends BaseClass {
     private stateDB: { [key: string]: { state: ioBroker.State; ts: number } } = {};
     timespan: number;
     constructor(adapter: AdapterClassDefinition, name: string = '', timespan: number = 15000) {
-        super(adapter, name);
+        super(adapter, name || 'StatesDBReadOnly');
         this.timespan = timespan;
     }
     async setTrigger(id: string, from: BaseClassTriggerd): Promise<void> {
@@ -65,8 +68,7 @@ export class StatesDBReadOnly extends BaseClass {
         }
         const state = await this.adapter.getForeignStateAsync(id);
         if (state) {
-            this.stateDB[id].state = state;
-            this.stateDB[id].ts = Date.now();
+            this.stateDB[id] = { state: state, ts: Date.now() };
             return state;
         }
         throw new Error(`State id invalid ${id} no data!`);

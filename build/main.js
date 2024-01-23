@@ -29,6 +29,7 @@ __export(main_exports, {
 module.exports = __toCommonJS(main_exports);
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_library = require("./lib/library");
+var import_register = require("source-map-support/register");
 var MQTT = __toESM(require("./lib/mqtt"));
 var import_config = require("./lib/config");
 var import_panel_controller = require("./lib/panel-controller");
@@ -65,7 +66,9 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   onStateChange(id, state) {
     if (state) {
-      this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+      if (this.controller) {
+        this.controller.readOnlyDB.onStateChange(id, state);
+      }
     } else {
       this.log.info(`state ${id} deleted`);
     }

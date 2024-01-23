@@ -518,7 +518,8 @@ export type ScreenSaverMRDataElement = {
 type ScreenSaverElementConfig =
     | ScreenSaverElementConfigTriggered
     | ScreenSaverElementConfigState
-    | ScreenSaverElementConfigConst;
+    | ScreenSaverElementConfigConst
+    | undefined;
 
 type ScreenSaverElementConfigConst = {
     name?: string;

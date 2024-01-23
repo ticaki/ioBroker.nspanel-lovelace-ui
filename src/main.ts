@@ -6,6 +6,7 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 import { Library } from './lib/library';
+import 'source-map-support/register';
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
@@ -81,8 +82,9 @@ export class NspanelLovelaceUi extends utils.Adapter {
      */
     private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
         if (state) {
-            // The state was changed
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+            if (this.controller) {
+                this.controller.readOnlyDB.onStateChange(id, state);
+            }
         } else {
             // The state was deleted
             this.log.info(`state ${id} deleted`);
