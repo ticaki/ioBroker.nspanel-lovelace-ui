@@ -156,7 +156,7 @@ const Testconfig = {
       {
         entity: {
           type: "const",
-          constVal: "3"
+          constVal: "Thursday, February 6th, 2014 9:20pm"
         },
         entityDateFormat: {
           type: "const",

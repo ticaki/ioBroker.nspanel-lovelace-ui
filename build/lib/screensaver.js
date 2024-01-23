@@ -137,6 +137,7 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
           }
           iconColor = await GetScreenSaverEntityColor(item);
         } else if (item.entity.type == "boolean") {
+          val = await item.entity.getBoolean();
           iconColor = await GetScreenSaverEntityColor(item);
           if (!val && item.entityIconOff) {
             const t = await item.entityIconOff.getString();
@@ -152,7 +153,7 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
             if (t !== null)
               val = t;
           }
-        } else if (item.entity.type == "string") {
+        } else if (item.entity.type == "string" && (val = await item.entity.getString()) !== null) {
           iconColor = await GetScreenSaverEntityColor(item);
           const pformat = (0, import_moment_parseformat.default)(val);
           this.log.debug(

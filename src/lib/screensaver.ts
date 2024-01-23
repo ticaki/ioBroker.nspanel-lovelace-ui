@@ -129,7 +129,7 @@ export class Screensaver extends BaseClassPanelSend {
                     const val = await item.entityIconOn.getString();
                     if (val !== null) icon = Icons.GetIcon(val);
                 }
-                let val: string | number | null = await item.entity.getNumber();
+                let val: string | number | boolean | null = await item.entity.getNumber();
                 // if val not null its a number
                 if (val !== null) {
                     if (item.entityFactor) {
@@ -144,6 +144,7 @@ export class Screensaver extends BaseClassPanelSend {
 
                     iconColor = await GetScreenSaverEntityColor(item);
                 } else if (item.entity.type == 'boolean') {
+                    val = await item.entity.getBoolean();
                     iconColor = await GetScreenSaverEntityColor(item);
                     if (!val && item.entityIconOff) {
                         const t = await item.entityIconOff.getString();
@@ -156,7 +157,7 @@ export class Screensaver extends BaseClassPanelSend {
                         const t = await item.entityOffText.getString();
                         if (t !== null) val = t;
                     }
-                } else if (item.entity.type == 'string') {
+                } else if (item.entity.type == 'string' && (val = await item.entity.getString()) !== null) {
                     iconColor = await GetScreenSaverEntityColor(item);
 
                     const pformat = parseFormat(val);
