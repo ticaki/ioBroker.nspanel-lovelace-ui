@@ -35,6 +35,7 @@
     "aedes": "^0.50.1",
     "aedes-persistence-level": "^8.0.1",
     "axios": "^1.6.4",
+    "dayjs": "^1.11.10",
     "level": "^8.0.0",
     "moment": "^2.30.1",
     "moment-parseformat": "^4.0.0",

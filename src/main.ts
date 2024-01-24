@@ -5,14 +5,14 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
-import { Library } from './lib/library';
+import { Library } from './lib/classes/library';
 import 'source-map-support/register';
-
+import { mqttconfigPrivat } from './lib/password';
 // Load your modules here, e.g.:
 // import * as fs from "fs";
-import * as MQTT from './lib/mqtt';
+import * as MQTT from './lib/classes/mqtt';
 import { Testconfig } from './lib/config';
-import { Controller } from './lib/panel-controller';
+import { Controller } from './lib/controller/panel-controller';
 
 export class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -38,10 +38,21 @@ export class NspanelLovelaceUi extends utils.Adapter {
      */
     private async onReady(): Promise<void> {
         this.setTimeout(() => {
-            this.mqttClient = new MQTT.MQTTClientClass(this, '', 0, '', '', (topic, message) => {
-                this.log.debug(topic + ' ' + message);
+            this.mqttClient = new MQTT.MQTTClientClass(
+                this,
+                mqttconfigPrivat.ip,
+                mqttconfigPrivat.port,
+                mqttconfigPrivat.username,
+                mqttconfigPrivat.password,
+                (topic, message) => {
+                    this.log.debug(topic + ' ' + message);
+                },
+            );
+            this.controller = new Controller(this, {
+                mqttClient: this.mqttClient,
+                name: 'myname',
+                panels: [Testconfig],
             });
-            this.controller = new Controller(this, { mqttClient: this.mqttClient, name: 'myname', panels: Testconfig });
         }, 1000);
     }
 

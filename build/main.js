@@ -28,11 +28,12 @@ __export(main_exports, {
 });
 module.exports = __toCommonJS(main_exports);
 var utils = __toESM(require("@iobroker/adapter-core"));
-var import_library = require("./lib/library");
+var import_library = require("./lib/classes/library");
 var import_register = require("source-map-support/register");
-var MQTT = __toESM(require("./lib/mqtt"));
+var import_password = require("./lib/password");
+var MQTT = __toESM(require("./lib/classes/mqtt"));
 var import_config = require("./lib/config");
-var import_panel_controller = require("./lib/panel-controller");
+var import_panel_controller = require("./lib/controller/panel-controller");
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -51,10 +52,21 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   async onReady() {
     this.setTimeout(() => {
-      this.mqttClient = new MQTT.MQTTClientClass(this, "", 0, "", "", (topic, message) => {
-        this.log.debug(topic + " " + message);
+      this.mqttClient = new MQTT.MQTTClientClass(
+        this,
+        import_password.mqttconfigPrivat.ip,
+        import_password.mqttconfigPrivat.port,
+        import_password.mqttconfigPrivat.username,
+        import_password.mqttconfigPrivat.password,
+        (topic, message) => {
+          this.log.debug(topic + " " + message);
+        }
+      );
+      this.controller = new import_panel_controller.Controller(this, {
+        mqttClient: this.mqttClient,
+        name: "myname",
+        panels: [import_config.Testconfig]
       });
-      this.controller = new import_panel_controller.Controller(this, { mqttClient: this.mqttClient, name: "myname", panels: import_config.Testconfig });
     }, 1e3);
   }
   onUnload(callback) {
