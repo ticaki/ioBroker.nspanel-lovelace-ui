@@ -1,67 +1,53 @@
 import { NspanelLovelaceUi } from '../../main';
 import { BaseClass } from '../classes/library';
+import { NavigationItem } from '../types/navigation';
+import { PageMediaItem } from '../types/pageItem';
 import * as Nspanel from '../types/types';
 
-export class PageClass extends BaseClass {
-    config: Nspanel.PageType;
-    navigate: Nspanel.PageType; //Nspanel.PageNavigationType
-    constructor(adapter: NspanelLovelaceUi, options: { config: Nspanel.PageType; navigate: Nspanel.PageType }) {
+interface Card {
+    card: Nspanel.PageTypeCards;
+    name: string;
+    config: {
+        type: 'cardMedia';
+        items: [PageMediaItem];
+        headline: string;
+        useColor: boolean;
+        navigation: NavigationItem;
+    };
+}
+//interface Page extends BaseClass | PageConfig
+
+export class Page extends BaseClass implements Card {
+    pageItems: any[] = [];
+    card: Nspanel.PageTypeCards;
+    config: Card['config'];
+    test: number = 0;
+    constructor(adapter: NspanelLovelaceUi, options: Card) {
         super(adapter, 'Page');
         this.config = options.config;
-        this.navigate = options.navigate;
+        this.card = options.card;
     }
-    /*
-    GeneratePage (page: PageType): void {
-        try {
-            activePage = page;
-            write.dp(NSPanel_Path + 'ActivePage.type', activePage!.type);
-            setIfExists(NSPanel_Path + 'ActivePage.heading', activePage!.heading);
-            setIfExists(NSPanel_Path + 'ActivePage.id0', activePage!.items[0].id);
-            switch (page.type) {
-                case 'cardEntities':
-                    SendToPanel(GenerateEntitiesPage(page));
-                    break;
-                case 'cardThermo':
-                    SendToPanel(GenerateThermoPage(page));
-                    break;
-                case 'cardGrid':
-                    SendToPanel(GenerateGridPage(page));
-                    break;
-                case 'cardGrid2':
-                    SendToPanel(GenerateGridPage2(page));
-                    break;
-                case 'cardMedia':
-                    useMediaEvents = true;
-                    SendToPanel(GenerateMediaPage(page));
-                    break;
-                case 'cardAlarm':
-                    SendToPanel(GenerateAlarmPage(page));
-                    break;
-                case 'cardQR':
-                    SendToPanel(GenerateQRPage(page));
-                    break;
-                case 'cardPower':
-                    SendToPanel(GeneratePowerPage(page));
-                    break;
-                case 'cardChart':
-                    SendToPanel(GenerateChartPage(page));
-                    break;
-                case 'cardLChart':
-                    SendToPanel(GenerateChartPage(page));
-                    break;
-                case 'cardUnlock':
-                    SendToPanel(GenerateUnlockPage(page));
-                    break;
-            }
-        } catch (err: any) {
-            if (err.message == "Cannot read properties of undefined (reading 'type')") {
-                log(
-                    'Please wait a few seconds longer when launching the NSPanel. Not all parameters are loaded yet.',
-                    'warn',
-                );
-            } else {
-                log('error at function GeneratePage: ' + err.message, 'warn');
-            }
-        }
-    }*/
+    async init(): Promise<void> {}
+
+    goLeft(): Page | undefined {
+        if (this.config.navigation && this.config.navigation.left) return this.config.navigation.left.page;
+        return undefined;
+    }
+    goRight(): Page | undefined {
+        if (this.config.navigation && this.config.navigation.right) return this.config.navigation.right.page;
+        return undefined;
+    }
 }
+
+export class PageItem extends BaseClass {
+    config: PageItemConfig;
+    pageItems: any[] = [];
+    constructor(adapter: NspanelLovelaceUi, options: PageItemConfig) {
+        super(adapter, 'Page');
+        this.config = options;
+    }
+    async init(): Promise<void> {}
+}
+type PageItemConfig = {
+    name: string;
+};

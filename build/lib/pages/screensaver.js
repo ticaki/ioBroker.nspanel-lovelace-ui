@@ -109,7 +109,7 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
             icon = Icons.GetIcon(val2);
         }
         let val = await item.entity.getNumber();
-        if (val !== null) {
+        if (item.entity.type == "number" && val !== null) {
           if (item.entityFactor) {
             const v = await item.entityFactor.getNumber();
             if (v !== null)
@@ -148,8 +148,9 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
           );
           if ((0, import_moment.default)(val, pformat, true).isValid()) {
             const DatumZeit = (0, import_moment.default)(val, pformat).unix();
-            const entityDateFormat = item.entityDateFormat ? await item.entityDateFormat.getString() : null;
+            const entityDateFormat = item.entityDateFormat ? await item.entityDateFormat.getObject() : null;
             val = new Date(DatumZeit * 1e3).toLocaleString(
+              this.config.locale,
               entityDateFormat !== null ? entityDateFormat : void 0
             );
           }

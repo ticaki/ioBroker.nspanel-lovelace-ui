@@ -18,21 +18,47 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var Page_exports = {};
 __export(Page_exports, {
-  PageClass: () => PageClass
+  Page: () => Page,
+  PageItem: () => PageItem
 });
 module.exports = __toCommonJS(Page_exports);
 var import_library = require("../classes/library");
-class PageClass extends import_library.BaseClass {
+class Page extends import_library.BaseClass {
+  pageItems = [];
+  card;
   config;
-  navigate;
+  test = 0;
   constructor(adapter, options) {
     super(adapter, "Page");
     this.config = options.config;
-    this.navigate = options.navigate;
+    this.card = options.card;
+  }
+  async init() {
+  }
+  goLeft() {
+    if (this.config.navigation && this.config.navigation.left)
+      return this.config.navigation.left.page;
+    return void 0;
+  }
+  goRight() {
+    if (this.config.navigation && this.config.navigation.right)
+      return this.config.navigation.right.page;
+    return void 0;
+  }
+}
+class PageItem extends import_library.BaseClass {
+  config;
+  pageItems = [];
+  constructor(adapter, options) {
+    super(adapter, "Page");
+    this.config = options;
+  }
+  async init() {
   }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  PageClass
+  Page,
+  PageItem
 });
 //# sourceMappingURL=Page.js.map

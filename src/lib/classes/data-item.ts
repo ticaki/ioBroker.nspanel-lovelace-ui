@@ -137,7 +137,7 @@ export class Dataitem extends BaseClass {
     async getNumber(): Promise<number | null> {
         const result = await this.getRawValue();
         if (result && !isNaN(parseInt(String(result.val)))) {
-            return parseInt(result.val as string);
+            return parseFloat(result.val as string);
         }
         return null;
     }

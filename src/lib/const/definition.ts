@@ -1,5 +1,5 @@
 import { Off, On, HMIDark } from './color';
-import { PagetypeType, ScreensaverModeType, ScreensaverOptionsType } from '../types/types';
+import { PageTypeCards, ScreensaverModeType, ScreensaverOptionsType } from '../types/types';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object
     ? {
@@ -326,7 +326,7 @@ export const ScreenSaverConst: Record<
     },
 };
 
-export const PageTypeDefinition: Record<PagetypeType, { maxEntries: number }> = {
+export const PageTypeDefinition: Record<PageTypeCards, { maxEntries: number }> = {
     cardAlarm: {
         maxEntries: 1,
     },

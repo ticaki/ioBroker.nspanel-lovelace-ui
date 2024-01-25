@@ -117,7 +117,8 @@ export class Screensaver extends BaseClassPanelSend {
                 }
                 let val: string | number | boolean | null = await item.entity.getNumber();
                 // if val not null its a number
-                if (val !== null) {
+
+                if (item.entity.type == 'number' && val !== null) {
                     if (item.entityFactor) {
                         const v = await item.entityFactor.getNumber();
                         if (v !== null) val *= v;
@@ -154,8 +155,9 @@ export class Screensaver extends BaseClassPanelSend {
                     );
                     if (moment(val, pformat, true).isValid()) {
                         const DatumZeit = moment(val, pformat).unix(); // Conversion to Unix time stamp
-                        const entityDateFormat = item.entityDateFormat ? await item.entityDateFormat.getString() : null;
+                        const entityDateFormat = item.entityDateFormat ? await item.entityDateFormat.getObject() : null;
                         val = new Date(DatumZeit * 1000).toLocaleString(
+                            this.config.locale,
                             entityDateFormat !== null ? entityDateFormat : undefined,
                         );
                     }

@@ -75,11 +75,12 @@ export const Testconfig: Partial<panelConfigPartial> = {
                 {
                     entity: {
                         type: 'state',
-                        dp: '0_userdata.0.test1',
+                        dp: 'accuweather.0.Daily.Day1.Sunrise',
+                        valType: 'string',
                     },
                     entityDateFormat: {
                         type: 'const',
-                        constVal: null,
+                        constVal: JSON.stringify({ hour: '2-digit', minute: '2-digit' }),
                     },
                     entityDecimalPlaces: {
                         type: 'const',
@@ -91,7 +92,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     },
                     entityIconColor: {
                         type: 'const',
-                        constVal: null,
+                        constVal: Yellow,
                     },
                     entityIconColorScale: {
                         type: 'const',
@@ -99,11 +100,11 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     },
                     entityIconOff: {
                         type: 'const',
-                        constVal: 'home',
+                        constVal: null,
                     },
                     entityIconOn: {
                         type: 'const',
-                        constVal: 'home-outline',
+                        constVal: 'weather-sunset-up',
                     },
                     entityIconSelect: {
                         type: 'const',
@@ -115,29 +116,29 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     },
                     entityOffText: {
                         type: 'const',
-                        constVal: 'entityOffText',
+                        constVal: null,
                     },
                     entityOnColor: {
                         type: 'const',
-                        constVal: Green,
+                        constVal: null,
                     },
                     entityOnText: {
                         type: 'const',
-                        constVal: 'entityOnText',
+                        constVal: null,
                     },
                     entityText: {
                         type: 'const',
-                        constVal: null,
+                        constVal: 'Sonne',
                     },
                     entityUnitText: {
                         type: 'const',
-                        constVal: 'Adapter',
+                        constVal: null,
                     },
                 },
                 {
                     entity: {
-                        type: 'const',
-                        constVal: 'Thursday, February 6th, 2014 9:20pm',
+                        type: 'state',
+                        dp: 'accuweather.0.Current.WindSpeed',
                     },
                     entityDateFormat: {
                         type: 'const',
@@ -145,11 +146,11 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     },
                     entityDecimalPlaces: {
                         type: 'const',
-                        constVal: null,
+                        constVal: 1,
                     },
                     entityFactor: {
                         type: 'const',
-                        constVal: null,
+                        constVal: 1000 / 3600,
                     },
                     entityIconColor: {
                         type: 'const',
@@ -157,43 +158,43 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     },
                     entityIconColorScale: {
                         type: 'const',
-                        constVal: null,
+                        constVal: { val_min: 0, val_max: 120 },
                     },
                     entityIconOff: {
                         type: 'const',
-                        constVal: 'home',
+                        constVal: null,
                     },
                     entityIconOn: {
                         type: 'const',
-                        constVal: 'iconon',
+                        constVal: 'weather-windy',
                     },
                     entityIconSelect: {
                         type: 'const',
-                        constVal: 'iconoff',
+                        constVal: null,
                     },
                     entityOffColor: {
                         type: 'const',
-                        constVal: rgb_dec565(Black),
+                        constVal: null,
                     },
                     entityOffText: {
                         type: 'const',
-                        constVal: 'entityOffText',
+                        constVal: null,
                     },
                     entityOnColor: {
                         type: 'const',
-                        constVal: rgb_dec565(Green),
+                        constVal: null,
                     },
                     entityOnText: {
                         type: 'const',
-                        constVal: 'entityOnText',
+                        constVal: null,
                     },
                     entityText: {
                         type: 'const',
-                        constVal: null,
+                        constVal: 'Wind',
                     },
                     entityUnitText: {
                         type: 'const',
-                        constVal: 'entityUnitText',
+                        constVal: 'm/s',
                     },
                 },
                 {
@@ -403,7 +404,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
         },
         config: {
             momentLocale: '',
-            locale: '',
+            locale: 'de-DE',
             iconBig1: false,
             iconBig2: false,
         },

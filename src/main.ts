@@ -38,6 +38,7 @@ export class NspanelLovelaceUi extends utils.Adapter {
      */
     private async onReady(): Promise<void> {
         this.setTimeout(() => {
+            this.log.debug(this.adapterDir);
             this.mqttClient = new MQTT.MQTTClientClass(
                 this,
                 mqttconfigPrivat.ip,
@@ -48,10 +49,16 @@ export class NspanelLovelaceUi extends utils.Adapter {
                     this.log.debug(topic + ' ' + message);
                 },
             );
+            Testconfig.name = mqttconfigPrivat.name;
+            Testconfig.topic = mqttconfigPrivat.topic;
+            this.log.debug(String(process.memoryUsage().heapUsed));
             this.controller = new Controller(this, {
                 mqttClient: this.mqttClient,
-                name: 'myname',
+                name: 'controller',
                 panels: [Testconfig],
+            });
+            setTimeout(() => {
+                this.log.debug(String(process.memoryUsage().heapUsed)), 2000;
             });
         }, 1000);
     }

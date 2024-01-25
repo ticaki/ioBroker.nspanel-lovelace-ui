@@ -149,7 +149,7 @@ class Dataitem extends import_library.BaseClass {
   async getNumber() {
     const result = await this.getRawValue();
     if (result && !isNaN(parseInt(String(result.val)))) {
-      return parseInt(result.val);
+      return parseFloat(result.val);
     }
     return null;
   }

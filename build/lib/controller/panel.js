@@ -102,7 +102,7 @@ class Panel extends import_panel_message.BaseClassPanelSend {
   }
   onMessage = async (topic, message) => {
     if (topic.endsWith(import_definition.SendTopicAppendix)) {
-      this.log.debug(`Receive ${topic} with ${message}`);
+      this.log.debug(`Receive command ${topic} with ${message}`);
       return;
     }
     for (const fn of this.reivCallbacks) {
@@ -110,7 +110,7 @@ class Panel extends import_panel_message.BaseClassPanelSend {
         fn(topic, message);
     }
     if (topic.endsWith(import_definition.ReiveTopicAppendix)) {
-      this.log.debug(`Receive ${topic} with ${message}`);
+      this.log.debug(`Receive message ${topic} with ${message}`);
       const event = NSPanel.convertToEvent(message);
       if (event) {
         this.HandleIncomingMessage(event);

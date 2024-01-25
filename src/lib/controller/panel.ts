@@ -91,14 +91,14 @@ export class Panel extends BaseClassPanelSend {
     }
     onMessage: callbackMessageType = async (topic: string, message: string) => {
         if (topic.endsWith(SendTopicAppendix)) {
-            this.log.debug(`Receive ${topic} with ${message}`);
+            this.log.debug(`Receive command ${topic} with ${message}`);
             return;
         }
         for (const fn of this.reivCallbacks) {
             if (fn) fn(topic, message);
         }
         if (topic.endsWith(ReiveTopicAppendix)) {
-            this.log.debug(`Receive ${topic} with ${message}`);
+            this.log.debug(`Receive message ${topic} with ${message}`);
             const event: NSPanel.IncomingEvent | null = NSPanel.convertToEvent(message);
             if (event) {
                 this.HandleIncomingMessage(event);

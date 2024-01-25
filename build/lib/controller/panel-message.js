@@ -65,7 +65,7 @@ class PanelSend extends import_library.BaseClass {
       this.messageTimeout = void 0;
       return;
     }
-    this.log.debug(`send payload: ${msg} to panel.`);
+    this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
     this.mqttClient.publish(this.topic, msg.payload, msg.opt);
     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 200);
   };

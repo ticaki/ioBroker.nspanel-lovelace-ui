@@ -96,11 +96,12 @@ const Testconfig = {
         {
           entity: {
             type: "state",
-            dp: "0_userdata.0.test1"
+            dp: "accuweather.0.Daily.Day1.Sunrise",
+            valType: "string"
           },
           entityDateFormat: {
             type: "const",
-            constVal: null
+            constVal: JSON.stringify({ hour: "2-digit", minute: "2-digit" })
           },
           entityDecimalPlaces: {
             type: "const",
@@ -112,7 +113,7 @@ const Testconfig = {
           },
           entityIconColor: {
             type: "const",
-            constVal: null
+            constVal: import_color.Yellow
           },
           entityIconColorScale: {
             type: "const",
@@ -120,11 +121,11 @@ const Testconfig = {
           },
           entityIconOff: {
             type: "const",
-            constVal: "home"
+            constVal: null
           },
           entityIconOn: {
             type: "const",
-            constVal: "home-outline"
+            constVal: "weather-sunset-up"
           },
           entityIconSelect: {
             type: "const",
@@ -136,29 +137,29 @@ const Testconfig = {
           },
           entityOffText: {
             type: "const",
-            constVal: "entityOffText"
+            constVal: null
           },
           entityOnColor: {
             type: "const",
-            constVal: import_color.Green
+            constVal: null
           },
           entityOnText: {
             type: "const",
-            constVal: "entityOnText"
+            constVal: null
           },
           entityText: {
             type: "const",
-            constVal: null
+            constVal: "Sonne"
           },
           entityUnitText: {
             type: "const",
-            constVal: "Adapter"
+            constVal: null
           }
         },
         {
           entity: {
-            type: "const",
-            constVal: "Thursday, February 6th, 2014 9:20pm"
+            type: "state",
+            dp: "accuweather.0.Current.WindSpeed"
           },
           entityDateFormat: {
             type: "const",
@@ -166,11 +167,11 @@ const Testconfig = {
           },
           entityDecimalPlaces: {
             type: "const",
-            constVal: null
+            constVal: 1
           },
           entityFactor: {
             type: "const",
-            constVal: null
+            constVal: 1e3 / 3600
           },
           entityIconColor: {
             type: "const",
@@ -178,43 +179,43 @@ const Testconfig = {
           },
           entityIconColorScale: {
             type: "const",
-            constVal: null
+            constVal: { val_min: 0, val_max: 120 }
           },
           entityIconOff: {
             type: "const",
-            constVal: "home"
+            constVal: null
           },
           entityIconOn: {
             type: "const",
-            constVal: "iconon"
+            constVal: "weather-windy"
           },
           entityIconSelect: {
             type: "const",
-            constVal: "iconoff"
+            constVal: null
           },
           entityOffColor: {
             type: "const",
-            constVal: (0, import_color.rgb_dec565)(import_color.Black)
+            constVal: null
           },
           entityOffText: {
             type: "const",
-            constVal: "entityOffText"
+            constVal: null
           },
           entityOnColor: {
             type: "const",
-            constVal: (0, import_color.rgb_dec565)(import_color.Green)
+            constVal: null
           },
           entityOnText: {
             type: "const",
-            constVal: "entityOnText"
+            constVal: null
           },
           entityText: {
             type: "const",
-            constVal: null
+            constVal: "Wind"
           },
           entityUnitText: {
             type: "const",
-            constVal: "entityUnitText"
+            constVal: "m/s"
           }
         },
         {
@@ -424,7 +425,7 @@ const Testconfig = {
     },
     config: {
       momentLocale: "",
-      locale: "",
+      locale: "de-DE",
       iconBig1: false,
       iconBig2: false
     }

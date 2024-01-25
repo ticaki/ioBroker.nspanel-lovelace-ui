@@ -1,4 +1,5 @@
 import { Dataitem } from '../classes/data-item';
+import { PageMediaItem, PageThermoItem, PageBaseItem } from './pageItem';
 
 /**
  * Join arguments with ~ and return the string;
@@ -36,7 +37,7 @@ export function isMediaOptional(F: string | mediaOptional): F is mediaOptional {
     }
 }
 export function isRGB(F: RGB | any): F is RGB {
-    return typeof (F as RGB) == 'object' && 'red' in (F as RGB) && 'blue' in (F as RGB) && 'green' in (F as RGB);
+    return typeof F == 'object' && 'red' in F && 'blue' in F && 'green' in F;
 }
 
 export function isEventMethod(F: string | EventMethod): F is EventMethod {
@@ -71,8 +72,8 @@ export function isPopupType(F: PopupType | string): F is PopupType {
             throw new Error(`Please report to developer: Unknown PopupType: ${F} `);
     }
 }
-// If u get a error here u forgot something in PagetypeType or PageType
-export function checkPageType(F: PagetypeType, A: PageType): void {
+// If u get a error here u forgot something in PageTypeCards or PageType
+export function checkPageType(F: PageTypeCards, A: PageType): void {
     A.type = F;
 }
 export function isPageMediaItem(F: PageItem | PageMediaItem): F is PageMediaItem {
@@ -219,9 +220,10 @@ export type RGB = {
 export type Payload = {
     payload: string;
 };
+type BooleanIntersection = 'true' | 'false';
 
 export type PageBaseType = {
-    type: PagetypeType;
+    type: PageTypeCards;
     heading: string;
     items: PageItem[];
     useColor: boolean;
@@ -239,8 +241,12 @@ export type PageBaseType = {
     homeIcon?: string;
     homeIconColor?: RGB;
 };
-
-export type PagetypeType =
+type ColorType = Record<BooleanIntersection, RGB> & { scale?: IconScaleElement };
+export type Icon = {
+    icon: Record<BooleanIntersection, string>;
+    iconColor: ColorType;
+};
+export type PageTypeCards =
     | 'cardChart'
     | 'cardLChart'
     | 'cardEntities'
@@ -317,84 +323,6 @@ export type PageChart = {
 } & Omit<PageBaseType, 'useColor'>;
 
 export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
-
-export type PageMediaItem = {
-    adapterPlayerInstance: adapterPlayerInstanceType;
-    mediaDevice?: string;
-    colorMediaIcon?: RGB;
-    colorMediaArtist?: RGB;
-    colorMediaTitle?: RGB;
-    speakerList?: string[];
-    playList?: string[];
-    equalizerList?: string[];
-    repeatList?: string[];
-    globalTracklist?: string[];
-    crossfade?: boolean;
-} & PageBaseItem;
-
-export type PageThermoItem =
-    | ({
-          popupThermoMode1?: string[];
-          popupThermoMode2?: string[];
-          popupThermoMode3?: string[];
-          popUpThermoName?: string[];
-          setThermoAlias?: string[];
-          setThermoDestTemp2?: string;
-      } & PageBaseItem)
-    | ({
-          popupThermoMode1?: string[];
-          popupThermoMode2?: string[];
-          popupThermoMode3?: string[];
-          popUpThermoName?: string[];
-          setThermoAlias?: string[];
-          setThermoDestTemp2?: string;
-      } & PageBaseItem);
-// mean string start with getState(' and end with ').val
-type getStateID = string;
-export type PageBaseItem = {
-    id?: string | null;
-    icon?: string;
-    icon2?: string;
-    onColor?: RGB;
-    offColor?: RGB;
-    useColor?: boolean;
-    interpolateColor?: boolean;
-    minValueBrightness?: number;
-    maxValueBrightness?: number;
-    minValueColorTemp?: number;
-    maxValueColorTemp?: number;
-    minValueLevel?: number;
-    maxValueLevel?: number;
-    minValueTilt?: number;
-    maxValueTilt?: number;
-    minValue?: number;
-    maxValue?: number;
-    stepValue?: number;
-    prefixName?: string;
-    suffixName?: string;
-    name?: string | getStateID;
-    secondRow?: string;
-    buttonText?: string;
-    unit?: string;
-    navigate?: boolean;
-    colormode?: string;
-    colorScale?: IconScaleElement;
-    //adapterPlayerInstance?: adapterPlayerInstanceType,
-    targetPage?: string;
-    modeList?: string[];
-    hidePassword?: boolean;
-    autoCreateALias?: boolean;
-    yAxis?: string;
-    yAxisTicks?: number[] | string;
-    xAxisDecorationId?: string;
-    useValue?: boolean;
-    monobutton?: boolean;
-    inSel_ChoiceState?: boolean;
-    iconArray?: string[];
-    fontSize?: number;
-    actionStringArray?: string[];
-    alwaysOnDisplay?: boolean;
-};
 
 export type DimMode = {
     dimmodeOn: boolean | undefined;
@@ -515,31 +443,7 @@ export type ScreenSaverMRDataElement = {
     entityOffColor: RGB;
     entityIconSelect: { [key: string]: string } | null;
 };*/
-type ScreenSaverElementConfig =
-    | ScreenSaverElementConfigTriggered
-    | ScreenSaverElementConfigState
-    | ScreenSaverElementConfigConst
-    | undefined;
-
-type ScreenSaverElementConfigConst = {
-    name?: string;
-    role?: string;
-    type: 'const';
-    constVal: StateValue;
-};
-type ScreenSaverElementConfigState = {
-    name?: string;
-    role?: string;
-    type: 'state';
-    dp: string;
-};
-
-type ScreenSaverElementConfigTriggered = {
-    name?: string;
-    role?: string;
-    type: 'triggered';
-    dp: string;
-};
+type ScreenSaverElementConfig = DataItemsOptions | undefined;
 
 export type IconScaleElement = {
     val_min: number;
