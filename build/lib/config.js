@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,10 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var config_exports = {};
 __export(config_exports, {
@@ -22,10 +28,11 @@ __export(config_exports, {
   welcomePopupPayload: () => welcomePopupPayload
 });
 module.exports = __toCommonJS(config_exports);
-var import_color = require("./const/color");
+var Color = __toESM(require("./const/color"));
 const Testconfig = {
   screenSaverConfig: {
     mode: "standard",
+    rotationTime: 0,
     entitysConfig: {
       favoritEntity: [
         {
@@ -44,133 +51,160 @@ const Testconfig = {
           entityFactor: void 0,
           entityIconColor: {
             type: "state",
-            read: (val) => {
-              switch (val) {
-                case 24:
-                case 30:
-                case 31:
-                  return (0, import_color.rgb_dec565)(import_color.swExceptional);
-                case 7:
-                case 8:
-                case 38:
-                  return (0, import_color.rgb_dec565)(import_color.swCloudy);
-                case 11:
-                  return (0, import_color.rgb_dec565)(import_color.swFog);
-                case 25:
-                  return (0, import_color.rgb_dec565)(import_color.swHail);
-                case 15:
-                  return (0, import_color.rgb_dec565)(import_color.swLightning);
-                case 16:
-                case 17:
-                case 41:
-                case 42:
-                  return (0, import_color.rgb_dec565)(import_color.swLightningRainy);
-                case 33:
-                case 34:
-                case 37:
-                  return (0, import_color.rgb_dec565)(import_color.swClearNight);
-                case 3:
-                case 4:
-                case 6:
-                case 35:
-                case 36:
-                  return (0, import_color.rgb_dec565)(import_color.swPartlycloudy);
-                case 18:
-                  return (0, import_color.rgb_dec565)(import_color.swPouring);
-                case 12:
-                case 13:
-                case 14:
-                case 26:
-                case 39:
-                case 40:
-                  return (0, import_color.rgb_dec565)(import_color.swRainy);
-                case 19:
-                case 20:
-                case 21:
-                case 22:
-                case 23:
-                case 43:
-                case 44:
-                  return (0, import_color.rgb_dec565)(import_color.swSnowy);
-                case 29:
-                  return (0, import_color.rgb_dec565)(import_color.swSnowyRainy);
-                case 1:
-                case 2:
-                case 5:
-                  return (0, import_color.rgb_dec565)(import_color.swSunny);
-                case 32:
-                  return (0, import_color.rgb_dec565)(import_color.swWindy);
-                default:
-                  return (0, import_color.rgb_dec565)(import_color.White);
-              }
-            },
+            read: `switch (val) {
+                                case 24: // Ice
+                                case 30: // Hot
+                                case 31: // Cold
+                                    return Color.swExceptional; // exceptional
+
+                                case 7: // Cloudy
+                                case 8: // Dreary (Overcast)
+                                case 38: // Mostly Cloudy
+                                    return Color.swCloudy; // cloudy
+
+                                case 11: // fog
+                                    return Color.swFog; // fog
+
+                                case 25: // Sleet
+                                    return Color.swHail; // Hail
+
+                                case 15: // T-Storms
+                                    return Color.swLightning; // lightning
+
+                                case 16: // Mostly Cloudy w/ T-Storms
+                                case 17: // Partly Sunny w/ T-Storms
+                                case 41: // Partly Cloudy w/ T-Storms
+                                case 42: // Mostly Cloudy w/ T-Storms
+                                    return Color.swLightningRainy; // lightning-rainy
+
+                                case 33: // Clear
+                                case 34: // Mostly Clear
+                                case 37: // Hazy Moonlight
+                                    return Color.swClearNight;
+
+                                case 3: // Partly Sunny
+                                case 4: // Intermittent Clouds
+                                case 6: // Mostly Cloudy
+                                case 35: // Partly Cloudy
+                                case 36: // Intermittent Clouds
+                                    return Color.swPartlycloudy; // partlycloudy
+
+                                case 18: // pouring
+                                    return Color.swPouring; // pouring
+
+                                case 12: // Showers
+                                case 13: // Mostly Cloudy w/ Showers
+                                case 14: // Partly Sunny w/ Showers
+                                case 26: // Freezing Rain
+                                case 39: // Partly Cloudy w/ Showers
+                                case 40: // Mostly Cloudy w/ Showers
+                                    return Color.swRainy; // rainy
+
+                                case 19: // Flurries
+                                case 20: // Mostly Cloudy w/ Flurries
+                                case 21: // Partly Sunny w/ Flurries
+                                case 22: // Snow
+                                case 23: // Mostly Cloudy w/ Snow
+                                case 43: // Mostly Cloudy w/ Flurries
+                                case 44: // Mostly Cloudy w/ Snow
+                                    return Color.swSnowy; // snowy
+
+                                case 29: // Rain and Snow
+                                    return Color.swSnowyRainy; // snowy-rainy
+
+                                case 1: // Sunny
+                                case 2: // Mostly Sunny
+                                case 5: // Hazy Sunshine
+                                    return Color.swSunny; // sunny
+
+                                case 32: // windy
+                                    return Color.swWindy; // windy
+
+                                default:
+                                    return Color.White;
+                            }`,
             dp: "accuweather.0.Current.WeatherIcon"
           },
           entityIconColorScale: void 0,
           entityIconOn: {
             type: "triggered",
             dp: "accuweather.0.Current.WeatherIcon",
-            read: (val) => {
-              switch (val) {
-                case 30:
-                  return "weather-sunny-alert";
-                case 24:
-                case 31:
-                  return "snowflake-alert";
-                case 7:
-                case 8:
-                case 38:
-                  return "weather-cloudy";
-                case 11:
-                  return "weather-fog";
-                case 25:
-                  return "weather-hail";
-                case 15:
-                  return "weather-lightning";
-                case 16:
-                case 17:
-                case 41:
-                case 42:
-                  return "weather-lightning-rainy";
-                case 33:
-                case 34:
-                case 37:
-                  return "weather-night";
-                case 3:
-                case 4:
-                case 6:
-                case 35:
-                case 36:
-                  return "weather-partly-cloudy";
-                case 18:
-                  return "weather-pouring";
-                case 12:
-                case 13:
-                case 14:
-                case 26:
-                case 39:
-                case 40:
-                  return "weather-rainy";
-                case 19:
-                case 20:
-                case 21:
-                case 22:
-                case 23:
-                case 43:
-                case 44:
-                  return "weather-snowy";
-                case 29:
-                  return "weather-snowy-rainy";
-                case 1:
-                case 2:
-                case 5:
-                  return "weather-sunny";
-                case 32:
-                  return "weather-windy";
-                default:
-                  return "alert-circle-outline";
-              }
-            }
+            read: `{
+                            switch (val) {
+                                case 30: // Hot
+                                    return 'weather-sunny-alert'; // exceptional
+
+                                case 24: // Ice
+                                case 31: // Cold
+                                    return 'snowflake-alert'; // exceptional
+
+                                case 7: // Cloudy
+                                case 8: // Dreary (Overcast)
+                                case 38: // Mostly Cloudy
+                                    return 'weather-cloudy'; // cloudy
+
+                                case 11: // fog
+                                    return 'weather-fog'; // fog
+
+                                case 25: // Sleet
+                                    return 'weather-hail'; // Hail
+
+                                case 15: // T-Storms
+                                    return 'weather-lightning'; // lightning
+
+                                case 16: // Mostly Cloudy w/ T-Storms
+                                case 17: // Partly Sunny w/ T-Storms
+                                case 41: // Partly Cloudy w/ T-Storms
+                                case 42: // Mostly Cloudy w/ T-Storms
+                                    return 'weather-lightning-rainy'; // lightning-rainy
+
+                                case 33: // Clear
+                                case 34: // Mostly Clear
+                                case 37: // Hazy Moonlight
+                                    return 'weather-night';
+
+                                case 3: // Partly Sunny
+                                case 4: // Intermittent Clouds
+                                case 6: // Mostly Cloudy
+                                case 35: // Partly Cloudy
+                                case 36: // Intermittent Clouds
+                                    return 'weather-partly-cloudy'; // partlycloudy
+
+                                case 18: // pouring
+                                    return 'weather-pouring'; // pouring
+
+                                case 12: // Showers
+                                case 13: // Mostly Cloudy w/ Showers
+                                case 14: // Partly Sunny w/ Showers
+                                case 26: // Freezing Rain
+                                case 39: // Partly Cloudy w/ Showers
+                                case 40: // Mostly Cloudy w/ Showers
+                                    return 'weather-rainy'; // rainy
+
+                                case 19: // Flurries
+                                case 20: // Mostly Cloudy w/ Flurries
+                                case 21: // Partly Sunny w/ Flurries
+                                case 22: // Snow
+                                case 23: // Mostly Cloudy w/ Snow
+                                case 43: // Mostly Cloudy w/ Flurries
+                                case 44: // Mostly Cloudy w/ Snow
+                                    return 'weather-snowy'; // snowy
+
+                                case 29: // Rain and Snow
+                                    return 'weather-snowy-rainy'; // snowy-rainy
+
+                                case 1: // Sunny
+                                case 2: // Mostly Sunny
+                                case 5: // Hazy Sunshine
+                                    return 'weather-sunny'; // sunny
+
+                                case 32: // windy
+                                    return 'weather-windy'; // windy
+
+                                default:
+                                    return 'alert-circle-outline';
+                            }
+                        }`
           },
           entityIconOff: void 0,
           entityIconSelect: void 0,
@@ -207,7 +241,7 @@ const Testconfig = {
           },
           entityIconColor: {
             type: "const",
-            constVal: import_color.Yellow
+            constVal: Color.Yellow
           },
           entityIconColorScale: void 0,
           entityIconOff: void 0,
@@ -218,7 +252,7 @@ const Testconfig = {
           entityIconSelect: void 0,
           entityOffColor: {
             type: "const",
-            constVal: import_color.Yellow
+            constVal: Color.Yellow
           },
           entityOffText: void 0,
           entityOnColor: void 0,
@@ -328,7 +362,80 @@ const Testconfig = {
           entityOffText: void 0,
           entityOnColor: {
             type: "const",
-            constVal: import_color.White
+            constVal: Color.White
+          },
+          entityOnText: void 0,
+          entityText: {
+            type: "const",
+            constVal: "Windr."
+          },
+          entityUnitText: {
+            type: "const",
+            constVal: "\xB0"
+          }
+        },
+        {
+          entity: {
+            type: "state",
+            dp: "accuweather.0.Current.WindGust"
+          },
+          entityDateFormat: void 0,
+          entityDecimalPlaces: {
+            type: "const",
+            constVal: 1
+          },
+          entityFactor: {
+            type: "const",
+            constVal: 1e3 / 3600
+          },
+          entityIconColor: void 0,
+          entityIconColorScale: {
+            type: "const",
+            constVal: { val_min: 0, val_max: 120 }
+          },
+          entityIconOff: void 0,
+          entityIconOn: {
+            type: "const",
+            constVal: "weather-tornado"
+          },
+          entityIconSelect: void 0,
+          entityOffColor: void 0,
+          entityOffText: void 0,
+          entityOnColor: void 0,
+          entityOnText: void 0,
+          entityText: {
+            type: "const",
+            constVal: "B\xF6en"
+          },
+          entityUnitText: {
+            type: "const",
+            constVal: "m/s"
+          }
+        },
+        {
+          entity: {
+            type: "state",
+            dp: "accuweather.0.Current.WindDirectionText"
+          },
+          entityDateFormat: void 0,
+          entityDecimalPlaces: {
+            type: "const",
+            constVal: 0
+          },
+          entityFactor: void 0,
+          entityIconColor: void 0,
+          entityIconColorScale: void 0,
+          entityIconOff: void 0,
+          entityIconOn: {
+            type: "const",
+            constVal: "windsock"
+          },
+          entityIconSelect: void 0,
+          entityOffColor: void 0,
+          entityOffText: void 0,
+          entityOnColor: {
+            type: "const",
+            constVal: Color.White
           },
           entityOnText: void 0,
           entityText: {
@@ -341,6 +448,7 @@ const Testconfig = {
           }
         }
       ],
+      alternateEntity: [],
       indicatorEntity: [],
       mrIconEntity: [
         {
@@ -358,11 +466,11 @@ const Testconfig = {
           },
           entityOffColor: {
             type: "const",
-            constVal: import_color.White
+            constVal: Color.White
           },
           entityOnColor: {
             type: "const",
-            constVal: import_color.Red
+            constVal: Color.Red
           },
           entityValue: {
             type: "const",
@@ -396,11 +504,11 @@ const Testconfig = {
           },
           entityOffColor: {
             type: "const",
-            constVal: import_color.White
+            constVal: Color.White
           },
           entityOnColor: {
             type: "const",
-            constVal: import_color.Red
+            constVal: Color.Red
           },
           entityValue: {
             type: "const",

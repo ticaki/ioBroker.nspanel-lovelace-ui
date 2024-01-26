@@ -1,29 +1,14 @@
-import {
-    Red,
-    White,
-    Yellow,
-    rgb_dec565,
-    swClearNight,
-    swCloudy,
-    swExceptional,
-    swFog,
-    swHail,
-    swLightning,
-    swLightningRainy,
-    swPartlycloudy,
-    swPouring,
-    swRainy,
-    swSnowy,
-    swSnowyRainy,
-    swSunny,
-    swWindy,
-} from './const/color';
+import * as Color from './const/color';
 import { panelConfigPartial } from './controller/panel';
 
 //~1 ~2 ~~32495~5 ~entityOffText~1 ~2 ~3 ~4 ~65535~6 ~2entityUnitText~2 ~3 ~4 ~5 ~65535~ ~3~ ~ ~ ~ ~65535~ ~4~ ~ ~ ~ ~65535~ ~5~ ~ to panel.
 export const Testconfig: Partial<panelConfigPartial> = {
     screenSaverConfig: {
+        // mode of screensaver
         mode: 'standard',
+        // in 0 no rotation otherwise < 3 sec = 3 sec for testing -
+        rotationTime: 0,
+        // Config of Entitys
         entitysConfig: {
             favoritEntity: [
                 {
@@ -42,47 +27,46 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     entityFactor: undefined,
                     entityIconColor: {
                         type: 'state',
-                        read: (val: any) => {
-                            switch (val) {
+                        read: `switch (val) {
                                 case 24: // Ice
                                 case 30: // Hot
                                 case 31: // Cold
-                                    return rgb_dec565(swExceptional); // exceptional
+                                    return Color.swExceptional; // exceptional
 
                                 case 7: // Cloudy
                                 case 8: // Dreary (Overcast)
                                 case 38: // Mostly Cloudy
-                                    return rgb_dec565(swCloudy); // cloudy
+                                    return Color.swCloudy; // cloudy
 
                                 case 11: // fog
-                                    return rgb_dec565(swFog); // fog
+                                    return Color.swFog; // fog
 
                                 case 25: // Sleet
-                                    return rgb_dec565(swHail); // Hail
+                                    return Color.swHail; // Hail
 
                                 case 15: // T-Storms
-                                    return rgb_dec565(swLightning); // lightning
+                                    return Color.swLightning; // lightning
 
                                 case 16: // Mostly Cloudy w/ T-Storms
                                 case 17: // Partly Sunny w/ T-Storms
                                 case 41: // Partly Cloudy w/ T-Storms
                                 case 42: // Mostly Cloudy w/ T-Storms
-                                    return rgb_dec565(swLightningRainy); // lightning-rainy
+                                    return Color.swLightningRainy; // lightning-rainy
 
                                 case 33: // Clear
                                 case 34: // Mostly Clear
                                 case 37: // Hazy Moonlight
-                                    return rgb_dec565(swClearNight);
+                                    return Color.swClearNight;
 
                                 case 3: // Partly Sunny
                                 case 4: // Intermittent Clouds
                                 case 6: // Mostly Cloudy
                                 case 35: // Partly Cloudy
                                 case 36: // Intermittent Clouds
-                                    return rgb_dec565(swPartlycloudy); // partlycloudy
+                                    return Color.swPartlycloudy; // partlycloudy
 
                                 case 18: // pouring
-                                    return rgb_dec565(swPouring); // pouring
+                                    return Color.swPouring; // pouring
 
                                 case 12: // Showers
                                 case 13: // Mostly Cloudy w/ Showers
@@ -90,7 +74,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                                 case 26: // Freezing Rain
                                 case 39: // Partly Cloudy w/ Showers
                                 case 40: // Mostly Cloudy w/ Showers
-                                    return rgb_dec565(swRainy); // rainy
+                                    return Color.swRainy; // rainy
 
                                 case 19: // Flurries
                                 case 20: // Mostly Cloudy w/ Flurries
@@ -99,30 +83,29 @@ export const Testconfig: Partial<panelConfigPartial> = {
                                 case 23: // Mostly Cloudy w/ Snow
                                 case 43: // Mostly Cloudy w/ Flurries
                                 case 44: // Mostly Cloudy w/ Snow
-                                    return rgb_dec565(swSnowy); // snowy
+                                    return Color.swSnowy; // snowy
 
                                 case 29: // Rain and Snow
-                                    return rgb_dec565(swSnowyRainy); // snowy-rainy
+                                    return Color.swSnowyRainy; // snowy-rainy
 
                                 case 1: // Sunny
                                 case 2: // Mostly Sunny
                                 case 5: // Hazy Sunshine
-                                    return rgb_dec565(swSunny); // sunny
+                                    return Color.swSunny; // sunny
 
                                 case 32: // windy
-                                    return rgb_dec565(swWindy); // windy
+                                    return Color.swWindy; // windy
 
                                 default:
-                                    return rgb_dec565(White);
-                            }
-                        },
+                                    return Color.White;
+                            }`,
                         dp: 'accuweather.0.Current.WeatherIcon',
                     },
                     entityIconColorScale: undefined,
                     entityIconOn: {
                         type: 'triggered',
                         dp: 'accuweather.0.Current.WeatherIcon',
-                        read: (val) => {
+                        read: `{
                             switch (val) {
                                 case 30: // Hot
                                     return 'weather-sunny-alert'; // exceptional
@@ -197,8 +180,9 @@ export const Testconfig: Partial<panelConfigPartial> = {
                                 default:
                                     return 'alert-circle-outline';
                             }
-                        },
+                        }`,
                     },
+
                     entityIconOff: undefined,
                     entityIconSelect: undefined,
                     entityOffColor: undefined,
@@ -234,7 +218,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     },
                     entityIconColor: {
                         type: 'const',
-                        constVal: Yellow,
+                        constVal: Color.Yellow,
                     },
                     entityIconColorScale: undefined,
                     entityIconOff: undefined,
@@ -245,7 +229,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     entityIconSelect: undefined,
                     entityOffColor: {
                         type: 'const',
-                        constVal: Yellow,
+                        constVal: Color.Yellow,
                     },
                     entityOffText: undefined,
                     entityOnColor: undefined,
@@ -355,7 +339,80 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     entityOffText: undefined,
                     entityOnColor: {
                         type: 'const',
-                        constVal: White,
+                        constVal: Color.White,
+                    },
+                    entityOnText: undefined,
+                    entityText: {
+                        type: 'const',
+                        constVal: 'Windr.',
+                    },
+                    entityUnitText: {
+                        type: 'const',
+                        constVal: '°',
+                    },
+                },
+                {
+                    entity: {
+                        type: 'state',
+                        dp: 'accuweather.0.Current.WindGust',
+                    },
+                    entityDateFormat: undefined,
+                    entityDecimalPlaces: {
+                        type: 'const',
+                        constVal: 1,
+                    },
+                    entityFactor: {
+                        type: 'const',
+                        constVal: 1000 / 3600,
+                    },
+                    entityIconColor: undefined,
+                    entityIconColorScale: {
+                        type: 'const',
+                        constVal: { val_min: 0, val_max: 120 },
+                    },
+                    entityIconOff: undefined,
+                    entityIconOn: {
+                        type: 'const',
+                        constVal: 'weather-tornado',
+                    },
+                    entityIconSelect: undefined,
+                    entityOffColor: undefined,
+                    entityOffText: undefined,
+                    entityOnColor: undefined,
+                    entityOnText: undefined,
+                    entityText: {
+                        type: 'const',
+                        constVal: 'Böen',
+                    },
+                    entityUnitText: {
+                        type: 'const',
+                        constVal: 'm/s',
+                    },
+                },
+                {
+                    entity: {
+                        type: 'state',
+                        dp: 'accuweather.0.Current.WindDirectionText',
+                    },
+                    entityDateFormat: undefined,
+                    entityDecimalPlaces: {
+                        type: 'const',
+                        constVal: 0,
+                    },
+                    entityFactor: undefined,
+                    entityIconColor: undefined,
+                    entityIconColorScale: undefined,
+                    entityIconOff: undefined,
+                    entityIconOn: {
+                        type: 'const',
+                        constVal: 'windsock',
+                    },
+                    entityIconSelect: undefined,
+                    entityOffColor: undefined,
+                    entityOffText: undefined,
+                    entityOnColor: {
+                        type: 'const',
+                        constVal: Color.White,
                     },
                     entityOnText: undefined,
                     entityText: {
@@ -368,6 +425,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     },
                 },
             ],
+            alternateEntity: [],
             indicatorEntity: [],
             mrIconEntity: [
                 {
@@ -385,11 +443,11 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     },
                     entityOffColor: {
                         type: 'const',
-                        constVal: White,
+                        constVal: Color.White,
                     },
                     entityOnColor: {
                         type: 'const',
-                        constVal: Red,
+                        constVal: Color.Red,
                     },
                     entityValue: {
                         type: 'const',
@@ -423,11 +481,11 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     },
                     entityOffColor: {
                         type: 'const',
-                        constVal: White,
+                        constVal: Color.White,
                     },
                     entityOnColor: {
                         type: 'const',
-                        constVal: Red,
+                        constVal: Color.Red,
                     },
                     entityValue: {
                         type: 'const',
@@ -455,6 +513,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
             iconBig2: false,
         },
     },
+    // override by password.ts
     topic: 'nspanel/ns_panel2',
     name: 'Wohnzimmer',
 };

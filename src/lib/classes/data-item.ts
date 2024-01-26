@@ -28,7 +28,7 @@ export class Dataitem extends BaseClass {
                     this.log.error(`Error 1001 in constructor val == '' not allow in type const!`);
                 }*/
                 this.setTypeFromValue(this.options.constVal);
-                this.options.value = {
+                this.options.state = {
                     val: this.options.constVal,
                     ack: true,
                     ts: Date.now(),
@@ -72,7 +72,7 @@ export class Dataitem extends BaseClass {
     private async getRawState(): Promise<NSPanel.State | null | undefined> {
         switch (this.options.type) {
             case 'const':
-                return this.options.value;
+                return this.options.state;
             case 'state':
             case 'triggered':
                 if (!this.options.dp) {
@@ -85,17 +85,21 @@ export class Dataitem extends BaseClass {
         return null;
     }
     async getState(): Promise<NSPanel.State | null | undefined> {
-        const value = await this.getRawState();
-        if (value && this.options.type !== 'const' && this.options.type !== 'internal' && this.options.read) {
-            try {
-                if (typeof this.options.read === 'string')
-                    value.val = new Function('val', `return ${this.options.read}`)(value.val);
-                else value.val = this.options.read(value.val);
-            } catch (e) {
-                this.log.error(`Read is invalid: ${this.options.read} Error: ${e}`);
+        let state = await this.getRawState();
+        if (state) {
+            state = { ...state };
+            if (this.options.type !== 'const' && this.options.type !== 'internal' && this.options.read) {
+                try {
+                    if (typeof this.options.read === 'string')
+                        state.val = new Function('val', 'Color', `${this.options.read}`)(state.val, Color);
+                    else state.val = this.options.read(state.val);
+                    this.log.debug(JSON.stringify(state.val));
+                } catch (e) {
+                    this.log.error(`Read is invalid: ${this.options.read} Error: ${e}`);
+                }
             }
         }
-        return value;
+        return state;
     }
 
     async getObject(): Promise<object | null> {

@@ -178,11 +178,12 @@ const tft_version = "v4.3.3";
 const desired_display_firmware_version = 53;
 const berry_driver_version = 9;
 const tasmotaOtaUrl = "http://ota.tasmota.com/tasmota32/release/";
-const ScreenSaverPlaces = ["favoritEntity", "leftEntity", "bottomEntity", "indicatorEntity"];
+const ScreenSaverPlaces = ["favoritEntity", "leftEntity", "bottomEntity", "alternateEntity", "indicatorEntity"];
 const ScreenSaverAllPlaces = [
   "favoritEntity",
   "leftEntity",
   "bottomEntity",
+  "alternateEntity",
   "indicatorEntity",
   "mrIconEntity"
 ];
@@ -193,6 +194,9 @@ const ScreenSaverConst = {
     },
     bottomEntity: {
       maxEntries: 4
+    },
+    alternateEntity: {
+      maxEntries: 0
     },
     indicatorEntity: {
       maxEntries: 0
@@ -209,7 +213,10 @@ const ScreenSaverConst = {
       maxEntries: 0
     },
     bottomEntity: {
-      maxEntries: 5
+      maxEntries: 3
+    },
+    alternateEntity: {
+      maxEntries: 1
     },
     indicatorEntity: {
       maxEntries: 0
@@ -227,6 +234,9 @@ const ScreenSaverConst = {
     },
     bottomEntity: {
       maxEntries: 7
+    },
+    alternateEntity: {
+      maxEntries: 0
     },
     indicatorEntity: {
       maxEntries: 5

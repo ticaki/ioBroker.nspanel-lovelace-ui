@@ -22,6 +22,7 @@ export type ScreensaverConfig = {
     mode: NSPanel.ScreensaverModeType;
     entitysConfig: NSPanel.ScreensaverOptionsType;
     config: ScreensaverConfigType;
+    rotationTime: number;
 };
 
 export class Screensaver extends BaseClassPanelSend {
@@ -40,11 +41,16 @@ export class Screensaver extends BaseClassPanelSend {
         favoritEntity: [],
         leftEntity: [],
         bottomEntity: [],
+        alternateEntity: [],
         indicatorEntity: [],
         mrIconEntity: [],
     };
     readonly mode: NSPanel.ScreensaverModeType;
-
+    private rotationTime: number;
+    private currentPos: number = 0;
+    private timoutRotation: ioBroker.Timeout | undefined = undefined;
+    private step: number = 0;
+    protected visible: boolean = false;
     constructor(adapter: any, config: ScreensaverConfig, panelSend: PanelSend, readOnlyDB: StatesDBReadOnly) {
         super(adapter, panelSend, 'screensaver');
         this.entitysConfig = config.entitysConfig;
@@ -52,12 +58,11 @@ export class Screensaver extends BaseClassPanelSend {
         this.config = config.config;
         moment.locale(config.config.momentLocale);
         this.readOnlyDB = readOnlyDB;
+        this.rotationTime = config.rotationTime !== 0 && config.rotationTime < 3 ? 3000 : config.rotationTime * 1000;
     }
     async init(): Promise<void> {
-        // start sendTimeLoop
-
-        //const place = 'bottomEntity';
         const config = this.entitysConfig;
+
         for (const key of Definition.ScreenSaverAllPlaces) {
             for (const entry of config[key]) {
                 if (entry == null || entry === undefined) {
@@ -100,14 +105,27 @@ export class Screensaver extends BaseClassPanelSend {
     }
 
     async update(): Promise<void> {
+        if (!this.visible) {
+            this.log.error('get update command but not visible!');
+            return;
+        }
+
         const payload: sendTemplates['weatherUpdate'] = { eventType: 'weatherUpdate', value: {} };
         payload.value[this.layout] = [];
         const value = payload.value[this.layout];
         if (value === undefined) return;
         for (const place of Definition.ScreenSaverPlaces) {
-            const maxItems = Definition.ScreenSaverConst[this.layout][place].maxEntries;
-
-            for (let i = 0; i < maxItems; i++) {
+            // let bottom rotated
+            let maxItems = Definition.ScreenSaverConst[this.layout][place].maxEntries;
+            let i = 0;
+            if (place == 'bottomEntity') {
+                i = maxItems * this.step;
+                maxItems = maxItems * (this.step + 1);
+            }
+            if (place == 'favoritEntity') {
+                this.log.debug('y');
+            }
+            for (i; i < maxItems; i++) {
                 const item: NSPanel.ScreenSaverDataItems | undefined = this.items[place][i];
                 if (item === null || item === undefined || item.entity === undefined) {
                     value.push({ icon: '', iconColor: '', displayName: '', optionalValue: '' });
@@ -195,14 +213,17 @@ export class Screensaver extends BaseClassPanelSend {
     sendType(): void {
         switch (this.layout) {
             case 'standard': {
+                this.visible = true;
                 this.sendToPanel('pageType~screensaver');
                 break;
             }
             case 'alternate': {
+                this.visible = true;
                 this.sendToPanel('pageType~screensaver');
                 break;
             }
             case 'advanced': {
+                this.visible = true;
                 this.sendToPanel('pageType~screensaver2');
                 break;
             }
@@ -259,6 +280,37 @@ export class Screensaver extends BaseClassPanelSend {
             }
         }
     }
+    getVisibility = (): boolean => {
+        return this.visible;
+    };
+    setVisibility = (v: boolean): void => {
+        if (v !== this.visible) {
+            this.visible = v;
+            this.step = -1;
+            if (this.visible) {
+                this.sendType();
+                this.rotationLoop();
+            } else {
+                if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);
+            }
+        }
+    };
+    rotationLoop = async (): Promise<void> => {
+        if (this.unload) return;
+        // only use this if screensaver is activated
+        if (!this.visible) return;
+        const l = this.entitysConfig.bottomEntity.length;
+        const m = Definition.ScreenSaverConst[this.layout].bottomEntity.maxEntries;
+        if (l <= m * ++this.step) this.step = 0;
+
+        await this.update();
+
+        if (l <= m || this.rotationTime === 0) return;
+        this.timoutRotation = this.adapter.setTimeout(
+            this.rotationLoop,
+            this.rotationTime < 3000 ? 3000 : this.rotationTime,
+        );
+    };
     getPayloadArray(s: string[]): string {
         return s.join('~');
     }
@@ -394,6 +446,10 @@ export class Screensaver extends BaseClassPanelSend {
             payload[`icon${s}Font`] = this.config[`iconBig${s}`] ? '1' : '';
         }
         this.sendStatusUpdate(payload as sendTemplates['statusUpdate'], this.layout);
+    }
+    async delete(): Promise<void> {
+        await super.delete();
+        if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);
     }
 }
 

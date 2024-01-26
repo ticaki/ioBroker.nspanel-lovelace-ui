@@ -359,9 +359,10 @@ export type Config = {
     panelSendTopic: string;
     weatherEntity: string;
     screensaver: {
-        favoritEntity: ScreenSaverElement[];
+        favoritEntity: [ScreenSaverElement];
         leftEntity: ScreenSaverElement[];
         bottomEntity: ScreenSaverElement[];
+        alternateEntity: [ScreenSaverElement?];
         indicatorEntity: ScreenSaverElement[];
         mrIconEntity: [ScreenSaverMRElement, ScreenSaverMRElement];
     };
@@ -550,13 +551,13 @@ export type DataItemsOptions = { name?: string } & (
           type: 'const';
           role?: string;
           constVal: StateValue;
-          value?: State | null; // use just inside of class
+          state?: State | null; // use just inside of class
       }
     | {
           type: 'state';
           dp: string;
           role?: string;
-          value?: State | null; // use just inside of class
+          state?: State | null; // use just inside of class
           substring?: [number, number | undefined]; // only used with getString()
           forceType?: 'string' | 'number' | 'boolean'; // force a type
           read?: string | ((val: any) => any);
@@ -565,7 +566,7 @@ export type DataItemsOptions = { name?: string } & (
           type: 'triggered';
           dp: string;
           role?: string;
-          value?: State | null; // use just inside of class
+          state?: State | null; // use just inside of class
           substring?: [number, number | undefined]; // only used with getString()
           forceType?: 'string' | 'number' | 'boolean'; // force a type
           read?: string | ((val: any) => any);
@@ -613,6 +614,7 @@ export type ScreensaverOptionsType = {
     favoritEntity: Config['screensaver']['favoritEntity'];
     leftEntity: Config['screensaver']['leftEntity'];
     bottomEntity: Config['screensaver']['bottomEntity'];
+    alternateEntity: Config['screensaver']['alternateEntity'];
     indicatorEntity: Config['screensaver']['indicatorEntity'];
     mrIconEntity: Config['screensaver']['mrIconEntity'];
 };

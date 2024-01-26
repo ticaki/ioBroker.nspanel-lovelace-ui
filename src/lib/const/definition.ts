@@ -258,13 +258,15 @@ export const ScreenSaverPlaces: [
     keyof Pick<ScreensaverOptionsType, 'favoritEntity'>,
     keyof Pick<ScreensaverOptionsType, 'leftEntity'>,
     keyof Pick<ScreensaverOptionsType, 'bottomEntity'>,
+    keyof Pick<ScreensaverOptionsType, 'alternateEntity'>,
     keyof Pick<ScreensaverOptionsType, 'indicatorEntity'>,
-] = ['favoritEntity', 'leftEntity', 'bottomEntity', 'indicatorEntity'];
+] = ['favoritEntity', 'leftEntity', 'bottomEntity', 'alternateEntity', 'indicatorEntity'];
 
 export const ScreenSaverAllPlaces: (keyof ScreensaverOptionsType)[] = [
     'favoritEntity',
     'leftEntity',
     'bottomEntity',
+    'alternateEntity',
     'indicatorEntity',
     'mrIconEntity',
 ];
@@ -279,6 +281,9 @@ export const ScreenSaverConst: Record<
         },
         bottomEntity: {
             maxEntries: 4,
+        },
+        alternateEntity: {
+            maxEntries: 0,
         },
         indicatorEntity: {
             maxEntries: 0,
@@ -295,7 +300,10 @@ export const ScreenSaverConst: Record<
             maxEntries: 0,
         },
         bottomEntity: {
-            maxEntries: 5,
+            maxEntries: 3,
+        },
+        alternateEntity: {
+            maxEntries: 1,
         },
         indicatorEntity: {
             maxEntries: 0,
@@ -313,6 +321,9 @@ export const ScreenSaverConst: Record<
         },
         bottomEntity: {
             maxEntries: 7,
+        },
+        alternateEntity: {
+            maxEntries: 0,
         },
         indicatorEntity: {
             maxEntries: 5,

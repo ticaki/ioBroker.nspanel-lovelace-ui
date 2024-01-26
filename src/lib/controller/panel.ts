@@ -172,23 +172,28 @@ export class Panel extends BaseClassPanelSend {
                 break;
             }
             case 'sleepReached': {
-                this.screenSaver.sendType();
-                this.screenSaver.update();
+                this.screenSaver.setVisibility(true);
                 break;
             }
             case 'pageOpenDetail': {
                 break;
             }
             case 'buttonPress2': {
+                this.screenSaver.setVisibility(false);
+
                 break;
             }
             case 'renderCurrentPage': {
                 break;
             }
             case 'button1': {
+                this.screenSaver.setVisibility(false);
+
                 break;
             }
             case 'button2': {
+                this.screenSaver.setVisibility(false);
+
                 break;
             }
         }
