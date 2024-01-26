@@ -558,7 +558,8 @@ export type DataItemsOptions = { name?: string } & (
           role?: string;
           value?: State | null; // use just inside of class
           substring?: [number, number | undefined]; // only used with getString()
-          valType?: 'string' | 'number' | 'boolean'; // force a type
+          forceType?: 'string' | 'number' | 'boolean'; // force a type
+          read?: string | ((val: any) => any);
       }
     | {
           type: 'triggered';
@@ -566,9 +567,16 @@ export type DataItemsOptions = { name?: string } & (
           role?: string;
           value?: State | null; // use just inside of class
           substring?: [number, number | undefined]; // only used with getString()
-          valType?: 'string' | 'number' | 'boolean'; // force a type
+          forceType?: 'string' | 'number' | 'boolean'; // force a type
+          read?: string | ((val: any) => any);
+      }
+    | {
+          type: 'internal';
+          dp: internalDatapoints;
       }
 );
+
+type internalDatapoints = 'Relais1' | 'Relais2';
 export type IncomingEvent = {
     type: EventType;
     method: EventMethod;

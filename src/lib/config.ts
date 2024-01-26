@@ -1,4 +1,23 @@
-import { Black, Green, MSGreen, MSRed, Red, White, Yellow, rgb_dec565 } from './const/color';
+import {
+    Red,
+    White,
+    Yellow,
+    rgb_dec565,
+    swClearNight,
+    swCloudy,
+    swExceptional,
+    swFog,
+    swHail,
+    swLightning,
+    swLightningRainy,
+    swPartlycloudy,
+    swPouring,
+    swRainy,
+    swSnowy,
+    swSnowyRainy,
+    swSunny,
+    swWindy,
+} from './const/color';
 import { panelConfigPartial } from './controller/panel';
 
 //~1 ~2 ~~32495~5 ~entityOffText~1 ~2 ~3 ~4 ~65535~6 ~2entityUnitText~2 ~3 ~4 ~5 ~65535~ ~3~ ~ ~ ~ ~65535~ ~4~ ~ ~ ~ ~65535~ ~5~ ~ to panel.
@@ -10,7 +29,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                 {
                     entity: {
                         type: 'triggered',
-                        dp: '0_userdata.0.trigger1',
+                        dp: 'accuweather.0.Current.Temperature',
                     },
                     entityDateFormat: {
                         type: 'const',
@@ -20,53 +39,176 @@ export const Testconfig: Partial<panelConfigPartial> = {
                         type: 'const',
                         constVal: null,
                     },
-                    entityFactor: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityFactor: undefined,
                     entityIconColor: {
-                        type: 'const',
-                        constVal: null,
+                        type: 'state',
+                        read: (val: any) => {
+                            switch (val) {
+                                case 24: // Ice
+                                case 30: // Hot
+                                case 31: // Cold
+                                    return rgb_dec565(swExceptional); // exceptional
+
+                                case 7: // Cloudy
+                                case 8: // Dreary (Overcast)
+                                case 38: // Mostly Cloudy
+                                    return rgb_dec565(swCloudy); // cloudy
+
+                                case 11: // fog
+                                    return rgb_dec565(swFog); // fog
+
+                                case 25: // Sleet
+                                    return rgb_dec565(swHail); // Hail
+
+                                case 15: // T-Storms
+                                    return rgb_dec565(swLightning); // lightning
+
+                                case 16: // Mostly Cloudy w/ T-Storms
+                                case 17: // Partly Sunny w/ T-Storms
+                                case 41: // Partly Cloudy w/ T-Storms
+                                case 42: // Mostly Cloudy w/ T-Storms
+                                    return rgb_dec565(swLightningRainy); // lightning-rainy
+
+                                case 33: // Clear
+                                case 34: // Mostly Clear
+                                case 37: // Hazy Moonlight
+                                    return rgb_dec565(swClearNight);
+
+                                case 3: // Partly Sunny
+                                case 4: // Intermittent Clouds
+                                case 6: // Mostly Cloudy
+                                case 35: // Partly Cloudy
+                                case 36: // Intermittent Clouds
+                                    return rgb_dec565(swPartlycloudy); // partlycloudy
+
+                                case 18: // pouring
+                                    return rgb_dec565(swPouring); // pouring
+
+                                case 12: // Showers
+                                case 13: // Mostly Cloudy w/ Showers
+                                case 14: // Partly Sunny w/ Showers
+                                case 26: // Freezing Rain
+                                case 39: // Partly Cloudy w/ Showers
+                                case 40: // Mostly Cloudy w/ Showers
+                                    return rgb_dec565(swRainy); // rainy
+
+                                case 19: // Flurries
+                                case 20: // Mostly Cloudy w/ Flurries
+                                case 21: // Partly Sunny w/ Flurries
+                                case 22: // Snow
+                                case 23: // Mostly Cloudy w/ Snow
+                                case 43: // Mostly Cloudy w/ Flurries
+                                case 44: // Mostly Cloudy w/ Snow
+                                    return rgb_dec565(swSnowy); // snowy
+
+                                case 29: // Rain and Snow
+                                    return rgb_dec565(swSnowyRainy); // snowy-rainy
+
+                                case 1: // Sunny
+                                case 2: // Mostly Sunny
+                                case 5: // Hazy Sunshine
+                                    return rgb_dec565(swSunny); // sunny
+
+                                case 32: // windy
+                                    return rgb_dec565(swWindy); // windy
+
+                                default:
+                                    return rgb_dec565(White);
+                            }
+                        },
+                        dp: 'accuweather.0.Current.WeatherIcon',
                     },
-                    entityIconColorScale: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityIconOff: {
-                        type: 'const',
-                        constVal: 'home',
-                    },
+                    entityIconColorScale: undefined,
                     entityIconOn: {
-                        type: 'const',
-                        constVal: 'account',
+                        type: 'triggered',
+                        dp: 'accuweather.0.Current.WeatherIcon',
+                        read: (val) => {
+                            switch (val) {
+                                case 30: // Hot
+                                    return 'weather-sunny-alert'; // exceptional
+
+                                case 24: // Ice
+                                case 31: // Cold
+                                    return 'snowflake-alert'; // exceptional
+
+                                case 7: // Cloudy
+                                case 8: // Dreary (Overcast)
+                                case 38: // Mostly Cloudy
+                                    return 'weather-cloudy'; // cloudy
+
+                                case 11: // fog
+                                    return 'weather-fog'; // fog
+
+                                case 25: // Sleet
+                                    return 'weather-hail'; // Hail
+
+                                case 15: // T-Storms
+                                    return 'weather-lightning'; // lightning
+
+                                case 16: // Mostly Cloudy w/ T-Storms
+                                case 17: // Partly Sunny w/ T-Storms
+                                case 41: // Partly Cloudy w/ T-Storms
+                                case 42: // Mostly Cloudy w/ T-Storms
+                                    return 'weather-lightning-rainy'; // lightning-rainy
+
+                                case 33: // Clear
+                                case 34: // Mostly Clear
+                                case 37: // Hazy Moonlight
+                                    return 'weather-night';
+
+                                case 3: // Partly Sunny
+                                case 4: // Intermittent Clouds
+                                case 6: // Mostly Cloudy
+                                case 35: // Partly Cloudy
+                                case 36: // Intermittent Clouds
+                                    return 'weather-partly-cloudy'; // partlycloudy
+
+                                case 18: // pouring
+                                    return 'weather-pouring'; // pouring
+
+                                case 12: // Showers
+                                case 13: // Mostly Cloudy w/ Showers
+                                case 14: // Partly Sunny w/ Showers
+                                case 26: // Freezing Rain
+                                case 39: // Partly Cloudy w/ Showers
+                                case 40: // Mostly Cloudy w/ Showers
+                                    return 'weather-rainy'; // rainy
+
+                                case 19: // Flurries
+                                case 20: // Mostly Cloudy w/ Flurries
+                                case 21: // Partly Sunny w/ Flurries
+                                case 22: // Snow
+                                case 23: // Mostly Cloudy w/ Snow
+                                case 43: // Mostly Cloudy w/ Flurries
+                                case 44: // Mostly Cloudy w/ Snow
+                                    return 'weather-snowy'; // snowy
+
+                                case 29: // Rain and Snow
+                                    return 'weather-snowy-rainy'; // snowy-rainy
+
+                                case 1: // Sunny
+                                case 2: // Mostly Sunny
+                                case 5: // Hazy Sunshine
+                                    return 'weather-sunny'; // sunny
+
+                                case 32: // windy
+                                    return 'weather-windy'; // windy
+
+                                default:
+                                    return 'alert-circle-outline';
+                            }
+                        },
                     },
-                    entityIconSelect: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityOffColor: {
-                        type: 'const',
-                        constVal: MSGreen,
-                    },
-                    entityOffText: {
-                        type: 'const',
-                        constVal: 'entityOffText',
-                    },
-                    entityOnColor: {
-                        type: 'const',
-                        constVal: MSRed,
-                    },
-                    entityOnText: {
-                        type: 'const',
-                        constVal: 'entityOnText',
-                    },
-                    entityText: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityIconOff: undefined,
+                    entityIconSelect: undefined,
+                    entityOffColor: undefined,
+                    entityOffText: undefined,
+                    entityOnColor: undefined,
+                    entityOnText: undefined,
+                    entityText: undefined,
                     entityUnitText: {
                         type: 'const',
-                        constVal: 'Adapter',
+                        constVal: '°C',
                     },
                 },
             ],
@@ -76,7 +218,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     entity: {
                         type: 'state',
                         dp: 'accuweather.0.Daily.Day1.Sunrise',
-                        valType: 'string',
+                        forceType: 'string',
                     },
                     entityDateFormat: {
                         type: 'const',
@@ -94,56 +236,32 @@ export const Testconfig: Partial<panelConfigPartial> = {
                         type: 'const',
                         constVal: Yellow,
                     },
-                    entityIconColorScale: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityIconOff: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityIconColorScale: undefined,
+                    entityIconOff: undefined,
                     entityIconOn: {
                         type: 'const',
                         constVal: 'weather-sunset-up',
                     },
-                    entityIconSelect: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityIconSelect: undefined,
                     entityOffColor: {
                         type: 'const',
                         constVal: Yellow,
                     },
-                    entityOffText: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityOnColor: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityOnText: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityOffText: undefined,
+                    entityOnColor: undefined,
+                    entityOnText: undefined,
                     entityText: {
                         type: 'const',
                         constVal: 'Sonne',
                     },
-                    entityUnitText: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityUnitText: undefined,
                 },
                 {
                     entity: {
                         type: 'state',
                         dp: 'accuweather.0.Current.WindSpeed',
                     },
-                    entityDateFormat: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityDateFormat: undefined,
                     entityDecimalPlaces: {
                         type: 'const',
                         constVal: 1,
@@ -152,42 +270,21 @@ export const Testconfig: Partial<panelConfigPartial> = {
                         type: 'const',
                         constVal: 1000 / 3600,
                     },
-                    entityIconColor: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityIconColor: undefined,
                     entityIconColorScale: {
                         type: 'const',
                         constVal: { val_min: 0, val_max: 120 },
                     },
-                    entityIconOff: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityIconOff: undefined,
                     entityIconOn: {
                         type: 'const',
                         constVal: 'weather-windy',
                     },
-                    entityIconSelect: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityOffColor: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityOffText: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityOnColor: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityOnText: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityIconSelect: undefined,
+                    entityOffColor: undefined,
+                    entityOffText: undefined,
+                    entityOnColor: undefined,
+                    entityOnText: undefined,
                     entityText: {
                         type: 'const',
                         constVal: 'Wind',
@@ -199,126 +296,75 @@ export const Testconfig: Partial<panelConfigPartial> = {
                 },
                 {
                     entity: {
-                        type: 'const',
-                        constVal: '4',
+                        type: 'state',
+                        dp: 'accuweather.0.Current.WindGust',
                     },
-                    entityDateFormat: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityDateFormat: undefined,
                     entityDecimalPlaces: {
                         type: 'const',
-                        constVal: null,
+                        constVal: 1,
                     },
                     entityFactor: {
                         type: 'const',
-                        constVal: null,
+                        constVal: 1000 / 3600,
                     },
-                    entityIconColor: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityIconColor: undefined,
                     entityIconColorScale: {
                         type: 'const',
-                        constVal: null,
+                        constVal: { val_min: 0, val_max: 120 },
                     },
-                    entityIconOff: {
-                        type: 'const',
-                        constVal: 'home',
-                    },
+                    entityIconOff: undefined,
                     entityIconOn: {
                         type: 'const',
-                        constVal: 'iconon',
+                        constVal: 'weather-tornado',
                     },
-                    entityIconSelect: {
-                        type: 'const',
-                        constVal: 'iconoff',
-                    },
-                    entityOffColor: {
-                        type: 'const',
-                        constVal: rgb_dec565(Black),
-                    },
-                    entityOffText: {
-                        type: 'const',
-                        constVal: 'entityOffText',
-                    },
-                    entityOnColor: {
-                        type: 'const',
-                        constVal: rgb_dec565(Green),
-                    },
-                    entityOnText: {
-                        type: 'const',
-                        constVal: 'entityOnText',
-                    },
+                    entityIconSelect: undefined,
+                    entityOffColor: undefined,
+                    entityOffText: undefined,
+                    entityOnColor: undefined,
+                    entityOnText: undefined,
                     entityText: {
                         type: 'const',
-                        constVal: null,
+                        constVal: 'Böen',
                     },
                     entityUnitText: {
                         type: 'const',
-                        constVal: 'entityUnitText',
+                        constVal: 'm/s',
                     },
                 },
                 {
                     entity: {
-                        type: 'const',
-                        constVal: '5',
+                        type: 'state',
+                        dp: 'accuweather.0.Current.WindDirectionText',
                     },
-                    entityDateFormat: {
-                        type: 'const',
-                        constVal: null,
-                    },
+                    entityDateFormat: undefined,
                     entityDecimalPlaces: {
                         type: 'const',
-                        constVal: null,
+                        constVal: 0,
                     },
-                    entityFactor: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityIconColor: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityIconColorScale: {
-                        type: 'const',
-                        constVal: null,
-                    },
-                    entityIconOff: {
-                        type: 'const',
-                        constVal: 'home',
-                    },
+                    entityFactor: undefined,
+                    entityIconColor: undefined,
+                    entityIconColorScale: undefined,
+                    entityIconOff: undefined,
                     entityIconOn: {
                         type: 'const',
-                        constVal: 'iconon',
+                        constVal: 'windsock',
                     },
-                    entityIconSelect: {
-                        type: 'const',
-                        constVal: 'iconoff',
-                    },
-                    entityOffColor: {
-                        type: 'const',
-                        constVal: rgb_dec565(Black),
-                    },
-                    entityOffText: {
-                        type: 'const',
-                        constVal: 'entityOffText',
-                    },
+                    entityIconSelect: undefined,
+                    entityOffColor: undefined,
+                    entityOffText: undefined,
                     entityOnColor: {
                         type: 'const',
-                        constVal: rgb_dec565(Green),
+                        constVal: White,
                     },
-                    entityOnText: {
-                        type: 'const',
-                        constVal: 'entityOnText',
-                    },
+                    entityOnText: undefined,
                     entityText: {
                         type: 'const',
-                        constVal: null,
+                        constVal: 'Windr.',
                     },
                     entityUnitText: {
                         type: 'const',
-                        constVal: 'entityUnitText',
+                        constVal: '°',
                     },
                 },
             ],
@@ -326,8 +372,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
             mrIconEntity: [
                 {
                     entity: {
-                        type: 'const',
-                        constVal: true,
+                        type: 'internal',
+                        dp: 'Relais1',
                     },
                     entityIconOff: {
                         type: 'const',

@@ -62,8 +62,10 @@ class StatesDBReadOnly extends import_library.BaseClass {
     this.timespan = timespan;
   }
   async setTrigger(id, from) {
-    if (id.startsWith(this.adapter.namespace))
-      throw new Error(`Id: ${id} links to own namespace of adapter, this is not allowed!`);
+    if (id.startsWith(this.adapter.namespace)) {
+      this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
+      return;
+    }
     if (this.triggerDB[id] !== void 0) {
       if (this.triggerDB[id].to.indexOf(from) == -1)
         this.triggerDB[id].to.push(from);
@@ -80,7 +82,7 @@ class StatesDBReadOnly extends import_library.BaseClass {
       this.log.debug(`Set to new trigger to ${id}`);
     }
   }
-  async getValue(id) {
+  async getState(id) {
     if (this.triggerDB[id] !== void 0) {
       return this.triggerDB[id].state;
     } else if (this.stateDB[id]) {

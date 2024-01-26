@@ -64,17 +64,23 @@ export class Screensaver extends BaseClassPanelSend {
                     this.items[key].push(undefined);
                     continue;
                 }
-                const tempItem: any = {};
+                const tempItem: Partial<NSPanel.ScreenSaverDataItems | NSPanel.ScreenSaverMRDataItems> = {};
                 for (const j1 in entry) {
                     const j = j1 as keyof typeof entry;
                     const data = entry[j];
-                    tempItem[j] =
+                    let temp =
                         data !== undefined
-                            ? new Dataitem(this.adapter, { ...data, name: j }, this, this.readOnlyDB)
+                            ? new Dataitem(
+                                  this.adapter,
+                                  { ...data, name: `${this.name}.${key}.${j}` },
+                                  this,
+                                  this.readOnlyDB,
+                              )
                             : undefined;
-                    if (tempItem[j] !== undefined && !(await tempItem[j].isValidAndInit())) {
-                        tempItem[j] = undefined;
+                    if (temp !== undefined && !(await temp.isValidAndInit())) {
+                        temp = undefined;
                     }
+                    tempItem[j] = temp;
                 }
                 switch (key) {
                     case 'favoritEntity':
@@ -125,8 +131,11 @@ export class Screensaver extends BaseClassPanelSend {
                     }
                     if (item.entityDecimalPlaces) {
                         const v = await item.entityDecimalPlaces.getNumber();
-                        const v2 = item.entityUnitText ? await item.entityUnitText.getString() : null;
-                        if (v !== null) val = val.toFixed(v) + (v2 !== null ? v2 : '');
+                        if (v !== null) val = val.toFixed(v);
+                    }
+                    if (item.entityUnitText) {
+                        const v = await item.entityUnitText.getString();
+                        if (v !== null) val += v;
                     }
 
                     iconColor = await GetScreenSaverEntityColor(item);

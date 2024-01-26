@@ -5,7 +5,7 @@ import * as NSPanel from '../types/types';
 
 export class Dataitem extends BaseClass {
     private options: NSPanel.DataItemsOptions;
-    private obj: ioBroker.Object | null | undefined;
+    //private obj: ioBroker.Object | null | undefined;
     readOnlyDB: StatesDBReadOnly;
     type: ioBroker.CommonType | 'undefined' | undefined = undefined;
     parent: BaseClassTriggerd;
@@ -38,7 +38,7 @@ export class Dataitem extends BaseClass {
                 break;
             case 'state':
             case 'triggered':
-                this.type = this.options.valType ? this.options.valType : undefined;
+                this.type = this.options.forceType ? this.options.forceType : undefined;
                 // all work is done in isValidAndInit
                 break;
         }
@@ -55,41 +55,58 @@ export class Dataitem extends BaseClass {
             case 'state':
             case 'triggered':
                 if (this.options.dp === undefined) return false;
-                this.obj = await this.adapter.getForeignObjectAsync(this.options.dp);
-                if (!this.obj || this.obj.type != 'state' || !this.obj.common) {
-                    throw new Error(`801: ${this.options.dp} has no state object! Bye Bye`);
+                const obj = await this.adapter.getForeignObjectAsync(this.options.dp);
+                if (!obj || obj.type != 'state' || !obj.common) {
+                    this.log.warn(`801: ${this.options.dp} has a invalid state object!`);
+                    return false;
+                    //throw new Error(`801: ${this.options.dp} has no state object! Bye Bye`);
                 }
-                this.type = this.type || this.obj.common.type;
-                this.options.role = this.obj.common.role;
-                const value = await this.readOnlyDB.getValue(this.options.dp);
-                if (this.options.type == 'state') return !!value;
-                this.readOnlyDB.setTrigger(this.options.dp, this.parent);
+                this.type = this.type || obj.common.type;
+                this.options.role = obj.common.role;
+                if (this.options.type == 'triggered') this.readOnlyDB.setTrigger(this.options.dp, this.parent);
+                const value = await this.readOnlyDB.getState(this.options.dp);
                 return !!value;
         }
         return false;
     }
-    async getRawValue(): Promise<NSPanel.State | null | undefined> {
+    private async getRawState(): Promise<NSPanel.State | null | undefined> {
         switch (this.options.type) {
             case 'const':
                 return this.options.value;
             case 'state':
             case 'triggered':
-                if (this.options.dp === undefined)
+                if (!this.options.dp) {
                     throw new Error(`Error 1002 type is ${this.options.type} but dp is undefined`);
-                return await this.readOnlyDB.getValue(this.options.dp);
+                }
+                return await this.readOnlyDB.getState(this.options.dp);
+            case 'internal': {
+            }
         }
         return null;
     }
+    async getState(): Promise<NSPanel.State | null | undefined> {
+        const value = await this.getRawState();
+        if (value && this.options.type !== 'const' && this.options.type !== 'internal' && this.options.read) {
+            try {
+                if (typeof this.options.read === 'string')
+                    value.val = new Function('val', `return ${this.options.read}`)(value.val);
+                else value.val = this.options.read(value.val);
+            } catch (e) {
+                this.log.error(`Read is invalid: ${this.options.read} Error: ${e}`);
+            }
+        }
+        return value;
+    }
 
     async getObject(): Promise<object | null> {
-        const state = await this.getRawValue();
+        const state = await this.getState();
         if (state && state.val) {
             if (typeof state.val === 'string') {
                 try {
                     const value = JSON.parse(state.val);
                     return value;
                 } catch (e) {
-                    this.log.warn('incorrect json!');
+                    this.log.warn('Read a incorrect json!');
                 }
             } else if (typeof state.val === 'object') {
                 return state.val;
@@ -120,7 +137,7 @@ export class Dataitem extends BaseClass {
         return null;
     }
     async getString(): Promise<string | null> {
-        const state = await this.getRawValue();
+        const state = await this.getState();
         switch (this.options.type) {
             case 'const':
                 return state && state.val !== null ? String(state.val) : null;
@@ -132,17 +149,18 @@ export class Dataitem extends BaseClass {
                 }
                 return state && state.val !== null ? String(state.val) : null;
         }
+        return null;
     }
 
     async getNumber(): Promise<number | null> {
-        const result = await this.getRawValue();
+        const result = await this.getState();
         if (result && !isNaN(parseInt(String(result.val)))) {
             return parseFloat(result.val as string);
         }
         return null;
     }
     async getBoolean(): Promise<boolean | null> {
-        const result = await this.getRawValue();
+        const result = await this.getState();
         if (result && result.val !== null) {
             if (typeof result.val === 'string') {
                 switch (result.val.toLowerCase()) {

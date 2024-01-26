@@ -39,9 +39,18 @@ export class StatesDBReadOnly extends BaseClass {
         super(adapter, name || 'StatesDBReadOnly');
         this.timespan = timespan;
     }
+
+    /**
+     * Set a subscript to a foreignState and write current state/value to db
+     * @param id state id
+     * @param from the page that handle the trigger
+     */
     async setTrigger(id: string, from: BaseClassTriggerd): Promise<void> {
-        if (id.startsWith(this.adapter.namespace))
-            throw new Error(`Id: ${id} links to own namespace of adapter, this is not allowed!`);
+        if (id.startsWith(this.adapter.namespace)) {
+            this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
+            return;
+            //throw new Error(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
+        }
         if (this.triggerDB[id] !== undefined) {
             if (this.triggerDB[id].to.indexOf(from) == -1) this.triggerDB[id].to.push(from);
         } else {
@@ -58,7 +67,12 @@ export class StatesDBReadOnly extends BaseClass {
         }
     }
 
-    async getValue(id: string): Promise<ioBroker.State | null | undefined> {
+    /**
+     * Read a state from DB or js-controller
+     * @param id state id with namespace
+     * @returns
+     */
+    async getState(id: string): Promise<ioBroker.State | null | undefined> {
         if (this.triggerDB[id] !== undefined) {
             return this.triggerDB[id].state;
         } else if (this.stateDB[id]) {

@@ -32,7 +32,6 @@ var import_library = require("./library");
 var NSPanel = __toESM(require("../types/types"));
 class Dataitem extends import_library.BaseClass {
   options;
-  obj;
   readOnlyDB;
   type = void 0;
   parent;
@@ -55,7 +54,7 @@ class Dataitem extends import_library.BaseClass {
         break;
       case "state":
       case "triggered":
-        this.type = this.options.valType ? this.options.valType : void 0;
+        this.type = this.options.forceType ? this.options.forceType : void 0;
         break;
     }
   }
@@ -67,41 +66,58 @@ class Dataitem extends import_library.BaseClass {
       case "triggered":
         if (this.options.dp === void 0)
           return false;
-        this.obj = await this.adapter.getForeignObjectAsync(this.options.dp);
-        if (!this.obj || this.obj.type != "state" || !this.obj.common) {
-          throw new Error(`801: ${this.options.dp} has no state object! Bye Bye`);
+        const obj = await this.adapter.getForeignObjectAsync(this.options.dp);
+        if (!obj || obj.type != "state" || !obj.common) {
+          this.log.warn(`801: ${this.options.dp} has a invalid state object!`);
+          return false;
         }
-        this.type = this.type || this.obj.common.type;
-        this.options.role = this.obj.common.role;
-        const value = await this.readOnlyDB.getValue(this.options.dp);
-        if (this.options.type == "state")
-          return !!value;
-        this.readOnlyDB.setTrigger(this.options.dp, this.parent);
+        this.type = this.type || obj.common.type;
+        this.options.role = obj.common.role;
+        if (this.options.type == "triggered")
+          this.readOnlyDB.setTrigger(this.options.dp, this.parent);
+        const value = await this.readOnlyDB.getState(this.options.dp);
         return !!value;
     }
     return false;
   }
-  async getRawValue() {
+  async getRawState() {
     switch (this.options.type) {
       case "const":
         return this.options.value;
       case "state":
       case "triggered":
-        if (this.options.dp === void 0)
+        if (!this.options.dp) {
           throw new Error(`Error 1002 type is ${this.options.type} but dp is undefined`);
-        return await this.readOnlyDB.getValue(this.options.dp);
+        }
+        return await this.readOnlyDB.getState(this.options.dp);
+      case "internal": {
+      }
     }
     return null;
   }
+  async getState() {
+    const value = await this.getRawState();
+    if (value && this.options.type !== "const" && this.options.type !== "internal" && this.options.read) {
+      try {
+        if (typeof this.options.read === "string")
+          value.val = new Function("val", `return ${this.options.read}`)(value.val);
+        else
+          value.val = this.options.read(value.val);
+      } catch (e) {
+        this.log.error(`Read is invalid: ${this.options.read} Error: ${e}`);
+      }
+    }
+    return value;
+  }
   async getObject() {
-    const state = await this.getRawValue();
+    const state = await this.getState();
     if (state && state.val) {
       if (typeof state.val === "string") {
         try {
           const value = JSON.parse(state.val);
           return value;
         } catch (e) {
-          this.log.warn("incorrect json!");
+          this.log.warn("Read a incorrect json!");
         }
       } else if (typeof state.val === "object") {
         return state.val;
@@ -133,7 +149,7 @@ class Dataitem extends import_library.BaseClass {
     return null;
   }
   async getString() {
-    const state = await this.getRawValue();
+    const state = await this.getState();
     switch (this.options.type) {
       case "const":
         return state && state.val !== null ? String(state.val) : null;
@@ -145,16 +161,17 @@ class Dataitem extends import_library.BaseClass {
         }
         return state && state.val !== null ? String(state.val) : null;
     }
+    return null;
   }
   async getNumber() {
-    const result = await this.getRawValue();
+    const result = await this.getState();
     if (result && !isNaN(parseInt(String(result.val)))) {
       return parseFloat(result.val);
     }
     return null;
   }
   async getBoolean() {
-    const result = await this.getRawValue();
+    const result = await this.getState();
     if (result && result.val !== null) {
       if (typeof result.val === "string") {
         switch (result.val.toLowerCase()) {

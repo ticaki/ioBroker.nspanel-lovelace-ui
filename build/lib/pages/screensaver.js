@@ -68,10 +68,16 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
         for (const j1 in entry) {
           const j = j1;
           const data = entry[j];
-          tempItem[j] = data !== void 0 ? new import_data_item.Dataitem(this.adapter, { ...data, name: j }, this, this.readOnlyDB) : void 0;
-          if (tempItem[j] !== void 0 && !await tempItem[j].isValidAndInit()) {
-            tempItem[j] = void 0;
+          let temp = data !== void 0 ? new import_data_item.Dataitem(
+            this.adapter,
+            { ...data, name: `${this.name}.${key}.${j}` },
+            this,
+            this.readOnlyDB
+          ) : void 0;
+          if (temp !== void 0 && !await temp.isValidAndInit()) {
+            temp = void 0;
           }
+          tempItem[j] = temp;
         }
         switch (key) {
           case "favoritEntity":
@@ -117,9 +123,13 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
           }
           if (item.entityDecimalPlaces) {
             const v = await item.entityDecimalPlaces.getNumber();
-            const v2 = item.entityUnitText ? await item.entityUnitText.getString() : null;
             if (v !== null)
-              val = val.toFixed(v) + (v2 !== null ? v2 : "");
+              val = val.toFixed(v);
+          }
+          if (item.entityUnitText) {
+            const v = await item.entityUnitText.getString();
+            if (v !== null)
+              val += v;
           }
           iconColor = await GetScreenSaverEntityColor(item);
         } else if (item.entity.type == "boolean") {
