@@ -30,7 +30,6 @@ module.exports = __toCommonJS(main_exports);
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_library = require("./lib/classes/library");
 var import_register = require("source-map-support/register");
-var import_password = require("./lib/password");
 var MQTT = __toESM(require("./lib/classes/mqtt"));
 var import_config = require("./lib/config");
 var import_panel_controller = require("./lib/controller/panel-controller");
@@ -52,19 +51,22 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   async onReady() {
     this.setTimeout(() => {
+      this.log.debug("Check configuration!");
+      if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword))
+        return;
       this.log.debug(this.adapterDir);
       this.mqttClient = new MQTT.MQTTClientClass(
         this,
-        import_password.mqttconfigPrivat.ip,
-        import_password.mqttconfigPrivat.port,
-        import_password.mqttconfigPrivat.username,
-        import_password.mqttconfigPrivat.password,
+        this.config.mqttIp,
+        this.config.mqttPort,
+        this.config.mqttUsername,
+        this.config.mqttPassword,
         (topic, message) => {
           this.log.debug(topic + " " + message);
         }
       );
-      import_config.Testconfig.name = import_password.mqttconfigPrivat.name;
-      import_config.Testconfig.topic = import_password.mqttconfigPrivat.topic;
+      import_config.Testconfig.name = this.config.name;
+      import_config.Testconfig.topic = this.config.topic;
       this.log.debug(String(process.memoryUsage().heapUsed));
       this.controller = new import_panel_controller.Controller(this, {
         mqttClient: this.mqttClient,

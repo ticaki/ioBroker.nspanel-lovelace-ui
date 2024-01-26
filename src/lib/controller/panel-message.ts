@@ -6,13 +6,19 @@ import { Panel } from './panel';
 import { BaseClassTriggerd } from './states-controler';
 
 export class BaseClassPanelSend extends BaseClassTriggerd {
-    protected readonly panelSend: PanelSend;
+    readonly panelSend: PanelSend;
     readonly sendToPanel: (payload: string, opt?: IClientPublishOptions) => void;
 
     constructor(adapter: AdapterClassDefinition, panelSend: PanelSend, name: string) {
         super(adapter, name);
         this.panelSend = panelSend;
         this.sendToPanel = panelSend.addMessage;
+    }
+    getPayloadArray(s: string[]): string {
+        return s.join('~');
+    }
+    getPayload(...s: string[]): string {
+        return s.join('~');
     }
 }
 
@@ -53,7 +59,7 @@ export class PanelSend extends BaseClass {
         this.mqttClient.publish(this.topic, msg.payload, msg.opt);
         this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 200);
     };
-
+    
     async delete(): Promise<void> {
         await super.delete();
         if (this.messageTimeout) this.adapter.clearTimeout(this.messageTimeout);

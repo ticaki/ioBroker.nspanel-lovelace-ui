@@ -7,7 +7,6 @@
 import * as utils from '@iobroker/adapter-core';
 import { Library } from './lib/classes/library';
 import 'source-map-support/register';
-import { mqttconfigPrivat } from './lib/password';
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 import * as MQTT from './lib/classes/mqtt';
@@ -38,19 +37,22 @@ export class NspanelLovelaceUi extends utils.Adapter {
      */
     private async onReady(): Promise<void> {
         this.setTimeout(() => {
+            this.log.debug('Check configuration!');
+            if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword))
+                return;
             this.log.debug(this.adapterDir);
             this.mqttClient = new MQTT.MQTTClientClass(
                 this,
-                mqttconfigPrivat.ip,
-                mqttconfigPrivat.port,
-                mqttconfigPrivat.username,
-                mqttconfigPrivat.password,
+                this.config.mqttIp,
+                this.config.mqttPort,
+                this.config.mqttUsername,
+                this.config.mqttPassword,
                 (topic, message) => {
                     this.log.debug(topic + ' ' + message);
                 },
             );
-            Testconfig.name = mqttconfigPrivat.name;
-            Testconfig.topic = mqttconfigPrivat.topic;
+            Testconfig.name = this.config.name;
+            Testconfig.topic = this.config.topic;
             this.log.debug(String(process.memoryUsage().heapUsed));
             this.controller = new Controller(this, {
                 mqttClient: this.mqttClient,

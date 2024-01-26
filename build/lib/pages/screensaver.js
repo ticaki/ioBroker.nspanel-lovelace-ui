@@ -303,12 +303,6 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
       this.rotationTime < 3e3 ? 3e3 : this.rotationTime
     );
   };
-  getPayloadArray(s) {
-    return s.join("~");
-  }
-  getPayload(...s) {
-    return s.join("~");
-  }
   onStateTrigger = async () => {
     if (!await super.onStateTrigger())
       return false;

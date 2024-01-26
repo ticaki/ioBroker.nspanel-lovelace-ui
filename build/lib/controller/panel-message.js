@@ -33,6 +33,12 @@ class BaseClassPanelSend extends import_states_controler.BaseClassTriggerd {
     this.panelSend = panelSend;
     this.sendToPanel = panelSend.addMessage;
   }
+  getPayloadArray(s) {
+    return s.join("~");
+  }
+  getPayload(...s) {
+    return s.join("~");
+  }
 }
 class PanelSend extends import_library.BaseClass {
   messageDb = [];

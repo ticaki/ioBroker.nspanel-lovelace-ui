@@ -2,10 +2,35 @@
     "i18n": true,
     "type": "panel",
     "items": {
-        "option1": {
-            "type": "jsonEditor",
-            "label": "option1",
+        "mqttIp": {
+            "type": "text",
+            "label": "mqttIp",
             "newLine": true
+        },
+        "mqttPort": {
+            "type": "text",
+            "label": "mqttPort",
+            "newLine": false
+        },
+        "mqttUsername": {
+            "type": "text",
+            "label": "mqttUsername",
+            "newLine": true
+        },
+        "mqttPassword": {
+            "type": "text",
+            "label": "mqttPassword",
+            "newLine": false
+        },
+        "topic": {
+            "type": "text",
+            "label": "topic",
+            "newLine": true
+        },
+        "name": {
+            "type": "text",
+            "label": "name",
+            "newLine": false
         }
     }
 }

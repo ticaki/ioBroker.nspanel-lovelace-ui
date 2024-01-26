@@ -22,10 +22,10 @@ __export(password_exports, {
 });
 module.exports = __toCommonJS(password_exports);
 const mqttconfigPrivat = {
-  password: "5*qzx>-y73|?%]=|pKh2b>kB,W*Ar*6>nF5|EM[V<BJz8qR5./saDQRuThK|H<_",
-  username: "mqttuser",
-  ip: "mqtt.kiemen.com",
-  port: 1883,
+  mqttPassword: "5*qzx>-y73|?%]=|pKh2b>kB,W*Ar*6>nF5|EM[V<BJz8qR5./saDQRuThK|H<_",
+  mqttUsername: "mqttuser",
+  mqttIp: "mqtt.kiemen.com",
+  mqttPort: 1883,
   topic: "nspanel/ns_panel2",
   name: "Wohnzimmer"
 };

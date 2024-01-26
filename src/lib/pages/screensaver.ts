@@ -311,12 +311,6 @@ export class Screensaver extends BaseClassPanelSend {
             this.rotationTime < 3000 ? 3000 : this.rotationTime,
         );
     };
-    getPayloadArray(s: string[]): string {
-        return s.join('~');
-    }
-    getPayload(...s: string[]): string {
-        return s.join('~');
-    }
 
     onStateTrigger = async (): Promise<boolean> => {
         if (!(await super.onStateTrigger())) return false;

@@ -27,6 +27,15 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     entityFactor: undefined,
                     entityIconColor: {
                         type: 'state',
+
+                        /** How to use
+                         * this run its own this. U dont have accress to variables that no definied for this.
+                         * Color: in a import of color.ts
+                         * val: is the incoming value - raw
+                         *
+                         * The best thing is to write the function with () => { here }. Then remove the () => {}
+                         * and convert it into a template literal, using ``. A return is mandatory.
+                         */
                         read: `switch (val) {
                                 case 24: // Ice
                                 case 30: // Hot

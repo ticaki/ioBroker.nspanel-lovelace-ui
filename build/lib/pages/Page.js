@@ -23,13 +23,14 @@ __export(Page_exports, {
 });
 module.exports = __toCommonJS(Page_exports);
 var import_library = require("../classes/library");
-class Page extends import_library.BaseClass {
+var import_panel_message = require("../controller/panel-message");
+class Page extends import_panel_message.BaseClassPanelSend {
   pageItems = [];
   card;
   config;
   test = 0;
-  constructor(adapter, options) {
-    super(adapter, "Page");
+  constructor(adapter, panelSend, options, name) {
+    super(adapter, panelSend, name);
     this.config = options.config;
     this.card = options.card;
   }

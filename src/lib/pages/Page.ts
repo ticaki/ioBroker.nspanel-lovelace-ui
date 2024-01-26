@@ -1,10 +1,11 @@
 import { NspanelLovelaceUi } from '../../main';
 import { BaseClass } from '../classes/library';
+import { BaseClassPanelSend, PanelSend } from '../controller/panel-message';
 import { NavigationItem } from '../types/navigation';
 import { PageMediaItem } from '../types/pageItem';
 import * as Nspanel from '../types/types';
 
-interface Card {
+export interface Card {
     card: Nspanel.PageTypeCards;
     name: string;
     config: {
@@ -17,13 +18,13 @@ interface Card {
 }
 //interface Page extends BaseClass | PageConfig
 
-export class Page extends BaseClass implements Card {
+export class Page extends BaseClassPanelSend implements Card {
     pageItems: any[] = [];
     card: Nspanel.PageTypeCards;
     config: Card['config'];
     test: number = 0;
-    constructor(adapter: NspanelLovelaceUi, options: Card) {
-        super(adapter, 'Page');
+    constructor(adapter: NspanelLovelaceUi, panelSend: PanelSend, options: Card, name: string) {
+        super(adapter, panelSend, name);
         this.config = options.config;
         this.card = options.card;
     }
