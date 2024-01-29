@@ -30,12 +30,12 @@ module.exports = __toCommonJS(screensaver_exports);
 var import_data_item = require("../classes/data-item");
 var Definition = __toESM(require("../const/definition"));
 var Color = __toESM(require("../const/color"));
-var Icons = __toESM(require("../const/icon_mapping"));
 var import_moment = __toESM(require("moment"));
 var import_moment_parseformat = __toESM(require("moment-parseformat"));
 var import_msg_def = require("../types/msg-def");
-var import_panel_message = require("../controller/panel-message");
-class Screensaver extends import_panel_message.BaseClassPanelSend {
+var import_Page = require("./Page");
+var import_icon_mapping = require("../const/icon_mapping");
+class Screensaver extends import_Page.Page {
   entitysConfig;
   layout = "standard";
   readOnlyDB;
@@ -50,12 +50,19 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
   };
   mode;
   rotationTime;
-  currentPos = 0;
   timoutRotation = void 0;
   step = 0;
-  visible = false;
   constructor(adapter, config, panelSend, readOnlyDB) {
-    super(adapter, panelSend, "screensaver");
+    let card;
+    switch (config.mode) {
+      case "standard":
+      case "alternate":
+        card = "screensaver";
+        break;
+      case "advanced":
+        card = "screensaver2";
+    }
+    super(adapter, panelSend, card, "screensaver");
     this.entitysConfig = config.entitysConfig;
     this.mode = config.mode;
     this.config = config.config;
@@ -101,7 +108,7 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
     }
   }
   async update() {
-    if (!this.visible) {
+    if (!this.visibility) {
       this.log.error("get update command but not visible!");
       return;
     }
@@ -131,7 +138,7 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
         if (item.entityIconOn) {
           const val2 = await item.entityIconOn.getString();
           if (val2 !== null)
-            icon = Icons.GetIcon(val2);
+            icon = import_icon_mapping.Icons.GetIcon(val2);
         }
         let val = await item.entity.getNumber();
         if (item.entity.type == "number" && val !== null) {
@@ -157,7 +164,7 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
           if (!val && item.entityIconOff) {
             const t = await item.entityIconOff.getString();
             if (t !== null)
-              icon = Icons.GetIcon(t);
+              icon = import_icon_mapping.Icons.GetIcon(t);
           }
           if (val && item.entityOnText != void 0) {
             const t = await item.entityOnText.getString();
@@ -199,25 +206,6 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
     this.log.debug("HandleScreensaverUpdate payload: " + JSON.stringify(payload.value[this.layout]));
     this.sendStatusUpdate(payload, this.layout);
     this.HandleScreensaverStatusIcons();
-  }
-  sendType() {
-    switch (this.layout) {
-      case "standard": {
-        this.visible = true;
-        this.sendToPanel("pageType~screensaver");
-        break;
-      }
-      case "alternate": {
-        this.visible = true;
-        this.sendToPanel("pageType~screensaver");
-        break;
-      }
-      case "advanced": {
-        this.visible = true;
-        this.sendToPanel("pageType~screensaver2");
-        break;
-      }
-    }
   }
   sendStatusUpdate(payload, layout) {
     switch (payload.eventType) {
@@ -270,26 +258,23 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
       }
     }
   }
-  getVisibility = () => {
-    return this.visible;
+  onStateTriggerSuperDoNotOverride = async () => {
+    return true;
   };
-  setVisibility = (v) => {
-    if (v !== this.visible) {
-      this.visible = v;
-      this.step = -1;
-      if (this.visible) {
-        this.sendType();
-        this.rotationLoop();
-      } else {
-        if (this.timoutRotation)
-          this.adapter.clearTimeout(this.timoutRotation);
-      }
+  async onVisibilityChange(v) {
+    this.step = -1;
+    if (v) {
+      this.sendType();
+      this.rotationLoop();
+    } else {
+      if (this.timoutRotation)
+        this.adapter.clearTimeout(this.timoutRotation);
     }
-  };
+  }
   rotationLoop = async () => {
     if (this.unload)
       return;
-    if (!this.visible)
+    if (!this.visibility)
       return;
     const l = this.entitysConfig.bottomEntity.length;
     const m = Definition.ScreenSaverConst[this.layout].bottomEntity.maxEntries;
@@ -304,10 +289,7 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
     );
   };
   onStateTrigger = async () => {
-    if (!await super.onStateTrigger())
-      return false;
     this.update();
-    return true;
   };
   async HandleScreensaverStatusIcons() {
     const payload = { eventType: "statusUpdate" };
@@ -391,17 +373,17 @@ class Screensaver extends import_panel_message.BaseClassPanelSend {
         const offIcon = item.entityIconOff ? await item.entityIconOff.getString() : null;
         const selectIcon = typeof entity !== "boolean" && entity !== null && entityIconSelect ? entityIconSelect[entity] : void 0;
         if (selectIcon) {
-          payload[`icon${s}`] = Icons.GetIcon(selectIcon);
+          payload[`icon${s}`] = import_icon_mapping.Icons.GetIcon(selectIcon);
           this.log.debug("SelectIcon: " + JSON.stringify(payload), "info");
         } else if (entity && onIcon) {
-          payload[`icon${s}`] = Icons.GetIcon(onIcon);
+          payload[`icon${s}`] = import_icon_mapping.Icons.GetIcon(onIcon);
           this.log.debug("Icon if true " + JSON.stringify(payload), "info");
         } else {
           if (offIcon) {
-            payload[`icon${s}`] = Icons.GetIcon(offIcon);
+            payload[`icon${s}`] = import_icon_mapping.Icons.GetIcon(offIcon);
             this.log.debug("Icon1 else true " + JSON.stringify(payload), "info");
           } else if (onIcon) {
-            payload[`icon${s}`] = Icons.GetIcon(onIcon);
+            payload[`icon${s}`] = import_icon_mapping.Icons.GetIcon(onIcon);
             this.log.debug("Icon1 else false " + JSON.stringify(payload), "info");
           }
         }

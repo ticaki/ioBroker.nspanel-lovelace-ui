@@ -3,30 +3,20 @@ import { SendTopicAppendix } from '../const/definition';
 import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { MQTTClientClass } from '../classes/mqtt';
 import { Panel } from './panel';
-import { BaseClassTriggerd } from './states-controler';
+import { BaseClassTriggerd } from './states-controller';
 
-export class BaseClassPanelSend extends BaseClassTriggerd {
-    readonly panelSend: PanelSend;
-    readonly sendToPanel: (payload: string, opt?: IClientPublishOptions) => void;
+export class BaseClassPanelSend extends BaseClassTriggerd {}
 
-    constructor(adapter: AdapterClassDefinition, panelSend: PanelSend, name: string) {
-        super(adapter, name);
-        this.panelSend = panelSend;
-        this.sendToPanel = panelSend.addMessage;
-    }
-    getPayloadArray(s: string[]): string {
-        return s.join('~');
-    }
-    getPayload(...s: string[]): string {
-        return s.join('~');
-    }
-}
-
+/**
+ * Übernimmt das senden von Payloads an die mqtt Klasse - delay zwischen einzelnen Messages
+ * 1 * pro Klasse Panel
+ */
 export class PanelSend extends BaseClass {
     private messageDb: { payload: string; opt?: IClientPublishOptions }[] = [];
     private messageTimeout: ioBroker.Timeout | undefined;
     private mqttClient: MQTTClientClass;
     private topic: string = '';
+
     _panel: Panel | undefined = undefined;
 
     constructor(adapter: AdapterClassDefinition, config: { name: string; mqttClient: MQTTClientClass; topic: string }) {
@@ -45,7 +35,7 @@ export class PanelSend extends BaseClass {
     readonly addMessage = (payload: string, opt?: IClientPublishOptions): void => {
         this.messageDb.push({ payload: payload, opt: opt });
         if (this.messageTimeout === undefined) {
-            this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 20);
+            this.sendMessageLoop();
         }
     };
 
@@ -57,9 +47,9 @@ export class PanelSend extends BaseClass {
         }
         this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
         this.mqttClient.publish(this.topic, msg.payload, msg.opt);
-        this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 200);
+        this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 25);
     };
-    
+
     async delete(): Promise<void> {
         await super.delete();
         if (this.messageTimeout) this.adapter.clearTimeout(this.messageTimeout);

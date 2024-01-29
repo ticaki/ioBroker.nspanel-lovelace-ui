@@ -28,7 +28,7 @@ __export(panel_controller_exports, {
 });
 module.exports = __toCommonJS(panel_controller_exports);
 var Library = __toESM(require("../classes/library"));
-var import_states_controler = require("./states-controler");
+var import_states_controller = require("./states-controller");
 var Panel = __toESM(require("./panel"));
 class Controller extends Library.BaseClass {
   mqttClient;
@@ -36,10 +36,11 @@ class Controller extends Library.BaseClass {
   readOnlyDB;
   constructor(adapter, options) {
     super(adapter, options.name);
+    this.adapter.controller = this;
     this.mqttClient = options.mqttClient;
-    this.readOnlyDB = new import_states_controler.StatesDBReadOnly(this.adapter);
+    this.readOnlyDB = new import_states_controller.StatesDBReadOnly(this.adapter);
     for (const panelConfig of options.panels) {
-      panelConfig.Controler = this;
+      panelConfig.controller = this;
       if (!Panel.isPanelConfig(panelConfig)) {
         this.log.warn(`Panelconfig for ${panelConfig.name} is invalid!`);
         continue;

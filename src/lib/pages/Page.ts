@@ -1,42 +1,43 @@
 import { NspanelLovelaceUi } from '../../main';
 import { BaseClass } from '../classes/library';
 import { BaseClassPanelSend, PanelSend } from '../controller/panel-message';
-import { NavigationItem } from '../types/navigation';
-import { PageMediaItem } from '../types/pageItem';
-import * as Nspanel from '../types/types';
+import { PageTypeCards } from '../types/pages';
+import { IncomingEvent } from '../types/types';
 
 export interface Card {
-    card: Nspanel.PageTypeCards;
     name: string;
-    config: {
-        type: 'cardMedia';
-        items: [PageMediaItem];
-        headline: string;
-        useColor: boolean;
-        navigation: NavigationItem;
-    };
+    card: PageTypeCards;
 }
 //interface Page extends BaseClass | PageConfig
 
 export class Page extends BaseClassPanelSend implements Card {
-    pageItems: any[] = [];
-    card: Nspanel.PageTypeCards;
-    config: Card['config'];
-    test: number = 0;
-    constructor(adapter: NspanelLovelaceUi, panelSend: PanelSend, options: Card, name: string) {
+    readonly card: PageTypeCards;
+    readonly id: number;
+    //config: Card['config'];
+    constructor(adapter: NspanelLovelaceUi, panelSend: PanelSend, card: PageTypeCards, name: string) {
         super(adapter, panelSend, name);
-        this.config = options.config;
-        this.card = options.card;
+        this.card = card;
+        this.id = 1;
     }
     async init(): Promise<void> {}
 
-    goLeft(): Page | undefined {
-        if (this.config.navigation && this.config.navigation.left) return this.config.navigation.left.page;
-        return undefined;
+    async onButtonEvent(event: IncomingEvent): Promise<void> {
+        this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
     }
-    goRight(): Page | undefined {
-        if (this.config.navigation && this.config.navigation.right) return this.config.navigation.right.page;
-        return undefined;
+    sendType(): void {
+        this.sendToPanel(`pageType~${this.card}`);
+    }
+
+    protected async onVisibilityChange(val: boolean): Promise<void> {
+        if (val) {
+            this.sendType();
+            this.update();
+        }
+    }
+    public async update(): Promise<void> {
+        this.adapter.log.warn(
+            `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`,
+        );
     }
 }
 

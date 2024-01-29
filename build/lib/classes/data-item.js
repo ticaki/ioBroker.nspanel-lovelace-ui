@@ -24,7 +24,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var data_item_exports = {};
 __export(data_item_exports, {
-  Dataitem: () => Dataitem
+  Dataitem: () => Dataitem,
+  isDataItem: () => isDataItem
 });
 module.exports = __toCommonJS(data_item_exports);
 var Color = __toESM(require("../const/color"));
@@ -64,7 +65,7 @@ class Dataitem extends import_library.BaseClass {
         return this.options.constVal !== void 0;
       case "state":
       case "triggered":
-        if (this.options.dp === void 0)
+        if (this.options.dp === void 0 || this.options.dp === "")
           return false;
         const obj = await this.adapter.getForeignObjectAsync(this.options.dp);
         if (!obj || obj.type != "state" || !obj.common) {
@@ -74,8 +75,8 @@ class Dataitem extends import_library.BaseClass {
         this.type = this.type || obj.common.type;
         this.options.role = obj.common.role;
         if (this.options.type == "triggered")
-          this.readOnlyDB.setTrigger(this.options.dp, this.parent);
-        const value = await this.readOnlyDB.getState(this.options.dp);
+          this.readOnlyDB.setTrigger(this.options.dp, this.parent, this.options.response);
+        const value = await this.readOnlyDB.getState(this.options.dp, this.options.response);
         return !!value;
     }
     return false;
@@ -89,7 +90,7 @@ class Dataitem extends import_library.BaseClass {
         if (!this.options.dp) {
           throw new Error(`Error 1002 type is ${this.options.type} but dp is undefined`);
         }
-        return await this.readOnlyDB.getState(this.options.dp);
+        return await this.readOnlyDB.getState(this.options.dp, this.options.response);
       case "internal": {
       }
     }
@@ -211,9 +212,35 @@ class Dataitem extends import_library.BaseClass {
         this.type = "object";
     }
   }
+  async setStateTrue() {
+    await this.setStateAsync(true);
+  }
+  async setStateAsync(val) {
+    if (val === void 0)
+      return;
+    if (this.options.type === "state" || this.options.type === "triggered") {
+      if (this.options.dp) {
+        const ack = this.options.dp.startsWith(this.adapter.namespace);
+        this.log.debug(`setStateAsync(${this.options.dp}, ${val}, ${ack})`);
+        if (this.type === "number" && typeof val === "string")
+          val = parseFloat(val);
+        if (this.type === "boolean")
+          val = !!val;
+        if (this.type === "string")
+          val = String(val);
+        await this.adapter.setForeignStateAsync(this.options.dp, val, ack);
+      }
+    }
+  }
+}
+function isDataItem(F) {
+  if (F instanceof Dataitem)
+    return true;
+  return false;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Dataitem
+  Dataitem,
+  isDataItem
 });
 //# sourceMappingURL=data-item.js.map

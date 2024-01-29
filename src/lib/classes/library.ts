@@ -2,6 +2,7 @@ import _fs from 'fs';
 import { genericStateObjects } from '../const/definition';
 import { NspanelLovelaceUi } from '../../main';
 
+import * as LocalTranslations from '../../../templates/translations.json';
 // only change this for other adapters
 export type AdapterClassDefinition = NspanelLovelaceUi;
 
@@ -73,6 +74,7 @@ export class Library extends BaseClass {
     defaults = {
         updateStateOnChangeOnly: true,
     };
+
     constructor(adapter: AdapterClassDefinition, _options: any = null) {
         super(adapter, 'library');
         this.stateDataBase = {};
@@ -623,6 +625,19 @@ export class Library extends BaseClass {
                 return this.getTranslation(x);
             })
         );
+    }
+
+    getLocalTranslation(group: keyof typeof LocalTranslations, key: string): string {
+        try {
+            if (group in LocalTranslations) {
+                const result = LocalTranslations[group];
+                if (key in result) return result[key as keyof typeof result]['de-DE'];
+            }
+        } catch (e) {
+            // do nothing
+            return key;
+        }
+        return key;
     }
 }
 export async function sleep(time: number): Promise<void> {

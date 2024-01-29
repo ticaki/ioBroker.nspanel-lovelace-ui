@@ -24,21 +24,8 @@ __export(panel_message_exports, {
 module.exports = __toCommonJS(panel_message_exports);
 var import_definition = require("../const/definition");
 var import_library = require("../classes/library");
-var import_states_controler = require("./states-controler");
-class BaseClassPanelSend extends import_states_controler.BaseClassTriggerd {
-  panelSend;
-  sendToPanel;
-  constructor(adapter, panelSend, name) {
-    super(adapter, name);
-    this.panelSend = panelSend;
-    this.sendToPanel = panelSend.addMessage;
-  }
-  getPayloadArray(s) {
-    return s.join("~");
-  }
-  getPayload(...s) {
-    return s.join("~");
-  }
+var import_states_controller = require("./states-controller");
+class BaseClassPanelSend extends import_states_controller.BaseClassTriggerd {
 }
 class PanelSend extends import_library.BaseClass {
   messageDb = [];
@@ -62,7 +49,7 @@ class PanelSend extends import_library.BaseClass {
   addMessage = (payload, opt) => {
     this.messageDb.push({ payload, opt });
     if (this.messageTimeout === void 0) {
-      this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 20);
+      this.sendMessageLoop();
     }
   };
   sendMessageLoop = () => {
@@ -73,7 +60,7 @@ class PanelSend extends import_library.BaseClass {
     }
     this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
     this.mqttClient.publish(this.topic, msg.payload, msg.opt);
-    this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 200);
+    this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 25);
   };
   async delete() {
     await super.delete();

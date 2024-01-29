@@ -68,7 +68,7 @@ export class MQTTClientClass extends BaseClass {
     }
 
     async publish(topic: string, message: string, opt?: IClientPublishOptions): Promise<void> {
-        this.log.debug(`Publishing topic: ${topic} with message: ${message}.`);
+        //this.log.debug(`Publishing topic: ${topic} with message: ${message}.`);
         await this.client.publishAsync(topic, message, opt);
     }
 

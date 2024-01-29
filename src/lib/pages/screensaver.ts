@@ -2,14 +2,16 @@ import { Dataitem } from '../classes/data-item';
 import * as Definition from '../const/definition';
 import * as Color from '../const/color';
 import * as NSPanel from '../types/types';
-import * as Icons from '../const/icon_mapping';
 
 //import dayjs from 'dayjs';
 import moment from 'moment';
 import parseFormat from 'moment-parseformat';
 import { sendTemplates, weatherUpdateTestArray } from '../types/msg-def';
-import { BaseClassPanelSend, PanelSend } from '../controller/panel-message';
-import { StatesDBReadOnly } from '../controller/states-controler';
+import { StatesDBReadOnly } from '../controller/states-controller';
+import { Page } from './Page';
+import { PanelSend } from '../controller/panel-message';
+import { PageTypeCards } from '../types/pages';
+import { Icons } from '../const/icon_mapping';
 
 export type ScreensaverConfigType = {
     momentLocale: string;
@@ -25,7 +27,7 @@ export type ScreensaverConfig = {
     rotationTime: number;
 };
 
-export class Screensaver extends BaseClassPanelSend {
+export class Screensaver extends Page {
     private entitysConfig: NSPanel.ScreensaverOptionsType;
     layout: NSPanel.ScreensaverModeType = 'standard';
     readOnlyDB: StatesDBReadOnly;
@@ -47,12 +49,19 @@ export class Screensaver extends BaseClassPanelSend {
     };
     readonly mode: NSPanel.ScreensaverModeType;
     private rotationTime: number;
-    private currentPos: number = 0;
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
     private step: number = 0;
-    protected visible: boolean = false;
     constructor(adapter: any, config: ScreensaverConfig, panelSend: PanelSend, readOnlyDB: StatesDBReadOnly) {
-        super(adapter, panelSend, 'screensaver');
+        let card: PageTypeCards | undefined;
+        switch (config.mode) {
+            case 'standard':
+            case 'alternate':
+                card = 'screensaver';
+                break;
+            case 'advanced':
+                card = 'screensaver2';
+        }
+        super(adapter, panelSend, card, 'screensaver');
         this.entitysConfig = config.entitysConfig;
         this.mode = config.mode;
         this.config = config.config;
@@ -105,7 +114,7 @@ export class Screensaver extends BaseClassPanelSend {
     }
 
     async update(): Promise<void> {
-        if (!this.visible) {
+        if (!this.visibility) {
             this.log.error('get update command but not visible!');
             return;
         }
@@ -210,25 +219,7 @@ export class Screensaver extends BaseClassPanelSend {
 
         this.HandleScreensaverStatusIcons();
     }
-    sendType(): void {
-        switch (this.layout) {
-            case 'standard': {
-                this.visible = true;
-                this.sendToPanel('pageType~screensaver');
-                break;
-            }
-            case 'alternate': {
-                this.visible = true;
-                this.sendToPanel('pageType~screensaver');
-                break;
-            }
-            case 'advanced': {
-                this.visible = true;
-                this.sendToPanel('pageType~screensaver2');
-                break;
-            }
-        }
-    }
+
     sendStatusUpdate(
         payload: sendTemplates['statusUpdate'] | sendTemplates['weatherUpdate'],
         layout: NSPanel.ScreensaverModeType,
@@ -280,25 +271,22 @@ export class Screensaver extends BaseClassPanelSend {
             }
         }
     }
-    getVisibility = (): boolean => {
-        return this.visible;
+    onStateTriggerSuperDoNotOverride = async (): Promise<boolean> => {
+        return true;
     };
-    setVisibility = (v: boolean): void => {
-        if (v !== this.visible) {
-            this.visible = v;
-            this.step = -1;
-            if (this.visible) {
-                this.sendType();
-                this.rotationLoop();
-            } else {
-                if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);
-            }
+    async onVisibilityChange(v: boolean): Promise<void> {
+        this.step = -1;
+        if (v) {
+            this.sendType();
+            this.rotationLoop();
+        } else {
+            if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);
         }
-    };
+    }
     rotationLoop = async (): Promise<void> => {
         if (this.unload) return;
         // only use this if screensaver is activated
-        if (!this.visible) return;
+        if (!this.visibility) return;
         const l = this.entitysConfig.bottomEntity.length;
         const m = Definition.ScreenSaverConst[this.layout].bottomEntity.maxEntries;
         if (l <= m * ++this.step) this.step = 0;
@@ -312,12 +300,10 @@ export class Screensaver extends BaseClassPanelSend {
         );
     };
 
-    onStateTrigger = async (): Promise<boolean> => {
-        if (!(await super.onStateTrigger())) return false;
-
+    onStateTrigger = async (): Promise<void> => {
         this.update();
-        return true;
     };
+
     async HandleScreensaverStatusIcons(): Promise<void> {
         const payload: Partial<sendTemplates['statusUpdate']> = { eventType: 'statusUpdate' };
         const maxItems = Definition.ScreenSaverConst[this.layout]['mrIconEntity'].maxEntries;

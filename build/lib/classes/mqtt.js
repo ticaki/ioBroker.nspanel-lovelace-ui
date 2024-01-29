@@ -75,7 +75,6 @@ class MQTTClientClass extends import_library.BaseClass {
     });
   }
   async publish(topic, message, opt) {
-    this.log.debug(`Publishing topic: ${topic} with message: ${message}.`);
     await this.client.publishAsync(topic, message, opt);
   }
   subscript(topic, callback) {

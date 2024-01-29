@@ -7,16 +7,19 @@ import { Controller } from './panel-controller';
 import { AdapterClassDefinition } from '../classes/library';
 import { callbackMessageType } from '../classes/mqtt';
 import { ReiveTopicAppendix, SendTopicAppendix } from '../const/definition';
+import { StatesDBReadOnly } from './states-controller';
+import { PageMedia1, testConfigMedia } from '../pages/pageMedia';
+import { Page } from '../pages/Page';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
     screenSaverConfig: Screensaver.ScreensaverConfig;
-    Controler: Controller;
+    controller: Controller;
     topic: string;
     name: string;
 }
 export function isPanelConfig(F: object | panelConfig): F is panelConfig {
-    if ((F as panelConfig).Controler === undefined) return false;
+    if ((F as panelConfig).controller === undefined) return false;
     if ((F as panelConfig).screenSaverConfig === undefined) return false;
     if ((F as panelConfig).topic === undefined) return false;
     if ((F as panelConfig).name === undefined) return false;
@@ -25,7 +28,7 @@ export function isPanelConfig(F: object | panelConfig): F is panelConfig {
 type panelConfig = panelConfigTop & {
     format: Intl.DateTimeFormatOptions;
     screenSaverConfig: Screensaver.ScreensaverConfig;
-    Controler: Controller;
+    controller: Controller;
     topic: string;
     name: string;
 };
@@ -38,10 +41,11 @@ const DefaultOptions = {
     },
     CustomFormat: '',
     locale: 'de-DE',
-    timeout: 3,
+    timeout: 60,
 };
 
 type panelConfigTop = { CustomFormat: string; locale: Intl.LocalesArgument; timeout: number };
+
 export class Panel extends BaseClassPanelSend {
     private minuteLoopTimeout: ioBroker.Timeout | undefined;
     private dateUpdateTimeout: ioBroker.Timeout | undefined;
@@ -49,17 +53,48 @@ export class Panel extends BaseClassPanelSend {
     screenSaver: Screensaver.Screensaver;
     reivCallbacks: callbackMessageType[] = [];
     _isOnline = false;
+    readOnlyDB: StatesDBReadOnly;
+    private _activePage: { page: Page | null; sleep?: boolean } = { page: null };
 
+    async setActivePage(_notSleep?: boolean): Promise<void>;
+    async setActivePage(_page?: Page | boolean | undefined): Promise<void>;
+    async setActivePage(_page?: Page | boolean | undefined, _notSleep?: boolean): Promise<void> {
+        if (_page === undefined) return;
+        let page = this._activePage.page;
+        let sleep = false;
+        if (typeof _page === 'boolean') {
+            sleep = !_page;
+        } else {
+            page = _page;
+            sleep = _notSleep ?? false;
+        }
+        if (sleep == !this._activePage.sleep || page != this._activePage.page) {
+            if (page != this._activePage.page) {
+                if (this._activePage.page) this._activePage.page.setVisibility(false);
+                if (page && !sleep) page.setVisibility(true);
+                this._activePage = { page, sleep };
+            } else if (sleep == !this._activePage.sleep) {
+                if (this._activePage.page && !sleep) this._activePage.page.setVisibility(true, true);
+                this._activePage.sleep = sleep;
+            }
+        }
+    }
+    getActivePage(): Page {
+        if (!this._activePage.page) throw new Error(`No active page here, check code!`);
+        return this._activePage.page;
+    }
+    test: PageMedia1;
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
         super(
             adapter,
             new PanelSend(adapter, {
                 name: `${options.name}-SendClass`,
-                mqttClient: options.Controler.mqttClient,
+                mqttClient: options.controller.mqttClient,
                 topic: options.topic,
             }),
             options.name,
         );
+        this.readOnlyDB = options.controller.readOnlyDB;
         this.panelSend.panel = this;
         const format = Object.assign(DefaultOptions.format, options.format);
         this.options = Object.assign(DefaultOptions, options, { format: format });
@@ -67,8 +102,10 @@ export class Panel extends BaseClassPanelSend {
             adapter,
             options.screenSaverConfig,
             this.panelSend,
-            this.options.Controler.readOnlyDB,
+            this.readOnlyDB,
         );
+        this.test = new PageMedia1(adapter, this, testConfigMedia, 'media');
+        this.test.init();
     }
     get isOnline(): boolean {
         return this._isOnline;
@@ -81,7 +118,7 @@ export class Panel extends BaseClassPanelSend {
     }
 
     init = async (): Promise<void> => {
-        this.options.Controler.mqttClient.subscript(this.options.topic, this.onMessage);
+        this.options.controller.mqttClient.subscript(this.options.topic, this.onMessage);
         this.sendToPanel('pageType~pageStartup', { retain: true });
     };
     registerOnMessage(fn: callbackMessageType): void {
@@ -91,14 +128,14 @@ export class Panel extends BaseClassPanelSend {
     }
     onMessage: callbackMessageType = async (topic: string, message: string) => {
         if (topic.endsWith(SendTopicAppendix)) {
-            this.log.debug(`Receive command ${topic} with ${message}`);
+            //this.log.debug(`Receive command ${topic} with ${message}`);
             return;
         }
         for (const fn of this.reivCallbacks) {
             if (fn) fn(topic, message);
         }
         if (topic.endsWith(ReiveTopicAppendix)) {
-            this.log.debug(`Receive message ${topic} with ${message}`);
+            //this.log.debug(`Receive message ${topic} with ${message}`);
             const event: NSPanel.IncomingEvent | null = NSPanel.convertToEvent(message);
             if (event) {
                 this.HandleIncomingMessage(event);
@@ -152,35 +189,45 @@ export class Panel extends BaseClassPanelSend {
         if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
     }
 
-    HandleIncomingMessage(event: NSPanel.IncomingEvent): void {
+    async HandleIncomingMessage(event: NSPanel.IncomingEvent): Promise<void> {
+        this.log.debug(JSON.stringify(event));
         switch (event.method) {
             case 'startup': {
                 this.isOnline = true;
-                this.screenSaver.init();
+                await this.screenSaver.init();
                 if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
                 if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
                 this.minuteLoop();
                 this.dateUpdateLoop();
                 this.sendScreeensaverTimeout(this.options.timeout);
                 this.sendToPanel('dimmode~10~100~6371');
-
-                this.sendToPanel('pageType~cardGrid');
-                this.sendToPanel(
-                    'entityUpd~Menü~button~bPrev~~65535~~~button~bNext~~65535~~~button~navigate.SensorGrid~21.1~26095~Obergeschoss~PRESS~button~navigate.ObergeschossWindow~~64332~Obergeschoss~Obergeschoss~button~navigate.ogLightsGrid~~65363~Obergeschoss ACTUAL~PRESS~button~navigate.Alexa~~65222~test~PRESS',
-                );
+                const test = false;
+                if (test) {
+                    this.sendToPanel('pageType~cardGrid');
+                    this.sendToPanel(
+                        'entityUpd~Menü~button~bPrev~~65535~~~button~bNext~~65535~~~button~navigate.SensorGrid~21.1~26095~Obergeschoss~PRESS~button~navigate.ObergeschossWindow~~64332~Obergeschoss~Obergeschoss~button~navigate.ogLightsGrid~~65363~Obergeschoss ACTUAL~PRESS~button~navigate.Alexa~~65222~test~PRESS',
+                    );
+                } else {
+                    await this.setActivePage(this.test);
+                }
                 // sendPage
                 break;
             }
             case 'sleepReached': {
-                this.screenSaver.setVisibility(true);
+                await this.setActivePage(this.screenSaver);
                 break;
             }
             case 'pageOpenDetail': {
+                await this.setActivePage(false);
                 break;
             }
             case 'buttonPress2': {
-                this.screenSaver.setVisibility(false);
-
+                if (event.mode == 'screensaver') {
+                    await this.setActivePage(this.test);
+                } else {
+                    this.getActivePage().onButtonEvent(event);
+                    await this.setActivePage(true);
+                }
                 break;
             }
             case 'renderCurrentPage': {

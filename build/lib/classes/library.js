@@ -49,6 +49,7 @@ __export(library_exports, {
 module.exports = __toCommonJS(library_exports);
 var import_fs = __toESM(require("fs"));
 var import_definition = require("../const/definition");
+var LocalTranslations = __toESM(require("../../../templates/translations.json"));
 var _adapter, _prefix;
 class BaseClass {
   unload = false;
@@ -547,6 +548,18 @@ class Library extends BaseClass {
         return result;
       return this.getTranslation(x);
     });
+  }
+  getLocalTranslation(group, key) {
+    try {
+      if (group in LocalTranslations) {
+        const result = LocalTranslations[group];
+        if (key in result)
+          return result[key]["de-DE"];
+      }
+    } catch (e) {
+      return key;
+    }
+    return key;
   }
 }
 async function sleep(time) {

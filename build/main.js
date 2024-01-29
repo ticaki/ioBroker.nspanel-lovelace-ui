@@ -103,6 +103,11 @@ class NspanelLovelaceUi extends utils.Adapter {
       }
     }
   }
+  async writeStateExternalAsync(dp, val) {
+    if (dp.startsWith(this.namespace))
+      return;
+    await this.setForeignStateAsync(dp, val, false);
+  }
 }
 if (require.main !== module) {
   module.exports = (options) => new NspanelLovelaceUi(options);

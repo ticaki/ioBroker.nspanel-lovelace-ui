@@ -25,7 +25,6 @@ __export(definition_exports, {
   NSPanelSendTopic: () => NSPanelSendTopic,
   NSPanel_Alarm_Path: () => NSPanel_Alarm_Path,
   NSPanel_Path: () => NSPanel_Path,
-  PageTypeDefinition: () => PageTypeDefinition,
   ReiveTopicAppendix: () => ReiveTopicAppendix,
   ScreenSaverAllPlaces: () => ScreenSaverAllPlaces,
   ScreenSaverConst: () => ScreenSaverConst,
@@ -249,41 +248,6 @@ const ScreenSaverConst = {
     }
   }
 };
-const PageTypeDefinition = {
-  cardAlarm: {
-    maxEntries: 1
-  },
-  cardChart: {
-    maxEntries: 1
-  },
-  cardEntities: {
-    maxEntries: 5
-  },
-  cardGrid: {
-    maxEntries: 6
-  },
-  cardGrid2: {
-    maxEntries: 8
-  },
-  cardLChart: {
-    maxEntries: 1
-  },
-  cardMedia: {
-    maxEntries: 1
-  },
-  cardPower: {
-    maxEntries: 1
-  },
-  cardQR: {
-    maxEntries: 1
-  },
-  cardThermo: {
-    maxEntries: 1
-  },
-  cardUnlock: {
-    maxEntries: 1
-  }
-};
 const ReiveTopicAppendix = "/tele/RESULT";
 const SendTopicAppendix = "/cmnd/CustomSend";
 // Annotate the CommonJS export names for ESM import in node:
@@ -295,7 +259,6 @@ const SendTopicAppendix = "/cmnd/CustomSend";
   NSPanelSendTopic,
   NSPanel_Alarm_Path,
   NSPanel_Path,
-  PageTypeDefinition,
   ReiveTopicAppendix,
   ScreenSaverAllPlaces,
   ScreenSaverConst,

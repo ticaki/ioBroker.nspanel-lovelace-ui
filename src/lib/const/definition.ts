@@ -1,5 +1,5 @@
 import { Off, On, HMIDark } from './color';
-import { PageTypeCards, ScreensaverModeType, ScreensaverOptionsType } from '../types/types';
+import { ScreensaverModeType, ScreensaverOptionsType } from '../types/types';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object
     ? {
@@ -337,7 +337,7 @@ export const ScreenSaverConst: Record<
     },
 };
 
-export const PageTypeDefinition: Record<PageTypeCards, { maxEntries: number }> = {
+/*export const PageTypeDefinition: Record<PageTypeCards, { maxEntries: number }> = {
     cardAlarm: {
         maxEntries: 1,
     },
@@ -371,7 +371,7 @@ export const PageTypeDefinition: Record<PageTypeCards, { maxEntries: number }> =
     cardUnlock: {
         maxEntries: 1,
     },
-};
+};*/
 
 export const ReiveTopicAppendix = '/tele/RESULT';
 export const SendTopicAppendix = '/cmnd/CustomSend';

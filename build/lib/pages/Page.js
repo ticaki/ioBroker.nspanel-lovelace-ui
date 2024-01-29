@@ -25,26 +25,31 @@ module.exports = __toCommonJS(Page_exports);
 var import_library = require("../classes/library");
 var import_panel_message = require("../controller/panel-message");
 class Page extends import_panel_message.BaseClassPanelSend {
-  pageItems = [];
   card;
-  config;
-  test = 0;
-  constructor(adapter, panelSend, options, name) {
+  id;
+  constructor(adapter, panelSend, card, name) {
     super(adapter, panelSend, name);
-    this.config = options.config;
-    this.card = options.card;
+    this.card = card;
+    this.id = 1;
   }
   async init() {
   }
-  goLeft() {
-    if (this.config.navigation && this.config.navigation.left)
-      return this.config.navigation.left.page;
-    return void 0;
+  async onButtonEvent(event) {
+    this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
   }
-  goRight() {
-    if (this.config.navigation && this.config.navigation.right)
-      return this.config.navigation.right.page;
-    return void 0;
+  sendType() {
+    this.sendToPanel(`pageType~${this.card}`);
+  }
+  async onVisibilityChange(val) {
+    if (val) {
+      this.sendType();
+      this.update();
+    }
+  }
+  async update() {
+    this.adapter.log.warn(
+      `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`
+    );
   }
 }
 class PageItem extends import_library.BaseClass {

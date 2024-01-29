@@ -1,7 +1,7 @@
 import * as MQTT from '../classes/mqtt';
 import * as Library from '../classes/library';
 import { NspanelLovelaceUi } from '../../main';
-import { StatesDBReadOnly } from './states-controler';
+import { StatesDBReadOnly } from './states-controller';
 import * as Panel from './panel';
 
 export class Controller extends Library.BaseClass {
@@ -14,10 +14,11 @@ export class Controller extends Library.BaseClass {
         options: { mqttClient: MQTT.MQTTClientClass; name: string; panels: Partial<Panel.panelConfigPartial>[] },
     ) {
         super(adapter, options.name);
+        this.adapter.controller = this;
         this.mqttClient = options.mqttClient;
         this.readOnlyDB = new StatesDBReadOnly(this.adapter);
         for (const panelConfig of options.panels) {
-            panelConfig.Controler = this;
+            panelConfig.controller = this;
             if (!Panel.isPanelConfig(panelConfig)) {
                 this.log.warn(`Panelconfig for ${panelConfig.name} is invalid!`);
                 continue;

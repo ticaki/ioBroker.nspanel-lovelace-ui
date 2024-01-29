@@ -19,13 +19,12 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var types_exports = {};
 __export(types_exports, {
   buildNSPanelString: () => buildNSPanelString,
-  checkPageType: () => checkPageType,
   checkSortedPlayerType: () => checkSortedPlayerType,
   convertToEvent: () => convertToEvent,
+  isColorEntryType: () => isColorEntryType,
   isEventMethod: () => isEventMethod,
   isEventType: () => isEventType,
   isIconScaleElement: () => isIconScaleElement,
-  isMediaOptional: () => isMediaOptional,
   isPageMedia: () => isPageMedia,
   isPageMediaItem: () => isPageMediaItem,
   isPagePower: () => isPagePower,
@@ -45,21 +44,6 @@ function isPlayerWithMediaDevice(F) {
 }
 function checkSortedPlayerType(F) {
   return F;
-}
-function isMediaOptional(F) {
-  switch (F) {
-    case "seek":
-    case "crossfade":
-    case "speakerlist":
-    case "playlist":
-    case "tracklist":
-    case "equalizer":
-    case "repeat":
-    case "favorites":
-      return true;
-    default:
-      return false;
-  }
 }
 function isRGB(F) {
   return typeof F == "object" && "red" in F && "blue" in F && "green" in F;
@@ -91,11 +75,9 @@ function isPopupType(F) {
     case "popupTimer":
       return true;
     default:
-      throw new Error(`Please report to developer: Unknown PopupType: ${F} `);
+      console.info(`Unknown PopupType: ${F} `);
+      return false;
   }
-}
-function checkPageType(F, A) {
-  A.type = F;
 }
 function isPageMediaItem(F) {
   return "adapterPlayerInstance" in F;
@@ -109,6 +91,11 @@ function isPageMedia(F) {
 function isPagePower(F) {
   return F.type == "cardPower";
 }
+function isColorEntryType(F) {
+  if ("true" in F && "false" in F && "scale" in F)
+    return true;
+  return false;
+}
 function isIconScaleElement(F) {
   return F && "val_min" in F && "val_max" in F;
 }
@@ -116,6 +103,7 @@ function isEventType(F) {
   return ["event"].indexOf(F) != -1;
 }
 function convertToEvent(msg) {
+  var _a, _b, _c;
   msg = (JSON.parse(msg) || {}).CustomRecv;
   if (msg === void 0)
     return null;
@@ -124,23 +112,106 @@ function convertToEvent(msg) {
     return null;
   if (!isEventMethod(temp[1]))
     return null;
-  const result = { type: temp[0], method: temp[1] };
-  if (!isNaN(parseInt(temp[2])))
-    result.page = parseInt(temp[2]);
-  if (!isNaN(parseInt(temp[3])))
-    result.index = parseInt(temp[3]);
-  return result;
+  const arr = String(temp[3]).split("?");
+  if (arr[2])
+    return {
+      type: temp[0],
+      method: temp[1],
+      page: parseInt(arr[0]),
+      subPage: parseInt(arr[1]),
+      command: isButtonActionType(arr[2]) ? arr[2] : "",
+      mode: temp[2],
+      opt: (_a = temp[4]) != null ? _a : ""
+    };
+  else if (arr[1])
+    return {
+      type: temp[0],
+      method: temp[1],
+      page: parseInt(arr[0]),
+      command: isButtonActionType(arr[1]) ? arr[1] : "",
+      mode: temp[2],
+      opt: (_b = temp[4]) != null ? _b : ""
+    };
+  else
+    return {
+      type: temp[0],
+      method: temp[1],
+      command: isButtonActionType(arr[0]) ? arr[0] : "",
+      mode: temp[2],
+      opt: (_c = temp[4]) != null ? _c : ""
+    };
+}
+function isButtonActionType(F) {
+  switch (F) {
+    case "bExit":
+    case "bUp":
+    case "bNext":
+    case "bSubNext":
+    case "bPrev":
+    case "bSubPrev":
+    case "bHome":
+    case "notifyAction":
+    case "OnOff":
+    case "button":
+    case "up":
+    case "stop":
+    case "down":
+    case "positionSlider":
+    case "tiltOpen":
+    case "tiltStop":
+    case "tiltSlider":
+    case "tiltClose":
+    case "brightnessSlider":
+    case "colorTempSlider":
+    case "colorWheel":
+    case "tempUpd":
+    case "tempUpdHighLow":
+    case "media-back":
+    case "media-pause":
+    case "media-next":
+    case "media-shuffle":
+    case "volumeSlider":
+    case "mode-speakerlist":
+    case "mode-playlist":
+    case "mode-tracklist":
+    case "mode-repeat":
+    case "mode-equalizer":
+    case "mode-seek":
+    case "mode-crossfade":
+    case "mode-favorites":
+    case "mode-insel":
+    case "media-OnOff":
+    case "timer-start":
+    case "timer-pause":
+    case "timer-cancle":
+    case "timer-finish":
+    case "hvac_action":
+    case "mode-modus1":
+    case "mode-modus2":
+    case "mode-modus3":
+    case "number-set":
+    case "mode-preset_modes":
+    case "A1":
+    case "A2":
+    case "A3":
+    case "A4":
+    case "D1":
+    case "U1":
+      return true;
+    default:
+      console.info(F + " is not isButtonActionType!");
+      return false;
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   buildNSPanelString,
-  checkPageType,
   checkSortedPlayerType,
   convertToEvent,
+  isColorEntryType,
   isEventMethod,
   isEventType,
   isIconScaleElement,
-  isMediaOptional,
   isPageMedia,
   isPageMediaItem,
   isPagePower,

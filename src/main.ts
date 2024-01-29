@@ -127,6 +127,11 @@ export class NspanelLovelaceUi extends utils.Adapter {
             }
         }
     }
+
+    async writeStateExternalAsync(dp: string, val: ioBroker.StateValue): Promise<void> {
+        if (dp.startsWith(this.namespace)) return;
+        await this.setForeignStateAsync(dp, val, false);
+    }
 }
 
 if (require.main !== module) {

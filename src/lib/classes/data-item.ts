@@ -1,6 +1,6 @@
 import * as Color from '../const/color';
 import { BaseClass } from './library';
-import { BaseClassTriggerd, StatesDBReadOnly } from '../controller/states-controler';
+import { BaseClassTriggerd, StatesDBReadOnly } from '../controller/states-controller';
 import * as NSPanel from '../types/types';
 
 export class Dataitem extends BaseClass {
@@ -54,7 +54,7 @@ export class Dataitem extends BaseClass {
                 return this.options.constVal !== undefined;
             case 'state':
             case 'triggered':
-                if (this.options.dp === undefined) return false;
+                if (this.options.dp === undefined || this.options.dp === '') return false;
                 const obj = await this.adapter.getForeignObjectAsync(this.options.dp);
                 if (!obj || obj.type != 'state' || !obj.common) {
                     this.log.warn(`801: ${this.options.dp} has a invalid state object!`);
@@ -63,8 +63,9 @@ export class Dataitem extends BaseClass {
                 }
                 this.type = this.type || obj.common.type;
                 this.options.role = obj.common.role;
-                if (this.options.type == 'triggered') this.readOnlyDB.setTrigger(this.options.dp, this.parent);
-                const value = await this.readOnlyDB.getState(this.options.dp);
+                if (this.options.type == 'triggered')
+                    this.readOnlyDB.setTrigger(this.options.dp, this.parent, this.options.response);
+                const value = await this.readOnlyDB.getState(this.options.dp, this.options.response);
                 return !!value;
         }
         return false;
@@ -78,7 +79,7 @@ export class Dataitem extends BaseClass {
                 if (!this.options.dp) {
                     throw new Error(`Error 1002 type is ${this.options.type} but dp is undefined`);
                 }
-                return await this.readOnlyDB.getState(this.options.dp);
+                return await this.readOnlyDB.getState(this.options.dp, this.options.response);
             case 'internal': {
             }
         }
@@ -201,4 +202,25 @@ export class Dataitem extends BaseClass {
                 this.type = 'object';
         }
     }
+    async setStateTrue(): Promise<void> {
+        await this.setStateAsync(true);
+    }
+    async setStateAsync(val: ioBroker.StateValue): Promise<void> {
+        if (val === undefined) return;
+        if (this.options.type === 'state' || this.options.type === 'triggered') {
+            if (this.options.dp) {
+                const ack = this.options.dp.startsWith(this.adapter.namespace);
+                this.log.debug(`setStateAsync(${this.options.dp}, ${val}, ${ack})`);
+                if (this.type === 'number' && typeof val === 'string') val = parseFloat(val);
+                if (this.type === 'boolean') val = !!val;
+                if (this.type === 'string') val = String(val);
+                await this.adapter.setForeignStateAsync(this.options.dp, val, ack);
+            }
+        }
+    }
+}
+
+export function isDataItem(F: object | Dataitem): F is Dataitem {
+    if (F instanceof Dataitem) return true;
+    return false;
 }

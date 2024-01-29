@@ -1,5 +1,6 @@
 import { Dataitem } from '../classes/data-item';
 import { PageMediaItem, PageThermoItem, PageBaseItem } from './pageItem';
+import { PageRole, PageType, PageTypeCards } from './pages';
 
 /**
  * Join arguments with ~ and return the string;
@@ -21,21 +22,6 @@ export function checkSortedPlayerType(F: notSortedPlayerType): adapterPlayerInst
     return F;
 }
 
-export function isMediaOptional(F: string | mediaOptional): F is mediaOptional {
-    switch (F as mediaOptional) {
-        case 'seek':
-        case 'crossfade':
-        case 'speakerlist':
-        case 'playlist':
-        case 'tracklist':
-        case 'equalizer':
-        case 'repeat':
-        case 'favorites':
-            return true;
-        default:
-            return false;
-    }
-}
 export function isRGB(F: RGB | any): F is RGB {
     return typeof F == 'object' && 'red' in F && 'blue' in F && 'green' in F;
 }
@@ -69,13 +55,14 @@ export function isPopupType(F: PopupType | string): F is PopupType {
         case 'popupTimer':
             return true;
         default:
-            throw new Error(`Please report to developer: Unknown PopupType: ${F} `);
+            console.info(`Unknown PopupType: ${F} `);
+            return false;
     }
 }
 // If u get a error here u forgot something in PageTypeCards or PageType
-export function checkPageType(F: PageTypeCards, A: PageType): void {
+/*export function checkPageType(F: PageTypeCards, A: PageType): void {
     A.type = F;
-}
+}*/
 export function isPageMediaItem(F: PageItem | PageMediaItem): F is PageMediaItem {
     return 'adapterPlayerInstance' in F;
 }
@@ -220,7 +207,7 @@ export type RGB = {
 export type Payload = {
     payload: string;
 };
-type BooleanIntersection = 'true' | 'false';
+export type BooleanUnion = 'true' | 'false';
 
 export type PageBaseType = {
     type: PageTypeCards;
@@ -241,35 +228,15 @@ export type PageBaseType = {
     homeIcon?: string;
     homeIconColor?: RGB;
 };
-type ColorType = Record<BooleanIntersection, RGB> & { scale?: IconScaleElement };
+export type ColorEntryType = (Record<BooleanUnion, RGB> & { scale?: IconScaleElement }) | RGB;
+export function isColorEntryType(F: object | ColorEntryType): F is ColorEntryType {
+    if ('true' in F && 'false' in F && 'scale' in F) return true;
+    return false;
+}
 export type Icon = {
-    icon: Record<BooleanIntersection, string>;
-    iconColor: ColorType;
+    icon: Record<BooleanUnion, string>;
+    iconColor: ColorEntryType;
 };
-export type PageTypeCards =
-    | 'cardChart'
-    | 'cardLChart'
-    | 'cardEntities'
-    | 'cardGrid'
-    | 'cardGrid2'
-    | 'cardThermo'
-    | 'cardMedia'
-    | 'cardUnlock'
-    | 'cardQR'
-    | 'cardAlarm'
-    | 'cardPower'; //| 'cardBurnRec'
-
-export type PageType =
-    | PageChart
-    | PageEntities
-    | PageGrid
-    | PageGrid2
-    | PageThermo
-    | PageMedia
-    | PageUnlock
-    | PageQR
-    | PageAlarm
-    | PagePower;
 
 export type PageEntities = {
     type: 'cardEntities';
@@ -546,31 +513,52 @@ export type mediaOptional =
     | 'favorites';
 
 export type DataItemstype = DataItemsOptions['type'];
-export type DataItemsOptions = { name?: string } & (
+export type DataItemsMode = 'custom' | 'auto';
+export type DataItemsOptions = {
+    name?: string;
+} & (
     | {
           type: 'const';
           role?: string;
           constVal: StateValue;
           state?: State | null; // use just inside of class
       }
-    | {
+    | ((
+          | {
+                mode: 'auto' | 'done'; // not set means custom
+                role: PageRole | PageRole[];
+            }
+          | {
+                mode?: 'custom'; // not set means custom
+                role?: string;
+            }
+      ) & {
           type: 'state';
           dp: string;
-          role?: string;
           state?: State | null; // use just inside of class
           substring?: [number, number | undefined]; // only used with getString()
           forceType?: 'string' | 'number' | 'boolean'; // force a type
           read?: string | ((val: any) => any);
-      }
-    | {
+          response?: 'now' | 'medium' | 'slow';
+      })
+    | ((
+          | {
+                mode: 'auto' | 'done'; // not set means custom
+                role: PageRole | PageRole[];
+            }
+          | {
+                mode?: 'custom'; // not set means custom
+                role?: string;
+            }
+      ) & {
           type: 'triggered';
           dp: string;
-          role?: string;
           state?: State | null; // use just inside of class
           substring?: [number, number | undefined]; // only used with getString()
           forceType?: 'string' | 'number' | 'boolean'; // force a type
           read?: string | ((val: any) => any);
-      }
+          response?: 'now' | 'medium' | 'slow';
+      })
     | {
           type: 'internal';
           dp: internalDatapoints;
@@ -581,8 +569,11 @@ type internalDatapoints = 'Relais1' | 'Relais2';
 export type IncomingEvent = {
     type: EventType;
     method: EventMethod;
+    mode: string;
     page?: number;
-    index?: number;
+    subPage?: number;
+    command: ButtonActionType | '';
+    opt: string;
 };
 
 export type Event = {
@@ -602,12 +593,97 @@ export function convertToEvent(msg: string): IncomingEvent | null {
     const temp = msg.split(',');
     if (!isEventType(temp[0])) return null;
     if (!isEventMethod(temp[1])) return null;
-    const result: IncomingEvent = { type: temp[0], method: temp[1] };
-    if (!isNaN(parseInt(temp[2]))) result.page = parseInt(temp[2]);
-    if (!isNaN(parseInt(temp[3]))) result.index = parseInt(temp[3]);
-    return result;
+    const arr = String(temp[3]).split('?');
+    if (arr[2])
+        return {
+            type: temp[0],
+            method: temp[1],
+            page: parseInt(arr[0]),
+            subPage: parseInt(arr[1]),
+            command: isButtonActionType(arr[2]) ? arr[2] : '',
+            mode: temp[2],
+            opt: temp[4] ?? '',
+        };
+    else if (arr[1])
+        return {
+            type: temp[0],
+            method: temp[1],
+            page: parseInt(arr[0]),
+            command: isButtonActionType(arr[1]) ? arr[1] : '',
+            mode: temp[2],
+            opt: temp[4] ?? '',
+        };
+    else
+        return {
+            type: temp[0],
+            method: temp[1],
+            command: isButtonActionType(arr[0]) ? arr[0] : '',
+            mode: temp[2],
+            opt: temp[4] ?? '',
+        };
 }
-
+function isButtonActionType(F: string | ButtonActionType): F is ButtonActionType {
+    switch (F) {
+        case 'bExit':
+        case 'bUp':
+        case 'bNext':
+        case 'bSubNext':
+        case 'bPrev':
+        case 'bSubPrev':
+        case 'bHome':
+        case 'notifyAction':
+        case 'OnOff':
+        case 'button':
+        case 'up':
+        case 'stop':
+        case 'down':
+        case 'positionSlider':
+        case 'tiltOpen':
+        case 'tiltStop':
+        case 'tiltSlider':
+        case 'tiltClose':
+        case 'brightnessSlider':
+        case 'colorTempSlider':
+        case 'colorWheel':
+        case 'tempUpd':
+        case 'tempUpdHighLow':
+        case 'media-back':
+        case 'media-pause':
+        case 'media-next':
+        case 'media-shuffle':
+        case 'volumeSlider':
+        case 'mode-speakerlist':
+        case 'mode-playlist':
+        case 'mode-tracklist':
+        case 'mode-repeat':
+        case 'mode-equalizer':
+        case 'mode-seek':
+        case 'mode-crossfade':
+        case 'mode-favorites':
+        case 'mode-insel':
+        case 'media-OnOff':
+        case 'timer-start':
+        case 'timer-pause':
+        case 'timer-cancle':
+        case 'timer-finish':
+        case 'hvac_action':
+        case 'mode-modus1':
+        case 'mode-modus2':
+        case 'mode-modus3':
+        case 'number-set':
+        case 'mode-preset_modes':
+        case 'A1':
+        case 'A2':
+        case 'A3':
+        case 'A4':
+        case 'D1':
+        case 'U1':
+            return true;
+        default:
+            console.info(F + ' is not isButtonActionType!');
+            return false;
+    }
+}
 export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced';
 
 export type ScreensaverOptionsType = {

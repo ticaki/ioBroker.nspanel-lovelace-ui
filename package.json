@@ -82,7 +82,8 @@
     "build/",
     "www/",
     "io-package.json",
-    "LICENSE"
+    "LICENSE",
+    "/templates"
   ],
   "scripts": {
     "prebuild": "rimraf build",
