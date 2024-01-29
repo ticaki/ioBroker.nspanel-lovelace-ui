@@ -1,4 +1,4 @@
-import { Off, On, HMIDark } from './color';
+import { Off, On, HMIDark } from './Color';
 import { ScreensaverModeType, ScreensaverOptionsType } from '../types/types';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object

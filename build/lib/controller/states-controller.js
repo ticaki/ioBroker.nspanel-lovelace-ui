@@ -45,13 +45,13 @@ class BaseClassTriggerd extends import_library.BaseClass {
   }
   sendToPanelClass = () => {
   };
-  constructor(adapter, panelSend, name) {
-    super(adapter, name);
+  constructor(card) {
+    super(card.adapter, card.name);
     this.minUpdateInterval = 15e3;
     this.controller = this.adapter.controller;
-    this.panelSend = panelSend;
-    if (panelSend.addMessage && typeof panelSend.addMessage === "function")
-      this.sendToPanelClass = panelSend.addMessage;
+    this.panelSend = card.panelSend;
+    if (typeof card.panelSend.addMessage === "function")
+      this.sendToPanelClass = card.panelSend.addMessage;
   }
   onStateTriggerSuperDoNotOverride = async () => {
     if (!this.visibility)

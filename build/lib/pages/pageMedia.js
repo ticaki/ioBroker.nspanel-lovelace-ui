@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,34 +17,31 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageMedia_exports = {};
 __export(pageMedia_exports, {
-  PageMedia1: () => PageMedia1,
-  commands: () => commands,
-  getValueFromBoolean: () => getValueFromBoolean,
-  testConfigMedia: () => testConfigMedia
+  PageMedia: () => PageMedia,
+  getValueFromBoolean: () => getValueFromBoolean
 });
 module.exports = __toCommonJS(pageMedia_exports);
 var import_data_item = require("../classes/data-item");
-var import_color = require("../const/color");
+var Color = __toESM(require("../const/Color"));
 var import_icon_mapping = require("../const/icon_mapping");
 var import_Page = require("./Page");
-const commands = {
-  cardMedia: {
-    on: "1374",
-    pause: "65535"
-  }
-};
+var import_Page2 = require("./Page");
 const PageMediaMessageDefault = {
   event: "entityUpd",
   headline: "",
   getNavigation: "~~~~~~~~~",
   id: "",
   title: "",
-  titelColor: String((0, import_color.rgb_dec565)(import_color.White)),
+  titelColor: String(Color.rgb_dec565(Color.White)),
   artist: "",
-  artistColor: String((0, import_color.rgb_dec565)(import_color.White)),
+  artistColor: String(Color.rgb_dec565(Color.White)),
   volume: "",
   iconplaypause: "",
   onoffbutton: "",
@@ -58,23 +57,19 @@ const messageItemDefault = {
   name: "",
   ident: ""
 };
-const ArrayPlayerTypeWithMediaDevice = ["alexa2", "sonos", "squeezeboxrpc"];
-const ArrayPlayerTypeWithOutMediaDevice = ["spotify-premium", "volumio", "bosesoundtouch"];
 const steps = 4;
-class PageMedia1 extends import_Page.Page {
+class PageMedia extends import_Page2.Page {
   config;
   initMode;
   dpInit;
-  panel;
   items;
   writeItems;
   step = 0;
   headlinePos = 0;
   volume = 0;
-  constructor(adapter, panel, options, name) {
-    super(adapter, panel.panelSend, options.config.card, name);
+  constructor(config, options) {
+    super(config);
     this.config = options.config;
-    this.panel = panel;
     this.writeItems = options.writeItems;
     this.items = options.items;
     this.initMode = options.initMode;
@@ -224,7 +219,7 @@ class PageMedia1 extends import_Page.Page {
         message.options[a] = await this.getToolItem(item.toolbox[a], String(a), a % localStep + 1);
       }
       if (localStep === 4) {
-        const color = String((0, import_color.rgb_dec565)(import_color.White));
+        const color = String(Color.rgb_dec565(Color.White));
         const icon = "arrow-right";
         message.options[4] = {
           pageId: `5`,
@@ -366,7 +361,7 @@ class PageMedia1 extends import_Page.Page {
   async onButtonEvent(event) {
     if (event.mode !== "media")
       return;
-    if (isMediaButtonActionType(event.command)) {
+    if ((0, import_Page.isMediaButtonActionType)(event.command)) {
       this.log.debug("Receive event: " + JSON.stringify(event));
     } else
       return;
@@ -446,197 +441,6 @@ class PageMedia1 extends import_Page.Page {
     }
   }
 }
-const testConfigMedia = {
-  dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
-  initMode: "auto",
-  config: {
-    card: "cardMedia",
-    heading: {
-      type: "const",
-      constVal: "test"
-    },
-    alwaysOnDisplay: {
-      type: "const",
-      constVal: "test"
-    },
-    album: {
-      mode: "auto",
-      type: "state",
-      role: "media.album",
-      dp: ""
-    },
-    titel: {
-      on: {
-        type: "const",
-        constVal: true
-      },
-      text: {
-        mode: "auto",
-        type: "triggered",
-        role: "media.title",
-        dp: ""
-      },
-      color: {
-        type: "const",
-        constVal: { red: 250, green: 2, blue: 3 }
-      },
-      icon: void 0,
-      list: void 0
-    },
-    duration: {
-      mode: "auto",
-      type: "state",
-      role: "media.duration",
-      dp: ""
-    },
-    elapsed: {
-      mode: "auto",
-      type: "triggered",
-      role: ["media.elapsed", "media.elapsed.text"],
-      dp: ""
-    },
-    volume: {
-      mode: "auto",
-      type: "triggered",
-      role: ["level.volume"],
-      dp: ""
-    },
-    artist: {
-      on: {
-        type: "const",
-        constVal: true
-      },
-      text: {
-        mode: "auto",
-        type: "state",
-        role: "media.artist",
-        dp: ""
-      },
-      color: void 0,
-      icon: {
-        type: "const",
-        constVal: "diameter"
-      },
-      list: void 0
-    },
-    shuffle: {
-      mode: "auto",
-      type: "state",
-      role: "media.mode.shuffle",
-      dp: ""
-    },
-    icon: {
-      type: "const",
-      constVal: "dialpad"
-    },
-    play: {
-      mode: "auto",
-      type: "state",
-      role: ["button.play"],
-      dp: ""
-    },
-    mediaState: {
-      mode: "auto",
-      type: "triggered",
-      role: ["media.state"],
-      dp: ""
-    },
-    stop: {
-      mode: "auto",
-      type: "state",
-      role: ["button.stop"],
-      dp: ""
-    },
-    pause: {
-      mode: "auto",
-      type: "state",
-      role: "button.pause",
-      dp: ""
-    },
-    forward: {
-      mode: "auto",
-      type: "state",
-      role: "button.next",
-      dp: ""
-    },
-    backward: {
-      mode: "auto",
-      type: "state",
-      role: "button.prev",
-      dp: ""
-    },
-    logo: {
-      on: {
-        type: "const",
-        constVal: true
-      },
-      text: { type: "const", constVal: "1" },
-      icon: { type: "const", constVal: "home" },
-      color: { type: "const", constVal: { red: 250, blue: 250, green: 0 } },
-      list: void 0,
-      action: "cross"
-    },
-    toolbox: [
-      {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: { type: "const", constVal: "Repeat" },
-        icon: { type: "const", constVal: "repeat" },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: { type: "state", dp: "", mode: "auto", role: "media.playlist" },
-        action: "cross"
-      },
-      {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: { type: "const", constVal: "1" },
-        icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: void 0,
-        action: "cross"
-      },
-      {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: { type: "const", constVal: "1" },
-        icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: void 0,
-        action: "cross"
-      },
-      {
-        on: {
-          type: "const",
-          constVal: false
-        },
-        text: { type: "const", constVal: "1" },
-        icon: { true: { type: "const", constVal: "reply" }, false: { type: "const", constVal: "replay" } },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: void 0,
-        action: "cross"
-      },
-      {
-        on: {
-          type: "const",
-          constVal: false
-        },
-        text: { type: "const", constVal: "1" },
-        icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: void 0,
-        action: "cross"
-      }
-    ]
-  },
-  items: void 0,
-  writeItems: void 0
-};
 async function getValueFromBoolean(item, type, value = true) {
   if (item) {
     if ((0, import_data_item.isDataItem)(item)) {
@@ -668,33 +472,9 @@ async function getValueFromData(item, type) {
     }
   }
 }
-function isMediaButtonActionType(F) {
-  switch (F) {
-    case "media-back":
-    case "media-pause":
-    case "media-next":
-    case "media-shuffle":
-    case "volumeSlider":
-    case "mode-speakerlist":
-    case "mode-playlist":
-    case "mode-tracklist":
-    case "mode-repeat":
-    case "mode-equalizer":
-    case "mode-seek":
-    case "mode-crossfade":
-    case "mode-favorites":
-    case "mode-insel":
-    case "media-OnOff":
-      return true;
-  }
-  console.error(`${F} isMediaButtonActionType === false`);
-  return false;
-}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  PageMedia1,
-  commands,
-  getValueFromBoolean,
-  testConfigMedia
+  PageMedia,
+  getValueFromBoolean
 });
 //# sourceMappingURL=pageMedia.js.map

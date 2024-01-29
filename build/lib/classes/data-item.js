@@ -28,7 +28,7 @@ __export(data_item_exports, {
   isDataItem: () => isDataItem
 });
 module.exports = __toCommonJS(data_item_exports);
-var Color = __toESM(require("../const/color"));
+var Color = __toESM(require("../const/Color"));
 var import_library = require("./library");
 var NSPanel = __toESM(require("../types/types"));
 class Dataitem extends import_library.BaseClass {

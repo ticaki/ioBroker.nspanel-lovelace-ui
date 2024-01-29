@@ -1,15 +1,7 @@
-import {
-    PageAlarm,
-    PageChart,
-    PageEntities,
-    PageGrid,
-    PageGrid2,
-    PageMedia,
-    PagePower,
-    PageQR,
-    PageThermo,
-    PageUnlock,
-} from './types';
+import * as types_1 from './types';
+import { ButtonActionType } from './types';
+import * as types from './types';
+import { Dataitem } from '../classes/data-item';
 
 export type PageTypeCards =
     | 'cardChart'
@@ -27,17 +19,19 @@ export type PageTypeCards =
     | 'screensaver2'; //| 'cardBurnRec'
 
 export type PageType =
-    | PageChart
-    | PageEntities
-    | PageGrid
-    | PageGrid2
-    | PageThermo
-    | PageMedia
-    | PageUnlock
-    | PageQR
-    | PageAlarm
-    | PagePower;
+    | types.PageChart
+    | types.PageEntities
+    | types.PageGrid
+    | types.PageGrid2
+    | types.PageThermo
+    | types.PageMedia
+    | types.PageUnlock
+    | types.PageQR
+    | types.PageAlarm
+    | types.PagePower;
+
 export type PageRole = PageMediaRoles;
+
 export type PageMediaRoles =
     | 'button.play'
     | 'button.pause'
@@ -88,3 +82,219 @@ export function isPageRole(F: string | PageRole): F is PageRole {
             return false;
     }
 }
+export function isButtonActionType(F: string | ButtonActionType): F is ButtonActionType {
+    switch (F) {
+        case 'bExit':
+        case 'bUp':
+        case 'bNext':
+        case 'bSubNext':
+        case 'bPrev':
+        case 'bSubPrev':
+        case 'bHome':
+        case 'notifyAction':
+        case 'OnOff':
+        case 'button':
+        case 'up':
+        case 'stop':
+        case 'down':
+        case 'positionSlider':
+        case 'tiltOpen':
+        case 'tiltStop':
+        case 'tiltSlider':
+        case 'tiltClose':
+        case 'brightnessSlider':
+        case 'colorTempSlider':
+        case 'colorWheel':
+        case 'tempUpd':
+        case 'tempUpdHighLow':
+        case 'media-back':
+        case 'media-pause':
+        case 'media-next':
+        case 'media-shuffle':
+        case 'volumeSlider':
+        case 'mode-speakerlist':
+        case 'mode-playlist':
+        case 'mode-tracklist':
+        case 'mode-repeat':
+        case 'mode-equalizer':
+        case 'mode-seek':
+        case 'mode-crossfade':
+        case 'mode-favorites':
+        case 'mode-insel':
+        case 'media-OnOff':
+        case 'timer-start':
+        case 'timer-pause':
+        case 'timer-cancle':
+        case 'timer-finish':
+        case 'hvac_action':
+        case 'mode-modus1':
+        case 'mode-modus2':
+        case 'mode-modus3':
+        case 'number-set':
+        case 'mode-preset_modes':
+        case 'A1':
+        case 'A2':
+        case 'A3':
+        case 'A4':
+        case 'D1':
+        case 'U1':
+            return true;
+        default:
+            console.info(F + ' is not isButtonActionType!');
+            return false;
+    }
+}
+export function convertToEvent(msg: string): types_1.IncomingEvent | null {
+    msg = (JSON.parse(msg) || {}).CustomRecv;
+    if (msg === undefined) return null;
+    const temp = msg.split(',');
+    if (!types_1.isEventType(temp[0])) return null;
+    if (!types_1.isEventMethod(temp[1])) return null;
+    const arr = String(temp[3]).split('?');
+    if (arr[2])
+        return {
+            type: temp[0],
+            method: temp[1],
+            page: parseInt(arr[0]),
+            subPage: parseInt(arr[1]),
+            command: isButtonActionType(arr[2]) ? arr[2] : '',
+            mode: temp[2],
+            opt: temp[4] ?? '',
+        };
+    else if (arr[1])
+        return {
+            type: temp[0],
+            method: temp[1],
+            page: parseInt(arr[0]),
+            command: isButtonActionType(arr[1]) ? arr[1] : '',
+            mode: temp[2],
+            opt: temp[4] ?? '',
+        };
+    else
+        return {
+            type: temp[0],
+            method: temp[1],
+            command: isButtonActionType(arr[0]) ? arr[0] : '',
+            mode: temp[2],
+            opt: temp[4] ?? '',
+        };
+}
+export type PageMediaBase = {
+    //    type: PlayerType;
+    card: PageTypeCards;
+    initMode: 'auto' | 'custom';
+    dpInit: string; // '' and initMode 'auto' throw an error
+
+    //    mediaNamespace: string;
+    config: ChangeTypeOfKeys<PageMediaBaseConfig, types_1.DataItemsOptions | undefined> & {
+        toolbox: (toolboxItem | undefined)[];
+    } & { logo: toolboxItem | undefined };
+    items:
+        | (ChangeTypeOfKeys<PageMediaBaseConfig, Dataitem | undefined> & {
+              toolbox: (toolboxItemDataItem | undefined)[];
+          } & { logo: toolboxItemDataItem | undefined })
+        | undefined;
+    writeItems: PageMediaBaseConfigWrite | undefined;
+};
+export type ChangeTypeOfKeys<Obj, N> = Obj extends
+    | object
+    | listItem
+    | PageTypeCards
+    | iconBoolean
+    | types_1.ColorEntryType
+    ? Obj extends types_1.RGB
+        ? N
+        : {
+              [K in keyof Obj]-?: ChangeTypeOfKeys<Obj[K], N>;
+          }
+    : N;
+type PageMediaBaseConfig = {
+    heading: string;
+    alwaysOnDisplay: boolean;
+    album: string;
+    titel: listItem;
+    duration: string;
+    elapsed: string;
+    artist: listItem;
+    shuffle: string;
+    volume: number;
+    icon: string;
+    play: string;
+    mediaState: string;
+    stop: string;
+    pause: string;
+    forward: string;
+    backward: string;
+};
+type toolboxItem = ChangeTypeOfKeys<listItem, types_1.DataItemsOptions | undefined> & { action: MediaToolBoxAction };
+export type toolboxItemDataItem = ChangeTypeOfKeys<listItem, Dataitem | undefined> & { action: MediaToolBoxAction };
+
+export type PageMediaBaseConfigWrite = {
+    pplay: writeItem;
+    pause: writeItem;
+    forward: writeItem;
+    backward: writeItem;
+    stop: writeItem;
+    off: writeItem;
+    shuffle: writeItem;
+    tracklist: writeItem;
+    playlist: writeItem;
+    equalizerList: writeItem;
+    repeat: writeItem;
+    toolstring: writeItem;
+};
+export type PageMediaMessage = {
+    event: 'entityUpd';
+    headline: string;
+    getNavigation: string;
+    id: string;
+    title: string;
+    titelColor: string;
+    artist: string;
+    artistColor: string;
+    volume: string;
+    iconplaypause: string;
+    onoffbutton: string;
+    shuffle_icon: string;
+    logo: string;
+    options: [
+        (messageItem | string)?,
+        (messageItem | string)?,
+        (messageItem | string)?,
+        (messageItem | string)?,
+        (messageItem | string)?,
+    ];
+};
+type writeItem = { dp: string } | undefined;
+type listItem =
+    | {
+          on: string;
+          text: string;
+          color: types_1.ColorEntryType | string | undefined;
+          icon: iconBoolean | string | undefined;
+          list: string | undefined;
+      }
+    | undefined;
+
+export type iconBoolean = Record<types_1.BooleanUnion, string | undefined>;
+export type messageItem = {
+    event?: 'input_sel' | '' | 'button';
+    pageId: string;
+    iconNumber: 0 | 1 | 2 | 3 | 4 | 5; // media0 usw.
+    mode: MediaToolBoxAction;
+    icon: string;
+    color: string;
+    name: string;
+    ident?: string;
+};
+type MediaToolBoxAction =
+    | 'speaker'
+    | 'play'
+    | 'tool'
+    | 'track'
+    | 'favor'
+    | 'equal'
+    | 'repeat'
+    | 'seek'
+    | 'cross'
+    | 'nexttool';

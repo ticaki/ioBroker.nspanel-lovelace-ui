@@ -50,7 +50,7 @@ __export(definition_exports, {
   weatherScreensaverTempMinMax: () => weatherScreensaverTempMinMax
 });
 module.exports = __toCommonJS(definition_exports);
-var import_color = require("./color");
+var import_Color = require("./Color");
 const defaultChannel = {
   _id: "",
   type: "channel",
@@ -168,10 +168,10 @@ const weatherScreensaverTempMinMax = "MinMax";
 const weatherEntityPath = "alias.0.Wetter";
 const autoCreateAlias = true;
 const AliasPath = "alias.0." + NSPanel_Path.substring(13, NSPanel_Path.length);
-const defaultOffColorParam = import_color.Off;
-const defaultOnColorParam = import_color.On;
-const defaultColorParam = import_color.Off;
-const defaultBackgroundColorParam = import_color.HMIDark;
+const defaultOffColorParam = import_Color.Off;
+const defaultOnColorParam = import_Color.On;
+const defaultColorParam = import_Color.Off;
+const defaultBackgroundColorParam = import_Color.HMIDark;
 const scriptVersion = "v4.3.3.33";
 const tft_version = "v4.3.3";
 const desired_display_firmware_version = 53;

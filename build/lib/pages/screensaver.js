@@ -29,7 +29,7 @@ __export(screensaver_exports, {
 module.exports = __toCommonJS(screensaver_exports);
 var import_data_item = require("../classes/data-item");
 var Definition = __toESM(require("../const/definition"));
-var Color = __toESM(require("../const/color"));
+var Color = __toESM(require("../const/Color"));
 var import_moment = __toESM(require("moment"));
 var import_moment_parseformat = __toESM(require("moment-parseformat"));
 var import_msg_def = require("../types/msg-def");
@@ -52,23 +52,14 @@ class Screensaver extends import_Page.Page {
   rotationTime;
   timoutRotation = void 0;
   step = 0;
-  constructor(adapter, config, panelSend, readOnlyDB) {
-    let card;
-    switch (config.mode) {
-      case "standard":
-      case "alternate":
-        card = "screensaver";
-        break;
-      case "advanced":
-        card = "screensaver2";
-    }
-    super(adapter, panelSend, card, "screensaver");
-    this.entitysConfig = config.entitysConfig;
-    this.mode = config.mode;
-    this.config = config.config;
-    import_moment.default.locale(config.config.momentLocale);
+  constructor(config, options, readOnlyDB) {
+    super(config);
+    this.entitysConfig = options.entitysConfig;
+    this.mode = options.mode;
+    this.config = options.config;
+    import_moment.default.locale(options.config.momentLocale);
     this.readOnlyDB = readOnlyDB;
-    this.rotationTime = config.rotationTime !== 0 && config.rotationTime < 3 ? 3e3 : config.rotationTime * 1e3;
+    this.rotationTime = options.rotationTime !== 0 && options.rotationTime < 3 ? 3e3 : options.rotationTime * 1e3;
   }
   async init() {
     const config = this.entitysConfig;

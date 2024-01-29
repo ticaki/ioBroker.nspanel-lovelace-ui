@@ -1,33 +1,20 @@
 import { Dataitem, isDataItem } from '../classes/data-item';
-import { AdapterClassDefinition } from '../classes/library';
-import { White, rgb_dec565 } from '../const/color';
+import * as Color from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { Panel } from '../controller/panel';
-import { PageTypeCards } from '../types/pages';
-import { BooleanUnion, ColorEntryType, DataItemsOptions, IncomingEvent, RGB } from '../types/types';
+import * as pages from '../types/pages';
+import { BooleanUnion, ColorEntryType, IncomingEvent } from '../types/types';
+import { PageInterface, isMediaButtonActionType } from './Page';
 import { Page } from './Page';
 
-export const commands = {
-    cardMedia: {
-        on: '1374',
-        pause: '65535',
-    },
-};
-/*type PageMediaConfigInterface = ChangeTypeOfKeys<
-    Alexa | Sonos | Squeezeboxrpc | SpotifyPremium | Volumio | Bose,
-    DataItemsOptions
->;*/
-export type PageMediaDataInterface = PageMediaBase; //Alexa | Sonos | Squeezeboxrpc | SpotifyPremium | Volumio | Bose;
-
-const PageMediaMessageDefault: PageMediaMessage = {
+const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
     headline: '',
     getNavigation: '~~~~~~~~~',
     id: '',
     title: '',
-    titelColor: String(rgb_dec565(White)),
+    titelColor: String(Color.rgb_dec565(Color.White)),
     artist: '',
-    artistColor: String(rgb_dec565(White)),
+    artistColor: String(Color.rgb_dec565(Color.White)),
     volume: '',
     iconplaypause: '',
     onoffbutton: '',
@@ -35,146 +22,8 @@ const PageMediaMessageDefault: PageMediaMessage = {
     logo: '',
     options: ['', '', '', '', ''],
 };
-/*export interface Alexa extends PageMediaBase {
-    type: 'alexa2';
-    config: PageMediaBase['config'] & { device: string };
-}
-export interface Sonos extends PageMediaBase {
-    type: 'sonos';
-    dp: string;
-    config: PageMediaBase['config'] & { device: string };
-}
-export interface Squeezeboxrpc extends PageMediaBase {
-    type: 'squeezeboxrpc';
-    config: PageMediaBase['config'] & { device: string };
-}
-export interface SpotifyPremium extends PageMediaBase {
-    type: 'spotify-premium';
-}
-export interface Volumio extends PageMediaBase {
-    type: 'volumio';
-}
-export interface Bose extends PageMediaBase {
-    type: 'bosesoundtouch';
-}*/
-type PageMediaBase = {
-    //    type: PlayerType;
-    initMode: 'auto' | 'custom';
-    dpInit: string; // '' and initMode 'auto' throw an error
-    //    mediaNamespace: string;
-    config: ChangeTypeOfKeys<PageMediaBaseConfig, DataItemsOptions | undefined> & {
-        toolbox: (toolboxItem | undefined)[];
-    } & { logo: toolboxItem | undefined };
-    items:
-        | (ChangeTypeOfKeys<PageMediaBaseConfig, Dataitem | undefined> & {
-              toolbox: (toolboxItemDataItem | undefined)[];
-          } & { logo: toolboxItemDataItem | undefined })
-        | undefined;
-    writeItems: PageMediaBaseConfigWrite | undefined;
-};
 
-type ChangeTypeOfKeys<Obj, N> = Obj extends object | listItem | PageTypeCards | iconBoolean | ColorEntryType
-    ? Obj extends RGB
-        ? N
-        : { [K in keyof Obj]-?: ChangeTypeOfKeys<Obj[K], N> }
-    : N;
-
-type PageMediaBaseConfig = {
-    card: PageTypeCards;
-    heading: string;
-    alwaysOnDisplay: boolean;
-    album: string;
-    titel: listItem;
-    duration: string;
-    elapsed: string;
-    artist: listItem;
-    shuffle: string;
-    volume: number;
-    icon: string;
-    play: string;
-    mediaState: string;
-    stop: string;
-    pause: string;
-    forward: string;
-    backward: string;
-};
-
-type toolboxItem = ChangeTypeOfKeys<listItem, DataItemsOptions | undefined> & { action: MediaToolBoxAction };
-
-type toolboxItemDataItem = ChangeTypeOfKeys<listItem, Dataitem | undefined> & { action: MediaToolBoxAction };
-
-export type PageMediaBaseConfigWrite = {
-    pplay: writeItem;
-    pause: writeItem;
-    forward: writeItem;
-    backward: writeItem;
-    stop: writeItem;
-    off: writeItem;
-    shuffle: writeItem;
-    tracklist: writeItem;
-    playlist: writeItem;
-    equalizerList: writeItem;
-    repeat: writeItem;
-    toolstring: writeItem;
-};
-export type PageMediaMessage = {
-    event: 'entityUpd';
-    headline: string;
-    getNavigation: string;
-    id: string;
-    title: string;
-    titelColor: string;
-    artist: string;
-    artistColor: string;
-    volume: string;
-    iconplaypause: string;
-    onoffbutton: string;
-    shuffle_icon: string;
-    logo: string;
-    options: [
-        (messageItem | string)?,
-        (messageItem | string)?,
-        (messageItem | string)?,
-        (messageItem | string)?,
-        (messageItem | string)?,
-    ];
-};
-type writeItem = { dp: string } | undefined;
-type listItem =
-    | {
-          on: string;
-          text: string;
-          color: ColorEntryType | string | undefined;
-          icon: iconBoolean | string | undefined;
-          list: string | undefined;
-      }
-    | undefined;
-
-export type iconBoolean = Record<BooleanUnion, string | undefined>;
-export type messageItem = {
-    event?: 'input_sel' | '' | 'button';
-    pageId: string;
-    iconNumber: 0 | 1 | 2 | 3 | 4 | 5; // media0 usw.
-    mode: MediaToolBoxAction;
-    icon: string;
-    color: string;
-    name: string;
-    ident?: string;
-};
-
-type MediaToolBoxAction =
-    | 'speaker'
-    | 'play'
-    | 'tool'
-    | 'track'
-    | 'favor'
-    | 'equal'
-    | 'repeat'
-    | 'seek'
-    | 'cross'
-    | 'nexttool';
-
-const messageItemDefault: Required<Omit<messageItem, 'iconNumber' | 'mode'>> = {
+const messageItemDefault: Required<Omit<pages.messageItem, 'iconNumber' | 'mode'>> = {
     event: 'input_sel',
     pageId: '',
     icon: '',
@@ -183,29 +32,22 @@ const messageItemDefault: Required<Omit<messageItem, 'iconNumber' | 'mode'>> = {
     ident: '',
 };
 
-const ArrayPlayerTypeWithMediaDevice = ['alexa2', 'sonos', 'squeezeboxrpc'] as const;
-const ArrayPlayerTypeWithOutMediaDevice = ['spotify-premium', 'volumio', 'bosesoundtouch'] as const;
-
-export type PlayerType =
-    | (typeof ArrayPlayerTypeWithMediaDevice)[number]
-    | (typeof ArrayPlayerTypeWithOutMediaDevice)[number]
-    | 'sonstiges';
 const steps = 4;
-export class PageMedia1 extends Page implements PageMediaDataInterface {
-    config: PageMediaDataInterface['config'];
+
+export class PageMedia extends Page implements pages.PageMediaBase {
+    config: pages.PageMediaBase['config'];
     initMode: 'auto' | 'custom';
     dpInit: string;
-    panel: Panel;
-    items: PageMediaDataInterface['items'];
-    writeItems: PageMediaBaseConfigWrite | undefined;
+    items: pages.PageMediaBase['items'];
+    writeItems: pages.PageMediaBaseConfigWrite | undefined;
     private step: number = 0;
     private headlinePos: number = 0;
     private volume: number = 0;
 
-    constructor(adapter: AdapterClassDefinition, panel: Panel, options: PageMediaDataInterface, name: string) {
-        super(adapter, panel.panelSend, options.config.card, name);
+    constructor(config: PageInterface, options: pages.PageMediaBase) {
+        super(config);
+
         this.config = options.config;
-        this.panel = panel;
         this.writeItems = options.writeItems;
         this.items = options.items;
         this.initMode = options.initMode;
@@ -216,15 +58,15 @@ export class PageMedia1 extends Page implements PageMediaDataInterface {
     async init(): Promise<void> {
         const config = { ...this.config };
         // search states for mode auto
-        const tempConfig: Partial<PageMediaDataInterface['config']> =
+        const tempConfig: Partial<pages.PageMediaBase['config']> =
             this.initMode === 'auto' ? await this.panel.readOnlyDB.getDataItemsFromAuto(this.dpInit, config) : {};
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<PageMediaDataInterface['items']> = await this.panel.readOnlyDB.createDataItems(
+        const tempItem: Partial<pages.PageMediaBase['items']> = await this.panel.readOnlyDB.createDataItems(
             tempConfig,
             this,
         );
-        this.items = tempItem as PageMediaDataInterface['items'];
+        this.items = tempItem as pages.PageMediaBase['items'];
         //check if command dps are valid
         for (const g in this.writeItems) {
             const d = g as keyof typeof this.writeItems;
@@ -248,7 +90,7 @@ export class PageMedia1 extends Page implements PageMediaDataInterface {
     async update(): Promise<void> {
         const item = this.items;
         if (item === undefined) return;
-        const message: Partial<PageMediaMessage> = {};
+        const message: Partial<pages.PageMediaMessage> = {};
         // title
         {
             let duration = '0:00',
@@ -364,7 +206,7 @@ export class PageMedia1 extends Page implements PageMediaDataInterface {
                 message.options[a] = await this.getToolItem(item.toolbox[a], String(a), (a % localStep) + 1);
             }
             if (localStep === 4) {
-                const color = String(rgb_dec565(White));
+                const color = String(Color.rgb_dec565(Color.White));
                 const icon = 'arrow-right';
                 message.options[4] = {
                     pageId: `5`,
@@ -387,7 +229,7 @@ export class PageMedia1 extends Page implements PageMediaDataInterface {
             const temp = message.options[a];
             if (typeof temp === 'object') opts.push(this.getBottomMessages(temp));
         }
-        const msg: PageMediaMessage = Object.assign(PageMediaMessageDefault, message, {
+        const msg: pages.PageMediaMessage = Object.assign(PageMediaMessageDefault, message, {
             getNavigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
             id: 'media',
             options: opts,
@@ -418,10 +260,10 @@ export class PageMedia1 extends Page implements PageMediaDataInterface {
         return null;
     }
     private async getToolItem(
-        i: toolboxItemDataItem | undefined,
+        i: pages.toolboxItemDataItem | undefined,
         id: string,
         iconNumber: number,
-    ): Promise<messageItem | undefined> {
+    ): Promise<pages.messageItem | undefined> {
         if (i) {
             if (i.on && i.text && i.color && i.icon) {
                 const v = await i.on.getBoolean();
@@ -431,7 +273,7 @@ export class PageMedia1 extends Page implements PageMediaDataInterface {
                 const list = i.list ? await i.list.getString() : null;
                 if (list) this.log.debug(JSON.stringify(list));
                 if (color && icon && text) {
-                    const tool: messageItem = {
+                    const tool: pages.messageItem = {
                         pageId: `${id}`,
                         iconNumber: iconNumber as 1 | 2 | 3 | 4 | 5,
                         icon: Icons.GetIcon(icon),
@@ -446,7 +288,7 @@ export class PageMedia1 extends Page implements PageMediaDataInterface {
         return undefined;
     }
 
-    private getMessage(message: PageMediaMessage): string {
+    private getMessage(message: pages.PageMediaMessage): string {
         return this.getPayload(
             'entityUpd',
             message.headline,
@@ -472,14 +314,17 @@ export class PageMedia1 extends Page implements PageMediaDataInterface {
      */
     private getBottomMessages(
         msg:
-            | (Partial<messageItem> & { iconNumber: messageItem['iconNumber']; pageId: messageItem['pageId'] })
+            | (Partial<pages.messageItem> & {
+                  iconNumber: pages.messageItem['iconNumber'];
+                  pageId: pages.messageItem['pageId'];
+              })
             | undefined,
     ): string {
         if (!msg || !msg.pageId || !msg.icon || msg.event === '') return '~~~~~';
         msg.event = msg.event === undefined ? 'input_sel' : msg.event;
         msg.pageId = `${this.id}?${msg.pageId}?${msg.mode}`;
         const iconNumber = msg.iconNumber;
-        const temp: Partial<messageItem> = msg;
+        const temp: Partial<pages.messageItem> = msg;
         delete temp.mode;
         delete temp.iconNumber;
         msg.ident = msg.ident || 'media0';
@@ -592,218 +437,14 @@ export class PageMedia1 extends Page implements PageMediaDataInterface {
         }
     }
 }
-export const testConfigMedia: PageMediaDataInterface = {
-    //type: 'sonstiges',
-    dpInit: 'alexa2.0.Echo-Devices.G091EV0704641J8R.Player',
-    initMode: 'auto',
-    config: {
-        card: 'cardMedia',
-        heading: {
-            type: 'const',
-            constVal: 'test',
-        },
-        alwaysOnDisplay: {
-            type: 'const',
-            constVal: 'test',
-        },
-        album: {
-            mode: 'auto',
-            type: 'state',
-            role: 'media.album',
-            dp: '',
-        },
-        titel: {
-            on: {
-                type: 'const',
-                constVal: true,
-            },
-            text: {
-                mode: 'auto',
-                type: 'triggered',
-                role: 'media.title',
-                dp: '',
-            },
-            color: {
-                type: 'const',
-                constVal: { red: 250, green: 2, blue: 3 },
-            },
-            icon: undefined,
-            list: undefined,
-        },
-        duration: {
-            mode: 'auto',
-            type: 'state',
-            role: 'media.duration',
-            dp: '',
-        },
-        elapsed: {
-            mode: 'auto',
-            type: 'triggered',
-            role: ['media.elapsed', 'media.elapsed.text'],
-            dp: '',
-        },
-        volume: {
-            mode: 'auto',
-            type: 'triggered',
-            role: ['level.volume'],
-            dp: '',
-        },
-        artist: {
-            on: {
-                type: 'const',
-                constVal: true,
-            },
-            text: {
-                mode: 'auto',
-                type: 'state',
-                role: 'media.artist',
-                dp: '',
-            },
-            color: undefined,
-            icon: {
-                type: 'const',
-                constVal: 'diameter',
-            },
-            list: undefined,
-        },
-        shuffle: {
-            mode: 'auto',
-            type: 'state',
-            role: 'media.mode.shuffle',
-            dp: '',
-        },
-        icon: {
-            type: 'const',
-            constVal: 'dialpad',
-        },
-        play: {
-            mode: 'auto',
-            type: 'state',
-            role: ['button.play'],
-            dp: '',
-        },
-        mediaState: {
-            mode: 'auto',
-            type: 'triggered',
-            role: ['media.state'],
-            dp: '',
-        },
-        stop: {
-            mode: 'auto',
-            type: 'state',
-            role: ['button.stop'],
-            dp: '',
-        },
-        pause: {
-            mode: 'auto',
-            type: 'state',
-            role: 'button.pause',
-            dp: '',
-        },
-        forward: {
-            mode: 'auto',
-            type: 'state',
-            role: 'button.next',
-            dp: '',
-        },
-        backward: {
-            mode: 'auto',
-            type: 'state',
-            role: 'button.prev',
-            dp: '',
-        },
-        logo: {
-            on: {
-                type: 'const',
-                constVal: true,
-            },
-            text: { type: 'const', constVal: '1' },
-            icon: { type: 'const', constVal: 'home' },
-            color: { type: 'const', constVal: { red: 250, blue: 250, green: 0 } },
-            list: undefined,
-            action: 'cross',
-        },
-        toolbox: [
-            {
-                on: {
-                    type: 'const',
-                    constVal: true,
-                },
-                text: { type: 'const', constVal: 'Repeat' },
-                icon: { type: 'const', constVal: 'repeat' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: { type: 'state', dp: '', mode: 'auto', role: 'media.playlist' },
-                action: 'cross',
-            },
-            {
-                on: {
-                    type: 'const',
-                    constVal: true,
-                },
-                text: { type: 'const', constVal: '1' },
-                icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: undefined,
-                action: 'cross',
-            },
-            {
-                on: {
-                    type: 'const',
-                    constVal: true,
-                },
-                text: { type: 'const', constVal: '1' },
-                icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: undefined,
-                action: 'cross',
-            },
-            {
-                on: {
-                    type: 'const',
-                    constVal: false,
-                },
-                text: { type: 'const', constVal: '1' },
-                icon: { true: { type: 'const', constVal: 'reply' }, false: { type: 'const', constVal: 'replay' } },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: undefined,
-                action: 'cross',
-            },
-            {
-                on: {
-                    type: 'const',
-                    constVal: false,
-                },
-                text: { type: 'const', constVal: '1' },
-                icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: undefined,
-                action: 'cross',
-            },
-            /*{
-                on: {
-                    type: 'const',
-                    constVal: true,
-                },
-                text: { type: 'const', constVal: '1' },
-                icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: undefined,
-                action: 'cross',
-            },*/
-        ],
-    },
-    items: undefined,
-    writeItems: undefined,
-};
-
-type _selectValueFromBoolean = 'color' | 'string';
+type _SelectValueFromBoolean = 'color' | 'string';
 export async function getValueFromBoolean(
     item:
         | Record<BooleanUnion, Dataitem | undefined>
-        | ChangeTypeOfKeys<ColorEntryType, Dataitem | undefined>
+        | pages.ChangeTypeOfKeys<ColorEntryType, Dataitem | undefined>
         | Dataitem
         | undefined,
-    type: _selectValueFromBoolean,
+    type: _SelectValueFromBoolean,
     value: boolean = true,
 ): Promise<string | null> {
     if (item) {
@@ -824,7 +465,7 @@ export async function getValueFromBoolean(
     }
     return null;
 }
-async function getValueFromData(item: Dataitem, type: _selectValueFromBoolean): Promise<string | null> {
+async function getValueFromData(item: Dataitem, type: _SelectValueFromBoolean): Promise<string | null> {
     switch (type) {
         case 'string': {
             return item.getString();
@@ -836,99 +477,3 @@ async function getValueFromData(item: Dataitem, type: _selectValueFromBoolean): 
         }
     }
 }
-function isMediaButtonActionType(F: MediaButtonActionType | string): F is MediaButtonActionType {
-    switch (F) {
-        case 'media-back':
-        case 'media-pause':
-        case 'media-next':
-        case 'media-shuffle':
-        case 'volumeSlider':
-        case 'mode-speakerlist':
-        case 'mode-playlist':
-        case 'mode-tracklist':
-        case 'mode-repeat':
-        case 'mode-equalizer':
-        case 'mode-seek':
-        case 'mode-crossfade':
-        case 'mode-favorites':
-        case 'mode-insel':
-        case 'media-OnOff':
-            return true;
-    }
-    console.error(`${F} isMediaButtonActionType === false`);
-    return false;
-}
-type MediaButtonActionType = Extract<
-    ButtonActionType,
-    | 'media-back'
-    | 'media-pause'
-    | 'media-next'
-    | 'media-shuffle'
-    | 'volumeSlider'
-    | 'mode-speakerlist'
-    | 'mode-playlist'
-    | 'mode-tracklist'
-    | 'mode-repeat'
-    | 'mode-equalizer'
-    | 'mode-seek'
-    | 'mode-crossfade'
-    | 'mode-favorites'
-    | 'mode-insel'
-    | 'media-OnOff'
->;
-
-export type ButtonActionType =
-    | 'bExit'
-    | 'bUp'
-    | 'bNext'
-    | 'bSubNext'
-    | 'bPrev'
-    | 'bSubPrev'
-    | 'bHome'
-    | 'notifyAction'
-    | 'OnOff'
-    | 'button'
-    | 'up'
-    | 'stop'
-    | 'down'
-    | 'positionSlider'
-    | 'tiltOpen'
-    | 'tiltStop'
-    | 'tiltSlider'
-    | 'tiltClose'
-    | 'brightnessSlider'
-    | 'colorTempSlider'
-    | 'colorWheel'
-    | 'tempUpd'
-    | 'tempUpdHighLow'
-    | 'media-back'
-    | 'media-pause'
-    | 'media-next'
-    | 'media-shuffle'
-    | 'volumeSlider'
-    | 'mode-speakerlist'
-    | 'mode-playlist'
-    | 'mode-tracklist'
-    | 'mode-repeat'
-    | 'mode-equalizer'
-    | 'mode-seek'
-    | 'mode-crossfade'
-    | 'mode-favorites'
-    | 'mode-insel'
-    | 'media-OnOff'
-    | 'timer-start'
-    | 'timer-pause'
-    | 'timer-cancle'
-    | 'timer-finish'
-    | 'hvac_action'
-    | 'mode-modus1'
-    | 'mode-modus2'
-    | 'mode-modus3'
-    | 'number-set'
-    | 'mode-preset_modes'
-    | 'A1'
-    | 'A2'
-    | 'A3'
-    | 'A4'
-    | 'D1'
-    | 'U1';

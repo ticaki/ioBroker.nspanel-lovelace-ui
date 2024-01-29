@@ -3,13 +3,15 @@ import { BaseClassPanelSend, PanelSend } from './panel-message';
 import dayjs from 'dayjs';
 import * as Screensaver from '../pages/screensaver';
 import * as NSPanel from '../types/types';
+import * as pages from '../types/pages';
 import { Controller } from './panel-controller';
 import { AdapterClassDefinition } from '../classes/library';
 import { callbackMessageType } from '../classes/mqtt';
 import { ReiveTopicAppendix, SendTopicAppendix } from '../const/definition';
-import { StatesDBReadOnly } from './states-controller';
-import { PageMedia1, testConfigMedia } from '../pages/pageMedia';
-import { Page } from '../pages/Page';
+import { BaseClassTriggerdInterface, StatesDBReadOnly } from './states-controller';
+import { PageMedia } from '../pages/pageMedia';
+import { testConfigMedia } from '../config';
+import { Page, PageInterface } from '../pages/Page';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -83,28 +85,40 @@ export class Panel extends BaseClassPanelSend {
         if (!this._activePage.page) throw new Error(`No active page here, check code!`);
         return this._activePage.page;
     }
-    test: PageMedia1;
+    test: PageMedia;
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
-        super(
-            adapter,
-            new PanelSend(adapter, {
+        const config: BaseClassTriggerdInterface = {
+            name: options.name,
+            adapter: adapter,
+            panelSend: new PanelSend(adapter, {
                 name: `${options.name}-SendClass`,
                 mqttClient: options.controller.mqttClient,
                 topic: options.topic,
             }),
-            options.name,
-        );
+        };
+        super(config);
         this.readOnlyDB = options.controller.readOnlyDB;
         this.panelSend.panel = this;
         const format = Object.assign(DefaultOptions.format, options.format);
         this.options = Object.assign(DefaultOptions, options, { format: format });
-        this.screenSaver = new Screensaver.Screensaver(
-            adapter,
-            options.screenSaverConfig,
-            this.panelSend,
-            this.readOnlyDB,
-        );
-        this.test = new PageMedia1(adapter, this, testConfigMedia, 'media');
+        let ssconfig: PageInterface = {
+            card: 'screensaver',
+            panel: this,
+            id: 0,
+            name: 'SS',
+            adapter: this.adapter,
+            panelSend: this.panelSend,
+        };
+        this.screenSaver = new Screensaver.Screensaver(ssconfig, options.screenSaverConfig, this.readOnlyDB);
+        ssconfig = {
+            card: testConfigMedia.card,
+            panel: this,
+            id: 1,
+            name: 'PM',
+            adapter: this.adapter,
+            panelSend: this.panelSend,
+        };
+        this.test = new PageMedia(ssconfig, testConfigMedia);
         this.test.init();
     }
     get isOnline(): boolean {
@@ -136,7 +150,7 @@ export class Panel extends BaseClassPanelSend {
         }
         if (topic.endsWith(ReiveTopicAppendix)) {
             //this.log.debug(`Receive message ${topic} with ${message}`);
-            const event: NSPanel.IncomingEvent | null = NSPanel.convertToEvent(message);
+            const event: NSPanel.IncomingEvent | null = pages.convertToEvent(message);
             if (event) {
                 this.HandleIncomingMessage(event);
             }

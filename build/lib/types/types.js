@@ -20,7 +20,6 @@ var types_exports = {};
 __export(types_exports, {
   buildNSPanelString: () => buildNSPanelString,
   checkSortedPlayerType: () => checkSortedPlayerType,
-  convertToEvent: () => convertToEvent,
   isColorEntryType: () => isColorEntryType,
   isEventMethod: () => isEventMethod,
   isEventType: () => isEventType,
@@ -102,112 +101,10 @@ function isIconScaleElement(F) {
 function isEventType(F) {
   return ["event"].indexOf(F) != -1;
 }
-function convertToEvent(msg) {
-  var _a, _b, _c;
-  msg = (JSON.parse(msg) || {}).CustomRecv;
-  if (msg === void 0)
-    return null;
-  const temp = msg.split(",");
-  if (!isEventType(temp[0]))
-    return null;
-  if (!isEventMethod(temp[1]))
-    return null;
-  const arr = String(temp[3]).split("?");
-  if (arr[2])
-    return {
-      type: temp[0],
-      method: temp[1],
-      page: parseInt(arr[0]),
-      subPage: parseInt(arr[1]),
-      command: isButtonActionType(arr[2]) ? arr[2] : "",
-      mode: temp[2],
-      opt: (_a = temp[4]) != null ? _a : ""
-    };
-  else if (arr[1])
-    return {
-      type: temp[0],
-      method: temp[1],
-      page: parseInt(arr[0]),
-      command: isButtonActionType(arr[1]) ? arr[1] : "",
-      mode: temp[2],
-      opt: (_b = temp[4]) != null ? _b : ""
-    };
-  else
-    return {
-      type: temp[0],
-      method: temp[1],
-      command: isButtonActionType(arr[0]) ? arr[0] : "",
-      mode: temp[2],
-      opt: (_c = temp[4]) != null ? _c : ""
-    };
-}
-function isButtonActionType(F) {
-  switch (F) {
-    case "bExit":
-    case "bUp":
-    case "bNext":
-    case "bSubNext":
-    case "bPrev":
-    case "bSubPrev":
-    case "bHome":
-    case "notifyAction":
-    case "OnOff":
-    case "button":
-    case "up":
-    case "stop":
-    case "down":
-    case "positionSlider":
-    case "tiltOpen":
-    case "tiltStop":
-    case "tiltSlider":
-    case "tiltClose":
-    case "brightnessSlider":
-    case "colorTempSlider":
-    case "colorWheel":
-    case "tempUpd":
-    case "tempUpdHighLow":
-    case "media-back":
-    case "media-pause":
-    case "media-next":
-    case "media-shuffle":
-    case "volumeSlider":
-    case "mode-speakerlist":
-    case "mode-playlist":
-    case "mode-tracklist":
-    case "mode-repeat":
-    case "mode-equalizer":
-    case "mode-seek":
-    case "mode-crossfade":
-    case "mode-favorites":
-    case "mode-insel":
-    case "media-OnOff":
-    case "timer-start":
-    case "timer-pause":
-    case "timer-cancle":
-    case "timer-finish":
-    case "hvac_action":
-    case "mode-modus1":
-    case "mode-modus2":
-    case "mode-modus3":
-    case "number-set":
-    case "mode-preset_modes":
-    case "A1":
-    case "A2":
-    case "A3":
-    case "A4":
-    case "D1":
-    case "U1":
-      return true;
-    default:
-      console.info(F + " is not isButtonActionType!");
-      return false;
-  }
-}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   buildNSPanelString,
   checkSortedPlayerType,
-  convertToEvent,
   isColorEntryType,
   isEventMethod,
   isEventType,

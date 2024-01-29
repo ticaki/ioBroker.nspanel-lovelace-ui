@@ -1,23 +1,28 @@
-import { NspanelLovelaceUi } from '../../main';
+import { AdapterType } from '../../main';
 import { BaseClass } from '../classes/library';
-import { BaseClassPanelSend, PanelSend } from '../controller/panel-message';
+import { Panel } from '../controller/panel';
+import { BaseClassPanelSend } from '../controller/panel-message';
+import { BaseClassTriggerdInterface } from '../controller/states-controller';
 import { PageTypeCards } from '../types/pages';
 import { IncomingEvent } from '../types/types';
 
-export interface Card {
-    name: string;
+export interface PageInterface extends BaseClassTriggerdInterface {
     card: PageTypeCards;
+    panel: Panel;
+    id: number;
 }
 //interface Page extends BaseClass | PageConfig
 
-export class Page extends BaseClassPanelSend implements Card {
+export class Page extends BaseClassPanelSend {
     readonly card: PageTypeCards;
     readonly id: number;
+    protected panel: Panel;
     //config: Card['config'];
-    constructor(adapter: NspanelLovelaceUi, panelSend: PanelSend, card: PageTypeCards, name: string) {
-        super(adapter, panelSend, name);
-        this.card = card;
-        this.id = 1;
+    constructor(card: PageInterface) {
+        super(card);
+        this.card = card.card;
+        this.id = card.id;
+        this.panel = card.panel;
     }
     async init(): Promise<void> {}
 
@@ -44,7 +49,7 @@ export class Page extends BaseClassPanelSend implements Card {
 export class PageItem extends BaseClass {
     config: PageItemConfig;
     pageItems: any[] = [];
-    constructor(adapter: NspanelLovelaceUi, options: PageItemConfig) {
+    constructor(adapter: AdapterType, options: PageItemConfig) {
         super(adapter, 'Page');
         this.config = options;
     }
@@ -53,3 +58,99 @@ export class PageItem extends BaseClass {
 type PageItemConfig = {
     name: string;
 };
+export function isMediaButtonActionType(F: MediaButtonActionType | string): F is MediaButtonActionType {
+    switch (F) {
+        case 'media-back':
+        case 'media-pause':
+        case 'media-next':
+        case 'media-shuffle':
+        case 'volumeSlider':
+        case 'mode-speakerlist':
+        case 'mode-playlist':
+        case 'mode-tracklist':
+        case 'mode-repeat':
+        case 'mode-equalizer':
+        case 'mode-seek':
+        case 'mode-crossfade':
+        case 'mode-favorites':
+        case 'mode-insel':
+        case 'media-OnOff':
+            return true;
+    }
+    console.error(`${F} isMediaButtonActionType === false`);
+    return false;
+}
+type MediaButtonActionType = Extract<
+    ButtonActionType,
+    | 'media-back'
+    | 'media-pause'
+    | 'media-next'
+    | 'media-shuffle'
+    | 'volumeSlider'
+    | 'mode-speakerlist'
+    | 'mode-playlist'
+    | 'mode-tracklist'
+    | 'mode-repeat'
+    | 'mode-equalizer'
+    | 'mode-seek'
+    | 'mode-crossfade'
+    | 'mode-favorites'
+    | 'mode-insel'
+    | 'media-OnOff'
+>;
+
+export type ButtonActionType =
+    | 'bExit'
+    | 'bUp'
+    | 'bNext'
+    | 'bSubNext'
+    | 'bPrev'
+    | 'bSubPrev'
+    | 'bHome'
+    | 'notifyAction'
+    | 'OnOff'
+    | 'button'
+    | 'up'
+    | 'stop'
+    | 'down'
+    | 'positionSlider'
+    | 'tiltOpen'
+    | 'tiltStop'
+    | 'tiltSlider'
+    | 'tiltClose'
+    | 'brightnessSlider'
+    | 'colorTempSlider'
+    | 'colorWheel'
+    | 'tempUpd'
+    | 'tempUpdHighLow'
+    | 'media-back'
+    | 'media-pause'
+    | 'media-next'
+    | 'media-shuffle'
+    | 'volumeSlider'
+    | 'mode-speakerlist'
+    | 'mode-playlist'
+    | 'mode-tracklist'
+    | 'mode-repeat'
+    | 'mode-equalizer'
+    | 'mode-seek'
+    | 'mode-crossfade'
+    | 'mode-favorites'
+    | 'mode-insel'
+    | 'media-OnOff'
+    | 'timer-start'
+    | 'timer-pause'
+    | 'timer-cancle'
+    | 'timer-finish'
+    | 'hvac_action'
+    | 'mode-modus1'
+    | 'mode-modus2'
+    | 'mode-modus3'
+    | 'number-set'
+    | 'mode-preset_modes'
+    | 'A1'
+    | 'A2'
+    | 'A3'
+    | 'A4'
+    | 'D1'
+    | 'U1';

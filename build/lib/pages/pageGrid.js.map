@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/pages/pageGrid.ts"],
+  "sourcesContent": ["import { Page, PageInterface } from './Page';\n\nexport class PageGrid extends Page {\n    constructor(config: PageInterface) {\n        super({ ...config, card: 'cardGrid' });\n    }\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,kBAAoC;AAE7B,MAAM,iBAAiB,iBAAK;AAAA,EAC/B,YAAY,QAAuB;AAC/B,UAAM,EAAE,GAAG,QAAQ,MAAM,WAAW,CAAC;AAAA,EACzC;AACJ;",
+  "names": []
+}

@@ -31,9 +31,10 @@ module.exports = __toCommonJS(panel_exports);
 var import_panel_message = require("./panel-message");
 var import_dayjs = __toESM(require("dayjs"));
 var Screensaver = __toESM(require("../pages/screensaver"));
-var NSPanel = __toESM(require("../types/types"));
+var pages = __toESM(require("../types/pages"));
 var import_definition = require("../const/definition");
 var import_pageMedia = require("../pages/pageMedia");
+var import_config = require("../config");
 function isPanelConfig(F) {
   if (F.controller === void 0)
     return false;
@@ -97,26 +98,38 @@ class Panel extends import_panel_message.BaseClassPanelSend {
   }
   test;
   constructor(adapter, options) {
-    super(
+    const config = {
+      name: options.name,
       adapter,
-      new import_panel_message.PanelSend(adapter, {
+      panelSend: new import_panel_message.PanelSend(adapter, {
         name: `${options.name}-SendClass`,
         mqttClient: options.controller.mqttClient,
         topic: options.topic
-      }),
-      options.name
-    );
+      })
+    };
+    super(config);
     this.readOnlyDB = options.controller.readOnlyDB;
     this.panelSend.panel = this;
     const format = Object.assign(DefaultOptions.format, options.format);
     this.options = Object.assign(DefaultOptions, options, { format });
-    this.screenSaver = new Screensaver.Screensaver(
-      adapter,
-      options.screenSaverConfig,
-      this.panelSend,
-      this.readOnlyDB
-    );
-    this.test = new import_pageMedia.PageMedia1(adapter, this, import_pageMedia.testConfigMedia, "media");
+    let ssconfig = {
+      card: "screensaver",
+      panel: this,
+      id: 0,
+      name: "SS",
+      adapter: this.adapter,
+      panelSend: this.panelSend
+    };
+    this.screenSaver = new Screensaver.Screensaver(ssconfig, options.screenSaverConfig, this.readOnlyDB);
+    ssconfig = {
+      card: import_config.testConfigMedia.card,
+      panel: this,
+      id: 1,
+      name: "PM",
+      adapter: this.adapter,
+      panelSend: this.panelSend
+    };
+    this.test = new import_pageMedia.PageMedia(ssconfig, import_config.testConfigMedia);
     this.test.init();
   }
   get isOnline() {
@@ -146,7 +159,7 @@ class Panel extends import_panel_message.BaseClassPanelSend {
         fn(topic, message);
     }
     if (topic.endsWith(import_definition.ReiveTopicAppendix)) {
-      const event = NSPanel.convertToEvent(message);
+      const event = pages.convertToEvent(message);
       if (event) {
         this.HandleIncomingMessage(event);
       }

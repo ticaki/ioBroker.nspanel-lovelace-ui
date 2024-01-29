@@ -1,6 +1,6 @@
 import { Dataitem } from '../classes/data-item';
 import * as Definition from '../const/definition';
-import * as Color from '../const/color';
+import * as Color from '../const/Color';
 import * as NSPanel from '../types/types';
 
 //import dayjs from 'dayjs';
@@ -8,9 +8,7 @@ import moment from 'moment';
 import parseFormat from 'moment-parseformat';
 import { sendTemplates, weatherUpdateTestArray } from '../types/msg-def';
 import { StatesDBReadOnly } from '../controller/states-controller';
-import { Page } from './Page';
-import { PanelSend } from '../controller/panel-message';
-import { PageTypeCards } from '../types/pages';
+import { Page, PageInterface } from './Page';
 import { Icons } from '../const/icon_mapping';
 
 export type ScreensaverConfigType = {
@@ -51,23 +49,15 @@ export class Screensaver extends Page {
     private rotationTime: number;
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
     private step: number = 0;
-    constructor(adapter: any, config: ScreensaverConfig, panelSend: PanelSend, readOnlyDB: StatesDBReadOnly) {
-        let card: PageTypeCards | undefined;
-        switch (config.mode) {
-            case 'standard':
-            case 'alternate':
-                card = 'screensaver';
-                break;
-            case 'advanced':
-                card = 'screensaver2';
-        }
-        super(adapter, panelSend, card, 'screensaver');
-        this.entitysConfig = config.entitysConfig;
-        this.mode = config.mode;
-        this.config = config.config;
-        moment.locale(config.config.momentLocale);
+    constructor(config: PageInterface, options: ScreensaverConfig, readOnlyDB: StatesDBReadOnly) {
+        super(config);
+
+        this.entitysConfig = options.entitysConfig;
+        this.mode = options.mode;
+        this.config = options.config;
+        moment.locale(options.config.momentLocale);
         this.readOnlyDB = readOnlyDB;
-        this.rotationTime = config.rotationTime !== 0 && config.rotationTime < 3 ? 3000 : config.rotationTime * 1000;
+        this.rotationTime = options.rotationTime !== 0 && options.rotationTime < 3 ? 3000 : options.rotationTime * 1000;
     }
     async init(): Promise<void> {
         const config = this.entitysConfig;

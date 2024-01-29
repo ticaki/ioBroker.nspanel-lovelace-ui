@@ -19,7 +19,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var Page_exports = {};
 __export(Page_exports, {
   Page: () => Page,
-  PageItem: () => PageItem
+  PageItem: () => PageItem,
+  isMediaButtonActionType: () => isMediaButtonActionType
 });
 module.exports = __toCommonJS(Page_exports);
 var import_library = require("../classes/library");
@@ -27,10 +28,12 @@ var import_panel_message = require("../controller/panel-message");
 class Page extends import_panel_message.BaseClassPanelSend {
   card;
   id;
-  constructor(adapter, panelSend, card, name) {
-    super(adapter, panelSend, name);
-    this.card = card;
-    this.id = 1;
+  panel;
+  constructor(card) {
+    super(card);
+    this.card = card.card;
+    this.id = card.id;
+    this.panel = card.panel;
   }
   async init() {
   }
@@ -62,9 +65,32 @@ class PageItem extends import_library.BaseClass {
   async init() {
   }
 }
+function isMediaButtonActionType(F) {
+  switch (F) {
+    case "media-back":
+    case "media-pause":
+    case "media-next":
+    case "media-shuffle":
+    case "volumeSlider":
+    case "mode-speakerlist":
+    case "mode-playlist":
+    case "mode-tracklist":
+    case "mode-repeat":
+    case "mode-equalizer":
+    case "mode-seek":
+    case "mode-crossfade":
+    case "mode-favorites":
+    case "mode-insel":
+    case "media-OnOff":
+      return true;
+  }
+  console.error(`${F} isMediaButtonActionType === false`);
+  return false;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Page,
-  PageItem
+  PageItem,
+  isMediaButtonActionType
 });
 //# sourceMappingURL=Page.js.map

@@ -16,8 +16,8 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var color_exports = {};
-__export(color_exports, {
+var Color_exports = {};
+__export(Color_exports, {
   BatteryEmpty: () => BatteryEmpty,
   BatteryFull: () => BatteryFull,
   Black: () => Black,
@@ -100,7 +100,7 @@ __export(color_exports, {
   swSunny: () => swSunny,
   swWindy: () => swWindy
 });
-module.exports = __toCommonJS(color_exports);
+module.exports = __toCommonJS(Color_exports);
 const HMIOff = { red: 68, green: 115, blue: 158 };
 const HMIOn = { red: 3, green: 169, blue: 244 };
 const HMIDark = { red: 29, green: 29, blue: 29 };
@@ -305,4 +305,4 @@ function HandleColorScale(valueScaletemp) {
   swSunny,
   swWindy
 });
-//# sourceMappingURL=color.js.map
+//# sourceMappingURL=Color.js.map

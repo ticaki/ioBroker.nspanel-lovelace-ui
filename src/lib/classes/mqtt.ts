@@ -8,7 +8,6 @@ import { AdapterClassDefinition, BaseClass } from './library';
 
 import Aedes, { Client } from 'aedes';
 import { Server, createServer } from 'net';
-import { NspanelLovelaceUi } from '../../main';
 
 export type callbackMessageType = (topic: string, message: string) => void;
 
@@ -100,7 +99,7 @@ export class MQTTClientClass extends BaseClass {
 export class MQTTServerClass extends BaseClass {
     aedes: Aedes;
     server: Server;
-    constructor(adapter: NspanelLovelaceUi, port: number, username: string, password: string, path: string) {
+    constructor(adapter: AdapterClassDefinition, port: number, username: string, password: string, path: string) {
         super(adapter, 'mqttServer');
         const persistence = aedesPersistencelevel(new Level(path));
         this.aedes = new Aedes({ persistence: persistence });

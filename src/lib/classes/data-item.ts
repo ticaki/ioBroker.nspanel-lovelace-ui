@@ -1,4 +1,4 @@
-import * as Color from '../const/color';
+import * as Color from '../const/Color';
 import { BaseClass } from './library';
 import { BaseClassTriggerd, StatesDBReadOnly } from '../controller/states-controller';
 import * as NSPanel from '../types/types';

@@ -8,6 +8,11 @@ import { DataItemsOptions } from '../types/types';
 import { Controller } from './panel-controller';
 import { PanelSend } from './panel-message';
 
+export interface BaseClassTriggerdInterface {
+    name: string;
+    adapter: AdapterClassDefinition;
+    panelSend: PanelSend;
+}
 /**
  * Basisklasse für alles das auf Statestriggern soll - also jede card / popup
  * übernimmt auch die Sichtbarkeitssteuerung das triggern wird pausiert wenn nicht sichtbar
@@ -35,13 +40,12 @@ export class BaseClassTriggerd extends BaseClass {
     }
     private sendToPanelClass: (payload: string, opt?: IClientPublishOptions) => void = () => {};
 
-    constructor(adapter: AdapterClassDefinition, panelSend: PanelSend, name: string) {
-        super(adapter, name);
+    constructor(card: BaseClassTriggerdInterface) {
+        super(card.adapter, card.name);
         this.minUpdateInterval = 15000;
         this.controller = this.adapter.controller;
-        this.panelSend = panelSend;
-        if (panelSend.addMessage && typeof panelSend.addMessage === 'function')
-            this.sendToPanelClass = panelSend.addMessage;
+        this.panelSend = card.panelSend;
+        if (typeof card.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
     }
     readonly onStateTriggerSuperDoNotOverride = async (): Promise<boolean> => {
         if (!this.visibility) return false;

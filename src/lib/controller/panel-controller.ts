@@ -1,8 +1,8 @@
 import * as MQTT from '../classes/mqtt';
 import * as Library from '../classes/library';
-import { NspanelLovelaceUi } from '../../main';
 import { StatesDBReadOnly } from './states-controller';
 import * as Panel from './panel';
+import { AdapterType } from '../../main';
 
 export class Controller extends Library.BaseClass {
     mqttClient: MQTT.MQTTClientClass;
@@ -10,7 +10,7 @@ export class Controller extends Library.BaseClass {
     readOnlyDB: StatesDBReadOnly;
 
     constructor(
-        adapter: NspanelLovelaceUi,
+        adapter: AdapterType,
         options: { mqttClient: MQTT.MQTTClientClass; name: string; panels: Partial<Panel.panelConfigPartial>[] },
     ) {
         super(adapter, options.name);

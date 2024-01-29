@@ -5,10 +5,6 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
     for (let key of __getOwnPropNames(from))
@@ -23,9 +19,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var main_exports = {};
-__export(main_exports, {
-  NspanelLovelaceUi: () => NspanelLovelaceUi
-});
 module.exports = __toCommonJS(main_exports);
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_library = require("./lib/classes/library");
@@ -114,8 +107,4 @@ if (require.main !== module) {
 } else {
   (() => new NspanelLovelaceUi())();
 }
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
-  NspanelLovelaceUi
-});
 //# sourceMappingURL=main.js.map
