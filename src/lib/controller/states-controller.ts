@@ -3,10 +3,10 @@
 import { IClientPublishOptions } from 'mqtt';
 import { Dataitem } from '../classes/data-item';
 import { AdapterClassDefinition, BaseClass } from '../classes/library';
-import { isPageRole } from '../types/pages';
 import { DataItemsOptions } from '../types/types';
 import { Controller } from './panel-controller';
 import { PanelSend } from './panel-message';
+import { isPageRole } from '../types/pages';
 
 export interface BaseClassTriggerdInterface {
     name: string;

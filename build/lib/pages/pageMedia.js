@@ -49,14 +49,6 @@ const PageMediaMessageDefault = {
   logo: "",
   options: ["", "", "", "", ""]
 };
-const messageItemDefault = {
-  event: "input_sel",
-  pageId: "",
-  icon: "",
-  color: "",
-  name: "",
-  ident: ""
-};
 const steps = 4;
 class PageMedia extends import_Page2.Page {
   config;
@@ -64,9 +56,9 @@ class PageMedia extends import_Page2.Page {
   dpInit;
   items;
   writeItems;
-  step = 0;
+  step = 1;
   headlinePos = 0;
-  volume = 0;
+  nextArrow = false;
   constructor(config, options) {
     super(config);
     this.config = options.config;
@@ -189,7 +181,6 @@ class PageMedia extends import_Page2.Page {
     if (item.volume) {
       const v = await item.volume.getNumber();
       if (v !== null) {
-        this.volume = v;
         message.volume = String(v);
       }
     }
@@ -212,35 +203,37 @@ class PageMedia extends import_Page2.Page {
     message.options = [void 0, void 0, void 0, void 0, void 0];
     if (item.toolbox && Array.isArray(item.toolbox)) {
       const localStep = item.toolbox.length > 5 ? steps : 5;
-      if (item.toolbox.length > localStep * this.step)
+      if (item.toolbox.length <= localStep * (this.step - 1))
         this.step = 1;
       const maxSteps = localStep * this.step;
-      for (let a = maxSteps - localStep; a < maxSteps; a++) {
-        message.options[a] = await this.getToolItem(item.toolbox[a], String(a), a % localStep + 1);
+      const minStep = localStep * (this.step - 1);
+      for (let a = minStep; a < maxSteps; a++) {
+        message.options[a - minStep] = await this.getToolItem(item.toolbox[a], String(a), a % localStep + 1);
       }
       if (localStep === 4) {
+        this.nextArrow = true;
         const color = String(Color.rgb_dec565(Color.White));
         const icon = "arrow-right";
         message.options[4] = {
-          pageId: `5`,
+          intNameEntity: `5`,
           iconNumber: 5,
           icon: import_icon_mapping.Icons.GetIcon(icon),
-          color,
+          iconColor: color,
           mode: "nexttool",
-          name: "next"
+          dislayName: "next"
         };
       }
     }
     if (item.logo) {
-      message.logo = this.getBottomMessages(await this.getToolItem(item.logo, "logo", 5));
+      message.logo = this.getItemMessageMedia(await this.getToolItem(item.logo, "logo", 5));
     }
     {
     }
     const opts = [];
     for (const a in message.options) {
       const temp = message.options[a];
-      if (typeof temp === "object")
-        opts.push(this.getBottomMessages(temp));
+      if (typeof temp !== "string")
+        opts.push(this.getItemMessageMedia(temp));
     }
     const msg = Object.assign(PageMediaMessageDefault, message, {
       getNavigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
@@ -285,12 +278,12 @@ class PageMedia extends import_Page2.Page {
           this.log.debug(JSON.stringify(list));
         if (color && icon && text) {
           const tool = {
-            pageId: `${id}`,
+            intNameEntity: `${id}`,
             iconNumber,
             icon: import_icon_mapping.Icons.GetIcon(icon),
-            color,
+            iconColor: color,
             mode: i.action,
-            name: this.adapter.library.getLocalTranslation("media", text)
+            dislayName: this.adapter.library.getLocalTranslation("media", text)
           };
           return tool;
         }
@@ -316,50 +309,47 @@ class PageMedia extends import_Page2.Page {
       this.getPayloadArray(message.options)
     );
   }
-  getBottomMessages(msg) {
-    if (!msg || !msg.pageId || !msg.icon || msg.event === "")
+  getItemMessageMedia(msg) {
+    if (!msg || !msg.intNameEntity || !msg.icon)
       return "~~~~~";
-    msg.event = msg.event === void 0 ? "input_sel" : msg.event;
-    msg.pageId = `${this.id}?${msg.pageId}?${msg.mode}`;
+    msg.type = msg.type === void 0 ? "input_sel" : msg.type;
     const iconNumber = msg.iconNumber;
     const temp = msg;
-    delete temp.mode;
-    delete temp.iconNumber;
-    msg.ident = msg.ident || "media0";
-    const message = Object.assign(messageItemDefault, temp);
+    temp.optionalValue = msg.optionalValue || "media0";
+    const message = Object.assign(import_Page.messageItemDefault, temp);
     switch (iconNumber) {
       case 0: {
-        message.ident = "media0";
+        message.optionalValue = "media0";
         break;
       }
       case 1: {
-        message.ident = "media1";
+        message.optionalValue = "media1";
         break;
       }
       case 2: {
-        message.ident = "media2";
+        message.optionalValue = "media2";
         break;
       }
       case 3: {
-        message.ident = "media3";
+        message.optionalValue = "media3";
         break;
       }
       case 4: {
-        message.ident = "media4";
+        message.optionalValue = "media4";
         break;
       }
       case 5: {
-        message.ident = "media5";
+        message.optionalValue = "media5";
         break;
       }
     }
-    return this.getPayload(message.event, message.pageId, message.icon, message.color, message.name, message.ident);
+    return this.getItemMesssage(message);
   }
   onStateTrigger = async () => {
     this.update();
   };
   async onButtonEvent(event) {
-    if (event.mode !== "media")
+    if (!this.getVisibility())
       return;
     if ((0, import_Page.isMediaButtonActionType)(event.command)) {
       this.log.debug("Receive event: " + JSON.stringify(event));
@@ -435,6 +425,13 @@ class PageMedia extends import_Page2.Page {
         if (items.stop) {
           if (await this.getOnOffState())
             await items.stop.setStateTrue();
+        }
+        break;
+      }
+      case "button": {
+        if (event.mode === "5" && this.nextArrow) {
+          this.step++;
+          this.update();
         }
         break;
       }

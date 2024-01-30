@@ -101,7 +101,30 @@ export type panelRecvType = {
     method: EventMethod;
 };
 
-export type SerialType = 'button' | 'light' | 'shutter' | 'text' | 'input_sel' | 'timer' | 'number' | 'fan';
+export const SerialTypeArray = [
+    'light',
+    'shutter',
+    'delete',
+    'text',
+    'button',
+    'switch',
+    'number',
+    'input_sel',
+    'timer',
+    'fan',
+];
+
+export type SerialType =
+    | 'button'
+    | 'light'
+    | 'shutter'
+    | 'text'
+    | 'input_sel'
+    | 'timer'
+    | 'number'
+    | 'fan'
+    | 'switch'
+    | 'delete';
 
 export type roles =
     | 'light'

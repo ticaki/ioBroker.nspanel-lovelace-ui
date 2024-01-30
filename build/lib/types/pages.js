@@ -29,7 +29,7 @@ __export(pages_exports, {
   isPageRole: () => isPageRole
 });
 module.exports = __toCommonJS(pages_exports);
-var types_1 = __toESM(require("./types"));
+var Types = __toESM(require("./types"));
 function isPageRole(F) {
   switch (F) {
     case "button.play":
@@ -125,9 +125,9 @@ function convertToEvent(msg) {
   if (msg === void 0)
     return null;
   const temp = msg.split(",");
-  if (!types_1.isEventType(temp[0]))
+  if (!Types.isEventType(temp[0]))
     return null;
-  if (!types_1.isEventMethod(temp[1]))
+  if (!Types.isEventMethod(temp[1]))
     return null;
   const arr = String(temp[3]).split("?");
   if (arr[2])

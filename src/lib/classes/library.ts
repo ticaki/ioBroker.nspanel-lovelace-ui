@@ -1,10 +1,10 @@
 import _fs from 'fs';
 import { genericStateObjects } from '../const/definition';
-import { AdapterType } from '../../main';
 
 import * as LocalTranslations from '../../../templates/translations.json';
+import { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 // only change this for other adapters
-export type AdapterClassDefinition = AdapterType;
+export type AdapterClassDefinition = NspanelLovelaceUi;
 
 type LibraryStateVal = LibraryStateValJson | undefined;
 type LibraryStateValJson = {

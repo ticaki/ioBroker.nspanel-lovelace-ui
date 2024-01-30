@@ -12,7 +12,6 @@ import 'source-map-support/register';
 import * as MQTT from './lib/classes/mqtt';
 import { Testconfig } from './lib/config';
 import { Controller } from './lib/controller/panel-controller';
-export type AdapterType = NspanelLovelaceUi;
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;

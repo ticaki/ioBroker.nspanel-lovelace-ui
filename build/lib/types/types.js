@@ -18,6 +18,7 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var types_exports = {};
 __export(types_exports, {
+  SerialTypeArray: () => SerialTypeArray,
   buildNSPanelString: () => buildNSPanelString,
   checkSortedPlayerType: () => checkSortedPlayerType,
   isColorEntryType: () => isColorEntryType,
@@ -90,6 +91,18 @@ function isPageMedia(F) {
 function isPagePower(F) {
   return F.type == "cardPower";
 }
+const SerialTypeArray = [
+  "light",
+  "shutter",
+  "delete",
+  "text",
+  "button",
+  "switch",
+  "number",
+  "input_sel",
+  "timer",
+  "fan"
+];
 function isColorEntryType(F) {
   if ("true" in F && "false" in F && "scale" in F)
     return true;
@@ -103,6 +116,7 @@ function isEventType(F) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  SerialTypeArray,
   buildNSPanelString,
   checkSortedPlayerType,
   isColorEntryType,

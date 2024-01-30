@@ -726,6 +726,39 @@ const testConfigMedia = {
         color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
         list: void 0,
         action: "cross"
+      },
+      {
+        on: {
+          type: "const",
+          constVal: true
+        },
+        text: { type: "const", constVal: "1" },
+        icon: { type: "const", constVal: "home" },
+        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+        list: void 0,
+        action: "cross"
+      },
+      {
+        on: {
+          type: "const",
+          constVal: true
+        },
+        text: { type: "const", constVal: "1" },
+        icon: { type: "const", constVal: "home" },
+        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+        list: void 0,
+        action: "cross"
+      },
+      {
+        on: {
+          type: "const",
+          constVal: true
+        },
+        text: { type: "const", constVal: "1" },
+        icon: { type: "const", constVal: "home" },
+        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+        list: void 0,
+        action: "cross"
       }
     ]
   },

@@ -1,6 +1,4 @@
-import * as types_1 from './types';
-import { ButtonActionType } from './types';
-import * as types from './types';
+import * as Types from './types';
 import { Dataitem } from '../classes/data-item';
 
 export type PageTypeCards =
@@ -19,16 +17,16 @@ export type PageTypeCards =
     | 'screensaver2'; //| 'cardBurnRec'
 
 export type PageType =
-    | types.PageChart
-    | types.PageEntities
-    | types.PageGrid
-    | types.PageGrid2
-    | types.PageThermo
-    | types.PageMedia
-    | types.PageUnlock
-    | types.PageQR
-    | types.PageAlarm
-    | types.PagePower;
+    | Types.PageChart
+    | Types.PageEntities
+    | Types.PageGrid
+    | Types.PageGrid2
+    | Types.PageThermo
+    | Types.PageMedia
+    | Types.PageUnlock
+    | Types.PageQR
+    | Types.PageAlarm
+    | Types.PagePower;
 
 export type PageRole = PageMediaRoles;
 
@@ -82,7 +80,7 @@ export function isPageRole(F: string | PageRole): F is PageRole {
             return false;
     }
 }
-export function isButtonActionType(F: string | ButtonActionType): F is ButtonActionType {
+export function isButtonActionType(F: string | Types.ButtonActionType): F is Types.ButtonActionType {
     switch (F) {
         case 'bExit':
         case 'bUp':
@@ -144,12 +142,12 @@ export function isButtonActionType(F: string | ButtonActionType): F is ButtonAct
             return false;
     }
 }
-export function convertToEvent(msg: string): types_1.IncomingEvent | null {
+export function convertToEvent(msg: string): Types.IncomingEvent | null {
     msg = (JSON.parse(msg) || {}).CustomRecv;
     if (msg === undefined) return null;
     const temp = msg.split(',');
-    if (!types_1.isEventType(temp[0])) return null;
-    if (!types_1.isEventMethod(temp[1])) return null;
+    if (!Types.isEventType(temp[0])) return null;
+    if (!Types.isEventMethod(temp[1])) return null;
     const arr = String(temp[3]).split('?');
     if (arr[2])
         return {
@@ -186,7 +184,7 @@ export type PageMediaBase = {
     dpInit: string; // '' and initMode 'auto' throw an error
 
     //    mediaNamespace: string;
-    config: ChangeTypeOfKeys<PageMediaBaseConfig, types_1.DataItemsOptions | undefined> & {
+    config: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
         toolbox: (toolboxItem | undefined)[];
     } & { logo: toolboxItem | undefined };
     items:
@@ -201,8 +199,8 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | listItem
     | PageTypeCards
     | iconBoolean
-    | types_1.ColorEntryType
-    ? Obj extends types_1.RGB
+    | Types.ColorEntryType
+    ? Obj extends Types.RGB
         ? N
         : {
               [K in keyof Obj]-?: ChangeTypeOfKeys<Obj[K], N>;
@@ -226,7 +224,7 @@ type PageMediaBaseConfig = {
     forward: string;
     backward: string;
 };
-type toolboxItem = ChangeTypeOfKeys<listItem, types_1.DataItemsOptions | undefined> & { action: MediaToolBoxAction };
+type toolboxItem = ChangeTypeOfKeys<listItem, Types.DataItemsOptions | undefined> & { action: MediaToolBoxAction };
 export type toolboxItemDataItem = ChangeTypeOfKeys<listItem, Dataitem | undefined> & { action: MediaToolBoxAction };
 
 export type PageMediaBaseConfigWrite = {
@@ -258,11 +256,11 @@ export type PageMediaMessage = {
     shuffle_icon: string;
     logo: string;
     options: [
-        (messageItem | string)?,
-        (messageItem | string)?,
-        (messageItem | string)?,
-        (messageItem | string)?,
-        (messageItem | string)?,
+        (MessageItemMedia | string)?,
+        (MessageItemMedia | string)?,
+        (MessageItemMedia | string)?,
+        (MessageItemMedia | string)?,
+        (MessageItemMedia | string)?,
     ];
 };
 type writeItem = { dp: string } | undefined;
@@ -270,23 +268,43 @@ type listItem =
     | {
           on: string;
           text: string;
-          color: types_1.ColorEntryType | string | undefined;
+          color: Types.ColorEntryType | string | undefined;
           icon: iconBoolean | string | undefined;
           list: string | undefined;
       }
     | undefined;
 
-export type iconBoolean = Record<types_1.BooleanUnion, string | undefined>;
-export type messageItem = {
-    event?: 'input_sel' | '' | 'button';
-    pageId: string;
+export type iconBoolean = Record<Types.BooleanUnion, string | undefined>;
+export type ThisCardMessageTypes = 'input_sel' | 'button';
+/*export type MessageIstemMedia extends = {
+    type?: Extract<Types.SerialType, ThisCardMessageTypes> | '';
+    intNameEntity: string;
     iconNumber: 0 | 1 | 2 | 3 | 4 | 5; // media0 usw.
     mode: MediaToolBoxAction;
     icon: string;
-    color: string;
-    name: string;
-    ident?: string;
+    iconColor: string;
+    dislayName: string;
+    optionalValue?: string;
+};*/
+
+export type MessageItemMedia = Partial<MessageItem> & {
+    type?: Extract<Types.SerialType, ThisCardMessageTypes>;
+    iconNumber: 0 | 1 | 2 | 3 | 4 | 5; // media0 usw.
+    mode: MediaToolBoxAction;
 };
+export interface MessageItem extends MessageItemInterface {
+    mainId?: string;
+    subId?: string;
+}
+export type messageItemAllInterfaces = MessageItemMedia | MessageItem;
+export interface MessageItemInterface {
+    type: Types.SerialType;
+    intNameEntity: string;
+    icon: string;
+    iconColor: string;
+    dislayName: string;
+    optionalValue: string;
+}
 type MediaToolBoxAction =
     | 'speaker'
     | 'play'

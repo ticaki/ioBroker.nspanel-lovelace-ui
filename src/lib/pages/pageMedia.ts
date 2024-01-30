@@ -3,7 +3,7 @@ import * as Color from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import * as pages from '../types/pages';
 import { BooleanUnion, ColorEntryType, IncomingEvent } from '../types/types';
-import { PageInterface, isMediaButtonActionType } from './Page';
+import { PageInterface, isMediaButtonActionType, messageItemDefault } from './Page';
 import { Page } from './Page';
 
 const PageMediaMessageDefault: pages.PageMediaMessage = {
@@ -23,15 +23,6 @@ const PageMediaMessageDefault: pages.PageMediaMessage = {
     options: ['', '', '', '', ''],
 };
 
-const messageItemDefault: Required<Omit<pages.messageItem, 'iconNumber' | 'mode'>> = {
-    event: 'input_sel',
-    pageId: '',
-    icon: '',
-    color: '',
-    name: '',
-    ident: '',
-};
-
 const steps = 4;
 
 export class PageMedia extends Page implements pages.PageMediaBase {
@@ -40,9 +31,9 @@ export class PageMedia extends Page implements pages.PageMediaBase {
     dpInit: string;
     items: pages.PageMediaBase['items'];
     writeItems: pages.PageMediaBaseConfigWrite | undefined;
-    private step: number = 0;
+    private step: number = 1;
     private headlinePos: number = 0;
-    private volume: number = 0;
+    private nextArrow: boolean = false;
 
     constructor(config: PageInterface, options: pages.PageMediaBase) {
         super(config);
@@ -174,7 +165,6 @@ export class PageMedia extends Page implements pages.PageMediaBase {
         if (item.volume) {
             const v = await item.volume.getNumber();
             if (v !== null) {
-                this.volume = v;
                 message.volume = String(v);
             }
         }
@@ -199,35 +189,37 @@ export class PageMedia extends Page implements pages.PageMediaBase {
         message.options = [undefined, undefined, undefined, undefined, undefined];
         if (item.toolbox && Array.isArray(item.toolbox)) {
             const localStep = item.toolbox.length > 5 ? steps : 5;
-            if (item.toolbox.length > localStep * this.step) this.step = 1;
+            if (item.toolbox.length <= localStep * (this.step - 1)) this.step = 1;
             const maxSteps = localStep * this.step;
+            const minStep = localStep * (this.step - 1);
 
-            for (let a = maxSteps - localStep; a < maxSteps; a++) {
-                message.options[a] = await this.getToolItem(item.toolbox[a], String(a), (a % localStep) + 1);
+            for (let a = minStep; a < maxSteps; a++) {
+                message.options[a - minStep] = await this.getToolItem(item.toolbox[a], String(a), (a % localStep) + 1);
             }
             if (localStep === 4) {
+                this.nextArrow = true;
                 const color = String(Color.rgb_dec565(Color.White));
                 const icon = 'arrow-right';
                 message.options[4] = {
-                    pageId: `5`,
+                    intNameEntity: `5`,
                     iconNumber: 5,
                     icon: Icons.GetIcon(icon),
-                    color,
+                    iconColor: color,
                     mode: 'nexttool',
-                    name: 'next',
+                    dislayName: 'next',
                 };
             }
         }
         //Logo
         if (item.logo) {
-            message.logo = this.getBottomMessages(await this.getToolItem(item.logo, 'logo', 5));
+            message.logo = this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 5));
         }
         {
         }
         const opts: string[] = [];
         for (const a in message.options) {
             const temp = message.options[a];
-            if (typeof temp === 'object') opts.push(this.getBottomMessages(temp));
+            if (typeof temp !== 'string') opts.push(this.getItemMessageMedia(temp));
         }
         const msg: pages.PageMediaMessage = Object.assign(PageMediaMessageDefault, message, {
             getNavigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
@@ -263,7 +255,7 @@ export class PageMedia extends Page implements pages.PageMediaBase {
         i: pages.toolboxItemDataItem | undefined,
         id: string,
         iconNumber: number,
-    ): Promise<pages.messageItem | undefined> {
+    ): Promise<pages.MessageItemMedia | undefined> {
         if (i) {
             if (i.on && i.text && i.color && i.icon) {
                 const v = await i.on.getBoolean();
@@ -273,13 +265,13 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                 const list = i.list ? await i.list.getString() : null;
                 if (list) this.log.debug(JSON.stringify(list));
                 if (color && icon && text) {
-                    const tool: pages.messageItem = {
-                        pageId: `${id}`,
+                    const tool: pages.MessageItemMedia = {
+                        intNameEntity: `${id}`,
                         iconNumber: iconNumber as 1 | 2 | 3 | 4 | 5,
                         icon: Icons.GetIcon(icon),
-                        color,
+                        iconColor: color,
                         mode: i.action,
-                        name: this.adapter.library.getLocalTranslation('media', text),
+                        dislayName: this.adapter.library.getLocalTranslation('media', text),
                     };
                     return tool;
                 }
@@ -312,57 +304,49 @@ export class PageMedia extends Page implements pages.PageMediaBase {
      * @param msg
      * @returns string
      */
-    private getBottomMessages(
-        msg:
-            | (Partial<pages.messageItem> & {
-                  iconNumber: pages.messageItem['iconNumber'];
-                  pageId: pages.messageItem['pageId'];
-              })
-            | undefined,
-    ): string {
-        if (!msg || !msg.pageId || !msg.icon || msg.event === '') return '~~~~~';
-        msg.event = msg.event === undefined ? 'input_sel' : msg.event;
-        msg.pageId = `${this.id}?${msg.pageId}?${msg.mode}`;
+    private getItemMessageMedia(msg: Partial<pages.MessageItemMedia> | undefined): string {
+        if (!msg || !msg.intNameEntity || !msg.icon) return '~~~~~';
+        msg.type = msg.type === undefined ? 'input_sel' : msg.type;
         const iconNumber = msg.iconNumber;
-        const temp: Partial<pages.messageItem> = msg;
-        delete temp.mode;
-        delete temp.iconNumber;
-        msg.ident = msg.ident || 'media0';
-        const message: typeof messageItemDefault = Object.assign(messageItemDefault, temp);
+        const temp: Partial<pages.MessageItemMedia> = msg;
+        temp.optionalValue = msg.optionalValue || 'media0';
+        const message: pages.MessageItem = Object.assign(messageItemDefault, temp);
 
         switch (iconNumber) {
             case 0: {
-                message.ident = 'media0';
+                message.optionalValue = 'media0';
                 break;
             }
             case 1: {
-                message.ident = 'media1';
+                message.optionalValue = 'media1';
                 break;
             }
             case 2: {
-                message.ident = 'media2';
+                message.optionalValue = 'media2';
                 break;
             }
             case 3: {
-                message.ident = 'media3';
+                message.optionalValue = 'media3';
                 break;
             }
             case 4: {
-                message.ident = 'media4';
+                message.optionalValue = 'media4';
                 break;
             }
             case 5: {
-                message.ident = 'media5';
+                message.optionalValue = 'media5';
                 break;
             }
         }
-        return this.getPayload(message.event, message.pageId, message.icon, message.color, message.name, message.ident);
+        return this.getItemMesssage(message);
     }
+
     onStateTrigger = async (): Promise<void> => {
         this.update();
     };
     async onButtonEvent(event: IncomingEvent): Promise<void> {
-        if (event.mode !== 'media') return;
+        if (!this.getVisibility()) return;
+        //if (event.mode !== 'media') return;
         if (isMediaButtonActionType(event.command)) {
             this.log.debug('Receive event: ' + JSON.stringify(event));
         } else return;
@@ -431,7 +415,13 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                 if (items.stop) {
                     if (await this.getOnOffState()) await items.stop.setStateTrue();
                 }
-
+                break;
+            }
+            case 'button': {
+                if (event.mode === '5' && this.nextArrow) {
+                    this.step++;
+                    this.update();
+                }
                 break;
             }
         }

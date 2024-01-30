@@ -1,20 +1,28 @@
-import { AdapterType } from '../../main';
-import { BaseClass } from '../classes/library';
+import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { Panel } from '../controller/panel';
 import { BaseClassPanelSend } from '../controller/panel-message';
 import { BaseClassTriggerdInterface } from '../controller/states-controller';
-import { PageTypeCards } from '../types/pages';
+import * as pages from '../types/pages';
 import { IncomingEvent } from '../types/types';
 
+export const messageItemDefault: pages.MessageItem = {
+    type: 'input_sel',
+    intNameEntity: '',
+    icon: '',
+    iconColor: '',
+    dislayName: '',
+    optionalValue: '',
+};
+
 export interface PageInterface extends BaseClassTriggerdInterface {
-    card: PageTypeCards;
+    card: pages.PageTypeCards;
     panel: Panel;
     id: number;
 }
 //interface Page extends BaseClass | PageConfig
 
 export class Page extends BaseClassPanelSend {
-    readonly card: PageTypeCards;
+    readonly card: pages.PageTypeCards;
     readonly id: number;
     protected panel: Panel;
     //config: Card['config'];
@@ -44,12 +52,34 @@ export class Page extends BaseClassPanelSend {
             `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`,
         );
     }
+
+    /**
+     * Create a part of the panel messsage for bottom icons. if event === '' u get '~~~~~~'.
+     * default for event: input_sel
+     * @param msg {Partial<pages.MessageItem>}
+     * @returns string
+     */
+    public getItemMesssage(msg: Partial<pages.messageItemAllInterfaces> | undefined): string {
+        if (!msg || !msg.intNameEntity || !msg.type) return '~~~~~';
+        const id: string[] = [];
+        if (msg.mainId) id.push(msg.mainId);
+        if (msg.subId) id.push(msg.subId);
+        if (msg.intNameEntity) id.push(msg.intNameEntity);
+        return this.getPayload(
+            msg.type ?? messageItemDefault.type,
+            id.join('?') ?? messageItemDefault.intNameEntity,
+            msg.icon ?? messageItemDefault.icon,
+            msg.iconColor ?? messageItemDefault.iconColor,
+            msg.dislayName ?? messageItemDefault.dislayName,
+            msg.optionalValue ?? messageItemDefault.optionalValue,
+        );
+    }
 }
 
 export class PageItem extends BaseClass {
     config: PageItemConfig;
     pageItems: any[] = [];
-    constructor(adapter: AdapterType, options: PageItemConfig) {
+    constructor(adapter: AdapterClassDefinition, options: PageItemConfig) {
         super(adapter, 'Page');
         this.config = options;
     }
@@ -75,6 +105,7 @@ export function isMediaButtonActionType(F: MediaButtonActionType | string): F is
         case 'mode-favorites':
         case 'mode-insel':
         case 'media-OnOff':
+        case 'button':
             return true;
     }
     console.error(`${F} isMediaButtonActionType === false`);
@@ -97,6 +128,7 @@ type MediaButtonActionType = Extract<
     | 'mode-favorites'
     | 'mode-insel'
     | 'media-OnOff'
+    | 'button'
 >;
 
 export type ButtonActionType =

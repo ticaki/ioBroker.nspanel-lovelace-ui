@@ -20,11 +20,20 @@ var Page_exports = {};
 __export(Page_exports, {
   Page: () => Page,
   PageItem: () => PageItem,
-  isMediaButtonActionType: () => isMediaButtonActionType
+  isMediaButtonActionType: () => isMediaButtonActionType,
+  messageItemDefault: () => messageItemDefault
 });
 module.exports = __toCommonJS(Page_exports);
 var import_library = require("../classes/library");
 var import_panel_message = require("../controller/panel-message");
+const messageItemDefault = {
+  type: "input_sel",
+  intNameEntity: "",
+  icon: "",
+  iconColor: "",
+  dislayName: "",
+  optionalValue: ""
+};
 class Page extends import_panel_message.BaseClassPanelSend {
   card;
   id;
@@ -52,6 +61,26 @@ class Page extends import_panel_message.BaseClassPanelSend {
   async update() {
     this.adapter.log.warn(
       `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`
+    );
+  }
+  getItemMesssage(msg) {
+    var _a, _b, _c, _d, _e, _f;
+    if (!msg || !msg.intNameEntity || !msg.type)
+      return "~~~~~";
+    const id = [];
+    if (msg.mainId)
+      id.push(msg.mainId);
+    if (msg.subId)
+      id.push(msg.subId);
+    if (msg.intNameEntity)
+      id.push(msg.intNameEntity);
+    return this.getPayload(
+      (_a = msg.type) != null ? _a : messageItemDefault.type,
+      (_b = id.join("?")) != null ? _b : messageItemDefault.intNameEntity,
+      (_c = msg.icon) != null ? _c : messageItemDefault.icon,
+      (_d = msg.iconColor) != null ? _d : messageItemDefault.iconColor,
+      (_e = msg.dislayName) != null ? _e : messageItemDefault.dislayName,
+      (_f = msg.optionalValue) != null ? _f : messageItemDefault.optionalValue
     );
   }
 }
@@ -82,6 +111,7 @@ function isMediaButtonActionType(F) {
     case "mode-favorites":
     case "mode-insel":
     case "media-OnOff":
+    case "button":
       return true;
   }
   console.error(`${F} isMediaButtonActionType === false`);
@@ -91,6 +121,7 @@ function isMediaButtonActionType(F) {
 0 && (module.exports = {
   Page,
   PageItem,
-  isMediaButtonActionType
+  isMediaButtonActionType,
+  messageItemDefault
 });
 //# sourceMappingURL=Page.js.map

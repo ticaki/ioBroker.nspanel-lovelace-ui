@@ -33,8 +33,8 @@ var import_dayjs = __toESM(require("dayjs"));
 var Screensaver = __toESM(require("../pages/screensaver"));
 var pages = __toESM(require("../types/pages"));
 var import_definition = require("../const/definition");
-var import_pageMedia = require("../pages/pageMedia");
 var import_config = require("../config");
+var import_pageMedia = require("../pages/pageMedia");
 function isPanelConfig(F) {
   if (F.controller === void 0)
     return false;

@@ -17,9 +17,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var main_exports = {};
-module.exports = __toCommonJS(main_exports);
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_library = require("./lib/classes/library");
 var import_register = require("source-map-support/register");

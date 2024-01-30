@@ -9,9 +9,9 @@ import { AdapterClassDefinition } from '../classes/library';
 import { callbackMessageType } from '../classes/mqtt';
 import { ReiveTopicAppendix, SendTopicAppendix } from '../const/definition';
 import { BaseClassTriggerdInterface, StatesDBReadOnly } from './states-controller';
-import { PageMedia } from '../pages/pageMedia';
 import { testConfigMedia } from '../config';
 import { Page, PageInterface } from '../pages/Page';
+import { PageMedia } from '../pages/pageMedia';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
