@@ -19,7 +19,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var states_controller_exports = {};
 __export(states_controller_exports, {
   BaseClassTriggerd: () => BaseClassTriggerd,
-  StatesDBReadOnly: () => StatesDBReadOnly
+  StatesControler: () => StatesControler
 });
 module.exports = __toCommonJS(states_controller_exports);
 var import_data_item = require("../classes/data-item");
@@ -125,7 +125,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
     );
   }
 }
-class StatesDBReadOnly extends import_library.BaseClass {
+class StatesControler extends import_library.BaseClass {
   triggerDB = {};
   stateDB = {};
   tempObjectDB = void 0;
@@ -218,7 +218,7 @@ class StatesDBReadOnly extends import_library.BaseClass {
         if (this.triggerDB[dp].state) {
           this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
           this.triggerDB[dp].ts = Date.now();
-          if (this.triggerDB[dp].state.val !== state.val) {
+          if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack) {
             this.triggerDB[dp].state = state;
             if (state.ack) {
               this.triggerDB[dp].to.forEach(
@@ -228,6 +228,48 @@ class StatesDBReadOnly extends import_library.BaseClass {
           }
         }
       }
+    }
+  }
+  async setStateAsync(item, val) {
+    if (item.options.type === "state" || item.options.type === "triggered") {
+      if (item.options.dp) {
+        const ack = item.options.dp.startsWith(this.adapter.namespace);
+        this.log.debug(`setStateAsync(${item.options.dp}, ${val}, ${ack})`);
+        if (item.type === "number" && typeof val === "string")
+          val = parseFloat(val);
+        if (item.type === "boolean")
+          val = !!val;
+        if (item.type === "string")
+          val = String(val);
+        this.updateDBState(item.options.dp, val, ack);
+        await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
+      }
+    } else if (item.options.type === "internal") {
+      if (this.triggerDB[item.options.dp]) {
+        if (this.setInternalState(item.options.dp, val))
+          await this.onStateChange(item.options.dp, this.triggerDB[item.options.dp].state);
+      }
+    }
+  }
+  setInternalState(id, val) {
+    if (this.triggerDB[id] !== void 0) {
+      this.triggerDB[id].state = {
+        ...this.triggerDB[id].state,
+        val,
+        ack: true,
+        ts: Date.now()
+      };
+      return true;
+    }
+    return false;
+  }
+  updateDBState(id, val, ack) {
+    if (this.triggerDB[id] !== void 0) {
+      this.triggerDB[id].state.val = val;
+      this.triggerDB[id].state.ack = ack;
+    } else if (this.stateDB[id] !== void 0) {
+      this.stateDB[id].state.val = val;
+      this.stateDB[id].state.ack = ack;
     }
   }
   async createDataItems(data, parent) {
@@ -312,6 +354,6 @@ class StatesDBReadOnly extends import_library.BaseClass {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   BaseClassTriggerd,
-  StatesDBReadOnly
+  StatesControler
 });
 //# sourceMappingURL=states-controller.js.map

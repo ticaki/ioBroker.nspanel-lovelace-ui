@@ -22,6 +22,7 @@ __export(icon_mapping_exports, {
 });
 module.exports = __toCommonJS(icon_mapping_exports);
 class Icons {
+  static adapter;
   static iconMap = /* @__PURE__ */ new Map([
     ["ab-testing", "\uE1C8"],
     ["abacus", "\uF6DF"],
@@ -6921,11 +6922,22 @@ class Icons {
     ["zodiac-virgo", "\uEA87"]
   ]);
   static GetIcon(ma_name) {
-    ma_name = ma_name.trim();
-    if (Icons.iconMap.has(ma_name)) {
-      return Icons.iconMap.get(ma_name);
+    return Icons.GetIconWithType(ma_name);
+  }
+  static GetIconWithType(ma_name) {
+    if (!ma_name)
+      return "";
+    const val = ma_name.trim();
+    if (Icons.iconMap.has(val)) {
+      return Icons.iconMap.get(val);
+    } else {
+      if (Icons.adapter)
+        Icons.adapter.log.warn(`${val} is not a icon!`);
     }
     return "";
+  }
+  static isIcon(F) {
+    return true;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

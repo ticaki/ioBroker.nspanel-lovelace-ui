@@ -12,6 +12,7 @@ import 'source-map-support/register';
 import * as MQTT from './lib/classes/mqtt';
 import { Testconfig } from './lib/config';
 import { Controller } from './lib/controller/panel-controller';
+import { Icons } from './lib/const/icon_mapping';
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -36,6 +37,7 @@ class NspanelLovelaceUi extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration.
      */
     private async onReady(): Promise<void> {
+        Icons.adapter = this;
         this.setTimeout(() => {
             this.log.debug('Check configuration!');
             if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword))

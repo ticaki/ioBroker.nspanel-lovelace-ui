@@ -1,6 +1,6 @@
 // at the moment any
 
-import { Icon } from './types';
+import { IconEntryType } from './types';
 
 export type NavigationItem = {
     left?: NavigationItemParent | NavigationItemPrev;
@@ -10,22 +10,22 @@ export type NavigationItem = {
 type NavigationItemParent = {
     type: 'parent';
     page: Page;
-    icon: Icon;
+    icon: IconEntryType;
 };
 type NavigationItemHome = {
     type: 'home';
     page: anPagey;
-    icon: Icon;
+    icon: IconEntryType;
 };
 type NavigationItemPrev = {
     type: 'prev';
     page: Page;
-    icon: Icon;
+    icon: IconEntryType;
 };
 type NavigationItemNext = {
     type: 'next';
     page: Page;
-    icon: Icon;
+    icon: IconEntryType;
 };
 /*heading: string;
         items: PageItem[];

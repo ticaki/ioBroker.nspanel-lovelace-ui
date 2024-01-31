@@ -22,14 +22,20 @@ __export(Color_exports, {
   BatteryFull: () => BatteryFull,
   Black: () => Black,
   Blue: () => Blue,
+  ColorToHex: () => ColorToHex,
+  ConvertHexToRgb: () => ConvertHexToRgb,
+  ConvertRGBtoHex: () => ConvertRGBtoHex,
   Cyan: () => Cyan,
   DarkBlue: () => DarkBlue,
+  GetIconColor: () => GetIconColor,
   Gray: () => Gray,
   Green: () => Green,
   HMIDark: () => HMIDark,
   HMIOff: () => HMIOff,
   HMIOn: () => HMIOn,
   HandleColorScale: () => HandleColorScale,
+  Interpolate: () => Interpolate,
+  InterpolateNum: () => InterpolateNum,
   MSGreen: () => MSGreen,
   MSRed: () => MSRed,
   MSYellow: () => MSYellow,
@@ -57,8 +63,13 @@ __export(Color_exports, {
   colorScale9: () => colorScale9,
   colorSonos: () => colorSonos,
   colorSpotify: () => colorSpotify,
+  getHue: () => getHue,
+  hsv2rgb: () => hsv2rgb,
+  pos_to_color: () => pos_to_color,
+  rad2deg: () => rad2deg,
   rgbHexToObject: () => rgbHexToObject,
   rgb_dec565: () => rgb_dec565,
+  rgb_to_cie: () => rgb_to_cie,
   scale: () => scale,
   scbackground: () => scbackground,
   scbackgroundInd1: () => scbackgroundInd1,
@@ -178,6 +189,8 @@ const swSnowy = { red: 150, green: 150, blue: 150 };
 const swSnowyRainy = { red: 150, green: 150, blue: 255 };
 const swSunny = { red: 255, green: 255, blue: 0 };
 const swWindy = { red: 150, green: 150, blue: 150 };
+const defaultOnColor = HMIOn;
+const defaultOffColor = HMIOff;
 function rgb_dec565(rgb) {
   return rgb.red >> 3 << 11 | rgb.green >> 2 << 5 | rgb.blue >> 3;
 }
@@ -221,20 +234,132 @@ function HandleColorScale(valueScaletemp) {
       return rgb_dec565(colorScale10);
   }
 }
+function Interpolate(color1, color2, fraction) {
+  const r = InterpolateNum(color1.red, color2.red, fraction);
+  const g = InterpolateNum(color1.green, color2.green, fraction);
+  const b = InterpolateNum(color1.blue, color2.blue, fraction);
+  return { red: Math.round(r), green: Math.round(g), blue: Math.round(b) };
+}
+function InterpolateNum(d1, d2, fraction) {
+  return d1 + (d2 - d1) * fraction;
+}
+async function GetIconColor(pageItem, value) {
+  var _a;
+  const useColor = pageItem.data.useColor && await pageItem.data.useColor.getBoolean();
+  const interpolateColor = pageItem.data.interpolateColor && await pageItem.data.interpolateColor.getBoolean();
+  const onColor = pageItem.data.color && "true" in pageItem.data.color && pageItem.data.color.true && await pageItem.data.color.true.getRGBValue();
+  const offColor = pageItem.data.color && "true" in pageItem.data.color && pageItem.data.color.true && await pageItem.data.color.true.getRGBValue();
+  if (useColor && interpolateColor && typeof value === "number") {
+    let val = typeof value === "number" ? value : 0;
+    const maxValue = pageItem.data.maxValueBrightness && await pageItem.data.maxValueBrightness.getNumber() || 100;
+    const minValue = pageItem.data.minValueBrightness && await pageItem.data.minValueBrightness.getNumber() || 0;
+    val = val > maxValue ? maxValue : val;
+    val = val < minValue ? minValue : val;
+    return String(
+      rgb_dec565(
+        Interpolate(
+          offColor ? offColor : defaultOffColor,
+          onColor ? onColor : defaultOnColor,
+          scale(100 - val, minValue, maxValue, 0, 1)
+        )
+      )
+    );
+  }
+  if (useColor && typeof value === "boolean" && value || typeof value === "number" && value > (pageItem.data.minValueBrightness !== void 0 ? (_a = await pageItem.data.minValueBrightness.getNumber()) != null ? _a : 0 : 0)) {
+    return String(rgb_dec565(onColor ? onColor : defaultOnColor));
+  }
+  return String(rgb_dec565(offColor ? offColor : defaultOffColor));
+}
+function rad2deg(rad) {
+  return (360 + 180 * rad / Math.PI) % 360;
+}
+function ColorToHex(color) {
+  const hexadecimal = color.toString(16);
+  return hexadecimal.length == 1 ? "0" + hexadecimal : hexadecimal;
+}
+function ConvertRGBtoHex(red, green, blue) {
+  return "#" + ColorToHex(red) + ColorToHex(green) + ColorToHex(blue);
+}
+function ConvertHexToRgb(hex) {
+  return {
+    red: parseInt(hex.substring(1, 3), 16),
+    green: parseInt(hex.substring(3, 5), 16),
+    blue: parseInt(hex.substring(5, 7), 16)
+  };
+}
+function hsv2rgb(hue, saturation, value) {
+  hue /= 60;
+  const chroma = value * saturation;
+  const x = chroma * (1 - Math.abs(hue % 2 - 1));
+  const rgb = hue <= 1 ? [chroma, x, 0] : hue <= 2 ? [x, chroma, 0] : hue <= 3 ? [0, chroma, x] : hue <= 4 ? [0, x, chroma] : hue <= 5 ? [x, 0, chroma] : [chroma, 0, x];
+  return rgb.map((v) => (v + value - chroma) * 255);
+}
+function getHue(red, green, blue) {
+  const min = Math.min(Math.min(red, green), blue);
+  const max = Math.max(Math.max(red, green), blue);
+  if (min == max) {
+    return 0;
+  }
+  let hue = 0;
+  if (max == red) {
+    hue = (green - blue) / (max - min);
+  } else if (max == green) {
+    hue = 2 + (blue - red) / (max - min);
+  } else {
+    hue = 4 + (red - green) / (max - min);
+  }
+  hue = hue * 60;
+  if (hue < 0)
+    hue = hue + 360;
+  return Math.round(hue);
+}
+function pos_to_color(x, y) {
+  let r = 160 / 2;
+  x = Math.round((x - r) / r * 100) / 100;
+  y = Math.round((r - y) / r * 100) / 100;
+  r = Math.sqrt(x * x + y * y);
+  let sat = 0;
+  if (r > 1) {
+    sat = 0;
+  } else {
+    sat = r;
+  }
+  const hsv = rad2deg(Math.atan2(y, x));
+  const rgb = hsv2rgb(hsv, sat, 1);
+  return { red: Math.round(rgb[0]), green: Math.round(rgb[1]), blue: Math.round(rgb[2]) };
+}
+function rgb_to_cie(red, green, blue) {
+  const vred = red > 0.04045 ? Math.pow((red + 0.055) / (1 + 0.055), 2.4) : red / 12.92;
+  const vgreen = green > 0.04045 ? Math.pow((green + 0.055) / (1 + 0.055), 2.4) : green / 12.92;
+  const vblue = blue > 0.04045 ? Math.pow((blue + 0.055) / (1 + 0.055), 2.4) : blue / 12.92;
+  const X = vred * 0.664511 + vgreen * 0.154324 + vblue * 0.162028;
+  const Y = vred * 0.283881 + vgreen * 0.668433 + vblue * 0.047685;
+  const Z = vred * 88e-6 + vgreen * 0.07231 + vblue * 0.986039;
+  const ciex = (X / (X + Y + Z)).toFixed(4);
+  const ciey = (Y / (X + Y + Z)).toFixed(4);
+  const cie = "[" + ciex + "," + ciey + "]";
+  return cie;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   BatteryEmpty,
   BatteryFull,
   Black,
   Blue,
+  ColorToHex,
+  ConvertHexToRgb,
+  ConvertRGBtoHex,
   Cyan,
   DarkBlue,
+  GetIconColor,
   Gray,
   Green,
   HMIDark,
   HMIOff,
   HMIOn,
   HandleColorScale,
+  Interpolate,
+  InterpolateNum,
   MSGreen,
   MSRed,
   MSYellow,
@@ -262,8 +387,13 @@ function HandleColorScale(valueScaletemp) {
   colorScale9,
   colorSonos,
   colorSpotify,
+  getHue,
+  hsv2rgb,
+  pos_to_color,
+  rad2deg,
   rgbHexToObject,
   rgb_dec565,
+  rgb_to_cie,
   scale,
   scbackground,
   scbackgroundInd1,

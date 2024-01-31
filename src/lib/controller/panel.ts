@@ -8,7 +8,7 @@ import { Controller } from './panel-controller';
 import { AdapterClassDefinition } from '../classes/library';
 import { callbackMessageType } from '../classes/mqtt';
 import { ReiveTopicAppendix, SendTopicAppendix } from '../const/definition';
-import { BaseClassTriggerdInterface, StatesDBReadOnly } from './states-controller';
+import { BaseClassTriggerdInterface, StatesControler } from './states-controller';
 import { testConfigMedia } from '../config';
 import { Page, PageInterface } from '../pages/Page';
 import { PageMedia } from '../pages/pageMedia';
@@ -43,7 +43,7 @@ const DefaultOptions = {
     },
     CustomFormat: '',
     locale: 'de-DE',
-    timeout: 60,
+    timeout: 5,
 };
 
 type panelConfigTop = { CustomFormat: string; locale: Intl.LocalesArgument; timeout: number };
@@ -55,7 +55,7 @@ export class Panel extends BaseClassPanelSend {
     screenSaver: Screensaver.Screensaver;
     reivCallbacks: callbackMessageType[] = [];
     _isOnline = false;
-    readOnlyDB: StatesDBReadOnly;
+    readOnlyDB: StatesControler;
     private _activePage: { page: Page | null; sleep?: boolean } = { page: null };
 
     async setActivePage(_notSleep?: boolean): Promise<void>;

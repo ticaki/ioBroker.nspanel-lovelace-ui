@@ -1,12 +1,12 @@
 import * as Color from '../const/Color';
 import { BaseClass } from './library';
-import { BaseClassTriggerd, StatesDBReadOnly } from '../controller/states-controller';
+import { BaseClassTriggerd, StatesControler } from '../controller/states-controller';
 import * as NSPanel from '../types/types';
 
 export class Dataitem extends BaseClass {
-    private options: NSPanel.DataItemsOptions;
+    options: NSPanel.DataItemsOptions;
     //private obj: ioBroker.Object | null | undefined;
-    readOnlyDB: StatesDBReadOnly;
+    stateDB: StatesControler;
     type: ioBroker.CommonType | 'undefined' | undefined = undefined;
     parent: BaseClassTriggerd;
     /**
@@ -14,13 +14,13 @@ export class Dataitem extends BaseClass {
      * @param adapter this of adapter
      * @param options {NSPanel.DataItemsOptions}
      * @param parent {BaseClassTriggerd}
-     * @param db {StatesDBReadOnly}
+     * @param db {StatesControler}
      */
-    constructor(adapter: any, options: NSPanel.DataItemsOptions, parent: BaseClassTriggerd, db: StatesDBReadOnly) {
+    constructor(adapter: any, options: NSPanel.DataItemsOptions, parent: BaseClassTriggerd, db: StatesControler) {
         super(adapter, options.name || '');
         this.options = options;
         this.options.type = options.type;
-        this.readOnlyDB = db;
+        this.stateDB = db;
         this.parent = parent;
         switch (this.options.type) {
             case 'const':
@@ -64,8 +64,8 @@ export class Dataitem extends BaseClass {
                 this.type = this.type || obj.common.type;
                 this.options.role = obj.common.role;
                 if (this.options.type == 'triggered')
-                    this.readOnlyDB.setTrigger(this.options.dp, this.parent, this.options.response);
-                const value = await this.readOnlyDB.getState(this.options.dp, this.options.response);
+                    this.stateDB.setTrigger(this.options.dp, this.parent, this.options.response);
+                const value = await this.stateDB.getState(this.options.dp, this.options.response);
                 return !!value;
         }
         return false;
@@ -79,7 +79,7 @@ export class Dataitem extends BaseClass {
                 if (!this.options.dp) {
                     throw new Error(`Error 1002 type is ${this.options.type} but dp is undefined`);
                 }
-                return await this.readOnlyDB.getState(this.options.dp, this.options.response);
+                return await this.stateDB.getState(this.options.dp, this.options.response);
             case 'internal': {
             }
         }
@@ -205,17 +205,36 @@ export class Dataitem extends BaseClass {
     async setStateTrue(): Promise<void> {
         await this.setStateAsync(true);
     }
+    async setStateFalse(): Promise<void> {
+        await this.setStateAsync(false);
+    }
+    /**
+     * Flip this 'ON'/'OFF', 0/1 or true/false. Depend on this.type
+     */
+    async setStateFlip(): Promise<void> {
+        switch (this.type) {
+            case 'boolean':
+                await this.setStateAsync(!(await this.getBoolean()));
+                break;
+            case 'number':
+                await this.setStateAsync((await this.getBoolean()) ? 0 : 1);
+                break;
+            case 'string':
+                await this.setStateAsync((await this.getBoolean()) ? 'OFF' : 'ON');
+                break;
+        }
+    }
+    /**
+     * Set a internal, const or external State
+     * @param val number | boolean | string | null
+     * @returns
+     */
     async setStateAsync(val: ioBroker.StateValue): Promise<void> {
         if (val === undefined) return;
-        if (this.options.type === 'state' || this.options.type === 'triggered') {
-            if (this.options.dp) {
-                const ack = this.options.dp.startsWith(this.adapter.namespace);
-                this.log.debug(`setStateAsync(${this.options.dp}, ${val}, ${ack})`);
-                if (this.type === 'number' && typeof val === 'string') val = parseFloat(val);
-                if (this.type === 'boolean') val = !!val;
-                if (this.type === 'string') val = String(val);
-                await this.adapter.setForeignStateAsync(this.options.dp, val, ack);
-            }
+        if (this.options.type === 'const') {
+            this.options.constVal = val;
+        } else {
+            await this.stateDB.setStateAsync(this, val);
         }
     }
 }

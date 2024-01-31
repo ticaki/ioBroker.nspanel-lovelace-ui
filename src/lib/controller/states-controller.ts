@@ -123,7 +123,7 @@ export class BaseClassTriggerd extends BaseClass {
  * Adapter eigenen States sind verboten
  * Speichert Zugriff zwischen das kann mit timespan vereinflusst werden.
  */
-export class StatesDBReadOnly extends BaseClass {
+export class StatesControler extends BaseClass {
     private triggerDB: {
         [key: string]: {
             state: ioBroker.State;
@@ -243,7 +243,7 @@ export class StatesDBReadOnly extends BaseClass {
                 if (this.triggerDB[dp].state) {
                     this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
                     this.triggerDB[dp].ts = Date.now();
-                    if (this.triggerDB[dp].state.val !== state.val) {
+                    if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack) {
                         this.triggerDB[dp].state = state;
                         if (state.ack) {
                             this.triggerDB[dp].to.forEach(
@@ -253,6 +253,46 @@ export class StatesDBReadOnly extends BaseClass {
                     }
                 }
             }
+        }
+    }
+    async setStateAsync(item: Dataitem, val: ioBroker.StateValue): Promise<void> {
+        if (item.options.type === 'state' || item.options.type === 'triggered') {
+            if (item.options.dp) {
+                const ack = item.options.dp.startsWith(this.adapter.namespace);
+                this.log.debug(`setStateAsync(${item.options.dp}, ${val}, ${ack})`);
+                if (item.type === 'number' && typeof val === 'string') val = parseFloat(val);
+                if (item.type === 'boolean') val = !!val;
+                if (item.type === 'string') val = String(val);
+                this.updateDBState(item.options.dp, val, ack);
+                await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
+            }
+        } else if (item.options.type === 'internal') {
+            if (this.triggerDB[item.options.dp]) {
+                if (this.setInternalState(item.options.dp, val))
+                    await this.onStateChange(item.options.dp, this.triggerDB[item.options.dp].state);
+            }
+        }
+    }
+    private setInternalState(id: string, val: ioBroker.StateValue): boolean {
+        if (this.triggerDB[id] !== undefined) {
+            this.triggerDB[id].state = {
+                ...this.triggerDB[id].state,
+                val,
+                ack: true,
+                ts: Date.now(),
+            };
+            return true;
+        }
+        return false;
+    }
+
+    private updateDBState(id: string, val: ioBroker.StateValue, ack: boolean): void {
+        if (this.triggerDB[id] !== undefined) {
+            this.triggerDB[id].state.val = val;
+            this.triggerDB[id].state.ack = ack;
+        } else if (this.stateDB[id] !== undefined) {
+            this.stateDB[id].state.val = val;
+            this.stateDB[id].state.ack = ack;
         }
     }
 

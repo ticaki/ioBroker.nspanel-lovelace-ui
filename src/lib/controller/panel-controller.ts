@@ -1,12 +1,12 @@
 import * as MQTT from '../classes/mqtt';
 import * as Library from '../classes/library';
-import { StatesDBReadOnly } from './states-controller';
+import { StatesControler } from './states-controller';
 import * as Panel from './panel';
 
 export class Controller extends Library.BaseClass {
     mqttClient: MQTT.MQTTClientClass;
     private DBPanels: Panel.Panel[] = [];
-    readOnlyDB: StatesDBReadOnly;
+    readOnlyDB: StatesControler;
 
     constructor(
         adapter: Library.AdapterClassDefinition,
@@ -15,7 +15,7 @@ export class Controller extends Library.BaseClass {
         super(adapter, options.name);
         this.adapter.controller = this;
         this.mqttClient = options.mqttClient;
-        this.readOnlyDB = new StatesDBReadOnly(this.adapter);
+        this.readOnlyDB = new StatesControler(this.adapter);
         for (const panelConfig of options.panels) {
             panelConfig.controller = this;
             if (!Panel.isPanelConfig(panelConfig)) {

@@ -1,3 +1,4 @@
+import { PageItemDataitems } from '../types/pages';
 import { RGB } from '../types/types';
 
 export const HMIOff: RGB = { red: 68, green: 115, blue: 158 }; // Blue-Off - Original Entity Off
@@ -86,6 +87,9 @@ export const swSnowyRainy: RGB = { red: 150, green: 150, blue: 255 };
 export const swSunny: RGB = { red: 255, green: 255, blue: 0 };
 export const swWindy: RGB = { red: 150, green: 150, blue: 150 };
 
+const defaultOnColor = HMIOn;
+const defaultOffColor = HMIOff;
+
 export function rgb_dec565(rgb: RGB): number {
     //return ((Math.floor(rgb.red / 255 * 31) << 11) | (Math.floor(rgb.green / 255 * 63) << 5) | (Math.floor(rgb.blue / 255 * 31)));
     return ((rgb.red >> 3) << 11) | ((rgb.green >> 2) << 5) | (rgb.blue >> 3);
@@ -132,4 +136,180 @@ export function HandleColorScale(valueScaletemp: string): number {
         default:
             return rgb_dec565(colorScale10);
     }
+}
+export function Interpolate(color1: RGB, color2: RGB, fraction: number): RGB {
+    const r: number = InterpolateNum(color1.red, color2.red, fraction);
+    const g: number = InterpolateNum(color1.green, color2.green, fraction);
+    const b: number = InterpolateNum(color1.blue, color2.blue, fraction);
+    return { red: Math.round(r), green: Math.round(g), blue: Math.round(b) };
+}
+
+export function InterpolateNum(d1: number, d2: number, fraction: number): number {
+    return d1 + (d2 - d1) * fraction;
+}
+
+export async function GetIconColor(pageItem: PageItemDataitems, value: boolean | number): Promise<string> {
+    // dimmer
+    const useColor = pageItem.data.useColor && (await pageItem.data.useColor.getBoolean());
+    const interpolateColor = pageItem.data.interpolateColor && (await pageItem.data.interpolateColor.getBoolean());
+    const onColor =
+        pageItem.data.color &&
+        'true' in pageItem.data.color &&
+        pageItem.data.color.true &&
+        (await pageItem.data.color.true.getRGBValue());
+    const offColor =
+        pageItem.data.color &&
+        'true' in pageItem.data.color &&
+        pageItem.data.color.true &&
+        (await pageItem.data.color.true.getRGBValue());
+    if (useColor && interpolateColor && typeof value === 'number') {
+        let val: number = typeof value === 'number' ? value : 0;
+        const maxValue =
+            (pageItem.data.maxValueBrightness && (await pageItem.data.maxValueBrightness.getNumber())) || 100;
+        const minValue =
+            (pageItem.data.minValueBrightness && (await pageItem.data.minValueBrightness.getNumber())) || 0;
+        val = val > maxValue ? maxValue : val;
+        val = val < minValue ? minValue : val;
+
+        return String(
+            rgb_dec565(
+                Interpolate(
+                    offColor ? offColor : defaultOffColor,
+                    onColor ? onColor : defaultOnColor,
+                    scale(100 - val, minValue, maxValue, 0, 1),
+                ),
+            ),
+        );
+    }
+    if (
+        (useColor && typeof value === 'boolean' && value) ||
+        (typeof value === 'number' &&
+            value >
+                (pageItem.data.minValueBrightness !== undefined
+                    ? (await pageItem.data.minValueBrightness.getNumber()) ?? 0
+                    : 0))
+    ) {
+        return String(rgb_dec565(onColor ? onColor : defaultOnColor));
+    }
+    return String(rgb_dec565(offColor ? offColor : defaultOffColor));
+}
+
+/**
+ * Convert radians to degrees
+ * @param rad radians to convert, expects rad in range +/- PI per Math.atan2
+ * @returns {number} degrees equivalent of rad
+ */
+export function rad2deg(rad: number): number {
+    return (360 + (180 * rad) / Math.PI) % 360;
+}
+
+export function ColorToHex(color: number): string {
+    const hexadecimal: string = color.toString(16);
+    return hexadecimal.length == 1 ? '0' + hexadecimal : hexadecimal;
+}
+
+export function ConvertRGBtoHex(red: number, green: number, blue: number): string {
+    return '#' + ColorToHex(red) + ColorToHex(green) + ColorToHex(blue);
+}
+export function ConvertHexToRgb(hex: string): RGB {
+    return {
+        red: parseInt(hex.substring(1, 3), 16),
+        green: parseInt(hex.substring(3, 5), 16),
+        blue: parseInt(hex.substring(5, 7), 16),
+    };
+}
+
+/**
+ * Convert h,s,v values to r,g,b
+ * @param hue in range [0, 360]
+ * @param saturation in range 0 to 1
+ * @param value in range 0 to 1
+ * @returns {[number, number, number]} [r, g,b] in range 0 to 255
+ */
+export function hsv2rgb(hue: number, saturation: number, value: number): [number, number, number] {
+    hue /= 60;
+    const chroma = value * saturation;
+    const x = chroma * (1 - Math.abs((hue % 2) - 1));
+    const rgb: [number, number, number] =
+        hue <= 1
+            ? [chroma, x, 0]
+            : hue <= 2
+              ? [x, chroma, 0]
+              : hue <= 3
+                ? [0, chroma, x]
+                : hue <= 4
+                  ? [0, x, chroma]
+                  : hue <= 5
+                    ? [x, 0, chroma]
+                    : [chroma, 0, x];
+
+    return rgb.map((v) => (v + value - chroma) * 255) as [number, number, number];
+}
+
+export function getHue(red: number, green: number, blue: number): number {
+    const min = Math.min(Math.min(red, green), blue);
+    const max = Math.max(Math.max(red, green), blue);
+
+    if (min == max) {
+        return 0;
+    }
+
+    let hue = 0;
+    if (max == red) {
+        hue = (green - blue) / (max - min);
+    } else if (max == green) {
+        hue = 2 + (blue - red) / (max - min);
+    } else {
+        hue = 4 + (red - green) / (max - min);
+    }
+
+    hue = hue * 60;
+    if (hue < 0) hue = hue + 360;
+
+    return Math.round(hue);
+}
+
+export function pos_to_color(x: number, y: number): RGB {
+    let r = 160 / 2;
+    x = Math.round(((x - r) / r) * 100) / 100;
+    y = Math.round(((r - y) / r) * 100) / 100;
+
+    r = Math.sqrt(x * x + y * y);
+    let sat = 0;
+    if (r > 1) {
+        sat = 0;
+    } else {
+        sat = r;
+    }
+
+    const hsv = rad2deg(Math.atan2(y, x));
+    const rgb = hsv2rgb(hsv, sat, 1);
+
+    return { red: Math.round(rgb[0]), green: Math.round(rgb[1]), blue: Math.round(rgb[2]) };
+}
+
+/**
+ *
+ * @param red
+ * @param green
+ * @param blue
+ * @returns
+ */
+export function rgb_to_cie(red: number, green: number, blue: number): string {
+    //Apply a gamma correction to the RGB values, which makes the color more vivid and more the like the color displayed on the screen of your device
+    const vred = red > 0.04045 ? Math.pow((red + 0.055) / (1.0 + 0.055), 2.4) : red / 12.92;
+    const vgreen = green > 0.04045 ? Math.pow((green + 0.055) / (1.0 + 0.055), 2.4) : green / 12.92;
+    const vblue = blue > 0.04045 ? Math.pow((blue + 0.055) / (1.0 + 0.055), 2.4) : blue / 12.92;
+
+    //RGB values to XYZ using the Wide RGB D65 conversion formula
+    const X = vred * 0.664511 + vgreen * 0.154324 + vblue * 0.162028;
+    const Y = vred * 0.283881 + vgreen * 0.668433 + vblue * 0.047685;
+    const Z = vred * 0.000088 + vgreen * 0.07231 + vblue * 0.986039;
+
+    //Calculate the xy values from the XYZ values
+    const ciex = (X / (X + Y + Z)).toFixed(4);
+    const ciey = (Y / (X + Y + Z)).toFixed(4);
+    const cie = '[' + ciex + ',' + ciey + ']';
+
+    return cie;
 }

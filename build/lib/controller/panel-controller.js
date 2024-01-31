@@ -38,7 +38,7 @@ class Controller extends Library.BaseClass {
     super(adapter, options.name);
     this.adapter.controller = this;
     this.mqttClient = options.mqttClient;
-    this.readOnlyDB = new import_states_controller.StatesDBReadOnly(this.adapter);
+    this.readOnlyDB = new import_states_controller.StatesControler(this.adapter);
     for (const panelConfig of options.panels) {
       panelConfig.controller = this;
       if (!Panel.isPanelConfig(panelConfig)) {

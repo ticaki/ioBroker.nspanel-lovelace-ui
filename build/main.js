@@ -23,6 +23,7 @@ var import_register = require("source-map-support/register");
 var MQTT = __toESM(require("./lib/classes/mqtt"));
 var import_config = require("./lib/config");
 var import_panel_controller = require("./lib/controller/panel-controller");
+var import_icon_mapping = require("./lib/const/icon_mapping");
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -40,6 +41,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.on("unload", this.onUnload.bind(this));
   }
   async onReady() {
+    import_icon_mapping.Icons.adapter = this;
     this.setTimeout(() => {
       this.log.debug("Check configuration!");
       if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword))

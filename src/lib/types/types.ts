@@ -1,6 +1,6 @@
 import { Dataitem } from '../classes/data-item';
 import { PageMediaItem, PageThermoItem, PageBaseItem } from './pageItem';
-import { PageRole, PageType, PageTypeCards } from './pages';
+import { ChangeTypeOfKeys, PageRole, PageType, PageTypeCards } from './pages';
 
 /**
  * Join arguments with ~ and return the string;
@@ -251,14 +251,20 @@ export type PageBaseType = {
     homeIcon?: string;
     homeIconColor?: RGB;
 };
-export type ColorEntryType = (Record<BooleanUnion, RGB> & { scale?: IconScaleElement }) | RGB;
+export type ColorEntryType = Record<BooleanUnion, RGB> & { scale?: IconScaleElement };
 export function isColorEntryType(F: object | ColorEntryType): F is ColorEntryType {
     if ('true' in F && 'false' in F && 'scale' in F) return true;
     return false;
 }
-export type Icon = {
-    icon: Record<BooleanUnion, string>;
-    iconColor: ColorEntryType;
+export type IconEntryType = Record<BooleanUnion, string> & {
+    color: ColorEntryType;
+};
+export type TextEntryType = Record<BooleanUnion, string>;
+export type ValueEntryType = {
+    value: number;
+    decimal: number;
+    factor: number;
+    unit: string;
 };
 
 export type PageEntities = {
@@ -354,7 +360,7 @@ export type Config = {
         bottomEntity: ScreenSaverElement[];
         alternateEntity: [ScreenSaverElement?];
         indicatorEntity: ScreenSaverElement[];
-        mrIconEntity: [ScreenSaverMRElement, ScreenSaverMRElement];
+        mrIconEntity: [ScreenSaverElement, ScreenSaverElement];
     };
     defaultColor: RGB;
     defaultOnColor: RGB;
@@ -393,35 +399,27 @@ export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElem
     entityOnText?: string | null;
     entityOffText?: string | null;
 };*/
-export type ScreenSaverDataItems = Record<keyof ScreenSaverElement, Dataitem | undefined>;
+export type ScreenSaverDataItems = {
+    entityValue: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>;
+    entityDateFormat: Dataitem | undefined;
+    entityIcon: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined>;
+    entityText: ChangeTypeOfKeys<TextEntryType, Dataitem | undefined>;
+    entityIconSelect: Dataitem | undefined;
+};
 export type ScreenSaverElement = {
-    entity: ScreenSaverElementConfig;
-    entityText: ScreenSaverElementConfig;
-    entityFactor: ScreenSaverElementConfig;
-    entityDecimalPlaces: ScreenSaverElementConfig;
+    entityValue: ChangeTypeOfKeys<ValueEntryType, DataItemsOptions | undefined>;
     entityDateFormat: ScreenSaverElementConfig;
-    entityIconOn: ScreenSaverElementConfig;
-    entityIconOff: ScreenSaverElementConfig;
-    entityUnitText: ScreenSaverElementConfig;
-    entityIconColor: ScreenSaverElementConfig;
-    entityIconColorScale: ScreenSaverElementConfig; // result rgb
-    entityOnColor: ScreenSaverElementConfig;
-    entityOffColor: ScreenSaverElementConfig;
-    entityOnText: ScreenSaverElementConfig;
-    entityOffText: ScreenSaverElementConfig;
+    entityIcon: ChangeTypeOfKeys<IconEntryType, DataItemsOptions | undefined>;
+    entityText: ChangeTypeOfKeys<TextEntryType, DataItemsOptions | undefined>;
     entityIconSelect: ScreenSaverElementConfig;
 };
-export type ScreenSaverMRDataItems = Record<keyof ScreenSaverMRElement, Dataitem | undefined>;
-export type ScreenSaverMRElement = {
-    entity: ScreenSaverElementConfig;
-    entityIconOn: ScreenSaverElementConfig;
+/*export type ScreenSaverMRDataItems = Record<keyof ScreenSaverMRElement, Dataitem | undefined>;
+/*export type ScreenSaverMRElement = {
+    entity: ChangeTypeOfKeys<NumberEntryType, DataItemsOptions | undefined>;
+    entityDateFormat: ScreenSaverElementConfig;
+    entityIcon: ChangeTypeOfKeys<IconEntryType, DataItemsOptions | undefined>;
+    entityText: ChangeTypeOfKeys<TextEntryType, DataItemsOptions | undefined>;
     entityIconSelect: ScreenSaverElementConfig;
-    entityIconOff: ScreenSaverElementConfig;
-    entityValue: ScreenSaverElementConfig;
-    entityValueDecimalPlace: ScreenSaverElementConfig;
-    entityValueUnit: ScreenSaverElementConfig;
-    entityOnColor: ScreenSaverElementConfig;
-    entityOffColor: ScreenSaverElementConfig;
 }; /*
 export type ScreenSaverMRDataElement = {
     entity: string | number | boolean | null;
@@ -537,13 +535,31 @@ export type mediaOptional =
 
 export type DataItemstype = DataItemsOptions['type'];
 export type DataItemsMode = 'custom' | 'auto';
+export type DataItemsOptionsIcon =
+    | Exclude<
+          DataItemsOptions,
+          {
+              type: 'const';
+              role?: string;
+              constVal: StateValue | AllIcons;
+              state?: State | null; // use just inside of class
+          }
+      >
+    | ({
+          name?: string;
+      } & {
+          type: 'const';
+          role?: string;
+          constVal: AllIcons;
+          state?: State | null; // use just inside of class
+      });
 export type DataItemsOptions = {
     name?: string;
 } & (
     | {
           type: 'const';
           role?: string;
-          constVal: StateValue;
+          constVal: StateValue | AllIcons;
           state?: State | null; // use just inside of class
       }
     | ((

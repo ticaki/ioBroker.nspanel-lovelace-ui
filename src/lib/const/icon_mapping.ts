@@ -1,5 +1,8 @@
+import { AdapterClassDefinition } from '../classes/library';
+
 export class Icons {
-    static iconMap = new Map<string, string>([
+    static adapter: AdapterClassDefinition | undefined;
+    static iconMap = new Map([
         ['ab-testing', ''],
         ['abacus', ''],
         ['abjad-arabic', ''],
@@ -6899,10 +6902,24 @@ export class Icons {
     ]);
 
     static GetIcon(ma_name: string): string {
-        ma_name = ma_name.trim();
-        if (Icons.iconMap.has(ma_name)) {
-            return Icons.iconMap.get(ma_name)!;
+        return Icons.GetIconWithType(ma_name as AllIcons);
+    }
+    static GetIconWithType(ma_name: AllIcons): string {
+        if (!ma_name) return '';
+        const val = ma_name.trim();
+        if (Icons.iconMap.has(val)) {
+            return Icons.iconMap.get(val)!;
+        } else {
+            if (Icons.adapter) Icons.adapter.log.warn(`${val} is not a icon!`);
         }
         return '';
+    }
+    /**
+     * Just a dummy
+     * @param F
+     * @returns
+     */
+    static isIcon(F: string | AllIcons): F is AllIcons {
+        return true;
     }
 }

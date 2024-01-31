@@ -1,4 +1,3 @@
-import { Dataitem } from '../classes/data-item';
 import * as Definition from '../const/definition';
 import * as Color from '../const/Color';
 import * as NSPanel from '../types/types';
@@ -7,7 +6,7 @@ import * as NSPanel from '../types/types';
 import moment from 'moment';
 import parseFormat from 'moment-parseformat';
 import { sendTemplates, weatherUpdateTestArray } from '../types/msg-def';
-import { StatesDBReadOnly } from '../controller/states-controller';
+import { StatesControler } from '../controller/states-controller';
 import { Page, PageInterface } from './Page';
 import { Icons } from '../const/icon_mapping';
 
@@ -28,7 +27,7 @@ export type ScreensaverConfig = {
 export class Screensaver extends Page {
     private entitysConfig: NSPanel.ScreensaverOptionsType;
     layout: NSPanel.ScreensaverModeType = 'standard';
-    readOnlyDB: StatesDBReadOnly;
+    statesControler: StatesControler;
     private config: ScreensaverConfigType;
     private items: Record<
         keyof Omit<NSPanel.ScreensaverOptionsType, 'mrIconEntity'>,
@@ -36,7 +35,7 @@ export class Screensaver extends Page {
     > &
         Record<
             keyof Pick<NSPanel.ScreensaverOptionsType, 'mrIconEntity'>,
-            (NSPanel.ScreenSaverMRDataItems | undefined)[]
+            (NSPanel.ScreenSaverDataItems | undefined)[]
         > = {
         favoritEntity: [],
         leftEntity: [],
@@ -49,14 +48,14 @@ export class Screensaver extends Page {
     private rotationTime: number;
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
     private step: number = 0;
-    constructor(config: PageInterface, options: ScreensaverConfig, readOnlyDB: StatesDBReadOnly) {
+    constructor(config: PageInterface, options: ScreensaverConfig, statesControler: StatesControler) {
         super(config);
 
         this.entitysConfig = options.entitysConfig;
         this.mode = options.mode;
         this.config = options.config;
         moment.locale(options.config.momentLocale);
-        this.readOnlyDB = readOnlyDB;
+        this.statesControler = statesControler;
         this.rotationTime = options.rotationTime !== 0 && options.rotationTime < 3 ? 3000 : options.rotationTime * 1000;
     }
     async init(): Promise<void> {
@@ -68,33 +67,16 @@ export class Screensaver extends Page {
                     this.items[key].push(undefined);
                     continue;
                 }
-                const tempItem: Partial<NSPanel.ScreenSaverDataItems | NSPanel.ScreenSaverMRDataItems> = {};
-                for (const j1 in entry) {
-                    const j = j1 as keyof typeof entry;
-                    const data = entry[j];
-                    let temp =
-                        data !== undefined
-                            ? new Dataitem(
-                                  this.adapter,
-                                  { ...data, name: `${this.name}.${key}.${j}` },
-                                  this,
-                                  this.readOnlyDB,
-                              )
-                            : undefined;
-                    if (temp !== undefined && !(await temp.isValidAndInit())) {
-                        temp = undefined;
-                    }
-                    tempItem[j] = temp;
-                }
+                const tempItem = await this.statesControler.createDataItems(entry, this);
                 switch (key) {
                     case 'favoritEntity':
                     case 'leftEntity':
                     case 'bottomEntity':
                     case 'indicatorEntity':
-                        this.items[key].push(tempItem as NSPanel.ScreenSaverDataItems);
+                        this.items[key].push(tempItem);
                         break;
                     case 'mrIconEntity':
-                        this.items['mrIconEntity'].push(tempItem as NSPanel.ScreenSaverMRDataItems);
+                        this.items['mrIconEntity'].push(tempItem);
                         break;
                 }
 
@@ -126,7 +108,12 @@ export class Screensaver extends Page {
             }
             for (i; i < maxItems; i++) {
                 const item: NSPanel.ScreenSaverDataItems | undefined = this.items[place][i];
-                if (item === null || item === undefined || item.entity === undefined) {
+                if (
+                    item === null ||
+                    item === undefined ||
+                    item.entityValue === undefined ||
+                    item.entityValue.value === undefined
+                ) {
                     value.push({ icon: '', iconColor: '', displayName: '', optionalValue: '' });
                     continue;
                 }
@@ -134,43 +121,51 @@ export class Screensaver extends Page {
 
                 let iconColor = String(Color.rgb_dec565(Color.White));
                 let icon = '';
-                if (item.entityIconOn) {
-                    const val = await item.entityIconOn.getString();
+                if (item.entityIcon && item.entityIcon.true) {
+                    const val = await item.entityIcon.true.getString();
                     if (val !== null) icon = Icons.GetIcon(val);
                 }
-                let val: string | number | boolean | null = await item.entity.getNumber();
+                let val: string | number | boolean | null = await item.entityValue.value.getNumber();
                 // if val not null its a number
 
-                if (item.entity.type == 'number' && val !== null) {
-                    if (item.entityFactor) {
-                        const v = await item.entityFactor.getNumber();
+                if (item.entityValue.value.type == 'number' && val !== null) {
+                    if (item.entityValue.factor) {
+                        const v = await item.entityValue.factor.getNumber();
                         if (v !== null) val *= v;
                     }
-                    if (item.entityDecimalPlaces) {
-                        const v = await item.entityDecimalPlaces.getNumber();
+                    if (item.entityValue.decimal) {
+                        const v = await item.entityValue.decimal.getNumber();
                         if (v !== null) val = val.toFixed(v);
                     }
-                    if (item.entityUnitText) {
-                        const v = await item.entityUnitText.getString();
+                    if (item.entityValue.unit) {
+                        const v = await item.entityValue.unit.getString();
                         if (v !== null) val += v;
                     }
 
                     iconColor = await GetScreenSaverEntityColor(item);
-                } else if (item.entity.type == 'boolean') {
-                    val = await item.entity.getBoolean();
+                } else if (item.entityValue.value.type == 'boolean') {
+                    val = await item.entityValue.value.getBoolean();
                     iconColor = await GetScreenSaverEntityColor(item);
-                    if (!val && item.entityIconOff) {
-                        const t = await item.entityIconOff.getString();
+                    if (!val && item.entityIcon.false) {
+                        const t = await item.entityIcon.false.getString();
                         if (t !== null) icon = Icons.GetIcon(t);
                     }
-                    if (val && item.entityOnText != undefined) {
-                        const t = await item.entityOnText.getString();
-                        if (t !== null) val = t;
-                    } else if (!val && item.entityOffText != undefined) {
-                        const t = await item.entityOffText.getString();
-                        if (t !== null) val = t;
+                    const b = val ? 'true' : 'false';
+                    if (item.entityText != undefined) {
+                        const i = item.entityText[b];
+                        if (i !== undefined) {
+                            const t = await i.getString();
+                            if (t !== null) val = t;
+                        } else {
+                            const i = item.entityText.true;
+                            const t = i !== undefined ? await i.getString() : null;
+                            if (t !== null) val = t;
+                        }
                     }
-                } else if (item.entity.type == 'string' && (val = await item.entity.getString()) !== null) {
+                } else if (
+                    item.entityValue.value.type == 'string' &&
+                    (val = await item.entityValue.value.getString()) !== null
+                ) {
                     iconColor = await GetScreenSaverEntityColor(item);
 
                     const pformat = parseFormat(val);
@@ -189,9 +184,12 @@ export class Screensaver extends Page {
                     }
                 }
 
-                let temp: any = item.entityIconColor ? await item.entityIconColor.getRGBDec() : null;
+                let temp: any =
+                    item.entityIcon.color && item.entityIcon.color.true
+                        ? await item.entityIcon.color.true.getRGBDec()
+                        : null;
                 iconColor = temp ? temp : iconColor;
-                temp = item.entityText ? await item.entityText.getString() : null;
+                temp = item.entityText && item.entityText.true ? await item.entityText.true.getString() : null;
                 const entityText = temp ? temp : '';
                 value.push({ icon, iconColor, displayName: entityText, optionalValue: val ? String(val) : '' });
             }
@@ -308,24 +306,24 @@ export class Screensaver extends Page {
             }
 
             let value: string | boolean | number | null = null;
-            if (item.entityValue) {
-                switch (item.entityValue.type) {
+            if (item.entityValue && item.entityValue.value) {
+                switch (item.entityValue.value.type) {
                     case 'string': {
-                        const v = await item.entityValue.getString();
+                        const v = await item.entityValue.value.getString();
                         if (v !== null) value = v;
                         break;
                     }
                     case 'number': {
                         value = 0;
-                        const v = await item.entityValue.getNumber();
-                        const c = item.entityValueDecimalPlace ? await item.entityValueDecimalPlace.getNumber() : null;
+                        const v = await item.entityValue.value.getNumber();
+                        const c = item.entityValue.decimal ? await item.entityValue.decimal.getNumber() : null;
                         if (v !== null) value = v;
                         if (c !== null) value = (value || 0).toFixed(c);
                         break;
                     }
                     case 'boolean': {
                         value = false;
-                        const v = item.entityValue ? await item.entityValue.getBoolean() : null;
+                        const v = item.entityValue.value ? await item.entityValue.value.getBoolean() : null;
                         if (v !== null) value = v;
                         break;
                     }
@@ -338,17 +336,19 @@ export class Screensaver extends Page {
                         continue;
                 }
             }
-            const entity = item.entity
-                ? item.entity.type == 'string'
-                    ? await item.entity.getString()
-                    : await item.entity.getBoolean()
-                : null;
-            const offcolor = item.entityOffColor
-                ? await item.entityOffColor.getRGBDec()
-                : String(Color.rgb_dec565(Color.White));
-            const onColor = item.entityOnColor ? await item.entityOnColor.getRGBDec() : null;
+            const entity =
+                item.entityValue && item.entityValue.value
+                    ? item.entityValue.value.type == 'string'
+                        ? await item.entityValue.value.getString()
+                        : await item.entityValue.value.getBoolean()
+                    : null;
+            const offcolor =
+                item.entityIcon.color && item.entityIcon.color.false
+                    ? await item.entityIcon.color.false.getRGBDec()
+                    : String(Color.rgb_dec565(Color.White));
+            const onColor = item.entityIcon.color.true ? await item.entityIcon.color.true.getRGBDec() : null;
             payload[`icon${s}Color`] = offcolor !== null ? offcolor : String(Color.rgb_dec565(Color.White));
-            if (item.entity != null || value !== null || item.entityValue != null) {
+            if (item.entityValue != null || value !== null || onColor != null) {
                 // Prüfung ob Entity vom Typ String ist
                 if (entity != null && onColor) {
                     if (typeof entity == 'string') {
@@ -366,7 +366,7 @@ export class Screensaver extends Page {
                         }
                         if (Definition.Debug)
                             this.log.debug(
-                                'Value: ' + item.entity + ' Color: ' + JSON.stringify(payload[`icon${s}Color`]),
+                                'Value: ' + item.entityValue + ' Color: ' + JSON.stringify(payload[`icon${s}Color`]),
                                 'info',
                             );
                         // Alles was kein String ist in Boolean umwandeln
@@ -382,8 +382,8 @@ export class Screensaver extends Page {
                     : null;
 
                 // Icon ermitteln
-                const onIcon = item.entityIconOn ? await item.entityIconOn.getString() : null;
-                const offIcon = item.entityIconOff ? await item.entityIconOff.getString() : null;
+                const onIcon = item.entityIcon.color.true ? await item.entityIcon.color.true.getString() : null;
+                const offIcon = item.entityIcon.color.false ? await item.entityIcon.color.false.getString() : null;
                 const selectIcon =
                     typeof entity !== 'boolean' && entity !== null && entityIconSelect
                         ? (entityIconSelect[entity] as string | undefined)
@@ -407,7 +407,7 @@ export class Screensaver extends Page {
 
                 if (value !== null && value !== undefined) {
                     payload[`icon${s}`] += String(value);
-                    const unit = item.entityValueUnit ? await item.entityValueUnit.getString() : null;
+                    const unit = item.entityValue.unit ? await item.entityValue.unit.getString() : null;
                     if (unit !== null) payload[`icon${s}`] += unit;
                 }
             } else {
@@ -424,87 +424,92 @@ export class Screensaver extends Page {
 }
 
 async function GetScreenSaverEntityColor(item: NSPanel.ScreenSaverDataItems | null): Promise<string> {
-    if (item && item.entity) {
+    if (item && item.entityValue) {
         let colorReturn: number | string;
-        const entityAsNumber = item.entity ? await item.entity.getNumber() : null;
-        const entityFactor = item.entityFactor ? await item.entityFactor.getNumber() : null;
-        const entityIconColor = item.entityIconColor ? await item.entityIconColor.getRGBDec() : null;
-        const entityIconColorScale: NSPanel.IconScaleElement | null = item.entityIconColorScale
-            ? await item.entityIconColorScale.getIconScale()
+        const entityAsNumber = item.entityValue.value !== undefined ? await item.entityValue.value.getNumber() : null;
+        const entityFactor = item.entityValue.factor !== undefined ? await item.entityValue.factor.getNumber() : null;
+        const entityIconColor =
+            item.entityIcon.color && item.entityIcon.color.true ? await item.entityIcon.color.true.getRGBDec() : null;
+        const entityIconColorScale: NSPanel.IconScaleElement | null = item.entityIcon.color.scale
+            ? await item.entityIcon.color.scale.getIconScale()
             : null;
-        const entityOnColor = item.entityOnColor ? await item.entityOnColor.getRGBDec() : null;
-        const entityOffColor = item.entityOffColor ? await item.entityOffColor.getRGBDec() : null;
-        if (entityIconColor !== null && entityIconColorScale !== null) {
-            if (item.entity.type == 'boolean') {
-                const iconvalbest =
-                    entityIconColorScale && entityIconColorScale.val_best !== undefined
-                        ? !!entityIconColorScale.val_best
-                        : false;
-                if (iconvalbest == (await item.entity.getBoolean())) {
-                    if (entityOnColor !== null) colorReturn = entityOnColor;
-                    else colorReturn = Color.rgb_dec565(Color.colorScale0);
-                } else {
-                    if (entityOffColor !== null) colorReturn = entityOffColor;
-                    else colorReturn = Color.rgb_dec565(Color.colorScale10);
-                }
-            } else if (entityIconColorScale !== null && entityAsNumber !== null) {
-                const iconvalmin: number = entityIconColorScale.val_min != undefined ? entityIconColorScale.val_min : 0;
-                const iconvalmax: number =
-                    entityIconColorScale.val_max != undefined ? entityIconColorScale.val_max : 100;
-                const iconvalbest: number =
-                    entityIconColorScale.val_best != undefined ? entityIconColorScale.val_best : iconvalmin;
-                let valueScale = entityAsNumber * (entityFactor !== null ? entityFactor : 1);
-
-                if (iconvalmin == 0 && iconvalmax == 1) {
-                    if (await item.entity.getBoolean()) {
+        const entityOnColor = item.entityIcon.true ? await item.entityIcon.true.getRGBDec() : null;
+        const entityOffColor = item.entityIcon.false ? await item.entityIcon.false.getRGBDec() : null;
+        if (item.entityValue.value) {
+            if (entityIconColorScale !== null) {
+                if (item.entityValue.value.type == 'boolean') {
+                    const iconvalbest =
+                        entityIconColorScale && entityIconColorScale.val_best !== undefined
+                            ? !!entityIconColorScale.val_best
+                            : false;
+                    if (iconvalbest == (await item.entityValue.value.getBoolean())) {
                         if (entityOnColor !== null) colorReturn = entityOnColor;
                         else colorReturn = Color.rgb_dec565(Color.colorScale0);
                     } else {
                         if (entityOffColor !== null) colorReturn = entityOffColor;
                         else colorReturn = Color.rgb_dec565(Color.colorScale10);
                     }
-                } else {
-                    if (iconvalbest == iconvalmin) {
-                        valueScale = Color.scale(valueScale, iconvalmin, iconvalmax, 10, 0);
-                    } else {
-                        if (valueScale < iconvalbest) {
-                            valueScale = Color.scale(valueScale, iconvalmin, iconvalbest, 0, 10);
-                        } else if (valueScale > iconvalbest || iconvalbest != iconvalmin) {
-                            valueScale = Color.scale(valueScale, iconvalbest, iconvalmax, 10, 0);
-                        } else {
-                            valueScale = Color.scale(valueScale, iconvalmin, iconvalmax, 10, 0);
-                        }
-                    }
-                    //limit if valueScale is smaller/larger than 0-10
-                    if (valueScale > 10) valueScale = 10;
-                    if (valueScale < 0) valueScale = 0;
+                } else if (entityIconColorScale !== null && entityAsNumber !== null) {
+                    const iconvalmin: number =
+                        entityIconColorScale.val_min != undefined ? entityIconColorScale.val_min : 0;
+                    const iconvalmax: number =
+                        entityIconColorScale.val_max != undefined ? entityIconColorScale.val_max : 100;
+                    const iconvalbest: number =
+                        entityIconColorScale.val_best != undefined ? entityIconColorScale.val_best : iconvalmin;
+                    let valueScale = entityAsNumber * (entityFactor !== null ? entityFactor : 1);
 
-                    const valueScaletemp = Math.round(valueScale).toFixed();
-                    colorReturn = Color.HandleColorScale(valueScaletemp);
+                    if (iconvalmin == 0 && iconvalmax == 1) {
+                        if (await item.entityValue.value.getBoolean()) {
+                            if (entityOnColor !== null) colorReturn = entityOnColor;
+                            else colorReturn = Color.rgb_dec565(Color.colorScale0);
+                        } else {
+                            if (entityOffColor !== null) colorReturn = entityOffColor;
+                            else colorReturn = Color.rgb_dec565(Color.colorScale10);
+                        }
+                    } else {
+                        if (iconvalbest == iconvalmin) {
+                            valueScale = Color.scale(valueScale, iconvalmin, iconvalmax, 10, 0);
+                        } else {
+                            if (valueScale < iconvalbest) {
+                                valueScale = Color.scale(valueScale, iconvalmin, iconvalbest, 0, 10);
+                            } else if (valueScale > iconvalbest || iconvalbest != iconvalmin) {
+                                valueScale = Color.scale(valueScale, iconvalbest, iconvalmax, 10, 0);
+                            } else {
+                                valueScale = Color.scale(valueScale, iconvalmin, iconvalmax, 10, 0);
+                            }
+                        }
+                        //limit if valueScale is smaller/larger than 0-10
+                        if (valueScale > 10) valueScale = 10;
+                        if (valueScale < 0) valueScale = 0;
+
+                        const valueScaletemp = Math.round(valueScale).toFixed();
+                        colorReturn = Color.HandleColorScale(valueScaletemp);
+                    }
+                } else {
+                    colorReturn = Color.rgb_dec565(Color.White);
                 }
             } else {
-                colorReturn = Color.rgb_dec565(Color.White);
-            }
-        } else {
-            const entityAsBoolean = item.entity ? await item.entity.getBoolean() : null;
-            if (item.entity.type == 'boolean' || item.entity.type == 'number') {
-                if (entityAsBoolean !== null) {
-                    if (entityAsBoolean) {
-                        if (entityOnColor !== null) colorReturn = entityOnColor;
-                        else colorReturn = Color.rgb_dec565(Color.White);
+                const entityAsBoolean =
+                    item.entityValue && item.entityValue.value ? await item.entityValue.value.getBoolean() : null;
+                if (item.entityValue.value.type == 'boolean' || item.entityValue.value.type == 'number') {
+                    if (entityAsBoolean !== null) {
+                        if (entityAsBoolean) {
+                            if (entityOnColor !== null) colorReturn = entityOnColor;
+                            else colorReturn = Color.rgb_dec565(Color.White);
+                        } else {
+                            if (entityOffColor !== null) colorReturn = entityOffColor;
+                            else colorReturn = Color.rgb_dec565(Color.White);
+                        }
                     } else {
                         if (entityOffColor !== null) colorReturn = entityOffColor;
                         else colorReturn = Color.rgb_dec565(Color.White);
                     }
                 } else {
-                    if (entityOffColor !== null) colorReturn = entityOffColor;
-                    else colorReturn = Color.rgb_dec565(Color.White);
+                    colorReturn = Color.rgb_dec565(Color.White);
                 }
-            } else {
-                colorReturn = Color.rgb_dec565(Color.White);
             }
+            return String(colorReturn);
         }
-        return String(colorReturn);
     }
     return String(Color.rgb_dec565(Color.White));
 }

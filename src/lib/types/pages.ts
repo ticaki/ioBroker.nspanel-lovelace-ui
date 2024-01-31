@@ -198,12 +198,16 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | object
     | listItem
     | PageTypeCards
-    | iconBoolean
+    | IconBoolean
+    | Types.ValueEntryType
+    | Types.TextEntryType
+    | Types.RGB
     | Types.ColorEntryType
-    ? Obj extends Types.RGB
+    | Types.IconScaleElement
+    ? Obj extends Types.RGB | Types.IconScaleElement
         ? N
         : {
-              [K in keyof Obj]-?: ChangeTypeOfKeys<Obj[K], N>;
+              [K in keyof Obj]: ChangeTypeOfKeys<Obj[K], N>;
           }
     : N;
 type PageMediaBaseConfig = {
@@ -251,9 +255,9 @@ export type PageMediaMessage = {
     artist: string;
     artistColor: string;
     volume: string;
-    iconplaypause: string;
-    onoffbutton: string;
-    shuffle_icon: string;
+    iconplaypause: AllIcons;
+    onoffbuttonColor: string;
+    shuffle_icon: AllIcons;
     logo: string;
     options: [
         (MessageItemMedia | string)?,
@@ -269,12 +273,12 @@ type listItem =
           on: string;
           text: string;
           color: Types.ColorEntryType | string | undefined;
-          icon: iconBoolean | string | undefined;
+          icon: IconBoolean | string | undefined;
           list: string | undefined;
       }
     | undefined;
 
-export type iconBoolean = Record<Types.BooleanUnion, string | undefined>;
+export type IconBoolean = Record<Types.BooleanUnion, string | undefined>;
 export type ThisCardMessageTypes = 'input_sel' | 'button';
 /*export type MessageIstemMedia extends = {
     type?: Extract<Types.SerialType, ThisCardMessageTypes> | '';
@@ -316,3 +320,25 @@ type MediaToolBoxAction =
     | 'seek'
     | 'cross'
     | 'nexttool';
+export type PageItemBase = {
+    activ: string;
+    value: string;
+    color: Types.ColorEntryType;
+} & Types.IconEntryType;
+//XOR<XOR<A, B>, C>
+type PageItemLights = PageItemLightsBrightness;
+type PageItemLightsBrightness = {
+    maxValueBrightness: number;
+    minValueBrightness: number;
+    interpolateColor: boolean;
+    dimmer: number | boolean;
+    hue: string;
+    useColor: string;
+};
+export type PageItem = {
+    role: 'socket' | 'light' | 'dimmer' | 'hue' | 'ct';
+    type: 'light';
+    data: PageItemBase & PageItemLights;
+};
+
+export type PageItemDataitems = Omit<PageItem, 'data'> & { data: ChangeTypeOfKeys<PageItem['data'], Dataitem> };

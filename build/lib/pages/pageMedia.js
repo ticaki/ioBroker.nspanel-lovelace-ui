@@ -44,7 +44,7 @@ const PageMediaMessageDefault = {
   artistColor: String(Color.rgb_dec565(Color.White)),
   volume: "",
   iconplaypause: "",
-  onoffbutton: "",
+  onoffbuttonColor: "",
   shuffle_icon: "",
   logo: "",
   options: ["", "", "", "", ""]
@@ -58,6 +58,7 @@ class PageMedia extends import_Page2.Page {
   writeItems;
   step = 1;
   headlinePos = 0;
+  titelPos = 0;
   nextArrow = false;
   constructor(config, options) {
     super(config);
@@ -106,8 +107,8 @@ class PageMedia extends import_Page2.Page {
       if (item.album) {
         const v = await item.album.getString();
         if (v !== null) {
-          const maxSize = 18;
-          if (v.length > maxSize) {
+          const maxSize2 = 18;
+          if (v.length > maxSize2) {
             const s = v + "          ";
             this.headlinePos = this.headlinePos % s.length;
             message.headline = (s + v).substring(this.headlinePos++ % (v + s).length).substring(0, 23);
@@ -148,6 +149,14 @@ class PageMedia extends import_Page2.Page {
         }
       }
       message.title = `${title} (${elapsed}|${duration})`;
+      const maxSize = 44;
+      if (message.title.length > maxSize) {
+        const s = message.title + "          ";
+        this.titelPos = this.titelPos % s.length;
+        message.headline = (s + message.title).substring(this.titelPos++ % (message.title + s).length).substring(0, 45);
+      } else {
+        message.headline = message.title;
+      }
     }
     message.shuffle_icon = "";
     if (item.shuffle && item.shuffle.type) {
@@ -187,11 +196,11 @@ class PageMedia extends import_Page2.Page {
     if (item.mediaState) {
       const v = await item.mediaState.getString();
       if (v !== null) {
-        message.iconplaypause = await this.getMediaState() ? "play" : "pause";
+        message.iconplaypause = !await this.getMediaState() ? "play" : "pause";
         if (await item.stop) {
-          message.onoffbutton = v.toUpperCase() === "STOP" ? "65535" : "1374";
+          message.onoffbuttonColor = v.toUpperCase() !== "STOP" ? "65535" : "1374";
         } else {
-          message.onoffbutton = message.iconplaypause;
+          message.onoffbuttonColor = message.iconplaypause !== "pause" ? "65535" : "1374";
         }
       }
     }
@@ -303,7 +312,7 @@ class PageMedia extends import_Page2.Page {
       message.artistColor,
       message.volume,
       import_icon_mapping.Icons.GetIcon(message.iconplaypause),
-      import_icon_mapping.Icons.GetIcon(message.onoffbutton),
+      message.onoffbuttonColor,
       import_icon_mapping.Icons.GetIcon(message.shuffle_icon),
       message.logo,
       this.getPayloadArray(message.options)
