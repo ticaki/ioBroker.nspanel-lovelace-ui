@@ -1,6 +1,6 @@
 // at the moment any
 
-import { IconEntryType } from './types';
+import { IconEntryType } from './pages';
 
 export type NavigationItem = {
     left?: NavigationItemParent | NavigationItemPrev;

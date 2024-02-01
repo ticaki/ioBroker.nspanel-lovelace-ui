@@ -508,7 +508,7 @@ class Library extends BaseClass {
       language = "en";
     if (force || this.language != language) {
       try {
-        this.translation = await Promise.resolve().then(() => __toESM(require(`../../admin/i18n/${language}/translations.json`)));
+        this.translation = await Promise.resolve().then(() => __toESM(require(`../../../admin/i18n/${language}/translations.json`)));
         this.language = language;
         return true;
       } catch (error) {

@@ -574,7 +574,7 @@ export class Library extends BaseClass {
         if (!language) language = 'en';
         if (force || this.language != language) {
             try {
-                this.translation = await import(`../../admin/i18n/${language}/translations.json`);
+                this.translation = await import(`../../../admin/i18n/${language}/translations.json`);
                 this.language = language;
                 return true;
             } catch (error) {

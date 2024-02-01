@@ -2,10 +2,11 @@ import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { Panel } from '../controller/panel';
 import { BaseClassPanelSend } from '../controller/panel-message';
 import { BaseClassTriggerdInterface } from '../controller/states-controller';
+import { MessageItem, messageItemAllInterfaces } from '../types/pageItem';
 import * as pages from '../types/pages';
 import { IncomingEvent } from '../types/types';
 
-export const messageItemDefault: pages.MessageItem = {
+export const messageItemDefault: MessageItem = {
     type: 'input_sel',
     intNameEntity: '',
     icon: '',
@@ -56,10 +57,10 @@ export class Page extends BaseClassPanelSend {
     /**
      * Create a part of the panel messsage for bottom icons. if event === '' u get '~~~~~~'.
      * default for event: input_sel
-     * @param msg {Partial<pages.MessageItem>}
+     * @param msg {Partial<MessageItem>}
      * @returns string
      */
-    public getItemMesssage(msg: Partial<pages.messageItemAllInterfaces> | undefined): string {
+    public getItemMesssage(msg: Partial<messageItemAllInterfaces> | undefined): string {
         if (!msg || !msg.intNameEntity || !msg.type) return '~~~~~';
         const id: string[] = [];
         if (msg.mainId) id.push(msg.mainId);

@@ -2,6 +2,7 @@ import * as Color from '../const/Color';
 import { BaseClass } from './library';
 import { BaseClassTriggerd, StatesControler } from '../controller/states-controller';
 import * as NSPanel from '../types/types';
+import { RGB } from '../types/Color';
 
 export class Dataitem extends BaseClass {
     options: NSPanel.DataItemsOptions;
@@ -111,6 +112,13 @@ export class Dataitem extends BaseClass {
                     const value = JSON.parse(state.val);
                     return value;
                 } catch (e) {
+                    const value = state.val;
+                    if (typeof value === 'string') {
+                        if (value.startsWith('#') && value.length === 7) {
+                            const v = Color.rgbHexToObject(value);
+                            if (Color.isRGB(v)) return v;
+                        }
+                    }
                     this.log.warn('Read a incorrect json!');
                 }
             } else if (typeof state.val === 'object') {
@@ -120,10 +128,10 @@ export class Dataitem extends BaseClass {
         return null;
     }
 
-    async getRGBValue(): Promise<NSPanel.RGB | null> {
+    async getRGBValue(): Promise<RGB | null> {
         const value = await this.getObject();
         if (value) {
-            if (NSPanel.isRGB(value)) return value;
+            if (Color.isRGB(value)) return value;
         }
         return null;
     }

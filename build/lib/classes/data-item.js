@@ -122,6 +122,14 @@ class Dataitem extends import_library.BaseClass {
           const value = JSON.parse(state.val);
           return value;
         } catch (e) {
+          const value = state.val;
+          if (typeof value === "string") {
+            if (value.startsWith("#") && value.length === 7) {
+              const v = Color.rgbHexToObject(value);
+              if (Color.isRGB(v))
+                return v;
+            }
+          }
           this.log.warn("Read a incorrect json!");
         }
       } else if (typeof state.val === "object") {
@@ -133,7 +141,7 @@ class Dataitem extends import_library.BaseClass {
   async getRGBValue() {
     const value = await this.getObject();
     if (value) {
-      if (NSPanel.isRGB(value))
+      if (Color.isRGB(value))
         return value;
     }
     return null;

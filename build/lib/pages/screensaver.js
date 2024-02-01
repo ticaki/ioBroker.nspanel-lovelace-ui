@@ -47,14 +47,24 @@ class Screensaver extends import_Page.Page {
     indicatorEntity: [],
     mrIconEntity: []
   };
-  mode;
   rotationTime;
   timoutRotation = void 0;
   step = 0;
   constructor(config, options, statesControler) {
+    switch (options.mode) {
+      case "standard":
+      case "alternate": {
+        config.card = "screensaver";
+        break;
+      }
+      case "advanced": {
+        config.card = "screensaver2";
+        break;
+      }
+    }
     super(config);
     this.entitysConfig = options.entitysConfig;
-    this.mode = options.mode;
+    this.layout = options.mode;
     this.config = options.config;
     import_moment.default.locale(options.config.momentLocale);
     this.statesControler = statesControler;
@@ -111,8 +121,8 @@ class Screensaver extends import_Page.Page {
         }
         let iconColor = String(Color.rgb_dec565(Color.White));
         let icon = "";
-        if (item.entityIcon && item.entityIcon.true) {
-          const val2 = await item.entityIcon.true.getString();
+        if (item.entityIcon && item.entityIcon.true.value) {
+          const val2 = await item.entityIcon.true.value.getString();
           if (val2 !== null)
             icon = import_icon_mapping.Icons.GetIcon(val2);
         }
@@ -137,8 +147,8 @@ class Screensaver extends import_Page.Page {
         } else if (item.entityValue.value.type == "boolean") {
           val = await item.entityValue.value.getBoolean();
           iconColor = await GetScreenSaverEntityColor(item);
-          if (!val && item.entityIcon.false) {
-            const t = await item.entityIcon.false.getString();
+          if (!val && item.entityIcon.false.value) {
+            const t = await item.entityIcon.false.value.getString();
             if (t !== null)
               icon = import_icon_mapping.Icons.GetIcon(t);
           }
@@ -148,12 +158,12 @@ class Screensaver extends import_Page.Page {
             if (i2 !== void 0) {
               const t = await i2.getString();
               if (t !== null)
-                val = t;
+                val = this.library.getTranslation(t);
             } else {
               const i3 = item.entityText.true;
               const t = i3 !== void 0 ? await i3.getString() : null;
               if (t !== null)
-                val = t;
+                val = this.library.getTranslation(t);
             }
           }
         } else if (item.entityValue.value.type == "string" && (val = await item.entityValue.value.getString()) !== null) {
@@ -172,10 +182,10 @@ class Screensaver extends import_Page.Page {
             );
           }
         }
-        let temp = item.entityIcon.color && item.entityIcon.color.true ? await item.entityIcon.color.true.getRGBDec() : null;
+        let temp = item.entityIcon.true.color ? await item.entityIcon.true.color.getRGBDec() : null;
         iconColor = temp ? temp : iconColor;
         temp = item.entityText && item.entityText.true ? await item.entityText.true.getString() : null;
-        const entityText = temp ? temp : "";
+        const entityText = temp ? this.library.getTranslation(temp) : "";
         value.push({ icon, iconColor, displayName: entityText, optionalValue: val ? String(val) : "" });
       }
     }
@@ -319,8 +329,8 @@ class Screensaver extends import_Page.Page {
         }
       }
       const entity = item.entityValue && item.entityValue.value ? item.entityValue.value.type == "string" ? await item.entityValue.value.getString() : await item.entityValue.value.getBoolean() : null;
-      const offcolor = item.entityIcon.color && item.entityIcon.color.false ? await item.entityIcon.color.false.getRGBDec() : String(Color.rgb_dec565(Color.White));
-      const onColor = item.entityIcon.color.true ? await item.entityIcon.color.true.getRGBDec() : null;
+      const offcolor = item.entityIcon.false.color ? await item.entityIcon.false.color.getRGBDec() : String(Color.rgb_dec565(Color.White));
+      const onColor = item.entityIcon.true.color ? await item.entityIcon.true.color.getRGBDec() : null;
       payload[`icon${s}Color`] = offcolor !== null ? offcolor : String(Color.rgb_dec565(Color.White));
       if (item.entityValue != null || value !== null || onColor != null) {
         if (entity != null && onColor) {
@@ -337,11 +347,6 @@ class Screensaver extends import_Page.Page {
                 break;
               default:
             }
-            if (Definition.Debug)
-              this.log.debug(
-                "Value: " + item.entityValue + " Color: " + JSON.stringify(payload[`icon${s}Color`]),
-                "info"
-              );
           } else {
             this.log.debug("Entity ist kein String", "info");
             if (entity) {
@@ -350,8 +355,8 @@ class Screensaver extends import_Page.Page {
           }
         }
         const entityIconSelect = item.entityIconSelect ? await item.entityIconSelect.getObject() : null;
-        const onIcon = item.entityIcon.color.true ? await item.entityIcon.color.true.getString() : null;
-        const offIcon = item.entityIcon.color.false ? await item.entityIcon.color.false.getString() : null;
+        const onIcon = item.entityIcon.true.value ? await item.entityIcon.true.value.getString() : null;
+        const offIcon = item.entityIcon.false.value ? await item.entityIcon.false.value.getString() : null;
         const selectIcon = typeof entity !== "boolean" && entity !== null && entityIconSelect ? entityIconSelect[entity] : void 0;
         if (selectIcon) {
           payload[`icon${s}`] = import_icon_mapping.Icons.GetIcon(selectIcon);
@@ -392,10 +397,9 @@ async function GetScreenSaverEntityColor(item) {
     let colorReturn;
     const entityAsNumber = item.entityValue.value !== void 0 ? await item.entityValue.value.getNumber() : null;
     const entityFactor = item.entityValue.factor !== void 0 ? await item.entityValue.factor.getNumber() : null;
-    const entityIconColor = item.entityIcon.color && item.entityIcon.color.true ? await item.entityIcon.color.true.getRGBDec() : null;
-    const entityIconColorScale = item.entityIcon.color.scale ? await item.entityIcon.color.scale.getIconScale() : null;
-    const entityOnColor = item.entityIcon.true ? await item.entityIcon.true.getRGBDec() : null;
-    const entityOffColor = item.entityIcon.false ? await item.entityIcon.false.getRGBDec() : null;
+    const entityIconColorScale = "scale" in item.entityIcon && item.entityIcon.scale !== void 0 ? await item.entityIcon.scale.getIconScale() : null;
+    const entityOnColor = item.entityIcon.true.color ? await item.entityIcon.true.color.getRGBDec() : null;
+    const entityOffColor = item.entityIcon.false.color ? await item.entityIcon.false.color.getRGBDec() : null;
     if (item.entityValue.value) {
       if (entityIconColorScale !== null) {
         if (item.entityValue.value.type == "boolean") {
@@ -466,8 +470,8 @@ async function GetScreenSaverEntityColor(item) {
                 colorReturn = Color.rgb_dec565(Color.White);
             }
           } else {
-            if (entityOffColor !== null)
-              colorReturn = entityOffColor;
+            if (entityOnColor !== null)
+              colorReturn = entityOnColor;
             else
               colorReturn = Color.rgb_dec565(Color.White);
           }

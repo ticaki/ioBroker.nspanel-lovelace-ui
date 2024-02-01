@@ -1,8 +1,9 @@
 import { Dataitem, isDataItem } from '../classes/data-item';
 import * as Color from '../const/Color';
 import { Icons } from '../const/icon_mapping';
+import { MessageItemMedia, MessageItem, ColorEntryType } from '../types/pageItem';
 import * as pages from '../types/pages';
-import { BooleanUnion, ColorEntryType, IncomingEvent } from '../types/types';
+import { BooleanUnion, IncomingEvent } from '../types/types';
 import { PageInterface, isMediaButtonActionType, messageItemDefault } from './Page';
 import { Page } from './Page';
 
@@ -267,7 +268,7 @@ export class PageMedia extends Page implements pages.PageMediaBase {
         i: pages.toolboxItemDataItem | undefined,
         id: string,
         iconNumber: number,
-    ): Promise<pages.MessageItemMedia | undefined> {
+    ): Promise<MessageItemMedia | undefined> {
         if (i) {
             if (i.on && i.text && i.color && i.icon) {
                 const v = await i.on.getBoolean();
@@ -277,7 +278,7 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                 const list = i.list ? await i.list.getString() : null;
                 if (list) this.log.debug(JSON.stringify(list));
                 if (color && icon && text) {
-                    const tool: pages.MessageItemMedia = {
+                    const tool: MessageItemMedia = {
                         intNameEntity: `${id}`,
                         iconNumber: iconNumber as 1 | 2 | 3 | 4 | 5,
                         icon: Icons.GetIcon(icon),
@@ -316,13 +317,13 @@ export class PageMedia extends Page implements pages.PageMediaBase {
      * @param msg
      * @returns string
      */
-    private getItemMessageMedia(msg: Partial<pages.MessageItemMedia> | undefined): string {
+    private getItemMessageMedia(msg: Partial<MessageItemMedia> | undefined): string {
         if (!msg || !msg.intNameEntity || !msg.icon) return '~~~~~';
         msg.type = msg.type === undefined ? 'input_sel' : msg.type;
         const iconNumber = msg.iconNumber;
-        const temp: Partial<pages.MessageItemMedia> = msg;
+        const temp: Partial<MessageItemMedia> = msg;
         temp.optionalValue = msg.optionalValue || 'media0';
-        const message: pages.MessageItem = Object.assign(messageItemDefault, temp);
+        const message: MessageItem = Object.assign(messageItemDefault, temp);
 
         switch (iconNumber) {
             case 0: {

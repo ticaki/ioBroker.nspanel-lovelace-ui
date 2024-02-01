@@ -232,7 +232,7 @@ const ScreenSaverConst = {
       maxEntries: 3
     },
     bottomEntity: {
-      maxEntries: 7
+      maxEntries: 6
     },
     alternateEntity: {
       maxEntries: 0

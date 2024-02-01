@@ -1,6 +1,7 @@
 import { Dataitem } from '../classes/data-item';
-import { PageMediaItem, PageThermoItem, PageBaseItem } from './pageItem';
-import { ChangeTypeOfKeys, PageRole, PageType, PageTypeCards } from './pages';
+import { RGB } from './Color';
+import { IconEntryType, TextEntryType, ValueEntryType } from './pageItem';
+import { ChangeTypeOfKeys, PageRole } from './pages';
 
 /**
  * Join arguments with ~ and return the string;
@@ -20,10 +21,6 @@ export function isPlayerWithMediaDevice(F: string | _PlayerTypeWithMediaDevice):
 /** check if adapterPlayerInstanceType has all Playertypes */
 export function checkSortedPlayerType(F: notSortedPlayerType): adapterPlayerInstanceType {
     return F;
-}
-
-export function isRGB(F: RGB | any): F is RGB {
-    return typeof F == 'object' && 'red' in F && 'blue' in F && 'green' in F;
 }
 
 export function isEventMethod(F: string | EventMethod): F is EventMethod {
@@ -63,11 +60,8 @@ export function isPopupType(F: PopupType | string): F is PopupType {
 /*export function checkPageType(F: PageTypeCards, A: PageType): void {
     A.type = F;
 }*/
-export function isPageMediaItem(F: PageItem | PageMediaItem): F is PageMediaItem {
-    return 'adapterPlayerInstance' in F;
-}
 
-export function isPageThermoItem(F: PageItem | PageThermoItem): F is PageThermoItem {
+/*export function isPageThermoItem(F: PageItem | PageThermoItem): F is PageThermoItem {
     return 'popupThermoMode1' in F;
 }
 
@@ -77,7 +71,7 @@ export function isPageMedia(F: PageType | PageMedia): F is PageMedia {
 export function isPagePower(F: PageType | PagePower): F is PagePower {
     return F.type == 'cardPower';
 }
-
+*/
 export type PopupType =
     | 'popupFan'
     | 'popupInSel'
@@ -221,18 +215,12 @@ export type ButtonActionType =
     | 'D1'
     | 'U1';
 
-export type RGB = {
-    red: number;
-    green: number;
-    blue: number;
-};
-
 export type Payload = {
     payload: string;
 };
 export type BooleanUnion = 'true' | 'false';
 
-export type PageBaseType = {
+/*export type PageBaseType = {
     type: PageTypeCards;
     heading: string;
     items: PageItem[];
@@ -251,22 +239,6 @@ export type PageBaseType = {
     homeIcon?: string;
     homeIconColor?: RGB;
 };
-export type ColorEntryType = Record<BooleanUnion, RGB> & { scale?: IconScaleElement };
-export function isColorEntryType(F: object | ColorEntryType): F is ColorEntryType {
-    if ('true' in F && 'false' in F && 'scale' in F) return true;
-    return false;
-}
-export type IconEntryType = Record<BooleanUnion, string> & {
-    color: ColorEntryType;
-};
-export type TextEntryType = Record<BooleanUnion, string>;
-export type ValueEntryType = {
-    value: number;
-    decimal: number;
-    factor: number;
-    unit: string;
-};
-
 export type PageEntities = {
     type: 'cardEntities';
     items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
@@ -319,7 +291,7 @@ export type PageChart = {
 } & Omit<PageBaseType, 'useColor'>;
 
 export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
-
+*/
 export type DimMode = {
     dimmodeOn: boolean | undefined;
     brightnessDay: number | undefined;
@@ -328,7 +300,7 @@ export type DimMode = {
     timeNight: string | undefined;
 };
 
-export type ConfigButtonFunction = {
+/*export type ConfigButtonFunction = {
     mode: 'page' | 'toggle' | 'set' | null;
     page:
         | PageThermo
@@ -344,7 +316,7 @@ export type ConfigButtonFunction = {
         | null;
     entity: string | null;
     setValue: string | number | boolean | null;
-};
+};*/
 
 export type Config = {
     leftEntity: boolean;
@@ -366,10 +338,6 @@ export type Config = {
     defaultOnColor: RGB;
     defaultOffColor: RGB;
     defaultBackgroundColor: RGB;
-    pages: PageType[];
-    subPages: PageType[];
-    button1: ConfigButtonFunction;
-    button2: ConfigButtonFunction;
 };
 export type leftScreensaverEntityType =
     | [ScreenSaverElementWithUndefined, ScreenSaverElementWithUndefined, ScreenSaverElementWithUndefined]
@@ -561,6 +529,7 @@ export type DataItemsOptions = {
           role?: string;
           constVal: StateValue | AllIcons;
           state?: State | null; // use just inside of class
+          forceType?: 'string' | 'number' | 'boolean'; // force a type
       }
     | ((
           | {

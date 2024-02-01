@@ -105,7 +105,7 @@ export class Panel extends BaseClassPanelSend {
             card: 'screensaver',
             panel: this,
             id: 0,
-            name: 'SS',
+            name: 'SrS',
             adapter: this.adapter,
             panelSend: this.panelSend,
         };

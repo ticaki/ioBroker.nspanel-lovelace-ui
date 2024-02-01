@@ -93,6 +93,7 @@
                 "admin": ">=5.1.13"
             }
         ],
+        "messagebox": true,
         "tier": 3
     },
     "protectedNative": ["mqttPassword"],

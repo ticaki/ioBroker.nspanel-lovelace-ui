@@ -26,7 +26,7 @@ export type ScreensaverConfig = {
 
 export class Screensaver extends Page {
     private entitysConfig: NSPanel.ScreensaverOptionsType;
-    layout: NSPanel.ScreensaverModeType = 'standard';
+    readonly layout: NSPanel.ScreensaverModeType = 'standard';
     statesControler: StatesControler;
     private config: ScreensaverConfigType;
     private items: Record<
@@ -44,15 +44,26 @@ export class Screensaver extends Page {
         indicatorEntity: [],
         mrIconEntity: [],
     };
-    readonly mode: NSPanel.ScreensaverModeType;
     private rotationTime: number;
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
     private step: number = 0;
     constructor(config: PageInterface, options: ScreensaverConfig, statesControler: StatesControler) {
+        switch (options.mode) {
+            case 'standard':
+            case 'alternate': {
+                config.card = 'screensaver';
+                break;
+            }
+            case 'advanced': {
+                config.card = 'screensaver2';
+                break;
+            }
+        }
         super(config);
 
         this.entitysConfig = options.entitysConfig;
-        this.mode = options.mode;
+        this.layout = options.mode;
+
         this.config = options.config;
         moment.locale(options.config.momentLocale);
         this.statesControler = statesControler;
@@ -121,8 +132,8 @@ export class Screensaver extends Page {
 
                 let iconColor = String(Color.rgb_dec565(Color.White));
                 let icon = '';
-                if (item.entityIcon && item.entityIcon.true) {
-                    const val = await item.entityIcon.true.getString();
+                if (item.entityIcon && item.entityIcon.true.value) {
+                    const val = await item.entityIcon.true.value.getString();
                     if (val !== null) icon = Icons.GetIcon(val);
                 }
                 let val: string | number | boolean | null = await item.entityValue.value.getNumber();
@@ -146,8 +157,8 @@ export class Screensaver extends Page {
                 } else if (item.entityValue.value.type == 'boolean') {
                     val = await item.entityValue.value.getBoolean();
                     iconColor = await GetScreenSaverEntityColor(item);
-                    if (!val && item.entityIcon.false) {
-                        const t = await item.entityIcon.false.getString();
+                    if (!val && item.entityIcon.false.value) {
+                        const t = await item.entityIcon.false.value.getString();
                         if (t !== null) icon = Icons.GetIcon(t);
                     }
                     const b = val ? 'true' : 'false';
@@ -155,11 +166,11 @@ export class Screensaver extends Page {
                         const i = item.entityText[b];
                         if (i !== undefined) {
                             const t = await i.getString();
-                            if (t !== null) val = t;
+                            if (t !== null) val = this.library.getTranslation(t);
                         } else {
                             const i = item.entityText.true;
                             const t = i !== undefined ? await i.getString() : null;
-                            if (t !== null) val = t;
+                            if (t !== null) val = this.library.getTranslation(t);
                         }
                     }
                 } else if (
@@ -184,13 +195,10 @@ export class Screensaver extends Page {
                     }
                 }
 
-                let temp: any =
-                    item.entityIcon.color && item.entityIcon.color.true
-                        ? await item.entityIcon.color.true.getRGBDec()
-                        : null;
+                let temp: any = item.entityIcon.true.color ? await item.entityIcon.true.color.getRGBDec() : null;
                 iconColor = temp ? temp : iconColor;
                 temp = item.entityText && item.entityText.true ? await item.entityText.true.getString() : null;
-                const entityText = temp ? temp : '';
+                const entityText = temp ? this.library.getTranslation(temp) : '';
                 value.push({ icon, iconColor, displayName: entityText, optionalValue: val ? String(val) : '' });
             }
         }
@@ -342,11 +350,10 @@ export class Screensaver extends Page {
                         ? await item.entityValue.value.getString()
                         : await item.entityValue.value.getBoolean()
                     : null;
-            const offcolor =
-                item.entityIcon.color && item.entityIcon.color.false
-                    ? await item.entityIcon.color.false.getRGBDec()
-                    : String(Color.rgb_dec565(Color.White));
-            const onColor = item.entityIcon.color.true ? await item.entityIcon.color.true.getRGBDec() : null;
+            const offcolor = item.entityIcon.false.color
+                ? await item.entityIcon.false.color.getRGBDec()
+                : String(Color.rgb_dec565(Color.White));
+            const onColor = item.entityIcon.true.color ? await item.entityIcon.true.color.getRGBDec() : null;
             payload[`icon${s}Color`] = offcolor !== null ? offcolor : String(Color.rgb_dec565(Color.White));
             if (item.entityValue != null || value !== null || onColor != null) {
                 // Prüfung ob Entity vom Typ String ist
@@ -364,11 +371,6 @@ export class Screensaver extends Page {
                                 break;
                             default:
                         }
-                        if (Definition.Debug)
-                            this.log.debug(
-                                'Value: ' + item.entityValue + ' Color: ' + JSON.stringify(payload[`icon${s}Color`]),
-                                'info',
-                            );
                         // Alles was kein String ist in Boolean umwandeln
                     } else {
                         this.log.debug('Entity ist kein String', 'info');
@@ -382,8 +384,8 @@ export class Screensaver extends Page {
                     : null;
 
                 // Icon ermitteln
-                const onIcon = item.entityIcon.color.true ? await item.entityIcon.color.true.getString() : null;
-                const offIcon = item.entityIcon.color.false ? await item.entityIcon.color.false.getString() : null;
+                const onIcon = item.entityIcon.true.value ? await item.entityIcon.true.value.getString() : null;
+                const offIcon = item.entityIcon.false.value ? await item.entityIcon.false.value.getString() : null;
                 const selectIcon =
                     typeof entity !== 'boolean' && entity !== null && entityIconSelect
                         ? (entityIconSelect[entity] as string | undefined)
@@ -428,13 +430,12 @@ async function GetScreenSaverEntityColor(item: NSPanel.ScreenSaverDataItems | nu
         let colorReturn: number | string;
         const entityAsNumber = item.entityValue.value !== undefined ? await item.entityValue.value.getNumber() : null;
         const entityFactor = item.entityValue.factor !== undefined ? await item.entityValue.factor.getNumber() : null;
-        const entityIconColor =
-            item.entityIcon.color && item.entityIcon.color.true ? await item.entityIcon.color.true.getRGBDec() : null;
-        const entityIconColorScale: NSPanel.IconScaleElement | null = item.entityIcon.color.scale
-            ? await item.entityIcon.color.scale.getIconScale()
-            : null;
-        const entityOnColor = item.entityIcon.true ? await item.entityIcon.true.getRGBDec() : null;
-        const entityOffColor = item.entityIcon.false ? await item.entityIcon.false.getRGBDec() : null;
+        const entityIconColorScale: NSPanel.IconScaleElement | null =
+            'scale' in item.entityIcon && item.entityIcon.scale !== undefined
+                ? await item.entityIcon.scale.getIconScale()
+                : null;
+        const entityOnColor = item.entityIcon.true.color ? await item.entityIcon.true.color.getRGBDec() : null;
+        const entityOffColor = item.entityIcon.false.color ? await item.entityIcon.false.color.getRGBDec() : null;
         if (item.entityValue.value) {
             if (entityIconColorScale !== null) {
                 if (item.entityValue.value.type == 'boolean') {
@@ -501,7 +502,7 @@ async function GetScreenSaverEntityColor(item: NSPanel.ScreenSaverDataItems | nu
                             else colorReturn = Color.rgb_dec565(Color.White);
                         }
                     } else {
-                        if (entityOffColor !== null) colorReturn = entityOffColor;
+                        if (entityOnColor !== null) colorReturn = entityOnColor;
                         else colorReturn = Color.rgb_dec565(Color.White);
                     }
                 } else {

@@ -21,17 +21,11 @@ __export(types_exports, {
   SerialTypeArray: () => SerialTypeArray,
   buildNSPanelString: () => buildNSPanelString,
   checkSortedPlayerType: () => checkSortedPlayerType,
-  isColorEntryType: () => isColorEntryType,
   isEventMethod: () => isEventMethod,
   isEventType: () => isEventType,
   isIconScaleElement: () => isIconScaleElement,
-  isPageMedia: () => isPageMedia,
-  isPageMediaItem: () => isPageMediaItem,
-  isPagePower: () => isPagePower,
-  isPageThermoItem: () => isPageThermoItem,
   isPlayerWithMediaDevice: () => isPlayerWithMediaDevice,
-  isPopupType: () => isPopupType,
-  isRGB: () => isRGB
+  isPopupType: () => isPopupType
 });
 module.exports = __toCommonJS(types_exports);
 function buildNSPanelString(...tokens) {
@@ -44,9 +38,6 @@ function isPlayerWithMediaDevice(F) {
 }
 function checkSortedPlayerType(F) {
   return F;
-}
-function isRGB(F) {
-  return typeof F == "object" && "red" in F && "blue" in F && "green" in F;
 }
 function isEventMethod(F) {
   switch (F) {
@@ -79,18 +70,6 @@ function isPopupType(F) {
       return false;
   }
 }
-function isPageMediaItem(F) {
-  return "adapterPlayerInstance" in F;
-}
-function isPageThermoItem(F) {
-  return "popupThermoMode1" in F;
-}
-function isPageMedia(F) {
-  return F.type == "cardMedia";
-}
-function isPagePower(F) {
-  return F.type == "cardPower";
-}
 const SerialTypeArray = [
   "light",
   "shutter",
@@ -103,11 +82,6 @@ const SerialTypeArray = [
   "timer",
   "fan"
 ];
-function isColorEntryType(F) {
-  if ("true" in F && "false" in F && "scale" in F)
-    return true;
-  return false;
-}
 function isIconScaleElement(F) {
   return F && "val_min" in F && "val_max" in F;
 }
@@ -119,16 +93,10 @@ function isEventType(F) {
   SerialTypeArray,
   buildNSPanelString,
   checkSortedPlayerType,
-  isColorEntryType,
   isEventMethod,
   isEventType,
   isIconScaleElement,
-  isPageMedia,
-  isPageMediaItem,
-  isPagePower,
-  isPageThermoItem,
   isPlayerWithMediaDevice,
-  isPopupType,
-  isRGB
+  isPopupType
 });
 //# sourceMappingURL=types.js.map

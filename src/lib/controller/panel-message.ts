@@ -5,7 +5,6 @@ import { MQTTClientClass } from '../classes/mqtt';
 import { Panel } from './panel';
 import { BaseClassTriggerd } from './states-controller';
 
-
 export class BaseClassPanelSend extends BaseClassTriggerd {}
 
 /**

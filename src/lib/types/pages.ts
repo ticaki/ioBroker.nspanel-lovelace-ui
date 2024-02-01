@@ -1,5 +1,9 @@
 import * as Types from './types';
 import { Dataitem } from '../classes/data-item';
+import { RGB } from './Color';
+import { IconBoolean, ValueEntryType, TextEntryType, ColorEntryType, PageItemUnion } from './pageItem';
+import { MessageItemMedia } from './pageItem';
+import { MediaToolBoxAction } from './pageItem';
 
 export type PageTypeCards =
     | 'cardChart'
@@ -16,7 +20,7 @@ export type PageTypeCards =
     | 'screensaver'
     | 'screensaver2'; //| 'cardBurnRec'
 
-export type PageType =
+/*export type PageType =
     | Types.PageChart
     | Types.PageEntities
     | Types.PageGrid
@@ -27,7 +31,7 @@ export type PageType =
     | Types.PageQR
     | Types.PageAlarm
     | Types.PagePower;
-
+*/
 export type PageRole = PageMediaRoles;
 
 export type PageMediaRoles =
@@ -199,12 +203,13 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | listItem
     | PageTypeCards
     | IconBoolean
-    | Types.ValueEntryType
-    | Types.TextEntryType
-    | Types.RGB
-    | Types.ColorEntryType
+    | TextEntryType
+    | ValueEntryType
+    | RGB
+    | ColorEntryType
     | Types.IconScaleElement
-    ? Obj extends Types.RGB | Types.IconScaleElement
+    | PageItemUnion['data']
+    ? Obj extends RGB | Types.IconScaleElement
         ? N
         : {
               [K in keyof Obj]: ChangeTypeOfKeys<Obj[K], N>;
@@ -228,9 +233,10 @@ type PageMediaBaseConfig = {
     forward: string;
     backward: string;
 };
-type toolboxItem = ChangeTypeOfKeys<listItem, Types.DataItemsOptions | undefined> & { action: MediaToolBoxAction };
-export type toolboxItemDataItem = ChangeTypeOfKeys<listItem, Dataitem | undefined> & { action: MediaToolBoxAction };
-
+export function isColorEntryType(F: object | ColorEntryType): F is ColorEntryType {
+    if ('true' in F && 'false' in F && 'scale' in F) return true;
+    return false;
+}
 export type PageMediaBaseConfigWrite = {
     pplay: writeItem;
     pause: writeItem;
@@ -268,77 +274,16 @@ export type PageMediaMessage = {
     ];
 };
 type writeItem = { dp: string } | undefined;
-type listItem =
+export type listItem =
     | {
           on: string;
           text: string;
-          color: Types.ColorEntryType | string | undefined;
+          color: ColorEntryType | string | undefined;
           icon: IconBoolean | string | undefined;
           list: string | undefined;
       }
-    | undefined;
-
-export type IconBoolean = Record<Types.BooleanUnion, string | undefined>;
-export type ThisCardMessageTypes = 'input_sel' | 'button';
-/*export type MessageIstemMedia extends = {
-    type?: Extract<Types.SerialType, ThisCardMessageTypes> | '';
-    intNameEntity: string;
-    iconNumber: 0 | 1 | 2 | 3 | 4 | 5; // media0 usw.
-    mode: MediaToolBoxAction;
-    icon: string;
-    iconColor: string;
-    dislayName: string;
-    optionalValue?: string;
-};*/
-
-export type MessageItemMedia = Partial<MessageItem> & {
-    type?: Extract<Types.SerialType, ThisCardMessageTypes>;
-    iconNumber: 0 | 1 | 2 | 3 | 4 | 5; // media0 usw.
-    mode: MediaToolBoxAction;
+    | undefined; // mean string start with getState(' and end with ').val
+export type toolboxItem = ChangeTypeOfKeys<listItem, Types.DataItemsOptions | undefined> & {
+    action: MediaToolBoxAction;
 };
-export interface MessageItem extends MessageItemInterface {
-    mainId?: string;
-    subId?: string;
-}
-export type messageItemAllInterfaces = MessageItemMedia | MessageItem;
-export interface MessageItemInterface {
-    type: Types.SerialType;
-    intNameEntity: string;
-    icon: string;
-    iconColor: string;
-    dislayName: string;
-    optionalValue: string;
-}
-type MediaToolBoxAction =
-    | 'speaker'
-    | 'play'
-    | 'tool'
-    | 'track'
-    | 'favor'
-    | 'equal'
-    | 'repeat'
-    | 'seek'
-    | 'cross'
-    | 'nexttool';
-export type PageItemBase = {
-    activ: string;
-    value: string;
-    color: Types.ColorEntryType;
-} & Types.IconEntryType;
-//XOR<XOR<A, B>, C>
-type PageItemLights = PageItemLightsBrightness;
-type PageItemLightsBrightness = {
-    maxValueBrightness: number;
-    minValueBrightness: number;
-    interpolateColor: boolean;
-    dimmer: number | boolean;
-    hue: string;
-    useColor: string;
-};
-export type PageItem = {
-    role: 'socket' | 'light' | 'dimmer' | 'hue' | 'ct';
-    type: 'light';
-    data: PageItemBase & PageItemLights;
-};
-
-export type PageItemDataitems = Omit<PageItem, 'data'> & { data: ChangeTypeOfKeys<PageItem['data'], Dataitem> };
+export type toolboxItemDataItem = ChangeTypeOfKeys<listItem, Dataitem | undefined> & { action: MediaToolBoxAction };

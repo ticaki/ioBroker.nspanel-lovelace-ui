@@ -1,5 +1,5 @@
-import { PageItemDataitems } from '../types/pages';
-import { RGB } from '../types/types';
+import { RGB } from '../types/Color';
+import { PageItemDataitems } from '../types/pageItem';
 
 export const HMIOff: RGB = { red: 68, green: 115, blue: 158 }; // Blue-Off - Original Entity Off
 export const HMIOn: RGB = { red: 3, green: 169, blue: 244 }; // Blue-On
@@ -312,4 +312,7 @@ export function rgb_to_cie(red: number, green: number, blue: number): string {
     const cie = '[' + ciex + ',' + ciey + ']';
 
     return cie;
+}
+export function isRGB(F: RGB | any): F is RGB {
+    return typeof F == 'object' && 'red' in F && 'blue' in F && 'green' in F;
 }

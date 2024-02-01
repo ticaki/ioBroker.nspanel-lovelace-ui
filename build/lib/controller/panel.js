@@ -116,7 +116,7 @@ class Panel extends import_panel_message.BaseClassPanelSend {
       card: "screensaver",
       panel: this,
       id: 0,
-      name: "SS",
+      name: "SrS",
       adapter: this.adapter,
       panelSend: this.panelSend
     };

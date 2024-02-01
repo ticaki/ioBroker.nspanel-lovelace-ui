@@ -13,6 +13,7 @@ import * as MQTT from './lib/classes/mqtt';
 import { Testconfig } from './lib/config';
 import { Controller } from './lib/controller/panel-controller';
 import { Icons } from './lib/const/icon_mapping';
+import { ScreenSaverConst } from './lib/const/definition';
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -38,7 +39,9 @@ class NspanelLovelaceUi extends utils.Adapter {
      */
     private async onReady(): Promise<void> {
         Icons.adapter = this;
+        this.library = new Library(this);
         this.setTimeout(() => {
+            this.library.init();
             this.log.debug('Check configuration!');
             if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword))
                 return;
@@ -59,12 +62,12 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.controller = new Controller(this, {
                 mqttClient: this.mqttClient,
                 name: 'controller',
-                panels: [Testconfig],
+                panels: [JSON.parse(JSON.stringify(Testconfig))],
             });
             setTimeout(() => {
                 this.log.debug(String(process.memoryUsage().heapUsed)), 2000;
             });
-        }, 1000);
+        }, 3000);
     }
 
     /**
@@ -120,12 +123,133 @@ class NspanelLovelaceUi extends utils.Adapter {
     //  */
     private onMessage(obj: ioBroker.Message): void {
         if (typeof obj === 'object' && obj.message) {
-            if (obj.command === 'send') {
+            if (obj.command) {
                 // e.g. send email or pushover or whatever
-                this.log.info('send command');
+                this.log.info(JSON.stringify(obj));
+                if (obj.command === 'scs-field') {
+                    const result: { label: string; value: string }[] = [];
+                    const data = ScreenSaverConst[obj.message.type as keyof typeof ScreenSaverConst];
+                    for (const key in data) {
+                        const max = data[key as keyof typeof data].maxEntries;
+                        for (let a = 0; a < max; a++) {
+                            result.push({ label: `${a + 1} ${key}`, value: `${a + 1}#${key}` });
+                        }
+                    }
+                    if (obj.callback) this.sendTo(obj.from, obj.command, result, obj.callback);
+                    return;
+                } else if (obj.command === 'reload') {
+                    const result: any = {};
+                    const keyToValue:
+                        | 'value'
+                        | 'decimal'
+                        | 'factor'
+                        | 'unit'
+                        | 'date'
+                        | 'iconon'
+                        | 'icononcolor'
+                        | 'iconoff'
+                        | 'iconoffcolor'
+                        | 'iconscale'
+                        | 'texton'
+                        | 'textoff' = obj.message.field as typeof keyToValue;
+                    this.log.debug(keyToValue);
+                    result.currentfield = obj.message.entry + '#' + obj.message.field;
+                    const fields: Partial<{
+                        entity_value_read: string;
+                        entity_value_forcetyp: string;
+                        entity_value_dp: string;
+                        entity_value_constVal: string;
+                        entity_value_type: string;
+                    }> = {};
+                    const v1 = Testconfig.screenSaverConfig!.entitysConfig;
+                    const key = obj.message.entry.split('#')[1] as keyof typeof v1;
+                    const v2 = v1[key];
+                    const index = obj.message.entry.split('#')[0] - 1;
+                    const v3 = v2[index];
+                    if (v3 !== undefined) {
+                        let v4 = v3.entityValue.value;
+                        switch (keyToValue) {
+                            case 'value': {
+                                v4 = v3.entityValue.value;
+                                break;
+                            }
+                            case 'decimal': {
+                                v4 = v3.entityValue.decimal;
+                                break;
+                            }
+                            case 'factor': {
+                                v4 = v3.entityValue.factor;
+                                break;
+                            }
+                            case 'unit': {
+                                v4 = v3.entityValue.unit;
+                                break;
+                            }
+                            case 'date': {
+                                v4 = v3.entityDateFormat;
+                                break;
+                            }
+                            case 'iconon': {
+                                v4 = v3.entityIcon.true.value;
+                                break;
+                            }
+                            case 'icononcolor': {
+                                v4 = v3.entityIcon.true.color;
+                                break;
+                            }
+                            case 'iconoff': {
+                                v4 = v3.entityIcon.false.value;
+                                break;
+                            }
+                            case 'iconoffcolor': {
+                                v4 = v3.entityIcon.true.color;
+                                break;
+                            }
+                            case 'iconscale': {
+                                v4 = v3.entityIcon.scale;
+                                break;
+                            }
+                            case 'texton': {
+                                v4 = v3.entityText.true;
+                                break;
+                            }
+                            case 'textoff': {
+                                v4 = v3.entityText.false;
+                                break;
+                            }
+                            default:
+                                result.currentfield = '';
+                        }
+                        if (v4) {
+                            switch (v4.type) {
+                                case 'const': {
+                                    fields.entity_value_type = v4.type;
+                                    fields.entity_value_constVal = String(v4.constVal ?? '');
+                                    fields.entity_value_forcetyp = v4.forceType ?? '';
+                                    break;
+                                }
+                                case 'triggered':
+                                case 'state': {
+                                    fields.entity_value_type = v4.type;
+                                    fields.entity_value_dp = String(v4.dp ?? '');
+                                    fields.entity_value_forcetyp = String(v4.forceType ?? '');
+                                    fields.entity_value_read = String(v4.read ?? '');
+                                    break;
+                                }
+                                case 'internal': {
+                                    break;
+                                }
+                            }
+                        }
+                        this.log.debug(JSON.stringify({ native: Object.assign(result, fields) }));
+                        if (obj.callback)
+                            this.sendTo(obj.from, obj.command, { native: Object.assign(result, fields) }, obj.callback);
+                        return;
+                    }
+                }
 
                 // Send response in callback if required
-                if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
+                if (obj.callback) this.sendTo(obj.from, obj.command, [], obj.callback);
             }
         }
     }

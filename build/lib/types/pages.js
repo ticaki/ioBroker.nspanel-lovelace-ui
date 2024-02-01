@@ -26,6 +26,7 @@ var pages_exports = {};
 __export(pages_exports, {
   convertToEvent: () => convertToEvent,
   isButtonActionType: () => isButtonActionType,
+  isColorEntryType: () => isColorEntryType,
   isPageRole: () => isPageRole
 });
 module.exports = __toCommonJS(pages_exports);
@@ -158,10 +159,16 @@ function convertToEvent(msg) {
       opt: (_c = temp[4]) != null ? _c : ""
     };
 }
+function isColorEntryType(F) {
+  if ("true" in F && "false" in F && "scale" in F)
+    return true;
+  return false;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   convertToEvent,
   isButtonActionType,
+  isColorEntryType,
   isPageRole
 });
 //# sourceMappingURL=pages.js.map

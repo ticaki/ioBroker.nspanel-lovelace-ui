@@ -65,6 +65,7 @@ __export(Color_exports, {
   colorSpotify: () => colorSpotify,
   getHue: () => getHue,
   hsv2rgb: () => hsv2rgb,
+  isRGB: () => isRGB,
   pos_to_color: () => pos_to_color,
   rad2deg: () => rad2deg,
   rgbHexToObject: () => rgbHexToObject,
@@ -340,6 +341,9 @@ function rgb_to_cie(red, green, blue) {
   const cie = "[" + ciex + "," + ciey + "]";
   return cie;
 }
+function isRGB(F) {
+  return typeof F == "object" && "red" in F && "blue" in F && "green" in F;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   BatteryEmpty,
@@ -389,6 +393,7 @@ function rgb_to_cie(red, green, blue) {
   colorSpotify,
   getHue,
   hsv2rgb,
+  isRGB,
   pos_to_color,
   rad2deg,
   rgbHexToObject,
