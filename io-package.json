@@ -1,133 +1,150 @@
 {
-    "common": {
-        "name": "nspanel-lovelace-ui",
-        "version": "0.0.2-JustPlaceholder.0",
-        "news": {
-            "0.0.2-JustPlaceholder.0": {
-                "en": "initial release",
-                "de": "erstausstrahlung",
-                "ru": "первоначальный выпуск",
-                "pt": "lançamento inicial",
-                "nl": "eerste release",
-                "fr": "libération initiale",
-                "it": "rilascio iniziale",
-                "es": "liberación inicial",
-                "pl": "początkowe zwolnienie",
-                "uk": "початковий реліз",
-                "zh-cn": "初步释放"
-            },
-            "0.0.1": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "Начальная версия",
-                "pt": "lançamento inicial",
-                "nl": "Eerste uitgave",
-                "fr": "Première version",
-                "it": "Versione iniziale",
-                "es": "Versión inicial",
-                "pl": "Pierwsze wydanie",
-                "uk": "Початкова версія",
-                "zh-cn": "首次出版"
-            }
-        },
-        "title": "NSPanel Lovelace UI",
-        "titleLang": {
-            "en": "NSPanel Lovelace UI",
-            "de": "NSPanel Lovelace-Benutzeroberfläche",
-            "ru": "Пользовательский интерфейс NSPanel Lovelace",
-            "pt": "UI NSPanel Lovelace",
-            "nl": "NSPanel Lovelace-gebruikersinterface",
-            "fr": "Interface utilisateur NSPanel Lovelace",
-            "it": "Interfaccia utente NPanel Lovelace",
-            "es": "Interfaz de usuario de NSPanel Lovelace",
-            "pl": "Interfejs NSPanel Lovelace",
-            "uk": "Інтерфейс користувача NSPanel Lovelace",
-            "zh-cn": "NSPanel Lovelace UI"
-        },
-        "desc": {
-            "en": "NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.",
-            "de": "NsPanel Lovelace UI ist eine Firmware für den Nextion-Bildschirm innerhalb von NSPanel im Design von Lovelace UI Design.",
-            "ru": "NsPanel Lovelace UI — это прошивка для следующего экрана внутри NSPanel в дизайне Lovelace UI Design.",
-            "pt": "NsPanel Lovelace UI é um firmware para a tela nextion dentro do NSPanel no Design of Lovelace UI Design.",
-            "nl": "NsPanel Lovelace UI is een firmware voor het volgende scherm binnen NSPanel in het ontwerp van Lovelace UI Design.",
-            "fr": "NsPanel Lovelace UI est un micrologiciel pour l'écran suivant à l'intérieur de NSPanel dans la conception de Lovelace UI Design.",
-            "it": "NsPanel Lovelace UI è un firmware per la schermata successiva all'interno di NPanel nel design di Lovelace UI Design.",
-            "es": "NsPanel Lovelace UI es un firmware para la siguiente pantalla dentro de NSPanel en el diseño de Lovelace UI Design.",
-            "pl": "NsPanel Lovelace UI to oprogramowanie sprzętowe dla kolejnego ekranu wewnątrz NSPanel w projekcie Lovelace UI Design.",
-            "uk": "NsPanel Lovelace UI — це прошивка для наступного екрана всередині NSPanel у дизайні Lovelace UI Design.",
-            "zh-cn": "NsPanel Lovelace UI 是 Lovelace UI 设计中 NSPanel 内部下一个屏幕的固件。"
-        },
-        "authors": [
-            "ticaki <github@renopoint.de>"
-        ],
-        "keywords": [
-            "NSPanel",
-            "Lovelace",
-            "Sonoff",
-            "Lovelace UI",
-            "ioBroker"
-        ],
-        "license": "MIT",
-        "platform": "Javascript/Node.js",
-        "main": "build/main.js",
-        "icon": "nspanel-lovelace-ui.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/admin/nspanel-lovelace-ui.png",
-        "readme": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/README.md",
-        "loglevel": "info",
-        "mode": "daemon",
-        "type": "hardware",
-        "compact": true,
-        "connectionType": "local",
-        "dataSource": "push",
-        "adminUI": {
-            "config": "json"
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=3.3.22"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=5.1.13"
-            }
-        ],
-        "messagebox": true,
-        "tier": 3
+  "common": {
+    "name": "nspanel-lovelace-ui",
+    "version": "0.0.3-preAlpha.0",
+    "news": {
+      "0.0.3-preAlpha.0": {
+        "en": "alot - still dont install this",
+        "de": "alot - noch nicht installieren",
+        "ru": "alot - все еще не установить это",
+        "pt": "alot - ainda não instalar este",
+        "nl": "alot - nog steeds niet installeren",
+        "fr": "alot - toujours pas installer ceci",
+        "it": "alot - ancora non installare questo",
+        "es": "alot - todavía no instalar este",
+        "pl": "dużo - nadal nie zainstalować to",
+        "uk": "alot - все ще не встановити це",
+        "zh-cn": "alot - 还是不要安装这个"
+      },
+      "0.0.2-JustPlaceholder.0": {
+        "en": "initial release",
+        "de": "erstausstrahlung",
+        "ru": "первоначальный выпуск",
+        "pt": "lançamento inicial",
+        "nl": "eerste release",
+        "fr": "libération initiale",
+        "it": "rilascio iniziale",
+        "es": "liberación inicial",
+        "pl": "początkowe zwolnienie",
+        "uk": "початковий реліз",
+        "zh-cn": "初步释放"
+      },
+      "0.0.1": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "Начальная версия",
+        "pt": "lançamento inicial",
+        "nl": "Eerste uitgave",
+        "fr": "Première version",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Pierwsze wydanie",
+        "uk": "Початкова версія",
+        "zh-cn": "首次出版"
+      }
     },
-    "protectedNative": ["mqttPassword"],
-    "encryptedNative": ["mqttPassword"],
-    "native": {
-        "mqttPassword": "",
-        "mqttUsername": "",
-        "mqttIp": "mqtt.kiemen.com",
-        "mqttPort": 1883,
-        "topic": "nspanel/ns_panel2",
-        "name": "Wohnzimmer"
+    "title": "NSPanel Lovelace UI",
+    "titleLang": {
+      "en": "NSPanel Lovelace UI",
+      "de": "NSPanel Lovelace-Benutzeroberfläche",
+      "ru": "Пользовательский интерфейс NSPanel Lovelace",
+      "pt": "UI NSPanel Lovelace",
+      "nl": "NSPanel Lovelace-gebruikersinterface",
+      "fr": "Interface utilisateur NSPanel Lovelace",
+      "it": "Interfaccia utente NPanel Lovelace",
+      "es": "Interfaz de usuario de NSPanel Lovelace",
+      "pl": "Interfejs NSPanel Lovelace",
+      "uk": "Інтерфейс користувача NSPanel Lovelace",
+      "zh-cn": "NSPanel Lovelace UI"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "Device or service connected",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
-    ]
+    "desc": {
+      "en": "NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.",
+      "de": "NsPanel Lovelace UI ist eine Firmware für den Nextion-Bildschirm innerhalb von NSPanel im Design von Lovelace UI Design.",
+      "ru": "NsPanel Lovelace UI — это прошивка для следующего экрана внутри NSPanel в дизайне Lovelace UI Design.",
+      "pt": "NsPanel Lovelace UI é um firmware para a tela nextion dentro do NSPanel no Design of Lovelace UI Design.",
+      "nl": "NsPanel Lovelace UI is een firmware voor het volgende scherm binnen NSPanel in het ontwerp van Lovelace UI Design.",
+      "fr": "NsPanel Lovelace UI est un micrologiciel pour l'écran suivant à l'intérieur de NSPanel dans la conception de Lovelace UI Design.",
+      "it": "NsPanel Lovelace UI è un firmware per la schermata successiva all'interno di NPanel nel design di Lovelace UI Design.",
+      "es": "NsPanel Lovelace UI es un firmware para la siguiente pantalla dentro de NSPanel en el diseño de Lovelace UI Design.",
+      "pl": "NsPanel Lovelace UI to oprogramowanie sprzętowe dla kolejnego ekranu wewnątrz NSPanel w projekcie Lovelace UI Design.",
+      "uk": "NsPanel Lovelace UI — це прошивка для наступного екрана всередині NSPanel у дизайні Lovelace UI Design.",
+      "zh-cn": "NsPanel Lovelace UI 是 Lovelace UI 设计中 NSPanel 内部下一个屏幕的固件。"
+    },
+    "authors": [
+      "ticaki <github@renopoint.de>"
+    ],
+    "keywords": [
+      "NSPanel",
+      "Lovelace",
+      "Sonoff",
+      "Lovelace UI",
+      "ioBroker"
+    ],
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "main": "build/main.js",
+    "icon": "nspanel-lovelace-ui.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/admin/nspanel-lovelace-ui.png",
+    "readme": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/README.md",
+    "loglevel": "info",
+    "mode": "daemon",
+    "type": "hardware",
+    "compact": true,
+    "connectionType": "local",
+    "dataSource": "push",
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=3.3.22"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=5.1.13"
+      }
+    ],
+    "messagebox": true,
+    "tier": 3
+  },
+  "protectedNative": [
+    "mqttPassword"
+  ],
+  "encryptedNative": [
+    "mqttPassword"
+  ],
+  "native": {
+    "mqttPassword": "",
+    "mqttUsername": "",
+    "mqttIp": "mqtt.kiemen.com",
+    "mqttPort": 1883,
+    "topic": "nspanel/ns_panel2",
+    "name": "Wohnzimmer"
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Device or service connected",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }
