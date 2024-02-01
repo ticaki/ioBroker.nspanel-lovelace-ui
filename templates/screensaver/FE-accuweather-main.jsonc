@@ -1,0 +1,55 @@
+[
+    {
+        "type": [
+            "screensaver"
+        ],
+        "modul": [
+            "favoritEntity"
+        ],
+        "template": {
+            "entity": {
+                "type": "triggered",
+                "dp": "accuweather.0.Current.Temperature"
+            },
+            "entityDateFormat": {
+                "type": "const",
+                "constVal": null
+            },
+            "entityDecimalPlaces": {
+                "type": "const",
+                "constVal": null
+            },
+            "entityFactor": null,
+            "entityIconColor": {
+                "type": "state",
+                /* How to use
+                * this run its own this. U dont have accress to variables that no definied for this.
+                * Color: in a import of color.ts
+                * val: is the incoming value - raw
+                *
+                * The best thing is to write the function with () => { here }. Then remove the () => {}
+                * and and use a regex to remove 2- spaces and line breaks . A return is mandatory.
+                */
+                "read": "switch (val) {\n case 24: // Ice\n case 30: // Hot\n case 31: // Cold\n return Color.swExceptional; // exceptional\n\n case 7: // Cloudy\n case 8: // Dreary (Overcast)\n case 38: // Mostly Cloudy\n return Color.swCloudy; // cloudy\n\n case 11: // fog\n return Color.swFog; // fog\n\n case 25: // Sleet\n return Color.swHail; // Hail\n\n case 15: // T-Storms\n return Color.swLightning; // lightning\n\n case 16: // Mostly Cloudy w/ T-Storms\n case 17: // Partly Sunny w/ T-Storms\n case 41: // Partly Cloudy w/ T-Storms\n case 42: // Mostly Cloudy w/ T-Storms\n return Color.swLightningRainy; // lightning-rainy\n\n case 33: // Clear\n case 34: // Mostly Clear\n case 37: // Hazy Moonlight\n return Color.swClearNight;\n\n case 3: // Partly Sunny\n case 4: // Intermittent Clouds\n case 6: // Mostly Cloudy\n case 35: // Partly Cloudy\n case 36: // Intermittent Clouds\n return Color.swPartlycloudy; // partlycloudy\n\n case 18: // pouring\n return Color.swPouring; // pouring\n\n case 12: // Showers\n case 13: // Mostly Cloudy w/ Showers\n case 14: // Partly Sunny w/ Showers\n case 26: // Freezing Rain\n case 39: // Partly Cloudy w/ Showers\n case 40: // Mostly Cloudy w/ Showers\n return Color.swRainy; // rainy\n\n case 19: // Flurries\n case 20: // Mostly Cloudy w/ Flurries\n case 21: // Partly Sunny w/ Flurries\n case 22: // Snow\n case 23: // Mostly Cloudy w/ Snow\n case 43: // Mostly Cloudy w/ Flurries\n case 44: // Mostly Cloudy w/ Snow\n return Color.swSnowy; // snowy\n\n case 29: // Rain and Snow\n return Color.swSnowyRainy; // snowy-rainy\n\n case 1: // Sunny\n case 2: // Mostly Sunny\n case 5: // Hazy Sunshine\n return Color.swSunny; // sunny\n\n case 32: // windy\n return Color.swWindy; // windy\n\n default:\n return Color.White;\n }",
+                "dp": "accuweather.0.Current.WeatherIcon"
+            },
+            "entityIconColorScale": null,
+            "entityIconOn": {
+                "type": "triggered",
+                "dp": "accuweather.0.Current.WeatherIcon",
+                "read": "{\nswitch (val) {\n case 30: // Hot\n return 'weather-sunny-alert'; // exceptional\n\n case 24: // Ice\n case 31: // Cold\n return 'snowflake-alert'; // exceptional\n\n case 7: // Cloudy\n case 8: // Dreary (Overcast)\n case 38: // Mostly Cloudy\n return 'weather-cloudy'; // cloudy\n\n case 11: // fog\n return 'weather-fog'; // fog\n\n case 25: // Sleet\n return 'weather-hail'; // Hail\n\n case 15: // T-Storms\n return 'weather-lightning'; // lightning\n\n case 16: // Mostly Cloudy w/ T-Storms\n case 17: // Partly Sunny w/ T-Storms\n case 41: // Partly Cloudy w/ T-Storms\n case 42: // Mostly Cloudy w/ T-Storms\n return 'weather-lightning-rainy'; // lightning-rainy\n\n case 33: // Clear\n case 34: // Mostly Clear\n case 37: // Hazy Moonlight\n return 'weather-night';\n\n case 3: // Partly Sunny\n case 4: // Intermittent Clouds\n case 6: // Mostly Cloudy\n case 35: // Partly Cloudy\n case 36: // Intermittent Clouds\n return 'weather-partly-cloudy'; // partlycloudy\n\n case 18: // pouring\n return 'weather-pouring'; // pouring\n\n case 12: // Showers\n case 13: // Mostly Cloudy w/ Showers\n case 14: // Partly Sunny w/ Showers\n case 26: // Freezing Rain\n case 39: // Partly Cloudy w/ Showers\n case 40: // Mostly Cloudy w/ Showers\n return 'weather-rainy'; // rainy\n\n case 19: // Flurries\n case 20: // Mostly Cloudy w/ Flurries\n case 21: // Partly Sunny w/ Flurries\n case 22: // Snow\n case 23: // Mostly Cloudy w/ Snow\n case 43: // Mostly Cloudy w/ Flurries\n case 44: // Mostly Cloudy w/ Snow\n return 'weather-snowy'; // snowy\n\n case 29: // Rain and Snow\n return 'weather-snowy-rainy'; // snowy-rainy\n\n case 1: // Sunny\n case 2: // Mostly Sunny\n case 5: // Hazy Sunshine\n return 'weather-sunny'; // sunny\n\n case 32: // windy\n return 'weather-windy'; // windy\n\n default:\n return 'alert-circle-outline';\n}\n }"
+            },
+            "entityIconOff": null,
+            "entityIconSelect": null,
+            "entityOffColor": null,
+            "entityOffText": null,
+            "entityOnColor": null,
+            "entityOnText": null,
+            "entityText": null,
+            "entityUnitText": {
+                "type": "const",
+                "constVal": "°C"
+            }
+        }
+    }
+]

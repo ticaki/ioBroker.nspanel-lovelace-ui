@@ -1,11 +1,210 @@
 {
     "i18n": true,
-    "type": "panel",
+    "type": "tabs",
     "items": {
-        "option1": {
-            "type": "jsonEditor",
-            "label": "option1",
-            "newLine": true
+        "general": {
+            "type": "panel",
+            "label": "general",
+            "items": {
+                "mqttIp": {
+                    "type": "text",
+                    "label": "mqttIp",
+                    "newLine": true
+                },
+                "mqttPort": {
+                    "type": "text",
+                    "label": "mqttPort",
+                    "newLine": false
+                },
+                "mqttUsername": {
+                    "type": "text",
+                    "label": "mqttUsername",
+                    "newLine": true
+                },
+                "mqttPassword": {
+                    "type": "text",
+                    "label": "mqttPassword",
+                    "newLine": false
+                },
+                "topic": {
+                    "type": "text",
+                    "label": "topic",
+                    "newLine": true
+                },
+                "name": {
+                    "type": "text",
+                    "label": "name",
+                    "newLine": false
+                }
+            }
+        },
+        "screensaver": {
+            "type": "panel",
+            "label": "screensaver",
+            "items": {
+                "isAlive": {
+                    "type": "alive",
+                    "textAlive": "alive",
+                    "textNotAlive": "alive",
+                    "hidden": "true"
+                },
+                "scstype": {
+                    "type": "select",
+                    "label": "mode",
+                    "default": "standard",
+                    "options": [
+                        {
+                            "label": "Standard",
+                            "value": "standard"
+                        },
+                        {
+                            "label": "Alternative",
+                            "value": "alternate"
+                        },
+                        {
+                            "label": "Erweitert",
+                            "value": "advanced"
+                        }
+                    ],
+                    "lg": 3,
+                    "md": 6
+                },
+                "scsentry": {
+                    "type": "selectSendTo",
+                    "label": "mode",
+                    "command": "scs-field",
+                    "jsonData": "{\"type\": \"${data.scstype}\", \"entry\": \"${data.scsentry}\"}",
+                    "alsoDependsOn": ["scstype"],
+                    "newLine": true,
+                    "lg": 3,
+                    "md": 6
+                },
+                "currentfield": {
+                    "type": "text",
+                    "hidden": "false",
+                    "default": ""
+                },
+                "scsfield": {
+                    "type": "select",
+                    "label": "field",
+                    "default": "value",
+                    "options": [
+                        {
+                            "label": "value",
+                            "value": "value"
+                        },
+                        {
+                            "label": "decimal",
+                            "value": "decimal"
+                        },
+                        {
+                            "label": "factor",
+                            "value": "factor"
+                        },
+                        {
+                            "label": "unit",
+                            "value": "unit"
+                        },
+                        {
+                            "label": "date",
+                            "value": "date"
+                        },
+                        {
+                            "label": "iconon",
+                            "value": "iconon"
+                        },
+                        {
+                            "label": "icononcolor",
+                            "value": "icononcolor"
+                        },
+                        {
+                            "label": "iconoff",
+                            "value": "iconoff"
+                        },
+                        {
+                            "label": "iconoffcolor",
+                            "value": "iconoffcolor"
+                        },
+                        {
+                            "label": "iconscale",
+                            "value": "iconscale"
+                        },
+                        {
+                            "label": "texton",
+                            "value": "texton"
+                        },
+                        {
+                            "label": "textoff",
+                            "value": "textoff"
+                        }
+                    ],
+                    "lg": 3,
+                    "md": 6,
+                    "newLine": true
+                },
+                "reload": {
+                    "type": "sendTo",
+                    "command": "reload",
+                    "useNative": true,
+                    "jsonData": "{\"type\": \"${data.scstype}\", \"entry\": \"${data.scsentry}\", \"field\": \"${data.scsfield}\"}",
+                    "label":"Load Entry",
+                    "newLine": true
+                },
+
+                "entity_value_type": {
+                    "type": "select",
+                    "default": "const",
+                    "options": [
+                        {
+                            "label": "Konstanter Wert",
+                            "value": "const"
+                        },
+                        {
+                            "label": "Datenpunkt",
+                            "value": "state"
+                        },
+                        {
+                            "label": "Überwachter Datenpunkt",
+                            "value": "triggered"
+                        }
+                    ],
+                    "label": "Datenmodus",
+                    "hidden": "data.currentfield !== data.scsentry +'#'+ data.scsfield",
+                    "lg": 3,
+                    "md": 6,
+                    "newLine": true
+                },
+                "entity_value_constVal": {
+                    "type": "text",
+                    "label": "Konstanter Wert",
+                    "default": "",
+                    "hidden": "data.currentfield !== data.scsentry +'#'+ data.scsfield || data.entity_value_type !== 'const' "
+                },
+                "entity_value_dp": {
+                    "type": "text",
+                    "label": "Datenpunkt",
+                    "default": "",
+                    "lg": 3,
+                    "md": 6,
+                    "hidden": "data.currentfield !== data.scsentry +'#'+ data.scsfield || (data.entity_value_type !== 'state' && data.entity_value_type !== 'triggered')"
+                },
+                "entity_value_forcetyp": {
+                    "type": "text",
+                    "label": "Forciere Datentyp",
+                    "hidden": "data.currentfield !== data.scsentry +'#'+ data.scsfield",
+                    "default": "",
+                    "newLine": true
+                },
+                "entity_value_read": {
+                    "type": "text",
+                    "minRows": 5,
+                    "label": "Umwandlungsfunktion",
+                    "default": "",
+                    "hidden": "data.currentfield !== data.scsentry +'#'+ data.scsfield || (data.entity_value_type !== 'state' && data.entity_value_type !== 'triggered')",
+                    "lg": 6,
+                    "md": 6
+                }
+            }
         }
     }
 }
