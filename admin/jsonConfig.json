@@ -81,7 +81,7 @@
                 },
                 "currentfield": {
                     "type": "text",
-                    "hidden": "false",
+                    "hidden": "true",
                     "default": ""
                 },
                 "scsfield": {
@@ -148,7 +148,17 @@
                     "useNative": true,
                     "jsonData": "{\"type\": \"${data.scstype}\", \"entry\": \"${data.scsentry}\", \"field\": \"${data.scsfield}\"}",
                     "label":"Load Entry",
-                    "newLine": true
+                    "newLine": true,
+                    "hidden": "!data.scsentry || !data.scsfield"
+                },
+                "setData": {
+                    "type": "sendTo",
+                    "command": "setData",
+                    "useNative": true,
+                    "jsonData": "{\"type\": \"${data.scstype}\", \"entry\": \"${data.scsentry}\", \"field\": \"${data.scsfield}\", \"entity_value_read\": \"${data.entity_value_read}\", \"entity_value_dp\": \"${data.entity_value_dp}\", \"field\": \"${data.scsfield}\", \"entity_value_forcetyp\": \"${data.entity_value_forcetyp}\", \"entity_value_constVal\": \"${data.entity_value_constVal}\", \"entity_value_type\": \"${data.entity_value_type}\"}",
+                    "label":"Save Entry",
+                    "newLine": true,
+                    "hidden": "data.currentfield !== data.scsentry +'#'+ data.scsfield",
                 },
 
                 "entity_value_type": {

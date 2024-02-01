@@ -20,6 +20,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     mqttClient: MQTT.MQTTClientClass | undefined;
     mqttServer: MQTT.MQTTServerClass | undefined;
     controller: Controller | undefined;
+
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -40,6 +41,8 @@ class NspanelLovelaceUi extends utils.Adapter {
     private async onReady(): Promise<void> {
         Icons.adapter = this;
         this.library = new Library(this);
+        //@ts-expect-error nope
+        this.config.Testconfig = this.config.Testconfig || Testconfig;
         this.setTimeout(() => {
             this.library.init();
             this.log.debug('Check configuration!');
@@ -56,13 +59,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.log.debug(topic + ' ' + message);
                 },
             );
-            Testconfig.name = this.config.name;
-            Testconfig.topic = this.config.topic;
+            //@ts-expect-error ne ich definiere das nicht vollständig
+            const testconfig = JSON.parse(JSON.stringify(this.config.Testconfig));
+            testconfig.name = this.config.name;
+            testconfig.topic = this.config.topic;
             this.log.debug(String(process.memoryUsage().heapUsed));
             this.controller = new Controller(this, {
                 mqttClient: this.mqttClient,
                 name: 'controller',
-                panels: [JSON.parse(JSON.stringify(Testconfig))],
+                panels: [JSON.parse(JSON.stringify(testconfig))],
             });
             setTimeout(() => {
                 this.log.debug(String(process.memoryUsage().heapUsed)), 2000;
@@ -105,7 +110,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     /**
      * Is called if a subscribed state changes
      */
-    private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+    private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
         if (state) {
             if (this.controller) {
                 this.controller.readOnlyDB.onStateChange(id, state);
@@ -121,7 +126,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
     //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
     //  */
-    private onMessage(obj: ioBroker.Message): void {
+    private async onMessage(obj: ioBroker.Message): Promise<void> {
         if (typeof obj === 'object' && obj.message) {
             if (obj.command) {
                 // e.g. send email or pushover or whatever
@@ -137,7 +142,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     if (obj.callback) this.sendTo(obj.from, obj.command, result, obj.callback);
                     return;
-                } else if (obj.command === 'reload') {
+                } else if (obj.command === 'reload' || obj.command === 'setData') {
                     const result: any = {};
                     const keyToValue:
                         | 'value'
@@ -161,13 +166,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                         entity_value_constVal: string;
                         entity_value_type: string;
                     }> = {};
-                    const v1 = Testconfig.screenSaverConfig!.entitysConfig;
+                    //@ts-expect-error bla
+                    const v1 = this.config.Testconfig.screenSaverConfig!.entitysConfig;
                     const key = obj.message.entry.split('#')[1] as keyof typeof v1;
                     const v2 = v1[key];
                     const index = obj.message.entry.split('#')[0] - 1;
                     const v3 = v2[index];
+
                     if (v3 !== undefined) {
-                        let v4 = v3.entityValue.value;
+                        let v4 = undefined;
                         switch (keyToValue) {
                             case 'value': {
                                 v4 = v3.entityValue.value;
@@ -220,7 +227,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             default:
                                 result.currentfield = '';
                         }
-                        if (v4) {
+                        if (v4 && 'reload' == obj.command) {
                             switch (v4.type) {
                                 case 'const': {
                                     fields.entity_value_type = v4.type;
@@ -238,6 +245,109 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                                 case 'internal': {
                                     break;
+                                }
+                            }
+                        } else if (obj.command === 'setData') {
+                            const res = obj.message;
+                            const mytype = res.entity_value_type;
+                            v4 = undefined;
+                            switch (mytype) {
+                                case 'const': {
+                                    v4 = {
+                                        type: mytype,
+                                        constVal: res.entity_value_constVal ?? '',
+                                        forceType: res.entity_value_forcetyp ?? '',
+                                    };
+                                    if (v4.forceType == 'string') {
+                                        v4.constVal = String(v4.constVal);
+                                    } else if (v4.forceType == 'number') {
+                                        v4.constVal = Number(v4.constVal);
+                                    } else if (v4.forceType == 'boolean') {
+                                        v4.constVal = !!v4.constVal;
+                                    }
+                                    break;
+                                }
+                                case 'triggered':
+                                case 'state': {
+                                    v4 = {
+                                        type: mytype,
+                                        dp: res.entity_value_dp ?? '',
+                                        read: res.entity_value_read || undefined,
+                                        forceType: res.entity_value_forcetyp || undefined,
+                                    };
+                                    break;
+                                }
+                                case 'internal': {
+                                    break;
+                                }
+                            }
+                            let change = true;
+                            switch (keyToValue) {
+                                case 'value': {
+                                    v3.entityValue.value = v4;
+                                    break;
+                                }
+                                case 'decimal': {
+                                    v3.entityValue.decimal = v4;
+                                    break;
+                                }
+                                case 'factor': {
+                                    v3.entityValue.factor = v4;
+                                    break;
+                                }
+                                case 'unit': {
+                                    v3.entityValue.unit = v4;
+                                    break;
+                                }
+                                case 'date': {
+                                    v3.entityDateFormat = v4;
+                                    break;
+                                }
+                                case 'iconon': {
+                                    v3.entityIcon.true.value = v4;
+                                    break;
+                                }
+                                case 'icononcolor': {
+                                    v3.entityIcon.true.color = v4;
+                                    break;
+                                }
+                                case 'iconoff': {
+                                    v3.entityIcon.false.value = v4;
+                                    break;
+                                }
+                                case 'iconoffcolor': {
+                                    v3.entityIcon.true.color = v4;
+                                    break;
+                                }
+                                case 'iconscale': {
+                                    v3.entityIcon.scale;
+                                    break;
+                                }
+                                case 'texton': {
+                                    v3.entityText.true = v4;
+                                    break;
+                                }
+                                case 'textoff': {
+                                    v3.entityText.false = v4;
+                                    break;
+                                }
+                                default:
+                                    change = false;
+                                    result.currentfield = '';
+                            }
+                            if (change) {
+                                //@ts-expect-error bla
+                                this.config.Testconfig.screenSaverConfig!.entitysConfig[key][index] = v3;
+                                const obj = await this.getForeignObjectAsync('system.adapter.' + this.namespace);
+                                if (
+                                    obj &&
+                                    obj.native &&
+                                    //@ts-expect-error bla
+                                    JSON.stringify(obj.native.Testconfig) !== JSON.stringify(this.config.Testconfig)
+                                ) {
+                                    //@ts-expect-error bla
+                                    obj.native.Testconfig = this.config.Testconfig;
+                                    await this.setForeignObjectAsync('system.adapter.' + this.namespace, obj);
                                 }
                             }
                         }
