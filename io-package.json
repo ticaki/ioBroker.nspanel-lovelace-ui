@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.0.3-preAlpha.0",
+    "version": "0.0.4-preAlpha.0",
     "news": {
+      "0.0.4-preAlpha.0": {
+        "en": "admin save - still deep alpha",
+        "de": "admin speichern - noch tief alpha",
+        "ru": "admin save - все еще глубокая альфа",
+        "pt": "admin save - ainda deep alfa",
+        "nl": "admin opslaan - nog steeds diep alfa",
+        "fr": "admin save - encore profonde alpha",
+        "it": "admin salvare - ancora alfa profondo",
+        "es": "admin guardar - todavía profundo alfa",
+        "pl": "admin save - nadal głęboko alfa",
+        "uk": "admin зберегти - ще глибокий альфа",
+        "zh-cn": "管理员保存 - 仍然深 alpha"
+      },
       "0.0.3-preAlpha.0": {
         "en": "alot - still dont install this",
         "de": "alot - noch nicht installieren",
