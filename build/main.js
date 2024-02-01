@@ -44,6 +44,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   async onReady() {
     import_icon_mapping.Icons.adapter = this;
     this.library = new import_library.Library(this);
+    this.config.Testconfig = this.config.Testconfig || import_config.Testconfig;
     this.setTimeout(() => {
       this.library.init();
       this.log.debug("Check configuration!");
@@ -60,13 +61,14 @@ class NspanelLovelaceUi extends utils.Adapter {
           this.log.debug(topic + " " + message);
         }
       );
-      import_config.Testconfig.name = this.config.name;
-      import_config.Testconfig.topic = this.config.topic;
+      const testconfig = JSON.parse(JSON.stringify(this.config.Testconfig));
+      testconfig.name = this.config.name;
+      testconfig.topic = this.config.topic;
       this.log.debug(String(process.memoryUsage().heapUsed));
       this.controller = new import_panel_controller.Controller(this, {
         mqttClient: this.mqttClient,
         name: "controller",
-        panels: [JSON.parse(JSON.stringify(import_config.Testconfig))]
+        panels: [JSON.parse(JSON.stringify(testconfig))]
       });
       setTimeout(() => {
         this.log.debug(String(process.memoryUsage().heapUsed)), 2e3;
@@ -80,7 +82,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       callback();
     }
   }
-  onStateChange(id, state) {
+  async onStateChange(id, state) {
     if (state) {
       if (this.controller) {
         this.controller.readOnlyDB.onStateChange(id, state);
@@ -89,8 +91,8 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.log.info(`state ${id} deleted`);
     }
   }
-  onMessage(obj) {
-    var _a, _b, _c, _d, _e;
+  async onMessage(obj) {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     if (typeof obj === "object" && obj.message) {
       if (obj.command) {
         this.log.info(JSON.stringify(obj));
@@ -106,19 +108,19 @@ class NspanelLovelaceUi extends utils.Adapter {
           if (obj.callback)
             this.sendTo(obj.from, obj.command, result, obj.callback);
           return;
-        } else if (obj.command === "reload") {
+        } else if (obj.command === "reload" || obj.command === "setData") {
           const result = {};
           const keyToValue = obj.message.field;
           this.log.debug(keyToValue);
           result.currentfield = obj.message.entry + "#" + obj.message.field;
           const fields = {};
-          const v1 = import_config.Testconfig.screenSaverConfig.entitysConfig;
+          const v1 = this.config.Testconfig.screenSaverConfig.entitysConfig;
           const key = obj.message.entry.split("#")[1];
           const v2 = v1[key];
           const index = obj.message.entry.split("#")[0] - 1;
           const v3 = v2[index];
           if (v3 !== void 0) {
-            let v4 = v3.entityValue.value;
+            let v4 = void 0;
             switch (keyToValue) {
               case "value": {
                 v4 = v3.entityValue.value;
@@ -171,7 +173,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               default:
                 result.currentfield = "";
             }
-            if (v4) {
+            if (v4 && "reload" == obj.command) {
               switch (v4.type) {
                 case "const": {
                   fields.entity_value_type = v4.type;
@@ -189,6 +191,102 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 case "internal": {
                   break;
+                }
+              }
+            } else if (obj.command === "setData") {
+              const res = obj.message;
+              const mytype = res.entity_value_type;
+              v4 = void 0;
+              switch (mytype) {
+                case "const": {
+                  v4 = {
+                    type: mytype,
+                    constVal: (_f = res.entity_value_constVal) != null ? _f : "",
+                    forceType: (_g = res.entity_value_forcetyp) != null ? _g : ""
+                  };
+                  if (v4.forceType == "string") {
+                    v4.constVal = String(v4.constVal);
+                  } else if (v4.forceType == "number") {
+                    v4.constVal = Number(v4.constVal);
+                  } else if (v4.forceType == "boolean") {
+                    v4.constVal = !!v4.constVal;
+                  }
+                  break;
+                }
+                case "triggered":
+                case "state": {
+                  v4 = {
+                    type: mytype,
+                    dp: (_h = res.entity_value_dp) != null ? _h : "",
+                    read: res.entity_value_read || void 0,
+                    forceType: res.entity_value_forcetyp || void 0
+                  };
+                  break;
+                }
+                case "internal": {
+                  break;
+                }
+              }
+              let change = true;
+              switch (keyToValue) {
+                case "value": {
+                  v3.entityValue.value = v4;
+                  break;
+                }
+                case "decimal": {
+                  v3.entityValue.decimal = v4;
+                  break;
+                }
+                case "factor": {
+                  v3.entityValue.factor = v4;
+                  break;
+                }
+                case "unit": {
+                  v3.entityValue.unit = v4;
+                  break;
+                }
+                case "date": {
+                  v3.entityDateFormat = v4;
+                  break;
+                }
+                case "iconon": {
+                  v3.entityIcon.true.value = v4;
+                  break;
+                }
+                case "icononcolor": {
+                  v3.entityIcon.true.color = v4;
+                  break;
+                }
+                case "iconoff": {
+                  v3.entityIcon.false.value = v4;
+                  break;
+                }
+                case "iconoffcolor": {
+                  v3.entityIcon.true.color = v4;
+                  break;
+                }
+                case "iconscale": {
+                  v3.entityIcon.scale;
+                  break;
+                }
+                case "texton": {
+                  v3.entityText.true = v4;
+                  break;
+                }
+                case "textoff": {
+                  v3.entityText.false = v4;
+                  break;
+                }
+                default:
+                  change = false;
+                  result.currentfield = "";
+              }
+              if (change) {
+                this.config.Testconfig.screenSaverConfig.entitysConfig[key][index] = v3;
+                const obj2 = await this.getForeignObjectAsync("system.adapter." + this.namespace);
+                if (obj2 && obj2.native && JSON.stringify(obj2.native.Testconfig) !== JSON.stringify(this.config.Testconfig)) {
+                  obj2.native.Testconfig = this.config.Testconfig;
+                  await this.setForeignObjectAsync("system.adapter." + this.namespace, obj2);
                 }
               }
             }
