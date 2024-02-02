@@ -41,12 +41,10 @@ class NspanelLovelaceUi extends utils.Adapter {
     private async onReady(): Promise<void> {
         Icons.adapter = this;
         this.library = new Library(this);
-
         this.config.Testconfig = this.config.Testconfig || Testconfig;
         Testconfig.screenSaverConfig!.mode = this.config.scstype as any;
         this.config.Testconfig.timeout = this.config.timeout;
         testConfigMedia.dpInit = this.config.mediaid;
-
         this.setTimeout(() => {
             this.library.init();
             this.log.debug('Check configuration!');
@@ -169,7 +167,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                         entity_value_constVal: string;
                         entity_value_type: string;
                     }> = {};
-
                     const v1 = this.config.Testconfig.screenSaverConfig!.entitysConfig;
                     const key = obj.message.entry.split('#')[1] as keyof typeof v1;
                     const v2 = v1[key];
@@ -344,6 +341,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 if (
                                     obj &&
                                     obj.native &&
+
                                     JSON.stringify(obj.native.Testconfig) !== JSON.stringify(this.config.Testconfig)
                                 ) {
                                     obj.native.Testconfig = this.config.Testconfig;

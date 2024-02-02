@@ -169,6 +169,7 @@
                     "label":"Save Entry",
                     "newLine": true,
                     "hidden": "data.currentfield !== data.scsentry +'#'+ data.scsfield"
+
                 },
 
                 "entity_value_type": {
