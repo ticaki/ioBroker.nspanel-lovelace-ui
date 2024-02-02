@@ -281,3 +281,12 @@ export function rgb_to_cie(red: number, green: number, blue: number): string {
 export function isRGB(F: RGB | any): F is RGB {
     return typeof F == 'object' && 'red' in F && 'blue' in F && 'green' in F;
 }
+
+export const getDecfromRGBThree = async (item: PageItemDataitems): Promise<string | null> => {
+    if (!item) return String(rgb_dec565(White));
+    const red = (item.data.red && (await item.data.red.getNumber())) ?? -1;
+    const green = (item.data.red && (await item.data.red.getNumber())) ?? -1;
+    const blue = (item.data.red && (await item.data.red.getNumber())) ?? -1;
+    if (red === -1 || blue === -1 || green === -1) return null;
+    return String(rgb_dec565({ red, green, blue }));
+};
