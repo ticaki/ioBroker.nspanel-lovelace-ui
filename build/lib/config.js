@@ -214,7 +214,9 @@ const Testconfig = {
               }
             },
             false: { value: void 0, color: void 0 },
-            scale: void 0
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
           },
           entityText: {
             true: void 0,
@@ -258,7 +260,9 @@ const Testconfig = {
             scale: {
               type: "const",
               constVal: { val_min: 0, val_max: 80 }
-            }
+            },
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -304,7 +308,9 @@ const Testconfig = {
             scale: {
               type: "const",
               constVal: { val_min: 0, val_max: 7.2 }
-            }
+            },
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -347,7 +353,9 @@ const Testconfig = {
               value: void 0,
               color: void 0
             },
-            scale: void 0
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -402,7 +410,9 @@ const Testconfig = {
                 constVal: Color.Blue
               }
             },
-            scale: void 0
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -448,7 +458,9 @@ const Testconfig = {
             scale: {
               type: "const",
               constVal: { val_min: 0, val_max: 80 }
-            }
+            },
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -494,7 +506,9 @@ const Testconfig = {
             scale: {
               type: "const",
               constVal: { val_min: 0, val_max: 7.2 }
-            }
+            },
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -537,7 +551,9 @@ const Testconfig = {
               value: void 0,
               color: void 0
             },
-            scale: void 0
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -580,7 +596,9 @@ const Testconfig = {
             scale: {
               type: "const",
               constVal: { val_min: 0, val_max: 100, val_best: 65 }
-            }
+            },
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -623,7 +641,9 @@ const Testconfig = {
               value: void 0,
               color: void 0
             },
-            scale: void 0
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -679,7 +699,9 @@ const Testconfig = {
                 constVal: Color.Blue
               }
             },
-            scale: void 0
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -725,7 +747,9 @@ const Testconfig = {
             scale: {
               type: "const",
               constVal: { val_min: 0, val_max: 7.2 }
-            }
+            },
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -768,7 +792,9 @@ const Testconfig = {
               value: void 0,
               color: void 0
             },
-            scale: void 0
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -814,7 +840,9 @@ const Testconfig = {
             scale: {
               type: "const",
               constVal: { val_min: 0, val_max: 80 }
-            }
+            },
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -860,7 +888,9 @@ const Testconfig = {
             scale: {
               type: "const",
               constVal: { val_min: 0, val_max: 7.2 }
-            }
+            },
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -905,7 +935,9 @@ const Testconfig = {
               value: void 0,
               color: void 0
             },
-            scale: void 0
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -951,7 +983,9 @@ const Testconfig = {
                 constVal: "#FF00FF"
               }
             },
-            scale: void 0
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
           },
           entityIconSelect: void 0,
           entityText: {
@@ -972,7 +1006,8 @@ const Testconfig = {
     }
   },
   topic: "nspanel/ns_panel2",
-  name: "Wohnzimmer"
+  name: "Wohnzimmer",
+  timeout: 1
 };
 const welcomePopupPayload = "entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~  Einen sch\xF6nen Tag                w\xFCnschen dir                Armilar, TT-Tom, ticaki         & Kuckuckmann~2000~3~1~\uF4DD~2000";
 const testConfigMedia = {

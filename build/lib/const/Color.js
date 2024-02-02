@@ -63,8 +63,10 @@ __export(Color_exports, {
   colorScale9: () => colorScale9,
   colorSonos: () => colorSonos,
   colorSpotify: () => colorSpotify,
+  getDecfromRGBThree: () => getDecfromRGBThree,
   getHue: () => getHue,
   hsv2rgb: () => hsv2rgb,
+  hsvtodec: () => hsvtodec,
   isRGB: () => isRGB,
   pos_to_color: () => pos_to_color,
   rad2deg: () => rad2deg,
@@ -248,12 +250,12 @@ async function GetIconColor(pageItem, value) {
   var _a;
   const useColor = pageItem.data.useColor && await pageItem.data.useColor.getBoolean();
   const interpolateColor = pageItem.data.interpolateColor && await pageItem.data.interpolateColor.getBoolean();
-  const onColor = pageItem.data.color && "true" in pageItem.data.color && pageItem.data.color.true && await pageItem.data.color.true.getRGBValue();
-  const offColor = pageItem.data.color && "true" in pageItem.data.color && pageItem.data.color.true && await pageItem.data.color.true.getRGBValue();
+  const onColor = pageItem.data.icon.true.color && await pageItem.data.icon.true.color.getRGBValue();
+  const offColor = pageItem.data.icon.true.color && await pageItem.data.icon.true.color.getRGBValue();
   if (useColor && interpolateColor && typeof value === "number") {
     let val = typeof value === "number" ? value : 0;
-    const maxValue = pageItem.data.maxValueBrightness && await pageItem.data.maxValueBrightness.getNumber() || 100;
-    const minValue = pageItem.data.minValueBrightness && await pageItem.data.minValueBrightness.getNumber() || 0;
+    const maxValue = pageItem.data.icon.maxBri && await pageItem.data.icon.maxBri.getNumber() || 100;
+    const minValue = pageItem.data.icon.minBri && await pageItem.data.icon.minBri.getNumber() || 0;
     val = val > maxValue ? maxValue : val;
     val = val < minValue ? minValue : val;
     return String(
@@ -266,7 +268,7 @@ async function GetIconColor(pageItem, value) {
       )
     );
   }
-  if (useColor && typeof value === "boolean" && value || typeof value === "number" && value > (pageItem.data.minValueBrightness !== void 0 ? (_a = await pageItem.data.minValueBrightness.getNumber()) != null ? _a : 0 : 0)) {
+  if (useColor && typeof value === "boolean" && value || typeof value === "number" && value > (pageItem.data.icon.minBri !== void 0 ? (_a = await pageItem.data.icon.minBri.getNumber()) != null ? _a : 0 : 0)) {
     return String(rgb_dec565(onColor ? onColor : defaultOnColor));
   }
   return String(rgb_dec565(offColor ? offColor : defaultOffColor));
@@ -294,6 +296,12 @@ function hsv2rgb(hue, saturation, value) {
   const x = chroma * (1 - Math.abs(hue % 2 - 1));
   const rgb = hue <= 1 ? [chroma, x, 0] : hue <= 2 ? [x, chroma, 0] : hue <= 3 ? [0, chroma, x] : hue <= 4 ? [0, x, chroma] : hue <= 5 ? [x, 0, chroma] : [chroma, 0, x];
   return rgb.map((v) => (v + value - chroma) * 255);
+}
+function hsvtodec(hue, saturation, value) {
+  if (hue === null)
+    return null;
+  const result = hsv2rgb(hue, saturation, value);
+  return String(rgb_dec565({ red: result[0], green: result[1], blue: result[2] }));
 }
 function getHue(red, green, blue) {
   const min = Math.min(Math.min(red, green), blue);
@@ -344,6 +352,17 @@ function rgb_to_cie(red, green, blue) {
 function isRGB(F) {
   return typeof F == "object" && "red" in F && "blue" in F && "green" in F;
 }
+const getDecfromRGBThree = async (item) => {
+  var _a, _b, _c;
+  if (!item)
+    return String(rgb_dec565(White));
+  const red = (_a = item.data.red && await item.data.red.getNumber()) != null ? _a : -1;
+  const green = (_b = item.data.red && await item.data.red.getNumber()) != null ? _b : -1;
+  const blue = (_c = item.data.red && await item.data.red.getNumber()) != null ? _c : -1;
+  if (red === -1 || blue === -1 || green === -1)
+    return null;
+  return String(rgb_dec565({ red, green, blue }));
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   BatteryEmpty,
@@ -391,8 +410,10 @@ function isRGB(F) {
   colorScale9,
   colorSonos,
   colorSpotify,
+  getDecfromRGBThree,
   getHue,
   hsv2rgb,
+  hsvtodec,
   isRGB,
   pos_to_color,
   rad2deg,

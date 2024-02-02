@@ -35,7 +35,9 @@ class Dataitem extends import_library.BaseClass {
   options;
   stateDB;
   type = void 0;
+  trueType = void 0;
   parent;
+  writeable = false;
   constructor(adapter, options, parent, db) {
     super(adapter, options.name || "");
     this.options = options;
@@ -73,7 +75,9 @@ class Dataitem extends import_library.BaseClass {
           return false;
         }
         this.type = this.type || obj.common.type;
+        this.trueType = obj.common.type;
         this.options.role = obj.common.role;
+        this.writeable = !!obj.common.write;
         if (this.options.type == "triggered")
           this.stateDB.setTrigger(this.options.dp, this.parent, this.options.response);
         const value = await this.stateDB.getState(this.options.dp, this.options.response);
@@ -108,7 +112,9 @@ class Dataitem extends import_library.BaseClass {
             state.val = this.options.read(state.val);
           this.log.debug(JSON.stringify(state.val));
         } catch (e) {
-          this.log.error(`Read is invalid: ${this.options.read} Error: ${e}`);
+          this.log.error(
+            `Read for dp: ${this.options.dp} is invalid! read: ${this.options.read} Error: ${e}`
+          );
         }
       }
     }
@@ -245,7 +251,9 @@ class Dataitem extends import_library.BaseClass {
     if (this.options.type === "const") {
       this.options.constVal = val;
     } else {
-      await this.stateDB.setStateAsync(this, val);
+      if (this.options.write)
+        new Function("val", "Color", `${this.options.write}`)(val, Color);
+      await this.stateDB.setStateAsync(this, val, this.writeable);
     }
   }
 }

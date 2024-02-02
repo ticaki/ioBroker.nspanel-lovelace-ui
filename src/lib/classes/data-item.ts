@@ -9,7 +9,9 @@ export class Dataitem extends BaseClass {
     //private obj: ioBroker.Object | null | undefined;
     stateDB: StatesControler;
     type: ioBroker.CommonType | 'undefined' | undefined = undefined;
+    trueType: ioBroker.CommonType | 'undefined' | undefined = undefined;
     parent: BaseClassTriggerd;
+    writeable: boolean = false;
     /**
      * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
      * @param adapter this of adapter
@@ -63,7 +65,9 @@ export class Dataitem extends BaseClass {
                     //throw new Error(`801: ${this.options.dp} has no state object! Bye Bye`);
                 }
                 this.type = this.type || obj.common.type;
+                this.trueType = obj.common.type;
                 this.options.role = obj.common.role;
+                this.writeable = !!obj.common.write;
                 if (this.options.type == 'triggered')
                     this.stateDB.setTrigger(this.options.dp, this.parent, this.options.response);
                 const value = await this.stateDB.getState(this.options.dp, this.options.response);
@@ -97,7 +101,9 @@ export class Dataitem extends BaseClass {
                     else state.val = this.options.read(state.val);
                     this.log.debug(JSON.stringify(state.val));
                 } catch (e) {
-                    this.log.error(`Read is invalid: ${this.options.read} Error: ${e}`);
+                    this.log.error(
+                        `Read for dp: ${this.options.dp} is invalid! read: ${this.options.read} Error: ${e}`,
+                    );
                 }
             }
         }
@@ -242,7 +248,8 @@ export class Dataitem extends BaseClass {
         if (this.options.type === 'const') {
             this.options.constVal = val;
         } else {
-            await this.stateDB.setStateAsync(this, val);
+            if (this.options.write) new Function('val', 'Color', `${this.options.write}`)(val, Color);
+            await this.stateDB.setStateAsync(this, val, this.writeable);
         }
     }
 }

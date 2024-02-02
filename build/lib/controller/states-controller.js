@@ -90,8 +90,10 @@ class BaseClassTriggerd extends import_library.BaseClass {
     return s.join("~");
   }
   async stopTriggerTimeout() {
-    if (this.updateTimeout)
+    if (this.updateTimeout) {
       this.adapter.clearTimeout(this.updateTimeout);
+      this.updateTimeout = void 0;
+    }
   }
   async delete() {
     await super.delete();
@@ -230,19 +232,24 @@ class StatesControler extends import_library.BaseClass {
       }
     }
   }
-  async setStateAsync(item, val) {
+  async setStateAsync(item, val, writeable) {
     if (item.options.type === "state" || item.options.type === "triggered") {
       if (item.options.dp) {
         const ack = item.options.dp.startsWith(this.adapter.namespace);
         this.log.debug(`setStateAsync(${item.options.dp}, ${val}, ${ack})`);
-        if (item.type === "number" && typeof val === "string")
+        if (item.trueType === "number" && typeof val === "string")
           val = parseFloat(val);
-        if (item.type === "boolean")
+        else if (item.trueType === "number" && typeof val === "boolean")
+          val = val ? 1 : 0;
+        else if (item.trueType === "boolean")
           val = !!val;
-        if (item.type === "string")
+        if (item.trueType === "string")
           val = String(val);
         this.updateDBState(item.options.dp, val, ack);
-        await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
+        if (writeable)
+          await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
+        else
+          this.log.error(`Forbidden write attempts on a read-only state! id: ${item.options.dp}`);
       }
     } else if (item.options.type === "internal") {
       if (this.triggerDB[item.options.dp]) {

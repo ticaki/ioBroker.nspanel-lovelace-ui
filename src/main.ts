@@ -10,7 +10,7 @@ import 'source-map-support/register';
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 import * as MQTT from './lib/classes/mqtt';
-import { Testconfig } from './lib/config';
+import { Testconfig, testConfigMedia } from './lib/config';
 import { Controller } from './lib/controller/panel-controller';
 import { Icons } from './lib/const/icon_mapping';
 import { ScreenSaverConst } from './lib/const/definition';
@@ -41,8 +41,10 @@ class NspanelLovelaceUi extends utils.Adapter {
     private async onReady(): Promise<void> {
         Icons.adapter = this;
         this.library = new Library(this);
-        //@ts-expect-error nope
         this.config.Testconfig = this.config.Testconfig || Testconfig;
+        Testconfig.screenSaverConfig!.mode = this.config.scstype as any;
+        this.config.Testconfig.timeout = this.config.timeout;
+        testConfigMedia.dpInit = this.config.mediaid;
         this.setTimeout(() => {
             this.library.init();
             this.log.debug('Check configuration!');
@@ -59,7 +61,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.log.debug(topic + ' ' + message);
                 },
             );
-            //@ts-expect-error ne ich definiere das nicht vollständig
             const testconfig = JSON.parse(JSON.stringify(this.config.Testconfig));
             testconfig.name = this.config.name;
             testconfig.topic = this.config.topic;
@@ -166,7 +167,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                         entity_value_constVal: string;
                         entity_value_type: string;
                     }> = {};
-                    //@ts-expect-error bla
                     const v1 = this.config.Testconfig.screenSaverConfig!.entitysConfig;
                     const key = obj.message.entry.split('#')[1] as keyof typeof v1;
                     const v2 = v1[key];
@@ -336,16 +336,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     result.currentfield = '';
                             }
                             if (change) {
-                                //@ts-expect-error bla
                                 this.config.Testconfig.screenSaverConfig!.entitysConfig[key][index] = v3;
                                 const obj = await this.getForeignObjectAsync('system.adapter.' + this.namespace);
                                 if (
                                     obj &&
                                     obj.native &&
-                                    //@ts-expect-error bla
                                     JSON.stringify(obj.native.Testconfig) !== JSON.stringify(this.config.Testconfig)
                                 ) {
-                                    //@ts-expect-error bla
                                     obj.native.Testconfig = this.config.Testconfig;
                                     await this.setForeignObjectAsync('system.adapter.' + this.namespace, obj);
                                 }

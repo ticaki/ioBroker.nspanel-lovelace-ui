@@ -45,6 +45,9 @@ class NspanelLovelaceUi extends utils.Adapter {
     import_icon_mapping.Icons.adapter = this;
     this.library = new import_library.Library(this);
     this.config.Testconfig = this.config.Testconfig || import_config.Testconfig;
+    import_config.Testconfig.screenSaverConfig.mode = this.config.scstype;
+    this.config.Testconfig.timeout = this.config.timeout;
+    import_config.testConfigMedia.dpInit = this.config.mediaid;
     this.setTimeout(() => {
       this.library.init();
       this.log.debug("Check configuration!");

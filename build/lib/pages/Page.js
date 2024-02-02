@@ -31,7 +31,7 @@ const messageItemDefault = {
   intNameEntity: "",
   icon: "",
   iconColor: "",
-  dislayName: "",
+  displayName: "",
   optionalValue: ""
 };
 class Page extends import_panel_message.BaseClassPanelSend {
@@ -79,7 +79,7 @@ class Page extends import_panel_message.BaseClassPanelSend {
       (_b = id.join("?")) != null ? _b : messageItemDefault.intNameEntity,
       (_c = msg.icon) != null ? _c : messageItemDefault.icon,
       (_d = msg.iconColor) != null ? _d : messageItemDefault.iconColor,
-      (_e = msg.dislayName) != null ? _e : messageItemDefault.dislayName,
+      (_e = msg.displayName) != null ? _e : messageItemDefault.displayName,
       (_f = msg.optionalValue) != null ? _f : messageItemDefault.optionalValue
     );
   }

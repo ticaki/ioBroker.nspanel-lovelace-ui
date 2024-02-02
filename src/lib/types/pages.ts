@@ -1,8 +1,15 @@
 import * as Types from './types';
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
-import { IconBoolean, ValueEntryType, TextEntryType, ColorEntryType, PageItemUnion } from './pageItem';
-import { MessageItemMedia } from './pageItem';
+import {
+    ColorEntryType,
+    IconBoolean,
+    MessageItemMedia,
+    PageItemBase,
+    PageItemLights,
+    TextEntryType,
+    ValueEntryType,
+} from './pageItem';
 import { MediaToolBoxAction } from './pageItem';
 
 export type PageTypeCards =
@@ -208,7 +215,7 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | RGB
     | ColorEntryType
     | Types.IconScaleElement
-    | PageItemUnion['data']
+    | (PageItemBase & PageItemLights)
     ? Obj extends RGB | Types.IconScaleElement
         ? N
         : {
@@ -256,7 +263,7 @@ export type PageMediaMessage = {
     headline: string;
     getNavigation: string;
     id: string;
-    title: string;
+    name: string;
     titelColor: string;
     artist: string;
     artistColor: string;

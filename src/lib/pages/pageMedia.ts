@@ -12,7 +12,7 @@ const PageMediaMessageDefault: pages.PageMediaMessage = {
     headline: '',
     getNavigation: '~~~~~~~~~',
     id: '',
-    title: '',
+    name: '',
     titelColor: String(Color.rgb_dec565(Color.White)),
     artist: '',
     artistColor: String(Color.rgb_dec565(Color.White)),
@@ -76,6 +76,8 @@ export class PageMedia extends Page implements pages.PageMediaBase {
     }
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
+            this.headlinePos = 0;
+            this.titelPos = 0;
             this.sendType();
             this.update();
         }
@@ -86,22 +88,12 @@ export class PageMedia extends Page implements pages.PageMediaBase {
         const message: Partial<pages.PageMediaMessage> = {};
         // title
         {
+            const test: Record<string, string> = {};
+            test.bla = 'dd';
             let duration = '0:00',
                 elapsed = '0:00',
                 title = 'unknown';
-            if (item.album) {
-                const v = await item.album.getString();
-                if (v !== null) {
-                    const maxSize = 18;
-                    if (v.length > maxSize) {
-                        const s = v + '          ';
-                        this.headlinePos = this.headlinePos % s.length;
-                        message.headline = (s + v).substring(this.headlinePos++ % (v + s).length).substring(0, 23);
-                    } else {
-                        message.headline = v;
-                    }
-                }
-            }
+
             if (item.titel && item.titel.text) {
                 const v = await item.titel.text.getString();
                 if (v !== null) {
@@ -134,16 +126,34 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                 }
             }
 
-            message.title = `${title} (${elapsed}|${duration})`;
-            const maxSize = 44;
-            if (message.title.length > maxSize) {
-                const s = message.title + '          ';
-                this.titelPos = this.titelPos % s.length;
-                message.headline = (s + message.title)
-                    .substring(this.titelPos++ % (message.title + s).length)
-                    .substring(0, 45);
-            } else {
-                message.headline = message.title;
+            message.headline = `${title}`;
+
+            {
+                const maxSize = 18;
+                if (message.headline.length > maxSize) {
+                    const s = message.headline + '        ';
+                    this.headlinePos = this.headlinePos % s.length;
+                    message.headline = (s + message.headline)
+                        .substring(this.headlinePos++ % (message.headline + s).length)
+                        .substring(0, 23);
+                }
+            }
+
+            const maxSize = 35;
+            message.name = `(${elapsed}|${duration})`;
+            if (item.album) {
+                const v = await item.album.getString();
+                if (v !== null) {
+                    if (`${v} ${message.name}`.length > maxSize) {
+                        const s = v + '          ';
+                        this.titelPos = this.titelPos % s.length;
+                        message.name =
+                            v.substring(this.titelPos++ % (`${v} ${message.name}` + s).length).substring(0, 35) +
+                            ` ${message.name}`;
+                    } else {
+                        message.name = `${v} ${message.name}`;
+                    }
+                }
             }
         }
         message.shuffle_icon = '';
@@ -219,7 +229,7 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                     icon: Icons.GetIcon(icon),
                     iconColor: color,
                     mode: 'nexttool',
-                    dislayName: 'next',
+                    displayName: 'next',
                 };
             }
         }
@@ -284,7 +294,7 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                         icon: Icons.GetIcon(icon),
                         iconColor: color,
                         mode: i.action,
-                        dislayName: this.adapter.library.getLocalTranslation('media', text),
+                        displayName: this.adapter.library.getLocalTranslation('media', text),
                     };
                     return tool;
                 }
@@ -299,7 +309,7 @@ export class PageMedia extends Page implements pages.PageMediaBase {
             message.headline,
             message.getNavigation,
             message.id,
-            message.title,
+            message.name,
             message.titelColor,
             message.artist,
             message.artistColor,

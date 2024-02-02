@@ -38,7 +38,7 @@ const PageMediaMessageDefault = {
   headline: "",
   getNavigation: "~~~~~~~~~",
   id: "",
-  title: "",
+  name: "",
   titelColor: String(Color.rgb_dec565(Color.White)),
   artist: "",
   artistColor: String(Color.rgb_dec565(Color.White)),
@@ -93,6 +93,8 @@ class PageMedia extends import_Page2.Page {
   }
   async onVisibilityChange(val) {
     if (val) {
+      this.headlinePos = 0;
+      this.titelPos = 0;
       this.sendType();
       this.update();
     }
@@ -103,20 +105,9 @@ class PageMedia extends import_Page2.Page {
       return;
     const message = {};
     {
+      const test = {};
+      test.bla = "dd";
       let duration = "0:00", elapsed = "0:00", title = "unknown";
-      if (item.album) {
-        const v = await item.album.getString();
-        if (v !== null) {
-          const maxSize2 = 18;
-          if (v.length > maxSize2) {
-            const s = v + "          ";
-            this.headlinePos = this.headlinePos % s.length;
-            message.headline = (s + v).substring(this.headlinePos++ % (v + s).length).substring(0, 23);
-          } else {
-            message.headline = v;
-          }
-        }
-      }
       if (item.titel && item.titel.text) {
         const v = await item.titel.text.getString();
         if (v !== null) {
@@ -148,14 +139,28 @@ class PageMedia extends import_Page2.Page {
           }
         }
       }
-      message.title = `${title} (${elapsed}|${duration})`;
-      const maxSize = 44;
-      if (message.title.length > maxSize) {
-        const s = message.title + "          ";
-        this.titelPos = this.titelPos % s.length;
-        message.headline = (s + message.title).substring(this.titelPos++ % (message.title + s).length).substring(0, 45);
-      } else {
-        message.headline = message.title;
+      message.headline = `${title}`;
+      {
+        const maxSize2 = 18;
+        if (message.headline.length > maxSize2) {
+          const s = message.headline + "        ";
+          this.headlinePos = this.headlinePos % s.length;
+          message.headline = (s + message.headline).substring(this.headlinePos++ % (message.headline + s).length).substring(0, 23);
+        }
+      }
+      const maxSize = 35;
+      message.name = `(${elapsed}|${duration})`;
+      if (item.album) {
+        const v = await item.album.getString();
+        if (v !== null) {
+          if (`${v} ${message.name}`.length > maxSize) {
+            const s = v + "          ";
+            this.titelPos = this.titelPos % s.length;
+            message.name = v.substring(this.titelPos++ % (`${v} ${message.name}` + s).length).substring(0, 35) + ` ${message.name}`;
+          } else {
+            message.name = `${v} ${message.name}`;
+          }
+        }
       }
     }
     message.shuffle_icon = "";
@@ -229,7 +234,7 @@ class PageMedia extends import_Page2.Page {
           icon: import_icon_mapping.Icons.GetIcon(icon),
           iconColor: color,
           mode: "nexttool",
-          dislayName: "next"
+          displayName: "next"
         };
       }
     }
@@ -292,7 +297,7 @@ class PageMedia extends import_Page2.Page {
             icon: import_icon_mapping.Icons.GetIcon(icon),
             iconColor: color,
             mode: i.action,
-            dislayName: this.adapter.library.getLocalTranslation("media", text)
+            displayName: this.adapter.library.getLocalTranslation("media", text)
           };
           return tool;
         }
@@ -306,7 +311,7 @@ class PageMedia extends import_Page2.Page {
       message.headline,
       message.getNavigation,
       message.id,
-      message.title,
+      message.name,
       message.titelColor,
       message.artist,
       message.artistColor,
