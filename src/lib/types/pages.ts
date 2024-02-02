@@ -264,7 +264,7 @@ export type PageMediaMessage = {
     headline: string;
     getNavigation: string;
     id: string;
-    title: string;
+    name: string;
     titelColor: string;
     artist: string;
     artistColor: string;

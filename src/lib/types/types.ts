@@ -572,6 +572,7 @@ export type DataItemsOptions = {
     | {
           type: 'internal';
           dp: internalDatapoints;
+          write?: string | ((val: any) => any);
       }
 );
 

@@ -120,7 +120,7 @@ export interface MessageItemInterface {
     intNameEntity: string;
     icon: string;
     iconColor: string;
-    dislayName: string;
+    displayName: string;
     optionalValue: string;
 }
 export type MediaToolBoxAction =
@@ -135,11 +135,12 @@ export type MediaToolBoxAction =
     | 'cross'
     | 'nexttool';
 export type PageItemBase = {
-    activ: string;
+    headline: string;
     color: string;
     icon: IconEntryType;
     text: TextEntryType;
     entity: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+    entityOptional?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     set?: {
         value1: string;
         value2: string;
@@ -163,6 +164,10 @@ type PageItemLightsBrightness = {
 export type PageItemUnion = {
     role:
         | 'socket'
+        | 'value.time'
+        | 'level.timer'
+        | 'level.mode.fan'
+        | 'value.alarmtime'
         | 'light'
         | 'dimmer'
         | 'hue'

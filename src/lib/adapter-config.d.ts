@@ -10,6 +10,10 @@ declare global {
             mqttPort: number;
             topic: string;
             name: string;
+            timeout: number;
+            mediaid: string;
+            Testconfig: any;
+            scstype: string;
         }
     }
 }

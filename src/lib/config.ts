@@ -204,6 +204,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                         false: { value: undefined, color: undefined },
 
                         scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
 
                     entityText: {
@@ -251,6 +253,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             type: 'const',
                             constVal: { val_min: 0, val_max: 80 },
                         },
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
 
                     entityIconSelect: undefined,
@@ -300,6 +304,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             type: 'const',
                             constVal: { val_min: 0, val_max: 7.2 },
                         },
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
                     entityIconSelect: undefined,
                     entityText: {
@@ -344,6 +350,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             color: undefined,
                         },
                         scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
                     entityIconSelect: undefined,
 
@@ -402,6 +410,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             },
                         },
                         scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
 
                     entityIconSelect: undefined,
@@ -452,6 +462,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             type: 'const',
                             constVal: { val_min: 0, val_max: 80 },
                         },
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
 
                     entityIconSelect: undefined,
@@ -501,6 +513,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             type: 'const',
                             constVal: { val_min: 0, val_max: 7.2 },
                         },
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
                     entityIconSelect: undefined,
                     entityText: {
@@ -545,6 +559,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             color: undefined,
                         },
                         scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
                     entityIconSelect: undefined,
 
@@ -590,6 +606,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             type: 'const',
                             constVal: { val_min: 0, val_max: 100, val_best: 65 },
                         },
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
                     entityIconSelect: undefined,
 
@@ -635,6 +653,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             color: undefined,
                         },
                         scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
                     entityIconSelect: undefined,
 
@@ -694,6 +714,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             },
                         },
                         scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
 
                     entityIconSelect: undefined,
@@ -743,6 +765,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             type: 'const',
                             constVal: { val_min: 0, val_max: 7.2 },
                         },
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
                     entityIconSelect: undefined,
                     entityText: {
@@ -787,6 +811,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             color: undefined,
                         },
                         scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
                     entityIconSelect: undefined,
 
@@ -836,6 +862,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             type: 'const',
                             constVal: { val_min: 0, val_max: 80 },
                         },
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
 
                     entityIconSelect: undefined,
@@ -885,6 +913,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             type: 'const',
                             constVal: { val_min: 0, val_max: 7.2 },
                         },
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
                     entityIconSelect: undefined,
                     entityText: {
@@ -931,6 +961,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             color: undefined,
                         },
                         scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
                     entityIconSelect: undefined,
 
@@ -979,6 +1011,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             },
                         },
                         scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
                     },
                     entityIconSelect: undefined,
 
@@ -1002,6 +1036,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
     // override by password.ts
     topic: 'nspanel/ns_panel2',
     name: 'Wohnzimmer',
+    timeout: 1,
 };
 
 // pageType~popupNotify

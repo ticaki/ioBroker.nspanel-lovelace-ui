@@ -248,7 +248,7 @@ export class Dataitem extends BaseClass {
         if (this.options.type === 'const') {
             this.options.constVal = val;
         } else {
-            if (item.options.write) new Function('val', 'Color', this.options.write)(val, Color);
+            if (this.options.write) new Function('val', 'Color', `${this.options.write}`)(val, Color);
             await this.stateDB.setStateAsync(this, val, this.writeable);
         }
     }

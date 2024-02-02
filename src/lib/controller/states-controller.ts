@@ -81,7 +81,10 @@ export class BaseClassTriggerd extends BaseClass {
         return s.join('~');
     }
     private async stopTriggerTimeout(): Promise<void> {
-        if (this.updateTimeout) this.adapter.clearTimeout(this.updateTimeout);
+        if (this.updateTimeout) {
+            this.adapter.clearTimeout(this.updateTimeout);
+            this.updateTimeout = undefined;
+        }
     }
     async delete(): Promise<void> {
         await super.delete();

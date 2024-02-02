@@ -1,4 +1,3 @@
-import { off } from 'process';
 import { Dataitem } from '../classes/data-item';
 import { ChangeTypeOfPageItem, IconEntryType, TextEntryType, ValueEntryType } from '../types/pageItem';
 import { ChangeTypeOfKeys } from './definition';
@@ -16,28 +15,43 @@ export async function getValueEntryNumber(
 }
 
 export async function getIconEntryValue(
-    i: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined>,value: boolean, def: string
+    i: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined>,
+    on: boolean,
+    def: string,
 ): Promise<string> {
     if (!i) return def;
     const icon = i.true.value && (await i.true.value.getString());
-    if (!value) {
-        return i.false.value && (await i.false.value.getString()) ?? icon ?? def;
+    if (!on) {
+        return (i.false.value && (await i.false.value.getString())) ?? icon ?? def;
+    }
+    return icon ?? def;
+}
+export async function getIconEntryColor(
+    i: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined>,
+    on: boolean,
+    def: string,
+): Promise<string> {
+    if (!i) return def;
+    const icon = i.true.color && (await i.true.color.getRGBDec());
+    if (!on) {
+        return (i.false.color && (await i.false.color.getRGBDec())) ?? icon ?? def;
     }
     return icon ?? def;
 }
 export async function getValueEntryTextOnOff(
-    i: ChangeTypeOfKeys<TextEntryType, Dataitem | undefined>, on: boolean;
+    i: ChangeTypeOfKeys<TextEntryType, Dataitem | undefined> | undefined,
+    on: boolean,
 ): Promise<string | null> {
     if (!i) return null;
     const value = i.true && (await i.true.getString());
-    if (!value) {
-        return i.false && (await i.false.getString()) ?? value ?? null;
+    if (!on) {
+        return (i.false && (await i.false.getString())) ?? value ?? null;
     }
     return value ?? null;
 }
 
 export async function getValueEntryBoolean(
-    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
 ): Promise<boolean | null> {
     if (!i) return null;
     const nval = i.value && (await i.value.getBoolean());
@@ -48,7 +62,7 @@ export async function getValueEntryBoolean(
 }
 
 export async function getValueEntryString(
-    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
 ): Promise<string | null> {
     if (!i || !i.value) return null;
     const nval = await i.value.getNumber();

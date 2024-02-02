@@ -11,7 +11,7 @@ export const messageItemDefault: MessageItem = {
     intNameEntity: '',
     icon: '',
     iconColor: '',
-    dislayName: '',
+    displayName: '',
     optionalValue: '',
 };
 
@@ -71,7 +71,7 @@ export class Page extends BaseClassPanelSend {
             id.join('?') ?? messageItemDefault.intNameEntity,
             msg.icon ?? messageItemDefault.icon,
             msg.iconColor ?? messageItemDefault.iconColor,
-            msg.dislayName ?? messageItemDefault.dislayName,
+            msg.displayName ?? messageItemDefault.displayName,
             msg.optionalValue ?? messageItemDefault.optionalValue,
         );
     }
