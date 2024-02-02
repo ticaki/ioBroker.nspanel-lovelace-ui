@@ -55,7 +55,7 @@ const DefaultOptions = {
   },
   CustomFormat: "",
   locale: "de-DE",
-  timeout: 5
+  timeout: 30
 };
 class Panel extends import_panel_message.BaseClassPanelSend {
   minuteLoopTimeout;

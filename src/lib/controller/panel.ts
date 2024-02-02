@@ -43,7 +43,7 @@ const DefaultOptions = {
     },
     CustomFormat: '',
     locale: 'de-DE',
-    timeout: 5,
+    timeout: 30,
 };
 
 type panelConfigTop = { CustomFormat: string; locale: Intl.LocalesArgument; timeout: number };
