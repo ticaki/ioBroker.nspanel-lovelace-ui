@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/types/Color.ts"],
+  "sourcesContent": ["export type RGB = {\n    red: number;\n    green: number;\n    blue: number;\n};\n"],
+  "mappings": ";;;;;;;;;;;;;;AAAA;AAAA;",
+  "names": []
+}
