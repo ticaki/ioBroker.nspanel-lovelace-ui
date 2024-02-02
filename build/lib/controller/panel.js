@@ -207,7 +207,7 @@ class Panel extends import_panel_message.BaseClassPanelSend {
         this.minuteLoop();
         this.dateUpdateLoop();
         this.sendScreeensaverTimeout(this.options.timeout);
-        this.sendToPanel("dimmode~10~100~6371");
+        this.sendToPanel("dimmode~80~100~6371");
         const test = false;
         if (test) {
           this.sendToPanel("pageType~cardGrid");

@@ -977,7 +977,7 @@ const Testconfig = {
 const welcomePopupPayload = "entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~  Einen sch\xF6nen Tag                w\xFCnschen dir                Armilar, TT-Tom, ticaki         & Kuckuckmann~2000~3~1~\uF4DD~2000";
 const testConfigMedia = {
   card: "cardMedia",
-  dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
+  dpInit: "alexa2.0.Echo-Devices.G070RR1075220388.Player",
   initMode: "auto",
   config: {
     heading: {

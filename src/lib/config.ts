@@ -1014,7 +1014,7 @@ export const welcomePopupPayload =
 export const testConfigMedia: pages.PageMediaBase = {
     //type: 'sonstiges',
     card: 'cardMedia',
-    dpInit: 'alexa2.0.Echo-Devices.G091EV0704641J8R.Player',
+    dpInit: 'alexa2.0.Echo-Devices.G070RR1075220388.Player',
     initMode: 'auto',
     config: {
         heading: {
