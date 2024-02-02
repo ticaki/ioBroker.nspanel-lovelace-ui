@@ -136,11 +136,19 @@ export type MediaToolBoxAction =
     | 'nexttool';
 export type PageItemBase = {
     activ: string;
-    value: string;
-    color: ColorEntryType;
-} & IconEntryType;
+    color: string;
+    icon: IconEntryType;
+    text: TextEntryType;
+    entity: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+    set?: {
+        value1: string;
+        value2: string;
+    };
+    minValue: number;
+    maxValue: number;
+};
 //XOR<XOR<A, B>, C>
-type PageItemLights = PageItemLightsBrightness;
+export type PageItemLights = PageItemLightsBrightness;
 type PageItemLightsBrightness = {
     maxValueBrightness: number;
     minValueBrightness: number;
@@ -148,21 +156,54 @@ type PageItemLightsBrightness = {
     dimmer: number | boolean;
     hue: string;
     useColor: string;
+    red: number;
+    green: number;
+    blue: number;
 };
 export type PageItemUnion = {
-    role: 'socket' | 'light' | 'dimmer' | 'hue' | 'ct';
+    role:
+        | 'socket'
+        | 'light'
+        | 'dimmer'
+        | 'hue'
+        | 'ct'
+        | 'cie'
+        | 'rgbSingle'
+        | 'rgb'
+        | 'ct'
+        | 'blind'
+        | 'door'
+        | 'window'
+        | 'gate'
+        | 'motion'
+        | 'buttonSensor'
+        | 'switch'
+        | 'button'; // veraltet
+
     type: 'light';
     data: PageItemBase & PageItemLights;
 };
-
+export type ChangeTypeOfPageItem<Obj, N> = Obj extends
+    | object
+    | IconBoolean
+    | TextEntryType
+    | ValueEntryType
+    | ColorEntryType
+    | PageItemLightsBrightness
+    ? {
+          [K in keyof Obj]: ChangeTypeOfKeys<Obj[K], N>;
+      }
+    : N;
 export type PageItemDataitems = Omit<PageItemUnion, 'data'> & {
-    data: ChangeTypeOfKeys<PageItemUnion['data'], Dataitem>;
+    data: ChangeTypeOfPageItem<PageItemUnion['data'], Dataitem | undefined>;
 };
 
 export type ColorEntryType = Record<Types.BooleanUnion, RGB> & { scale?: Types.IconScaleElement };
 
 export type IconEntryType = Record<Types.BooleanUnion, { value: string; color: RGB }> & {
     scale: Types.IconScaleElement | undefined;
+    maxBri: string;
+    minBri: string;
 };
 
 export type TextEntryType = Record<Types.BooleanUnion, string>;

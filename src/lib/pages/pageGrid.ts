@@ -1,15 +1,34 @@
-/*
-import { config } from 'chai';
-import { log } from 'console';
-import { type } from 'os';
-import { rgb_dec565, scale, colorScale0, colorScale10, HandleColorScale, GetIconColor } from '../const/Color';
+import {
+    rgb_dec565,
+    scale,
+    colorScale0,
+    colorScale10,
+    HandleColorScale,
+    GetIconColor,
+    getRGBfromThree,
+    hsv2rgb,
+    getDecfromRGBThree,
+    hsvtodec,
+} from '../const/Color';
 import { Debug } from '../const/definition';
 import { Icons } from '../const/icon_mapping';
-import { roles, RGB, isEventMethod } from '../types/types';
-import { Page, PageInterface } from './Page';
-import { ChangeTypeOfKeys, MessageItem, PageItem } from '../types/pages';
+import { roles, isEventMethod } from '../types/types';
+import { Page, PageInterface, PageItem } from './Page';
+import { ChangeTypeOfKeys } from '../types/pages';
 import { Dataitem } from '../classes/data-item';
 import { KeyObject } from 'crypto';
+import { config } from 'chai';
+import { log } from 'console';
+import { RGB } from '../types/Color';
+import { PageItemDataitems, MessageItem, PageItemUnion } from '../types/pageItem';
+import {
+    getIconEntryValue,
+    getTranslation,
+    getValueEntryBoolean,
+    getValueEntryNumber,
+    getValueEntryString,
+    getValueEntryTextOnOff,
+} from '../const/tools';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageGrid extends Page {
@@ -17,56 +36,123 @@ export class PageGrid extends Page {
         super({ ...config, card: 'cardGrid' });
     }
 
-    async getPageItem(item2: { [key: string]: Dataitem }) {
-        const item = item2 as unknown as Omit<PageItem, 'data'> & {
-            data: ChangeTypeOfKeys<PageItem['data'], Dataitem>;
-        };
+    async getPageItem(item: PageItemDataitems, id: string): Promise<string> {
         const message: Partial<MessageItem> = {};
+        message.intNameEntity = id + '?' + item.role;
         switch (item.role) {
             case 'light':
             case 'dimmer':
-            case 'socket': {
+            case 'socket':
+            case 'cie':
+            case 'rgb':
+            case 'ct':
+            case 'hue':
+            case 'rgbSingle': {
                 message.type = 'light';
 
-                message.intNameEntity = 'lights';
                 const dimmer = item.data.dimmer && (await item.data.dimmer.getNumber());
-                const v = item.data.value && (await item.data.value.getBoolean());
+                const rgb =
+                    item.role == 'rgb'
+                        ? await getDecfromRGBThree(item)
+                        : item.data.color && (await item.data.color.getRGBDec());
+                const hue =
+                    item.role == 'hue' && item.data.hue ? hsvtodec(await item.data.hue.getNumber(), 1, 1) : null;
+                const v = item.data.entity.value ? await item.data.entity.value.getBoolean() : true;
+
+                switch (item.role) {
+                    case 'socket': {
+                        message.icon = Icons.GetIcon('power-socket-de');
+                        break;
+                    }
+                    default: {
+                        message.icon = Icons.GetIcon('lightbulb');
+                        break;
+                    }
+                }
                 if (v) {
                     message.optionalValue = '1';
-                    message.iconColor = await GetIconColor(item, dimmer ?? false);
-                    const i = item.data.icon.true && (await item.data.icon.true.getString());
+                    message.iconColor = hue ?? rgb ?? (await GetIconColor(item, dimmer ?? 100));
+                    const i = item.data.icon.true.value ? await item.data.icon.true.value.getString() : null;
                     if (i !== null) message.icon = i;
-                    else message.icon = Icons.GetIcon('power-socket-de');
                 } else {
                     message.optionalValue = '0';
-                    message.iconColor = await GetIconColor(item, dimmer ?? false);
-                    const i = item.data.icon.false && (await item.data.icon.false.getString());
+                    message.iconColor = await GetIconColor(item, false);
+                    const i = item.data.icon.false.value ? await item.data.icon.false.value.getString() : null;
                     if (i !== null) message.icon = i;
-                    else message.icon = Icons.GetIcon('lightbulb');
                 }
-                return this.getItemMesssage(message);
-                break;
-            }
+                message.dislayName = (item.data.text.true && (await item.data.text.true.getString())) ?? '';
 
-            case 'hue': {
-                break;
-            }
-            case 'rgb': {
-                break;
-            }
-            case 'rgbSingle': {
+                return this.getItemMesssage(message);
                 break;
             }
             case 'cd': {
                 break;
             }
             case 'blind': {
+                message.type = 'shutter';
+
+                const value = await getValueEntryNumber(item.data.entity);
+                /*const min = (item.data.minValue && (await item.data.minValue.getNumber())) ?? null;
+                const max = (item.data.maxValue && (await item.data.maxValue.getNumber())) ?? null;
+                */
+                message.icon = Icons.GetIcon(
+                    (item.data.icon.true.value && (await item.data.icon.true.value.getString())) ?? 'window-open',
+                );
+                message.iconColor = await GetIconColor(item, value !== null ? value : true);
+                //const dimmer = item.data.dimmer && (await item.data.dimmer.getNumber());
+                /*let val = value;
+                if (min !== null && max !== null && val !== null) {
+                    val = Math.trunc(scale(val, min, max, 100, 0));
+                }*/
+                message.optionalValue = [
+                    Icons.GetIcon('arrow-up'), //up
+                    Icons.GetIcon('stop'), //stop
+                    Icons.GetIcon('arrow-down'), //down
+                    'enable', // up status
+                    'enable', // stop status
+                    'enable', // down status
+                ].join('|');
+                message.dislayName = (await getValueEntryTextOnOff(item.data.text, true)) ?? '';
+
+                return this.getItemMesssage(message);
                 break;
             }
-            case 'door': {
-                break;
-            }
+            case 'gate':
+            case 'door':
             case 'window': {
+                message.type = 'text';
+
+                let value = await getValueEntryBoolean(item.data.entity);
+                if (value !== null) {
+                    // gate works revese true is closed -> invert value
+                    if (item.role === 'gate') value = !value;
+                    let icon = '';
+                    message.iconColor = await GetIconColor(item, value ?? true ? true : false);
+                    if (value) {
+                        icon =
+                            (item.data.icon.true.value && (await item.data.icon.true.value.getString())) ??
+                            (item.role === 'door'
+                                ? 'door-open'
+                                : item.role === 'window'
+                                  ? 'window-open-variant'
+                                  : 'garage-open');
+                        message.optionalValue = getTranslation(this.library, 'window', 'opened');
+                    } else {
+                        icon =
+                            (item.data.icon.false.value && (await item.data.icon.false.value.getString())) ??
+                            (item.role === 'door'
+                                ? 'door-closed'
+                                : item.role === 'window'
+                                  ? 'window-closed-variant'
+                                  : 'garage');
+                        message.optionalValue = getTranslation(this.library, 'window', 'closed');
+                    }
+                    message.dislayName = (await getValueEntryTextOnOff(item.data.text, value)) ?? '';
+                    message.icon = Icons.GetIcon(icon);
+                    return this.getItemMesssage(message);
+                } else {
+                    this.log.error(`Missing data value for ${this.name}-${id} role:${item.role}`);
+                }
                 break;
             }
             case 'volumeGroup': {
@@ -75,27 +161,13 @@ export class PageGrid extends Page {
             case 'volume': {
                 break;
             }
-            case 'info': {
-                break;
-            }
-            case 'humidity': {
-                break;
-            }
-            case 'temperature': {
-                break;
-            }
-            case 'value.temperature': {
-                break;
-            }
-            case 'value.humidity': {
-                break;
-            }
-            case 'sensor.door': {
-                break;
-            }
-            case 'sensor.window': {
-                break;
-            }
+            case 'info':
+            case 'humidity':
+            case 'temperature':
+            case 'value.temperature':
+            case 'value.humidity':
+            case 'sensor.door':
+            case 'sensor.window':
             case 'thermostat': {
                 break;
             }
@@ -108,22 +180,54 @@ export class PageGrid extends Page {
             case 'cie': {
                 break;
             }
-            case 'gate': {
-                break;
-            }
             case 'motion': {
+                message.type = 'text';
+                const value = await getValueEntryBoolean(item.data.entity);
+                if (value !== null) {
+                    item.data.message.iconColor = await GetIconColor(item, value ?? true ? true : false);
+                    message.icon = Icons.GetIcon(await getIconEntryValue(item.data.icon, value, 'motion-sensor'));
+                    message.optionalValue = getTranslation(this.library, value ? 'on' : 'off');
+                    message.dislayName = (await getValueEntryTextOnOff(item.data.text, value)) ?? '';
+                    return this.getItemMesssage(message);
+                } else {
+                    this.log.error(`Missing data value for ${this.name}-${id} role:${item.role}`);
+                }
                 break;
             }
-            case 'buttonSensor': {
-                break;
-            }
+
+            case 'buttonSensor':
+            case 'switch': // ein button ist nicht true oder false sondern etwas das man drücken kann und ab dann ist es undefiniert.
+            // veraltet
             case 'button': {
+                let value =
+                    (item.data.set && item.data.set.value1 && (await item.data.set.value1.getBoolean())) ?? null;
+                if (value === null && item.role === 'buttonSensor') value = true;
+                if (value !== null) {
+                    message.type = item.role === 'buttonSensor' ? 'input_sel' : 'button';
+                    message.iconColor = await GetIconColor(item, value);
+                    message.icon = Icons.GetIcon(await getIconEntryValue(item.data.icon, value, 'gesture-tap-button'));
+                    message.dislayName = (await getValueEntryTextOnOff(item.data.text, value)) ?? '';
+                    message.optionalValue = (await getValueEntryString(item.data.entity)) ?? 'PRESS';
+                    return this.getItemMesssage(message);
+                } else {
+                    this.log.error(`Missing set value for ${this.name}-${id} role:${item.role}`);
+                }
                 break;
             }
-            case 'value.time': {
-                break;
-            }
+            case 'value.time':
             case 'level.timer': {
+                const value =
+                    (item.data.set && item.data.set.value1 && (await item.data.set.value1.getNumber())) ?? null;
+                if (value !== null) {
+                    message.type = 'timer';
+                    message.iconColor = await GetIconColor(item, value);
+                    message.icon = Icons.GetIcon(await getIconEntryValue(item.data.icon, true, 'gesture-tap-button'));
+                    message.dislayName = (await getValueEntryTextOnOff(item.data.text, true)) ?? '';
+                    message.optionalValue = (await getValueEntryString(item.data.entity)) ?? 'PRESS';
+                    return this.getItemMesssage(message);
+                } else {
+                    this.log.error(`Missing set value for ${this.name}-${id} role:${item.role}`);
+                }
                 break;
             }
             case 'value.alarmtime': {
@@ -151,293 +255,13 @@ export class PageGrid extends Page {
                 break;
             }
         }
+        return '~delete~~~~~';
     }
     bla(role: roles): string {
         let type: string = '',
             iconId = '';
         const test: Partial<MessageItem> = {};
         switch (role) {
-            case 'socket':
-            case 'light':
-                type = 'light';
-                test.icon =
-                    pageItem.icon !== undefined
-                        ? Icons.GetIcon(pageItem.icon)
-                        : role == 'socket'
-                          ? Icons.GetIcon('power-socket-de')
-                          : Icons.GetIcon('lightbulb');
-                iconId2 =
-                    pageItem.icon2 !== undefined
-                        ? Icons.GetIcon(pageItem.icon2)
-                        : role == 'socket'
-                          ? Icons.GetIcon('power-socket-de')
-                          : Icons.GetIcon('lightbulb');
-                optVal = '0';
-
-                if (val === true || val === 'true') {
-                    optVal = '1';
-                    iconColor = GetIconColor(pageItem, true, useColors);
-                } else {
-                    iconColor = GetIconColor(pageItem, false, useColors);
-                    if (pageItem.icon !== undefined) {
-                        if (pageItem.icon2 !== undefined) {
-                            iconId = iconId2;
-                        }
-                    }
-                }
-
-                return '~' + type + '~' + placeId + '~' + iconId + '~' + iconColor + '~' + theName + '~' + optVal;
-
-            case 'hue':
-                type = 'light';
-                iconId = pageItem.icon !== undefined ? Icons.GetIcon(pageItem.icon) : Icons.GetIcon('lightbulb');
-                optVal = '0';
-
-                if (val === true || val === 'true') {
-                    optVal = '1';
-                    iconColor = GetIconColor(
-                        pageItem,
-                        existsState(pageItem.id + '.DIMMER') ? getState(pageItem.id + '.DIMMER').val : true,
-                        useColors,
-                    );
-                } else {
-                    iconColor = GetIconColor(pageItem, false, useColors);
-                    if (pageItem.icon !== undefined) {
-                        if (pageItem.icon2 !== undefined) {
-                            iconId = iconId2;
-                        }
-                    }
-                }
-
-                if (pageItem.interpolateColor != undefined && pageItem.interpolateColor == true && val) {
-                    if (existsState(pageItem.id + '.HUE')) {
-                        if (getState(pageItem.id + '.HUE').val != null) {
-                            const huecolor = hsv2rgb(getState(pageItem.id + '.HUE').val, 1, 1);
-                            const rgb: RGB = {
-                                red: Math.round(huecolor[0]),
-                                green: Math.round(huecolor[1]),
-                                blue: Math.round(huecolor[2]),
-                            };
-                            iconColor = rgb_dec565(
-                                pageItem.interpolateColor !== undefined ? rgb : config.defaultOnColor,
-                            );
-                        }
-                    }
-                }
-
-                if (Debug)
-                    log(
-                        'CreateEntity Icon role hue ~' +
-                            type +
-                            '~' +
-                            placeId +
-                            '~' +
-                            iconId +
-                            '~' +
-                            iconColor +
-                            '~' +
-                            theName +
-                            '~' +
-                            optVal,
-                        'info',
-                    );
-                return '~' + type + '~' + placeId + '~' + iconId + '~' + iconColor + '~' + theName + '~' + optVal;
-
-            case 'ct':
-                type = 'light';
-                iconId = pageItem.icon !== undefined ? Icons.GetIcon(pageItem.icon) : Icons.GetIcon('lightbulb');
-                optVal = '0';
-
-                if (val === true || val === 'true') {
-                    optVal = '1';
-                    iconColor = GetIconColor(
-                        pageItem,
-                        existsState(pageItem.id + '.DIMMER') ? getState(pageItem.id + '.DIMMER').val : true,
-                        useColors,
-                    );
-                } else {
-                    iconColor = GetIconColor(pageItem, false, useColors);
-                    if (pageItem.icon !== undefined) {
-                        if (pageItem.icon2 !== undefined) {
-                            iconId = iconId2;
-                        }
-                    }
-                }
-
-                if (Debug)
-                    log(
-                        'CreateEntity Icon role ct ~' +
-                            type +
-                            '~' +
-                            placeId +
-                            '~' +
-                            iconId +
-                            '~' +
-                            iconColor +
-                            '~' +
-                            theName +
-                            '~' +
-                            optVal,
-                        'info',
-                    );
-                return '~' + type + '~' + placeId + '~' + iconId + '~' + iconColor + '~' + theName + '~' + optVal;
-
-            case 'rgb':
-                type = 'light';
-                iconId = pageItem.icon !== undefined ? Icons.GetIcon(pageItem.icon) : Icons.GetIcon('lightbulb');
-                optVal = '0';
-
-                if (val === true || val === 'true') {
-                    optVal = '1';
-                    iconColor = GetIconColor(
-                        pageItem,
-                        existsState(pageItem.id + '.DIMMER') ? getState(pageItem.id + '.DIMMER').val : true,
-                        useColors,
-                    );
-                } else {
-                    iconColor = GetIconColor(pageItem, false, useColors);
-                    if (pageItem.icon !== undefined) {
-                        if (pageItem.icon2 !== undefined) {
-                            iconId = iconId2;
-                        }
-                    }
-                }
-
-                if (
-                    existsState(pageItem.id + '.RED') &&
-                    existsState(pageItem.id + '.GREEN') &&
-                    existsState(pageItem.id + '.BLUE') &&
-                    val
-                ) {
-                    if (
-                        getState(pageItem.id + '.RED').val != null &&
-                        getState(pageItem.id + '.GREEN').val != null &&
-                        getState(pageItem.id + '.BLUE').val != null
-                    ) {
-                        const rgbRed = getState(pageItem.id + '.RED').val;
-                        const rgbGreen = getState(pageItem.id + '.GREEN').val;
-                        const rgbBlue = getState(pageItem.id + '.BLUE').val;
-                        const rgb: RGB = {
-                            red: Math.round(rgbRed),
-                            green: Math.round(rgbGreen),
-                            blue: Math.round(rgbBlue),
-                        };
-                        iconColor = rgb_dec565(pageItem.interpolateColor !== undefined ? rgb : config.defaultOnColor);
-                    }
-                }
-
-                if (Debug)
-                    log(
-                        'CreateEntity Icon role rgb ~' +
-                            type +
-                            '~' +
-                            placeId +
-                            '~' +
-                            iconId +
-                            '~' +
-                            iconColor +
-                            '~' +
-                            theName +
-                            '~' +
-                            optVal,
-                        'info',
-                    );
-                return '~' + type + '~' + placeId + '~' + iconId + '~' + iconColor + '~' + theName + '~' + optVal;
-
-            case 'cie':
-            case 'rgbSingle':
-                type = 'light';
-                iconId = pageItem.icon !== undefined ? Icons.GetIcon(pageItem.icon) : Icons.GetIcon('lightbulb');
-                optVal = '0';
-
-                if (val === true || val === 'true') {
-                    optVal = '1';
-                    iconColor = GetIconColor(
-                        pageItem,
-                        existsState(pageItem.id + '.DIMMER') ? getState(pageItem.id + '.DIMMER').val : true,
-                        useColors,
-                    );
-                } else {
-                    iconColor = GetIconColor(pageItem, false, useColors);
-                    if (pageItem.icon !== undefined) {
-                        if (pageItem.icon2 !== undefined) {
-                            iconId = iconId2;
-                        }
-                    }
-                }
-
-                if (existsState(pageItem.id + '.RGB') && val) {
-                    if (getState(pageItem.id + '.RGB').val != null) {
-                        const hex = getState(pageItem.id + '.RGB').val;
-                        const hexRed = parseInt(hex[1] + hex[2], 16);
-                        const hexGreen = parseInt(hex[3] + hex[4], 16);
-                        const hexBlue = parseInt(hex[5] + hex[6], 16);
-                        const rgb: RGB = {
-                            red: Math.round(hexRed),
-                            green: Math.round(hexGreen),
-                            blue: Math.round(hexBlue),
-                        };
-                        iconColor = rgb_dec565(pageItem.interpolateColor !== undefined ? rgb : config.defaultOnColor);
-                    }
-                }
-
-                if (Debug)
-                    log(
-                        'CreateEntity Icon role cie/rgbSingle ~' +
-                            type +
-                            '~' +
-                            placeId +
-                            '~' +
-                            iconId +
-                            '~' +
-                            iconColor +
-                            '~' +
-                            theName +
-                            '~' +
-                            optVal,
-                        'info',
-                    );
-                return '~' + type + '~' + placeId + '~' + iconId + '~' + iconColor + '~' + theName + '~' + optVal;
-
-            case 'dimmer':
-                type = 'light';
-                iconId = pageItem.icon !== undefined ? Icons.GetIcon(pageItem.icon) : Icons.GetIcon('lightbulb');
-                optVal = '0';
-
-                if (val === true || val === 'true') {
-                    optVal = '1';
-                    iconColor = GetIconColor(
-                        pageItem,
-                        existsState(pageItem.id + '.ACTUAL') ? getState(pageItem.id + '.ACTUAL').val : true,
-                        useColors,
-                    );
-                } else {
-                    iconColor = GetIconColor(pageItem, false, useColors);
-                    if (pageItem.icon !== undefined) {
-                        if (pageItem.icon2 !== undefined) {
-                            iconId = iconId2;
-                        }
-                    }
-                }
-
-                if (Debug)
-                    log(
-                        'CreateEntity Icon role dimmer ~' +
-                            type +
-                            '~' +
-                            placeId +
-                            '~' +
-                            iconId +
-                            '~' +
-                            iconColor +
-                            '~' +
-                            theName +
-                            '~' +
-                            optVal,
-                        'info',
-                    );
-                return '~' + type + '~' + placeId + '~' + iconId + '~' + iconColor + '~' + theName + '~' + optVal;
-
             case 'blind':
                 type = 'shutter';
                 iconId = pageItem.icon !== undefined ? Icons.GetIcon(pageItem.icon) : Icons.GetIcon('window-open');
@@ -1145,4 +969,4 @@ export class PageGrid extends Page {
                 return '~delete~~~~~';
         }
     }
-}*/
+}

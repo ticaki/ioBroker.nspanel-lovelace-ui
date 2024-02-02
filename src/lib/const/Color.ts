@@ -152,22 +152,12 @@ export async function GetIconColor(pageItem: PageItemDataitems, value: boolean |
     // dimmer
     const useColor = pageItem.data.useColor && (await pageItem.data.useColor.getBoolean());
     const interpolateColor = pageItem.data.interpolateColor && (await pageItem.data.interpolateColor.getBoolean());
-    const onColor =
-        pageItem.data.color &&
-        'true' in pageItem.data.color &&
-        pageItem.data.color.true &&
-        (await pageItem.data.color.true.getRGBValue());
-    const offColor =
-        pageItem.data.color &&
-        'true' in pageItem.data.color &&
-        pageItem.data.color.true &&
-        (await pageItem.data.color.true.getRGBValue());
+    const onColor = pageItem.data.icon.true.color && (await pageItem.data.icon.true.color.getRGBValue());
+    const offColor = pageItem.data.icon.true.color && (await pageItem.data.icon.true.color.getRGBValue());
     if (useColor && interpolateColor && typeof value === 'number') {
         let val: number = typeof value === 'number' ? value : 0;
-        const maxValue =
-            (pageItem.data.maxValueBrightness && (await pageItem.data.maxValueBrightness.getNumber())) || 100;
-        const minValue =
-            (pageItem.data.minValueBrightness && (await pageItem.data.minValueBrightness.getNumber())) || 0;
+        const maxValue = (pageItem.data.icon.maxBri && (await pageItem.data.icon.maxBri.getNumber())) || 100;
+        const minValue = (pageItem.data.icon.minBri && (await pageItem.data.icon.minBri.getNumber())) || 0;
         val = val > maxValue ? maxValue : val;
         val = val < minValue ? minValue : val;
 
@@ -184,10 +174,7 @@ export async function GetIconColor(pageItem: PageItemDataitems, value: boolean |
     if (
         (useColor && typeof value === 'boolean' && value) ||
         (typeof value === 'number' &&
-            value >
-                (pageItem.data.minValueBrightness !== undefined
-                    ? (await pageItem.data.minValueBrightness.getNumber()) ?? 0
-                    : 0))
+            value > (pageItem.data.icon.minBri !== undefined ? (await pageItem.data.icon.minBri.getNumber()) ?? 0 : 0))
     ) {
         return String(rgb_dec565(onColor ? onColor : defaultOnColor));
     }
@@ -246,6 +233,11 @@ export function hsv2rgb(hue: number, saturation: number, value: number): [number
     return rgb.map((v) => (v + value - chroma) * 255) as [number, number, number];
 }
 
+export function hsvtodec(hue: number | null, saturation: number, value: number): string | null {
+    if (hue === null) return null;
+    const result = hsv2rgb(hue, saturation, value);
+    return String(rgb_dec565({ red: result[0], green: result[1], blue: result[2] }));
+}
 export function getHue(red: number, green: number, blue: number): number {
     const min = Math.min(Math.min(red, green), blue);
     const max = Math.max(Math.max(red, green), blue);
@@ -316,3 +308,12 @@ export function rgb_to_cie(red: number, green: number, blue: number): string {
 export function isRGB(F: RGB | any): F is RGB {
     return typeof F == 'object' && 'red' in F && 'blue' in F && 'green' in F;
 }
+
+export const getDecfromRGBThree = async (item: PageItemDataitems): Promise<string | null> => {
+    if (!item) return String(rgb_dec565(White));
+    const red = (item.data.red && (await item.data.red.getNumber())) ?? -1;
+    const green = (item.data.red && (await item.data.red.getNumber())) ?? -1;
+    const blue = (item.data.red && (await item.data.red.getNumber())) ?? -1;
+    if (red === -1 || blue === -1 || green === -1) return null;
+    return String(rgb_dec565({ red, green, blue }));
+};

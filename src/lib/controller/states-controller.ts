@@ -255,16 +255,18 @@ export class StatesControler extends BaseClass {
             }
         }
     }
-    async setStateAsync(item: Dataitem, val: ioBroker.StateValue): Promise<void> {
+    async setStateAsync(item: Dataitem, val: ioBroker.StateValue, writeable: boolean): Promise<void> {
         if (item.options.type === 'state' || item.options.type === 'triggered') {
             if (item.options.dp) {
                 const ack = item.options.dp.startsWith(this.adapter.namespace);
                 this.log.debug(`setStateAsync(${item.options.dp}, ${val}, ${ack})`);
-                if (item.type === 'number' && typeof val === 'string') val = parseFloat(val);
-                if (item.type === 'boolean') val = !!val;
-                if (item.type === 'string') val = String(val);
+                if (item.trueType === 'number' && typeof val === 'string') val = parseFloat(val);
+                else if (item.trueType === 'number' && typeof val === 'boolean') val = val ? 1 : 0;
+                else if (item.trueType === 'boolean') val = !!val;
+                if (item.trueType === 'string') val = String(val);
                 this.updateDBState(item.options.dp, val, ack);
-                await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
+                if (writeable) await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
+                else this.log.error(`Forbidden write attempts on a read-only state! id: ${item.options.dp}`);
             }
         } else if (item.options.type === 'internal') {
             if (this.triggerDB[item.options.dp]) {

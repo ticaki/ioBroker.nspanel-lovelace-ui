@@ -547,6 +547,7 @@ export type DataItemsOptions = {
           substring?: [number, number | undefined]; // only used with getString()
           forceType?: 'string' | 'number' | 'boolean'; // force a type
           read?: string | ((val: any) => any);
+          write?: string | ((val: any) => any);
           response?: 'now' | 'medium' | 'slow';
       })
     | ((
@@ -565,6 +566,7 @@ export type DataItemsOptions = {
           substring?: [number, number | undefined]; // only used with getString()
           forceType?: 'string' | 'number' | 'boolean'; // force a type
           read?: string | ((val: any) => any);
+          write?: string | ((val: any) => any);
           response?: 'now' | 'medium' | 'slow';
       })
     | {
