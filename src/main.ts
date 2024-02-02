@@ -341,7 +341,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 if (
                                     obj &&
                                     obj.native &&
-
                                     JSON.stringify(obj.native.Testconfig) !== JSON.stringify(this.config.Testconfig)
                                 ) {
                                     obj.native.Testconfig = this.config.Testconfig;

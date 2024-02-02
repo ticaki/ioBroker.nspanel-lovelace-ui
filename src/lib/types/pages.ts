@@ -7,7 +7,6 @@ import {
     MessageItemMedia,
     PageItemBase,
     PageItemLights,
-    PageItemUnion,
     TextEntryType,
     ValueEntryType,
 } from './pageItem';
