@@ -1756,6 +1756,14 @@ export const welcomePopupPayload =
     ' Armilar, TT-Tom, ticaki      ' +
     '   & Kuckuckmann~2000~3~1~~2000';
 
+// pageType~popupNotify
+export const welcomePopupPayload =
+    'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
+    '  Einen schönen Tag           ' +
+    '     wünschen dir               ' +
+    ' Armilar, TT-Tom, ticaki      ' +
+    '   & Kuckuckmann~2000~3~1~~2000';
+
 /*
    SendToPanel({ payload:'pageType~popupNotify'});
                     SendToPanel({ payload:'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
