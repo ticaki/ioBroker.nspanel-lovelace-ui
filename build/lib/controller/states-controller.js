@@ -211,6 +211,26 @@ class StatesControler extends import_library.BaseClass {
     if (this.deletePageTimeout)
       this.adapter.clearInterval(this.deletePageTimeout);
   }
+  deletePage(p) {
+    const removeId = [];
+    for (const id in this.triggerDB) {
+      const index = this.triggerDB[id].to.findIndex((a) => a == p);
+      if (index !== -1) {
+        const entry = this.triggerDB[id];
+        for (const key in entry) {
+          const k = key;
+          const item = entry[k];
+          if (Array.isArray(item)) {
+            item.splice(index, 1);
+          }
+        }
+        this.triggerDB[id].to.splice(index, 1);
+        this.triggerDB[id].subscribed.splice(index, 1);
+        this.triggerDB[id].response.splice(index, 1);
+        this.triggerDB[id].to.splice(index, 1);
+      }
+    }
+  }
   async setTrigger(id, from, response = "slow") {
     if (id.startsWith(this.adapter.namespace)) {
       this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);

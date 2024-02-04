@@ -62,7 +62,6 @@ __export(Color_exports, {
   colorScale9: () => colorScale9,
   colorSonos: () => colorSonos,
   colorSpotify: () => colorSpotify,
-  getDecfromRGBThree: () => getDecfromRGBThree,
   getHue: () => getHue,
   hsv2rgb: () => hsv2rgb,
   hsvtodec: () => hsvtodec,
@@ -324,17 +323,6 @@ function rgb_to_cie(red, green, blue) {
 function isRGB(F) {
   return typeof F == "object" && "red" in F && "blue" in F && "green" in F;
 }
-const getDecfromRGBThree = async (item) => {
-  var _a, _b, _c;
-  if (!item)
-    return String(rgb_dec565(White));
-  const red = (_a = item.data.red && await item.data.red.getNumber()) != null ? _a : -1;
-  const green = (_b = item.data.red && await item.data.red.getNumber()) != null ? _b : -1;
-  const blue = (_c = item.data.red && await item.data.red.getNumber()) != null ? _c : -1;
-  if (red === -1 || blue === -1 || green === -1)
-    return null;
-  return String(rgb_dec565({ red, green, blue }));
-};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   BatteryEmpty,
@@ -381,7 +369,6 @@ const getDecfromRGBThree = async (item) => {
   colorScale9,
   colorSonos,
   colorSpotify,
-  getDecfromRGBThree,
   getHue,
   hsv2rgb,
   hsvtodec,
