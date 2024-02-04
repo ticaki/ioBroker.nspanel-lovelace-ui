@@ -1,6 +1,5 @@
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
-import { ChangeTypeOfKeys } from './pages';
 import * as Types from './types';
 export type PageBaseItem = {
     id?: string | null;
@@ -114,6 +113,61 @@ export interface MessageItem extends MessageItemInterface {
     mainId?: string;
     subId?: string;
 }
+export type entityUpdateDetailMessage = {
+    type: '2Sliders';
+    entityName: string;
+    icon?: undefined;
+    slidersColor: string | 'disable';
+    buttonState: boolean | 'disable';
+    slider1Pos: number | 'disable';
+    slider2Pos: number | 'disable';
+    hueMode: boolean;
+    hue_translation: string | '';
+    slider2Translation: string | '';
+    slider1Translation: string | '';
+    popup: boolean;
+};
+
+export type entityUpdateDetailMessageType = '2Sliders';
+
+export type entityUpdateDetailMessageTemplate2 = Record<
+    PageItemUnion['role'] | Types.roles,
+    entityUpdateDetailMessageTemplate
+>;
+
+export type entityUpdateDetailMessageTemplate =
+    | {
+          type: '2Sliders';
+          slidersColor: RGB | false;
+          buttonState: true | false;
+          slider1Pos: number | false;
+          slider2Pos: number | false;
+          hueMode: boolean;
+          hue_translation: string | false;
+          slider2Translation: string | false;
+          slider1Translation: string | false;
+          popup: boolean;
+      }
+    | {
+          type: 'popupShutter';
+          slider1Pos: number | false;
+          slider2Pos: number | false;
+          textHeadline: string | false;
+          textStatus: string | false;
+          iconUp: string | false;
+          iconStop: string | false;
+          iconDown: string | false;
+          iconUpStatus: string | false;
+          iconStopStatus: string | false;
+          iconDownStatus: string | false;
+          textTilt: string | false;
+          iconTiltLeft: string | false;
+          iconTiltStop: string | false;
+          iconTiltRight: string | false;
+          iconTiltLeftStatus: string | false;
+          iconTiltStopStatus: string | false;
+          iconTiltRightStatus: string | false;
+      };
 export type messageItemAllInterfaces = MessageItemMedia | MessageItem;
 export interface MessageItemInterface {
     type: Types.SerialType;
@@ -135,32 +189,35 @@ export type MediaToolBoxAction =
     | 'cross'
     | 'nexttool';
 export type PageItemBase = {
-    headline: string;
+    headline?: string;
     color: string;
     icon: IconEntryType;
-    text: TextEntryType;
-    entity: ValueEntryType; // Readonly Werte die angezeigt werden soll.
-    entityOptional?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
-    set?: {
-        value1: string;
-        value2: string;
-    };
-    minValue: number;
-    maxValue: number;
+    text?: TextEntryType;
+    entity1: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+    entity2?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+    entity3?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+    text1: string;
+    text2?: string;
+    text3?: string;
+    setValue1: string;
+    setValue2?: string;
+    setValue3?: string;
+    modeList?: number;
+    maxValue1?: number;
+    minValue1?: number;
+    minValue2?: number;
+    maxValue2?: number;
+    interpolateColor?: boolean;
+    dimmer?: number | boolean;
+    hue?: string;
+    saturation?: string;
+    useColor: string;
+    Red?: number;
+    Green?: number;
+    Blue?: number;
 };
 //XOR<XOR<A, B>, C>
-export type PageItemLights = PageItemLightsBrightness;
-type PageItemLightsBrightness = {
-    maxValueBrightness: number;
-    minValueBrightness: number;
-    interpolateColor: boolean;
-    dimmer: number | boolean;
-    hue: string;
-    useColor: string;
-    red: number;
-    green: number;
-    blue: number;
-};
+
 export type PageItemUnion = {
     role:
         | 'socket'
@@ -182,11 +239,11 @@ export type PageItemUnion = {
         | 'gate'
         | 'motion'
         | 'buttonSensor'
-        | 'switch'
-        | 'button'; // veraltet
+        | 'button'
+        | 'media.repeat';
 
     type: 'light';
-    data: PageItemBase & PageItemLights;
+    data: PageItemBase;
 };
 export type ChangeTypeOfPageItem<Obj, N> = Obj extends
     | object
@@ -194,10 +251,14 @@ export type ChangeTypeOfPageItem<Obj, N> = Obj extends
     | TextEntryType
     | ValueEntryType
     | ColorEntryType
-    | PageItemLightsBrightness
-    ? {
-          [K in keyof Obj]: ChangeTypeOfKeys<Obj[K], N>;
-      }
+    | PageItemBase
+    ? Obj extends undefined
+        ? undefined
+        : Obj extends RGB
+          ? N
+          : {
+                [K in keyof Obj]: ChangeTypeOfPageItem<Obj[K], N>;
+            }
     : N;
 export type PageItemDataitems = Omit<PageItemUnion, 'data'> & {
     data: ChangeTypeOfPageItem<PageItemUnion['data'], Dataitem | undefined>;
@@ -213,9 +274,11 @@ export type IconEntryType = Record<Types.BooleanUnion, { value: string; color: R
 
 export type TextEntryType = Record<Types.BooleanUnion, string>;
 
-export type ValueEntryType = {
-    value: number;
-    decimal: number;
-    factor: number;
-    unit: string;
-};
+export type ValueEntryType =
+    | {
+          value: number;
+          decimal: number;
+          factor: number;
+          unit: string;
+      }
+    | undefined;

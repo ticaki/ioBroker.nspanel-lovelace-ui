@@ -1,6 +1,6 @@
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
-import { IconEntryType, TextEntryType, ValueEntryType } from './pageItem';
+import { IconEntryType, TextEntryType, ValueEntryType } from './type-pageItem';
 import { ChangeTypeOfKeys, PageRole } from './pages';
 
 /**
@@ -39,6 +39,16 @@ export function isEventMethod(F: string | EventMethod): F is EventMethod {
             return false;
     }
 }
+export type MessageOutgoingMode =
+    | 'media1'
+    | 'media0'
+    | 'media2'
+    | 'media3'
+    | 'media4'
+    | 'media5'
+    | 'media0'
+    | 'media0'
+    | 'media0';
 
 export function isPopupType(F: PopupType | string): F is PopupType {
     switch (F as PopupType) {
@@ -96,16 +106,16 @@ export type panelRecvType = {
 };
 
 export const SerialTypeArray = [
-    'light',
-    'shutter',
+    'light', //popup
+    'shutter', //popup
     'delete',
     'text',
     'button',
-    'switch',
+    'switch', // nur für cardQR
     'number',
-    'input_sel',
-    'timer',
-    'fan',
+    'input_sel', //popup
+    'timer', //popup
+    'fan', //popup
 ];
 
 export type SerialType =
@@ -504,86 +514,66 @@ export type mediaOptional =
 export type DataItemstype = DataItemsOptions['type'];
 export type DataItemsMode = 'custom' | 'auto';
 export type DataItemsOptionsIcon =
-    | Exclude<
-          DataItemsOptions,
-          {
-              type: 'const';
-              role?: string;
-              constVal: StateValue | AllIcons;
-              state?: State | null; // use just inside of class
-          }
-      >
-    | ({
-          name?: string;
-      } & {
-          type: 'const';
-          role?: string;
+    | Exclude<DataItemsOptions, DataItemsOptionsConst>
+    | (DataItemsOptionsConst & {
           constVal: AllIcons;
-          state?: State | null; // use just inside of class
       });
 export type DataItemsOptions = {
     name?: string;
-} & (
-    | {
-          type: 'const';
-          role?: string;
-          constVal: StateValue | AllIcons;
-          state?: State | null; // use just inside of class
-          forceType?: 'string' | 'number' | 'boolean'; // force a type
-      }
-    | ((
-          | {
-                mode: 'auto' | 'done'; // not set means custom
-                role: PageRole | PageRole[];
-            }
-          | {
-                mode?: 'custom'; // not set means custom
-                role?: string;
-            }
-      ) & {
-          type: 'state';
-          dp: string;
-          state?: State | null; // use just inside of class
-          substring?: [number, number | undefined]; // only used with getString()
-          forceType?: 'string' | 'number' | 'boolean'; // force a type
-          read?: string | ((val: any) => any);
-          write?: string | ((val: any) => any);
-          response?: 'now' | 'medium' | 'slow';
-      })
-    | ((
-          | {
-                mode: 'auto' | 'done'; // not set means custom
-                role: PageRole | PageRole[];
-            }
-          | {
-                mode?: 'custom'; // not set means custom
-                role?: string;
-            }
-      ) & {
-          type: 'triggered';
-          dp: string;
-          state?: State | null; // use just inside of class
-          substring?: [number, number | undefined]; // only used with getString()
-          forceType?: 'string' | 'number' | 'boolean'; // force a type
-          read?: string | ((val: any) => any);
-          write?: string | ((val: any) => any);
-          response?: 'now' | 'medium' | 'slow';
-      })
-    | {
-          type: 'internal';
-          dp: internalDatapoints;
-          write?: string | ((val: any) => any);
-      }
-);
+} & (DataItemsOptionsConst | DataItemsOptionsState | DataItemsOptionsTriggered | DataItemsOptionsInternal);
+
+type DataItemsOptionsAuto = {
+    mode: 'auto' | 'done'; // not set means custom
+    role: PageRole | PageRole[];
+};
+type DataItemsOptionsCustom = {
+    mode?: 'custom'; // not set means custom
+    role?: string;
+};
+
+type DataItemsOptionsConst = {
+    type: 'const';
+    role?: string;
+    constVal: StateValue | AllIcons;
+    state?: State | null; // use just inside of class
+    forceType?: 'string' | 'number' | 'boolean'; // force a type
+};
+type DataItemsOptionsInternal = {
+    type: 'internal';
+    role?: string;
+    dp: internalDatapoints;
+    read?: string | ((val: any) => any);
+    write?: string | ((val: any) => any);
+};
+type DataItemsOptionsState = (DataItemsOptionsAuto | DataItemsOptionsCustom) & {
+    type: 'state';
+    dp: string;
+    state?: State | null; // use just inside of class
+    substring?: [number, number | undefined]; // only used with getString()
+    forceType?: 'string' | 'number' | 'boolean'; // force a type
+    read?: string | ((val: any) => any);
+    write?: string | ((val: any) => any);
+    response?: 'now' | 'medium' | 'slow';
+};
+type DataItemsOptionsTriggered = (DataItemsOptionsAuto | DataItemsOptionsCustom) & {
+    type: 'triggered';
+    dp: string;
+    state?: State | null; // use just inside of class
+    substring?: [number, number | undefined]; // only used with getString()
+    forceType?: 'string' | 'number' | 'boolean'; // force a type
+    read?: string | ((val: any) => any);
+    write?: string | ((val: any) => any);
+    response?: 'now' | 'medium' | 'slow';
+};
 
 type internalDatapoints = 'Relais1' | 'Relais2';
 export type IncomingEvent = {
     type: EventType;
     method: EventMethod;
-    mode: string;
+    action: ButtonActionType | '';
     page?: number;
     subPage?: number;
-    command: ButtonActionType | '';
+    command: string; //| PopupType;
     opt: string;
 };
 

@@ -1,16 +1,8 @@
 import * as Types from './types';
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
-import {
-    ColorEntryType,
-    IconBoolean,
-    MessageItemMedia,
-    PageItemBase,
-    PageItemLights,
-    TextEntryType,
-    ValueEntryType,
-} from './pageItem';
-import { MediaToolBoxAction } from './pageItem';
+import { ColorEntryType, IconBoolean, MessageItemMedia, TextEntryType, ValueEntryType } from './type-pageItem';
+import { MediaToolBoxAction } from './type-pageItem';
 
 export type PageTypeCards =
     | 'cardChart'
@@ -25,7 +17,9 @@ export type PageTypeCards =
     | 'cardAlarm'
     | 'cardPower'
     | 'screensaver'
-    | 'screensaver2'; //| 'cardBurnRec'
+    | 'screensaver2'
+    | 'cardBurnRec'
+    | 'cardItemSpecial'; // besonders, interne Card zum verwalten von pageItems
 
 /*export type PageType =
     | Types.PageChart
@@ -159,15 +153,15 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
     const temp = msg.split(',');
     if (!Types.isEventType(temp[0])) return null;
     if (!Types.isEventMethod(temp[1])) return null;
-    const arr = String(temp[3]).split('?');
+    const arr = String(temp[2]).split('?');
     if (arr[2])
         return {
             type: temp[0],
             method: temp[1],
             page: parseInt(arr[0]),
             subPage: parseInt(arr[1]),
-            command: isButtonActionType(arr[2]) ? arr[2] : '',
-            mode: temp[2],
+            command: arr[2],
+            action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
     else if (arr[1])
@@ -175,24 +169,25 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             type: temp[0],
             method: temp[1],
             page: parseInt(arr[0]),
-            command: isButtonActionType(arr[1]) ? arr[1] : '',
-            mode: temp[2],
+            command: arr[1],
+            action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
     else
         return {
             type: temp[0],
             method: temp[1],
-            command: isButtonActionType(arr[0]) ? arr[0] : '',
-            mode: temp[2],
+            command: arr[0],
+            action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
 }
-export type PageMediaBase = {
+export type PageBaseConfig = {
     //    type: PlayerType;
-    card: PageTypeCards;
+    card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
     initMode: 'auto' | 'custom';
     dpInit: string; // '' and initMode 'auto' throw an error
+    alwaysOn: 'none' | 'always' | 'action';
 
     //    mediaNamespace: string;
     config: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
@@ -215,7 +210,7 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | RGB
     | ColorEntryType
     | Types.IconScaleElement
-    | (PageItemBase & PageItemLights)
+    | PageMediaBaseConfig
     ? Obj extends RGB | Types.IconScaleElement
         ? N
         : {

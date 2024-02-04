@@ -18,6 +18,8 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var tools_exports = {};
 __export(tools_exports, {
+  getDecfromHue: () => getDecfromHue,
+  getDecfromRGBThree: () => getDecfromRGBThree,
   getIconEntryColor: () => getIconEntryColor,
   getIconEntryValue: () => getIconEntryValue,
   getTranslation: () => getTranslation,
@@ -27,6 +29,7 @@ __export(tools_exports, {
   getValueEntryTextOnOff: () => getValueEntryTextOnOff
 });
 module.exports = __toCommonJS(tools_exports);
+var import_Color2 = require("./Color");
 async function getValueEntryNumber(i) {
   var _a;
   if (!i)
@@ -37,18 +40,22 @@ async function getValueEntryNumber(i) {
   }
   return null;
 }
-async function getIconEntryValue(i, on, def) {
-  var _a, _b;
+async function getIconEntryValue(i, on, def, defOff = null) {
+  var _a, _b, _c;
   if (!i)
-    return def;
+    return on ? def : defOff != null ? defOff : def;
   const icon = i.true.value && await i.true.value.getString();
   if (!on) {
-    return (_b = (_a = i.false.value && await i.false.value.getString()) != null ? _a : icon) != null ? _b : def;
+    return (_c = (_b = (_a = i.false.value && await i.false.value.getString()) != null ? _a : defOff) != null ? _b : icon) != null ? _c : def;
   }
   return icon != null ? icon : def;
 }
 async function getIconEntryColor(i, on, def) {
   var _a, _b;
+  if (typeof def === "number")
+    def = String(def);
+  else if (typeof def !== "string")
+    def = String((0, import_Color2.rgb_dec565)(def));
   if (!i)
     return def;
   const icon = i.true.color && await i.true.color.getRGBDec();
@@ -103,8 +110,34 @@ function getTranslation(library, key1, key2) {
   result = library.getTranslation(result || key1);
   return result;
 }
+const getDecfromRGBThree = async (item) => {
+  var _a, _b, _c;
+  if (!item)
+    return String((0, import_Color2.rgb_dec565)(import_Color2.White));
+  const red = (_a = item.data.Red && await item.data.Red.getNumber()) != null ? _a : -1;
+  const green = (_b = item.data.Green && await item.data.Green.getNumber()) != null ? _b : -1;
+  const blue = (_c = item.data.Blue && await item.data.Blue.getNumber()) != null ? _c : -1;
+  if (red === -1 || blue === -1 || green === -1)
+    return null;
+  return String((0, import_Color2.rgb_dec565)({ red, green, blue }));
+};
+const getDecfromHue = async (item) => {
+  var _a;
+  if (!item || !item.data.hue)
+    return null;
+  const hue = await item.data.hue.getNumber();
+  let saturation = Math.abs((_a = item.data.saturation && await item.data.saturation.getNumber()) != null ? _a : 1);
+  if (saturation > 1)
+    saturation = 1;
+  if (hue === null)
+    return null;
+  const arr = (0, import_Color2.hsv2rgb)(hue, saturation, 1);
+  return String((0, import_Color2.rgb_dec565)({ red: arr[0], green: arr[1], blue: arr[2] }));
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  getDecfromHue,
+  getDecfromRGBThree,
   getIconEntryColor,
   getIconEntryValue,
   getTranslation,

@@ -1,7 +1,7 @@
 import { Dataitem, isDataItem } from '../classes/data-item';
 import * as Color from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { MessageItemMedia, MessageItem, ColorEntryType } from '../types/pageItem';
+import { MessageItemMedia, MessageItem, ColorEntryType } from '../types/type-pageItem';
 import * as pages from '../types/pages';
 import { BooleanUnion, IncomingEvent } from '../types/types';
 import { PageInterface, isMediaButtonActionType, messageItemDefault } from './Page';
@@ -26,18 +26,18 @@ const PageMediaMessageDefault: pages.PageMediaMessage = {
 
 const steps = 4;
 
-export class PageMedia extends Page implements pages.PageMediaBase {
-    config: pages.PageMediaBase['config'];
+export class PageMedia extends Page {
+    config: pages.PageBaseConfig['config'];
     initMode: 'auto' | 'custom';
     dpInit: string;
-    items: pages.PageMediaBase['items'];
+    items: pages.PageBaseConfig['items'];
     writeItems: pages.PageMediaBaseConfigWrite | undefined;
     private step: number = 1;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
 
-    constructor(config: PageInterface, options: pages.PageMediaBase) {
+    constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config);
 
         this.config = options.config;
@@ -51,21 +51,21 @@ export class PageMedia extends Page implements pages.PageMediaBase {
     async init(): Promise<void> {
         const config = { ...this.config };
         // search states for mode auto
-        const tempConfig: Partial<pages.PageMediaBase['config']> =
-            this.initMode === 'auto' ? await this.panel.readOnlyDB.getDataItemsFromAuto(this.dpInit, config) : {};
+        const tempConfig: Partial<pages.PageBaseConfig['config']> =
+            this.initMode === 'auto' ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : {};
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<pages.PageMediaBase['items']> = await this.panel.readOnlyDB.createDataItems(
+        const tempItem: Partial<pages.PageBaseConfig['items']> = await this.panel.statesControler.createDataItems(
             tempConfig,
             this,
         );
-        this.items = tempItem as pages.PageMediaBase['items'];
+        this.items = tempItem as pages.PageBaseConfig['items'];
         //check if command dps are valid
         for (const g in this.writeItems) {
             const d = g as keyof typeof this.writeItems;
             const item = this.writeItems[d];
             if (item === undefined) continue;
-            if (!item.dp || !(await this.panel.readOnlyDB.existsState(item.dp))) {
+            if (!item.dp || !(await this.panel.statesControler.existsState(item.dp))) {
                 this.log.warn(`State ${item.dp} was not found!`);
                 this.writeItems[d] = undefined;
             }
@@ -229,13 +229,14 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                     icon: Icons.GetIcon(icon),
                     iconColor: color,
                     mode: 'nexttool',
+                    type: 'button',
                     displayName: 'next',
                 };
             }
         }
         //Logo
         if (item.logo) {
-            message.logo = this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 5));
+            message.logo = this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
         }
         {
         }
@@ -289,11 +290,12 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                 if (list) this.log.debug(JSON.stringify(list));
                 if (color && icon && text) {
                     const tool: MessageItemMedia = {
-                        intNameEntity: `${id}`,
+                        intNameEntity: `${this.id}?${id}`,
                         iconNumber: iconNumber as 1 | 2 | 3 | 4 | 5,
                         icon: Icons.GetIcon(icon),
                         iconColor: color,
                         mode: i.action,
+                        type: 'button',
                         displayName: this.adapter.library.getLocalTranslation('media', text),
                     };
                     return tool;
@@ -370,12 +372,12 @@ export class PageMedia extends Page implements pages.PageMediaBase {
     async onButtonEvent(event: IncomingEvent): Promise<void> {
         if (!this.getVisibility()) return;
         //if (event.mode !== 'media') return;
-        if (isMediaButtonActionType(event.command)) {
+        if (isMediaButtonActionType(event.action)) {
             this.log.debug('Receive event: ' + JSON.stringify(event));
         } else return;
         const items = this.items;
         if (!items) return;
-        switch (event.command) {
+        switch (event.action) {
             case 'media-back': {
                 items.backward && (await items.backward.setStateTrue());
                 break;
@@ -441,7 +443,7 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                 break;
             }
             case 'button': {
-                if (event.mode === '5' && this.nextArrow) {
+                if (event.command === '5' && this.nextArrow) {
                     this.step++;
                     this.update();
                 }

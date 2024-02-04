@@ -7,11 +7,14 @@ import { DataItemsOptions } from '../types/types';
 import { Controller } from './panel-controller';
 import { PanelSend } from './panel-message';
 import { isPageRole } from '../types/pages';
+import { Panel } from './panel';
 
 export interface BaseClassTriggerdInterface {
     name: string;
     adapter: AdapterClassDefinition;
     panelSend: PanelSend;
+    alwaysOn?: 'none' | 'always' | 'action';
+    panel: Panel;
 }
 /**
  * Basisklasse für alles das auf Statestriggern soll - also jede card / popup
@@ -24,15 +27,20 @@ export class BaseClassTriggerd extends BaseClass {
     private doUpdate: boolean = true;
     protected minUpdateInterval: number;
     protected visibility: boolean = false;
-    protected controller: Controller | undefined;
+    protected controller: Controller;
     readonly panelSend: PanelSend;
+    public alwaysOn: 'none' | 'always' | 'action';
+    private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
+    protected panel: Panel;
+
     protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
         payload: string,
         opt?: IClientPublishOptions,
     ) => {
         if (payload == this.lastMessage) return;
         this.lastMessage = payload;
+
         this.sendToPanelClass(payload, opt);
     };
     resetLastMessage(): void {
@@ -43,20 +51,32 @@ export class BaseClassTriggerd extends BaseClass {
     constructor(card: BaseClassTriggerdInterface) {
         super(card.adapter, card.name);
         this.minUpdateInterval = 15000;
+        if (!this.adapter.controller) throw new Error('No controller! bye bye');
         this.controller = this.adapter.controller;
         this.panelSend = card.panelSend;
-        if (typeof card.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
+        this.alwaysOn = card.alwaysOn ?? 'none';
+        this.panel = card.panel;
+        if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
     }
-    readonly onStateTriggerSuperDoNotOverride = async (): Promise<boolean> => {
-        if (!this.visibility) return false;
+    readonly onStateTriggerSuperDoNotOverride = async (response: 'now' | 'medium' | 'slow'): Promise<boolean> => {
+        if (!this.visibility || this.unload) return false;
         if (this.waitForTimeout) return false;
-        if (this.updateTimeout) {
+        if (this.updateTimeout && response !== 'now') {
             this.doUpdate = true;
             return false;
         } else {
             this.waitForTimeout = this.adapter.setTimeout(() => {
                 this.waitForTimeout = undefined;
                 this.onStateTrigger();
+                if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
+                if (this.alwaysOn === 'action') {
+                    this.alwaysOnState = this.adapter.setTimeout(
+                        () => {
+                            this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                        },
+                        this.panel.timeout * 1000 || 10000,
+                    );
+                }
             }, 50);
             this.updateTimeout = this.adapter.setTimeout(async () => {
                 if (this.unload) return;
@@ -88,6 +108,9 @@ export class BaseClassTriggerd extends BaseClass {
     }
     async delete(): Promise<void> {
         await super.delete();
+        await this.setVisibility(false);
+        if (this.waitForTimeout) this.adapter.clearTimeout(this.waitForTimeout);
+        if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
         await this.stopTriggerTimeout();
     }
     getVisibility = (): boolean => {
@@ -97,13 +120,27 @@ export class BaseClassTriggerd extends BaseClass {
         if (v !== this.visibility || force) {
             this.visibility = v;
             if (this.visibility) {
+                if (this.alwaysOn != 'none') {
+                    this.panel.sendScreeensaverTimeout(0);
+
+                    if (this.alwaysOn === 'action') {
+                        this.alwaysOnState = this.adapter.setTimeout(
+                            () => {
+                                this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                            },
+                            this.panel.timeout * 2 * 1000 || 5000,
+                        );
+                    }
+                } else this.panel.sendScreeensaverTimeout(this.panel.timeout);
                 this.log.debug(`Switch page to visible${force ? ' (forced)' : ''}!`);
                 this.resetLastMessage();
-                this.controller && this.controller.readOnlyDB.activateTrigger(this);
+                this.controller && this.controller.statesControler.activateTrigger(this);
             } else {
+                if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
+                this.panel.sendScreeensaverTimeout(this.panel.timeout);
                 this.log.debug(`Switch page to invisible${force ? ' (forced)' : ''}!`);
                 this.stopTriggerTimeout();
-                this.controller && this.controller.readOnlyDB.deactivateTrigger(this);
+                this.controller && this.controller.statesControler.deactivateTrigger(this);
             }
             await this.onVisibilityChange(v);
         } else this.visibility = v;
@@ -143,7 +180,26 @@ export class StatesControler extends BaseClass {
         super(adapter, name || 'StatesDBReadOnly');
         this.timespan = timespan;
     }
-
+    deletePage(p: BaseClassTriggerd): void {
+        const removeId = [];
+        for (const id in this.triggerDB) {
+            const index = this.triggerDB[id].to.findIndex((a) => a == p);
+            if (index !== -1) {
+                const entry = this.triggerDB[id];
+                for (const key in entry) {   
+                    const k = key as keyof typeof entry;
+                    const item = entry[k];
+                    if (Array.isArray(item)) {
+                        item.splice(index, 1);
+                    }
+                }
+                this.triggerDB[id].to.splice(index, 1);
+                this.triggerDB[id].subscribed.splice(index, 1);
+                this.triggerDB[id].response.splice(index, 1);
+                this.triggerDB[id].to.splice(index, 1);
+            }
+        }
+    }
     /**
      * Set a subscript to a foreignState and write current state/value to db
      * @param id state id
@@ -156,15 +212,22 @@ export class StatesControler extends BaseClass {
             //throw new Error(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
         }
         if (this.triggerDB[id] !== undefined) {
-            if (this.triggerDB[id].to.indexOf(from) == -1) {
+            const index = this.triggerDB[id].to.findIndex((a) => a == from);
+            if (index === -1) {
                 this.triggerDB[id].to.push(from);
                 this.triggerDB[id].subscribed.push(false);
                 this.triggerDB[id].response.push(response);
+            } else {
+                if (this.triggerDB[id].response[index] !== response) {
+                    if (response === 'now') this.triggerDB[id].response[index] = 'now';
+                }
             }
         } else {
             const state = await this.adapter.getForeignStateAsync(id);
             if (state) {
+                // erstelle keinen trigger für das gleiche parent doppelt..
                 await this.adapter.subscribeForeignStatesAsync(id);
+
                 this.triggerDB[id] = {
                     state,
                     to: [from],
@@ -172,6 +235,9 @@ export class StatesControler extends BaseClass {
                     subscribed: [false],
                     response: [response],
                 };
+                if (this.stateDB[id] !== undefined) {
+                    delete this.stateDB[id];
+                }
             }
             this.log.debug(`Set a new trigger to ${id}`);
         }
@@ -250,7 +316,9 @@ export class StatesControler extends BaseClass {
                         this.triggerDB[dp].state = state;
                         if (state.ack) {
                             this.triggerDB[dp].to.forEach(
-                                (c) => c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride(),
+                                (c, index) =>
+                                    c.onStateTriggerSuperDoNotOverride &&
+                                    c.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]),
                             );
                         }
                     }

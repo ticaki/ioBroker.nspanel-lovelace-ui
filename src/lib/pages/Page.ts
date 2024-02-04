@@ -2,9 +2,10 @@ import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { Panel } from '../controller/panel';
 import { BaseClassPanelSend } from '../controller/panel-message';
 import { BaseClassTriggerdInterface } from '../controller/states-controller';
-import { MessageItem, messageItemAllInterfaces } from '../types/pageItem';
+import { MessageItem, messageItemAllInterfaces } from '../types/type-pageItem';
 import * as pages from '../types/pages';
 import { IncomingEvent } from '../types/types';
+import { ScreensaverConfig } from './screensaver';
 
 export const messageItemDefault: MessageItem = {
     type: 'input_sel',
@@ -14,24 +15,26 @@ export const messageItemDefault: MessageItem = {
     displayName: '',
     optionalValue: '',
 };
-
-export interface PageInterface extends BaseClassTriggerdInterface {
+export interface PageConfigInterface {
+    config: pages.PageBaseConfig;
+    page: PageInterface;
+}
+export type PageInterface = BaseClassTriggerdInterface & {
     card: pages.PageTypeCards;
     panel: Panel;
-    id: number;
-}
+    id: string;
+};
 //interface Page extends BaseClass | PageConfig
-
+export type PageConfigAll = ScreensaverConfig | pages.PageBaseConfig;
 export class Page extends BaseClassPanelSend {
     readonly card: pages.PageTypeCards;
-    readonly id: number;
-    protected panel: Panel;
+    readonly id: string;
+
     //config: Card['config'];
     constructor(card: PageInterface) {
         super(card);
         this.card = card.card;
         this.id = card.id;
-        this.panel = card.panel;
     }
     async init(): Promise<void> {}
 

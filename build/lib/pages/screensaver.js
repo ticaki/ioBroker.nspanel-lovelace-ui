@@ -37,7 +37,6 @@ var import_icon_mapping = require("../const/icon_mapping");
 class Screensaver extends import_Page.Page {
   entitysConfig;
   layout = "standard";
-  statesControler;
   config;
   items = {
     favoritEntity: [],
@@ -50,7 +49,7 @@ class Screensaver extends import_Page.Page {
   rotationTime;
   timoutRotation = void 0;
   step = 0;
-  constructor(config, options, statesControler) {
+  constructor(config, options) {
     switch (options.mode) {
       case "standard":
       case "alternate": {
@@ -62,33 +61,35 @@ class Screensaver extends import_Page.Page {
         break;
       }
     }
+    config.alwaysOn = "none";
     super(config);
     this.entitysConfig = options.entitysConfig;
     this.layout = options.mode;
-    this.config = options.config;
-    import_moment.default.locale(options.config.momentLocale);
-    this.statesControler = statesControler;
+    this.config = this.panel.config;
+    import_moment.default.locale(this.config.momentLocale);
     this.rotationTime = options.rotationTime !== 0 && options.rotationTime < 3 ? 3e3 : options.rotationTime * 1e3;
   }
   async init() {
     const config = this.entitysConfig;
-    for (const key of Definition.ScreenSaverAllPlaces) {
-      for (const entry of config[key]) {
-        if (entry == null || entry === void 0) {
-          this.items[key].push(void 0);
-          continue;
-        }
-        const tempItem = await this.statesControler.createDataItems(entry, this);
-        switch (key) {
-          case "favoritEntity":
-          case "leftEntity":
-          case "bottomEntity":
-          case "indicatorEntity":
-            this.items[key].push(tempItem);
-            break;
-          case "mrIconEntity":
-            this.items["mrIconEntity"].push(tempItem);
-            break;
+    if (this.controller) {
+      for (const key of Definition.ScreenSaverAllPlaces) {
+        for (const entry of config[key]) {
+          if (entry == null || entry === void 0) {
+            this.items[key].push(void 0);
+            continue;
+          }
+          const tempItem = await this.controller.statesControler.createDataItems(entry, this);
+          switch (key) {
+            case "favoritEntity":
+            case "leftEntity":
+            case "bottomEntity":
+            case "indicatorEntity":
+              this.items[key].push(tempItem);
+              break;
+            case "mrIconEntity":
+              this.items["mrIconEntity"].push(tempItem);
+              break;
+          }
         }
       }
     }
@@ -249,9 +250,6 @@ class Screensaver extends import_Page.Page {
       }
     }
   }
-  onStateTriggerSuperDoNotOverride = async () => {
-    return true;
-  };
   async onVisibilityChange(v) {
     this.step = -1;
     if (v) {
@@ -375,7 +373,7 @@ class Screensaver extends import_Page.Page {
         }
         if (value !== null && value !== void 0) {
           payload[`icon${s}`] += String(value);
-          const unit = item.entityValue.unit ? await item.entityValue.unit.getString() : null;
+          const unit = item.entityValue && item.entityValue.unit ? await item.entityValue.unit.getString() : null;
           if (unit !== null)
             payload[`icon${s}`] += unit;
         }

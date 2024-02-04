@@ -37,23 +37,15 @@ class Dataitem extends import_library.BaseClass {
   type = void 0;
   trueType = void 0;
   parent;
-  writeable = false;
+  _writeable = false;
   constructor(adapter, options, parent, db) {
     super(adapter, options.name || "");
     this.options = options;
-    this.options.type = options.type;
     this.stateDB = db;
     this.parent = parent;
     switch (this.options.type) {
       case "const":
         this.setTypeFromValue(this.options.constVal);
-        this.options.state = {
-          val: this.options.constVal,
-          ack: true,
-          ts: Date.now(),
-          lc: Date.now(),
-          from: ""
-        };
         break;
       case "state":
       case "triggered":
@@ -61,13 +53,16 @@ class Dataitem extends import_library.BaseClass {
         break;
     }
   }
+  get writeable() {
+    return this._writeable;
+  }
   async isValidAndInit() {
     switch (this.options.type) {
       case "const":
-        return this.options.constVal !== void 0;
+        return !(this.options.constVal === void 0 || this.options.constVal === null);
       case "state":
       case "triggered":
-        if (this.options.dp === void 0 || this.options.dp === "")
+        if (!this.options.dp)
           return false;
         const obj = await this.adapter.getForeignObjectAsync(this.options.dp);
         if (!obj || obj.type != "state" || !obj.common) {
@@ -77,7 +72,7 @@ class Dataitem extends import_library.BaseClass {
         this.type = this.type || obj.common.type;
         this.trueType = obj.common.type;
         this.options.role = obj.common.role;
-        this.writeable = !!obj.common.write;
+        this._writeable = !!obj.common.write;
         if (this.options.type == "triggered")
           this.stateDB.setTrigger(this.options.dp, this.parent, this.options.response);
         const value = await this.stateDB.getState(this.options.dp, this.options.response);
@@ -88,7 +83,7 @@ class Dataitem extends import_library.BaseClass {
   async getRawState() {
     switch (this.options.type) {
       case "const":
-        return this.options.state;
+        return { val: this.options.constVal, ack: true, ts: Date.now(), lc: Date.now(), from: "" };
       case "state":
       case "triggered":
         if (!this.options.dp) {
@@ -253,7 +248,7 @@ class Dataitem extends import_library.BaseClass {
     } else {
       if (this.options.write)
         new Function("val", "Color", `${this.options.write}`)(val, Color);
-      await this.stateDB.setStateAsync(this, val, this.writeable);
+      await this.stateDB.setStateAsync(this, val, this._writeable);
     }
   }
 }

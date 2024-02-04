@@ -12,6 +12,6 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var pageItem_exports = {};
-module.exports = __toCommonJS(pageItem_exports);
-//# sourceMappingURL=pageItem.js.map
+var type_pageItem_exports = {};
+module.exports = __toCommonJS(type_pageItem_exports);
+//# sourceMappingURL=type-pageItem.js.map

@@ -12,7 +12,7 @@ declare global {
             name: string;
             timeout: number;
             mediaid: string;
-            Testconfig: any;
+            Testconfig2: Partial<Panel.panelConfigPartial>[];
             scstype: string;
         }
     }

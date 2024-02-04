@@ -1,39 +1,43 @@
-import { BaseClassPanelSend, PanelSend } from './panel-message';
+import { PanelSend } from './panel-message';
 
 import dayjs from 'dayjs';
-import * as Screensaver from '../pages/screensaver';
+import { Screensaver, ScreensaverConfigType } from '../pages/screensaver';
 import * as NSPanel from '../types/types';
 import * as pages from '../types/pages';
 import { Controller } from './panel-controller';
-import { AdapterClassDefinition } from '../classes/library';
+import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { callbackMessageType } from '../classes/mqtt';
 import { ReiveTopicAppendix, SendTopicAppendix } from '../const/definition';
-import { BaseClassTriggerdInterface, StatesControler } from './states-controller';
 import { testConfigMedia } from '../config';
-import { Page, PageInterface } from '../pages/Page';
+import { Page, PageConfigAll, PageInterface } from '../pages/Page';
 import { PageMedia } from '../pages/pageMedia';
+import { IClientPublishOptions } from 'mqtt';
+import { StatesControler } from './states-controller';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
-    screenSaverConfig: Screensaver.ScreensaverConfig;
     controller: Controller;
     topic: string;
     name: string;
+    pages: PageConfigAll[];
+    config: ScreensaverConfigType;
 }
 export function isPanelConfig(F: object | panelConfig): F is panelConfig {
     if ((F as panelConfig).controller === undefined) return false;
-    if ((F as panelConfig).screenSaverConfig === undefined) return false;
+    if ((F as panelConfig).pages === undefined) return false;
     if ((F as panelConfig).topic === undefined) return false;
     if ((F as panelConfig).name === undefined) return false;
     return true;
 }
 type panelConfig = panelConfigTop & {
     format: Intl.DateTimeFormatOptions;
-    screenSaverConfig: Screensaver.ScreensaverConfig;
     controller: Controller;
     topic: string;
     name: string;
+    pages: PageConfigAll[];
+    config: ScreensaverConfigType;
 };
+
 const DefaultOptions = {
     format: {
         weekday: 'short',
@@ -44,20 +48,124 @@ const DefaultOptions = {
     CustomFormat: '',
     locale: 'de-DE',
     timeout: 30,
+    pages: [],
 };
 
 type panelConfigTop = { CustomFormat: string; locale: Intl.LocalesArgument; timeout: number };
 
-export class Panel extends BaseClassPanelSend {
+export class Panel extends BaseClass {
     private minuteLoopTimeout: ioBroker.Timeout | undefined;
     private dateUpdateTimeout: ioBroker.Timeout | undefined;
-    options: panelConfig;
-    screenSaver: Screensaver.Screensaver;
-    reivCallbacks: callbackMessageType[] = [];
-    _isOnline = false;
-    readOnlyDB: StatesControler;
+    private pages: Record<string, Page> = {};
     private _activePage: { page: Page | null; sleep?: boolean } = { page: null };
+    private screenSaver: Screensaver | undefined;
+    readonly format: Partial<Intl.DateTimeFormatOptions>;
+    readonly controller: Controller;
+    readonly topic: string;
+    readonly reivCallbacks: callbackMessageType[] = [];
+    _isOnline = false;
+    readonly panelSend: PanelSend;
+    readonly statesControler: StatesControler;
+    readonly config: ScreensaverConfigType;
+    readonly timeout: number;
+    readonly CustomFormat: string;
+    constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
+        super(adapter, options.name);
+        this.panelSend = new PanelSend(adapter, {
+            name: `${options.name}-SendClass`,
+            mqttClient: options.controller.mqttClient,
+            topic: options.topic,
+        });
+        this.timeout = options.timeout || 15;
+        this.CustomFormat = options.CustomFormat ?? '';
+        this.config = options.config;
+        this.format = Object.assign(DefaultOptions.format, options.format);
+        this.controller = options.controller;
+        this.topic = options.topic;
+        if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = this.panelSend.addMessage;
+        this.statesControler = options.controller.statesControler;
+        let scsFound = 0;
+        for (const a in options.pages) {
+            const pageConfig = options.pages[a];
+            if (!pageConfig) continue;
+            switch (pageConfig.card) {
+                case 'cardChart': {
+                    break;
+                }
+                case 'cardLChart': {
+                    break;
+                }
+                case 'cardEntities': {
+                    break;
+                }
+                case 'cardGrid': {
+                    break;
+                }
+                case 'cardGrid2': {
+                    break;
+                }
+                case 'cardThermo': {
+                    break;
+                }
+                case 'cardMedia': {
+                    const pmconfig = {
+                        card: testConfigMedia.card,
+                        panel: this,
+                        id: a,
+                        name: 'PM',
+                        alwaysOn: testConfigMedia.alwaysOn,
+                        adapter: this.adapter,
+                        panelSend: this.panelSend,
+                    };
+                    this.pages[a] = new PageMedia(pmconfig, pageConfig);
+                    this.pages[a].init();
+                    break;
+                }
+                case 'cardUnlock': {
+                    break;
+                }
+                case 'cardQR': {
+                    break;
+                }
+                case 'cardAlarm': {
+                    break;
+                }
+                case 'cardPower': {
+                    break;
+                }
+                case 'screensaver':
+                case 'screensaver2': {
+                    if (scsFound++ > 0) continue;
 
+                    //const opt = Object.assign(DefaultOptions, pageConfig);
+                    const ssconfig: PageInterface = {
+                        card: 'screensaver',
+                        panel: this,
+                        id: a,
+                        name: 'SrS',
+                        adapter: this.adapter,
+                        panelSend: this.panelSend,
+                    };
+                    this.screenSaver = new Screensaver(ssconfig, pageConfig);
+                    break;
+                }
+            }
+        }
+        if (scsFound === 0 || this.screenSaver === undefined) {
+            this.log.error('no screensaver found! Stop!');
+            throw new Error('no screensaver found! Stop!');
+            this.adapter.controller!.delete();
+            return;
+        }
+    }
+
+    private sendToPanelClass: (payload: string, opt?: IClientPublishOptions) => void = () => {};
+    protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
+        payload: string,
+        opt?: IClientPublishOptions,
+    ) => {
+        this.sendToPanelClass(payload, opt);
+    };
     async setActivePage(_notSleep?: boolean): Promise<void>;
     async setActivePage(_page?: Page | boolean | undefined): Promise<void>;
     async setActivePage(_page?: Page | boolean | undefined, _notSleep?: boolean): Promise<void> {
@@ -73,7 +181,9 @@ export class Panel extends BaseClassPanelSend {
         if (sleep == !this._activePage.sleep || page != this._activePage.page) {
             if (page != this._activePage.page) {
                 if (this._activePage.page) this._activePage.page.setVisibility(false);
-                if (page && !sleep) page.setVisibility(true);
+                if (page && !sleep) {
+                    page.setVisibility(true);
+                }
                 this._activePage = { page, sleep };
             } else if (sleep == !this._activePage.sleep) {
                 if (this._activePage.page && !sleep) this._activePage.page.setVisibility(true, true);
@@ -84,42 +194,6 @@ export class Panel extends BaseClassPanelSend {
     getActivePage(): Page {
         if (!this._activePage.page) throw new Error(`No active page here, check code!`);
         return this._activePage.page;
-    }
-    test: PageMedia;
-    constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
-        const config: BaseClassTriggerdInterface = {
-            name: options.name,
-            adapter: adapter,
-            panelSend: new PanelSend(adapter, {
-                name: `${options.name}-SendClass`,
-                mqttClient: options.controller.mqttClient,
-                topic: options.topic,
-            }),
-        };
-        super(config);
-        this.readOnlyDB = options.controller.readOnlyDB;
-        this.panelSend.panel = this;
-        const format = Object.assign(DefaultOptions.format, options.format);
-        this.options = Object.assign(DefaultOptions, options, { format: format });
-        let ssconfig: PageInterface = {
-            card: 'screensaver',
-            panel: this,
-            id: 0,
-            name: 'SrS',
-            adapter: this.adapter,
-            panelSend: this.panelSend,
-        };
-        this.screenSaver = new Screensaver.Screensaver(ssconfig, options.screenSaverConfig, this.readOnlyDB);
-        ssconfig = {
-            card: testConfigMedia.card,
-            panel: this,
-            id: 1,
-            name: 'PM',
-            adapter: this.adapter,
-            panelSend: this.panelSend,
-        };
-        this.test = new PageMedia(ssconfig, testConfigMedia);
-        this.test.init();
     }
     get isOnline(): boolean {
         return this._isOnline;
@@ -132,7 +206,7 @@ export class Panel extends BaseClassPanelSend {
     }
 
     init = async (): Promise<void> => {
-        this.options.controller.mqttClient.subscript(this.options.topic, this.onMessage);
+        this.controller.mqttClient.subscript(this.topic, this.onMessage);
         this.sendToPanel('pageType~pageStartup', { retain: true });
     };
     registerOnMessage(fn: callbackMessageType): void {
@@ -162,9 +236,15 @@ export class Panel extends BaseClassPanelSend {
      * @param sec seconds for timeout
      */
     sendScreeensaverTimeout(sec: number): void {
+        this.log.debug(`Set screeensaver timeout to ${sec}s.`);
         this.sendToPanel(`timeout~${sec}`);
     }
-
+    restartLoops(): void {
+        if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
+        if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
+        this.minuteLoop();
+        this.dateUpdateLoop();
+    }
     /**
      * Do panel work always at full minute
      * @returns void
@@ -183,9 +263,9 @@ export class Panel extends BaseClassPanelSend {
     dateUpdateLoop = (): void => {
         if (this.unload) return;
         const val =
-            this.options.CustomFormat != ''
-                ? dayjs().format(this.options.CustomFormat)
-                : new Date().toLocaleDateString(this.options.locale, this.options.format);
+            this.CustomFormat != ''
+                ? dayjs().format(this.CustomFormat)
+                : new Date().toLocaleDateString(this.config.locale, this.format);
 
         this.sendToPanel(`date~${val}`);
         const d: Date = new Date();
@@ -205,15 +285,20 @@ export class Panel extends BaseClassPanelSend {
 
     async HandleIncomingMessage(event: NSPanel.IncomingEvent): Promise<void> {
         this.log.debug(JSON.stringify(event));
+        let index: string | undefined;
+        for (index in this.pages) {
+            if (!(this.pages[index].card === 'screensaver' || this.pages[index].card !== 'screensaver2')) break;
+        }
+        if (index === undefined) return;
         switch (event.method) {
             case 'startup': {
                 this.isOnline = true;
-                await this.screenSaver.init();
+                if (this.screenSaver) await this.screenSaver.init();
+                else return;
                 if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
                 if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
-                this.minuteLoop();
-                this.dateUpdateLoop();
-                this.sendScreeensaverTimeout(this.options.timeout);
+                this.restartLoops();
+                this.sendScreeensaverTimeout(this.timeout);
                 this.sendToPanel('dimmode~80~100~6371');
                 const test = false;
                 if (test) {
@@ -222,7 +307,7 @@ export class Panel extends BaseClassPanelSend {
                         'entityUpd~Menü~button~bPrev~~65535~~~button~bNext~~65535~~~button~navigate.SensorGrid~21.1~26095~Obergeschoss~PRESS~button~navigate.ObergeschossWindow~~64332~Obergeschoss~Obergeschoss~button~navigate.ogLightsGrid~~65363~Obergeschoss ACTUAL~PRESS~button~navigate.Alexa~~65222~test~PRESS',
                     );
                 } else {
-                    await this.setActivePage(this.test);
+                    await this.setActivePage(this.pages[index]);
                 }
                 // sendPage
                 break;
@@ -236,8 +321,8 @@ export class Panel extends BaseClassPanelSend {
                 break;
             }
             case 'buttonPress2': {
-                if (event.mode == 'screensaver') {
-                    await this.setActivePage(this.test);
+                if (event.command == 'screensaver') {
+                    await this.setActivePage(this.pages[index]);
                 } else {
                     this.getActivePage().onButtonEvent(event);
                     await this.setActivePage(true);
@@ -248,12 +333,12 @@ export class Panel extends BaseClassPanelSend {
                 break;
             }
             case 'button1': {
-                this.screenSaver.setVisibility(false);
+                this.screenSaver!.setVisibility(false);
 
                 break;
             }
             case 'button2': {
-                this.screenSaver.setVisibility(false);
+                this.screenSaver!.setVisibility(false);
 
                 break;
             }

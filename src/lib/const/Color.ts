@@ -1,5 +1,5 @@
 import { RGB } from '../types/Color';
-import { PageItemDataitems } from '../types/pageItem';
+import { PageItemDataitems } from '../types/type-pageItem';
 
 export const HMIOff: RGB = { red: 68, green: 115, blue: 158 }; // Blue-Off - Original Entity Off
 export const HMIOn: RGB = { red: 3, green: 169, blue: 244 }; // Blue-On
@@ -105,7 +105,14 @@ export function rgbHexToObject(rgb: string): RGB {
     return result;
 }
 
-export function scale(number: number, inMin: number, inMax: number, outMin: number, outMax: number): number {
+export function scale(
+    number: number,
+    inMin: number | null,
+    inMax: number | null,
+    outMin: number,
+    outMax: number,
+): number {
+    if (inMin === null || inMax === null) return number;
     return outMax + outMin - (((number - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin);
 }
 
@@ -308,12 +315,3 @@ export function rgb_to_cie(red: number, green: number, blue: number): string {
 export function isRGB(F: RGB | any): F is RGB {
     return typeof F == 'object' && 'red' in F && 'blue' in F && 'green' in F;
 }
-
-export const getDecfromRGBThree = async (item: PageItemDataitems): Promise<string | null> => {
-    if (!item) return String(rgb_dec565(White));
-    const red = (item.data.red && (await item.data.red.getNumber())) ?? -1;
-    const green = (item.data.red && (await item.data.red.getNumber())) ?? -1;
-    const blue = (item.data.red && (await item.data.red.getNumber())) ?? -1;
-    if (red === -1 || blue === -1 || green === -1) return null;
-    return String(rgb_dec565({ red, green, blue }));
-};

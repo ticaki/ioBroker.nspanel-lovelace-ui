@@ -71,8 +71,8 @@ class PageMedia extends import_Page2.Page {
   }
   async init() {
     const config = { ...this.config };
-    const tempConfig = this.initMode === "auto" ? await this.panel.readOnlyDB.getDataItemsFromAuto(this.dpInit, config) : {};
-    const tempItem = await this.panel.readOnlyDB.createDataItems(
+    const tempConfig = this.initMode === "auto" ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : {};
+    const tempItem = await this.panel.statesControler.createDataItems(
       tempConfig,
       this
     );
@@ -82,7 +82,7 @@ class PageMedia extends import_Page2.Page {
       const item = this.writeItems[d];
       if (item === void 0)
         continue;
-      if (!item.dp || !await this.panel.readOnlyDB.existsState(item.dp)) {
+      if (!item.dp || !await this.panel.statesControler.existsState(item.dp)) {
         this.log.warn(`State ${item.dp} was not found!`);
         this.writeItems[d] = void 0;
       }
@@ -234,12 +234,13 @@ class PageMedia extends import_Page2.Page {
           icon: import_icon_mapping.Icons.GetIcon(icon),
           iconColor: color,
           mode: "nexttool",
+          type: "button",
           displayName: "next"
         };
       }
     }
     if (item.logo) {
-      message.logo = this.getItemMessageMedia(await this.getToolItem(item.logo, "logo", 5));
+      message.logo = this.getItemMessageMedia(await this.getToolItem(item.logo, "logo", 0));
     }
     {
     }
@@ -292,11 +293,12 @@ class PageMedia extends import_Page2.Page {
           this.log.debug(JSON.stringify(list));
         if (color && icon && text) {
           const tool = {
-            intNameEntity: `${id}`,
+            intNameEntity: `${this.id}?${id}`,
             iconNumber,
             icon: import_icon_mapping.Icons.GetIcon(icon),
             iconColor: color,
             mode: i.action,
+            type: "button",
             displayName: this.adapter.library.getLocalTranslation("media", text)
           };
           return tool;
@@ -365,14 +367,14 @@ class PageMedia extends import_Page2.Page {
   async onButtonEvent(event) {
     if (!this.getVisibility())
       return;
-    if ((0, import_Page.isMediaButtonActionType)(event.command)) {
+    if ((0, import_Page.isMediaButtonActionType)(event.action)) {
       this.log.debug("Receive event: " + JSON.stringify(event));
     } else
       return;
     const items = this.items;
     if (!items)
       return;
-    switch (event.command) {
+    switch (event.action) {
       case "media-back": {
         items.backward && await items.backward.setStateTrue();
         break;
@@ -443,7 +445,7 @@ class PageMedia extends import_Page2.Page {
         break;
       }
       case "button": {
-        if (event.mode === "5" && this.nextArrow) {
+        if (event.command === "5" && this.nextArrow) {
           this.step++;
           this.update();
         }
