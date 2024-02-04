@@ -44,16 +44,15 @@ class NspanelLovelaceUi extends utils.Adapter {
   async onReady() {
     import_icon_mapping.Icons.adapter = this;
     this.library = new import_library.Library(this);
-    this.config.Testconfig = this.config.Testconfig || import_config.Testconfig;
-    import_config.Testconfig.screenSaverConfig.mode = this.config.scstype;
-    this.config.Testconfig.timeout = this.config.timeout;
-    import_config.testConfigMedia.dpInit = this.config.mediaid;
+    this.config.Testconfig2 = [import_config.Testconfig];
+    import_config.Testconfig.pages[0].mode = this.config.scstype;
+    this.config.Testconfig2[0].timeout = this.config.timeout;
+    this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
     this.setTimeout(() => {
       this.library.init();
       this.log.debug("Check configuration!");
       if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword))
         return;
-      this.log.debug(this.adapterDir);
       this.mqttClient = new MQTT.MQTTClientClass(
         this,
         this.config.mqttIp,
@@ -64,22 +63,29 @@ class NspanelLovelaceUi extends utils.Adapter {
           this.log.debug(topic + " " + message);
         }
       );
-      const testconfig = JSON.parse(JSON.stringify(this.config.Testconfig));
-      testconfig.name = this.config.name;
-      testconfig.topic = this.config.topic;
-      this.log.debug(String(process.memoryUsage().heapUsed));
-      this.controller = new import_panel_controller.Controller(this, {
-        mqttClient: this.mqttClient,
-        name: "controller",
-        panels: [JSON.parse(JSON.stringify(testconfig))]
-      });
       setTimeout(() => {
-        this.log.debug(String(process.memoryUsage().heapUsed)), 2e3;
-      });
+        if (!this.mqttClient)
+          return;
+        const testconfig = JSON.parse(JSON.stringify(this.config.Testconfig2));
+        testconfig.name = this.config.name;
+        testconfig.topic = this.config.topic;
+        const mem = process.memoryUsage().heapUsed / 1024;
+        this.log.debug(String(mem + "k"));
+        this.controller = new import_panel_controller.Controller(this, {
+          mqttClient: this.mqttClient,
+          name: "controller",
+          panels: JSON.parse(JSON.stringify(testconfig))
+        });
+        setTimeout(() => {
+          this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + "k"));
+        }, 5e3);
+      }, 2e3);
     }, 3e3);
   }
   onUnload(callback) {
     try {
+      if (this.controller)
+        this.controller.delete;
       callback();
     } catch (e) {
       callback();
@@ -88,7 +94,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   async onStateChange(id, state) {
     if (state) {
       if (this.controller) {
-        this.controller.readOnlyDB.onStateChange(id, state);
+        this.controller.statesControler.onStateChange(id, state);
       }
     } else {
       this.log.info(`state ${id} deleted`);
@@ -117,7 +123,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           this.log.debug(keyToValue);
           result.currentfield = obj.message.entry + "#" + obj.message.field;
           const fields = {};
-          const v1 = this.config.Testconfig.screenSaverConfig.entitysConfig;
+          const v1 = this.config.Testconfig2[0].pages[0].screenSaverConfig.entitysConfig;
           const key = obj.message.entry.split("#")[1];
           const v2 = v1[key];
           const index = obj.message.entry.split("#")[0] - 1;
@@ -285,10 +291,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                   result.currentfield = "";
               }
               if (change) {
-                this.config.Testconfig.screenSaverConfig.entitysConfig[key][index] = v3;
+                this.config.Testconfig2[0].pages[0].screenSaverConfig.entitysConfig[key][index] = v3;
                 const obj2 = await this.getForeignObjectAsync("system.adapter." + this.namespace);
-                if (obj2 && obj2.native && JSON.stringify(obj2.native.Testconfig) !== JSON.stringify(this.config.Testconfig)) {
-                  obj2.native.Testconfig = this.config.Testconfig;
+                if (obj2 && obj2.native && JSON.stringify(obj2.native.Testconfig2) !== JSON.stringify(this.config.Testconfig2)) {
+                  obj2.native.Testconfig2 = this.config.Testconfig2;
                   await this.setForeignObjectAsync("system.adapter." + this.namespace, obj2);
                 }
               }

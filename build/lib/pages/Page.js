@@ -37,12 +37,10 @@ const messageItemDefault = {
 class Page extends import_panel_message.BaseClassPanelSend {
   card;
   id;
-  panel;
   constructor(card) {
     super(card);
     this.card = card.card;
     this.id = card.id;
-    this.panel = card.panel;
   }
   async init() {
   }

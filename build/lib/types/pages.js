@@ -130,15 +130,15 @@ function convertToEvent(msg) {
     return null;
   if (!Types.isEventMethod(temp[1]))
     return null;
-  const arr = String(temp[3]).split("?");
+  const arr = String(temp[2]).split("?");
   if (arr[2])
     return {
       type: temp[0],
       method: temp[1],
       page: parseInt(arr[0]),
       subPage: parseInt(arr[1]),
-      command: isButtonActionType(arr[2]) ? arr[2] : "",
-      mode: temp[2],
+      command: arr[2],
+      action: isButtonActionType(temp[3]) ? temp[3] : "",
       opt: (_a = temp[4]) != null ? _a : ""
     };
   else if (arr[1])
@@ -146,16 +146,16 @@ function convertToEvent(msg) {
       type: temp[0],
       method: temp[1],
       page: parseInt(arr[0]),
-      command: isButtonActionType(arr[1]) ? arr[1] : "",
-      mode: temp[2],
+      command: arr[1],
+      action: isButtonActionType(temp[3]) ? temp[3] : "",
       opt: (_b = temp[4]) != null ? _b : ""
     };
   else
     return {
       type: temp[0],
       method: temp[1],
-      command: isButtonActionType(arr[0]) ? arr[0] : "",
-      mode: temp[2],
+      command: arr[0],
+      action: isButtonActionType(temp[3]) ? temp[3] : "",
       opt: (_c = temp[4]) != null ? _c : ""
     };
 }
