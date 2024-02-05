@@ -609,6 +609,59 @@ export class PageItem extends BaseClassTriggerd {
 
                 break;
             }
+            case 'popupFan':
+            case 'popupInSel': {
+                switch (item.role) {
+                    case 'socket':
+                    case 'value.time':
+                    case 'level.timer':
+                    case 'level.mode.fan':
+                    case 'value.alarmtime':
+                    case 'light':
+                    case 'dimmer':
+                    case 'hue':
+                    case 'ct':
+                    case 'cie':
+                    case 'rgbSingle':
+                    case 'rgb':
+                    case 'blind':
+                    case 'door':
+                    case 'window':
+                    case 'gate':
+                    case 'motion':
+                    case 'media.repeat':
+
+                    case 'buttonSensor':
+                    case 'button':
+                        break;
+                    case 'text.list': {
+                        message.type = 'insel';
+
+                        if (message.type !== 'insel' || template.type !== 'insel') return null;
+
+                        const value = template.value
+                            ? (await getValueEntryBoolean(item.data.entity1)) ?? template.value
+                            : template.value;
+                        message.textColor = await getEntryColor(item.data.color, value, template.textColor);
+                        message.headline = this.library.getTranslation(
+                            (item.data.headline && (await item.data.headline.getString())) ?? '',
+                        );
+                        let list = template.list
+                            ? (item.data.modeList && (await item.data.modeList.getObject)) ?? template.list
+                            : [];
+                        if (!Array.isArray(list)) list = [];
+                        message.list = list.map((a) => formatInSelText(a)).join('?');
+
+                        break;
+                    }
+                }
+                break;
+            }
+            case 'popupLightNew':
+            case 'popupNotify':
+            case 'popupShutter':
+            case 'popupThermo':
+            case 'popupTimer':
         }
 
         if (template.type !== message.type) {

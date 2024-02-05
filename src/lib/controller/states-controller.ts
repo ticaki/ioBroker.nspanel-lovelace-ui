@@ -119,7 +119,6 @@ export class BaseClassTriggerd extends BaseClass {
             this.visibility = v;
             if (this.visibility) {
                 if (this.unload) return;
-
                 if (this.alwaysOn != 'none') {
                     await this.panel.sendScreeensaverTimeout(0);
 
