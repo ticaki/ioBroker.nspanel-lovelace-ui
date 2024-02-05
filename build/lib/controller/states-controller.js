@@ -114,8 +114,8 @@ class BaseClassTriggerd extends import_library.BaseClass {
     }
   }
   async delete() {
-    await super.delete();
     await this.setVisibility(false);
+    await super.delete();
     if (this.waitForTimeout)
       this.adapter.clearTimeout(this.waitForTimeout);
     if (this.alwaysOnState)
@@ -129,6 +129,8 @@ class BaseClassTriggerd extends import_library.BaseClass {
     if (v !== this.visibility || force) {
       this.visibility = v;
       if (this.visibility) {
+        if (this.unload)
+          return;
         if (this.alwaysOn != "none") {
           this.panel.sendScreeensaverTimeout(0);
           if (this.alwaysOn === "action") {
@@ -167,32 +169,44 @@ class BaseClassTriggerd extends import_library.BaseClass {
 }
 class StatesControler extends import_library.BaseClass {
   triggerDB = {};
+  deletePageTimeout;
   stateDB = {};
   tempObjectDB = void 0;
   timespan;
   constructor(adapter, name = "", timespan = 15e3) {
     super(adapter, name || "StatesDBReadOnly");
     this.timespan = timespan;
+    this.deletePageTimeout = this.adapter.setInterval(this.deletePageLoop, 6e4);
   }
-  deletePage(p) {
+  deletePageLoop = () => {
     const removeId = [];
     for (const id in this.triggerDB) {
-      const index = this.triggerDB[id].to.findIndex((a) => a == p);
-      if (index !== -1) {
-        const entry = this.triggerDB[id];
+      const entry = this.triggerDB[id];
+      const removeIndex = [];
+      for (const i in entry.to) {
+        if (entry.to[i].unload)
+          removeIndex.push(Number(i));
+      }
+      for (const i of removeIndex) {
         for (const key in entry) {
           const k = key;
           const item = entry[k];
           if (Array.isArray(item)) {
-            item.splice(index, 1);
+            item.splice(i, 1);
           }
         }
-        this.triggerDB[id].to.splice(index, 1);
-        this.triggerDB[id].subscribed.splice(index, 1);
-        this.triggerDB[id].response.splice(index, 1);
-        this.triggerDB[id].to.splice(index, 1);
       }
+      if (entry.to.length === 0)
+        removeId.push(id);
     }
+    for (const id of removeId) {
+      delete this.triggerDB[id];
+    }
+  };
+  async delete() {
+    await super.delete();
+    if (this.deletePageTimeout)
+      this.adapter.clearInterval(this.deletePageTimeout);
   }
   async setTrigger(id, from, response = "slow") {
     if (id.startsWith(this.adapter.namespace)) {
@@ -346,21 +360,22 @@ class StatesControler extends import_library.BaseClass {
       this.stateDB[id].state.ack = ack;
     }
   }
-  async createDataItems(data, parent) {
+  async createDataItems(data, parent, target = {}) {
+    var _a;
     for (const i in data) {
       const d = data[i];
       if (d === void 0)
         continue;
       if (typeof d === "object" && !("type" in d)) {
-        data[i] = await this.createDataItems(d, parent);
+        target[i] = await this.createDataItems(d, parent, ((_a = target[i]) != null ? _a : Array.isArray(d)) ? [] : {});
       } else if (typeof d === "object" && "type" in d) {
-        data[i] = data[i] !== void 0 ? new import_data_item.Dataitem(this.adapter, { ...d, name: `${this.name}.${parent.name}.${i}` }, parent, this) : void 0;
-        if (data[i] !== void 0 && !await data[i].isValidAndInit()) {
-          data[i] = void 0;
+        target[i] = data[i] !== void 0 ? new import_data_item.Dataitem(this.adapter, { ...d, name: `${this.name}.${parent.name}.${i}` }, parent, this) : void 0;
+        if (target[i] !== void 0 && !await target[i].isValidAndInit()) {
+          target[i] = void 0;
         }
       }
     }
-    return data;
+    return target;
   }
   async getDataItemsFromAuto(dpInit, data) {
     if (dpInit === "")
