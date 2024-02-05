@@ -89,8 +89,6 @@ export class Screensaver extends Page {
                             this.items['mrIconEntity'].push(tempItem);
                             break;
                     }
-
-                    //this.controller.RegisterEntityWatcher(this, item);
                 }
             }
         }

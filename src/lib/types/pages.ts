@@ -153,6 +153,8 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
     const temp = msg.split(',');
     if (!Types.isEventType(temp[0])) return null;
     if (!Types.isEventMethod(temp[1])) return null;
+    let popup: undefined | string = undefined;
+    if (temp[1] === 'pageOpenDetail') popup = temp.splice(2, 1)[0];
     const arr = String(temp[2]).split('?');
     if (arr[2])
         return {
@@ -160,7 +162,8 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             method: temp[1],
             page: parseInt(arr[0]),
             subPage: parseInt(arr[1]),
-            command: arr[2],
+            popup: popup,
+            name: arr[2],
             action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
@@ -169,7 +172,8 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             type: temp[0],
             method: temp[1],
             page: parseInt(arr[0]),
-            command: arr[1],
+            popup: popup,
+            name: arr[1],
             action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
@@ -177,7 +181,8 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
         return {
             type: temp[0],
             method: temp[1],
-            command: arr[0],
+            popup: popup,
+            name: arr[0],
             action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
@@ -211,6 +216,7 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | ColorEntryType
     | Types.IconScaleElement
     | PageMediaBaseConfig
+    | Types.SerialTypePageElements
     ? Obj extends RGB | Types.IconScaleElement
         ? N
         : {

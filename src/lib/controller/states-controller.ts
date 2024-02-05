@@ -107,8 +107,8 @@ export class BaseClassTriggerd extends BaseClass {
         }
     }
     async delete(): Promise<void> {
-        await super.delete();
         await this.setVisibility(false);
+        await super.delete();
         if (this.waitForTimeout) this.adapter.clearTimeout(this.waitForTimeout);
         if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
         await this.stopTriggerTimeout();
@@ -120,6 +120,7 @@ export class BaseClassTriggerd extends BaseClass {
         if (v !== this.visibility || force) {
             this.visibility = v;
             if (this.visibility) {
+                if (this.unload) return;
                 if (this.alwaysOn != 'none') {
                     this.panel.sendScreeensaverTimeout(0);
 
@@ -173,32 +174,43 @@ export class StatesControler extends BaseClass {
             response: ('now' | 'medium' | 'slow')[];
         };
     } = {};
+    private deletePageTimeout: ioBroker.Interval | undefined;
     private stateDB: { [key: string]: { state: ioBroker.State; ts: number } } = {};
     private tempObjectDB: { [key: string]: { [id: string]: ioBroker.Object } } | undefined = undefined;
     timespan: number;
     constructor(adapter: AdapterClassDefinition, name: string = '', timespan: number = 15000) {
         super(adapter, name || 'StatesDBReadOnly');
         this.timespan = timespan;
+        this.deletePageTimeout = this.adapter.setInterval(this.deletePageLoop, 60000);
     }
-    deletePage(p: BaseClassTriggerd): void {
+    private deletePageLoop = (): void => {
         const removeId = [];
         for (const id in this.triggerDB) {
-            const index = this.triggerDB[id].to.findIndex((a) => a == p);
-            if (index !== -1) {
-                const entry = this.triggerDB[id];
-                for (const key in entry) {   
+            const entry = this.triggerDB[id];
+            const removeIndex = [];
+            for (const i in entry.to) {
+                if (entry.to[i].unload) removeIndex.push(Number(i));
+            }
+            for (const i of removeIndex) {
+                for (const key in entry) {
                     const k = key as keyof typeof entry;
                     const item = entry[k];
                     if (Array.isArray(item)) {
-                        item.splice(index, 1);
+                        item.splice(i, 1);
                     }
                 }
-                this.triggerDB[id].to.splice(index, 1);
-                this.triggerDB[id].subscribed.splice(index, 1);
-                this.triggerDB[id].response.splice(index, 1);
-                this.triggerDB[id].to.splice(index, 1);
             }
+            if (entry.to.length === 0) removeId.push(id);
         }
+
+        for (const id of removeId) {
+            delete this.triggerDB[id];
+        }
+    };
+
+    async delete(): Promise<void> {
+        await super.delete();
+        if (this.deletePageTimeout) this.adapter.clearInterval(this.deletePageTimeout);
     }
     /**
      * Set a subscript to a foreignState and write current state/value to db
@@ -375,23 +387,23 @@ export class StatesControler extends BaseClass {
      * @param parent Page etc.
      * @returns then json with values dataitem or undefined
      */
-    async createDataItems(data: any, parent: any): Promise<any> {
+    async createDataItems(data: any, parent: any, target: any = {}): Promise<any> {
         for (const i in data) {
             const d = data[i];
             if (d === undefined) continue;
             if (typeof d === 'object' && !('type' in d)) {
-                data[i] = await this.createDataItems(d, parent);
+                target[i] = await this.createDataItems(d, parent, target[i] ?? Array.isArray(d) ? [] : {});
             } else if (typeof d === 'object' && 'type' in d) {
-                data[i] =
+                target[i] =
                     data[i] !== undefined
                         ? new Dataitem(this.adapter, { ...d, name: `${this.name}.${parent.name}.${i}` }, parent, this)
                         : undefined;
-                if (data[i] !== undefined && !(await data[i].isValidAndInit())) {
-                    data[i] = undefined;
+                if (target[i] !== undefined && !(await target[i].isValidAndInit())) {
+                    target[i] = undefined;
                 }
             }
         }
-        return data;
+        return target;
     }
 
     async getDataItemsFromAuto(dpInit: string, data: any): Promise<any> {

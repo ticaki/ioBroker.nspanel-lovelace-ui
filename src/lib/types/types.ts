@@ -66,31 +66,6 @@ export function isPopupType(F: PopupType | string): F is PopupType {
             return false;
     }
 }
-// If u get a error here u forgot something in PageTypeCards or PageType
-/*export function checkPageType(F: PageTypeCards, A: PageType): void {
-    A.type = F;
-}*/
-
-/*export function isPageThermoItem(F: PageItem | PageThermoItem): F is PageThermoItem {
-    return 'popupThermoMode1' in F;
-}
-
-export function isPageMedia(F: PageType | PageMedia): F is PageMedia {
-    return F.type == 'cardMedia';
-}
-export function isPagePower(F: PageType | PagePower): F is PagePower {
-    return F.type == 'cardPower';
-}
-*/
-export type PopupType =
-    | 'popupFan'
-    | 'popupInSel'
-    | 'popupLight'
-    | 'popupLightNew'
-    | 'popupNotify'
-    | 'popupShutter'
-    | 'popupThermo'
-    | 'popupTimer';
 
 export type EventMethod =
     | 'startup'
@@ -118,7 +93,27 @@ export const SerialTypeArray = [
     'fan', //popup
 ];
 
-export type SerialType =
+export type PopupType =
+    | 'popupFan'
+    | 'popupInSel'
+    | 'popupLight'
+    | 'popupLightNew'
+    | 'popupNotify'
+    | 'popupShutter'
+    | 'popupThermo'
+    | 'popupTimer';
+
+export type SerialTypePageElements =
+    | 'button' //~button~button.entityName~3~17299~bt-name~bt-text
+    | 'light' // ~light~light.entityName~1~17299~Light1~0
+    | 'shutter' // ~shutter~cover.entityName~0~17299~Shutter2~iconUp|iconStop|iconDown
+    | 'text' // ~text~sensor.entityName~3~17299~Temperature~content
+    | 'input_sel' //~input_sel~input_select.entityName~3~17299~sel-name~sel-text
+    | 'number' //~number~input_number.entityName~4~17299~Number123~value|min|max
+    | 'switch' // ~switch~switch.entityName~4~17299~Switch1~0
+    | 'delete'; //~delete~~~~~
+
+export type SerialTypePopup =
     | 'button'
     | 'light'
     | 'shutter'
@@ -573,7 +568,8 @@ export type IncomingEvent = {
     action: ButtonActionType | '';
     page?: number;
     subPage?: number;
-    command: string; //| PopupType;
+    popup?: string;
+    name: string; //| PopupType;
     opt: string;
 };
 

@@ -105,7 +105,7 @@ export type ThisCardMessageTypes = 'input_sel' | 'button';
 };*/
 
 export type MessageItemMedia = Partial<MessageItem> & {
-    type?: Extract<Types.SerialType, ThisCardMessageTypes>;
+    type?: Extract<Types.SerialTypePopup, ThisCardMessageTypes>;
     iconNumber: 0 | 1 | 2 | 3 | 4 | 5; // media0 usw.
     mode: MediaToolBoxAction;
 };
@@ -113,22 +113,30 @@ export interface MessageItem extends MessageItemInterface {
     mainId?: string;
     subId?: string;
 }
-export type entityUpdateDetailMessage = {
-    type: '2Sliders';
-    entityName: string;
-    icon?: undefined;
-    slidersColor: string | 'disable';
-    buttonState: boolean | 'disable';
-    slider1Pos: number | 'disable';
-    slider2Pos: number | 'disable';
-    hueMode: boolean;
-    hue_translation: string | '';
-    slider2Translation: string | '';
-    slider1Translation: string | '';
-    popup: boolean;
-};
+export type entityUpdateDetailMessage =
+    | {
+          type: '2Sliders';
+          entityName: string;
+          icon?: undefined;
+          slidersColor: string | 'disable';
+          buttonState: boolean | 'disable';
+          slider1Pos: number | 'disable';
+          slider2Pos: number | 'disable';
+          hueMode: boolean;
+          hue_translation: string | '';
+          slider2Translation: string | '';
+          slider1Translation: string | '';
+          popup: boolean;
+      }
+    | {
+          type: 'insel';
+          entityName: string;
+          textColor: string;
+          headline: string;
+          list: string;
+      };
 
-export type entityUpdateDetailMessageType = '2Sliders';
+export type entityUpdateDetailMessageType = '2Sliders' | 'insel';
 
 export type entityUpdateDetailMessageTemplate2 = Record<
     PageItemUnion['role'] | Types.roles,
@@ -167,10 +175,17 @@ export type entityUpdateDetailMessageTemplate =
           iconTiltLeftStatus: string | false;
           iconTiltStopStatus: string | false;
           iconTiltRightStatus: string | false;
+      }
+    | {
+          type: 'insel';
+          value: boolean;
+          textColor: RGB;
+          textHeadline: string | false;
+          list: string[] | false;
       };
 export type messageItemAllInterfaces = MessageItemMedia | MessageItem;
 export interface MessageItemInterface {
-    type: Types.SerialType;
+    type: Types.SerialTypePopup;
     intNameEntity: string;
     icon: string;
     iconColor: string;
@@ -190,7 +205,7 @@ export type MediaToolBoxAction =
     | 'nexttool';
 export type PageItemBase = {
     headline?: string;
-    color: string;
+    color: ColorEntryType;
     icon: IconEntryType;
     text?: TextEntryType;
     entity1: ValueEntryType; // Readonly Werte die angezeigt werden soll.
@@ -216,6 +231,38 @@ export type PageItemBase = {
     Green?: number;
     Blue?: number;
 };
+
+export type PageTypeUnionTemplate = {
+    role: Types.roles;
+    type: Types.SerialTypePageElements;
+    data: {
+        headline?: string | undefined;
+        color?: RGB | undefined;
+        icon?: { true: { value: string; color: RGB }; false: { value: string; color: RGB } } | undefined;
+        text?: { true: string; false: string } | undefined;
+        entity1: true | undefined | 'invert';
+        entity2?: true | undefined | 'invert';
+        entity3?: true | undefined | 'invert';
+        text1?: { true: string; false: string } | undefined;
+        text2?: { true: string; false: string } | undefined;
+        text3?: { true: string; false: string } | undefined;
+        setValue1?: true | undefined;
+        setValue2?: true | undefined;
+        setValue3?: true | undefined;
+        modeList?: true | undefined;
+        maxValue1?: number | undefined;
+        minValue1?: number | undefined;
+        minValue2?: number | undefined;
+        maxValue2?: number | undefined;
+        interpolateColor?: true | undefined;
+        dimmer?: true | undefined;
+        hue?: true | undefined;
+        saturation?: true | undefined;
+        useColor?: true | undefined;
+        RGB3?: true | undefined;
+        optionalData?: any[] | true | undefined; //shutter icons
+    };
+};
 //XOR<XOR<A, B>, C>
 
 export type PageItemUnion = {
@@ -240,9 +287,10 @@ export type PageItemUnion = {
         | 'motion'
         | 'buttonSensor'
         | 'button'
-        | 'media.repeat';
+        | 'media.repeat'
+        | 'text.list';
 
-    type: 'light';
+    type: Types.SerialTypePageElements;
     data: PageItemBase;
 };
 export type ChangeTypeOfPageItem<Obj, N> = Obj extends
@@ -280,5 +328,7 @@ export type ValueEntryType =
           decimal: number;
           factor: number;
           unit: string;
+          minScale?: number;
+          maxScale?: number;
       }
     | undefined;

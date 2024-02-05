@@ -37,6 +37,7 @@ const messageItemDefault = {
 class Page extends import_panel_message.BaseClassPanelSend {
   card;
   id;
+  popups = [];
   constructor(card) {
     super(card);
     this.card = card.card;

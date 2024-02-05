@@ -74,9 +74,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                     name: 'controller',
                     panels: JSON.parse(JSON.stringify(testconfig)),
                 });
+                this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + 'k'));
                 setTimeout(() => {
                     this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + 'k'));
                 }, 5000);
+                setInterval(() => {
+                    this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + 'k'));
+                }, 60000);
             }, 2000);
         }, 3000);
     }

@@ -62,7 +62,7 @@ const DefaultOptions = {
 class Panel extends import_library.BaseClass {
   minuteLoopTimeout;
   dateUpdateTimeout;
-  pages = {};
+  pages = [];
   _activePage = { page: null };
   screenSaver;
   format;
@@ -93,7 +93,7 @@ class Panel extends import_library.BaseClass {
       this.sendToPanelClass = this.panelSend.addMessage;
     this.statesControler = options.controller.statesControler;
     let scsFound = 0;
-    for (const a in options.pages) {
+    for (let a = 0; a < options.pages.length; a++) {
       const pageConfig = options.pages[a];
       if (!pageConfig)
         continue;
@@ -120,7 +120,7 @@ class Panel extends import_library.BaseClass {
           const pmconfig = {
             card: import_config.testConfigMedia.card,
             panel: this,
-            id: a,
+            id: String(a),
             name: "PM",
             alwaysOn: import_config.testConfigMedia.alwaysOn,
             adapter: this.adapter,
@@ -149,7 +149,7 @@ class Panel extends import_library.BaseClass {
           const ssconfig = {
             card: "screensaver",
             panel: this,
-            id: a,
+            id: String(a),
             name: "SrS",
             adapter: this.adapter,
             panelSend: this.panelSend
@@ -251,6 +251,7 @@ class Panel extends import_library.BaseClass {
     if (this.unload)
       return;
     this.sendToPanel(`time~${new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`);
+    this.pages = this.pages.filter((a) => a && !a.unload);
     const diff = 6e4 - Date.now() % 6e4 + 10;
     this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
   };
@@ -263,7 +264,7 @@ class Panel extends import_library.BaseClass {
     d.setDate(d.getDate() + 1);
     d.setHours(0, 0, 0);
     const diff = d.getTime() - Date.now();
-    this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
+    this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
   };
   async delete() {
     await super.delete();
@@ -275,12 +276,12 @@ class Panel extends import_library.BaseClass {
   }
   async HandleIncomingMessage(event) {
     this.log.debug(JSON.stringify(event));
-    let index;
-    for (index in this.pages) {
-      if (!(this.pages[index].card === "screensaver" || this.pages[index].card !== "screensaver2"))
-        break;
-    }
-    if (index === void 0)
+    const index = this.pages.findIndex((a) => {
+      if (a && (a.card === "screensaver" || a.card !== "screensaver2"))
+        return true;
+      return false;
+    });
+    if (index === -1)
       return;
     switch (event.method) {
       case "startup": {
@@ -289,12 +290,8 @@ class Panel extends import_library.BaseClass {
           await this.screenSaver.init();
         else
           return;
-        if (this.minuteLoopTimeout)
-          this.adapter.clearTimeout(this.minuteLoopTimeout);
-        if (this.dateUpdateTimeout)
-          this.adapter.clearTimeout(this.dateUpdateTimeout);
         this.restartLoops();
-        this.sendScreeensaverTimeout(this.timeout);
+        this.sendScreeensaverTimeout(3);
         this.sendToPanel("dimmode~80~100~6371");
         const test = false;
         if (test) {

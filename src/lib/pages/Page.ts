@@ -29,6 +29,7 @@ export type PageConfigAll = ScreensaverConfig | pages.PageBaseConfig;
 export class Page extends BaseClassPanelSend {
     readonly card: pages.PageTypeCards;
     readonly id: string;
+    protected popups: PageItem[] = [];
 
     //config: Card['config'];
     constructor(card: PageInterface) {

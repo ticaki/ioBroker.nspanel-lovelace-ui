@@ -6901,7 +6901,7 @@ export class Icons {
         ['zodiac-virgo', ''],
     ]);
 
-    static GetIcon(ma_name: string): string {
+    static GetIcon(ma_name: AllIcons | string): string {
         return Icons.GetIconWithType(ma_name as AllIcons);
     }
     static GetIconWithType(ma_name: AllIcons): string {

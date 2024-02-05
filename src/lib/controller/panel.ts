@@ -56,7 +56,7 @@ type panelConfigTop = { CustomFormat: string; locale: Intl.LocalesArgument; time
 export class Panel extends BaseClass {
     private minuteLoopTimeout: ioBroker.Timeout | undefined;
     private dateUpdateTimeout: ioBroker.Timeout | undefined;
-    private pages: Record<string, Page> = {};
+    private pages: (Page | undefined)[] = [];
     private _activePage: { page: Page | null; sleep?: boolean } = { page: null };
     private screenSaver: Screensaver | undefined;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
@@ -85,7 +85,7 @@ export class Panel extends BaseClass {
         if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = this.panelSend.addMessage;
         this.statesControler = options.controller.statesControler;
         let scsFound = 0;
-        for (const a in options.pages) {
+        for (let a = 0; a < options.pages.length; a++) {
             const pageConfig = options.pages[a];
             if (!pageConfig) continue;
             switch (pageConfig.card) {
@@ -111,14 +111,14 @@ export class Panel extends BaseClass {
                     const pmconfig = {
                         card: testConfigMedia.card,
                         panel: this,
-                        id: a,
+                        id: String(a),
                         name: 'PM',
                         alwaysOn: testConfigMedia.alwaysOn,
                         adapter: this.adapter,
                         panelSend: this.panelSend,
                     };
                     this.pages[a] = new PageMedia(pmconfig, pageConfig);
-                    this.pages[a].init();
+                    this.pages[a]!.init();
                     break;
                 }
                 case 'cardUnlock': {
@@ -141,7 +141,7 @@ export class Panel extends BaseClass {
                     const ssconfig: PageInterface = {
                         card: 'screensaver',
                         panel: this,
-                        id: a,
+                        id: String(a),
                         name: 'SrS',
                         adapter: this.adapter,
                         panelSend: this.panelSend,
@@ -252,6 +252,9 @@ export class Panel extends BaseClass {
     minuteLoop = (): void => {
         if (this.unload) return;
         this.sendToPanel(`time~${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`);
+
+        this.pages = this.pages.filter((a) => a && !a.unload);
+
         const diff = 60000 - (Date.now() % 60000) + 10;
         this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
     };
@@ -273,7 +276,7 @@ export class Panel extends BaseClass {
         // don't set ms, let them be random
         d.setHours(0, 0, 0);
         const diff = d.getTime() - Date.now();
-        this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
+        this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
     };
 
     async delete(): Promise<void> {
@@ -285,20 +288,19 @@ export class Panel extends BaseClass {
 
     async HandleIncomingMessage(event: NSPanel.IncomingEvent): Promise<void> {
         this.log.debug(JSON.stringify(event));
-        let index: string | undefined;
-        for (index in this.pages) {
-            if (!(this.pages[index].card === 'screensaver' || this.pages[index].card !== 'screensaver2')) break;
-        }
-        if (index === undefined) return;
+        const index = this.pages.findIndex((a) => {
+            if (a && (a.card === 'screensaver' || a.card !== 'screensaver2')) return true;
+            return false;
+        });
+        if (index === -1) return;
         switch (event.method) {
             case 'startup': {
                 this.isOnline = true;
                 if (this.screenSaver) await this.screenSaver.init();
                 else return;
-                if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
-                if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
                 this.restartLoops();
-                this.sendScreeensaverTimeout(this.timeout);
+                //this.sendScreeensaverTimeout(this.timeout);
+                this.sendScreeensaverTimeout(3);
                 this.sendToPanel('dimmode~80~100~6371');
                 const test = false;
                 if (test) {
@@ -321,7 +323,7 @@ export class Panel extends BaseClass {
                 break;
             }
             case 'buttonPress2': {
-                if (event.command == 'screensaver') {
+                if (event.name == 'screensaver') {
                     await this.setActivePage(this.pages[index]);
                 } else {
                     this.getActivePage().onButtonEvent(event);
