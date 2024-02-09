@@ -101,6 +101,13 @@ class Panel extends import_library.BaseClass {
     if (typeof this.panelSend.addMessageTasmota === "function")
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     this.statesControler = options.controller.statesControler;
+    this.library.writedp(`panel.${this.name}`, void 0, import_definition.genericStateObjects.panel.panels._channel);
+    this.library.writedp(
+      `panel.${this.name}.cmd`,
+      void 0 === "ON",
+      import_definition.genericStateObjects.panel.panels.cmd._channel
+    );
+    this.adapter.subscribeStates(`panel.${this.name}.cmd.*`);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
       const pageConfig = options.pages[a];

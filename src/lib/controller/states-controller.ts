@@ -64,6 +64,7 @@ export class BaseClassTriggerd extends BaseClass {
     readonly onStateTriggerSuperDoNotOverride = async (response: 'now' | 'medium' | 'slow'): Promise<boolean> => {
         if (!this.visibility || this.unload) return false;
         if (this.waitForTimeout) return false;
+
         if (this.updateTimeout && response !== 'now') {
             this.doUpdate = true;
             return false;
