@@ -47,6 +47,6 @@ export class Controller extends Library.BaseClass {
     }
     async delete(): Promise<void> {
         await super.delete();
-        this.panel.forEach((a) => a.delete());
+        this.panels.forEach((a) => a.delete());
     }
 }

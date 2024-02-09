@@ -631,37 +631,37 @@ export class PageItem extends BaseClassTriggerd {
                     case 'motion':
                     case 'media.repeat':
 
-                    case 'buttonSensor':
-                    case 'button':
-                        break;
-                    case 'text.list': {
-                        message.type = 'insel';
+                if (message.type !== 'insel') return null;
 
-                        if (message.type !== 'insel' || template.type !== 'insel') return null;
+                const value = (await tools.getValueEntryBoolean(item.entity1)) ?? true;
 
-                        const value = template.value
-                            ? (await getValueEntryBoolean(item.data.entity1)) ?? template.value
-                            : template.value;
-                        message.textColor = await getEntryColor(item.data.color, value, template.textColor);
-                        message.headline = this.library.getTranslation(
-                            (item.data.headline && (await item.data.headline.getString())) ?? '',
-                        );
-                        let list = template.list
-                            ? (item.data.modeList && (await item.data.modeList.getObject)) ?? template.list
-                            : [];
-                        if (!Array.isArray(list)) list = [];
-                        message.list = list.map((a) => formatInSelText(a)).join('?');
+                message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+                message.headline = this.library.getTranslation(
+                    (item.headline && (await item.headline.getString())) ?? '',
+                );
+                let list = (item.valueList && (await item.valueList.getObject())) ??
+                    (item.valueList && (await item.valueList.getString())) ?? [
+                        '1',
+                        '2',
+                        '3',
+                        '4',
+                        '5',
+                        '6',
+                        '7',
+                        '8',
+                        '9',
+                        '10',
+                        '11',
+                        '12',
+                        '13',
+                    ];
+                if (list !== null) {
+                    if (typeof list === 'string') list = list.split('?');
+                } else list = [];
+                message.list = Array.isArray(list) ? list.map((a: string[]) => tools.formatInSelText(a)).join('?') : '';
 
-                        break;
-                    }
-                }
                 break;
             }
-            case 'popupLightNew':
-            case 'popupNotify':
-            case 'popupShutter':
-            case 'popupThermo':
-            case 'popupTimer':
         }
 
         if (template.type !== message.type) {

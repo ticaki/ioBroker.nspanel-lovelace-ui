@@ -64,6 +64,7 @@ export class BaseClassTriggerd extends BaseClass {
     readonly onStateTriggerSuperDoNotOverride = async (response: 'now' | 'medium' | 'slow'): Promise<boolean> => {
         if (!this.visibility || this.unload) return false;
         if (this.waitForTimeout) return false;
+
         if (this.updateTimeout && response !== 'now') {
             this.doUpdate = true;
             return false;
@@ -119,6 +120,7 @@ export class BaseClassTriggerd extends BaseClass {
             this.visibility = v;
             if (this.visibility) {
                 if (this.unload) return;
+
                 if (this.alwaysOn != 'none') {
                     await this.panel.sendScreeensaverTimeout(0);
 

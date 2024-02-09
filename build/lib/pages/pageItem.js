@@ -463,51 +463,37 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       }
       case "popupFan":
       case "popupInSel": {
-        switch (item.role) {
-          case "socket":
-          case "value.time":
-          case "level.timer":
-          case "level.mode.fan":
-          case "value.alarmtime":
-          case "light":
-          case "dimmer":
-          case "hue":
-          case "ct":
-          case "cie":
-          case "rgbSingle":
-          case "rgb":
-          case "blind":
-          case "door":
-          case "window":
-          case "gate":
-          case "motion":
-          case "media.repeat":
-          case "buttonSensor":
-          case "button":
-            break;
-          case "text.list": {
-            message.type = "insel";
-            if (message.type !== "insel" || template.type !== "insel")
-              return null;
-            const value = template.value ? (_j = await (0, import_tools.getValueEntryBoolean)(item.data.entity1)) != null ? _j : template.value : template.value;
-            message.textColor = await (0, import_tools.getEntryColor)(item.data.color, value, template.textColor);
-            message.headline = this.library.getTranslation(
-              (_k = item.data.headline && await item.data.headline.getString()) != null ? _k : ""
-            );
-            let list = template.list ? (_l = item.data.modeList && await item.data.modeList.getObject) != null ? _l : template.list : [];
-            if (!Array.isArray(list))
-              list = [];
-            message.list = list.map((a) => (0, import_tools.formatInSelText)(a)).join("?");
-            break;
-          }
-        }
+        message.type = "insel";
+        if (message.type !== "insel")
+          return null;
+        const value = (_j = await tools.getValueEntryBoolean(item.entity1)) != null ? _j : true;
+        message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+        message.headline = this.library.getTranslation(
+          (_k = item.headline && await item.headline.getString()) != null ? _k : ""
+        );
+        let list = (_m = (_l = item.valueList && await item.valueList.getObject()) != null ? _l : item.valueList && await item.valueList.getString()) != null ? _m : [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13"
+        ];
+        if (list !== null) {
+          if (typeof list === "string")
+            list = list.split("?");
+        } else
+          list = [];
+        message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
         break;
       }
-      case "popupLightNew":
-      case "popupNotify":
-      case "popupShutter":
-      case "popupThermo":
-      case "popupTimer":
     }
     if (template.type !== message.type) {
       throw new Error(`Template ${template.type} is not ${message.type} for role: ${this.config.role}`);
