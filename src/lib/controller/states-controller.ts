@@ -8,6 +8,9 @@ import { Controller } from './panel-controller';
 import { PanelSend } from './panel-message';
 import { isPageRole } from '../types/pages';
 import { Panel } from './panel';
+import { PageItemDataItemsOptions } from '../types/type-pageItem';
+import { PageItem } from '../pages/pageItem';
+import { PageInterface } from '../classes/Page';
 
 export interface BaseClassTriggerdInterface {
     name: string;
@@ -16,6 +19,7 @@ export interface BaseClassTriggerdInterface {
     alwaysOn?: 'none' | 'always' | 'action';
     panel: Panel;
 }
+
 /**
  * Basisklasse für alles das auf Statestriggern soll - also jede card / popup
  * übernimmt auch die Sichtbarkeitssteuerung das triggern wird pausiert wenn nicht sichtbar
@@ -33,7 +37,6 @@ export class BaseClassTriggerd extends BaseClass {
     private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
     protected panel: Panel;
-
     protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
         payload: string,
         opt?: IClientPublishOptions,
@@ -61,6 +64,7 @@ export class BaseClassTriggerd extends BaseClass {
     readonly onStateTriggerSuperDoNotOverride = async (response: 'now' | 'medium' | 'slow'): Promise<boolean> => {
         if (!this.visibility || this.unload) return false;
         if (this.waitForTimeout) return false;
+
         if (this.updateTimeout && response !== 'now') {
             this.doUpdate = true;
             return false;
@@ -94,12 +98,7 @@ export class BaseClassTriggerd extends BaseClass {
             `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`,
         );
     }
-    getPayloadArray(s: (string | any)[]): string {
-        return s.join('~');
-    }
-    getPayload(...s: string[]): string {
-        return s.join('~');
-    }
+
     private async stopTriggerTimeout(): Promise<void> {
         if (this.updateTimeout) {
             this.adapter.clearTimeout(this.updateTimeout);
@@ -121,13 +120,14 @@ export class BaseClassTriggerd extends BaseClass {
             this.visibility = v;
             if (this.visibility) {
                 if (this.unload) return;
+
                 if (this.alwaysOn != 'none') {
-                    this.panel.sendScreeensaverTimeout(0);
+                    await this.panel.sendScreeensaverTimeout(0);
 
                     if (this.alwaysOn === 'action') {
                         this.alwaysOnState = this.adapter.setTimeout(
-                            () => {
-                                this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                            async () => {
+                                await this.panel.sendScreeensaverTimeout(this.panel.timeout);
                             },
                             this.panel.timeout * 2 * 1000 || 5000,
                         );
@@ -135,13 +135,13 @@ export class BaseClassTriggerd extends BaseClass {
                 } else this.panel.sendScreeensaverTimeout(this.panel.timeout);
                 this.log.debug(`Switch page to visible${force ? ' (forced)' : ''}!`);
                 this.resetLastMessage();
-                this.controller && this.controller.statesControler.activateTrigger(this);
+                this.controller && (await this.controller.statesControler.activateTrigger(this));
             } else {
                 if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
-                this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                await this.panel.sendScreeensaverTimeout(this.panel.timeout);
                 this.log.debug(`Switch page to invisible${force ? ' (forced)' : ''}!`);
                 this.stopTriggerTimeout();
-                this.controller && this.controller.statesControler.deactivateTrigger(this);
+                this.controller && (await this.controller.statesControler.deactivateTrigger(this));
             }
             await this.onVisibilityChange(v);
         } else this.visibility = v;
@@ -156,6 +156,15 @@ export class BaseClassTriggerd extends BaseClass {
                 this,
             )}] not react on onVisibilityChange(), or call super.onVisibilityChange()`,
         );
+    }
+}
+
+export class BaseClassPage extends BaseClassTriggerd {
+    protected pageItemConfig: (PageItemDataItemsOptions | undefined)[] | undefined;
+    pageItems: PageItem[] | undefined;
+    constructor(card: PageInterface, pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined) {
+        super(card);
+        this.pageItemConfig = pageItemsConfig;
     }
 }
 
@@ -336,6 +345,25 @@ export class StatesControler extends BaseClass {
                     }
                 }
             }
+            if (dp.startsWith(this.adapter.namespace)) {
+                const id = dp.replace(this.adapter.namespace + '.', '');
+                const libState = this.library.readdb(id);
+                if (libState) {
+                    this.library.setdb(id, { ...libState, val: state.val, ts: state.ts, ack: state.ack });
+                }
+
+                if (
+                    libState &&
+                    libState.obj &&
+                    libState.obj.common &&
+                    libState.obj.common.write &&
+                    this.adapter.controller
+                ) {
+                    for (const panel of this.adapter.controller.panels) {
+                        await panel.onStateChange(id, state);
+                    }
+                }
+            }
         }
     }
     async setStateAsync(item: Dataitem, val: ioBroker.StateValue, writeable: boolean): Promise<void> {
@@ -407,7 +435,7 @@ export class StatesControler extends BaseClass {
     }
 
     async getDataItemsFromAuto(dpInit: string, data: any): Promise<any> {
-        if (dpInit === '') return {};
+        if (dpInit === '') return data;
         if (this.tempObjectDB === undefined) {
             this.tempObjectDB = {};
             this.adapter.setTimeout(() => {

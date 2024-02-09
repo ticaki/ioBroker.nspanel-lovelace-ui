@@ -48,7 +48,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     import_config.Testconfig.pages[0].mode = this.config.scstype;
     this.config.Testconfig2[0].timeout = this.config.timeout;
     this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
-    this.setTimeout(() => {
+    this.setTimeout(async () => {
       this.library.init();
       this.log.debug("Check configuration!");
       if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword))
@@ -63,27 +63,28 @@ class NspanelLovelaceUi extends utils.Adapter {
           this.log.debug(topic + " " + message);
         }
       );
+      if (!this.mqttClient)
+        return;
+      const testconfig = JSON.parse(JSON.stringify(this.config.Testconfig2));
+      testconfig.name = this.config.name;
+      testconfig.topic = this.config.topic;
+      const mem = process.memoryUsage().heapUsed / 1024;
+      this.log.debug(String(mem + "k"));
+      this.controller = new import_panel_controller.Controller(this, {
+        mqttClient: this.mqttClient,
+        name: "controller",
+        panels: JSON.parse(JSON.stringify(testconfig))
+      });
+      await this.controller.init();
+      this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + "k"));
       setTimeout(() => {
-        if (!this.mqttClient)
-          return;
-        const testconfig = JSON.parse(JSON.stringify(this.config.Testconfig2));
-        testconfig.name = this.config.name;
-        testconfig.topic = this.config.topic;
-        const mem = process.memoryUsage().heapUsed / 1024;
-        this.log.debug(String(mem + "k"));
-        this.controller = new import_panel_controller.Controller(this, {
-          mqttClient: this.mqttClient,
-          name: "controller",
-          panels: JSON.parse(JSON.stringify(testconfig))
-        });
         this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + "k"));
-        setTimeout(() => {
-          this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + "k"));
-        }, 5e3);
-        setInterval(() => {
-          this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + "k"));
-        }, 6e4);
       }, 2e3);
+      setInterval(() => {
+        this.log.debug(
+          Math.trunc(mem) + "k/" + String(Math.trunc(process.memoryUsage().heapUsed / 1024)) + "k Start/Jetzt: "
+        );
+      }, 6e4);
     }, 3e3);
   }
   onUnload(callback) {
@@ -307,6 +308,12 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (obj.callback)
               this.sendTo(obj.from, obj.command, { native: Object.assign(result, fields) }, obj.callback);
             return;
+          }
+        } else if (obj.command = "config") {
+          const obj1 = await this.getForeignObjectAsync("system.adapter." + this.namespace);
+          if (obj1 && obj1.native && JSON.stringify(obj1.native.Testconfig2) !== JSON.stringify(obj.message)) {
+            obj1.native.Testconfig2 = obj.message;
+            await this.setForeignObjectAsync("system.adapter." + this.namespace, obj1);
           }
         }
         if (obj.callback)

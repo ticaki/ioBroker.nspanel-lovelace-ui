@@ -50,7 +50,7 @@ export type MessageOutgoingMode =
     | 'media0'
     | 'media0';
 
-export function isPopupType(F: PopupType | string): F is PopupType {
+export function isPopupType(F: PopupType | any): F is PopupType {
     switch (F as PopupType) {
         case 'popupFan':
         case 'popupInSel':
@@ -569,7 +569,7 @@ export type IncomingEvent = {
     page?: number;
     subPage?: number;
     popup?: string;
-    name: string; //| PopupType;
+    id: string; //| PopupType;
     opt: string;
 };
 
@@ -598,3 +598,5 @@ export interface State extends Omit<ioBroker.State, 'val'> {
     val: StateValue;
 }
 export type StateValue = ioBroker.StateValue | object;
+
+export type TasmotaIncomingTopics = 'stat/POWER2' | 'stat/POWER1';

@@ -1,11 +1,13 @@
 import { Dataitem, isDataItem } from '../classes/data-item';
 import * as Color from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { MessageItemMedia, MessageItem, ColorEntryType } from '../types/type-pageItem';
+import { MessageItemMedia, ColorEntryType } from '../types/type-pageItem';
 import * as pages from '../types/pages';
 import { BooleanUnion, IncomingEvent } from '../types/types';
-import { PageInterface, isMediaButtonActionType, messageItemDefault } from './Page';
-import { Page } from './Page';
+import { PageInterface, isMediaButtonActionType } from '../classes/Page';
+import { Page } from '../classes/Page';
+import { PageItem } from './pageItem';
+import { getPayload, getPayloadArray } from '../const/tools';
 
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
@@ -24,7 +26,7 @@ const PageMediaMessageDefault: pages.PageMediaMessage = {
     options: ['', '', '', '', ''],
 };
 
-const steps = 4;
+//const steps = 4;
 
 export class PageMedia extends Page {
     config: pages.PageBaseConfig['config'];
@@ -36,9 +38,10 @@ export class PageMedia extends Page {
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
+    tempItem: PageItem | undefined;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        super(config);
+        super(config, options.pageItems);
 
         this.config = options.config;
         this.writeItems = options.writeItems;
@@ -71,15 +74,11 @@ export class PageMedia extends Page {
             }
         }
     }
-    sendType(): void {
-        this.sendToPanel('pageType~cardMedia');
-    }
     protected async onVisibilityChange(val: boolean): Promise<void> {
+        await super.onVisibilityChange(val);
         if (val) {
             this.headlinePos = 0;
             this.titelPos = 0;
-            this.sendType();
-            this.update();
         }
     }
     async update(): Promise<void> {
@@ -209,7 +208,7 @@ export class PageMedia extends Page {
             if (v !== null) message.titelColor = v;
         }
 
-        message.options = [undefined, undefined, undefined, undefined, undefined];
+        /*message.options = [undefined, undefined, undefined, undefined, undefined];
         if (item.toolbox && Array.isArray(item.toolbox)) {
             const localStep = item.toolbox.length > 5 ? steps : 5;
             if (item.toolbox.length <= localStep * (this.step - 1)) this.step = 1;
@@ -233,17 +232,19 @@ export class PageMedia extends Page {
                     displayName: 'next',
                 };
             }
-        }
+        }*/
         //Logo
         if (item.logo) {
-            message.logo = this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
+            message.logo = '~~~~~'; //await this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
         }
         {
         }
-        const opts: string[] = [];
-        for (const a in message.options) {
-            const temp = message.options[a];
-            if (typeof temp !== 'string') opts.push(this.getItemMessageMedia(temp));
+        const opts: string[] = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
+        if (this.pageItems) {
+            for (let a = 0; a < 5; a++) {
+                const temp = this.pageItems[a];
+                if (temp) opts[a] = await temp.getPageItemPayload();
+            }
         }
         const msg: pages.PageMediaMessage = Object.assign(PageMediaMessageDefault, message, {
             getNavigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
@@ -306,7 +307,7 @@ export class PageMedia extends Page {
     }
 
     private getMessage(message: pages.PageMediaMessage): string {
-        return this.getPayload(
+        return getPayload(
             'entityUpd',
             message.headline,
             message.getNavigation,
@@ -320,7 +321,7 @@ export class PageMedia extends Page {
             message.onoffbuttonColor,
             Icons.GetIcon(message.shuffle_icon),
             message.logo, //'~~~~~'
-            this.getPayloadArray(message.options),
+            getPayloadArray(message.options),
         );
     }
     /**
@@ -328,8 +329,8 @@ export class PageMedia extends Page {
      * default for event: input_sel
      * @param msg
      * @returns string
-     */
-    private getItemMessageMedia(msg: Partial<MessageItemMedia> | undefined): string {
+
+    private async getItemMessageMedia(msg: Partial<MessageItemMedia> | undefined): Promise<string> {
         if (!msg || !msg.intNameEntity || !msg.icon) return '~~~~~';
         msg.type = msg.type === undefined ? 'input_sel' : msg.type;
         const iconNumber = msg.iconNumber;
@@ -363,8 +364,62 @@ export class PageMedia extends Page {
                 break;
             }
         }
-        return this.getItemMesssage(message);
-    }
+        if (!this.tempItem) {
+            const config: PageInterface = {
+                card: 'cardItemSpecial',
+                name: 'test',
+                adapter: this.adapter,
+                panelSend: this.panelSend,
+                panel: this.panel,
+                id: 'irgendwas',
+            };
+            const options: PageItemDataItemsOptions = {
+                role: 'text.list',
+                type: 'input_sel',
+                dpInit: undefined,
+                initMode: 'custom',
+                data: {
+                    color: {
+                        true: {
+                            type: 'const',
+                            constVal: Color.HMIOn,
+                        },
+                        false: undefined,
+                        scale: undefined,
+                    },
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'home' },
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'fan' },
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
+                    },
+                    entity1: {
+                        value: {
+                            type: 'const',
+                            constVal: true,
+                        },
+                        decimal: undefined,
+                        factor: undefined,
+                        unit: undefined,
+                    },
+                    text1: undefined,
+                    setValue1: undefined,
+                    useColor: undefined,
+                },
+            };
+            this.tempItem = new PageItem(config, options);
+            await this.tempItem.init();
+        }
+        return await this.tempItem.getPageItemPayload('test');
+        //return this.getItemMesssage(message);
+    }*/
 
     onStateTrigger = async (): Promise<void> => {
         this.update();
@@ -443,7 +498,7 @@ export class PageMedia extends Page {
                 break;
             }
             case 'button': {
-                if (event.name === '5' && this.nextArrow) {
+                if (event.id === '5' && this.nextArrow) {
                     this.step++;
                     this.update();
                 }

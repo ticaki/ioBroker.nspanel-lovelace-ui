@@ -131,7 +131,6 @@ class Dataitem extends import_library.BaseClass {
                 return v;
             }
           }
-          this.log.warn("Read a incorrect json!");
         }
       } else if (typeof state.val === "object") {
         return state.val;

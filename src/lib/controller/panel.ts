@@ -7,12 +7,12 @@ import * as pages from '../types/pages';
 import { Controller } from './panel-controller';
 import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { callbackMessageType } from '../classes/mqtt';
-import { ReiveTopicAppendix, SendTopicAppendix } from '../const/definition';
-import { testConfigMedia } from '../config';
-import { Page, PageConfigAll, PageInterface } from '../pages/Page';
+import { ReiveTopicAppendix, SendTopicAppendix, genericStateObjects } from '../const/definition';
+import { Page, PageConfigAll, PageInterface } from '../classes/Page';
 import { PageMedia } from '../pages/pageMedia';
 import { IClientPublishOptions } from 'mqtt';
 import { StatesControler } from './states-controller';
+import { PageGrid } from '../pages/pageGrid';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -69,6 +69,8 @@ export class Panel extends BaseClass {
     readonly config: ScreensaverConfigType;
     readonly timeout: number;
     readonly CustomFormat: string;
+    readonly sendToTasmota: (topic: string, payload: string, opt?: IClientPublishOptions) => void = () => {};
+
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
         super(adapter, options.name);
         this.panelSend = new PanelSend(adapter, {
@@ -83,7 +85,18 @@ export class Panel extends BaseClass {
         this.controller = options.controller;
         this.topic = options.topic;
         if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = this.panelSend.addMessage;
+        if (typeof this.panelSend.addMessageTasmota === 'function')
+            this.sendToTasmota = this.panelSend.addMessageTasmota;
         this.statesControler = options.controller.statesControler;
+
+        this.library.writedp(`panel.${this.name}`, undefined, genericStateObjects.panel.panels._channel);
+        this.library.writedp(
+            `panel.${this.name}.cmd`,
+            undefined === 'ON',
+            genericStateObjects.panel.panels.cmd._channel,
+        );
+        this.adapter.subscribeStates(`panel.${this.name}.cmd.*`);
+
         let scsFound = 0;
         for (let a = 0; a < options.pages.length; a++) {
             const pageConfig = options.pages[a];
@@ -99,6 +112,17 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cardGrid': {
+                    const pmconfig = {
+                        card: pageConfig.card,
+                        panel: this,
+                        id: String(a),
+                        name: 'PG',
+                        alwaysOn: pageConfig.alwaysOn,
+                        adapter: this.adapter,
+                        panelSend: this.panelSend,
+                    };
+                    this.pages[a] = new PageGrid(pmconfig, pageConfig);
+                    this.pages[a]!.init();
                     break;
                 }
                 case 'cardGrid2': {
@@ -109,11 +133,11 @@ export class Panel extends BaseClass {
                 }
                 case 'cardMedia': {
                     const pmconfig = {
-                        card: testConfigMedia.card,
+                        card: pageConfig.card,
                         panel: this,
                         id: String(a),
                         name: 'PM',
-                        alwaysOn: testConfigMedia.alwaysOn,
+                        alwaysOn: pageConfig.alwaysOn,
                         adapter: this.adapter,
                         panelSend: this.panelSend,
                     };
@@ -139,7 +163,7 @@ export class Panel extends BaseClass {
 
                     //const opt = Object.assign(DefaultOptions, pageConfig);
                     const ssconfig: PageInterface = {
-                        card: 'screensaver',
+                        card: pageConfig.card,
                         panel: this,
                         id: String(a),
                         name: 'SrS',
@@ -180,13 +204,13 @@ export class Panel extends BaseClass {
         }
         if (sleep == !this._activePage.sleep || page != this._activePage.page) {
             if (page != this._activePage.page) {
-                if (this._activePage.page) this._activePage.page.setVisibility(false);
+                if (this._activePage.page) await this._activePage.page.setVisibility(false);
                 if (page && !sleep) {
-                    page.setVisibility(true);
+                    await page.setVisibility(true);
                 }
                 this._activePage = { page, sleep };
             } else if (sleep == !this._activePage.sleep) {
-                if (this._activePage.page && !sleep) this._activePage.page.setVisibility(true, true);
+                if (this._activePage.page && !sleep) await this._activePage.page.setVisibility(true, true);
                 this._activePage.sleep = sleep;
             }
         }
@@ -206,8 +230,10 @@ export class Panel extends BaseClass {
     }
 
     init = async (): Promise<void> => {
-        this.controller.mqttClient.subscript(this.topic, this.onMessage);
-        this.sendToPanel('pageType~pageStartup', { retain: true });
+        this.controller.mqttClient.subscript(this.topic + '/#', this.onMessage);
+        this.sendToTasmota(this.topic + '/cmnd/POWER1', '');
+        this.sendToTasmota(this.topic + '/cmnd/POWER2', '');
+        this.sendToPanel('pageType~pageStartup', { retain: false });
     };
     registerOnMessage(fn: callbackMessageType): void {
         if (this.reivCallbacks.indexOf(fn) === -1) {
@@ -228,8 +254,51 @@ export class Panel extends BaseClass {
             if (event) {
                 this.HandleIncomingMessage(event);
             }
+        } else {
+            const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) ||
+                [])[0] as NSPanel.TasmotaIncomingTopics | null;
+            if (command) {
+                this.log.debug(`Receive other message ${topic} with ${message}`);
+                this.log.debug(`${command}`);
+                switch (command) {
+                    case 'stat/POWER2': {
+                        this.library.writedp(
+                            `panel.${this.name}.cmd.power2`,
+                            message === 'ON',
+                            genericStateObjects.panel.panels.cmd.power2,
+                        );
+                        break;
+                    }
+                    case 'stat/POWER1': {
+                        this.library.writedp(
+                            `panel.${this.name}.cmd.power1`,
+                            message === 'ON',
+                            genericStateObjects.panel.panels.cmd.power1,
+                        );
+
+                        break;
+                    }
+                }
+            }
         }
     };
+
+    async onStateChange(id: string, state: ioBroker.State): Promise<void> {
+        if (state.ack) return;
+        if (id.split('.')[1] === this.name) {
+            const cmd = id.replace(`panel.${this.name}.cmd.`, '');
+            switch (cmd) {
+                case 'power1': {
+                    this.sendToTasmota(this.topic + '/cmnd/POWER1', state.val ? 'ON' : 'OFF');
+                    break;
+                }
+                case 'power2': {
+                    this.sendToTasmota(this.topic + '/cmnd/POWER1', state.val ? 'ON' : 'OFF');
+                    break;
+                }
+            }
+        }
+    }
 
     /**
      * timeout screensaver after sec
@@ -287,7 +356,7 @@ export class Panel extends BaseClass {
     }
 
     async HandleIncomingMessage(event: NSPanel.IncomingEvent): Promise<void> {
-        this.log.debug(JSON.stringify(event));
+        this.log.debug('Receive message:' + JSON.stringify(event));
         const index = this.pages.findIndex((a) => {
             if (a && (a.card === 'screensaver' || a.card !== 'screensaver2')) return true;
             return false;
@@ -320,12 +389,24 @@ export class Panel extends BaseClass {
             }
             case 'pageOpenDetail': {
                 await this.setActivePage(false);
+                this.getActivePage().onPopupRequest(
+                    event.id,
+                    event.popup as NSPanel.PopupType,
+                    event.action,
+                    event.opt,
+                );
                 break;
             }
             case 'buttonPress2': {
-                if (event.name == 'screensaver') {
+                if (event.id == 'screensaver') {
                     await this.setActivePage(this.pages[index]);
                 } else {
+                    this.getActivePage().onPopupRequest(
+                        event.id,
+                        event.popup as NSPanel.PopupType,
+                        event.action,
+                        event.opt,
+                    );
                     this.getActivePage().onButtonEvent(event);
                     await this.setActivePage(true);
                 }

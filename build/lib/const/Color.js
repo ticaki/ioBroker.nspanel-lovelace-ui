@@ -27,7 +27,6 @@ __export(Color_exports, {
   ConvertRGBtoHex: () => ConvertRGBtoHex,
   Cyan: () => Cyan,
   DarkBlue: () => DarkBlue,
-  GetIconColor: () => GetIconColor,
   Gray: () => Gray,
   Green: () => Green,
   HMIDark: () => HMIDark,
@@ -191,8 +190,6 @@ const swSnowy = { red: 150, green: 150, blue: 150 };
 const swSnowyRainy = { red: 150, green: 150, blue: 255 };
 const swSunny = { red: 255, green: 255, blue: 0 };
 const swWindy = { red: 150, green: 150, blue: 150 };
-const defaultOnColor = HMIOn;
-const defaultOffColor = HMIOff;
 function rgb_dec565(rgb) {
   return rgb.red >> 3 << 11 | rgb.green >> 2 << 5 | rgb.blue >> 3;
 }
@@ -246,33 +243,6 @@ function Interpolate(color1, color2, fraction) {
 }
 function InterpolateNum(d1, d2, fraction) {
   return d1 + (d2 - d1) * fraction;
-}
-async function GetIconColor(pageItem, value) {
-  var _a;
-  const useColor = pageItem.data.useColor && await pageItem.data.useColor.getBoolean();
-  const interpolateColor = pageItem.data.interpolateColor && await pageItem.data.interpolateColor.getBoolean();
-  const onColor = pageItem.data.icon.true.color && await pageItem.data.icon.true.color.getRGBValue();
-  const offColor = pageItem.data.icon.true.color && await pageItem.data.icon.true.color.getRGBValue();
-  if (useColor && interpolateColor && typeof value === "number") {
-    let val = typeof value === "number" ? value : 0;
-    const maxValue = pageItem.data.icon.maxBri && await pageItem.data.icon.maxBri.getNumber() || 100;
-    const minValue = pageItem.data.icon.minBri && await pageItem.data.icon.minBri.getNumber() || 0;
-    val = val > maxValue ? maxValue : val;
-    val = val < minValue ? minValue : val;
-    return String(
-      rgb_dec565(
-        Interpolate(
-          offColor ? offColor : defaultOffColor,
-          onColor ? onColor : defaultOnColor,
-          scale(100 - val, minValue, maxValue, 0, 1)
-        )
-      )
-    );
-  }
-  if (useColor && typeof value === "boolean" && value || typeof value === "number" && value > (pageItem.data.icon.minBri !== void 0 ? (_a = await pageItem.data.icon.minBri.getNumber()) != null ? _a : 0 : 0)) {
-    return String(rgb_dec565(onColor ? onColor : defaultOnColor));
-  }
-  return String(rgb_dec565(offColor ? offColor : defaultOffColor));
 }
 function rad2deg(rad) {
   return (360 + 180 * rad / Math.PI) % 360;
@@ -364,7 +334,6 @@ function isRGB(F) {
   ConvertRGBtoHex,
   Cyan,
   DarkBlue,
-  GetIconColor,
   Gray,
   Green,
   HMIDark,

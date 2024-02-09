@@ -5,9 +5,8 @@ import * as Panel from './panel';
 
 export class Controller extends Library.BaseClass {
     mqttClient: MQTT.MQTTClientClass;
-    private DBPanels: Panel.Panel[] = [];
     statesControler: StatesControler;
-    panel: Panel.Panel[] = [];
+    panels: Panel.Panel[] = [];
     constructor(
         adapter: Library.AdapterClassDefinition,
         options: { mqttClient: MQTT.MQTTClientClass; name: string; panels: Partial<Panel.panelConfigPartial>[] },
@@ -23,20 +22,24 @@ export class Controller extends Library.BaseClass {
                 continue;
             }
             const panel = new Panel.Panel(adapter, panelConfig);
-            this.checkPanel(panel);
+            this.panels.push(panel);
         }
     }
-    async checkPanel(panel: Panel.Panel): Promise<void> {
-        if (await panel.isValid()) {
-            this.panel.push(panel);
-            await panel.init();
-        } else {
-            panel.delete();
-            this.log.error(`Panel ${panel.name} has a invalid configuration.`);
-        }
+
+    async init(): Promise<void> {
+        const newPanels = [];
+        for (const panel of this.panels)
+            if (await panel.isValid()) {
+                newPanels.push(panel);
+                await panel.init();
+            } else {
+                panel.delete();
+                this.log.error(`Panel ${panel.name} has a invalid configuration.`);
+            }
+        this.panels = newPanels;
     }
     async delete(): Promise<void> {
         await super.delete();
-        this.panel.forEach((a) => a.delete());
+        this.panels.forEach((a) => a.delete());
     }
 }

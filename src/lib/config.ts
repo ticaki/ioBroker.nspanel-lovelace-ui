@@ -7,7 +7,7 @@ export const testConfigMedia: pages.PageBaseConfig = {
     card: 'cardMedia',
     dpInit: 'alexa2.0.Echo-Devices.G070RR1075220388.Player',
     initMode: 'auto',
-    alwaysOn: 'action',
+    alwaysOn: 'none',
     config: {
         heading: {
             type: 'const',
@@ -227,9 +227,231 @@ export const testConfigMedia: pages.PageBaseConfig = {
     },
     items: undefined,
     writeItems: undefined,
+    pageItems: [
+        {
+            role: 'text.list',
+            type: 'input_sel',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'home' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text1: {
+                    true: undefined,
+                    false: undefined,
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                useColor: undefined,
+                setValue1: undefined,
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'button',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'home' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text1: {
+                    true: undefined,
+                    false: undefined,
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                useColor: undefined,
+                setValue1: undefined,
+            },
+        },
+    ],
 }; //~1 ~2 ~~32495~5 ~entityOffText~1 ~2 ~3 ~4 ~65535~6 ~2entityUnitText~2 ~3 ~4 ~5 ~65535~ ~3~ ~ ~ ~ ~65535~ ~4~ ~ ~ ~ ~65535~ ~5~ ~ to panel.
 export const Testconfig: Partial<panelConfigPartial> = {
     pages: [
+        {
+            //type: 'sonstiges',
+            card: 'cardGrid',
+            dpInit: '',
+            initMode: 'custom',
+            alwaysOn: 'none',
+            config: undefined,
+            items: undefined,
+            writeItems: undefined,
+            pageItems: [
+                {
+                    role: 'text.list',
+                    type: 'input_sel',
+                    dpInit: undefined,
+                    initMode: 'custom',
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                            scale: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'home' },
+                                color: { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text1: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                        /**
+                         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                         */
+                        valueList: { type: 'const', constVal: 'home?butter' },
+                        /**
+                         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                         */
+                        setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                        useColor: undefined,
+                        setValue1: undefined,
+                    },
+                },
+                {
+                    role: 'text.list',
+                    type: 'button',
+                    dpInit: undefined,
+                    initMode: 'custom',
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                            scale: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'home' },
+                                color: { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text1: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                        /**
+                         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                         */
+                        valueList: { type: 'const', constVal: 'home?butter' },
+                        /**
+                         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                         */
+                        setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                        useColor: undefined,
+                        setValue1: undefined,
+                    },
+                },
+            ],
+        },
         {
             card: 'screensaver',
             // mode of screensaver

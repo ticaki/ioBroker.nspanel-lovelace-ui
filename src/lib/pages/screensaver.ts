@@ -6,9 +6,10 @@ import * as NSPanel from '../types/types';
 import moment from 'moment';
 import parseFormat from 'moment-parseformat';
 import { sendTemplates, weatherUpdateTestArray } from '../types/msg-def';
-import { Page, PageInterface } from './Page';
+import { Page, PageInterface } from '../classes/Page';
 import { Icons } from '../const/icon_mapping';
 import { PageTypeCards } from '../types/pages';
+import { getPayload, getPayloadArray } from '../const/tools';
 
 export type ScreensaverConfigType = {
     momentLocale: string;
@@ -59,7 +60,7 @@ export class Screensaver extends Page {
             }
         }
         config.alwaysOn = 'none';
-        super(config);
+        super(config, undefined);
 
         this.entitysConfig = options.entitysConfig;
         this.layout = options.mode;
@@ -221,7 +222,7 @@ export class Screensaver extends Page {
         switch (payload.eventType) {
             case 'statusUpdate':
                 this.sendToPanel(
-                    this.getPayload(
+                    getPayload(
                         payload.eventType,
                         payload.icon1,
                         payload.icon1Color,
@@ -250,7 +251,7 @@ export class Screensaver extends Page {
                     (a) =>
                         a &&
                         result.push(
-                            this.getPayload(
+                            getPayload(
                                 '',
                                 '',
                                 a.icon,
@@ -260,7 +261,7 @@ export class Screensaver extends Page {
                             ),
                         ),
                 );
-                this.sendToPanel(this.getPayloadArray([...result, '']));
+                this.sendToPanel(getPayloadArray([...result, '']));
                 break;
             }
         }

@@ -18,10 +18,85 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var TpageItem_exports = {};
 __export(TpageItem_exports, {
+  templatePageElements: () => templatePageElements,
   templatePageItems: () => templatePageItems
 });
 module.exports = __toCommonJS(TpageItem_exports);
 var import_Color = require("../const/Color");
+const templatePageElements = {
+  number: {
+    rgb: {
+      role: "light",
+      type: "number",
+      data: {
+        headline: void 0,
+        color: void 0,
+        icon: void 0,
+        text: void 0,
+        entity1: void 0,
+        entity2: void 0,
+        entity3: void 0,
+        text1: void 0,
+        text2: void 0,
+        text3: void 0,
+        setValue1: void 0,
+        setValue2: void 0,
+        setValue3: void 0,
+        modeList: void 0,
+        maxValue1: void 0,
+        minValue1: void 0,
+        minValue2: void 0,
+        maxValue2: void 0,
+        interpolateColor: void 0,
+        dimmer: void 0,
+        hue: void 0,
+        saturation: void 0,
+        useColor: void 0,
+        RGB3: void 0,
+        optionalData: void 0
+      }
+    }
+  },
+  button: {},
+  light: {
+    rgb: {
+      role: "rgb",
+      type: "light",
+      data: {
+        headline: void 0,
+        color: void 0,
+        icon: void 0,
+        text: void 0,
+        entity1: void 0,
+        entity2: void 0,
+        entity3: void 0,
+        text1: void 0,
+        text2: void 0,
+        text3: void 0,
+        setValue1: void 0,
+        setValue2: void 0,
+        setValue3: void 0,
+        modeList: void 0,
+        maxValue1: void 0,
+        minValue1: void 0,
+        minValue2: void 0,
+        maxValue2: void 0,
+        interpolateColor: void 0,
+        dimmer: void 0,
+        hue: void 0,
+        saturation: void 0,
+        useColor: void 0,
+        RGB3: void 0,
+        optionalData: void 0
+      }
+    }
+  },
+  shutter: {},
+  text: {},
+  input_sel: {},
+  switch: {},
+  delete: {}
+};
 const templatePageItems = {
   popupFan: {
     socket: {
@@ -3781,6 +3856,7 @@ const templatePageItems = {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  templatePageElements,
   templatePageItems
 });
 //# sourceMappingURL=TpageItem.js.map

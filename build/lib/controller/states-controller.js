@@ -18,6 +18,7 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var states_controller_exports = {};
 __export(states_controller_exports, {
+  BaseClassPage: () => BaseClassPage,
   BaseClassTriggerd: () => BaseClassTriggerd,
   StatesControler: () => StatesControler
 });
@@ -101,12 +102,6 @@ class BaseClassTriggerd extends import_library.BaseClass {
       `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`
     );
   }
-  getPayloadArray(s) {
-    return s.join("~");
-  }
-  getPayload(...s) {
-    return s.join("~");
-  }
   async stopTriggerTimeout() {
     if (this.updateTimeout) {
       this.adapter.clearTimeout(this.updateTimeout);
@@ -132,11 +127,11 @@ class BaseClassTriggerd extends import_library.BaseClass {
         if (this.unload)
           return;
         if (this.alwaysOn != "none") {
-          this.panel.sendScreeensaverTimeout(0);
+          await this.panel.sendScreeensaverTimeout(0);
           if (this.alwaysOn === "action") {
             this.alwaysOnState = this.adapter.setTimeout(
-              () => {
-                this.panel.sendScreeensaverTimeout(this.panel.timeout);
+              async () => {
+                await this.panel.sendScreeensaverTimeout(this.panel.timeout);
               },
               this.panel.timeout * 2 * 1e3 || 5e3
             );
@@ -145,14 +140,14 @@ class BaseClassTriggerd extends import_library.BaseClass {
           this.panel.sendScreeensaverTimeout(this.panel.timeout);
         this.log.debug(`Switch page to visible${force ? " (forced)" : ""}!`);
         this.resetLastMessage();
-        this.controller && this.controller.statesControler.activateTrigger(this);
+        this.controller && await this.controller.statesControler.activateTrigger(this);
       } else {
         if (this.alwaysOnState)
           this.adapter.clearTimeout(this.alwaysOnState);
-        this.panel.sendScreeensaverTimeout(this.panel.timeout);
+        await this.panel.sendScreeensaverTimeout(this.panel.timeout);
         this.log.debug(`Switch page to invisible${force ? " (forced)" : ""}!`);
         this.stopTriggerTimeout();
-        this.controller && this.controller.statesControler.deactivateTrigger(this);
+        this.controller && await this.controller.statesControler.deactivateTrigger(this);
       }
       await this.onVisibilityChange(v);
     } else
@@ -165,6 +160,14 @@ class BaseClassTriggerd extends import_library.BaseClass {
         this
       )}] not react on onVisibilityChange(), or call super.onVisibilityChange()`
     );
+  }
+}
+class BaseClassPage extends BaseClassTriggerd {
+  pageItemConfig;
+  pageItems;
+  constructor(card, pageItemsConfig) {
+    super(card);
+    this.pageItemConfig = pageItemsConfig;
   }
 }
 class StatesControler extends import_library.BaseClass {
@@ -311,6 +314,18 @@ class StatesControler extends import_library.BaseClass {
           }
         }
       }
+      if (dp.startsWith(this.adapter.namespace)) {
+        const id = dp.replace(this.adapter.namespace + ".", "");
+        const libState = this.library.readdb(id);
+        if (libState) {
+          this.library.setdb(id, { ...libState, val: state.val, ts: state.ts, ack: state.ack });
+        }
+        if (libState && libState.obj && libState.obj.common && libState.obj.common.write && this.adapter.controller) {
+          for (const panel of this.adapter.controller.panels) {
+            await panel.onStateChange(id, state);
+          }
+        }
+      }
     }
   }
   async setStateAsync(item, val, writeable) {
@@ -379,7 +394,7 @@ class StatesControler extends import_library.BaseClass {
   }
   async getDataItemsFromAuto(dpInit, data) {
     if (dpInit === "")
-      return {};
+      return data;
     if (this.tempObjectDB === void 0) {
       this.tempObjectDB = {};
       this.adapter.setTimeout(() => {
@@ -442,6 +457,7 @@ class StatesControler extends import_library.BaseClass {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  BaseClassPage,
   BaseClassTriggerd,
   StatesControler
 });

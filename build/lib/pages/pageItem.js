@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,214 +17,209 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageItem_exports = {};
 __export(pageItem_exports, {
   PageItem: () => PageItem
 });
 module.exports = __toCommonJS(pageItem_exports);
-var import_Color = require("../const/Color");
+var Color = __toESM(require("../const/Color"));
 var import_icon_mapping = require("../const/icon_mapping");
-var import_Page = require("./Page");
-var import_tools = require("../const/tools");
+var tools = __toESM(require("../const/tools"));
 var import_TpageItem = require("../templates/TpageItem");
-class PageItem extends import_Page.Page {
-  defaultOnColor = import_Color.White;
-  defaultOffColor = import_Color.Blue;
-  constructor(config) {
-    super({ ...config, card: "cardItemSpecial" });
+var import_states_controller = require("../controller/states-controller");
+class PageItem extends import_states_controller.BaseClassTriggerd {
+  defaultOnColor = Color.White;
+  defaultOffColor = Color.Blue;
+  config;
+  dataItems;
+  panel;
+  id;
+  constructor(config, options) {
+    super({ ...config });
+    this.panel = config.panel;
+    this.id = config.id;
+    this.config = options;
   }
-  async getPageItemPayload(item, id) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u;
-    const message = {};
-    message.displayName = (_a = item.data.headline && await item.data.headline.getString()) != null ? _a : "";
-    message.intNameEntity = id + "?" + item.role;
-    switch (item.role) {
-      case "light":
-      case "dimmer":
-      case "socket":
-      case "cie":
-      case "rgb":
-      case "ct":
-      case "hue":
-      case "rgbSingle": {
-        message.type = "light";
-        const dimmer = item.data.dimmer && await item.data.dimmer.getNumber();
-        const rgb = item.role == "rgb" ? await (0, import_tools.getDecfromRGBThree)(item) : await (0, import_tools.getEntryColor)(item.data.color, true, import_Color.White);
-        const hue = item.role == "hue" && item.data.hue ? (0, import_Color.hsvtodec)(await item.data.hue.getNumber(), 1, 1) : null;
-        const v = (_b = item.data.entity1 && item.data.entity1.value && await item.data.entity1.value.getBoolean()) != null ? _b : true;
-        switch (item.role) {
-          case "socket": {
-            message.icon = import_icon_mapping.Icons.GetIcon("power-socket-de");
+  async init() {
+    if (!this.config)
+      return;
+    const config = { ...this.config };
+    const tempConfig = this.config.initMode === "auto" && this.config.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.config.dpInit, config.data) : config.data;
+    const tempItem = await this.panel.statesControler.createDataItems(
+      tempConfig,
+      this
+    );
+    this.dataItems = tempItem;
+  }
+  async getPageItemPayload() {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+    if (this.dataItems && this.config) {
+      const item = this.dataItems;
+      const message = {};
+      const template = import_TpageItem.templatePageElements[this.config.type];
+      message.displayName = (_a = item.headline && await item.headline.getString()) != null ? _a : "";
+      message.intNameEntity = this.id;
+      switch (this.config.type) {
+        case "light": {
+          message.type = "light";
+          const t = "item.role" in template && template[this.config.role];
+          if (!t)
+            break;
+          const dimmer = t.data.dimmer ? item.dimmer && await item.dimmer.getNumber() : null;
+          const rgb = t.data.RGB3 ? (_b = await tools.getDecfromRGBThree(item)) != null ? _b : await tools.getEntryColor(item.color, true, Color.White) : null;
+          const hue = t.data.hue && item.hue ? Color.hsvtodec(await item.hue.getNumber(), 1, 1) : null;
+          let v = (_c = !!t.data.entity1 && await tools.getValueEntryBoolean(item.entity1)) != null ? _c : true;
+          if (t.data.entity1 === "invert")
+            v = !v;
+          message.icon = t.data.icon ? await tools.getIconEntryValue(item.icon, v, t.data.icon.true.value, t.data.icon.false.value) : "";
+          if (v) {
+            message.optionalValue = "1";
+            message.iconColor = (_d = hue != null ? hue : rgb) != null ? _d : await tools.GetIconColor(item.icon, dimmer != null ? dimmer : 100);
+          } else {
+            message.optionalValue = "0";
+            message.iconColor = await tools.GetIconColor(item.icon, false);
+          }
+          message.displayName = t.data.text1 ? ((_e = await tools.getEntryTextOnOff(item.text, v)) != null ? _e : v) ? t.data.text1.true : t.data.text1.false : message.displayName;
+          return tools.getItemMesssage(message);
+          break;
+        }
+        case "shutter": {
+          message.type = "shutter";
+          const t = "item.role" in template && template[this.config.role];
+          if (!t)
+            break;
+          let value = await tools.getValueEntryNumber(item.entity1);
+          if (value === null) {
+            this.log.warn(`Entity ${this.config.role} has no value!`);
             break;
           }
-          default: {
-            message.icon = import_icon_mapping.Icons.GetIcon("lightbulb");
+          if (t.data.entity1 === "invert")
+            value = 100 - value;
+          message.icon = await tools.getIconEntryValue(item.icon, value < 5, "window-open");
+          message.icon = t.data.icon ? await tools.getIconEntryValue(
+            item.icon,
+            value < 5,
+            t.data.icon.true.value,
+            t.data.icon.false.value
+          ) : "";
+          const optionalValue = t.data.optionalData === true ? [
+            import_icon_mapping.Icons.GetIcon("arrow-up"),
+            import_icon_mapping.Icons.GetIcon("stop"),
+            import_icon_mapping.Icons.GetIcon("arrow-down"),
+            "enable",
+            "enable",
+            "enable"
+          ] : t.data.optionalData === void 0 ? ["", "", "", "disable", "disable", "disable"] : t.data.optionalData === "state" && item.valueList ? await item.valueList.getObject() : [
+            import_icon_mapping.Icons.GetIcon(t.data.optionalData[0]),
+            import_icon_mapping.Icons.GetIcon(t.data.optionalData[1]),
+            import_icon_mapping.Icons.GetIcon(t.data.optionalData[2]),
+            t.data.optionalData[3],
+            t.data.optionalData[4],
+            t.data.optionalData[5]
+          ];
+          const optionalValueC = Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === "string") ? optionalValue : ["", "", "", "disable", "disable", "disable"];
+          message.optionalValue = optionalValueC.join("|");
+          message.displayName = (_f = t.data.text && (await tools.getEntryTextOnOff(item.text, true) || t.data.text.true)) != null ? _f : message.displayName;
+          return tools.getItemMesssage(message);
+          break;
+        }
+        case "text": {
+          message.type = "text";
+          const t = this.config.role in template && template[this.config.role];
+          if (!t)
             break;
-          }
-        }
-        if (v) {
-          message.optionalValue = "1";
-          message.iconColor = (_c = hue != null ? hue : rgb) != null ? _c : await (0, import_Color.GetIconColor)(item, dimmer != null ? dimmer : 100);
-          const i = item.data.icon.true.value ? await item.data.icon.true.value.getString() : null;
-          if (i !== null)
-            message.icon = i;
-        } else {
-          message.optionalValue = "0";
-          message.iconColor = await (0, import_Color.GetIconColor)(item, false);
-          const i = item.data.icon.false.value ? await item.data.icon.false.value.getString() : null;
-          if (i !== null)
-            message.icon = i;
-        }
-        message.displayName = (_d = await (0, import_tools.getValueEntryTextOnOff)(item.data.text, true)) != null ? _d : message.displayName;
-        return this.getItemMesssage(message);
-        break;
-      }
-      case "blind": {
-        message.type = "shutter";
-        const value = await (0, import_tools.getValueEntryNumber)(item.data.entity1);
-        message.icon = import_icon_mapping.Icons.GetIcon(
-          (_e = item.data.icon.true.value && await item.data.icon.true.value.getString()) != null ? _e : "window-open"
-        );
-        message.iconColor = await (0, import_Color.GetIconColor)(item, value !== null ? value : true);
-        message.optionalValue = [
-          import_icon_mapping.Icons.GetIcon("arrow-up"),
-          import_icon_mapping.Icons.GetIcon("stop"),
-          import_icon_mapping.Icons.GetIcon("arrow-down"),
-          "enable",
-          "enable",
-          "enable"
-        ].join("|");
-        message.displayName = (_f = await (0, import_tools.getValueEntryTextOnOff)(item.data.text, true)) != null ? _f : message.displayName;
-        return this.getItemMesssage(message);
-        break;
-      }
-      case "gate":
-      case "door":
-      case "window": {
-        message.type = "text";
-        let value = await (0, import_tools.getValueEntryBoolean)(item.data.entity1);
-        if (value !== null) {
-          if (item.role === "gate")
-            value = !value;
-          let icon = "";
-          message.iconColor = await (0, import_Color.GetIconColor)(item, (value != null ? value : true) ? true : false);
-          if (value) {
-            icon = (_g = item.data.icon.true.value && await item.data.icon.true.value.getString()) != null ? _g : item.role === "door" ? "door-open" : item.role === "window" ? "window-open-variant" : "garage-open";
-            message.optionalValue = (0, import_tools.getTranslation)(this.library, "window", "opened");
+          let value = t.data.entity1 ? await tools.getValueEntryBoolean(item.entity1) : null;
+          if (value !== null) {
+            if (t.data.entity1 === "invert")
+              value = !value;
+            let icon = "";
+            message.iconColor = await tools.GetIconColor(item.icon, (value != null ? value : true) ? true : false);
+            icon = t.data.icon ? await tools.getIconEntryValue(
+              item.icon,
+              value,
+              t.data.icon.true.value,
+              t.data.icon.false.value
+            ) : "";
+            if (t.data.optionalData) {
+              if (typeof t.data.optionalData === "string") {
+                const arr = t.data.optionalData.split("?");
+                if (arr.length > 0) {
+                  message.optionalValue = !value && arr.length > 1 ? arr[1] : arr[0];
+                }
+              } else
+                message.optionalValue = this.library.getTranslation(
+                  (_g = await tools.getEntryTextOnOff(item.text, value)) != null ? _g : ""
+                );
+            }
+            message.displayName = (_h = t.data.text && await tools.getEntryTextOnOff(item.text, value)) != null ? _h : message.displayName;
+            message.icon = import_icon_mapping.Icons.GetIcon(icon);
+            return tools.getItemMesssage(message);
           } else {
-            icon = (_h = item.data.icon.false.value && await item.data.icon.false.value.getString()) != null ? _h : item.role === "door" ? "door-closed" : item.role === "window" ? "window-closed-variant" : "garage";
-            message.optionalValue = (0, import_tools.getTranslation)(this.library, "window", "closed");
+            this.log.error(`Missing data value for ${this.name}-${this.id} role:${this.config.role}`);
           }
-          message.displayName = (_i = await (0, import_tools.getValueEntryTextOnOff)(item.data.text, value)) != null ? _i : message.displayName;
-          message.icon = import_icon_mapping.Icons.GetIcon(icon);
-          return this.getItemMesssage(message);
-        } else {
-          this.log.error(`Missing data value for ${this.name}-${id} role:${item.role}`);
+          this.log.debug(JSON.stringify(message));
+          break;
         }
-        break;
-      }
-      case "motion": {
-        message.type = "text";
-        const value = await (0, import_tools.getValueEntryBoolean)(item.data.entity1);
-        if (value !== null) {
-          message.iconColor = await (0, import_Color.GetIconColor)(item, (value != null ? value : true) ? true : false);
-          message.icon = import_icon_mapping.Icons.GetIcon(await (0, import_tools.getIconEntryValue)(item.data.icon, value, "motion-sensor"));
-          message.optionalValue = (0, import_tools.getTranslation)(this.library, value ? "on" : "off");
-          message.displayName = (_j = await (0, import_tools.getValueEntryTextOnOff)(item.data.text, value)) != null ? _j : message.displayName;
-          return this.getItemMesssage(message);
-        } else {
-          this.log.error(`Missing data value for ${this.name}-${id} role:${item.role}`);
+        case "number": {
+          break;
         }
-        break;
-      }
-      case "buttonSensor":
-      case "button": {
-        let value = (_k = item.data.setValue1 && await item.data.setValue1.getBoolean()) != null ? _k : null;
-        if (value === null && item.role === "buttonSensor")
-          value = true;
-        if (value !== null) {
-          message.type = item.role === "buttonSensor" ? "input_sel" : "button";
-          message.iconColor = await (0, import_Color.GetIconColor)(item, value);
-          message.icon = import_icon_mapping.Icons.GetIcon(await (0, import_tools.getIconEntryValue)(item.data.icon, value, "gesture-tap-button"));
-          message.displayName = (_l = await (0, import_tools.getValueEntryTextOnOff)(item.data.text, value)) != null ? _l : "";
-          message.optionalValue = (_m = await (0, import_tools.getValueEntryString)(item.data.entity1)) != null ? _m : "PRESS";
-          return this.getItemMesssage(message);
-        } else {
-          this.log.error(`Missing set value for ${this.name}-${id} role:${item.role}`);
-        }
-        break;
-      }
-      case "value.time":
-      case "level.timer": {
-        const value = (_n = item.data.setValue1 && await item.data.setValue1.getNumber()) != null ? _n : null;
-        if (value !== null) {
-          message.type = "timer";
-          message.iconColor = await (0, import_Color.GetIconColor)(item, value);
-          message.icon = import_icon_mapping.Icons.GetIcon(await (0, import_tools.getIconEntryValue)(item.data.icon, true, "gesture-tap-button"));
-          message.optionalValue = (_o = await (0, import_tools.getValueEntryTextOnOff)(item.data.text, true)) != null ? _o : "PRESS";
-          return this.getItemMesssage(message);
-        } else {
-          this.log.error(`Missing set value for ${this.name}-${id} role:${item.role}`);
-        }
-        break;
-      }
-      case "value.alarmtime": {
-        const value = (_p = item.data.setValue1 && await item.data.setValue1.getNumber()) != null ? _p : null;
-        if (value !== null) {
-          message.type = "timer";
-          message.iconColor = ((_q = await (0, import_tools.getValueEntryString)(item.data.entity2)) != null ? _q : "") == "paused" ? await (0, import_tools.getIconEntryColor)(item.data.icon, true, String((0, import_Color.rgb_dec565)(import_Color.colorScale10))) : await (0, import_tools.getIconEntryColor)(item.data.icon, false, String((0, import_Color.rgb_dec565)(import_Color.colorScale0)));
-          message.displayName = new Date(
-            (await (0, import_tools.getValueEntryNumber)(item.data.entity1) || 0) * 1e3
-          ).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-          message.icon = import_icon_mapping.Icons.GetIcon(await (0, import_tools.getIconEntryValue)(item.data.icon, true, "timer-outline"));
-          message.optionalValue = (_r = await (0, import_tools.getValueEntryTextOnOff)(item.data.text, true)) != null ? _r : "PRESS";
-          return this.getItemMesssage(message);
-        } else {
-          this.log.error(`Missing set value for ${this.name}-${id} role:${item.role}`);
-        }
-        break;
-      }
-      case "level.mode.fan": {
-        message.type = "fan";
-        const value = (_s = await (0, import_tools.getValueEntryBoolean)(item.data.entity1)) != null ? _s : false;
-        message.iconColor = await (0, import_Color.GetIconColor)(item, value);
-        message.icon = import_icon_mapping.Icons.GetIcon(await (0, import_tools.getIconEntryValue)(item.data.icon, value, "fan"));
-        message.optionalValue = value ? "1" : "0";
-        return this.getItemMesssage(message);
-        break;
-      }
-      case "media.repeat": {
-        message.type = "button";
-        const value = item.data.entity1 && item.data.entity1.value && item.data.entity1.value.type === "number" ? await (0, import_tools.getValueEntryNumber)(item.data.entity1) : await (0, import_tools.getValueEntryBoolean)(item.data.entity1);
-        if (value !== null) {
-          message.iconColor = await (0, import_Color.GetIconColor)(item, !!value);
-          if (value === 2) {
-            message.icon = "repeat-once";
-          } else {
-            message.icon = import_icon_mapping.Icons.GetIcon(
-              await (0, import_tools.getIconEntryValue)(item.data.icon, !!value, "repeat-variant", "repeat-off")
+        case "button": {
+          if (item.entity1 && item.entity1.value) {
+            let value;
+            if (item.entity1.value.type === "string") {
+            } else if (item.entity1.value.type === "number") {
+            } else if (item.entity1.value.type === "boolean") {
+              value = await tools.getValueEntryBoolean(item.entity1);
+            }
+            if (value === void 0)
+              break;
+            message.displayName = (_i = await tools.getEntryTextOnOff(item.text, value)) != null ? _i : "test1";
+            message.optionalValue = (_j = await tools.getEntryTextOnOff(item.text1, value)) != null ? _j : "test2";
+            message.icon = await tools.getIconEntryValue(item.icon, value, "home", "account");
+            message.iconColor = await tools.GetIconColor(
+              item.icon,
+              typeof value === "number" ? value : !!value
             );
-            message.optionalValue = !!value ? "1" : "0";
-            return this.getItemMesssage(message);
+            return tools.getPayload(
+              "button",
+              message.intNameEntity,
+              message.icon,
+              message.iconColor,
+              message.displayName,
+              message.optionalValue
+            );
           }
+          break;
         }
-        break;
-      }
-      case "text.list": {
-        message.type = "input_sel";
-        const value = (_t = item.data.entity1 && item.data.entity1.value && await (0, import_tools.getValueEntryBoolean)(item.data.entity1)) != null ? _t : null;
-        message.iconColor = await (0, import_tools.getIconEntryColor)(item.data.icon, value, import_Color.HMIOn, import_Color.HMIOff);
-        message.icon = import_icon_mapping.Icons.GetIcon(
-          await (0, import_tools.getIconEntryValue)(item.data.icon, value, "clipboard-list", "clipboard-list-outline")
-        );
-        message.displayName = (_u = await (0, import_tools.getValueEntryTextOnOff)(item.data.text, value)) != null ? _u : "";
-        message.optionalValue = !!value ? "1" : "0";
-        return this.getItemMesssage(message);
-        break;
+        case "input_sel": {
+          message.type = "input_sel";
+          const value = (_k = await tools.getValueEntryNumber(item.entity1)) != null ? _k : await tools.getValueEntryBoolean(item.entity1);
+          message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
+          message.iconColor = (_l = await tools.GetIconColor(
+            item.icon,
+            value != null ? value : true,
+            Color.HMIOn,
+            Color.HMIOff,
+            true,
+            true,
+            0,
+            100
+          )) != null ? _l : Color.HMIOn;
+          message.optionalValue = (_m = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _m : "PRESS";
+          this.log.debug(JSON.stringify(message));
+          return tools.getItemMesssage(message);
+          break;
+        }
+        case "switch":
+        case "delete":
       }
     }
-    return "~delete~~~~~";
+    return "~~~~~";
   }
   getDetailPayload(message) {
     if (!message.type)
@@ -244,7 +241,7 @@ class PageItem extends import_Page.Page {
           popup: false
         };
         result = Object.assign(result, message);
-        return this.getPayload(
+        return tools.getPayload(
           "entityUpdateDetail",
           result.entityName,
           "",
@@ -264,12 +261,12 @@ class PageItem extends import_Page.Page {
         let result = {
           type: "insel",
           entityName: "",
-          textColor: String((0, import_Color.rgb_dec565)(import_Color.White)),
+          textColor: String(Color.rgb_dec565(Color.White)),
           headline: "",
           list: ""
         };
         result = Object.assign(result, message);
-        return this.getPayload(
+        return tools.getPayload(
           "entityUpdateDetail2",
           result.entityName,
           "",
@@ -283,14 +280,17 @@ class PageItem extends import_Page.Page {
     }
     return "";
   }
-  async GenerateDetailPage(mode, item, id) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+  async GenerateDetailPage(mode) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+    if (!this.config || !this.dataItems)
+      return null;
+    const item = this.dataItems;
     const message = {};
-    const template = import_TpageItem.templatePageItems[mode][item.role];
-    message.entityName = id;
+    const template = import_TpageItem.templatePageItems[mode][this.config.role];
+    message.entityName = this.id;
     switch (mode) {
       case "popupLight": {
-        switch (item.role) {
+        switch (this.config.role) {
           case "light":
           case "socket":
           case "dimmer":
@@ -303,15 +303,15 @@ class PageItem extends import_Page.Page {
               return null;
             if (template.type !== message.type)
               return null;
-            message.buttonState = (_a = template.buttonState ? await (0, import_tools.getValueEntryBoolean)(item.data.entity1) : null) != null ? _a : "disable";
-            const dimmer = item.data.dimmer && await item.data.dimmer.getNumber();
+            message.buttonState = (_a = template.buttonState ? await tools.getValueEntryBoolean(item.entity1) : null) != null ? _a : "disable";
+            const dimmer = item.dimmer && await item.dimmer.getNumber();
             if (dimmer != null && template.slider1Pos) {
-              if (item.data.minValue1 != void 0 && item.data.maxValue1) {
+              if (item.minValue1 != void 0 && item.maxValue1) {
                 message.slider1Pos = Math.trunc(
-                  (0, import_Color.scale)(
+                  Color.scale(
                     dimmer,
-                    await item.data.minValue1.getNumber(),
-                    await item.data.maxValue1.getNumber(),
+                    await item.minValue1.getNumber(),
+                    await item.maxValue1.getNumber(),
                     100,
                     0
                   )
@@ -320,20 +320,19 @@ class PageItem extends import_Page.Page {
                 message.slider1Pos = dimmer;
               }
             }
-            message.slidersColor = template.slidersColor ? String((0, import_Color.rgb_dec565)(template.slidersColor)) : (_b = await (0, import_tools.getIconEntryColor)(item.data.icon, false, import_Color.White)) != null ? _b : "disable";
+            message.slidersColor = template.slidersColor ? String(Color.rgb_dec565(template.slidersColor)) : (_b = await tools.getIconEntryColor(item.icon, false, Color.White)) != null ? _b : "disable";
             let rgb;
-            switch (item.role) {
+            switch (this.config.role) {
               case "socket":
               case "light":
               case "dimmer":
               case "ct":
                 break;
               case "hue":
-                rgb = (_c = rgb != null ? rgb : await (0, import_tools.getDecfromHue)(item)) != null ? _c : null;
+                rgb = (_c = rgb != null ? rgb : await tools.getDecfromHue(item)) != null ? _c : null;
                 break;
               case "rgbSingle":
               case "rgb":
-                rgb = await (0, import_tools.getDecfromRGBThree)(item);
                 break;
             }
             if (rgb !== null && template.hueMode) {
@@ -341,23 +340,23 @@ class PageItem extends import_Page.Page {
               message.slidersColor = rgb;
             }
             message.slider2Pos = "disable";
-            let ct = template.slider2Pos ? await (0, import_tools.getValueEntryNumber)(item.data.entity2) : null;
+            let ct = template.slider2Pos ? await tools.getValueEntryNumber(item.entity2) : null;
             if (ct != null && template.slider2Pos !== false) {
-              const max = (_d = item.data.maxValue2 && await item.data.maxValue2.getNumber()) != null ? _d : template.slider2Pos;
+              const max = (_d = item.maxValue2 && await item.maxValue2.getNumber()) != null ? _d : template.slider2Pos;
               ct = ct > max ? max : ct < 0 ? 0 : ct;
-              if (item.data.minValue2 !== void 0) {
-                const min = (_e = await item.data.minValue2.getNumber()) != null ? _e : 0;
-                message.slider2Pos = Math.trunc((0, import_Color.scale)(ct < min ? min : ct, min, max, 100, 0));
+              if (item.minValue2 !== void 0) {
+                const min = (_e = await item.minValue2.getNumber()) != null ? _e : 0;
+                message.slider2Pos = Math.trunc(Color.scale(ct < min ? min : ct, min, max, 100, 0));
               } else {
-                message.slider2Pos = Math.trunc((0, import_Color.scale)(ct, 0, max, 100, 0));
+                message.slider2Pos = Math.trunc(Color.scale(ct, 0, max, 100, 0));
               }
             }
-            if ((_f = template.popup && item.data.modeList && await item.data.modeList.getString()) != null ? _f : false) {
+            if ((_f = template.popup && item.valueList && await item.valueList.getString()) != null ? _f : false) {
               message.popup = true;
             }
-            message.slider1Translation = template.slider1Translation !== false ? (_g = item.data.modeList && await item.data.modeList.getString()) != null ? _g : template.slider1Translation : "";
-            message.slider2Translation = template.slider2Translation !== false ? (_h = item.data.modeList && await item.data.modeList.getString()) != null ? _h : template.slider2Translation : "";
-            message.hue_translation = template.hue_translation !== false ? (_i = item.data.modeList && await item.data.modeList.getString()) != null ? _i : template.hue_translation : "";
+            message.slider1Translation = template.slider1Translation !== false ? (_g = item.valueList && await item.valueList.getString()) != null ? _g : template.slider1Translation : "";
+            message.slider2Translation = template.slider2Translation !== false ? (_h = item.valueList && await item.valueList.getString()) != null ? _h : template.slider2Translation : "";
+            message.hue_translation = template.hue_translation !== false ? (_i = item.valueList && await item.valueList.getString()) != null ? _i : template.hue_translation : "";
             break;
           }
         }
@@ -365,60 +364,85 @@ class PageItem extends import_Page.Page {
       }
       case "popupFan":
       case "popupInSel": {
-        switch (item.role) {
-          case "socket":
-          case "value.time":
-          case "level.timer":
-          case "level.mode.fan":
-          case "value.alarmtime":
-          case "light":
-          case "dimmer":
-          case "hue":
-          case "ct":
-          case "cie":
-          case "rgbSingle":
-          case "rgb":
-          case "blind":
-          case "door":
-          case "window":
-          case "gate":
-          case "motion":
-          case "media.repeat":
-          case "buttonSensor":
-          case "button":
-            break;
-          case "text.list": {
-            message.type = "insel";
-            if (message.type !== "insel" || template.type !== "insel")
-              return null;
-            const value = template.value ? (_j = await (0, import_tools.getValueEntryBoolean)(item.data.entity1)) != null ? _j : template.value : template.value;
-            message.textColor = await (0, import_tools.getEntryColor)(item.data.color, value, template.textColor);
-            message.headline = this.library.getTranslation(
-              (_k = item.data.headline && await item.data.headline.getString()) != null ? _k : ""
-            );
-            let list = template.list ? (_l = item.data.modeList && await item.data.modeList.getObject) != null ? _l : template.list : [];
-            if (!Array.isArray(list))
-              list = [];
-            message.list = list.map((a) => (0, import_tools.formatInSelText)(a)).join("?");
-            break;
-          }
-        }
+        message.type = "insel";
+        if (message.type !== "insel")
+          return null;
+        const value = (_j = await tools.getValueEntryBoolean(item.entity1)) != null ? _j : true;
+        message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+        message.headline = this.library.getTranslation(
+          (_k = item.headline && await item.headline.getString()) != null ? _k : ""
+        );
+        let list = (_m = (_l = item.valueList && await item.valueList.getObject()) != null ? _l : item.valueList && await item.valueList.getString()) != null ? _m : [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13"
+        ];
+        if (list !== null) {
+          if (typeof list === "string")
+            list = list.split("?");
+        } else
+          list = [];
+        message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
         break;
       }
-      case "popupLightNew":
-      case "popupNotify":
-      case "popupShutter":
-      case "popupThermo":
-      case "popupTimer":
     }
     if (template.type !== message.type) {
-      throw new Error(`Template ${template.type} is not ${message.type} for role: ${item.role}`);
+      throw new Error(`Template ${template.type} is not ${message.type} for role: ${this.config.role}`);
     }
-    this.getDetailPayload(message);
+    return this.getDetailPayload(message);
     return null;
   }
   async delete() {
     super.delete();
+  }
+  async setPopupAction(action, value) {
+    if (value === void 0 || this.dataItems === void 0)
+      return;
+    if (action === "mode-insel") {
+      if (!this.dataItems.setList)
+        return;
+      let list = await this.dataItems.setList.getObject();
+      if (list === null) {
+        list = await this.dataItems.setList.getString();
+        list = list.split("|").map((a) => {
+          const t = a.split("?");
+          return { id: t[0], value: t[1] };
+        });
+      }
+      if (list[value]) {
+        try {
+          const obj = await this.adapter.getForeignObjectAsync(list[value].id);
+          if (!obj || !obj.common || obj.type !== "state")
+            throw new Error("Dont get obj!");
+          const type = obj.common.type;
+          const newValue = this.adapter.library.convertToType(list[value].value, type);
+          if (newValue !== null) {
+            await this.adapter.setForeignStateAsync(
+              list[value].id,
+              newValue,
+              list[value].id.startsWith(this.adapter.namespace)
+            );
+            this.log.debug(`------------Set dp ${list[value].id} to ${String(newValue)}!`);
+          } else {
+            this.log.error(`Try to set a null value to ${list[value].id}!`);
+          }
+        } catch (e) {
+          this.log.error(`Id ${list[value].id} is not valid!`);
+        }
+      } else {
+      }
+    } else if (action === "button") {
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

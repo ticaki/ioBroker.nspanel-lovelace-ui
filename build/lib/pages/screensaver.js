@@ -32,8 +32,9 @@ var Color = __toESM(require("../const/Color"));
 var import_moment = __toESM(require("moment"));
 var import_moment_parseformat = __toESM(require("moment-parseformat"));
 var import_msg_def = require("../types/msg-def");
-var import_Page = require("./Page");
+var import_Page = require("../classes/Page");
 var import_icon_mapping = require("../const/icon_mapping");
+var import_tools = require("../const/tools");
 class Screensaver extends import_Page.Page {
   entitysConfig;
   layout = "standard";
@@ -62,7 +63,7 @@ class Screensaver extends import_Page.Page {
       }
     }
     config.alwaysOn = "none";
-    super(config);
+    super(config, void 0);
     this.entitysConfig = options.entitysConfig;
     this.layout = options.mode;
     this.config = this.panel.config;
@@ -203,7 +204,7 @@ class Screensaver extends import_Page.Page {
     switch (payload.eventType) {
       case "statusUpdate":
         this.sendToPanel(
-          this.getPayload(
+          (0, import_tools.getPayload)(
             payload.eventType,
             payload.icon1,
             payload.icon1Color,
@@ -235,7 +236,7 @@ class Screensaver extends import_Page.Page {
         });
         value.forEach(
           (a) => a && result.push(
-            this.getPayload(
+            (0, import_tools.getPayload)(
               "",
               "",
               a.icon,
@@ -245,7 +246,7 @@ class Screensaver extends import_Page.Page {
             )
           )
         );
-        this.sendToPanel(this.getPayloadArray([...result, ""]));
+        this.sendToPanel((0, import_tools.getPayloadArray)([...result, ""]));
         break;
       }
     }

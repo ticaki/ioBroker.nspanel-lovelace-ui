@@ -211,13 +211,14 @@ export type PageItemBase = {
     entity1: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     entity2?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     entity3?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
-    text1: string;
-    text2?: string;
-    text3?: string;
+    text1: TextEntryType;
+    text2?: TextEntryType;
+    text3?: TextEntryType;
     setValue1: string;
     setValue2?: string;
     setValue3?: string;
-    modeList?: number;
+    valueList?: number;
+    setList?: number;
     maxValue1?: number;
     minValue1?: number;
     minValue2?: number;
@@ -238,9 +239,9 @@ export type PageTypeUnionTemplate = {
     data: {
         headline?: string | undefined;
         color?: RGB | undefined;
-        icon?: { true: { value: string; color: RGB }; false: { value: string; color: RGB } } | undefined;
+        icon?: { true: { value: string; color: RGB | null }; false: { value: string; color: RGB | null } } | undefined;
         text?: { true: string; false: string } | undefined;
-        entity1: true | undefined | 'invert';
+        entity1: true | undefined | 'invert' | '';
         entity2?: true | undefined | 'invert';
         entity3?: true | undefined | 'invert';
         text1?: { true: string; false: string } | undefined;
@@ -260,7 +261,7 @@ export type PageTypeUnionTemplate = {
         saturation?: true | undefined;
         useColor?: true | undefined;
         RGB3?: true | undefined;
-        optionalData?: any[] | true | undefined; //shutter icons
+        optionalData?: any[] | string | true | undefined; //shutter icons - string for true?false or just true
     };
 };
 //XOR<XOR<A, B>, C>
@@ -289,7 +290,8 @@ export type PageItemUnion = {
         | 'button'
         | 'media.repeat'
         | 'text.list';
-
+    dpInit: string | undefined;
+    initMode: 'auto' | 'custom';
     type: Types.SerialTypePageElements;
     data: PageItemBase;
 };
@@ -308,8 +310,12 @@ export type ChangeTypeOfPageItem<Obj, N> = Obj extends
                 [K in keyof Obj]: ChangeTypeOfPageItem<Obj[K], N>;
             }
     : N;
-export type PageItemDataitems = Omit<PageItemUnion, 'data'> & {
+export type PageItemDataItems = Omit<PageItemUnion, 'data'> & {
     data: ChangeTypeOfPageItem<PageItemUnion['data'], Dataitem | undefined>;
+};
+
+export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data'> & {
+    data: ChangeTypeOfPageItem<PageItemUnion['data'], Types.DataItemsOptions | undefined>;
 };
 
 export type ColorEntryType = Record<Types.BooleanUnion, RGB> & { scale?: Types.IconScaleElement };

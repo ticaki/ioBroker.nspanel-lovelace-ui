@@ -47,7 +47,7 @@
                     "newLine": false
                 }
             }
-        },
+        }/*,
         "screensaver": {
             "type": "panel",
             "label": "screensaver",
@@ -226,6 +226,6 @@
                     "md": 6
                 }
             }
-        }
+        }*/
     }
 }

@@ -3,15 +3,26 @@ import {
     ChangeTypeOfPageItem,
     ColorEntryType,
     IconEntryType,
-    PageItemDataitems,
+    MessageItem,
+    PageItemDataItems,
     TextEntryType,
     ValueEntryType,
+    messageItemAllInterfaces,
 } from '../types/type-pageItem';
 import { ChangeTypeOfKeys } from './definition';
 import { Library } from '../classes/library';
 import { RGB } from '../types/Color';
-import { White, hsv2rgb, rgb_dec565, scale } from './Color';
+import { HMIOff, HMIOn, Interpolate, White, hsv2rgb, rgb_dec565, scale } from './Color';
 import { Icons } from './icon_mapping';
+
+export const messageItemDefault: MessageItem = {
+    type: 'input_sel',
+    intNameEntity: '',
+    icon: '',
+    iconColor: '',
+    displayName: '',
+    optionalValue: '',
+};
 
 export async function getValueEntryNumber(
     i: ChangeTypeOfPageItem<ValueEntryType, Dataitem | undefined>,
@@ -48,7 +59,7 @@ export async function getIconEntryValue(
 }
 export async function getIconEntryColor(
     i: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined>,
-    on: boolean | null,
+    on: boolean | number | null,
     def: string | RGB | number,
     defOff: string | RGB | null = null,
 ): Promise<string> {
@@ -66,6 +77,57 @@ export async function getIconEntryColor(
         return (i.false.color && (await i.false.color.getRGBDec())) ?? defOff ?? icon ?? def;
     }
     return icon ?? def;
+}
+export async function GetIconColor(
+    item: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined>,
+    value: boolean | number | null,
+    def: string | RGB | number = HMIOn,
+    defOff: string | RGB | number = HMIOff,
+    useColor: boolean = true,
+    interpolateColor: boolean = true,
+    min: number | null = null,
+    max: number | null = null,
+): Promise<string> {
+    // dimmer
+    const defRGB = typeof def === 'object' ? def : null;
+    def = typeof def === 'string' ? def : typeof def === 'number' ? String(def) : String(rgb_dec565(def));
+    if (item === undefined || value === null) return def;
+    const defOffRGB = typeof defOff === 'object' ? defOff : null;
+    const newDefOff: string | null =
+        defOff === null
+            ? null
+            : typeof def === 'string'
+              ? def
+              : typeof def === 'number'
+                ? String(def)
+                : String(rgb_dec565(def));
+
+    const onColor = item.true.color && (await item.true.color.getRGBValue());
+    const offColor = item.false.color && (await item.false.color.getRGBValue());
+    if (useColor && interpolateColor && typeof value === 'number') {
+        let val: number = typeof value === 'number' ? value : 0;
+        const maxValue = ((item.maxBri && (await item.maxBri.getNumber())) || max) ?? 100;
+        const minValue = ((item.minBri && (await item.minBri.getNumber())) || min) ?? 0;
+        val = val > maxValue ? maxValue : val;
+        val = val < minValue ? minValue : val;
+
+        return String(
+            rgb_dec565(
+                Interpolate(
+                    offColor ? offColor : defOffRGB ?? HMIOff,
+                    onColor ? onColor : defRGB ?? HMIOn,
+                    scale(100 - val, minValue, maxValue, 0, 1),
+                ),
+            ),
+        );
+    }
+    if (
+        (useColor && typeof value === 'boolean' && value) ||
+        (typeof value === 'number' && value > ((item.minBri !== undefined && (await item.minBri.getNumber())) || 0))
+    ) {
+        return onColor ? String(rgb_dec565(onColor)) : def;
+    }
+    return offColor ? String(rgb_dec565(offColor)) : newDefOff ?? def;
 }
 
 export async function getEntryColor(
@@ -132,19 +194,19 @@ export function getTranslation(library: Library, key1: any | string, key2?: stri
     return result;
 }
 
-export const getDecfromRGBThree = async (item: PageItemDataitems): Promise<string | null> => {
+export const getDecfromRGBThree = async (item: PageItemDataItems['data']): Promise<string | null> => {
     if (!item) return String(rgb_dec565(White));
-    const red = (item.data.Red && (await item.data.Red.getNumber())) ?? -1;
-    const green = (item.data.Green && (await item.data.Green.getNumber())) ?? -1;
-    const blue = (item.data.Blue && (await item.data.Blue.getNumber())) ?? -1;
+    const red = (item.Red && (await item.Red.getNumber())) ?? -1;
+    const green = (item.Green && (await item.Green.getNumber())) ?? -1;
+    const blue = (item.Blue && (await item.Blue.getNumber())) ?? -1;
     if (red === -1 || blue === -1 || green === -1) return null;
     return String(rgb_dec565({ red, green, blue }));
 };
 
-export const getDecfromHue = async (item: PageItemDataitems): Promise<string | null> => {
-    if (!item || !item.data.hue) return null;
-    const hue = await item.data.hue.getNumber();
-    let saturation = Math.abs((item.data.saturation && (await item.data.saturation.getNumber())) ?? 1);
+export const getDecfromHue = async (item: PageItemDataItems['data']): Promise<string | null> => {
+    if (!item || !item.hue) return null;
+    const hue = await item.hue.getNumber();
+    let saturation = Math.abs((item.saturation && (await item.saturation.getNumber())) ?? 1);
     if (saturation > 1) saturation = 1;
     if (hue === null) return null;
     const arr = hsv2rgb(hue, saturation, 1);
@@ -178,4 +240,33 @@ export function formatInSelText(Text: string[] | string): string {
     } else {
         return textLineTwo.trim();
     }
+}
+
+/**
+ * Create a part of the panel messsage for bottom icons. if event === '' u get '~~~~~~'.
+ * default for event: input_sel
+ * @param msg {Partial<MessageItem>}
+ * @returns string
+ */
+export function getItemMesssage(msg: Partial<messageItemAllInterfaces> | undefined): string {
+    if (!msg || !msg.intNameEntity || !msg.type) return '~~~~~';
+    const id: string[] = [];
+    if (msg.mainId) id.push(msg.mainId);
+    if (msg.subId) id.push(msg.subId);
+    if (msg.intNameEntity) id.push(msg.intNameEntity);
+    return getPayload(
+        msg.type ?? messageItemDefault.type,
+        id.join('?') ?? messageItemDefault.intNameEntity,
+        msg.icon ?? messageItemDefault.icon,
+        msg.iconColor ?? messageItemDefault.iconColor,
+        msg.displayName ?? messageItemDefault.displayName,
+        msg.optionalValue ?? messageItemDefault.optionalValue,
+    );
+}
+
+export function getPayloadArray(s: (string | any)[]): string {
+    return s.join('~');
+}
+export function getPayload(...s: string[]): string {
+    return s.join('~');
 }

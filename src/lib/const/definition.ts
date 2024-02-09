@@ -33,7 +33,14 @@ export const genericStateObjects: {
     settings: ioBroker.FolderObject;
     global: ioBroker.FolderObject;
     presense: ioBroker.StateObject;
-    deviceDB: ioBroker.StateObject;
+    panel: customChannelType & {
+        panels: customChannelType & {
+            cmd: customChannelType & {
+                power1: ioBroker.StateObject;
+                power2: ioBroker.StateObject;
+            };
+        };
+    };
 } = {
     default: {
         _id: 'No_definition',
@@ -47,17 +54,59 @@ export const genericStateObjects: {
         },
         native: {},
     },
-    deviceDB: {
-        _id: '',
-        type: 'state',
-        common: {
-            name: 'genericStateObjects.deviceDB',
-            type: 'string',
-            role: 'json',
-            read: true,
-            write: false,
+    panel: {
+        _channel: {
+            _id: '',
+            type: 'device',
+            common: {
+                name: 'genericStateObjects.panel',
+            },
+            native: {},
         },
-        native: {},
+        panels: {
+            _channel: {
+                _id: '',
+                type: 'device',
+                common: {
+                    name: 'genericStateObjects.panels',
+                },
+                native: {},
+            },
+            cmd: {
+                _channel: {
+                    _id: '',
+                    type: 'device',
+                    common: {
+                        name: 'genericStateObjects.cmd',
+                    },
+                    native: {},
+                },
+                power1: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'genericStateObjects.power1',
+                        type: 'boolean',
+                        role: 'switch',
+                        read: true,
+                        write: true,
+                    },
+                    native: {},
+                },
+                power2: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'genericStateObjects.power1',
+                        type: 'boolean',
+                        role: 'switch',
+                        read: true,
+                        write: true,
+                    },
+                    native: {},
+                },
+            },
+        },
     },
     presense: {
         _id: '',

@@ -130,6 +130,9 @@ function convertToEvent(msg) {
     return null;
   if (!Types.isEventMethod(temp[1]))
     return null;
+  let popup = void 0;
+  if (temp[1] === "pageOpenDetail")
+    popup = temp.splice(2, 1)[0];
   const arr = String(temp[2]).split("?");
   if (arr[2])
     return {
@@ -137,7 +140,8 @@ function convertToEvent(msg) {
       method: temp[1],
       page: parseInt(arr[0]),
       subPage: parseInt(arr[1]),
-      command: arr[2],
+      popup,
+      id: arr[2],
       action: isButtonActionType(temp[3]) ? temp[3] : "",
       opt: (_a = temp[4]) != null ? _a : ""
     };
@@ -146,7 +150,8 @@ function convertToEvent(msg) {
       type: temp[0],
       method: temp[1],
       page: parseInt(arr[0]),
-      command: arr[1],
+      popup,
+      id: arr[1],
       action: isButtonActionType(temp[3]) ? temp[3] : "",
       opt: (_b = temp[4]) != null ? _b : ""
     };
@@ -154,7 +159,8 @@ function convertToEvent(msg) {
     return {
       type: temp[0],
       method: temp[1],
-      command: arr[0],
+      popup,
+      id: arr[0],
       action: isButtonActionType(temp[3]) ? temp[3] : "",
       opt: (_c = temp[4]) != null ? _c : ""
     };

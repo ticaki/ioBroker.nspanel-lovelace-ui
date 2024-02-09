@@ -34,8 +34,8 @@ var import_screensaver = require("../pages/screensaver");
 var pages = __toESM(require("../types/pages"));
 var import_library = require("../classes/library");
 var import_definition = require("../const/definition");
-var import_config = require("../config");
 var import_pageMedia = require("../pages/pageMedia");
+var import_pageGrid = require("../pages/pageGrid");
 function isPanelConfig(F) {
   if (F.controller === void 0)
     return false;
@@ -75,6 +75,8 @@ class Panel extends import_library.BaseClass {
   config;
   timeout;
   CustomFormat;
+  sendToTasmota = () => {
+  };
   constructor(adapter, options) {
     var _a;
     super(adapter, options.name);
@@ -91,7 +93,16 @@ class Panel extends import_library.BaseClass {
     this.topic = options.topic;
     if (typeof this.panelSend.addMessage === "function")
       this.sendToPanelClass = this.panelSend.addMessage;
+    if (typeof this.panelSend.addMessageTasmota === "function")
+      this.sendToTasmota = this.panelSend.addMessageTasmota;
     this.statesControler = options.controller.statesControler;
+    this.library.writedp(`panel.${this.name}`, void 0, import_definition.genericStateObjects.panel.panels._channel);
+    this.library.writedp(
+      `panel.${this.name}.cmd`,
+      void 0 === "ON",
+      import_definition.genericStateObjects.panel.panels.cmd._channel
+    );
+    this.adapter.subscribeStates(`panel.${this.name}.cmd.*`);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
       const pageConfig = options.pages[a];
@@ -108,6 +119,17 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cardGrid": {
+          const pmconfig = {
+            card: pageConfig.card,
+            panel: this,
+            id: String(a),
+            name: "PG",
+            alwaysOn: pageConfig.alwaysOn,
+            adapter: this.adapter,
+            panelSend: this.panelSend
+          };
+          this.pages[a] = new import_pageGrid.PageGrid(pmconfig, pageConfig);
+          this.pages[a].init();
           break;
         }
         case "cardGrid2": {
@@ -118,11 +140,11 @@ class Panel extends import_library.BaseClass {
         }
         case "cardMedia": {
           const pmconfig = {
-            card: import_config.testConfigMedia.card,
+            card: pageConfig.card,
             panel: this,
             id: String(a),
             name: "PM",
-            alwaysOn: import_config.testConfigMedia.alwaysOn,
+            alwaysOn: pageConfig.alwaysOn,
             adapter: this.adapter,
             panelSend: this.panelSend
           };
@@ -147,7 +169,7 @@ class Panel extends import_library.BaseClass {
           if (scsFound++ > 0)
             continue;
           const ssconfig = {
-            card: "screensaver",
+            card: pageConfig.card,
             panel: this,
             id: String(a),
             name: "SrS",
@@ -185,14 +207,14 @@ class Panel extends import_library.BaseClass {
     if (sleep == !this._activePage.sleep || page != this._activePage.page) {
       if (page != this._activePage.page) {
         if (this._activePage.page)
-          this._activePage.page.setVisibility(false);
+          await this._activePage.page.setVisibility(false);
         if (page && !sleep) {
-          page.setVisibility(true);
+          await page.setVisibility(true);
         }
         this._activePage = { page, sleep };
       } else if (sleep == !this._activePage.sleep) {
         if (this._activePage.page && !sleep)
-          this._activePage.page.setVisibility(true, true);
+          await this._activePage.page.setVisibility(true, true);
         this._activePage.sleep = sleep;
       }
     }
@@ -212,8 +234,10 @@ class Panel extends import_library.BaseClass {
     return true;
   }
   init = async () => {
-    this.controller.mqttClient.subscript(this.topic, this.onMessage);
-    this.sendToPanel("pageType~pageStartup", { retain: true });
+    this.controller.mqttClient.subscript(this.topic + "/#", this.onMessage);
+    this.sendToTasmota(this.topic + "/cmnd/POWER1", "");
+    this.sendToTasmota(this.topic + "/cmnd/POWER2", "");
+    this.sendToPanel("pageType~pageStartup", { retain: false });
   };
   registerOnMessage(fn) {
     if (this.reivCallbacks.indexOf(fn) === -1) {
@@ -233,8 +257,49 @@ class Panel extends import_library.BaseClass {
       if (event) {
         this.HandleIncomingMessage(event);
       }
+    } else {
+      const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) || [])[0];
+      if (command) {
+        this.log.debug(`Receive other message ${topic} with ${message}`);
+        this.log.debug(`${command}`);
+        switch (command) {
+          case "stat/POWER2": {
+            this.library.writedp(
+              `panel.${this.name}.cmd.power2`,
+              message === "ON",
+              import_definition.genericStateObjects.panel.panels.cmd.power2
+            );
+            break;
+          }
+          case "stat/POWER1": {
+            this.library.writedp(
+              `panel.${this.name}.cmd.power1`,
+              message === "ON",
+              import_definition.genericStateObjects.panel.panels.cmd.power1
+            );
+            break;
+          }
+        }
+      }
     }
   };
+  async onStateChange(id, state) {
+    if (state.ack)
+      return;
+    if (id.split(".")[1] === this.name) {
+      const cmd = id.replace(`panel.${this.name}.cmd.`, "");
+      switch (cmd) {
+        case "power1": {
+          this.sendToTasmota(this.topic + "/cmnd/POWER1", state.val ? "ON" : "OFF");
+          break;
+        }
+        case "power2": {
+          this.sendToTasmota(this.topic + "/cmnd/POWER1", state.val ? "ON" : "OFF");
+          break;
+        }
+      }
+    }
+  }
   sendScreeensaverTimeout(sec) {
     this.log.debug(`Set screeensaver timeout to ${sec}s.`);
     this.sendToPanel(`timeout~${sec}`);
@@ -275,7 +340,7 @@ class Panel extends import_library.BaseClass {
       this.adapter.clearTimeout(this.dateUpdateTimeout);
   }
   async HandleIncomingMessage(event) {
-    this.log.debug(JSON.stringify(event));
+    this.log.debug("Receive message:" + JSON.stringify(event));
     const index = this.pages.findIndex((a) => {
       if (a && (a.card === "screensaver" || a.card !== "screensaver2"))
         return true;
@@ -310,12 +375,24 @@ class Panel extends import_library.BaseClass {
       }
       case "pageOpenDetail": {
         await this.setActivePage(false);
+        this.getActivePage().onPopupRequest(
+          event.id,
+          event.popup,
+          event.action,
+          event.opt
+        );
         break;
       }
       case "buttonPress2": {
-        if (event.command == "screensaver") {
+        if (event.id == "screensaver") {
           await this.setActivePage(this.pages[index]);
         } else {
+          this.getActivePage().onPopupRequest(
+            event.id,
+            event.popup,
+            event.action,
+            event.opt
+          );
           this.getActivePage().onButtonEvent(event);
           await this.setActivePage(true);
         }

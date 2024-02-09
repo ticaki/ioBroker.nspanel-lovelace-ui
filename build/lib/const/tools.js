@@ -18,27 +18,49 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var tools_exports = {};
 __export(tools_exports, {
+  GetIconColor: () => GetIconColor,
   formatInSelText: () => formatInSelText,
   getDecfromHue: () => getDecfromHue,
   getDecfromRGBThree: () => getDecfromRGBThree,
   getEntryColor: () => getEntryColor,
+  getEntryTextOnOff: () => getEntryTextOnOff,
   getIconEntryColor: () => getIconEntryColor,
   getIconEntryValue: () => getIconEntryValue,
+  getItemMesssage: () => getItemMesssage,
+  getPayload: () => getPayload,
+  getPayloadArray: () => getPayloadArray,
   getTranslation: () => getTranslation,
   getValueEntryBoolean: () => getValueEntryBoolean,
   getValueEntryNumber: () => getValueEntryNumber,
   getValueEntryString: () => getValueEntryString,
-  getValueEntryTextOnOff: () => getValueEntryTextOnOff
+  messageItemDefault: () => messageItemDefault
 });
 module.exports = __toCommonJS(tools_exports);
 var import_Color2 = require("./Color");
+var import_icon_mapping = require("./icon_mapping");
+const messageItemDefault = {
+  type: "input_sel",
+  intNameEntity: "",
+  icon: "",
+  iconColor: "",
+  displayName: "",
+  optionalValue: ""
+};
 async function getValueEntryNumber(i) {
   var _a;
   if (!i)
     return null;
   const nval = i.value && await i.value.getNumber();
   if (nval !== null && nval !== void 0) {
-    return nval * ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
+    let res = nval * ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
+    if (i.minScale !== void 0 && i.maxScale !== void 0) {
+      const min = await i.minScale.getNumber();
+      const max = await i.maxScale.getNumber();
+      if (min !== null && max !== null) {
+        res = (0, import_Color2.scale)(res, min, max, 0, 100);
+      }
+    }
+    return res;
   }
   return null;
 }
@@ -46,12 +68,12 @@ async function getIconEntryValue(i, on, def, defOff = null) {
   var _a, _b, _c;
   on = on != null ? on : true;
   if (!i)
-    return on ? def : defOff != null ? defOff : def;
+    return import_icon_mapping.Icons.GetIcon(on ? def : defOff != null ? defOff : def);
   const icon = i.true.value && await i.true.value.getString();
   if (!on) {
-    return (_c = (_b = (_a = i.false.value && await i.false.value.getString()) != null ? _a : defOff) != null ? _b : icon) != null ? _c : def;
+    return import_icon_mapping.Icons.GetIcon((_c = (_b = (_a = i.false.value && await i.false.value.getString()) != null ? _a : defOff) != null ? _b : icon) != null ? _c : def);
   }
-  return icon != null ? icon : def;
+  return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def);
 }
 async function getIconEntryColor(i, on, def, defOff = null) {
   var _a, _b, _c;
@@ -74,6 +96,37 @@ async function getIconEntryColor(i, on, def, defOff = null) {
   }
   return icon != null ? icon : def;
 }
+async function GetIconColor(item, value, def = import_Color2.HMIOn, defOff = import_Color2.HMIOff, useColor = true, interpolateColor = true, min = null, max = null) {
+  var _a, _b;
+  const defRGB = typeof def === "object" ? def : null;
+  def = typeof def === "string" ? def : typeof def === "number" ? String(def) : String((0, import_Color2.rgb_dec565)(def));
+  if (item === void 0 || value === null)
+    return def;
+  const defOffRGB = typeof defOff === "object" ? defOff : null;
+  const newDefOff = defOff === null ? null : typeof def === "string" ? def : typeof def === "number" ? String(def) : String((0, import_Color2.rgb_dec565)(def));
+  const onColor = item.true.color && await item.true.color.getRGBValue();
+  const offColor = item.false.color && await item.false.color.getRGBValue();
+  if (useColor && interpolateColor && typeof value === "number") {
+    let val = typeof value === "number" ? value : 0;
+    const maxValue = (_a = item.maxBri && await item.maxBri.getNumber() || max) != null ? _a : 100;
+    const minValue = (_b = item.minBri && await item.minBri.getNumber() || min) != null ? _b : 0;
+    val = val > maxValue ? maxValue : val;
+    val = val < minValue ? minValue : val;
+    return String(
+      (0, import_Color2.rgb_dec565)(
+        (0, import_Color2.Interpolate)(
+          offColor ? offColor : defOffRGB != null ? defOffRGB : import_Color2.HMIOff,
+          onColor ? onColor : defRGB != null ? defRGB : import_Color2.HMIOn,
+          (0, import_Color2.scale)(100 - val, minValue, maxValue, 0, 1)
+        )
+      )
+    );
+  }
+  if (useColor && typeof value === "boolean" && value || typeof value === "number" && value > (item.minBri !== void 0 && await item.minBri.getNumber() || 0)) {
+    return onColor ? String((0, import_Color2.rgb_dec565)(onColor)) : def;
+  }
+  return offColor ? String((0, import_Color2.rgb_dec565)(offColor)) : newDefOff != null ? newDefOff : def;
+}
 async function getEntryColor(i, value, def) {
   var _a, _b;
   if (typeof def === "number")
@@ -88,7 +141,7 @@ async function getEntryColor(i, value, def) {
   }
   return icon != null ? icon : def;
 }
-async function getValueEntryTextOnOff(i, on) {
+async function getEntryTextOnOff(i, on) {
   var _a, _b;
   if (!i)
     return null;
@@ -111,13 +164,12 @@ async function getValueEntryString(i) {
   var _a, _b, _c;
   if (!i || !i.value)
     return null;
-  const nval = await i.value.getNumber();
+  const nval = await getValueEntryNumber(i);
   if (nval !== null && nval !== void 0) {
-    const res2 = nval * ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
-    const d = i.decimal && await i.decimal.getNumber();
-    let result = String(res2);
-    if (d || d === 0) {
-      result = res2.toFixed(d);
+    const d = (_a = i.decimal && await i.decimal.getNumber()) != null ? _a : null;
+    let result = String(nval);
+    if (d !== null) {
+      result = nval.toFixed(d);
     }
     return result + ((_b = i.unit && await i.unit.getString()) != null ? _b : "");
   }
@@ -138,19 +190,19 @@ const getDecfromRGBThree = async (item) => {
   var _a, _b, _c;
   if (!item)
     return String((0, import_Color2.rgb_dec565)(import_Color2.White));
-  const red = (_a = item.data.Red && await item.data.Red.getNumber()) != null ? _a : -1;
-  const green = (_b = item.data.Green && await item.data.Green.getNumber()) != null ? _b : -1;
-  const blue = (_c = item.data.Blue && await item.data.Blue.getNumber()) != null ? _c : -1;
+  const red = (_a = item.Red && await item.Red.getNumber()) != null ? _a : -1;
+  const green = (_b = item.Green && await item.Green.getNumber()) != null ? _b : -1;
+  const blue = (_c = item.Blue && await item.Blue.getNumber()) != null ? _c : -1;
   if (red === -1 || blue === -1 || green === -1)
     return null;
   return String((0, import_Color2.rgb_dec565)({ red, green, blue }));
 };
 const getDecfromHue = async (item) => {
   var _a;
-  if (!item || !item.data.hue)
+  if (!item || !item.hue)
     return null;
-  const hue = await item.data.hue.getNumber();
-  let saturation = Math.abs((_a = item.data.saturation && await item.data.saturation.getNumber()) != null ? _a : 1);
+  const hue = await item.hue.getNumber();
+  let saturation = Math.abs((_a = item.saturation && await item.saturation.getNumber()) != null ? _a : 1);
   if (saturation > 1)
     saturation = 1;
   if (hue === null)
@@ -187,18 +239,49 @@ function formatInSelText(Text) {
     return textLineTwo.trim();
   }
 }
+function getItemMesssage(msg) {
+  var _a, _b, _c, _d, _e, _f;
+  if (!msg || !msg.intNameEntity || !msg.type)
+    return "~~~~~";
+  const id = [];
+  if (msg.mainId)
+    id.push(msg.mainId);
+  if (msg.subId)
+    id.push(msg.subId);
+  if (msg.intNameEntity)
+    id.push(msg.intNameEntity);
+  return getPayload(
+    (_a = msg.type) != null ? _a : messageItemDefault.type,
+    (_b = id.join("?")) != null ? _b : messageItemDefault.intNameEntity,
+    (_c = msg.icon) != null ? _c : messageItemDefault.icon,
+    (_d = msg.iconColor) != null ? _d : messageItemDefault.iconColor,
+    (_e = msg.displayName) != null ? _e : messageItemDefault.displayName,
+    (_f = msg.optionalValue) != null ? _f : messageItemDefault.optionalValue
+  );
+}
+function getPayloadArray(s) {
+  return s.join("~");
+}
+function getPayload(...s) {
+  return s.join("~");
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  GetIconColor,
   formatInSelText,
   getDecfromHue,
   getDecfromRGBThree,
   getEntryColor,
+  getEntryTextOnOff,
   getIconEntryColor,
   getIconEntryValue,
+  getItemMesssage,
+  getPayload,
+  getPayloadArray,
   getTranslation,
   getValueEntryBoolean,
   getValueEntryNumber,
   getValueEntryString,
-  getValueEntryTextOnOff
+  messageItemDefault
 });
 //# sourceMappingURL=tools.js.map

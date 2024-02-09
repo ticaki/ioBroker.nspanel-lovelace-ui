@@ -32,9 +32,8 @@ var import_states_controller = require("./states-controller");
 var Panel = __toESM(require("./panel"));
 class Controller extends Library.BaseClass {
   mqttClient;
-  DBPanels = [];
   statesControler;
-  panel = [];
+  panels = [];
   constructor(adapter, options) {
     super(adapter, options.name);
     this.adapter.controller = this;
@@ -47,21 +46,24 @@ class Controller extends Library.BaseClass {
         continue;
       }
       const panel = new Panel.Panel(adapter, panelConfig);
-      this.checkPanel(panel);
+      this.panels.push(panel);
     }
   }
-  async checkPanel(panel) {
-    if (await panel.isValid()) {
-      this.panel.push(panel);
-      await panel.init();
-    } else {
-      panel.delete();
-      this.log.error(`Panel ${panel.name} has a invalid configuration.`);
-    }
+  async init() {
+    const newPanels = [];
+    for (const panel of this.panels)
+      if (await panel.isValid()) {
+        newPanels.push(panel);
+        await panel.init();
+      } else {
+        panel.delete();
+        this.log.error(`Panel ${panel.name} has a invalid configuration.`);
+      }
+    this.panels = newPanels;
   }
   async delete() {
     await super.delete();
-    this.panel.forEach((a) => a.delete());
+    this.panels.forEach((a) => a.delete());
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

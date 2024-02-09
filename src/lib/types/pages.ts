@@ -1,7 +1,7 @@
 import * as Types from './types';
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
-import { ColorEntryType, IconBoolean, MessageItemMedia, TextEntryType, ValueEntryType } from './type-pageItem';
+import { ColorEntryType, IconBoolean, PageItemDataItemsOptions, TextEntryType, ValueEntryType } from './type-pageItem';
 import { MediaToolBoxAction } from './type-pageItem';
 
 export type PageTypeCards =
@@ -163,7 +163,7 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             page: parseInt(arr[0]),
             subPage: parseInt(arr[1]),
             popup: popup,
-            name: arr[2],
+            id: arr[2],
             action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
@@ -173,7 +173,7 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             method: temp[1],
             page: parseInt(arr[0]),
             popup: popup,
-            name: arr[1],
+            id: arr[1],
             action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
@@ -182,7 +182,7 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             type: temp[0],
             method: temp[1],
             popup: popup,
-            name: arr[0],
+            id: arr[0],
             action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
@@ -193,11 +193,14 @@ export type PageBaseConfig = {
     initMode: 'auto' | 'custom';
     dpInit: string; // '' and initMode 'auto' throw an error
     alwaysOn: 'none' | 'always' | 'action';
+    pageItems: PageItemDataItemsOptions[];
 
     //    mediaNamespace: string;
-    config: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
-        toolbox: (toolboxItem | undefined)[];
-    } & { logo: toolboxItem | undefined };
+    config:
+        | undefined
+        | (ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
+              toolbox: (toolboxItem | undefined)[];
+          } & { logo: toolboxItem | undefined });
     items:
         | (ChangeTypeOfKeys<PageMediaBaseConfig, Dataitem | undefined> & {
               toolbox: (toolboxItemDataItem | undefined)[];
@@ -273,14 +276,16 @@ export type PageMediaMessage = {
     onoffbuttonColor: string;
     shuffle_icon: AllIcons;
     logo: string;
-    options: [
-        (MessageItemMedia | string)?,
-        (MessageItemMedia | string)?,
-        (MessageItemMedia | string)?,
-        (MessageItemMedia | string)?,
-        (MessageItemMedia | string)?,
-    ];
+    options: [string?, string?, string?, string?, string?];
 };
+
+export type PageGridMessage = {
+    event: 'entityUpd';
+    headline: string;
+    getNavigation: string;
+    options: [string?, string?, string?, string?, string?, string?, string?, string?];
+};
+
 type writeItem = { dp: string } | undefined;
 export type listItem =
     | {
