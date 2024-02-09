@@ -314,7 +314,7 @@ class Library extends BaseClass {
   convertToType(value, type) {
     if (value === null)
       return null;
-    if (type === void 0) {
+    if (type === "undefined") {
       throw new Error("convertToType type undefined not allowed!");
     }
     if (value === void 0)
@@ -334,6 +334,7 @@ class Library extends BaseClass {
           break;
         case "array":
         case "json":
+          newValue = JSON.stringify(value);
           break;
       }
     }

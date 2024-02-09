@@ -31,8 +31,9 @@ module.exports = __toCommonJS(pageMedia_exports);
 var import_data_item = require("../classes/data-item");
 var Color = __toESM(require("../const/Color"));
 var import_icon_mapping = require("../const/icon_mapping");
-var import_Page = require("./Page");
-var import_Page2 = require("./Page");
+var import_Page = require("../classes/Page");
+var import_Page2 = require("../classes/Page");
+var import_tools = require("../const/tools");
 const PageMediaMessageDefault = {
   event: "entityUpd",
   headline: "",
@@ -49,7 +50,6 @@ const PageMediaMessageDefault = {
   logo: "",
   options: ["", "", "", "", ""]
 };
-const steps = 4;
 class PageMedia extends import_Page2.Page {
   config;
   initMode;
@@ -60,8 +60,9 @@ class PageMedia extends import_Page2.Page {
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
+  tempItem;
   constructor(config, options) {
-    super(config);
+    super(config, options.pageItems);
     this.config = options.config;
     this.writeItems = options.writeItems;
     this.items = options.items;
@@ -88,15 +89,11 @@ class PageMedia extends import_Page2.Page {
       }
     }
   }
-  sendType() {
-    this.sendToPanel("pageType~cardMedia");
-  }
   async onVisibilityChange(val) {
+    await super.onVisibilityChange(val);
     if (val) {
       this.headlinePos = 0;
       this.titelPos = 0;
-      this.sendType();
-      this.update();
     }
   }
   async update() {
@@ -214,41 +211,18 @@ class PageMedia extends import_Page2.Page {
       if (v !== null)
         message.titelColor = v;
     }
-    message.options = [void 0, void 0, void 0, void 0, void 0];
-    if (item.toolbox && Array.isArray(item.toolbox)) {
-      const localStep = item.toolbox.length > 5 ? steps : 5;
-      if (item.toolbox.length <= localStep * (this.step - 1))
-        this.step = 1;
-      const maxSteps = localStep * this.step;
-      const minStep = localStep * (this.step - 1);
-      for (let a = minStep; a < maxSteps; a++) {
-        message.options[a - minStep] = await this.getToolItem(item.toolbox[a], String(a), a % localStep + 1);
-      }
-      if (localStep === 4) {
-        this.nextArrow = true;
-        const color = String(Color.rgb_dec565(Color.White));
-        const icon = "arrow-right";
-        message.options[4] = {
-          intNameEntity: `5`,
-          iconNumber: 5,
-          icon: import_icon_mapping.Icons.GetIcon(icon),
-          iconColor: color,
-          mode: "nexttool",
-          type: "button",
-          displayName: "next"
-        };
-      }
-    }
     if (item.logo) {
-      message.logo = this.getItemMessageMedia(await this.getToolItem(item.logo, "logo", 0));
+      message.logo = "~~~~~";
     }
     {
     }
-    const opts = [];
-    for (const a in message.options) {
-      const temp = message.options[a];
-      if (typeof temp !== "string")
-        opts.push(this.getItemMessageMedia(temp));
+    const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
+    if (this.pageItems) {
+      for (let a = 0; a < 5; a++) {
+        const temp = this.pageItems[a];
+        if (temp)
+          opts[a] = await temp.getPageItemPayload();
+      }
     }
     const msg = Object.assign(PageMediaMessageDefault, message, {
       getNavigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
@@ -308,7 +282,7 @@ class PageMedia extends import_Page2.Page {
     return void 0;
   }
   getMessage(message) {
-    return this.getPayload(
+    return (0, import_tools.getPayload)(
       "entityUpd",
       message.headline,
       message.getNavigation,
@@ -322,44 +296,8 @@ class PageMedia extends import_Page2.Page {
       message.onoffbuttonColor,
       import_icon_mapping.Icons.GetIcon(message.shuffle_icon),
       message.logo,
-      this.getPayloadArray(message.options)
+      (0, import_tools.getPayloadArray)(message.options)
     );
-  }
-  getItemMessageMedia(msg) {
-    if (!msg || !msg.intNameEntity || !msg.icon)
-      return "~~~~~";
-    msg.type = msg.type === void 0 ? "input_sel" : msg.type;
-    const iconNumber = msg.iconNumber;
-    const temp = msg;
-    temp.optionalValue = msg.optionalValue || "media0";
-    const message = Object.assign(import_Page.messageItemDefault, temp);
-    switch (iconNumber) {
-      case 0: {
-        message.optionalValue = "media0";
-        break;
-      }
-      case 1: {
-        message.optionalValue = "media1";
-        break;
-      }
-      case 2: {
-        message.optionalValue = "media2";
-        break;
-      }
-      case 3: {
-        message.optionalValue = "media3";
-        break;
-      }
-      case 4: {
-        message.optionalValue = "media4";
-        break;
-      }
-      case 5: {
-        message.optionalValue = "media5";
-        break;
-      }
-    }
-    return this.getItemMesssage(message);
   }
   onStateTrigger = async () => {
     this.update();
@@ -445,7 +383,7 @@ class PageMedia extends import_Page2.Page {
         break;
       }
       case "button": {
-        if (event.command === "5" && this.nextArrow) {
+        if (event.id === "5" && this.nextArrow) {
           this.step++;
           this.update();
         }

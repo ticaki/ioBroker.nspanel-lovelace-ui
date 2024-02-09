@@ -19,27 +19,17 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var Page_exports = {};
 __export(Page_exports, {
   Page: () => Page,
-  PageItem: () => PageItem,
-  isMediaButtonActionType: () => isMediaButtonActionType,
-  messageItemDefault: () => messageItemDefault
+  isMediaButtonActionType: () => isMediaButtonActionType
 });
 module.exports = __toCommonJS(Page_exports);
-var import_library = require("../classes/library");
-var import_panel_message = require("../controller/panel-message");
-const messageItemDefault = {
-  type: "input_sel",
-  intNameEntity: "",
-  icon: "",
-  iconColor: "",
-  displayName: "",
-  optionalValue: ""
-};
-class Page extends import_panel_message.BaseClassPanelSend {
+var import_states_controller = require("../controller/states-controller");
+var import_types = require("../types/types");
+var import_pageItem = require("../pages/pageItem");
+class Page extends import_states_controller.BaseClassPage {
   card;
   id;
-  popups = [];
-  constructor(card) {
-    super(card);
+  constructor(card, pageItemsConfig) {
+    super(card, pageItemsConfig);
     this.card = card.card;
     this.id = card.id;
   }
@@ -53,8 +43,30 @@ class Page extends import_panel_message.BaseClassPanelSend {
   }
   async onVisibilityChange(val) {
     if (val) {
+      if (!this.pageItems && this.pageItemConfig) {
+        this.pageItems = [];
+        for (let a = 0; a < this.pageItemConfig.length; a++) {
+          const config = {
+            name: "PI",
+            adapter: this.adapter,
+            panel: this.panel,
+            panelSend: this.panelSend,
+            card: "cardItemSpecial",
+            id: `${this.id}?${a}`
+          };
+          this.pageItems[a] = new import_pageItem.PageItem(config, this.pageItemConfig[a]);
+          await this.pageItems[a].init();
+        }
+      }
       this.sendType();
       this.update();
+    } else {
+      if (this.pageItems) {
+        for (const item of this.pageItems) {
+          await item.delete();
+        }
+        this.pageItems = void 0;
+      }
     }
   }
   async update() {
@@ -62,35 +74,23 @@ class Page extends import_panel_message.BaseClassPanelSend {
       `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`
     );
   }
-  getItemMesssage(msg) {
-    var _a, _b, _c, _d, _e, _f;
-    if (!msg || !msg.intNameEntity || !msg.type)
-      return "~~~~~";
-    const id = [];
-    if (msg.mainId)
-      id.push(msg.mainId);
-    if (msg.subId)
-      id.push(msg.subId);
-    if (msg.intNameEntity)
-      id.push(msg.intNameEntity);
-    return this.getPayload(
-      (_a = msg.type) != null ? _a : messageItemDefault.type,
-      (_b = id.join("?")) != null ? _b : messageItemDefault.intNameEntity,
-      (_c = msg.icon) != null ? _c : messageItemDefault.icon,
-      (_d = msg.iconColor) != null ? _d : messageItemDefault.iconColor,
-      (_e = msg.displayName) != null ? _e : messageItemDefault.displayName,
-      (_f = msg.optionalValue) != null ? _f : messageItemDefault.optionalValue
-    );
-  }
-}
-class PageItem extends import_library.BaseClass {
-  config;
-  pageItems = [];
-  constructor(adapter, options) {
-    super(adapter, "Page");
-    this.config = options;
-  }
-  async init() {
+  async onPopupRequest(id, mode, action, value) {
+    if (!this.pageItems)
+      return;
+    const i = typeof id === "number" ? id : parseInt(id);
+    const item = this.pageItems[i];
+    if (!item)
+      return;
+    let msg = null;
+    if ((0, import_types.isPopupType)(mode)) {
+      msg = await item.GenerateDetailPage(mode);
+    }
+    if (action === "mode-insel" && value !== void 0) {
+      item.setPopupAction(action, value);
+    } else if (action === "button" && value !== void 0) {
+    }
+    if (msg !== null)
+      this.sendToPanel(msg);
   }
 }
 function isMediaButtonActionType(F) {
@@ -119,8 +119,6 @@ function isMediaButtonActionType(F) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Page,
-  PageItem,
-  isMediaButtonActionType,
-  messageItemDefault
+  isMediaButtonActionType
 });
 //# sourceMappingURL=Page.js.map

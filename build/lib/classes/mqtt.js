@@ -69,7 +69,7 @@ class MQTTClientClass extends import_library.BaseClass {
     });
     this.client.on("message", (topic, message) => {
       const callbacks = this.subscriptDB.filter((i) => {
-        return topic.startsWith(i.topic);
+        return topic.startsWith(i.topic.replace("/#", ""));
       });
       callbacks.forEach((c) => c.callback(topic, message.toString()));
     });
@@ -83,12 +83,6 @@ class MQTTClientClass extends import_library.BaseClass {
     const aNewOne = this.subscriptDB.findIndex((m) => m.topic === topic) === -1;
     this.subscriptDB.push({ topic, callback });
     if (aNewOne) {
-      if (!topic.endsWith("#")) {
-        if (!topic.endsWith("/")) {
-          topic += "/";
-        }
-        topic += "#";
-      }
       this.log.debug(`subscripe to: ${topic}`);
       this.client.subscribe(topic, (err) => {
         if (err) {

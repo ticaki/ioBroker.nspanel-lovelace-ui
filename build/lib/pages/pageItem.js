@@ -449,11 +449,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         }
         break;
       }
-      case "popupLightNew":
-      case "popupNotify":
-      case "popupShutter":
-      case "popupThermo":
-      case "popupTimer":
     }
     if (template.type !== message.type) {
       throw new Error(`Template ${template.type} is not ${message.type} for role: ${this.config.role}`);
