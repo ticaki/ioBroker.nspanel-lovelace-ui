@@ -28,10 +28,12 @@ var import_pageItem = require("../pages/pageItem");
 class Page extends import_states_controller.BaseClassPage {
   card;
   id;
+  uniqueID;
   constructor(card, pageItemsConfig) {
     super(card, pageItemsConfig);
     this.card = card.card;
     this.id = card.id;
+    this.uniqueID = card.uniqueID;
   }
   async init() {
   }
@@ -69,6 +71,9 @@ class Page extends import_states_controller.BaseClassPage {
       }
     }
   }
+  getNavigation() {
+    return this.panel.navigation.buildNavigationString();
+  }
   async update() {
     this.adapter.log.warn(
       `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`
@@ -87,7 +92,8 @@ class Page extends import_states_controller.BaseClassPage {
     }
     if (action === "mode-insel" && value !== void 0) {
       item.setPopupAction(action, value);
-    } else if (action === "button" && value !== void 0) {
+    } else if (action === "button") {
+      item.setPopupAction(action, "");
     }
     if (msg !== null)
       this.sendToPanel(msg);

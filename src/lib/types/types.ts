@@ -566,8 +566,9 @@ export type IncomingEvent = {
     type: EventType;
     method: EventMethod;
     action: ButtonActionType | '';
+    target?: number;
     page?: number;
-    subPage?: number;
+    cmd?: number;
     popup?: string;
     id: string; //| PopupType;
     opt: string;

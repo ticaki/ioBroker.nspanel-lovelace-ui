@@ -11,7 +11,7 @@ import 'source-map-support/register';
 // import * as fs from "fs";
 import * as MQTT from './lib/classes/mqtt';
 import { Testconfig } from './lib/config';
-import { Controller } from './lib/controller/panel-controller';
+import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import { ScreenSaverConst } from './lib/const/definition';
 
@@ -74,10 +74,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                 panels: JSON.parse(JSON.stringify(testconfig)),
             });
             await this.controller.init();
-            this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + 'k'));
-            setTimeout(() => {
-                this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + 'k'));
-            }, 2000);
             setInterval(() => {
                 this.log.debug(
                     Math.trunc(mem) +
@@ -86,7 +82,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         'k Start/Jetzt: ',
                 );
             }, 60000);
-        }, 3000);
+        }, 1500);
     }
 
     /**

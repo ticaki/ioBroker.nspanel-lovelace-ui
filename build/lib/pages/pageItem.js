@@ -406,6 +406,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     super.delete();
   }
   async setPopupAction(action, value) {
+    var _a;
     if (value === void 0 || this.dataItems === void 0)
       return;
     if (action === "mode-insel") {
@@ -442,6 +443,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       } else {
       }
     } else if (action === "button") {
+      const value2 = (_a = this.dataItems.setNavi && await this.dataItems.setNavi.getString()) != null ? _a : null;
+      if (value2 !== null) {
+        this.panel.navigation.setTargetPageByName(value2);
+      }
     }
   }
 }

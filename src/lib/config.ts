@@ -5,7 +5,7 @@ import { panelConfigPartial } from './controller/panel';
 export const testConfigMedia: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardMedia',
-    dpInit: 'alexa2.0.Echo-Devices.G070RR1075220388.Player',
+    dpInit: 'alexa2.0.Echo-Devices.G091EV0704641J8R.Player',
     initMode: 'auto',
     alwaysOn: 'none',
     config: {
@@ -333,7 +333,8 @@ export const testConfigMedia: pages.PageBaseConfig = {
             },
         },
     ],
-}; //~1 ~2 ~~32495~5 ~entityOffText~1 ~2 ~3 ~4 ~65535~6 ~2entityUnitText~2 ~3 ~4 ~5 ~65535~ ~3~ ~ ~ ~ ~65535~ ~4~ ~ ~ ~ ~65535~ ~5~ ~ to panel.
+    uniqueID: 'media1',
+};
 export const Testconfig: Partial<panelConfigPartial> = {
     pages: [
         {
@@ -342,6 +343,120 @@ export const Testconfig: Partial<panelConfigPartial> = {
             dpInit: '',
             initMode: 'custom',
             alwaysOn: 'none',
+            uniqueID: 'grid1',
+            config: undefined,
+            items: undefined,
+            writeItems: undefined,
+            pageItems: [
+                {
+                    role: 'text.list',
+                    type: 'input_sel',
+                    dpInit: undefined,
+                    initMode: 'custom',
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                            scale: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'home' },
+                                color: { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text1: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                        /**
+                         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                         */
+                        valueList: { type: 'const', constVal: 'home?butter' },
+                        /**
+                         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                         */
+                        setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                        useColor: undefined,
+                        setValue1: undefined,
+                    },
+                },
+                {
+                    role: 'text.list',
+                    type: 'button',
+                    dpInit: undefined,
+                    initMode: 'custom',
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                            scale: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'arrow-up' },
+                                color: { type: 'const', constVal: Color.Blue },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text1: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                        setNavi: {
+                            type: 'const',
+                            constVal: '3',
+                        },
+                        useColor: undefined,
+                        setValue1: undefined,
+                    },
+                },
+            ],
+        },
+        {
+            //type: 'sonstiges',
+            card: 'cardGrid2',
+            dpInit: '',
+            initMode: 'custom',
+            alwaysOn: 'none',
+            uniqueID: 'grid3',
             config: undefined,
             items: undefined,
             writeItems: undefined,
@@ -415,6 +530,123 @@ export const Testconfig: Partial<panelConfigPartial> = {
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'home' },
+                                color: { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text1: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                        /**
+                         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                         */
+                        valueList: { type: 'const', constVal: 'home?butter' },
+                        /**
+                         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                         */
+                        setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                        useColor: undefined,
+                        setValue1: undefined,
+                    },
+                },
+            ],
+        },
+        {
+            //type: 'sonstiges',
+            card: 'cardGrid',
+            dpInit: '',
+            initMode: 'custom',
+            alwaysOn: 'none',
+            uniqueID: 'grid2',
+            config: undefined,
+            items: undefined,
+            writeItems: undefined,
+            pageItems: [
+                {
+                    role: 'text.list',
+                    type: 'input_sel',
+                    dpInit: undefined,
+                    initMode: 'custom',
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                            scale: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'fan' },
+                                color: { type: 'const', constVal: Color.Red },
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        entity1: {
+                            value: {
+                                type: 'const',
+                                constVal: true,
+                            },
+                            decimal: undefined,
+                            factor: undefined,
+                            unit: undefined,
+                        },
+                        text1: {
+                            true: undefined,
+                            false: undefined,
+                        },
+                        /**
+                         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                         */
+                        valueList: { type: 'const', constVal: 'home?butter' },
+                        /**
+                         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                         */
+                        setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                        useColor: undefined,
+                        setValue1: undefined,
+                    },
+                },
+                {
+                    role: 'text.list',
+                    type: 'button',
+                    dpInit: undefined,
+                    initMode: 'custom',
+                    data: {
+                        color: {
+                            true: {
+                                type: 'const',
+                                constVal: Color.HMIOn,
+                            },
+                            false: undefined,
+                            scale: undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'account' },
                                 color: { type: 'const', constVal: Color.Green },
                             },
                             false: {
@@ -1479,6 +1711,32 @@ export const Testconfig: Partial<panelConfigPartial> = {
         testConfigMedia,
     ],
     // override by password.ts
+    navigation: [
+        {
+            name: '1',
+            left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
+            right: { single: '2' },
+            page: 'grid1', // das grid1 bezieht sich auf die uniqueID oben in pages
+        },
+        {
+            name: '2',
+            left: { single: '1' },
+            right: { single: '3' },
+            page: 'grid2',
+        },
+        {
+            name: '3',
+            left: { single: '2' },
+            right: { single: '4', double: '1' },
+            page: 'media1',
+        },
+        {
+            name: '4',
+            left: { single: '3', double: '1' },
+            right: { single: '1', double: '2' },
+            page: 'grid3',
+        },
+    ],
     topic: 'nspanel/ns_panel2',
     name: 'Wohnzimmer',
     config: {

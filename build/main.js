@@ -22,7 +22,7 @@ var import_library = require("./lib/classes/library");
 var import_register = require("source-map-support/register");
 var MQTT = __toESM(require("./lib/classes/mqtt"));
 var import_config = require("./lib/config");
-var import_panel_controller = require("./lib/controller/panel-controller");
+var import_controller = require("./lib/controller/controller");
 var import_icon_mapping = require("./lib/const/icon_mapping");
 var import_definition = require("./lib/const/definition");
 class NspanelLovelaceUi extends utils.Adapter {
@@ -70,22 +70,18 @@ class NspanelLovelaceUi extends utils.Adapter {
       testconfig.topic = this.config.topic;
       const mem = process.memoryUsage().heapUsed / 1024;
       this.log.debug(String(mem + "k"));
-      this.controller = new import_panel_controller.Controller(this, {
+      this.controller = new import_controller.Controller(this, {
         mqttClient: this.mqttClient,
         name: "controller",
         panels: JSON.parse(JSON.stringify(testconfig))
       });
       await this.controller.init();
-      this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + "k"));
-      setTimeout(() => {
-        this.log.debug(String(process.memoryUsage().heapUsed / 1024 - mem + "k"));
-      }, 2e3);
       setInterval(() => {
         this.log.debug(
           Math.trunc(mem) + "k/" + String(Math.trunc(process.memoryUsage().heapUsed / 1024)) + "k Start/Jetzt: "
         );
       }, 6e4);
-    }, 3e3);
+    }, 1500);
   }
   onUnload(callback) {
     try {

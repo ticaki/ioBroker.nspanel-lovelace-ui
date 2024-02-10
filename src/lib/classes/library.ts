@@ -544,24 +544,12 @@ export class Library extends BaseClass {
     }
 
     async getTranslationObj(key: string): Promise<ioBroker.StringOrTranslated> {
-        const language: (ioBroker.Languages | 'uk')[] = [
-            'en',
-            'de',
-            'ru',
-            'pt',
-            'nl',
-            'fr',
-            'it',
-            'es',
-            'pl',
-            'uk',
-            'zh-cn',
-        ];
-        const result: { [key: string]: string } = {};
+        const language: ioBroker.Languages[] = ['en', 'de', 'ru', 'pt', 'nl', 'fr', 'it', 'es', 'pl', 'uk', 'zh-cn'];
+        const result: Partial<Record<ioBroker.Languages, string>> = {};
         for (const l of language) {
             try {
                 const i = await import(`../../admin/i18n/${l}/translations.json`);
-                if (i[key] !== undefined) result[l as string] = i[key];
+                if (i[key] !== undefined) result[l] = i[key];
             } catch (error) {
                 return key;
             }

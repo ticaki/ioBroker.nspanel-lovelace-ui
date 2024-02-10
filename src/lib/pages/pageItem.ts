@@ -1,6 +1,6 @@
 import * as Color from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { PageInterface } from '../classes/Page';
+import { PageItemInterface } from '../classes/Page';
 import {
     PageItemDataItems,
     MessageItem,
@@ -22,7 +22,7 @@ export class PageItem extends BaseClassTriggerd {
     dataItems: PageItemDataItems['data'] | undefined;
     panel: Panel;
     id: string;
-    constructor(config: Omit<PageInterface, 'pageItemsConfig'>, options: PageItemDataItemsOptions | undefined) {
+    constructor(config: Omit<PageItemInterface, 'pageItemsConfig'>, options: PageItemDataItemsOptions | undefined) {
         super({ ...config });
         this.panel = config.panel;
         this.id = config.id;
@@ -657,6 +657,10 @@ export class PageItem extends BaseClassTriggerd {
             } else {
             }
         } else if (action === 'button') {
+            const value = (this.dataItems.setNavi && (await this.dataItems.setNavi.getString())) ?? null;
+            if (value !== null) {
+                this.panel.navigation.setTargetPageByName(value);
+            }
         }
     }
 }

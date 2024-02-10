@@ -156,12 +156,24 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
     let popup: undefined | string = undefined;
     if (temp[1] === 'pageOpenDetail') popup = temp.splice(2, 1)[0];
     const arr = String(temp[2]).split('?');
+    if (arr[3])
+        return {
+            type: temp[0],
+            method: temp[1],
+            target: parseInt(arr[3]),
+            page: parseInt(arr[1]),
+            cmd: parseInt(arr[0]),
+            popup: popup,
+            id: arr[2],
+            action: isButtonActionType(temp[3]) ? temp[3] : '',
+            opt: temp[4] ?? '',
+        };
     if (arr[2])
         return {
             type: temp[0],
             method: temp[1],
             page: parseInt(arr[0]),
-            subPage: parseInt(arr[1]),
+            cmd: parseInt(arr[1]),
             popup: popup,
             id: arr[2],
             action: isButtonActionType(temp[3]) ? temp[3] : '',
@@ -191,6 +203,7 @@ export type PageBaseConfig = {
     //    type: PlayerType;
     card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
     initMode: 'auto' | 'custom';
+    uniqueID: string;
     dpInit: string; // '' and initMode 'auto' throw an error
     alwaysOn: 'none' | 'always' | 'action';
     pageItems: PageItemDataItemsOptions[];
@@ -265,7 +278,7 @@ export type PageMediaBaseConfigWrite = {
 export type PageMediaMessage = {
     event: 'entityUpd';
     headline: string;
-    getNavigation: string;
+    navigation: string;
     id: string;
     name: string;
     titelColor: string;
@@ -282,7 +295,7 @@ export type PageMediaMessage = {
 export type PageGridMessage = {
     event: 'entityUpd';
     headline: string;
-    getNavigation: string;
+    navigation: string;
     options: [string?, string?, string?, string?, string?, string?, string?, string?];
 };
 

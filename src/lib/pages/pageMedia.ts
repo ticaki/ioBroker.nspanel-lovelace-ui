@@ -12,7 +12,7 @@ import { getPayload, getPayloadArray } from '../const/tools';
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
     headline: '',
-    getNavigation: '~~~~~~~~~',
+    navigation: '~~~~~~~~~',
     id: '',
     name: '',
     titelColor: String(Color.rgb_dec565(Color.White)),
@@ -246,8 +246,8 @@ export class PageMedia extends Page {
                 if (temp) opts[a] = await temp.getPageItemPayload();
             }
         }
+        message.navigation = this.getNavigation();
         const msg: pages.PageMediaMessage = Object.assign(PageMediaMessageDefault, message, {
-            getNavigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
             id: 'media',
             options: opts,
         });
@@ -310,7 +310,7 @@ export class PageMedia extends Page {
         return getPayload(
             'entityUpd',
             message.headline,
-            message.getNavigation,
+            message.navigation,
             message.id,
             message.name,
             message.titelColor,

@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { Screensaver, ScreensaverConfigType } from '../pages/screensaver';
 import * as NSPanel from '../types/types';
 import * as pages from '../types/pages';
-import { Controller } from './panel-controller';
+import { Controller } from './controller';
 import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { callbackMessageType } from '../classes/mqtt';
 import { ReiveTopicAppendix, SendTopicAppendix, genericStateObjects } from '../const/definition';
@@ -13,6 +13,7 @@ import { PageMedia } from '../pages/pageMedia';
 import { IClientPublishOptions } from 'mqtt';
 import { StatesControler } from './states-controller';
 import { PageGrid } from '../pages/pageGrid';
+import { Navigation, NavigationConfig } from '../classes/navigation';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -20,6 +21,7 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     topic: string;
     name: string;
     pages: PageConfigAll[];
+    navigation: NavigationConfig['navigationConfig'];
     config: ScreensaverConfigType;
 }
 export function isPanelConfig(F: object | panelConfig): F is panelConfig {
@@ -36,6 +38,7 @@ type panelConfig = panelConfigTop & {
     name: string;
     pages: PageConfigAll[];
     config: ScreensaverConfigType;
+    navigation: NavigationConfig['navigationConfig'];
 };
 
 const DefaultOptions = {
@@ -59,6 +62,7 @@ export class Panel extends BaseClass {
     private pages: (Page | undefined)[] = [];
     private _activePage: { page: Page | null; sleep?: boolean } = { page: null };
     private screenSaver: Screensaver | undefined;
+    readonly navigation: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
     readonly controller: Controller;
     readonly topic: string;
@@ -111,6 +115,7 @@ export class Panel extends BaseClass {
                 case 'cardEntities': {
                     break;
                 }
+                case 'cardGrid2':
                 case 'cardGrid': {
                     const pmconfig = {
                         card: pageConfig.card,
@@ -120,14 +125,12 @@ export class Panel extends BaseClass {
                         alwaysOn: pageConfig.alwaysOn,
                         adapter: this.adapter,
                         panelSend: this.panelSend,
+                        uniqueID: pageConfig.uniqueID,
                     };
                     this.pages[a] = new PageGrid(pmconfig, pageConfig);
-                    this.pages[a]!.init();
                     break;
                 }
-                case 'cardGrid2': {
-                    break;
-                }
+
                 case 'cardThermo': {
                     break;
                 }
@@ -140,9 +143,9 @@ export class Panel extends BaseClass {
                         alwaysOn: pageConfig.alwaysOn,
                         adapter: this.adapter,
                         panelSend: this.panelSend,
+                        uniqueID: pageConfig.uniqueID,
                     };
                     this.pages[a] = new PageMedia(pmconfig, pageConfig);
-                    this.pages[a]!.init();
                     break;
                 }
                 case 'cardUnlock': {
@@ -169,6 +172,7 @@ export class Panel extends BaseClass {
                         name: 'SrS',
                         adapter: this.adapter,
                         panelSend: this.panelSend,
+                        uniqueID: '',
                     };
                     this.screenSaver = new Screensaver(ssconfig, pageConfig);
                     break;
@@ -177,11 +181,29 @@ export class Panel extends BaseClass {
         }
         if (scsFound === 0 || this.screenSaver === undefined) {
             this.log.error('no screensaver found! Stop!');
-            throw new Error('no screensaver found! Stop!');
             this.adapter.controller!.delete();
+            throw new Error('no screensaver found! Stop!');
             return;
         }
+        const navConfig: NavigationConfig = {
+            adapter: this.adapter,
+            panel: this,
+            navigationConfig: options.navigation,
+        };
+        this.navigation = new Navigation(navConfig);
     }
+
+    init = async (): Promise<void> => {
+        this.controller.mqttClient.subscript(this.topic + '/#', this.onMessage);
+        for (const page of this.pages) {
+            this.log.debug('init page');
+            if (page) await page.init();
+        }
+        this.sendToTasmota(this.topic + '/cmnd/POWER1', '');
+        this.sendToTasmota(this.topic + '/cmnd/POWER2', '');
+        this.navigation.init();
+        this.sendToPanel('pageType~pageStartup', { retain: false });
+    };
 
     private sendToPanelClass: (payload: string, opt?: IClientPublishOptions) => void = () => {};
     protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
@@ -229,12 +251,6 @@ export class Panel extends BaseClass {
         return true;
     }
 
-    init = async (): Promise<void> => {
-        this.controller.mqttClient.subscript(this.topic + '/#', this.onMessage);
-        this.sendToTasmota(this.topic + '/cmnd/POWER1', '');
-        this.sendToTasmota(this.topic + '/cmnd/POWER2', '');
-        this.sendToPanel('pageType~pageStartup', { retain: false });
-    };
     registerOnMessage(fn: callbackMessageType): void {
         if (this.reivCallbacks.indexOf(fn) === -1) {
             this.reivCallbacks.push(fn);
@@ -258,8 +274,7 @@ export class Panel extends BaseClass {
             const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) ||
                 [])[0] as NSPanel.TasmotaIncomingTopics | null;
             if (command) {
-                this.log.debug(`Receive other message ${topic} with ${message}`);
-                this.log.debug(`${command}`);
+                //this.log.debug(`Receive other message ${topic} with ${message}`);
                 switch (command) {
                     case 'stat/POWER2': {
                         this.library.writedp(
@@ -355,10 +370,15 @@ export class Panel extends BaseClass {
         if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
     }
 
+    getPagebyUniqueID(uniqueID: string): Page | null {
+        if (!uniqueID) return null;
+        const index = this.pages.findIndex((a) => a && a.uniqueID && a.uniqueID === uniqueID);
+        return this.pages[index] ?? null;
+    }
     async HandleIncomingMessage(event: NSPanel.IncomingEvent): Promise<void> {
         this.log.debug('Receive message:' + JSON.stringify(event));
         const index = this.pages.findIndex((a) => {
-            if (a && (a.card === 'screensaver' || a.card !== 'screensaver2')) return true;
+            if (a && a.card !== 'screensaver' && a.card !== 'screensaver2') return true;
             return false;
         });
         if (index === -1) return;
@@ -371,6 +391,9 @@ export class Panel extends BaseClass {
                 //this.sendScreeensaverTimeout(this.timeout);
                 this.sendScreeensaverTimeout(3);
                 this.sendToPanel('dimmode~80~100~6371');
+
+                this.navigation.resetPosition();
+                const page = this.navigation.getCurrentPage();
                 const test = false;
                 if (test) {
                     this.sendToPanel('pageType~cardGrid');
@@ -378,13 +401,14 @@ export class Panel extends BaseClass {
                         'entityUpd~Menü~button~bPrev~~65535~~~button~bNext~~65535~~~button~navigate.SensorGrid~21.1~26095~Obergeschoss~PRESS~button~navigate.ObergeschossWindow~~64332~Obergeschoss~Obergeschoss~button~navigate.ogLightsGrid~~65363~Obergeschoss ACTUAL~PRESS~button~navigate.Alexa~~65222~test~PRESS',
                     );
                 } else {
-                    await this.setActivePage(this.pages[index]);
+                    await this.setActivePage(page);
                 }
                 // sendPage
                 break;
             }
             case 'sleepReached': {
                 await this.setActivePage(this.screenSaver);
+                this.navigation.resetPosition();
                 break;
             }
             case 'pageOpenDetail': {
@@ -401,6 +425,14 @@ export class Panel extends BaseClass {
                 if (event.id == 'screensaver') {
                     await this.setActivePage(this.pages[index]);
                 } else {
+                    if (
+                        event.action === 'button' &&
+                        ['bNext', 'bPrev', 'bUp', 'bHome', 'bSubNext', 'bSubPrev'].indexOf(event.id) != -1
+                    ) {
+                        if (['bPrev', 'bUp', 'bSubPrev'].indexOf(event.id) != -1) this.navigation.goLeft();
+                        else if (['bNext', 'bHome', 'bSubNext'].indexOf(event.id) != -1) this.navigation.goRight();
+                        return;
+                    }
                     this.getActivePage().onPopupRequest(
                         event.id,
                         event.popup as NSPanel.PopupType,

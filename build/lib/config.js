@@ -32,7 +32,7 @@ module.exports = __toCommonJS(config_exports);
 var Color = __toESM(require("./const/Color"));
 const testConfigMedia = {
   card: "cardMedia",
-  dpInit: "alexa2.0.Echo-Devices.G070RR1075220388.Player",
+  dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
   initMode: "auto",
   alwaysOn: "none",
   config: {
@@ -347,7 +347,8 @@ const testConfigMedia = {
         setValue1: void 0
       }
     }
-  ]
+  ],
+  uniqueID: "media1"
 };
 const Testconfig = {
   pages: [
@@ -356,6 +357,113 @@ const Testconfig = {
       dpInit: "",
       initMode: "custom",
       alwaysOn: "none",
+      uniqueID: "grid1",
+      config: void 0,
+      items: void 0,
+      writeItems: void 0,
+      pageItems: [
+        {
+          role: "text.list",
+          type: "input_sel",
+          dpInit: void 0,
+          initMode: "custom",
+          data: {
+            color: {
+              true: {
+                type: "const",
+                constVal: Color.HMIOn
+              },
+              false: void 0,
+              scale: void 0
+            },
+            icon: {
+              true: {
+                value: { type: "const", constVal: "home" },
+                color: { type: "const", constVal: Color.Green }
+              },
+              false: {
+                value: { type: "const", constVal: "fan" },
+                color: { type: "const", constVal: Color.Red }
+              },
+              scale: void 0,
+              maxBri: void 0,
+              minBri: void 0
+            },
+            entity1: {
+              value: {
+                type: "const",
+                constVal: true
+              },
+              decimal: void 0,
+              factor: void 0,
+              unit: void 0
+            },
+            text1: {
+              true: void 0,
+              false: void 0
+            },
+            valueList: { type: "const", constVal: "home?butter" },
+            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" },
+            useColor: void 0,
+            setValue1: void 0
+          }
+        },
+        {
+          role: "text.list",
+          type: "button",
+          dpInit: void 0,
+          initMode: "custom",
+          data: {
+            color: {
+              true: {
+                type: "const",
+                constVal: Color.HMIOn
+              },
+              false: void 0,
+              scale: void 0
+            },
+            icon: {
+              true: {
+                value: { type: "const", constVal: "arrow-up" },
+                color: { type: "const", constVal: Color.Blue }
+              },
+              false: {
+                value: { type: "const", constVal: "fan" },
+                color: { type: "const", constVal: Color.Red }
+              },
+              scale: void 0,
+              maxBri: void 0,
+              minBri: void 0
+            },
+            entity1: {
+              value: {
+                type: "const",
+                constVal: true
+              },
+              decimal: void 0,
+              factor: void 0,
+              unit: void 0
+            },
+            text1: {
+              true: void 0,
+              false: void 0
+            },
+            setNavi: {
+              type: "const",
+              constVal: "3"
+            },
+            useColor: void 0,
+            setValue1: void 0
+          }
+        }
+      ]
+    },
+    {
+      card: "cardGrid2",
+      dpInit: "",
+      initMode: "custom",
+      alwaysOn: "none",
+      uniqueID: "grid3",
       config: void 0,
       items: void 0,
       writeItems: void 0,
@@ -423,6 +531,110 @@ const Testconfig = {
             icon: {
               true: {
                 value: { type: "const", constVal: "home" },
+                color: { type: "const", constVal: Color.Green }
+              },
+              false: {
+                value: { type: "const", constVal: "fan" },
+                color: { type: "const", constVal: Color.Red }
+              },
+              scale: void 0,
+              maxBri: void 0,
+              minBri: void 0
+            },
+            entity1: {
+              value: {
+                type: "const",
+                constVal: true
+              },
+              decimal: void 0,
+              factor: void 0,
+              unit: void 0
+            },
+            text1: {
+              true: void 0,
+              false: void 0
+            },
+            valueList: { type: "const", constVal: "home?butter" },
+            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" },
+            useColor: void 0,
+            setValue1: void 0
+          }
+        }
+      ]
+    },
+    {
+      card: "cardGrid",
+      dpInit: "",
+      initMode: "custom",
+      alwaysOn: "none",
+      uniqueID: "grid2",
+      config: void 0,
+      items: void 0,
+      writeItems: void 0,
+      pageItems: [
+        {
+          role: "text.list",
+          type: "input_sel",
+          dpInit: void 0,
+          initMode: "custom",
+          data: {
+            color: {
+              true: {
+                type: "const",
+                constVal: Color.HMIOn
+              },
+              false: void 0,
+              scale: void 0
+            },
+            icon: {
+              true: {
+                value: { type: "const", constVal: "fan" },
+                color: { type: "const", constVal: Color.Green }
+              },
+              false: {
+                value: { type: "const", constVal: "fan" },
+                color: { type: "const", constVal: Color.Red }
+              },
+              scale: void 0,
+              maxBri: void 0,
+              minBri: void 0
+            },
+            entity1: {
+              value: {
+                type: "const",
+                constVal: true
+              },
+              decimal: void 0,
+              factor: void 0,
+              unit: void 0
+            },
+            text1: {
+              true: void 0,
+              false: void 0
+            },
+            valueList: { type: "const", constVal: "home?butter" },
+            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" },
+            useColor: void 0,
+            setValue1: void 0
+          }
+        },
+        {
+          role: "text.list",
+          type: "button",
+          dpInit: void 0,
+          initMode: "custom",
+          data: {
+            color: {
+              true: {
+                type: "const",
+                constVal: Color.HMIOn
+              },
+              false: void 0,
+              scale: void 0
+            },
+            icon: {
+              true: {
+                value: { type: "const", constVal: "account" },
                 color: { type: "const", constVal: Color.Green }
               },
               false: {
@@ -1424,6 +1636,32 @@ const Testconfig = {
       }
     },
     testConfigMedia
+  ],
+  navigation: [
+    {
+      name: "1",
+      left: { single: "4" },
+      right: { single: "2" },
+      page: "grid1"
+    },
+    {
+      name: "2",
+      left: { single: "1" },
+      right: { single: "3" },
+      page: "grid2"
+    },
+    {
+      name: "3",
+      left: { single: "2" },
+      right: { single: "4", double: "1" },
+      page: "media1"
+    },
+    {
+      name: "4",
+      left: { single: "3", double: "1" },
+      right: { single: "1", double: "2" },
+      page: "grid3"
+    }
   ],
   topic: "nspanel/ns_panel2",
   name: "Wohnzimmer",

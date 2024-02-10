@@ -10,10 +10,17 @@ export interface PageConfigInterface {
     config: pages.PageBaseConfig;
     page: PageInterface;
 }
+export type PageItemInterface = BaseClassTriggerdInterface & {
+    card: pages.PageTypeCards;
+    panel: Panel;
+    id: string;
+};
+
 export type PageInterface = BaseClassTriggerdInterface & {
     card: pages.PageTypeCards;
     panel: Panel;
     id: string;
+    uniqueID: string;
 };
 
 //interface Page extends BaseClass | PageConfig
@@ -21,11 +28,13 @@ export type PageConfigAll = ScreensaverConfig | pages.PageBaseConfig;
 export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
     readonly id: string;
+    readonly uniqueID: string;
     //config: Card['config'];
     constructor(card: PageInterface, pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined) {
         super(card, pageItemsConfig);
         this.card = card.card;
         this.id = card.id;
+        this.uniqueID = card.uniqueID;
     }
     async init(): Promise<void> {}
 
@@ -35,13 +44,13 @@ export class Page extends BaseClassPage {
     sendType(): void {
         this.sendToPanel(`pageType~${this.card}`);
     }
-    
+
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
             if (!this.pageItems && this.pageItemConfig) {
                 this.pageItems = [];
                 for (let a = 0; a < this.pageItemConfig.length; a++) {
-                    const config: Omit<PageInterface, 'pageItemsConfig'> = {
+                    const config: Omit<PageItemInterface, 'pageItemsConfig'> = {
                         name: 'PI',
                         adapter: this.adapter,
                         panel: this.panel,
@@ -64,6 +73,11 @@ export class Page extends BaseClassPage {
             }
         }
     }
+
+    protected getNavigation(): string {
+        return this.panel.navigation.buildNavigationString();
+    }
+
     public async update(): Promise<void> {
         this.adapter.log.warn(
             `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`,
@@ -86,7 +100,8 @@ export class Page extends BaseClassPage {
         }
         if (action === 'mode-insel' && value !== undefined) {
             item.setPopupAction(action, value);
-        } else if (action === 'button' && value !== undefined) {
+        } else if (action === 'button') {
+            item.setPopupAction(action, '');
         }
         if (msg !== null) this.sendToPanel(msg);
     }

@@ -218,6 +218,7 @@ export type PageItemBase = {
     setValue2?: string;
     setValue3?: string;
     valueList?: number;
+    setNavi?: number;
     setList?: number;
     maxValue1?: number;
     minValue1?: number;

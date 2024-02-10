@@ -113,9 +113,9 @@ export class Screensaver extends Page {
                 i = maxItems * this.step;
                 maxItems = maxItems * (this.step + 1);
             }
-            if (place == 'favoritEntity') {
-                this.log.debug('y');
-            }
+            /*if (place == 'favoritEntity') {
+                this.log.debug('');
+            }*/
             for (i; i < maxItems; i++) {
                 const item: NSPanel.ScreenSaverDataItems | undefined = this.items[place][i];
                 if (
@@ -355,7 +355,6 @@ export class Screensaver extends Page {
                 // Prüfung ob Entity vom Typ String ist
                 if (entity != null && onColor) {
                     if (typeof entity == 'string') {
-                        this.log.debug('Entity ist String');
                         switch (entity.toUpperCase()) {
                             case 'ON':
                             case 'OK':
@@ -369,7 +368,6 @@ export class Screensaver extends Page {
                         }
                         // Alles was kein String ist in Boolean umwandeln
                     } else {
-                        this.log.debug('Entity ist kein String', 'info');
                         if (entity) {
                             payload[`icon${s}Color`] = onColor;
                         }

@@ -1,32 +1,30 @@
 // at the moment any
 
-import { IconEntryType } from './pages';
-
-export type NavigationItem = {
-    left?: NavigationItemParent | NavigationItemPrev;
-    right?: NavigationItemNext | NavigationItemHome;
+export type NavigationItemConfig = {
+    name: string;
+    left?: {
+        single?: string;
+        double?: string;
+    };
+    right?: {
+        single?: string;
+        double?: string;
+    };
+    page: string;
 } | null;
 
-type NavigationItemParent = {
-    type: 'parent';
+export type NavigationItem = {
+    left: {
+        single?: number;
+        double?: number;
+    };
+    right: {
+        single?: number;
+        double?: number;
+    };
     page: Page;
-    icon: IconEntryType;
-};
-type NavigationItemHome = {
-    type: 'home';
-    page: anPagey;
-    icon: IconEntryType;
-};
-type NavigationItemPrev = {
-    type: 'prev';
-    page: Page;
-    icon: IconEntryType;
-};
-type NavigationItemNext = {
-    type: 'next';
-    page: Page;
-    icon: IconEntryType;
-};
+} | null;
+
 /*heading: string;
         items: PageItem[];
         useColor: boolean;

@@ -37,7 +37,7 @@ var import_tools = require("../const/tools");
 const PageMediaMessageDefault = {
   event: "entityUpd",
   headline: "",
-  getNavigation: "~~~~~~~~~",
+  navigation: "~~~~~~~~~",
   id: "",
   name: "",
   titelColor: String(Color.rgb_dec565(Color.White)),
@@ -224,8 +224,8 @@ class PageMedia extends import_Page2.Page {
           opts[a] = await temp.getPageItemPayload();
       }
     }
+    message.navigation = this.getNavigation();
     const msg = Object.assign(PageMediaMessageDefault, message, {
-      getNavigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
       id: "media",
       options: opts
     });
@@ -285,7 +285,7 @@ class PageMedia extends import_Page2.Page {
     return (0, import_tools.getPayload)(
       "entityUpd",
       message.headline,
-      message.getNavigation,
+      message.navigation,
       message.id,
       message.name,
       message.titelColor,

@@ -4,7 +4,7 @@ import { IClientPublishOptions } from 'mqtt';
 import { Dataitem } from '../classes/data-item';
 import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { DataItemsOptions } from '../types/types';
-import { Controller } from './panel-controller';
+import { Controller } from './controller';
 import { PanelSend } from './panel-message';
 import { isPageRole } from '../types/pages';
 import { Panel } from './panel';
@@ -53,7 +53,7 @@ export class BaseClassTriggerd extends BaseClass {
 
     constructor(card: BaseClassTriggerdInterface) {
         super(card.adapter, card.name);
-        this.minUpdateInterval = 15000;
+        this.minUpdateInterval = 3000;
         if (!this.adapter.controller) throw new Error('No controller! bye bye');
         this.controller = this.adapter.controller;
         this.panelSend = card.panelSend;
@@ -78,7 +78,7 @@ export class BaseClassTriggerd extends BaseClass {
                         () => {
                             this.panel.sendScreeensaverTimeout(this.panel.timeout);
                         },
-                        this.panel.timeout * 1000 || 10000,
+                        this.panel.timeout * 1000 || 5000,
                     );
                 }
             }, 50);
@@ -160,7 +160,7 @@ export class BaseClassTriggerd extends BaseClass {
 }
 
 export class BaseClassPage extends BaseClassTriggerd {
-    protected pageItemConfig: (PageItemDataItemsOptions | undefined)[] | undefined;
+    readonly pageItemConfig: (PageItemDataItemsOptions | undefined)[] | undefined;
     pageItems: PageItem[] | undefined;
     constructor(card: PageInterface, pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined) {
         super(card);
