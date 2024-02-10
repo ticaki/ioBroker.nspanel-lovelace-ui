@@ -19,16 +19,6 @@ export function isEventMethod(F: string | EventMethod): F is EventMethod {
             return false;
     }
 }
-export type MessageOutgoingMode =
-    | 'media1'
-    | 'media0'
-    | 'media2'
-    | 'media3'
-    | 'media4'
-    | 'media5'
-    | 'media0'
-    | 'media0'
-    | 'media0';
 
 export function isPopupType(F: PopupType | any): F is PopupType {
     switch (F as PopupType) {
