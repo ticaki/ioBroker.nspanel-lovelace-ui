@@ -498,7 +498,7 @@ export class PageMedia extends Page {
                 break;
             }
             case 'button': {
-                if (event.command === '5' && this.nextArrow) {
+                if (event.id === '5' && this.nextArrow) {
                     this.step++;
                     this.update();
                 }

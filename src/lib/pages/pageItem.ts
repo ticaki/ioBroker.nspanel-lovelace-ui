@@ -609,59 +609,6 @@ export class PageItem extends BaseClassTriggerd {
 
                 break;
             }
-            case 'popupFan':
-            case 'popupInSel': {
-                switch (item.role) {
-                    case 'socket':
-                    case 'value.time':
-                    case 'level.timer':
-                    case 'level.mode.fan':
-                    case 'value.alarmtime':
-                    case 'light':
-                    case 'dimmer':
-                    case 'hue':
-                    case 'ct':
-                    case 'cie':
-                    case 'rgbSingle':
-                    case 'rgb':
-                    case 'blind':
-                    case 'door':
-                    case 'window':
-                    case 'gate':
-                    case 'motion':
-                    case 'media.repeat':
-
-                if (message.type !== 'insel') return null;
-
-                const value = (await tools.getValueEntryBoolean(item.entity1)) ?? true;
-
-                message.textColor = await tools.getEntryColor(item.color, value, Color.White);
-                message.headline = this.library.getTranslation(
-                    (item.headline && (await item.headline.getString())) ?? '',
-                );
-                let list = (item.valueList && (await item.valueList.getObject())) ??
-                    (item.valueList && (await item.valueList.getString())) ?? [
-                        '1',
-                        '2',
-                        '3',
-                        '4',
-                        '5',
-                        '6',
-                        '7',
-                        '8',
-                        '9',
-                        '10',
-                        '11',
-                        '12',
-                        '13',
-                    ];
-                if (list !== null) {
-                    if (typeof list === 'string') list = list.split('?');
-                } else list = [];
-                message.list = Array.isArray(list) ? list.map((a: string[]) => tools.formatInSelText(a)).join('?') : '';
-
-                break;
-            }
         }
 
         if (template.type !== message.type) {

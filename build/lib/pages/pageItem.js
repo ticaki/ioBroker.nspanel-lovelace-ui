@@ -218,30 +218,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         case "switch":
         case "delete":
       }
-      case "text.list": {
-        message.type = "input_sel";
-        const value = (_t = item.data.entity1 && item.data.entity1.value && await (0, import_tools.getValueEntryBoolean)(item.data.entity1)) != null ? _t : null;
-        message.iconColor = await (0, import_tools.getIconEntryColor)(item.data.icon, value, import_Color.HMIOn, import_Color.HMIOff);
-        message.icon = import_icon_mapping.Icons.GetIcon(
-          await (0, import_tools.getIconEntryValue)(item.data.icon, value, "clipboard-list", "clipboard-list-outline")
-        );
-        message.displayName = (_u = await (0, import_tools.getValueEntryTextOnOff)(item.data.text, value)) != null ? _u : "";
-        message.optionalValue = !!value ? "1" : "0";
-        return this.getItemMesssage(message);
-        break;
-      }
-      case "text.list": {
-        message.type = "input_sel";
-        const value = (_t = item.data.entity1 && item.data.entity1.value && await (0, import_tools.getValueEntryBoolean)(item.data.entity1)) != null ? _t : null;
-        message.iconColor = await (0, import_tools.getIconEntryColor)(item.data.icon, value, import_Color.HMIOn, import_Color.HMIOff);
-        message.icon = import_icon_mapping.Icons.GetIcon(
-          await (0, import_tools.getIconEntryValue)(item.data.icon, value, "clipboard-list", "clipboard-list-outline")
-        );
-        message.displayName = (_u = await (0, import_tools.getValueEntryTextOnOff)(item.data.text, value)) != null ? _u : "";
-        message.optionalValue = !!value ? "1" : "0";
-        return this.getItemMesssage(message);
-        break;
-      }
     }
     return "~~~~~";
   }
@@ -381,81 +357,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.slider1Translation = template.slider1Translation !== false ? (_g = item.valueList && await item.valueList.getString()) != null ? _g : template.slider1Translation : "";
             message.slider2Translation = template.slider2Translation !== false ? (_h = item.valueList && await item.valueList.getString()) != null ? _h : template.slider2Translation : "";
             message.hue_translation = template.hue_translation !== false ? (_i = item.valueList && await item.valueList.getString()) != null ? _i : template.hue_translation : "";
-            break;
-          }
-        }
-        break;
-      }
-      case "popupFan":
-      case "popupInSel": {
-        message.type = "insel";
-        if (message.type !== "insel")
-          return null;
-        const value = (_j = await tools.getValueEntryBoolean(item.entity1)) != null ? _j : true;
-        message.textColor = await tools.getEntryColor(item.color, value, Color.White);
-        message.headline = this.library.getTranslation(
-          (_k = item.headline && await item.headline.getString()) != null ? _k : ""
-        );
-        let list = (_m = (_l = item.valueList && await item.valueList.getObject()) != null ? _l : item.valueList && await item.valueList.getString()) != null ? _m : [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-          "7",
-          "8",
-          "9",
-          "10",
-          "11",
-          "12",
-          "13"
-        ];
-        if (list !== null) {
-          if (typeof list === "string")
-            list = list.split("?");
-        } else
-          list = [];
-        message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
-        break;
-      }
-      case "popupFan":
-      case "popupInSel": {
-        switch (item.role) {
-          case "socket":
-          case "value.time":
-          case "level.timer":
-          case "level.mode.fan":
-          case "value.alarmtime":
-          case "light":
-          case "dimmer":
-          case "hue":
-          case "ct":
-          case "cie":
-          case "rgbSingle":
-          case "rgb":
-          case "blind":
-          case "door":
-          case "window":
-          case "gate":
-          case "motion":
-          case "media.repeat":
-          case "buttonSensor":
-          case "button":
-            break;
-          case "text.list": {
-            message.type = "insel";
-            if (message.type !== "insel" || template.type !== "insel")
-              return null;
-            const value = template.value ? (_j = await (0, import_tools.getValueEntryBoolean)(item.data.entity1)) != null ? _j : template.value : template.value;
-            message.textColor = await (0, import_tools.getEntryColor)(item.data.color, value, template.textColor);
-            message.headline = this.library.getTranslation(
-              (_k = item.data.headline && await item.data.headline.getString()) != null ? _k : ""
-            );
-            let list = template.list ? (_l = item.data.modeList && await item.data.modeList.getObject) != null ? _l : template.list : [];
-            if (!Array.isArray(list))
-              list = [];
-            message.list = list.map((a) => (0, import_tools.formatInSelText)(a)).join("?");
             break;
           }
         }

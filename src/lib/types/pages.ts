@@ -173,8 +173,9 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             type: temp[0],
             method: temp[1],
             page: parseInt(arr[0]),
-            subPage: parseInt(arr[1]),
-            command: arr[2],
+            cmd: parseInt(arr[1]),
+            popup: popup,
+            id: arr[2],
             action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
@@ -183,7 +184,8 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             type: temp[0],
             method: temp[1],
             page: parseInt(arr[0]),
-            command: arr[1],
+            popup: popup,
+            id: arr[1],
             action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
@@ -191,7 +193,8 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
         return {
             type: temp[0],
             method: temp[1],
-            command: arr[0],
+            popup: popup,
+            id: arr[0],
             action: isButtonActionType(temp[3]) ? temp[3] : '',
             opt: temp[4] ?? '',
         };
