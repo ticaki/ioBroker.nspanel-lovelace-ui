@@ -112,9 +112,6 @@ class Screensaver extends import_Page.Page {
         i = maxItems * this.step;
         maxItems = maxItems * (this.step + 1);
       }
-      if (place == "favoritEntity") {
-        this.log.debug("y");
-      }
       for (i; i < maxItems; i++) {
         const item = this.items[place][i];
         if (item === null || item === void 0 || item.entityValue === void 0 || item.entityValue.value === void 0) {
@@ -334,7 +331,6 @@ class Screensaver extends import_Page.Page {
       if (item.entityValue != null || value !== null || onColor != null) {
         if (entity != null && onColor) {
           if (typeof entity == "string") {
-            this.log.debug("Entity ist String");
             switch (entity.toUpperCase()) {
               case "ON":
               case "OK":
@@ -347,7 +343,6 @@ class Screensaver extends import_Page.Page {
               default:
             }
           } else {
-            this.log.debug("Entity ist kein String", "info");
             if (entity) {
               payload[`icon${s}Color`] = onColor;
             }

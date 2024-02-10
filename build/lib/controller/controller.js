@@ -22,11 +22,11 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var panel_controller_exports = {};
-__export(panel_controller_exports, {
+var controller_exports = {};
+__export(controller_exports, {
   Controller: () => Controller
 });
-module.exports = __toCommonJS(panel_controller_exports);
+module.exports = __toCommonJS(controller_exports);
 var Library = __toESM(require("../classes/library"));
 var import_states_controller = require("./states-controller");
 var Panel = __toESM(require("./panel"));
@@ -70,4 +70,4 @@ class Controller extends Library.BaseClass {
 0 && (module.exports = {
   Controller
 });
-//# sourceMappingURL=panel-controller.js.map
+//# sourceMappingURL=controller.js.map

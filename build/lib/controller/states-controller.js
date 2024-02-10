@@ -52,7 +52,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   constructor(card) {
     var _a;
     super(card.adapter, card.name);
-    this.minUpdateInterval = 15e3;
+    this.minUpdateInterval = 3e3;
     if (!this.adapter.controller)
       throw new Error("No controller! bye bye");
     this.controller = this.adapter.controller;
@@ -81,7 +81,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
             () => {
               this.panel.sendScreeensaverTimeout(this.panel.timeout);
             },
-            this.panel.timeout * 1e3 || 1e4
+            this.panel.timeout * 1e3 || 5e3
           );
         }
       }, 50);

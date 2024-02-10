@@ -6,13 +6,13 @@ import { PageItem } from './pageItem';
 const PageGridMessageDefault: pages.PageGridMessage = {
     event: 'entityUpd',
     headline: 'Page Grid',
-    getNavigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
+    navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
     options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
 };
 const PageGrid2MessageDefault: pages.PageGridMessage = {
     event: 'entityUpd',
     headline: 'Page Grid',
-    getNavigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
+    navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
     options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
 };
 export class PageGrid extends Page {
@@ -32,7 +32,6 @@ export class PageGrid extends Page {
     }
 
     async init(): Promise<void> {}
-    
 
     public async update(): Promise<void> {
         const message: Partial<pages.PageGridMessage> = {};
@@ -45,6 +44,7 @@ export class PageGrid extends Page {
             }
         }
 
+        message.navigation = this.getNavigation();
         const msg: pages.PageGridMessage = Object.assign(
             this.card === 'cardGrid' ? PageGridMessageDefault : PageGrid2MessageDefault,
             message,
@@ -53,6 +53,6 @@ export class PageGrid extends Page {
         this.sendToPanel(this.getMessage(msg));
     }
     private getMessage(message: pages.PageGridMessage): string {
-        return getPayload('entityUpd', message.headline, message.getNavigation, getPayloadArray(message.options));
+        return getPayload('entityUpd', message.headline, message.navigation, getPayloadArray(message.options));
     }
 }

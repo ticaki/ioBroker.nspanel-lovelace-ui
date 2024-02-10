@@ -477,19 +477,7 @@ class Library extends BaseClass {
     return this.translation[key] !== void 0;
   }
   async getTranslationObj(key) {
-    const language = [
-      "en",
-      "de",
-      "ru",
-      "pt",
-      "nl",
-      "fr",
-      "it",
-      "es",
-      "pl",
-      "uk",
-      "zh-cn"
-    ];
+    const language = ["en", "de", "ru", "pt", "nl", "fr", "it", "es", "pl", "uk", "zh-cn"];
     const result = {};
     for (const l of language) {
       try {

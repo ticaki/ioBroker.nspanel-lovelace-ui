@@ -121,7 +121,7 @@ function isButtonActionType(F) {
   }
 }
 function convertToEvent(msg) {
-  var _a, _b, _c;
+  var _a, _b, _c, _d;
   msg = (JSON.parse(msg) || {}).CustomRecv;
   if (msg === void 0)
     return null;
@@ -134,16 +134,28 @@ function convertToEvent(msg) {
   if (temp[1] === "pageOpenDetail")
     popup = temp.splice(2, 1)[0];
   const arr = String(temp[2]).split("?");
+  if (arr[3])
+    return {
+      type: temp[0],
+      method: temp[1],
+      target: parseInt(arr[3]),
+      page: parseInt(arr[1]),
+      cmd: parseInt(arr[0]),
+      popup,
+      id: arr[2],
+      action: isButtonActionType(temp[3]) ? temp[3] : "",
+      opt: (_a = temp[4]) != null ? _a : ""
+    };
   if (arr[2])
     return {
       type: temp[0],
       method: temp[1],
       page: parseInt(arr[0]),
-      subPage: parseInt(arr[1]),
+      cmd: parseInt(arr[1]),
       popup,
       id: arr[2],
       action: isButtonActionType(temp[3]) ? temp[3] : "",
-      opt: (_a = temp[4]) != null ? _a : ""
+      opt: (_b = temp[4]) != null ? _b : ""
     };
   else if (arr[1])
     return {
@@ -153,7 +165,7 @@ function convertToEvent(msg) {
       popup,
       id: arr[1],
       action: isButtonActionType(temp[3]) ? temp[3] : "",
-      opt: (_b = temp[4]) != null ? _b : ""
+      opt: (_c = temp[4]) != null ? _c : ""
     };
   else
     return {
@@ -162,7 +174,7 @@ function convertToEvent(msg) {
       popup,
       id: arr[0],
       action: isButtonActionType(temp[3]) ? temp[3] : "",
-      opt: (_c = temp[4]) != null ? _c : ""
+      opt: (_d = temp[4]) != null ? _d : ""
     };
 }
 function isColorEntryType(F) {

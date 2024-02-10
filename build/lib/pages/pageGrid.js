@@ -26,13 +26,13 @@ var import_tools = require("../const/tools");
 const PageGridMessageDefault = {
   event: "entityUpd",
   headline: "Page Grid",
-  getNavigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
+  navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
   options: ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"]
 };
 const PageGrid2MessageDefault = {
   event: "entityUpd",
   headline: "Page Grid",
-  getNavigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
+  navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
   options: ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"]
 };
 class PageGrid extends import_Page.Page {
@@ -62,6 +62,7 @@ class PageGrid extends import_Page.Page {
           message.options[a] = await temp.getPageItemPayload();
       }
     }
+    message.navigation = this.getNavigation();
     const msg = Object.assign(
       this.card === "cardGrid" ? PageGridMessageDefault : PageGrid2MessageDefault,
       message
@@ -69,7 +70,7 @@ class PageGrid extends import_Page.Page {
     this.sendToPanel(this.getMessage(msg));
   }
   getMessage(message) {
-    return (0, import_tools.getPayload)("entityUpd", message.headline, message.getNavigation, (0, import_tools.getPayloadArray)(message.options));
+    return (0, import_tools.getPayload)("entityUpd", message.headline, message.navigation, (0, import_tools.getPayloadArray)(message.options));
   }
 }
 // Annotate the CommonJS export names for ESM import in node:
