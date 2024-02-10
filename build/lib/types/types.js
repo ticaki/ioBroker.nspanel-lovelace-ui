@@ -19,26 +19,12 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var types_exports = {};
 __export(types_exports, {
   SerialTypeArray: () => SerialTypeArray,
-  buildNSPanelString: () => buildNSPanelString,
-  checkSortedPlayerType: () => checkSortedPlayerType,
   isEventMethod: () => isEventMethod,
   isEventType: () => isEventType,
   isIconScaleElement: () => isIconScaleElement,
-  isPlayerWithMediaDevice: () => isPlayerWithMediaDevice,
   isPopupType: () => isPopupType
 });
 module.exports = __toCommonJS(types_exports);
-function buildNSPanelString(...tokens) {
-  return tokens.join("~");
-}
-const ArrayPlayerTypeWithMediaDevice = ["alexa2", "sonos", "squeezeboxrpc"];
-const ArrayPlayerTypeWithOutMediaDevice = ["spotify-premium", "volumio", "bosesoundtouch"];
-function isPlayerWithMediaDevice(F) {
-  return ArrayPlayerTypeWithMediaDevice.indexOf(F) != -1;
-}
-function checkSortedPlayerType(F) {
-  return F;
-}
 function isEventMethod(F) {
   switch (F) {
     case "startup":
@@ -91,12 +77,9 @@ function isEventType(F) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   SerialTypeArray,
-  buildNSPanelString,
-  checkSortedPlayerType,
   isEventMethod,
   isEventType,
   isIconScaleElement,
-  isPlayerWithMediaDevice,
   isPopupType
 });
 //# sourceMappingURL=types.js.map

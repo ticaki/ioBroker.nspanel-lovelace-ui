@@ -65,6 +65,7 @@ class Panel extends import_library.BaseClass {
   pages = [];
   _activePage = { page: null };
   screenSaver;
+  InitDone = false;
   navigation;
   format;
   controller;
@@ -78,9 +79,11 @@ class Panel extends import_library.BaseClass {
   CustomFormat;
   sendToTasmota = () => {
   };
+  fName = "";
   constructor(adapter, options) {
     var _a;
     super(adapter, options.name);
+    this.fName = options.name;
     this.panelSend = new import_panel_message.PanelSend(adapter, {
       name: `${options.name}-SendClass`,
       mqttClient: options.controller.mqttClient,
@@ -97,13 +100,6 @@ class Panel extends import_library.BaseClass {
     if (typeof this.panelSend.addMessageTasmota === "function")
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     this.statesControler = options.controller.statesControler;
-    this.library.writedp(`panel.${this.name}`, void 0, import_definition.genericStateObjects.panel.panels._channel);
-    this.library.writedp(
-      `panel.${this.name}.cmd`,
-      void 0 === "ON",
-      import_definition.genericStateObjects.panel.panels.cmd._channel
-    );
-    this.adapter.subscribeStates(`panel.${this.name}.cmd.*`);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
       const pageConfig = options.pages[a];
@@ -196,6 +192,17 @@ class Panel extends import_library.BaseClass {
   }
   init = async () => {
     this.controller.mqttClient.subscript(this.topic + "/#", this.onMessage);
+    this.sendToTasmota(this.topic + "/cmnd/STATUS0", "");
+  };
+  start = async () => {
+    this.adapter.subscribeStates(`panel.${this.name}.cmd.*`);
+    import_definition.genericStateObjects.panel.panels._channel.common.name = this.fName;
+    this.library.writedp(`panel.${this.name}`, void 0, import_definition.genericStateObjects.panel.panels._channel);
+    this.library.writedp(
+      `panel.${this.name}.cmd`,
+      void 0 === "ON",
+      import_definition.genericStateObjects.panel.panels.cmd._channel
+    );
     for (const page of this.pages) {
       this.log.debug("init page");
       if (page)
@@ -272,6 +279,7 @@ class Panel extends import_library.BaseClass {
     } else {
       const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) || [])[0];
       if (command) {
+        this.log.debug(`Receive other message ${topic} with ${message}`);
         switch (command) {
           case "stat/POWER2": {
             this.library.writedp(
@@ -289,6 +297,24 @@ class Panel extends import_library.BaseClass {
             );
             break;
           }
+          case "stat/STATUS0": {
+            const data = JSON.parse(message);
+            this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
+            if (!this.InitDone) {
+              this.InitDone = true;
+              await this.start();
+            }
+            this.library.writedp(
+              `panel.${this.name}.info`,
+              void 0,
+              import_definition.genericStateObjects.panel.panels.info._channel
+            );
+            this.library.writedp(
+              `panel.${this.name}.info.status`,
+              message,
+              import_definition.genericStateObjects.panel.panels.info.status
+            );
+          }
         }
       }
     }
@@ -304,7 +330,7 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "power2": {
-          this.sendToTasmota(this.topic + "/cmnd/POWER1", state.val ? "ON" : "OFF");
+          this.sendToTasmota(this.topic + "/cmnd/POWER2", state.val ? "ON" : "OFF");
           break;
         }
       }

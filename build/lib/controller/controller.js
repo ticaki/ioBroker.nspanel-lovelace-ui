@@ -30,6 +30,7 @@ module.exports = __toCommonJS(controller_exports);
 var Library = __toESM(require("../classes/library"));
 var import_states_controller = require("./states-controller");
 var Panel = __toESM(require("./panel"));
+var import_definition = require("../const/definition");
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
@@ -51,6 +52,7 @@ class Controller extends Library.BaseClass {
   }
   async init() {
     const newPanels = [];
+    this.library.writedp(`panel`, void 0, import_definition.genericStateObjects.panel._channel);
     for (const panel of this.panels)
       if (await panel.isValid()) {
         newPanels.push(panel);

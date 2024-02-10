@@ -75,7 +75,7 @@ const genericStateObjects = {
   panel: {
     _channel: {
       _id: "",
-      type: "device",
+      type: "folder",
       common: {
         name: "genericStateObjects.panel"
       },
@@ -93,7 +93,7 @@ const genericStateObjects = {
       cmd: {
         _channel: {
           _id: "",
-          type: "device",
+          type: "channel",
           common: {
             name: "genericStateObjects.cmd"
           },
@@ -115,11 +115,33 @@ const genericStateObjects = {
           _id: "",
           type: "state",
           common: {
-            name: "genericStateObjects.power1",
+            name: "genericStateObjects.power2",
             type: "boolean",
             role: "switch",
             read: true,
             write: true
+          },
+          native: {}
+        }
+      },
+      info: {
+        _channel: {
+          _id: "",
+          type: "channel",
+          common: {
+            name: "genericStateObjects.info"
+          },
+          native: {}
+        },
+        status: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "genericStateObjects.status",
+            type: "string",
+            role: "json",
+            read: true,
+            write: false
           },
           native: {}
         }
