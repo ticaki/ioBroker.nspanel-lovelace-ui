@@ -62,6 +62,7 @@ export class Panel extends BaseClass {
     private pages: (Page | undefined)[] = [];
     private _activePage: { page: Page | null; sleep?: boolean } = { page: null };
     private screenSaver: Screensaver | undefined;
+    private InitDone: boolean = false;
     readonly navigation: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
     readonly controller: Controller;
@@ -74,15 +75,18 @@ export class Panel extends BaseClass {
     readonly timeout: number;
     readonly CustomFormat: string;
     readonly sendToTasmota: (topic: string, payload: string, opt?: IClientPublishOptions) => void = () => {};
+    fName: string = '';
 
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
         super(adapter, options.name);
+        this.fName = options.name;
         this.panelSend = new PanelSend(adapter, {
             name: `${options.name}-SendClass`,
             mqttClient: options.controller.mqttClient,
             topic: options.topic,
         });
         this.timeout = options.timeout || 15;
+
         this.CustomFormat = options.CustomFormat ?? '';
         this.config = options.config;
         this.format = Object.assign(DefaultOptions.format, options.format);
@@ -92,14 +96,6 @@ export class Panel extends BaseClass {
         if (typeof this.panelSend.addMessageTasmota === 'function')
             this.sendToTasmota = this.panelSend.addMessageTasmota;
         this.statesControler = options.controller.statesControler;
-
-        this.library.writedp(`panel.${this.name}`, undefined, genericStateObjects.panel.panels._channel);
-        this.library.writedp(
-            `panel.${this.name}.cmd`,
-            undefined === 'ON',
-            genericStateObjects.panel.panels.cmd._channel,
-        );
-        this.adapter.subscribeStates(`panel.${this.name}.cmd.*`);
 
         let scsFound = 0;
         for (let a = 0; a < options.pages.length; a++) {
@@ -195,6 +191,17 @@ export class Panel extends BaseClass {
 
     init = async (): Promise<void> => {
         this.controller.mqttClient.subscript(this.topic + '/#', this.onMessage);
+        this.sendToTasmota(this.topic + '/cmnd/STATUS0', '');
+    };
+    start = async (): Promise<void> => {
+        this.adapter.subscribeStates(`panel.${this.name}.cmd.*`);
+        genericStateObjects.panel.panels._channel.common.name = this.fName;
+        this.library.writedp(`panel.${this.name}`, undefined, genericStateObjects.panel.panels._channel);
+        this.library.writedp(
+            `panel.${this.name}.cmd`,
+            undefined === 'ON',
+            genericStateObjects.panel.panels.cmd._channel,
+        );
         for (const page of this.pages) {
             this.log.debug('init page');
             if (page) await page.init();
@@ -274,7 +281,7 @@ export class Panel extends BaseClass {
             const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) ||
                 [])[0] as NSPanel.TasmotaIncomingTopics | null;
             if (command) {
-                //this.log.debug(`Receive other message ${topic} with ${message}`);
+                this.log.debug(`Receive other message ${topic} with ${message}`);
                 switch (command) {
                     case 'stat/POWER2': {
                         this.library.writedp(
@@ -293,6 +300,24 @@ export class Panel extends BaseClass {
 
                         break;
                     }
+                    case 'stat/STATUS0': {
+                        const data = JSON.parse(message) as NSPanel.STATUS0;
+                        this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
+                        if (!this.InitDone) {
+                            this.InitDone = true;
+                            await this.start();
+                        }
+                        this.library.writedp(
+                            `panel.${this.name}.info`,
+                            undefined,
+                            genericStateObjects.panel.panels.info._channel,
+                        );
+                        this.library.writedp(
+                            `panel.${this.name}.info.status`,
+                            message,
+                            genericStateObjects.panel.panels.info.status,
+                        );
+                    }
                 }
             }
         }
@@ -308,7 +333,7 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'power2': {
-                    this.sendToTasmota(this.topic + '/cmnd/POWER1', state.val ? 'ON' : 'OFF');
+                    this.sendToTasmota(this.topic + '/cmnd/POWER2', state.val ? 'ON' : 'OFF');
                     break;
                 }
             }

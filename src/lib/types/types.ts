@@ -3,26 +3,6 @@ import { RGB } from './Color';
 import { IconEntryType, TextEntryType, ValueEntryType } from './type-pageItem';
 import { ChangeTypeOfKeys, PageRole } from './pages';
 
-/**
- * Join arguments with ~ and return the string;
- * @param tokens unlimited numbers of strings
- * @returns
- */
-export function buildNSPanelString(...tokens: (string | number)[]): string {
-    return tokens.join('~');
-}
-
-const ArrayPlayerTypeWithMediaDevice = ['alexa2', 'sonos', 'squeezeboxrpc'] as const;
-const ArrayPlayerTypeWithOutMediaDevice = ['spotify-premium', 'volumio', 'bosesoundtouch'] as const;
-
-export function isPlayerWithMediaDevice(F: string | _PlayerTypeWithMediaDevice): F is _PlayerTypeWithMediaDevice {
-    return ArrayPlayerTypeWithMediaDevice.indexOf(F as _PlayerTypeWithMediaDevice) != -1;
-}
-/** check if adapterPlayerInstanceType has all Playertypes */
-export function checkSortedPlayerType(F: notSortedPlayerType): adapterPlayerInstanceType {
-    return F;
-}
-
 export function isEventMethod(F: string | EventMethod): F is EventMethod {
     switch (F as EventMethod) {
         case 'startup':
@@ -39,16 +19,6 @@ export function isEventMethod(F: string | EventMethod): F is EventMethod {
             return false;
     }
 }
-export type MessageOutgoingMode =
-    | 'media1'
-    | 'media0'
-    | 'media2'
-    | 'media3'
-    | 'media4'
-    | 'media5'
-    | 'media0'
-    | 'media0'
-    | 'media0';
 
 export function isPopupType(F: PopupType | any): F is PopupType {
     switch (F as PopupType) {
@@ -225,78 +195,6 @@ export type Payload = {
 };
 export type BooleanUnion = 'true' | 'false';
 
-/*export type PageBaseType = {
-    type: PageTypeCards;
-    heading: string;
-    items: PageItem[];
-    useColor: boolean;
-    subPage?: boolean;
-    parent?: PageType;
-    parentIcon?: string;
-    parentIconColor?: RGB;
-    prev?: string;
-    prevIcon?: string;
-    prevIconColor?: RGB;
-    next?: string;
-    nextIcon?: string;
-    nextIconColor?: RGB;
-    home?: string;
-    homeIcon?: string;
-    homeIconColor?: RGB;
-};
-export type PageEntities = {
-    type: 'cardEntities';
-    items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
-} & PageBaseType;
-
-export type PageGrid = {
-    type: 'cardGrid';
-    items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
-} & PageBaseType;
-
-export type PageGrid2 = {
-    type: 'cardGrid2';
-    items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
-} & PageBaseType;
-
-export type PageThermo = {
-    type: 'cardThermo';
-    items: [PageThermoItem];
-} & Omit<PageBaseType, 'useColor'>;
-
-export type PageMedia = {
-    type: 'cardMedia';
-    items: [PageMediaItem];
-} & Omit<PageBaseType, 'useColor' | 'autoCreateAlias'>;
-
-export type PageAlarm = {
-    type: 'cardAlarm';
-    items: [PageItem];
-} & Omit<PageBaseType, 'useColor'>;
-
-export type PageUnlock = {
-    type: 'cardUnlock';
-    items: [PageItem];
-} & Omit<PageBaseType, 'useColor'> &
-    Partial<Pick<PageBaseType, 'useColor'>>;
-
-export type PageQR = {
-    type: 'cardQR';
-    items: [PageItem];
-} & Omit<PageBaseType, 'useColor'>;
-
-export type PagePower = {
-    type: 'cardPower';
-    items: [PageItem];
-} & Omit<PageBaseType, 'useColor'>;
-
-export type PageChart = {
-    type: 'cardChart' | 'cardLChart';
-    items: PageItem[];
-} & Omit<PageBaseType, 'useColor'>;
-
-export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
-*/
 export type DimMode = {
     dimmodeOn: boolean | undefined;
     brightnessDay: number | undefined;
@@ -304,24 +202,6 @@ export type DimMode = {
     timeDay: string | undefined;
     timeNight: string | undefined;
 };
-
-/*export type ConfigButtonFunction = {
-    mode: 'page' | 'toggle' | 'set' | null;
-    page:
-        | PageThermo
-        | PageMedia
-        | PageAlarm
-        | PageQR
-        | PageEntities
-        | PageGrid
-        | PageGrid2
-        | PagePower
-        | PageChart
-        | PageUnlock
-        | null;
-    entity: string | null;
-    setValue: string | number | boolean | null;
-};*/
 
 export type Config = {
     leftEntity: boolean;
@@ -386,25 +266,7 @@ export type ScreenSaverElement = {
     entityText: ChangeTypeOfKeys<TextEntryType, DataItemsOptions | undefined>;
     entityIconSelect: ScreenSaverElementConfig;
 };
-/*export type ScreenSaverMRDataItems = Record<keyof ScreenSaverMRElement, Dataitem | undefined>;
-/*export type ScreenSaverMRElement = {
-    entity: ChangeTypeOfKeys<NumberEntryType, DataItemsOptions | undefined>;
-    entityDateFormat: ScreenSaverElementConfig;
-    entityIcon: ChangeTypeOfKeys<IconEntryType, DataItemsOptions | undefined>;
-    entityText: ChangeTypeOfKeys<TextEntryType, DataItemsOptions | undefined>;
-    entityIconSelect: ScreenSaverElementConfig;
-}; /*
-export type ScreenSaverMRDataElement = {
-    entity: string | number | boolean | null;
-    entityIconOn: string | null;
-    entityIconOff: string | null;
-    entityValue: string | number | boolean | null;
-    entityValueDecimalPlace: number | null;
-    entityValueUnit: string | null;
-    entityOnColor: RGB;
-    entityOffColor: RGB;
-    entityIconSelect: { [key: string]: string } | null;
-};*/
+
 type ScreenSaverElementConfig = DataItemsOptions | undefined;
 
 export type IconScaleElement = {
@@ -416,85 +278,6 @@ export type IconScaleElement = {
 export function isIconScaleElement(F: any | IconScaleElement): F is IconScaleElement {
     return F && 'val_min' in (F as IconScaleElement) && 'val_max' in (F as IconScaleElement);
 }
-/** we need this to have a nice order when using switch() */
-export type adapterPlayerInstanceType =
-    | 'alexa2.0.'
-    | 'alexa2.1.'
-    | 'alexa2.2.'
-    | 'alexa2.3.'
-    | 'alexa2.4.'
-    | 'alexa2.5.'
-    | 'alexa2.6.'
-    | 'alexa2.7.'
-    | 'alexa2.8.'
-    | 'alexa2.9.'
-    | 'sonos.0.'
-    | 'sonos.1.'
-    | 'sonos.2.'
-    | 'sonos.3.'
-    | 'sonos.4.'
-    | 'sonos.5.'
-    | 'sonos.6.'
-    | 'sonos.7.'
-    | 'sonos.8.'
-    | 'sonos.9.'
-    | 'spotify-premium.0.'
-    | 'spotify-premium.1.'
-    | 'spotify-premium.2.'
-    | 'spotify-premium.3.'
-    | 'spotify-premium.4.'
-    | 'spotify-premium.5.'
-    | 'spotify-premium.6.'
-    | 'spotify-premium.7.'
-    | 'spotify-premium.8.'
-    | 'spotify-premium.9.'
-    | 'volumio.0.'
-    | 'volumio.1.'
-    | 'volumio.2.'
-    | 'volumio.3.'
-    | 'volumio.4.'
-    | 'volumio.5.'
-    | 'volumio.6.'
-    | 'volumio.7.'
-    | 'volumio.8.'
-    | 'volumio.9.'
-    | 'squeezeboxrpc.0.'
-    | 'squeezeboxrpc.1.'
-    | 'squeezeboxrpc.2.'
-    | 'squeezeboxrpc.3.'
-    | 'squeezeboxrpc.4.'
-    | 'squeezeboxrpc.5.'
-    | 'squeezeboxrpc.6.'
-    | 'squeezeboxrpc.7.'
-    | 'squeezeboxrpc.8.'
-    | 'squeezeboxrpc.9.'
-    | 'bosesoundtouch.0.'
-    | 'bosesoundtouch.1.'
-    | 'bosesoundtouch.2.'
-    | 'bosesoundtouch.3.'
-    | 'bosesoundtouch.4.'
-    | 'bosesoundtouch.5.'
-    | 'bosesoundtouch.6.'
-    | 'bosesoundtouch.7.'
-    | 'bosesoundtouch.8.'
-    | 'bosesoundtouch.9.';
-
-export type PlayerType = _PlayerTypeWithMediaDevice | _PlayerTypeWithOutMediaDevice;
-
-export type _PlayerTypeWithOutMediaDevice = (typeof ArrayPlayerTypeWithOutMediaDevice)[number];
-export type _PlayerTypeWithMediaDevice = (typeof ArrayPlayerTypeWithMediaDevice)[number];
-
-export type notSortedPlayerType =
-    | `${PlayerType}.0.`
-    | `${PlayerType}.1.`
-    | `${PlayerType}.2.`
-    | `${PlayerType}.3.`
-    | `${PlayerType}.4.`
-    | `${PlayerType}.5.`
-    | `${PlayerType}.6.`
-    | `${PlayerType}.7.`
-    | `${PlayerType}.8.`
-    | `${PlayerType}.9.`;
 
 export type mediaOptional =
     | 'seek'
@@ -600,4 +383,161 @@ export interface State extends Omit<ioBroker.State, 'val'> {
 }
 export type StateValue = ioBroker.StateValue | object;
 
-export type TasmotaIncomingTopics = 'stat/POWER2' | 'stat/POWER1';
+export type TasmotaIncomingTopics = 'stat/POWER2' | 'stat/POWER1' | 'stat/STATUS0';
+
+export type STATUS0 = {
+    Status: {
+        Module: number;
+        DeviceName: string;
+        FriendlyName: Array<string>;
+        Topic: string;
+        ButtonTopic: string;
+        Power: number;
+        PowerOnState: number;
+        LedState: number;
+        LedMask: string;
+        SaveData: number;
+        SaveState: number;
+        SwitchTopic: string;
+        SwitchMode: Array<number>;
+        ButtonRetain: number;
+        SwitchRetain: number;
+        SensorRetain: number;
+        PowerRetain: number;
+        InfoRetain: number;
+        StateRetain: number;
+        StatusRetain: number;
+    };
+    StatusPRM: {
+        Baudrate: number;
+        SerialConfig: string;
+        GroupTopic: string;
+        OtaUrl: string;
+        RestartReason: string;
+        Uptime: string;
+        StartupUTC: string;
+        Sleep: number;
+        CfgHolder: number;
+        BootCount: number;
+        BCResetTime: string;
+        SaveCount: number;
+    };
+    StatusFWR: {
+        Version: string;
+        BuildDateTime: string;
+        Core: string;
+        SDK: string;
+        CpuFrequency: number;
+        Hardware: string;
+        CR: string;
+    };
+    StatusLOG: {
+        SerialLog: number;
+        WebLog: number;
+        MqttLog: number;
+        SysLog: number;
+        LogHost: string;
+        LogPort: number;
+        SSId: Array<string>;
+        TelePeriod: number;
+        Resolution: string;
+        SetOption: Array<string>;
+    };
+    StatusMEM: {
+        ProgramSize: number;
+        Free: number;
+        Heap: number;
+        StackLowMark: number;
+        PsrMax: number;
+        PsrFree: number;
+        ProgramFlashSize: number;
+        FlashSize: number;
+        FlashChipId: string;
+        FlashFrequency: number;
+        FlashMode: string;
+        Features: Array<string>;
+        Drivers: string;
+        Sensors: string;
+        I2CDriver: string;
+    };
+    StatusNET: {
+        Hostname: string;
+        IPAddress: string;
+        Gateway: string;
+        Subnetmask: string;
+        DNSServer1: string;
+        DNSServer2: string;
+        Mac: string;
+        IP6Global: string;
+        IP6Local: string;
+        Ethernet: {
+            Hostname: string;
+            IPAddress: string;
+            Gateway: string;
+            Subnetmask: string;
+            DNSServer1: string;
+            DNSServer2: string;
+            Mac: string;
+            IP6Global: string;
+            IP6Local: string;
+        };
+        Webserver: number;
+        HTTP_API: number;
+        WifiConfig: number;
+        WifiPower: number;
+    };
+    StatusMQT: {
+        MqttHost: string;
+        MqttPort: number;
+        MqttClientMask: string;
+        MqttClient: string;
+        MqttUser: string;
+        MqttCount: number;
+        MAX_PACKET_SIZE: number;
+        KEEPALIVE: number;
+        SOCKET_TIMEOUT: number;
+    };
+    StatusTIM: {
+        UTC: string;
+        Local: string;
+        StartDST: string;
+        EndDST: string;
+        Timezone: string;
+        Sunrise: string;
+        Sunset: string;
+    };
+    StatusSNS: {
+        Time: string;
+        ANALOG: {
+            Temperature1: number;
+        };
+        TempUnit: string;
+    };
+    StatusSTS: {
+        Time: string;
+        Uptime: string;
+        UptimeSec: number;
+        Heap: number;
+        SleepMode: string;
+        Sleep: number;
+        LoadAvg: number;
+        MqttCount: number;
+        Berry: {
+            HeapUsed: number;
+            Objects: number;
+        };
+        POWER1: string;
+        POWER2: string;
+        Wifi: {
+            AP: number;
+            SSId: string;
+            BSSId: string;
+            Channel: number;
+            Mode: string;
+            RSSI: number;
+            Signal: number;
+            LinkCount: number;
+            Downtime: string;
+        };
+    };
+};

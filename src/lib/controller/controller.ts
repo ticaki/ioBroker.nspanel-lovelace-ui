@@ -2,6 +2,7 @@ import * as MQTT from '../classes/mqtt';
 import * as Library from '../classes/library';
 import { StatesControler } from './states-controller';
 import * as Panel from './panel';
+import { genericStateObjects } from '../const/definition';
 
 export class Controller extends Library.BaseClass {
     mqttClient: MQTT.MQTTClientClass;
@@ -28,6 +29,8 @@ export class Controller extends Library.BaseClass {
 
     async init(): Promise<void> {
         const newPanels = [];
+        this.library.writedp(`panel`, undefined, genericStateObjects.panel._channel);
+
         for (const panel of this.panels)
             if (await panel.isValid()) {
                 newPanels.push(panel);

@@ -13,7 +13,7 @@ export type ChangeToChannel<Obj, T> = Obj extends object
 export type ChangeTypeOfKeys<Obj, N> = Obj extends object ? { [K in keyof Obj]-?: ChangeTypeOfKeys<Obj[K], N> } : N;
 
 export type customChannelType = {
-    _channel: ioBroker.ChannelObject | ioBroker.DeviceObject;
+    _channel: ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.FolderObject;
 };
 
 export const defaultChannel: ioBroker.ChannelObject = {
@@ -39,6 +39,9 @@ export const genericStateObjects: {
                 power1: ioBroker.StateObject;
                 power2: ioBroker.StateObject;
             };
+            info: customChannelType & {
+                status: ioBroker.StateObject;
+            };
         };
     };
 } = {
@@ -57,7 +60,7 @@ export const genericStateObjects: {
     panel: {
         _channel: {
             _id: '',
-            type: 'device',
+            type: 'folder',
             common: {
                 name: 'genericStateObjects.panel',
             },
@@ -75,7 +78,7 @@ export const genericStateObjects: {
             cmd: {
                 _channel: {
                     _id: '',
-                    type: 'device',
+                    type: 'channel',
                     common: {
                         name: 'genericStateObjects.cmd',
                     },
@@ -97,11 +100,33 @@ export const genericStateObjects: {
                     _id: '',
                     type: 'state',
                     common: {
-                        name: 'genericStateObjects.power1',
+                        name: 'genericStateObjects.power2',
                         type: 'boolean',
                         role: 'switch',
                         read: true,
                         write: true,
+                    },
+                    native: {},
+                },
+            },
+            info: {
+                _channel: {
+                    _id: '',
+                    type: 'channel',
+                    common: {
+                        name: 'genericStateObjects.info',
+                    },
+                    native: {},
+                },
+                status: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'genericStateObjects.status',
+                        type: 'string',
+                        role: 'json',
+                        read: true,
+                        write: false,
                     },
                     native: {},
                 },
