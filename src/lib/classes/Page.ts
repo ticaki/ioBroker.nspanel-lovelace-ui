@@ -1,37 +1,40 @@
-import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { Panel } from '../controller/panel';
-import { BaseClassPanelSend } from '../controller/panel-message';
-import { BaseClassTriggerdInterface } from '../controller/states-controller';
-import { MessageItem, messageItemAllInterfaces } from '../types/pageItem';
+import { BaseClassPage, BaseClassTriggerdInterface } from '../controller/states-controller';
 import * as pages from '../types/pages';
-import { IncomingEvent } from '../types/types';
+import { IncomingEvent, PopupType, isPopupType } from '../types/types';
+import { ScreensaverConfig } from '../pages/screensaver';
+import { PageItem } from '../pages/pageItem';
+import { PageItemDataItemsOptions } from '../types/type-pageItem';
 
-export const messageItemDefault: MessageItem = {
-    type: 'input_sel',
-    intNameEntity: '',
-    icon: '',
-    iconColor: '',
-    displayName: '',
-    optionalValue: '',
-};
-
-export interface PageInterface extends BaseClassTriggerdInterface {
+export interface PageConfigInterface {
+    config: pages.PageBaseConfig;
+    page: PageInterface;
+}
+export type PageItemInterface = BaseClassTriggerdInterface & {
     card: pages.PageTypeCards;
     panel: Panel;
-    id: number;
-}
-//interface Page extends BaseClass | PageConfig
+    id: string;
+};
 
-export class Page extends BaseClassPanelSend {
+export type PageInterface = BaseClassTriggerdInterface & {
+    card: pages.PageTypeCards;
+    panel: Panel;
+    id: string;
+    uniqueID: string;
+};
+
+//interface Page extends BaseClass | PageConfig
+export type PageConfigAll = ScreensaverConfig | pages.PageBaseConfig;
+export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
-    readonly id: number;
-    protected panel: Panel;
+    readonly id: string;
+    readonly uniqueID: string;
     //config: Card['config'];
-    constructor(card: PageInterface) {
-        super(card);
+    constructor(card: PageInterface, pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined) {
+        super(card, pageItemsConfig);
         this.card = card.card;
         this.id = card.id;
-        this.panel = card.panel;
+        this.uniqueID = card.uniqueID;
     }
     async init(): Promise<void> {}
 
@@ -44,51 +47,66 @@ export class Page extends BaseClassPanelSend {
 
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
+            if (!this.pageItems && this.pageItemConfig) {
+                this.pageItems = [];
+                for (let a = 0; a < this.pageItemConfig.length; a++) {
+                    const config: Omit<PageItemInterface, 'pageItemsConfig'> = {
+                        name: 'PI',
+                        adapter: this.adapter,
+                        panel: this.panel,
+                        panelSend: this.panelSend,
+                        card: 'cardItemSpecial',
+                        id: `${this.id}?${a}`,
+                    };
+                    this.pageItems[a] = new PageItem(config, this.pageItemConfig[a]);
+                    await this.pageItems[a].init();
+                }
+            }
             this.sendType();
             this.update();
+        } else {
+            if (this.pageItems) {
+                for (const item of this.pageItems) {
+                    await item.delete();
+                }
+                this.pageItems = undefined;
+            }
         }
     }
+
+    protected getNavigation(): string {
+        return this.panel.navigation.buildNavigationString();
+    }
+
     public async update(): Promise<void> {
         this.adapter.log.warn(
             `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`,
         );
     }
 
-    /**
-     * Create a part of the panel messsage for bottom icons. if event === '' u get '~~~~~~'.
-     * default for event: input_sel
-     * @param msg {Partial<MessageItem>}
-     * @returns string
-     */
-    public getItemMesssage(msg: Partial<messageItemAllInterfaces> | undefined): string {
-        if (!msg || !msg.intNameEntity || !msg.type) return '~~~~~';
-        const id: string[] = [];
-        if (msg.mainId) id.push(msg.mainId);
-        if (msg.subId) id.push(msg.subId);
-        if (msg.intNameEntity) id.push(msg.intNameEntity);
-        return this.getPayload(
-            msg.type ?? messageItemDefault.type,
-            id.join('?') ?? messageItemDefault.intNameEntity,
-            msg.icon ?? messageItemDefault.icon,
-            msg.iconColor ?? messageItemDefault.iconColor,
-            msg.displayName ?? messageItemDefault.displayName,
-            msg.optionalValue ?? messageItemDefault.optionalValue,
-        );
+    public async onPopupRequest(
+        id: number | string,
+        mode: PopupType | undefined,
+        action: ButtonActionType | undefined | string,
+        value: string | undefined,
+    ): Promise<void> {
+        if (!this.pageItems) return;
+        const i = typeof id === 'number' ? id : parseInt(id);
+        const item = this.pageItems[i];
+        if (!item) return;
+        let msg: string | null = null;
+        if (isPopupType(mode)) {
+            msg = await item.GenerateDetailPage(mode);
+        }
+        if (action === 'mode-insel' && value !== undefined) {
+            item.setPopupAction(action, value);
+        } else if (action === 'button') {
+            item.setPopupAction(action, '');
+        }
+        if (msg !== null) this.sendToPanel(msg);
     }
 }
 
-export class PageItem extends BaseClass {
-    config: PageItemConfig;
-    pageItems: any[] = [];
-    constructor(adapter: AdapterClassDefinition, options: PageItemConfig) {
-        super(adapter, 'Page');
-        this.config = options;
-    }
-    async init(): Promise<void> {}
-}
-type PageItemConfig = {
-    name: string;
-};
 export function isMediaButtonActionType(F: MediaButtonActionType | string): F is MediaButtonActionType {
     switch (F) {
         case 'media-back':

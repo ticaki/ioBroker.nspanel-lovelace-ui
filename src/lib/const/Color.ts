@@ -1,5 +1,4 @@
 import { RGB } from '../types/Color';
-import { PageItemDataitems } from '../types/pageItem';
 
 export const HMIOff: RGB = { red: 68, green: 115, blue: 158 }; // Blue-Off - Original Entity Off
 export const HMIOn: RGB = { red: 3, green: 169, blue: 244 }; // Blue-On
@@ -87,8 +86,8 @@ export const swSnowyRainy: RGB = { red: 150, green: 150, blue: 255 };
 export const swSunny: RGB = { red: 255, green: 255, blue: 0 };
 export const swWindy: RGB = { red: 150, green: 150, blue: 150 };
 
-const defaultOnColor = HMIOn;
-const defaultOffColor = HMIOff;
+//const defaultOnColor = HMIOn;
+//const defaultOffColor = HMIOff;
 
 export function rgb_dec565(rgb: RGB): number {
     //return ((Math.floor(rgb.red / 255 * 31) << 11) | (Math.floor(rgb.green / 255 * 63) << 5) | (Math.floor(rgb.blue / 255 * 31)));
@@ -105,7 +104,14 @@ export function rgbHexToObject(rgb: string): RGB {
     return result;
 }
 
-export function scale(number: number, inMin: number, inMax: number, outMin: number, outMax: number): number {
+export function scale(
+    number: number,
+    inMin: number | null,
+    inMax: number | null,
+    outMin: number,
+    outMax: number,
+): number {
+    if (inMin === null || inMax === null) return number;
     return outMax + outMin - (((number - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin);
 }
 
@@ -146,39 +152,6 @@ export function Interpolate(color1: RGB, color2: RGB, fraction: number): RGB {
 
 export function InterpolateNum(d1: number, d2: number, fraction: number): number {
     return d1 + (d2 - d1) * fraction;
-}
-
-export async function GetIconColor(pageItem: PageItemDataitems, value: boolean | number): Promise<string> {
-    // dimmer
-    const useColor = pageItem.data.useColor && (await pageItem.data.useColor.getBoolean());
-    const interpolateColor = pageItem.data.interpolateColor && (await pageItem.data.interpolateColor.getBoolean());
-    const onColor = pageItem.data.icon.true.color && (await pageItem.data.icon.true.color.getRGBValue());
-    const offColor = pageItem.data.icon.true.color && (await pageItem.data.icon.true.color.getRGBValue());
-    if (useColor && interpolateColor && typeof value === 'number') {
-        let val: number = typeof value === 'number' ? value : 0;
-        const maxValue = (pageItem.data.icon.maxBri && (await pageItem.data.icon.maxBri.getNumber())) || 100;
-        const minValue = (pageItem.data.icon.minBri && (await pageItem.data.icon.minBri.getNumber())) || 0;
-        val = val > maxValue ? maxValue : val;
-        val = val < minValue ? minValue : val;
-
-        return String(
-            rgb_dec565(
-                Interpolate(
-                    offColor ? offColor : defaultOffColor,
-                    onColor ? onColor : defaultOnColor,
-                    scale(100 - val, minValue, maxValue, 0, 1),
-                ),
-            ),
-        );
-    }
-    if (
-        (useColor && typeof value === 'boolean' && value) ||
-        (typeof value === 'number' &&
-            value > (pageItem.data.icon.minBri !== undefined ? (await pageItem.data.icon.minBri.getNumber()) ?? 0 : 0))
-    ) {
-        return String(rgb_dec565(onColor ? onColor : defaultOnColor));
-    }
-    return String(rgb_dec565(offColor ? offColor : defaultOffColor));
 }
 
 /**

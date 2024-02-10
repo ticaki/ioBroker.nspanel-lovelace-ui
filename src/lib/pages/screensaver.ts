@@ -6,9 +6,10 @@ import * as NSPanel from '../types/types';
 import moment from 'moment';
 import parseFormat from 'moment-parseformat';
 import { sendTemplates, weatherUpdateTestArray } from '../types/msg-def';
-import { StatesControler } from '../controller/states-controller';
-import { Page, PageInterface } from './Page';
+import { Page, PageInterface } from '../classes/Page';
 import { Icons } from '../const/icon_mapping';
+import { PageTypeCards } from '../types/pages';
+import { getPayload, getPayloadArray } from '../const/tools';
 
 export type ScreensaverConfigType = {
     momentLocale: string;
@@ -18,16 +19,15 @@ export type ScreensaverConfigType = {
 };
 
 export type ScreensaverConfig = {
+    card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
     mode: NSPanel.ScreensaverModeType;
     entitysConfig: NSPanel.ScreensaverOptionsType;
-    config: ScreensaverConfigType;
     rotationTime: number;
 };
 
 export class Screensaver extends Page {
     private entitysConfig: NSPanel.ScreensaverOptionsType;
     readonly layout: NSPanel.ScreensaverModeType = 'standard';
-    statesControler: StatesControler;
     private config: ScreensaverConfigType;
     private items: Record<
         keyof Omit<NSPanel.ScreensaverOptionsType, 'mrIconEntity'>,
@@ -47,7 +47,7 @@ export class Screensaver extends Page {
     private rotationTime: number;
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
     private step: number = 0;
-    constructor(config: PageInterface, options: ScreensaverConfig, statesControler: StatesControler) {
+    constructor(config: PageInterface, options: ScreensaverConfig) {
         switch (options.mode) {
             case 'standard':
             case 'alternate': {
@@ -59,39 +59,38 @@ export class Screensaver extends Page {
                 break;
             }
         }
-        super(config);
+        config.alwaysOn = 'none';
+        super(config, undefined);
 
         this.entitysConfig = options.entitysConfig;
         this.layout = options.mode;
 
-        this.config = options.config;
-        moment.locale(options.config.momentLocale);
-        this.statesControler = statesControler;
+        this.config = this.panel.config;
+        moment.locale(this.config.momentLocale);
         this.rotationTime = options.rotationTime !== 0 && options.rotationTime < 3 ? 3000 : options.rotationTime * 1000;
     }
     async init(): Promise<void> {
         const config = this.entitysConfig;
-
-        for (const key of Definition.ScreenSaverAllPlaces) {
-            for (const entry of config[key]) {
-                if (entry == null || entry === undefined) {
-                    this.items[key].push(undefined);
-                    continue;
+        if (this.controller) {
+            for (const key of Definition.ScreenSaverAllPlaces) {
+                for (const entry of config[key]) {
+                    if (entry == null || entry === undefined) {
+                        this.items[key].push(undefined);
+                        continue;
+                    }
+                    const tempItem = await this.controller.statesControler.createDataItems(entry, this);
+                    switch (key) {
+                        case 'favoritEntity':
+                        case 'leftEntity':
+                        case 'bottomEntity':
+                        case 'indicatorEntity':
+                            this.items[key].push(tempItem);
+                            break;
+                        case 'mrIconEntity':
+                            this.items['mrIconEntity'].push(tempItem);
+                            break;
+                    }
                 }
-                const tempItem = await this.statesControler.createDataItems(entry, this);
-                switch (key) {
-                    case 'favoritEntity':
-                    case 'leftEntity':
-                    case 'bottomEntity':
-                    case 'indicatorEntity':
-                        this.items[key].push(tempItem);
-                        break;
-                    case 'mrIconEntity':
-                        this.items['mrIconEntity'].push(tempItem);
-                        break;
-                }
-
-                //this.controller.RegisterEntityWatcher(this, item);
             }
         }
     }
@@ -114,9 +113,9 @@ export class Screensaver extends Page {
                 i = maxItems * this.step;
                 maxItems = maxItems * (this.step + 1);
             }
-            if (place == 'favoritEntity') {
-                this.log.debug('y');
-            }
+            /*if (place == 'favoritEntity') {
+                this.log.debug('');
+            }*/
             for (i; i < maxItems; i++) {
                 const item: NSPanel.ScreenSaverDataItems | undefined = this.items[place][i];
                 if (
@@ -223,7 +222,7 @@ export class Screensaver extends Page {
         switch (payload.eventType) {
             case 'statusUpdate':
                 this.sendToPanel(
-                    this.getPayload(
+                    getPayload(
                         payload.eventType,
                         payload.icon1,
                         payload.icon1Color,
@@ -252,7 +251,7 @@ export class Screensaver extends Page {
                     (a) =>
                         a &&
                         result.push(
-                            this.getPayload(
+                            getPayload(
                                 '',
                                 '',
                                 a.icon,
@@ -262,14 +261,11 @@ export class Screensaver extends Page {
                             ),
                         ),
                 );
-                this.sendToPanel(this.getPayloadArray([...result, '']));
+                this.sendToPanel(getPayloadArray([...result, '']));
                 break;
             }
         }
     }
-    onStateTriggerSuperDoNotOverride = async (): Promise<boolean> => {
-        return true;
-    };
     async onVisibilityChange(v: boolean): Promise<void> {
         this.step = -1;
         if (v) {
@@ -359,7 +355,6 @@ export class Screensaver extends Page {
                 // Prüfung ob Entity vom Typ String ist
                 if (entity != null && onColor) {
                     if (typeof entity == 'string') {
-                        this.log.debug('Entity ist String');
                         switch (entity.toUpperCase()) {
                             case 'ON':
                             case 'OK':
@@ -373,7 +368,6 @@ export class Screensaver extends Page {
                         }
                         // Alles was kein String ist in Boolean umwandeln
                     } else {
-                        this.log.debug('Entity ist kein String', 'info');
                         if (entity) {
                             payload[`icon${s}Color`] = onColor;
                         }
@@ -409,7 +403,8 @@ export class Screensaver extends Page {
 
                 if (value !== null && value !== undefined) {
                     payload[`icon${s}`] += String(value);
-                    const unit = item.entityValue.unit ? await item.entityValue.unit.getString() : null;
+                    const unit =
+                        item.entityValue && item.entityValue.unit ? await item.entityValue.unit.getString() : null;
                     if (unit !== null) payload[`icon${s}`] += unit;
                 }
             } else {

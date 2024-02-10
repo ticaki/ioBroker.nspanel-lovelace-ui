@@ -6,7 +6,7 @@ import { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 // only change this for other adapters
 export type AdapterClassDefinition = NspanelLovelaceUi;
 
-type LibraryStateVal = LibraryStateValJson | undefined;
+export type LibraryStateVal = LibraryStateValJson | undefined;
 type LibraryStateValJson = {
     type: ioBroker.ObjectType;
     stateTyp: string | undefined;
@@ -351,7 +351,7 @@ export class Library extends BaseClass {
      */
     convertToType(value: ioBroker.StateValue | Array<any> | JSON, type: string): ioBroker.StateValue {
         if (value === null) return null;
-        if (type === undefined) {
+        if (type === 'undefined') {
             throw new Error('convertToType type undefined not allowed!');
         }
         if (value === undefined) value = '';
@@ -372,7 +372,7 @@ export class Library extends BaseClass {
                     break;
                 case 'array':
                 case 'json':
-                    //JSON.stringify() is done before
+                    newValue = JSON.stringify(value);
                     break;
             }
         }
@@ -544,24 +544,12 @@ export class Library extends BaseClass {
     }
 
     async getTranslationObj(key: string): Promise<ioBroker.StringOrTranslated> {
-        const language: (ioBroker.Languages | 'uk')[] = [
-            'en',
-            'de',
-            'ru',
-            'pt',
-            'nl',
-            'fr',
-            'it',
-            'es',
-            'pl',
-            'uk',
-            'zh-cn',
-        ];
-        const result: { [key: string]: string } = {};
+        const language: ioBroker.Languages[] = ['en', 'de', 'ru', 'pt', 'nl', 'fr', 'it', 'es', 'pl', 'uk', 'zh-cn'];
+        const result: Partial<Record<ioBroker.Languages, string>> = {};
         for (const l of language) {
             try {
                 const i = await import(`../../admin/i18n/${l}/translations.json`);
-                if (i[key] !== undefined) result[l as string] = i[key];
+                if (i[key] !== undefined) result[l] = i[key];
             } catch (error) {
                 return key;
             }

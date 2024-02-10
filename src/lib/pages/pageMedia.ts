@@ -1,16 +1,18 @@
 import { Dataitem, isDataItem } from '../classes/data-item';
 import * as Color from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { MessageItemMedia, MessageItem, ColorEntryType } from '../types/pageItem';
+import { MessageItemMedia, ColorEntryType } from '../types/type-pageItem';
 import * as pages from '../types/pages';
 import { BooleanUnion, IncomingEvent } from '../types/types';
-import { PageInterface, isMediaButtonActionType, messageItemDefault } from './Page';
-import { Page } from './Page';
+import { PageInterface, isMediaButtonActionType } from '../classes/Page';
+import { Page } from '../classes/Page';
+import { PageItem } from './pageItem';
+import { getPayload, getPayloadArray } from '../const/tools';
 
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
     headline: '',
-    getNavigation: '~~~~~~~~~',
+    navigation: '~~~~~~~~~',
     id: '',
     name: '',
     titelColor: String(Color.rgb_dec565(Color.White)),
@@ -24,21 +26,22 @@ const PageMediaMessageDefault: pages.PageMediaMessage = {
     options: ['', '', '', '', ''],
 };
 
-const steps = 4;
+//const steps = 4;
 
-export class PageMedia extends Page implements pages.PageMediaBase {
-    config: pages.PageMediaBase['config'];
+export class PageMedia extends Page {
+    config: pages.PageBaseConfig['config'];
     initMode: 'auto' | 'custom';
     dpInit: string;
-    items: pages.PageMediaBase['items'];
+    items: pages.PageBaseConfig['items'];
     writeItems: pages.PageMediaBaseConfigWrite | undefined;
     private step: number = 1;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
+    tempItem: PageItem | undefined;
 
-    constructor(config: PageInterface, options: pages.PageMediaBase) {
-        super(config);
+    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+        super(config, options.pageItems);
 
         this.config = options.config;
         this.writeItems = options.writeItems;
@@ -51,35 +54,31 @@ export class PageMedia extends Page implements pages.PageMediaBase {
     async init(): Promise<void> {
         const config = { ...this.config };
         // search states for mode auto
-        const tempConfig: Partial<pages.PageMediaBase['config']> =
-            this.initMode === 'auto' ? await this.panel.readOnlyDB.getDataItemsFromAuto(this.dpInit, config) : {};
+        const tempConfig: Partial<pages.PageBaseConfig['config']> =
+            this.initMode === 'auto' ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : {};
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<pages.PageMediaBase['items']> = await this.panel.readOnlyDB.createDataItems(
+        const tempItem: Partial<pages.PageBaseConfig['items']> = await this.panel.statesControler.createDataItems(
             tempConfig,
             this,
         );
-        this.items = tempItem as pages.PageMediaBase['items'];
+        this.items = tempItem as pages.PageBaseConfig['items'];
         //check if command dps are valid
         for (const g in this.writeItems) {
             const d = g as keyof typeof this.writeItems;
             const item = this.writeItems[d];
             if (item === undefined) continue;
-            if (!item.dp || !(await this.panel.readOnlyDB.existsState(item.dp))) {
+            if (!item.dp || !(await this.panel.statesControler.existsState(item.dp))) {
                 this.log.warn(`State ${item.dp} was not found!`);
                 this.writeItems[d] = undefined;
             }
         }
     }
-    sendType(): void {
-        this.sendToPanel('pageType~cardMedia');
-    }
     protected async onVisibilityChange(val: boolean): Promise<void> {
+        await super.onVisibilityChange(val);
         if (val) {
             this.headlinePos = 0;
             this.titelPos = 0;
-            this.sendType();
-            this.update();
         }
     }
     async update(): Promise<void> {
@@ -209,7 +208,7 @@ export class PageMedia extends Page implements pages.PageMediaBase {
             if (v !== null) message.titelColor = v;
         }
 
-        message.options = [undefined, undefined, undefined, undefined, undefined];
+        /*message.options = [undefined, undefined, undefined, undefined, undefined];
         if (item.toolbox && Array.isArray(item.toolbox)) {
             const localStep = item.toolbox.length > 5 ? steps : 5;
             if (item.toolbox.length <= localStep * (this.step - 1)) this.step = 1;
@@ -229,23 +228,26 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                     icon: Icons.GetIcon(icon),
                     iconColor: color,
                     mode: 'nexttool',
+                    type: 'button',
                     displayName: 'next',
                 };
             }
-        }
+        }*/
         //Logo
         if (item.logo) {
-            message.logo = this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 5));
+            message.logo = '~~~~~'; //await this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
         }
         {
         }
-        const opts: string[] = [];
-        for (const a in message.options) {
-            const temp = message.options[a];
-            if (typeof temp !== 'string') opts.push(this.getItemMessageMedia(temp));
+        const opts: string[] = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
+        if (this.pageItems) {
+            for (let a = 0; a < 5; a++) {
+                const temp = this.pageItems[a];
+                if (temp) opts[a] = await temp.getPageItemPayload();
+            }
         }
+        message.navigation = this.getNavigation();
         const msg: pages.PageMediaMessage = Object.assign(PageMediaMessageDefault, message, {
-            getNavigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
             id: 'media',
             options: opts,
         });
@@ -289,11 +291,12 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                 if (list) this.log.debug(JSON.stringify(list));
                 if (color && icon && text) {
                     const tool: MessageItemMedia = {
-                        intNameEntity: `${id}`,
+                        intNameEntity: `${this.id}?${id}`,
                         iconNumber: iconNumber as 1 | 2 | 3 | 4 | 5,
                         icon: Icons.GetIcon(icon),
                         iconColor: color,
                         mode: i.action,
+                        type: 'button',
                         displayName: this.adapter.library.getLocalTranslation('media', text),
                     };
                     return tool;
@@ -304,10 +307,10 @@ export class PageMedia extends Page implements pages.PageMediaBase {
     }
 
     private getMessage(message: pages.PageMediaMessage): string {
-        return this.getPayload(
+        return getPayload(
             'entityUpd',
             message.headline,
-            message.getNavigation,
+            message.navigation,
             message.id,
             message.name,
             message.titelColor,
@@ -318,7 +321,7 @@ export class PageMedia extends Page implements pages.PageMediaBase {
             message.onoffbuttonColor,
             Icons.GetIcon(message.shuffle_icon),
             message.logo, //'~~~~~'
-            this.getPayloadArray(message.options),
+            getPayloadArray(message.options),
         );
     }
     /**
@@ -326,8 +329,8 @@ export class PageMedia extends Page implements pages.PageMediaBase {
      * default for event: input_sel
      * @param msg
      * @returns string
-     */
-    private getItemMessageMedia(msg: Partial<MessageItemMedia> | undefined): string {
+
+    private async getItemMessageMedia(msg: Partial<MessageItemMedia> | undefined): Promise<string> {
         if (!msg || !msg.intNameEntity || !msg.icon) return '~~~~~';
         msg.type = msg.type === undefined ? 'input_sel' : msg.type;
         const iconNumber = msg.iconNumber;
@@ -361,8 +364,62 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                 break;
             }
         }
-        return this.getItemMesssage(message);
-    }
+        if (!this.tempItem) {
+            const config: PageInterface = {
+                card: 'cardItemSpecial',
+                name: 'test',
+                adapter: this.adapter,
+                panelSend: this.panelSend,
+                panel: this.panel,
+                id: 'irgendwas',
+            };
+            const options: PageItemDataItemsOptions = {
+                role: 'text.list',
+                type: 'input_sel',
+                dpInit: undefined,
+                initMode: 'custom',
+                data: {
+                    color: {
+                        true: {
+                            type: 'const',
+                            constVal: Color.HMIOn,
+                        },
+                        false: undefined,
+                        scale: undefined,
+                    },
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'home' },
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'fan' },
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
+                    },
+                    entity1: {
+                        value: {
+                            type: 'const',
+                            constVal: true,
+                        },
+                        decimal: undefined,
+                        factor: undefined,
+                        unit: undefined,
+                    },
+                    text1: undefined,
+                    setValue1: undefined,
+                    useColor: undefined,
+                },
+            };
+            this.tempItem = new PageItem(config, options);
+            await this.tempItem.init();
+        }
+        return await this.tempItem.getPageItemPayload('test');
+        //return this.getItemMesssage(message);
+    }*/
 
     onStateTrigger = async (): Promise<void> => {
         this.update();
@@ -370,12 +427,12 @@ export class PageMedia extends Page implements pages.PageMediaBase {
     async onButtonEvent(event: IncomingEvent): Promise<void> {
         if (!this.getVisibility()) return;
         //if (event.mode !== 'media') return;
-        if (isMediaButtonActionType(event.command)) {
+        if (isMediaButtonActionType(event.action)) {
             this.log.debug('Receive event: ' + JSON.stringify(event));
         } else return;
         const items = this.items;
         if (!items) return;
-        switch (event.command) {
+        switch (event.action) {
             case 'media-back': {
                 items.backward && (await items.backward.setStateTrue());
                 break;
@@ -441,7 +498,7 @@ export class PageMedia extends Page implements pages.PageMediaBase {
                 break;
             }
             case 'button': {
-                if (event.mode === '5' && this.nextArrow) {
+                if (event.command === '5' && this.nextArrow) {
                     this.step++;
                     this.update();
                 }

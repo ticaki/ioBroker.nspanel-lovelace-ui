@@ -10,8 +10,8 @@ import 'source-map-support/register';
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 import * as MQTT from './lib/classes/mqtt';
-import { Testconfig, testConfigMedia } from './lib/config';
-import { Controller } from './lib/controller/panel-controller';
+import { Testconfig } from './lib/config';
+import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import { ScreenSaverConst } from './lib/const/definition';
 
@@ -41,16 +41,17 @@ class NspanelLovelaceUi extends utils.Adapter {
     private async onReady(): Promise<void> {
         Icons.adapter = this;
         this.library = new Library(this);
-        this.config.Testconfig = this.config.Testconfig || Testconfig;
-        Testconfig.screenSaverConfig!.mode = this.config.scstype as any;
-        this.config.Testconfig.timeout = this.config.timeout;
-        testConfigMedia.dpInit = this.config.mediaid;
-        this.setTimeout(() => {
+        this.config.Testconfig2 = [Testconfig];
+        //@ts-expect-error joghurt
+        Testconfig.pages![0].mode = this.config.scstype as any;
+        //this.log.debug(JSON.stringify(this.config.Testconfig2[0].dpInit))
+        this.config.Testconfig2[0].timeout = this.config.timeout;
+        this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
+        this.setTimeout(async () => {
             this.library.init();
             this.log.debug('Check configuration!');
             if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword))
                 return;
-            this.log.debug(this.adapterDir);
             this.mqttClient = new MQTT.MQTTClientClass(
                 this,
                 this.config.mqttIp,
@@ -61,19 +62,27 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.log.debug(topic + ' ' + message);
                 },
             );
-            const testconfig = JSON.parse(JSON.stringify(this.config.Testconfig));
+            if (!this.mqttClient) return;
+            const testconfig = JSON.parse(JSON.stringify(this.config.Testconfig2));
             testconfig.name = this.config.name;
             testconfig.topic = this.config.topic;
-            this.log.debug(String(process.memoryUsage().heapUsed));
+            const mem = process.memoryUsage().heapUsed / 1024;
+            this.log.debug(String(mem + 'k'));
             this.controller = new Controller(this, {
                 mqttClient: this.mqttClient,
                 name: 'controller',
-                panels: [JSON.parse(JSON.stringify(testconfig))],
+                panels: JSON.parse(JSON.stringify(testconfig)),
             });
-            setTimeout(() => {
-                this.log.debug(String(process.memoryUsage().heapUsed)), 2000;
-            });
-        }, 3000);
+            await this.controller.init();
+            setInterval(() => {
+                this.log.debug(
+                    Math.trunc(mem) +
+                        'k/' +
+                        String(Math.trunc(process.memoryUsage().heapUsed / 1024)) +
+                        'k Start/Jetzt: ',
+                );
+            }, 60000);
+        }, 1500);
     }
 
     /**
@@ -86,7 +95,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             // clearTimeout(timeout2);
             // ...
             // clearInterval(interval1);
-
+            if (this.controller) this.controller.delete;
             callback();
         } catch (e) {
             callback();
@@ -114,7 +123,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
         if (state) {
             if (this.controller) {
-                this.controller.readOnlyDB.onStateChange(id, state);
+                this.controller.statesControler.onStateChange(id, state);
             }
         } else {
             // The state was deleted
@@ -167,7 +176,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         entity_value_constVal: string;
                         entity_value_type: string;
                     }> = {};
-                    const v1 = this.config.Testconfig.screenSaverConfig!.entitysConfig;
+                    const v1 = this.config.Testconfig2[0].pages[0].screenSaverConfig!.entitysConfig;
                     const key = obj.message.entry.split('#')[1] as keyof typeof v1;
                     const v2 = v1[key];
                     const index = obj.message.entry.split('#')[0] - 1;
@@ -336,14 +345,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     result.currentfield = '';
                             }
                             if (change) {
-                                this.config.Testconfig.screenSaverConfig!.entitysConfig[key][index] = v3;
+                                this.config.Testconfig2[0].pages[0].screenSaverConfig.entitysConfig[key][index] = v3;
                                 const obj = await this.getForeignObjectAsync('system.adapter.' + this.namespace);
                                 if (
                                     obj &&
                                     obj.native &&
-                                    JSON.stringify(obj.native.Testconfig) !== JSON.stringify(this.config.Testconfig)
+                                    JSON.stringify(obj.native.Testconfig2) !== JSON.stringify(this.config.Testconfig2)
                                 ) {
-                                    obj.native.Testconfig = this.config.Testconfig;
+                                    obj.native.Testconfig2 = this.config.Testconfig2;
                                     await this.setForeignObjectAsync('system.adapter.' + this.namespace, obj);
                                 }
                             }
@@ -353,8 +362,17 @@ class NspanelLovelaceUi extends utils.Adapter {
                             this.sendTo(obj.from, obj.command, { native: Object.assign(result, fields) }, obj.callback);
                         return;
                     }
+                } else if ((obj.command = 'config')) {
+                    const obj1 = await this.getForeignObjectAsync('system.adapter.' + this.namespace);
+                    if (
+                        obj1 &&
+                        obj1.native &&
+                        JSON.stringify(obj1.native.Testconfig2) !== JSON.stringify(obj.message)
+                    ) {
+                        obj1.native.Testconfig2 = obj.message;
+                        await this.setForeignObjectAsync('system.adapter.' + this.namespace, obj1);
+                    }
                 }
-
                 // Send response in callback if required
                 if (obj.callback) this.sendTo(obj.from, obj.command, [], obj.callback);
             }

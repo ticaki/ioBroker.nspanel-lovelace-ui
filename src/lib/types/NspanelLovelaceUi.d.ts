@@ -1,6 +1,6 @@
 import * as utils from '@iobroker/adapter-core';
 import { Library } from '../classes/library';
-import { Controller } from '../controller/panel-controller';
+import { Controller } from '../controller/controller';
 import { MQTTClientClass, MQTTServerClass } from '../classes/mqtt';
 
 declare class NspanelLovelaceUi extends utils.Adapter {

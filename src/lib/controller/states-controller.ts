@@ -4,15 +4,22 @@ import { IClientPublishOptions } from 'mqtt';
 import { Dataitem } from '../classes/data-item';
 import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { DataItemsOptions } from '../types/types';
-import { Controller } from './panel-controller';
+import { Controller } from './controller';
 import { PanelSend } from './panel-message';
 import { isPageRole } from '../types/pages';
+import { Panel } from './panel';
+import { PageItemDataItemsOptions } from '../types/type-pageItem';
+import { PageItem } from '../pages/pageItem';
+import { PageInterface } from '../classes/Page';
 
 export interface BaseClassTriggerdInterface {
     name: string;
     adapter: AdapterClassDefinition;
     panelSend: PanelSend;
+    alwaysOn?: 'none' | 'always' | 'action';
+    panel: Panel;
 }
+
 /**
  * Basisklasse für alles das auf Statestriggern soll - also jede card / popup
  * übernimmt auch die Sichtbarkeitssteuerung das triggern wird pausiert wenn nicht sichtbar
@@ -24,15 +31,19 @@ export class BaseClassTriggerd extends BaseClass {
     private doUpdate: boolean = true;
     protected minUpdateInterval: number;
     protected visibility: boolean = false;
-    protected controller: Controller | undefined;
+    protected controller: Controller;
     readonly panelSend: PanelSend;
+    public alwaysOn: 'none' | 'always' | 'action';
+    private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
+    protected panel: Panel;
     protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
         payload: string,
         opt?: IClientPublishOptions,
     ) => {
         if (payload == this.lastMessage) return;
         this.lastMessage = payload;
+
         this.sendToPanelClass(payload, opt);
     };
     resetLastMessage(): void {
@@ -42,21 +53,34 @@ export class BaseClassTriggerd extends BaseClass {
 
     constructor(card: BaseClassTriggerdInterface) {
         super(card.adapter, card.name);
-        this.minUpdateInterval = 15000;
+        this.minUpdateInterval = 3000;
+        if (!this.adapter.controller) throw new Error('No controller! bye bye');
         this.controller = this.adapter.controller;
         this.panelSend = card.panelSend;
-        if (typeof card.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
+        this.alwaysOn = card.alwaysOn ?? 'none';
+        this.panel = card.panel;
+        if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
     }
-    readonly onStateTriggerSuperDoNotOverride = async (): Promise<boolean> => {
-        if (!this.visibility) return false;
+    readonly onStateTriggerSuperDoNotOverride = async (response: 'now' | 'medium' | 'slow'): Promise<boolean> => {
+        if (!this.visibility || this.unload) return false;
         if (this.waitForTimeout) return false;
-        if (this.updateTimeout) {
+
+        if (this.updateTimeout && response !== 'now') {
             this.doUpdate = true;
             return false;
         } else {
             this.waitForTimeout = this.adapter.setTimeout(() => {
                 this.waitForTimeout = undefined;
                 this.onStateTrigger();
+                if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
+                if (this.alwaysOn === 'action') {
+                    this.alwaysOnState = this.adapter.setTimeout(
+                        () => {
+                            this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                        },
+                        this.panel.timeout * 1000 || 5000,
+                    );
+                }
             }, 50);
             this.updateTimeout = this.adapter.setTimeout(async () => {
                 if (this.unload) return;
@@ -74,12 +98,7 @@ export class BaseClassTriggerd extends BaseClass {
             `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`,
         );
     }
-    getPayloadArray(s: (string | any)[]): string {
-        return s.join('~');
-    }
-    getPayload(...s: string[]): string {
-        return s.join('~');
-    }
+
     private async stopTriggerTimeout(): Promise<void> {
         if (this.updateTimeout) {
             this.adapter.clearTimeout(this.updateTimeout);
@@ -87,7 +106,10 @@ export class BaseClassTriggerd extends BaseClass {
         }
     }
     async delete(): Promise<void> {
+        await this.setVisibility(false);
         await super.delete();
+        if (this.waitForTimeout) this.adapter.clearTimeout(this.waitForTimeout);
+        if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
         await this.stopTriggerTimeout();
     }
     getVisibility = (): boolean => {
@@ -97,13 +119,29 @@ export class BaseClassTriggerd extends BaseClass {
         if (v !== this.visibility || force) {
             this.visibility = v;
             if (this.visibility) {
+                if (this.unload) return;
+
+                if (this.alwaysOn != 'none') {
+                    await this.panel.sendScreeensaverTimeout(0);
+
+                    if (this.alwaysOn === 'action') {
+                        this.alwaysOnState = this.adapter.setTimeout(
+                            async () => {
+                                await this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                            },
+                            this.panel.timeout * 2 * 1000 || 5000,
+                        );
+                    }
+                } else this.panel.sendScreeensaverTimeout(this.panel.timeout);
                 this.log.debug(`Switch page to visible${force ? ' (forced)' : ''}!`);
                 this.resetLastMessage();
-                this.controller && this.controller.readOnlyDB.activateTrigger(this);
+                this.controller && (await this.controller.statesControler.activateTrigger(this));
             } else {
+                if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
+                await this.panel.sendScreeensaverTimeout(this.panel.timeout);
                 this.log.debug(`Switch page to invisible${force ? ' (forced)' : ''}!`);
                 this.stopTriggerTimeout();
-                this.controller && this.controller.readOnlyDB.deactivateTrigger(this);
+                this.controller && (await this.controller.statesControler.deactivateTrigger(this));
             }
             await this.onVisibilityChange(v);
         } else this.visibility = v;
@@ -118,6 +156,15 @@ export class BaseClassTriggerd extends BaseClass {
                 this,
             )}] not react on onVisibilityChange(), or call super.onVisibilityChange()`,
         );
+    }
+}
+
+export class BaseClassPage extends BaseClassTriggerd {
+    readonly pageItemConfig: (PageItemDataItemsOptions | undefined)[] | undefined;
+    pageItems: PageItem[] | undefined;
+    constructor(card: PageInterface, pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined) {
+        super(card);
+        this.pageItemConfig = pageItemsConfig;
     }
 }
 
@@ -136,14 +183,44 @@ export class StatesControler extends BaseClass {
             response: ('now' | 'medium' | 'slow')[];
         };
     } = {};
+    private deletePageTimeout: ioBroker.Interval | undefined;
     private stateDB: { [key: string]: { state: ioBroker.State; ts: number } } = {};
     private tempObjectDB: { [key: string]: { [id: string]: ioBroker.Object } } | undefined = undefined;
     timespan: number;
     constructor(adapter: AdapterClassDefinition, name: string = '', timespan: number = 15000) {
         super(adapter, name || 'StatesDBReadOnly');
         this.timespan = timespan;
+        this.deletePageTimeout = this.adapter.setInterval(this.deletePageLoop, 60000);
     }
+    private deletePageLoop = (): void => {
+        const removeId = [];
+        for (const id in this.triggerDB) {
+            const entry = this.triggerDB[id];
+            const removeIndex = [];
+            for (const i in entry.to) {
+                if (entry.to[i].unload) removeIndex.push(Number(i));
+            }
+            for (const i of removeIndex) {
+                for (const key in entry) {
+                    const k = key as keyof typeof entry;
+                    const item = entry[k];
+                    if (Array.isArray(item)) {
+                        item.splice(i, 1);
+                    }
+                }
+            }
+            if (entry.to.length === 0) removeId.push(id);
+        }
 
+        for (const id of removeId) {
+            delete this.triggerDB[id];
+        }
+    };
+
+    async delete(): Promise<void> {
+        await super.delete();
+        if (this.deletePageTimeout) this.adapter.clearInterval(this.deletePageTimeout);
+    }
     /**
      * Set a subscript to a foreignState and write current state/value to db
      * @param id state id
@@ -156,15 +233,22 @@ export class StatesControler extends BaseClass {
             //throw new Error(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
         }
         if (this.triggerDB[id] !== undefined) {
-            if (this.triggerDB[id].to.indexOf(from) == -1) {
+            const index = this.triggerDB[id].to.findIndex((a) => a == from);
+            if (index === -1) {
                 this.triggerDB[id].to.push(from);
                 this.triggerDB[id].subscribed.push(false);
                 this.triggerDB[id].response.push(response);
+            } else {
+                if (this.triggerDB[id].response[index] !== response) {
+                    if (response === 'now') this.triggerDB[id].response[index] = 'now';
+                }
             }
         } else {
             const state = await this.adapter.getForeignStateAsync(id);
             if (state) {
+                // erstelle keinen trigger für das gleiche parent doppelt..
                 await this.adapter.subscribeForeignStatesAsync(id);
+
                 this.triggerDB[id] = {
                     state,
                     to: [from],
@@ -172,6 +256,9 @@ export class StatesControler extends BaseClass {
                     subscribed: [false],
                     response: [response],
                 };
+                if (this.stateDB[id] !== undefined) {
+                    delete this.stateDB[id];
+                }
             }
             this.log.debug(`Set a new trigger to ${id}`);
         }
@@ -250,9 +337,30 @@ export class StatesControler extends BaseClass {
                         this.triggerDB[dp].state = state;
                         if (state.ack) {
                             this.triggerDB[dp].to.forEach(
-                                (c) => c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride(),
+                                (c, index) =>
+                                    c.onStateTriggerSuperDoNotOverride &&
+                                    c.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]),
                             );
                         }
+                    }
+                }
+            }
+            if (dp.startsWith(this.adapter.namespace)) {
+                const id = dp.replace(this.adapter.namespace + '.', '');
+                const libState = this.library.readdb(id);
+                if (libState) {
+                    this.library.setdb(id, { ...libState, val: state.val, ts: state.ts, ack: state.ack });
+                }
+
+                if (
+                    libState &&
+                    libState.obj &&
+                    libState.obj.common &&
+                    libState.obj.common.write &&
+                    this.adapter.controller
+                ) {
+                    for (const panel of this.adapter.controller.panels) {
+                        await panel.onStateChange(id, state);
                     }
                 }
             }
@@ -307,27 +415,27 @@ export class StatesControler extends BaseClass {
      * @param parent Page etc.
      * @returns then json with values dataitem or undefined
      */
-    async createDataItems(data: any, parent: any): Promise<any> {
+    async createDataItems(data: any, parent: any, target: any = {}): Promise<any> {
         for (const i in data) {
             const d = data[i];
             if (d === undefined) continue;
             if (typeof d === 'object' && !('type' in d)) {
-                data[i] = await this.createDataItems(d, parent);
+                target[i] = await this.createDataItems(d, parent, target[i] ?? Array.isArray(d) ? [] : {});
             } else if (typeof d === 'object' && 'type' in d) {
-                data[i] =
+                target[i] =
                     data[i] !== undefined
                         ? new Dataitem(this.adapter, { ...d, name: `${this.name}.${parent.name}.${i}` }, parent, this)
                         : undefined;
-                if (data[i] !== undefined && !(await data[i].isValidAndInit())) {
-                    data[i] = undefined;
+                if (target[i] !== undefined && !(await target[i].isValidAndInit())) {
+                    target[i] = undefined;
                 }
             }
         }
-        return data;
+        return target;
     }
 
     async getDataItemsFromAuto(dpInit: string, data: any): Promise<any> {
-        if (dpInit === '') return {};
+        if (dpInit === '') return data;
         if (this.tempObjectDB === undefined) {
             this.tempObjectDB = {};
             this.adapter.setTimeout(() => {
