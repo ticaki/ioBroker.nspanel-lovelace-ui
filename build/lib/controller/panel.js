@@ -37,6 +37,7 @@ var import_definition = require("../const/definition");
 var import_pageMedia = require("../pages/pageMedia");
 var import_pageGrid = require("../pages/pageGrid");
 var import_navigation = require("../classes/navigation");
+var import_pageThermo = require("../pages/pageThermo");
 function isPanelConfig(F) {
   if (F.controller === void 0)
     return false;
@@ -132,6 +133,17 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cardThermo": {
+          const pmconfig = {
+            card: pageConfig.card,
+            panel: this,
+            id: String(a),
+            name: "PM",
+            alwaysOn: pageConfig.alwaysOn,
+            adapter: this.adapter,
+            panelSend: this.panelSend,
+            uniqueID: pageConfig.uniqueID
+          };
+          this.pages[a] = new import_pageThermo.PageThermo(pmconfig, pageConfig);
           break;
         }
         case "cardMedia": {
@@ -192,7 +204,8 @@ class Panel extends import_library.BaseClass {
     this.navigation = new import_navigation.Navigation(navConfig);
   }
   init = async () => {
-    this.controller.mqttClient.subscript(this.topic + "/#", this.onMessage);
+    this.controller.mqttClient.subscript(this.topic + "/tele/#", this.onMessage);
+    this.controller.mqttClient.subscript(this.topic + "/stat/#", this.onMessage);
     this.sendToTasmota(this.topic + "/cmnd/STATUS0", "");
   };
   start = async () => {
@@ -205,14 +218,15 @@ class Panel extends import_library.BaseClass {
       import_definition.genericStateObjects.panel.panels.cmd._channel
     );
     for (const page of this.pages) {
-      this.log.debug("init page");
+      if (page)
+        this.log.debug("init page " + page.uniqueID);
       if (page)
         await page.init();
     }
     this.sendToTasmota(this.topic + "/cmnd/POWER1", "");
     this.sendToTasmota(this.topic + "/cmnd/POWER2", "");
     this.navigation.init();
-    this.sendToPanel("pageType~pageStartup", { retain: false });
+    this.sendToPanel("pageType~pageStartup", { retain: true });
   };
   sendToPanelClass = () => {
   };
@@ -265,9 +279,6 @@ class Panel extends import_library.BaseClass {
     }
   }
   onMessage = async (topic, message) => {
-    if (topic.endsWith(import_definition.SendTopicAppendix)) {
-      return;
-    }
     for (const fn of this.reivCallbacks) {
       if (fn)
         fn(topic, message);
@@ -302,6 +313,11 @@ class Panel extends import_library.BaseClass {
             const data = JSON.parse(message);
             this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
             if (!this.InitDone) {
+              this.sendToTasmota(
+                this.topic + "/cmnd/Rule3",
+                "ON CustomSend DO RuleTimer1 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON"
+              );
+              this.sendToTasmota(this.topic + "/cmnd/Rule3", "ON");
               this.InitDone = true;
               await this.start();
             }

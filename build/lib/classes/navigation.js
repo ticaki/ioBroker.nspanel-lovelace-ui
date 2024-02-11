@@ -29,7 +29,7 @@ class Navigation extends import_library.BaseClass {
   panel;
   database = [];
   navigationConfig;
-  doubleClickDelay = 400;
+  doubleClickDelay = 300;
   doubleClickTimeout;
   currentItem = 0;
   constructor(config) {
@@ -118,6 +118,8 @@ class Navigation extends import_library.BaseClass {
           this.panel.setActivePage(this.database[index].page);
           return;
         }
+        this.log.debug(`Navigation single click with target ${i[d].single} not work.`);
+        return;
       }
       this.log.debug("Navigation single click not work.");
     }

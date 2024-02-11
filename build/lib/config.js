@@ -36,224 +36,226 @@ const testConfigMedia = {
   initMode: "auto",
   alwaysOn: "none",
   config: {
-    heading: {
-      type: "const",
-      constVal: "home"
-    },
-    alwaysOnDisplay: {
-      type: "const",
-      constVal: "test"
-    },
-    album: {
-      mode: "auto",
-      type: "state",
-      role: "media.album",
-      dp: ""
-    },
-    titel: {
-      on: {
+    card: "cardMedia",
+    data: {
+      headline: {
         type: "const",
-        constVal: true
+        constVal: "home"
       },
-      text: {
-        mode: "auto",
-        type: "triggered",
-        role: "media.title",
-        dp: ""
-      },
-      color: {
+      alwaysOnDisplay: {
         type: "const",
-        constVal: { red: 250, green: 2, blue: 3 }
+        constVal: "test"
       },
-      icon: void 0,
-      list: void 0
-    },
-    duration: {
-      mode: "auto",
-      type: "state",
-      role: "media.duration",
-      dp: ""
-    },
-    elapsed: {
-      mode: "auto",
-      type: "triggered",
-      role: ["media.elapsed", "media.elapsed.text"],
-      dp: ""
-    },
-    volume: {
-      mode: "auto",
-      type: "triggered",
-      role: ["level.volume"],
-      dp: ""
-    },
-    artist: {
-      on: {
-        type: "const",
-        constVal: true
-      },
-      text: {
+      album: {
         mode: "auto",
         type: "state",
-        role: "media.artist",
+        role: "media.album",
         dp: ""
       },
-      color: void 0,
+      titel: {
+        on: {
+          type: "const",
+          constVal: true
+        },
+        text: {
+          mode: "auto",
+          type: "triggered",
+          role: "media.title",
+          dp: ""
+        },
+        color: {
+          type: "const",
+          constVal: { red: 250, green: 2, blue: 3 }
+        }
+      },
+      duration: {
+        mode: "auto",
+        type: "state",
+        role: "media.duration",
+        dp: ""
+      },
+      elapsed: {
+        mode: "auto",
+        type: "triggered",
+        role: ["media.elapsed", "media.elapsed.text"],
+        dp: ""
+      },
+      volume: {
+        mode: "auto",
+        type: "triggered",
+        role: ["level.volume"],
+        response: "now",
+        scale: { min: 0, max: 100 },
+        dp: ""
+      },
+      artist: {
+        on: {
+          type: "const",
+          constVal: true
+        },
+        text: {
+          mode: "auto",
+          type: "state",
+          role: "media.artist",
+          dp: ""
+        },
+        color: void 0,
+        icon: {
+          type: "const",
+          constVal: "diameter"
+        },
+        list: void 0
+      },
+      shuffle: {
+        mode: "auto",
+        type: "state",
+        role: "media.mode.shuffle",
+        dp: ""
+      },
       icon: {
         type: "const",
-        constVal: "diameter"
+        constVal: "dialpad"
       },
-      list: void 0
-    },
-    shuffle: {
-      mode: "auto",
-      type: "state",
-      role: "media.mode.shuffle",
-      dp: ""
-    },
-    icon: {
-      type: "const",
-      constVal: "dialpad"
-    },
-    play: {
-      mode: "auto",
-      type: "state",
-      role: ["button.play"],
-      dp: ""
-    },
-    mediaState: {
-      mode: "auto",
-      type: "triggered",
-      role: ["media.state"],
-      dp: ""
-    },
-    stop: {
-      mode: "auto",
-      type: "state",
-      role: ["button.stop"],
-      dp: ""
-    },
-    pause: {
-      mode: "auto",
-      type: "state",
-      role: "button.pause",
-      dp: ""
-    },
-    forward: {
-      mode: "auto",
-      type: "state",
-      role: "button.next",
-      dp: ""
-    },
-    backward: {
-      mode: "auto",
-      type: "state",
-      role: "button.prev",
-      dp: ""
-    },
-    logo: {
-      on: {
-        type: "const",
-        constVal: true
+      play: {
+        mode: "auto",
+        type: "state",
+        role: ["button.play"],
+        dp: ""
       },
-      text: { type: "const", constVal: "1" },
-      icon: { type: "const", constVal: "home" },
-      color: { type: "const", constVal: { red: 250, blue: 250, green: 0 } },
-      list: void 0,
-      action: "cross"
-    },
-    toolbox: [
-      {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: { type: "const", constVal: "Repeat" },
-        icon: { type: "const", constVal: "repeat" },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: { type: "state", dp: "", mode: "auto", role: "media.playlist" },
-        action: "cross"
+      mediaState: {
+        mode: "auto",
+        type: "triggered",
+        role: ["media.state"],
+        dp: ""
       },
-      {
+      stop: {
+        mode: "auto",
+        type: "state",
+        role: ["button.stop"],
+        dp: ""
+      },
+      pause: {
+        mode: "auto",
+        type: "state",
+        role: "button.pause",
+        dp: ""
+      },
+      forward: {
+        mode: "auto",
+        type: "state",
+        role: "button.next",
+        dp: ""
+      },
+      backward: {
+        mode: "auto",
+        type: "state",
+        role: "button.prev",
+        dp: ""
+      },
+      logo: {
         on: {
           type: "const",
           constVal: true
         },
         text: { type: "const", constVal: "1" },
         icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+        color: { type: "const", constVal: { red: 250, blue: 250, green: 0 } },
         list: void 0,
         action: "cross"
       },
-      {
-        on: {
-          type: "const",
-          constVal: true
+      toolbox: [
+        {
+          on: {
+            type: "const",
+            constVal: true
+          },
+          text: { type: "const", constVal: "Repeat" },
+          icon: { type: "const", constVal: "repeat" },
+          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+          list: { type: "state", dp: "", mode: "auto", role: "media.playlist" },
+          action: "cross"
         },
-        text: { type: "const", constVal: "1" },
-        icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: void 0,
-        action: "cross"
-      },
-      {
-        on: {
-          type: "const",
-          constVal: false
+        {
+          on: {
+            type: "const",
+            constVal: true
+          },
+          text: { type: "const", constVal: "1" },
+          icon: { type: "const", constVal: "home" },
+          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+          list: void 0,
+          action: "cross"
         },
-        text: { type: "const", constVal: "1" },
-        icon: { true: { type: "const", constVal: "reply" }, false: { type: "const", constVal: "replay" } },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: void 0,
-        action: "cross"
-      },
-      {
-        on: {
-          type: "const",
-          constVal: false
+        {
+          on: {
+            type: "const",
+            constVal: true
+          },
+          text: { type: "const", constVal: "1" },
+          icon: { type: "const", constVal: "home" },
+          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+          list: void 0,
+          action: "cross"
         },
-        text: { type: "const", constVal: "1" },
-        icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: void 0,
-        action: "cross"
-      },
-      {
-        on: {
-          type: "const",
-          constVal: true
+        {
+          on: {
+            type: "const",
+            constVal: false
+          },
+          text: { type: "const", constVal: "1" },
+          icon: { true: { type: "const", constVal: "reply" }, false: { type: "const", constVal: "replay" } },
+          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+          list: void 0,
+          action: "cross"
         },
-        text: { type: "const", constVal: "1" },
-        icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: void 0,
-        action: "cross"
-      },
-      {
-        on: {
-          type: "const",
-          constVal: true
+        {
+          on: {
+            type: "const",
+            constVal: false
+          },
+          text: { type: "const", constVal: "1" },
+          icon: { type: "const", constVal: "home" },
+          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+          list: void 0,
+          action: "cross"
         },
-        text: { type: "const", constVal: "1" },
-        icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: void 0,
-        action: "cross"
-      },
-      {
-        on: {
-          type: "const",
-          constVal: true
+        {
+          on: {
+            type: "const",
+            constVal: true
+          },
+          text: { type: "const", constVal: "1" },
+          icon: { type: "const", constVal: "home" },
+          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+          list: void 0,
+          action: "cross"
         },
-        text: { type: "const", constVal: "1" },
-        icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-        list: void 0,
-        action: "cross"
-      }
-    ]
+        {
+          on: {
+            type: "const",
+            constVal: true
+          },
+          text: { type: "const", constVal: "1" },
+          icon: { type: "const", constVal: "home" },
+          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+          list: void 0,
+          action: "cross"
+        },
+        {
+          on: {
+            type: "const",
+            constVal: true
+          },
+          text: { type: "const", constVal: "1" },
+          icon: { type: "const", constVal: "home" },
+          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
+          list: void 0,
+          action: "cross"
+        }
+      ]
+    }
   },
   items: void 0,
-  writeItems: void 0,
   pageItems: [
     {
       role: "text.list",
@@ -291,14 +293,12 @@ const testConfigMedia = {
           factor: void 0,
           unit: void 0
         },
-        text1: {
+        text: {
           true: void 0,
           false: void 0
         },
         valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" },
-        useColor: void 0,
-        setValue1: void 0
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
     {
@@ -337,30 +337,133 @@ const testConfigMedia = {
           factor: void 0,
           unit: void 0
         },
-        text1: {
+        text: {
           true: void 0,
           false: void 0
         },
-        valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" },
-        useColor: void 0,
         setValue1: void 0
       }
     }
   ],
-  uniqueID: "media1"
+  uniqueID: "media1",
+  useColor: false
+};
+const pageThermoTest = {
+  card: "cardThermo",
+  initMode: "auto",
+  uniqueID: "thermo1",
+  dpInit: "",
+  alwaysOn: "none",
+  pageItems: [
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setNavi: {
+          type: "const",
+          constVal: "3"
+        },
+        setValue1: void 0
+      }
+    }
+  ],
+  config: {
+    card: "cardThermo",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "headline"
+      },
+      current: {
+        type: "const",
+        constVal: "20"
+      },
+      unit: {
+        type: "const",
+        constVal: "\xB0C"
+      },
+      text1: {
+        type: "const",
+        constVal: "text1"
+      },
+      text2: {
+        type: "const",
+        constVal: "text2"
+      },
+      minTemp: {
+        type: "const",
+        constVal: "10"
+      },
+      maxTemp: {
+        type: "const",
+        constVal: "60"
+      },
+      tempStep: {
+        type: "const",
+        constVal: "5"
+      },
+      set1: { type: "state", dp: "0_userdata.0.number1" },
+      set2: { type: "state", dp: "0_userdata.0.number2" }
+    }
+  },
+  items: void 0,
+  useColor: false
 };
 const Testconfig = {
   pages: [
+    pageThermoTest,
     {
       card: "cardGrid",
       dpInit: "",
       initMode: "custom",
       alwaysOn: "none",
       uniqueID: "grid1",
-      config: void 0,
-      items: void 0,
-      writeItems: void 0,
+      useColor: false,
+      config: {
+        card: "cardGrid",
+        data: {
+          headline: {
+            type: "const",
+            constVal: "\xDCberschrift"
+          }
+        }
+      },
       pageItems: [
         {
           role: "text.list",
@@ -398,14 +501,12 @@ const Testconfig = {
               factor: void 0,
               unit: void 0
             },
-            text1: {
+            text: {
               true: void 0,
               false: void 0
             },
             valueList: { type: "const", constVal: "home?butter" },
-            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" },
-            useColor: void 0,
-            setValue1: void 0
+            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
           }
         },
         {
@@ -444,7 +545,7 @@ const Testconfig = {
               factor: void 0,
               unit: void 0
             },
-            text1: {
+            text: {
               true: void 0,
               false: void 0
             },
@@ -452,11 +553,11 @@ const Testconfig = {
               type: "const",
               constVal: "3"
             },
-            useColor: void 0,
             setValue1: void 0
           }
         }
-      ]
+      ],
+      items: void 0
     },
     {
       card: "cardGrid2",
@@ -464,9 +565,17 @@ const Testconfig = {
       initMode: "custom",
       alwaysOn: "none",
       uniqueID: "grid3",
-      config: void 0,
+      useColor: false,
+      config: {
+        card: "cardGrid2",
+        data: {
+          headline: {
+            type: "const",
+            constVal: "\xDCberschrift"
+          }
+        }
+      },
       items: void 0,
-      writeItems: void 0,
       pageItems: [
         {
           role: "text.list",
@@ -504,14 +613,12 @@ const Testconfig = {
               factor: void 0,
               unit: void 0
             },
-            text1: {
+            text: {
               true: void 0,
               false: void 0
             },
             valueList: { type: "const", constVal: "home?butter" },
-            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" },
-            useColor: void 0,
-            setValue1: void 0
+            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
           }
         },
         {
@@ -550,13 +657,10 @@ const Testconfig = {
               factor: void 0,
               unit: void 0
             },
-            text1: {
+            text: {
               true: void 0,
               false: void 0
             },
-            valueList: { type: "const", constVal: "home?butter" },
-            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" },
-            useColor: void 0,
             setValue1: void 0
           }
         }
@@ -568,9 +672,17 @@ const Testconfig = {
       initMode: "custom",
       alwaysOn: "none",
       uniqueID: "grid2",
-      config: void 0,
+      useColor: false,
+      config: {
+        card: "cardGrid",
+        data: {
+          headline: {
+            type: "const",
+            constVal: "\xDCberschrift2"
+          }
+        }
+      },
       items: void 0,
-      writeItems: void 0,
       pageItems: [
         {
           role: "text.list",
@@ -608,14 +720,12 @@ const Testconfig = {
               factor: void 0,
               unit: void 0
             },
-            text1: {
+            text: {
               true: void 0,
               false: void 0
             },
             valueList: { type: "const", constVal: "home?butter" },
-            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" },
-            useColor: void 0,
-            setValue1: void 0
+            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
           }
         },
         {
@@ -654,13 +764,10 @@ const Testconfig = {
               factor: void 0,
               unit: void 0
             },
-            text1: {
+            text: {
               true: void 0,
               false: void 0
             },
-            valueList: { type: "const", constVal: "home?butter" },
-            setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" },
-            useColor: void 0,
             setValue1: void 0
           }
         }
@@ -1639,8 +1746,14 @@ const Testconfig = {
   ],
   navigation: [
     {
-      name: "1",
+      name: "0",
+      page: "thermo1",
       left: { single: "4" },
+      right: { single: "1" }
+    },
+    {
+      name: "1",
+      left: { single: "0" },
       right: { single: "2" },
       page: "grid1"
     },

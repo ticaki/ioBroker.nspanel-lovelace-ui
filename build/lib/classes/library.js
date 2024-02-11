@@ -108,12 +108,7 @@ class Library extends BaseClass {
     this.stateDataBase = {};
   }
   async init() {
-    const obj = await this.adapter.getForeignObjectAsync("system.config");
-    if (obj) {
-      await this.setLanguage(obj.common.language, true);
-    } else {
-      await this.setLanguage("en", true);
-    }
+    await this.checkLanguage();
   }
   async writeFromJson(prefix, objNode, def, data, expandTree = false) {
     if (!def || typeof def !== "object")
@@ -464,8 +459,8 @@ class Library extends BaseClass {
     }
   }
   getLocalLanguage() {
-    if (this.language)
-      return this.language;
+    if (this.adapter.language)
+      return this.adapter.language;
     return "en-En";
   }
   getTranslation(key) {
@@ -492,19 +487,12 @@ class Library extends BaseClass {
       return key;
     return result;
   }
-  async setLanguage(language, force = false) {
-    if (!language)
-      language = "en";
-    if (force || this.language != language) {
-      try {
-        this.translation = await Promise.resolve().then(() => __toESM(require(`../../../admin/i18n/${language}/translations.json`)));
-        this.language = language;
-        return true;
-      } catch (error) {
-        this.log.error(`Language ${language} not exist!`);
-      }
+  async checkLanguage() {
+    try {
+      this.translation = await Promise.resolve().then(() => __toESM(require(`../../../admin/i18n/${this.adapter.language}/translations.json`)));
+    } catch (error) {
+      this.log.error(`Language ${this.adapter.language} not exist!`);
     }
-    return false;
   }
   sortText(text) {
     text.sort((a, b) => {
@@ -527,7 +515,7 @@ class Library extends BaseClass {
     if (day) {
       b[0] = b[0].split(" ")[2];
     }
-    return " " + (new Date(`${b[1]}/${b[0]}/${new Date().getFullYear()}`).toLocaleString(this.language, {
+    return " " + (new Date(`${b[1]}/${b[0]}/${new Date().getFullYear()}`).toLocaleString(this.getLocalLanguage(), {
       weekday: day ? "long" : void 0,
       day: "numeric",
       month: `long`

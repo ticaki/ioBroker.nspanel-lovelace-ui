@@ -55,7 +55,6 @@ class PageMedia extends import_Page2.Page {
   initMode;
   dpInit;
   items;
-  writeItems;
   step = 1;
   headlinePos = 0;
   titelPos = 0;
@@ -64,30 +63,22 @@ class PageMedia extends import_Page2.Page {
   constructor(config, options) {
     super(config, options.pageItems);
     this.config = options.config;
-    this.writeItems = options.writeItems;
-    this.items = options.items;
+    if (this.items && this.items.card === "cardMedia")
+      this.items = options.items;
     this.initMode = options.initMode;
     this.dpInit = options.dpInit;
     this.minUpdateInterval = 2e3;
   }
   async init() {
     const config = { ...this.config };
-    const tempConfig = this.initMode === "auto" ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : {};
+    const tempConfig = this.initMode === "auto" ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : config;
     const tempItem = await this.panel.statesControler.createDataItems(
       tempConfig,
       this
     );
+    if (tempItem)
+      tempItem.card = this.config && this.config.card;
     this.items = tempItem;
-    for (const g in this.writeItems) {
-      const d = g;
-      const item = this.writeItems[d];
-      if (item === void 0)
-        continue;
-      if (!item.dp || !await this.panel.statesControler.existsState(item.dp)) {
-        this.log.warn(`State ${item.dp} was not found!`);
-        this.writeItems[d] = void 0;
-      }
-    }
   }
   async onVisibilityChange(val) {
     await super.onVisibilityChange(val);
@@ -102,34 +93,36 @@ class PageMedia extends import_Page2.Page {
       return;
     const message = {};
     {
+      if (item.card !== "cardMedia")
+        return;
       const test = {};
       test.bla = "dd";
       let duration = "0:00", elapsed = "0:00", title = "unknown";
-      if (item.titel && item.titel.text) {
-        const v = await item.titel.text.getString();
+      if (item.data.titel && item.data.titel.text) {
+        const v = await item.data.titel.text.getString();
         if (v !== null) {
           title = v;
         }
       }
-      if (item.artist && item.artist.text) {
-        const v = await item.artist.text.getString();
+      if (item.data.artist && item.data.artist.text) {
+        const v = await item.data.artist.text.getString();
         if (v !== null) {
           message.artist = v;
         }
       }
-      if (item.duration && item.elapsed) {
-        const d = await item.duration.getNumber();
+      if (item.data.duration && item.data.elapsed) {
+        const d = await item.data.duration.getNumber();
         if (d !== null) {
           const t = new Date().setHours(0, 0, d, 0);
           duration = new Date(t).toLocaleTimeString("de-DE", { minute: "2-digit", second: "2-digit" });
         }
-        if (item.elapsed.type === "string") {
-          const e = await item.elapsed.getString();
+        if (item.data.elapsed.type === "string") {
+          const e = await item.data.elapsed.getString();
           if (e !== null) {
             elapsed = e;
           }
-        } else if (item.elapsed.type === "number") {
-          const e = await item.elapsed.getNumber();
+        } else if (item.data.elapsed.type === "number") {
+          const e = await item.data.elapsed.getNumber();
           if (e !== null) {
             const t = new Date().setHours(0, 0, e, 0);
             elapsed = new Date(t).toLocaleTimeString("de-DE", { minute: "2-digit", second: "2-digit" });
@@ -147,8 +140,8 @@ class PageMedia extends import_Page2.Page {
       }
       const maxSize = 35;
       message.name = `(${elapsed}|${duration})`;
-      if (item.album) {
-        const v = await item.album.getString();
+      if (item.data.album) {
+        const v = await item.data.album.getString();
         if (v !== null) {
           if (`${v} ${message.name}`.length > maxSize) {
             const s = v + "          ";
@@ -161,11 +154,11 @@ class PageMedia extends import_Page2.Page {
       }
     }
     message.shuffle_icon = "";
-    if (item.shuffle && item.shuffle.type) {
+    if (item.data.shuffle && item.data.shuffle.type) {
       let value = null;
-      switch (item.shuffle.type) {
+      switch (item.data.shuffle.type) {
         case "string": {
-          const v = await item.shuffle.getString();
+          const v = await item.data.shuffle.getString();
           if (v !== null) {
             value = ["OFF", "FALSE"].indexOf(v.toUpperCase()) !== -1;
           }
@@ -173,7 +166,7 @@ class PageMedia extends import_Page2.Page {
         }
         case "number":
         case "boolean": {
-          value = await item.shuffle.getBoolean();
+          value = await item.data.shuffle.getBoolean();
           break;
         }
         case "undefined":
@@ -189,29 +182,29 @@ class PageMedia extends import_Page2.Page {
         message.shuffle_icon = value ? "shuffle-variant" : "shuffle-disabled";
       }
     }
-    if (item.volume) {
-      const v = await item.volume.getNumber();
+    if (item.data.volume) {
+      const v = await item.data.volume.getNumber();
       if (v !== null) {
         message.volume = String(v);
       }
     }
-    if (item.mediaState) {
-      const v = await item.mediaState.getString();
+    if (item.data.mediaState) {
+      const v = await item.data.mediaState.getString();
       if (v !== null) {
         message.iconplaypause = !await this.getMediaState() ? "play" : "pause";
-        if (await item.stop) {
+        if (await item.data.stop) {
           message.onoffbuttonColor = v.toUpperCase() !== "STOP" ? "65535" : "1374";
         } else {
           message.onoffbuttonColor = message.iconplaypause !== "pause" ? "65535" : "1374";
         }
       }
     }
-    if (item.titel && item.titel.color) {
-      const v = await getValueFromBoolean(item.titel.color, "color");
+    if (item.data.titel && item.data.titel.color) {
+      const v = await getValueFromBoolean(item.data.titel.color, "color");
       if (v !== null)
         message.titelColor = v;
     }
-    if (item.logo) {
+    if (item.data.logo) {
       message.logo = "~~~~~";
     }
     {
@@ -232,9 +225,9 @@ class PageMedia extends import_Page2.Page {
     this.sendToPanel(this.getMessage(msg));
   }
   async getMediaState() {
-    if (!this.items)
+    if (!this.items || this.items.card !== "cardMedia")
       return null;
-    const item = this.items.mediaState;
+    const item = this.items.data.mediaState;
     if (item) {
       const v = await item.getString();
       if (v !== null) {
@@ -244,9 +237,9 @@ class PageMedia extends import_Page2.Page {
     return null;
   }
   async getOnOffState() {
-    if (!this.items)
+    if (!this.items || this.items.card !== "cardMedia")
       return null;
-    const item = this.items.mediaState;
+    const item = this.items.data.mediaState;
     if (item) {
       const v = await item.getString();
       if (v !== null) {
@@ -310,39 +303,39 @@ class PageMedia extends import_Page2.Page {
     } else
       return;
     const items = this.items;
-    if (!items)
+    if (!items || items.card !== "cardMedia")
       return;
     switch (event.action) {
       case "media-back": {
-        items.backward && await items.backward.setStateTrue();
+        items.data.backward && await items.data.backward.setStateTrue();
         break;
       }
       case "media-pause": {
-        if (items.pause && items.play) {
+        if (items.data.pause && items.data.play) {
           if (await this.getMediaState())
-            await items.pause.setStateTrue();
+            await items.data.pause.setStateTrue();
           else
-            await items.play.setStateTrue();
-        } else if (items.mediaState) {
+            await items.data.play.setStateTrue();
+        } else if (items.data.mediaState) {
         }
         break;
       }
       case "media-next": {
-        items.forward && await items.forward.setStateTrue();
+        items.data.forward && await items.data.forward.setStateTrue();
         break;
       }
       case "media-shuffle": {
-        items.shuffle && await items.shuffle.setStateTrue();
+        items.data.shuffle && await items.data.shuffle.setStateTrue();
         break;
       }
       case "volumeSlider": {
-        if (items.volume) {
+        if (items.data.volume) {
           let v = parseInt(event.opt);
           if (v > 100)
             v = 100;
           else if (v < 0)
             v = 0;
-          await items.volume.setStateAsync(v);
+          await items.data.volume.setStateAsync(v);
         } else {
           this.log.error(`Missing volumen controller. Report to dev`);
         }
@@ -376,9 +369,9 @@ class PageMedia extends import_Page2.Page {
         break;
       }
       case "media-OnOff": {
-        if (items.stop) {
+        if (items.data.stop) {
           if (await this.getOnOffState())
-            await items.stop.setStateTrue();
+            await items.data.stop.setStateTrue();
         }
         break;
       }

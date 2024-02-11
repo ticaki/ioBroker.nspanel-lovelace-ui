@@ -46,12 +46,14 @@ class PageGrid extends import_Page.Page {
   constructor(config, options) {
     super(config, options.pageItems);
     this.config = options.config;
-    this.items = options.items;
+    if (options.items && (options.items.card == "cardGrid" || options.items.card == "cardGrid2"))
+      this.items = options.items;
     this.minUpdateInterval = 2e3;
   }
   async init() {
   }
   async update() {
+    var _a;
     const message = {};
     message.options = [];
     if (this.pageItems) {
@@ -62,6 +64,7 @@ class PageGrid extends import_Page.Page {
           message.options[a] = await temp.getPageItemPayload();
       }
     }
+    message.headline = (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : "";
     message.navigation = this.getNavigation();
     const msg = Object.assign(
       this.card === "cardGrid" ? PageGridMessageDefault : PageGrid2MessageDefault,

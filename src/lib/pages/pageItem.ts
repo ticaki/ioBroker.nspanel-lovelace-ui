@@ -1,5 +1,4 @@
 import * as Color from '../const/Color';
-import { Icons } from '../const/icon_mapping';
 import { PageItemInterface } from '../classes/Page';
 import {
     PageItemDataItems,
@@ -19,7 +18,7 @@ export class PageItem extends BaseClassTriggerd {
     defaultOnColor = Color.White;
     defaultOffColor = Color.Blue;
     config: PageItemDataItemsOptions | undefined;
-    dataItems: PageItemDataItems['data'] | undefined;
+    dataItems: PageItemDataItems | undefined;
     panel: Panel;
     id: string;
     constructor(config: Omit<PageItemInterface, 'pageItemsConfig'>, options: PageItemDataItemsOptions | undefined) {
@@ -43,18 +42,18 @@ export class PageItem extends BaseClassTriggerd {
             tempConfig,
             this,
         )) as PageItemDataItems['data'];
-        this.dataItems = tempItem;
+        this.dataItems = { ...config, data: tempItem } as PageItemDataItems;
     }
 
     async getPageItemPayload(): Promise<string> {
         if (this.dataItems && this.config) {
-            const item = this.dataItems;
+            const entry = this.dataItems;
             const message: Partial<MessageItem> = {};
             const template = templatePageElements[this.config.type];
-            message.displayName = (item.headline && (await item.headline.getString())) ?? '';
             message.intNameEntity = this.id;
-            switch (this.config.type) {
+            switch (entry.type) {
                 case 'light': {
+                    const item = entry.data;
                     message.type = 'light';
                     const t =
                         'item.role' in template &&
@@ -86,7 +85,9 @@ export class PageItem extends BaseClassTriggerd {
                     return tools.getItemMesssage(message);
                     break;
                 }
-                case 'shutter': {
+                /*case 'shutter': {
+                    const item = entry.data;
+
                     message.type = 'shutter';
                     const t =
                         'item.role' in template &&
@@ -141,6 +142,7 @@ export class PageItem extends BaseClassTriggerd {
                     break;
                 }
                 case 'text': {
+                    const item = entry.data;
                     message.type = 'text';
                     const t =
                         this.config.role in template &&
@@ -183,29 +185,35 @@ export class PageItem extends BaseClassTriggerd {
                     break;
                 }
                 case 'number': {
+                    const item = entry.data;
                     break;
-                }
+                }*/
                 case 'button': {
                     /**
                      * Alles was einen Druckfläche sein kann. D
                      */
+                    const item = entry.data;
 
                     if (item.entity1 && item.entity1.value) {
-                        let value;
+                        /*let value;
                         if (item.entity1.value.type === 'string') {
                         } else if (item.entity1.value.type === 'number') {
                         } else if (item.entity1.value.type === 'boolean') {
                             value = await tools.getValueEntryBoolean(item.entity1);
                         }
                         if (value === undefined) break;
+*/
+                        message.optionalValue = !!(item.setValue1 && (await item.setValue1.getBoolean())) ? '0' : '1';
+                        message.displayName =
+                            (await tools.getEntryTextOnOff(item.text, message.optionalValue === '1')) ?? 'test1';
 
-                        message.displayName = (await tools.getEntryTextOnOff(item.text, value)) ?? 'test1';
-                        message.optionalValue = (await tools.getEntryTextOnOff(item.text1, value)) ?? 'test2';
-                        message.icon = await tools.getIconEntryValue(item.icon, value, 'home', 'account');
-                        message.iconColor = await tools.GetIconColor(
+                        message.icon = await tools.getIconEntryValue(
                             item.icon,
-                            typeof value === 'number' ? value : !!value,
+                            message.optionalValue === '1',
+                            'home',
+                            'account',
                         );
+                        message.iconColor = await tools.GetIconColor(item.icon, message.optionalValue === '1');
                         return tools.getPayload(
                             'button',
                             message.intNameEntity,
@@ -219,6 +227,7 @@ export class PageItem extends BaseClassTriggerd {
                 }
 
                 case 'input_sel': {
+                    const item = entry.data;
                     message.type = 'input_sel';
                     const value =
                         (await tools.getValueEntryNumber(item.entity1)) ??
@@ -243,8 +252,7 @@ export class PageItem extends BaseClassTriggerd {
 
                     break;
                 }
-                case 'switch':
-                case 'delete':
+                //case 'switch':
                 /*case 'volumeGroup': {
                 break;
             }
@@ -479,13 +487,13 @@ export class PageItem extends BaseClassTriggerd {
     }
     async GenerateDetailPage(mode: PopupType): Promise<string | null> {
         if (!this.config || !this.dataItems) return null;
-        const item = this.dataItems;
+        const entry = this.dataItems;
         const message: Partial<entityUpdateDetailMessage> = {};
         const template = templatePageItems[mode][this.config.role];
         message.entityName = this.id;
 
         switch (mode) {
-            case 'popupLight': {
+            /*case 'popupLight': {
                 switch (this.config.role) {
                     case 'light':
                     case 'socket':
@@ -573,9 +581,11 @@ export class PageItem extends BaseClassTriggerd {
                     }
                 }
                 break;
-            }
+            }*/
             case 'popupFan':
             case 'popupInSel': {
+                if (entry.type !== 'input_sel') break;
+                const item = entry.data;
                 message.type = 'insel';
 
                 if (message.type !== 'insel') return null;
@@ -625,41 +635,56 @@ export class PageItem extends BaseClassTriggerd {
 
     async setPopupAction(action: string, value: string): Promise<void> {
         if (value === undefined || this.dataItems === undefined) return;
-        if (action === 'mode-insel') {
-            if (!this.dataItems.setList) return;
-            let list: any = (await this.dataItems.setList.getObject()) as { id: string; value: any } | null;
-            if (list === null) {
-                list = await this.dataItems.setList.getString();
-                list = list.split('|').map((a: string) => {
-                    const t = a.split('?');
-                    return { id: t[0], value: t[1] };
-                });
-            }
-            if (list[value]) {
-                try {
-                    const obj = await this.adapter.getForeignObjectAsync(list[value].id);
-                    if (!obj || !obj.common || obj.type !== 'state') throw new Error('Dont get obj!');
-                    const type = obj.common.type;
-                    const newValue = this.adapter.library.convertToType(list[value].value, type);
-                    if (newValue !== null) {
-                        await this.adapter.setForeignStateAsync(
-                            list[value].id,
-                            newValue,
-                            list[value].id.startsWith(this.adapter.namespace),
-                        );
-                        this.log.debug(`------------Set dp ${list[value].id} to ${String(newValue)}!`);
-                    } else {
-                        this.log.error(`Try to set a null value to ${list[value].id}!`);
+        const entry = this.dataItems;
+        switch (action) {
+            case 'mode-insel':
+                {
+                    if (entry.type !== 'input_sel') break;
+                    const item = entry.data;
+                    if (!item.setList) return;
+                    let list: any = (await item.setList.getObject()) as { id: string; value: any } | null;
+                    if (list === null) {
+                        list = await item.setList.getString();
+                        list = list.split('|').map((a: string) => {
+                            const t = a.split('?');
+                            return { id: t[0], value: t[1] };
+                        });
                     }
-                } catch (e) {
-                    this.log.error(`Id ${list[value].id} is not valid!`);
+                    if (list[value]) {
+                        try {
+                            const obj = await this.adapter.getForeignObjectAsync(list[value].id);
+                            if (!obj || !obj.common || obj.type !== 'state') throw new Error('Dont get obj!');
+                            const type = obj.common.type;
+                            const newValue = this.adapter.library.convertToType(list[value].value, type);
+                            if (newValue !== null) {
+                                await this.adapter.setForeignStateAsync(
+                                    list[value].id,
+                                    newValue,
+                                    list[value].id.startsWith(this.adapter.namespace),
+                                );
+                                this.log.debug(`------------Set dp ${list[value].id} to ${String(newValue)}!`);
+                            } else {
+                                this.log.error(`Try to set a null value to ${list[value].id}!`);
+                            }
+                        } catch (e) {
+                            this.log.error(`Id ${list[value].id} is not valid!`);
+                        }
+                    } else {
+                    }
                 }
-            } else {
-            }
-        } else if (action === 'button') {
-            const value = (this.dataItems.setNavi && (await this.dataItems.setNavi.getString())) ?? null;
-            if (value !== null) {
-                this.panel.navigation.setTargetPageByName(value);
+                break;
+            case 'button': {
+                if (entry.type !== 'button') break;
+                const item = entry.data;
+                let value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
+                if (value !== null) {
+                    this.panel.navigation.setTargetPageByName(value);
+                    break;
+                }
+                value = (item.setValue1 && (await item.setValue1.getBoolean())) ?? null;
+                if (value !== null) {
+                    await item.setValue1!.setStateFlip();
+                }
             }
         }
     }

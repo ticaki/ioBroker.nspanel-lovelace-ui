@@ -298,6 +298,7 @@ export type DataItemsOptionsIcon =
       });
 export type DataItemsOptions = {
     name?: string;
+    scale?: { min: number; max: number };
 } & (DataItemsOptionsConst | DataItemsOptionsState | DataItemsOptionsTriggered | DataItemsOptionsInternal);
 
 type DataItemsOptionsAuto = {

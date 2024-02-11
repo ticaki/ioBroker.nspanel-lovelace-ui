@@ -206,20 +206,43 @@ export type PageBaseConfig = {
     uniqueID: string;
     dpInit: string; // '' and initMode 'auto' throw an error
     alwaysOn: 'none' | 'always' | 'action';
+    useColor: boolean;
     pageItems: PageItemDataItemsOptions[];
 
     //    mediaNamespace: string;
-    config:
-        | undefined
-        | (ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
-              toolbox: (toolboxItem | undefined)[];
-          } & { logo: toolboxItem | undefined });
-    items:
-        | (ChangeTypeOfKeys<PageMediaBaseConfig, Dataitem | undefined> & {
-              toolbox: (toolboxItemDataItem | undefined)[];
-          } & { logo: toolboxItemDataItem | undefined })
-        | undefined;
-    writeItems: PageMediaBaseConfigWrite | undefined;
+    config: undefined | cardMediaDataItemOptions | cardGridDataItemOptions | cardThermoDataItemOptions;
+    items: undefined | cardMediaDataItems | cardGridDataItems | cardThermoDataItems;
+};
+
+export type cardGridDataItemOptions = {
+    card: 'cardGrid' | 'cardGrid2';
+    data: ChangeTypeOfKeys<PageGridBaseConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardGridDataItems = {
+    card: 'cardGrid' | 'cardGrid2';
+    data: ChangeTypeOfKeys<PageGridBaseConfig, Dataitem | undefined>;
+};
+
+export type cardThermoDataItemOptions = {
+    card: 'cardThermo';
+    data: ChangeTypeOfKeys<PageThermoBaseConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardThermoDataItems = {
+    card: 'cardThermo';
+    data: ChangeTypeOfKeys<PageThermoBaseConfig, Dataitem | undefined>;
+};
+
+export type cardMediaDataItemOptions = {
+    card: 'cardMedia';
+    data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
+        toolbox: (toolboxItem | undefined)[];
+    } & { logo: toolboxItem | undefined };
+};
+export type cardMediaDataItems = {
+    card: 'cardMedia';
+    data: ChangeTypeOfKeys<PageMediaBaseConfig, Dataitem | undefined> & {
+        toolbox: (toolboxItemDataItem | undefined)[];
+    } & { logo: toolboxItemDataItem | undefined };
 };
 export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | object
@@ -240,7 +263,7 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
           }
     : N;
 type PageMediaBaseConfig = {
-    heading: string;
+    headline: string;
     alwaysOnDisplay: boolean;
     album: string;
     titel: listItem;
@@ -256,6 +279,39 @@ type PageMediaBaseConfig = {
     pause: string;
     forward: string;
     backward: string;
+};
+
+type PageGridBaseConfig = {
+    headline: string;
+};
+
+type PageThermoBaseConfig = {
+    current: number;
+    auto?: boolean;
+    boost?: boolean;
+    error?: boolean;
+    humidity?: number;
+    manual?: boolean;
+    mode?: string;
+    party?: boolean;
+    unreach?: boolean;
+    windowopen?: boolean;
+    cool?: boolean;
+    heat?: boolean;
+    lowbat?: boolean;
+    maintain?: boolean;
+    power?: boolean;
+    set1: boolean;
+    set2?: boolean;
+    speed?: number;
+    swing?: number;
+    unit: string;
+    headline: string;
+    text1: string;
+    text2: string;
+    minTemp: number; // *10
+    maxTemp: number; // *10
+    tempStep: number; // *10
 };
 export function isColorEntryType(F: object | ColorEntryType): F is ColorEntryType {
     if ('true' in F && 'false' in F && 'scale' in F) return true;
@@ -298,6 +354,25 @@ export type PageGridMessage = {
     navigation: string;
     options: [string?, string?, string?, string?, string?, string?, string?, string?];
 };
+export type PageThermoMessage = {
+    event: 'entityUpd';
+    headline: string;
+    navigation: string;
+    intNameEntity: string;
+    currentTemp: number | string;
+    dstTemp: number | string; // *10
+    status: string;
+    minTemp: number | string; // *10
+    maxTemp: number | string; // *10
+    tempStep: string; // *10
+    options: [string, string, string, string, string, string, string, string];
+    tCurTempLbl: string;
+    tStateLbl: string;
+    tALbl: ''; // ignored
+    tCF: string;
+    temp2: number | string; // *10
+    btDetail: '' | 1;
+};
 
 type writeItem = { dp: string } | undefined;
 export type listItem =
@@ -305,8 +380,8 @@ export type listItem =
           on: string;
           text: string;
           color: ColorEntryType | string | undefined;
-          icon: IconBoolean | string | undefined;
-          list: string | undefined;
+          icon?: IconBoolean | string | undefined;
+          list?: string | undefined;
       }
     | undefined; // mean string start with getState(' and end with ').val
 export type toolboxItem = ChangeTypeOfKeys<listItem, Types.DataItemsOptions | undefined> & {

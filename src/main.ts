@@ -25,6 +25,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         super({
             ...options,
             name: 'nspanel-lovelace-ui',
+            useFormatDate: true,
         });
         this.library = new Library(this);
         this.on('ready', this.onReady.bind(this));
@@ -48,6 +49,16 @@ class NspanelLovelaceUi extends utils.Adapter {
         this.config.Testconfig2[0].timeout = this.config.timeout;
         this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
         this.setTimeout(async () => {
+            //check config
+            if (!Testconfig.pages) return;
+            const names: string[] = [];
+            for (const p of Testconfig.pages) {
+                if (p.card === 'screensaver' || p.card === 'screensaver2') continue;
+                if (!('uniqueID' in p)) continue;
+                if (names.indexOf(p.uniqueID) !== -1) throw new Error(`uniqueID ${p.uniqueID} is double!`);
+                names.push(p.uniqueID);
+            }
+
             this.library.init();
             this.log.debug('Check configuration!');
             if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword))
