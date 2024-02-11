@@ -81,12 +81,7 @@ export class Library extends BaseClass {
     }
 
     async init(): Promise<void> {
-        const obj = await this.adapter.getForeignObjectAsync('system.config');
-        if (obj) {
-            await this.setLanguage(obj.common.language, true);
-        } else {
-            await this.setLanguage('en', true);
-        }
+        await this.checkLanguage();
     }
 
     /**
@@ -532,7 +527,7 @@ export class Library extends BaseClass {
     }
 
     getLocalLanguage(): string {
-        if (this.language) return this.language;
+        if (this.adapter.language) return this.adapter.language;
         return 'en-En';
     }
     getTranslation(key: string): string {
@@ -558,18 +553,12 @@ export class Library extends BaseClass {
         return result as ioBroker.StringOrTranslated;
     }
 
-    async setLanguage(language: ioBroker.Languages | 'uk', force = false): Promise<boolean> {
-        if (!language) language = 'en';
-        if (force || this.language != language) {
-            try {
-                this.translation = await import(`../../../admin/i18n/${language}/translations.json`);
-                this.language = language;
-                return true;
-            } catch (error) {
-                this.log.error(`Language ${language} not exist!`);
-            }
+    async checkLanguage(): Promise<void> {
+        try {
+            this.translation = await import(`../../../admin/i18n/${this.adapter.language}/translations.json`);
+        } catch (error) {
+            this.log.error(`Language ${this.adapter.language} not exist!`);
         }
-        return false;
     }
     sortText(text: string[]): string[] {
         text.sort((a, b) => {
@@ -602,7 +591,7 @@ export class Library extends BaseClass {
         return (
             ' ' +
             (
-                new Date(`${b[1]}/${b[0]}/${new Date().getFullYear()}`).toLocaleString(this.language, {
+                new Date(`${b[1]}/${b[0]}/${new Date().getFullYear()}`).toLocaleString(this.getLocalLanguage(), {
                     weekday: day ? 'long' : undefined,
                     day: 'numeric',
                     month: `long`,

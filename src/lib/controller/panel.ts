@@ -7,13 +7,14 @@ import * as pages from '../types/pages';
 import { Controller } from './controller';
 import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { callbackMessageType } from '../classes/mqtt';
-import { ReiveTopicAppendix, SendTopicAppendix, genericStateObjects } from '../const/definition';
+import { ReiveTopicAppendix, genericStateObjects } from '../const/definition';
 import { Page, PageConfigAll, PageInterface } from '../classes/Page';
 import { PageMedia } from '../pages/pageMedia';
 import { IClientPublishOptions } from 'mqtt';
 import { StatesControler } from './states-controller';
 import { PageGrid } from '../pages/pageGrid';
 import { Navigation, NavigationConfig } from '../classes/navigation';
+import { PageThermo } from '../pages/pageThermo';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -128,6 +129,17 @@ export class Panel extends BaseClass {
                 }
 
                 case 'cardThermo': {
+                    const pmconfig = {
+                        card: pageConfig.card,
+                        panel: this,
+                        id: String(a),
+                        name: 'PM',
+                        alwaysOn: pageConfig.alwaysOn,
+                        adapter: this.adapter,
+                        panelSend: this.panelSend,
+                        uniqueID: pageConfig.uniqueID,
+                    };
+                    this.pages[a] = new PageThermo(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardMedia': {
@@ -190,7 +202,8 @@ export class Panel extends BaseClass {
     }
 
     init = async (): Promise<void> => {
-        this.controller.mqttClient.subscript(this.topic + '/#', this.onMessage);
+        this.controller.mqttClient.subscript(this.topic + '/tele/#', this.onMessage);
+        this.controller.mqttClient.subscript(this.topic + '/stat/#', this.onMessage);
         this.sendToTasmota(this.topic + '/cmnd/STATUS0', '');
     };
     start = async (): Promise<void> => {
@@ -203,13 +216,13 @@ export class Panel extends BaseClass {
             genericStateObjects.panel.panels.cmd._channel,
         );
         for (const page of this.pages) {
-            this.log.debug('init page');
+            if (page) this.log.debug('init page ' + page.uniqueID);
             if (page) await page.init();
         }
         this.sendToTasmota(this.topic + '/cmnd/POWER1', '');
         this.sendToTasmota(this.topic + '/cmnd/POWER2', '');
         this.navigation.init();
-        this.sendToPanel('pageType~pageStartup', { retain: false });
+        this.sendToPanel('pageType~pageStartup', { retain: true });
     };
 
     private sendToPanelClass: (payload: string, opt?: IClientPublishOptions) => void = () => {};
@@ -264,10 +277,6 @@ export class Panel extends BaseClass {
         }
     }
     onMessage: callbackMessageType = async (topic: string, message: string) => {
-        if (topic.endsWith(SendTopicAppendix)) {
-            //this.log.debug(`Receive command ${topic} with ${message}`);
-            return;
-        }
         for (const fn of this.reivCallbacks) {
             if (fn) fn(topic, message);
         }
@@ -304,6 +313,11 @@ export class Panel extends BaseClass {
                         const data = JSON.parse(message) as NSPanel.STATUS0;
                         this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
                         if (!this.InitDone) {
+                            this.sendToTasmota(
+                                this.topic + '/cmnd/Rule3',
+                                'ON CustomSend DO RuleTimer1 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON',
+                            );
+                            this.sendToTasmota(this.topic + '/cmnd/Rule3', 'ON');
                             this.InitDone = true;
                             await this.start();
                         }

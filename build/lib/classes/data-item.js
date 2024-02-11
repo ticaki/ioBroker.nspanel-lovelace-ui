@@ -179,7 +179,11 @@ class Dataitem extends import_library.BaseClass {
   async getNumber() {
     const result = await this.getState();
     if (result && !isNaN(parseInt(String(result.val)))) {
-      return parseFloat(result.val);
+      let val = parseFloat(String(result.val));
+      if (this.options.scale !== void 0) {
+        val = Math.trunc(Color.scale(val, this.options.scale.min, this.options.scale.max, 0, 100));
+      }
+      return val;
     }
     return null;
   }

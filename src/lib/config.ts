@@ -9,224 +9,226 @@ export const testConfigMedia: pages.PageBaseConfig = {
     initMode: 'auto',
     alwaysOn: 'none',
     config: {
-        heading: {
-            type: 'const',
-            constVal: 'home',
-        },
-        alwaysOnDisplay: {
-            type: 'const',
-            constVal: 'test',
-        },
-        album: {
-            mode: 'auto',
-            type: 'state',
-            role: 'media.album',
-            dp: '',
-        },
-        titel: {
-            on: {
+        card: 'cardMedia',
+        data: {
+            headline: {
                 type: 'const',
-                constVal: true,
+                constVal: 'home',
             },
-            text: {
-                mode: 'auto',
-                type: 'triggered',
-                role: 'media.title',
-                dp: '',
-            },
-            color: {
+            alwaysOnDisplay: {
                 type: 'const',
-                constVal: { red: 250, green: 2, blue: 3 },
+                constVal: 'test',
             },
-            icon: undefined,
-            list: undefined,
-        },
-        duration: {
-            mode: 'auto',
-            type: 'state',
-            role: 'media.duration',
-            dp: '',
-        },
-        elapsed: {
-            mode: 'auto',
-            type: 'triggered',
-            role: ['media.elapsed', 'media.elapsed.text'],
-            dp: '',
-        },
-        volume: {
-            mode: 'auto',
-            type: 'triggered',
-            role: ['level.volume'],
-            dp: '',
-        },
-        artist: {
-            on: {
-                type: 'const',
-                constVal: true,
-            },
-            text: {
+            album: {
                 mode: 'auto',
                 type: 'state',
-                role: 'media.artist',
+                role: 'media.album',
                 dp: '',
             },
-            color: undefined,
+            titel: {
+                on: {
+                    type: 'const',
+                    constVal: true,
+                },
+                text: {
+                    mode: 'auto',
+                    type: 'triggered',
+                    role: 'media.title',
+                    dp: '',
+                },
+                color: {
+                    type: 'const',
+                    constVal: { red: 250, green: 2, blue: 3 },
+                },
+            },
+            duration: {
+                mode: 'auto',
+                type: 'state',
+                role: 'media.duration',
+                dp: '',
+            },
+            elapsed: {
+                mode: 'auto',
+                type: 'triggered',
+                role: ['media.elapsed', 'media.elapsed.text'],
+                dp: '',
+            },
+            volume: {
+                mode: 'auto',
+                type: 'triggered',
+                role: ['level.volume'],
+                response: 'now',
+                scale: { min: 0, max: 100 },
+                dp: '',
+            },
+            artist: {
+                on: {
+                    type: 'const',
+                    constVal: true,
+                },
+                text: {
+                    mode: 'auto',
+                    type: 'state',
+                    role: 'media.artist',
+                    dp: '',
+                },
+                color: undefined,
+                icon: {
+                    type: 'const',
+                    constVal: 'diameter',
+                },
+                list: undefined,
+            },
+            shuffle: {
+                mode: 'auto',
+                type: 'state',
+                role: 'media.mode.shuffle',
+                dp: '',
+            },
             icon: {
                 type: 'const',
-                constVal: 'diameter',
+                constVal: 'dialpad',
             },
-            list: undefined,
-        },
-        shuffle: {
-            mode: 'auto',
-            type: 'state',
-            role: 'media.mode.shuffle',
-            dp: '',
-        },
-        icon: {
-            type: 'const',
-            constVal: 'dialpad',
-        },
-        play: {
-            mode: 'auto',
-            type: 'state',
-            role: ['button.play'],
-            dp: '',
-        },
-        mediaState: {
-            mode: 'auto',
-            type: 'triggered',
-            role: ['media.state'],
-            dp: '',
-        },
-        stop: {
-            mode: 'auto',
-            type: 'state',
-            role: ['button.stop'],
-            dp: '',
-        },
-        pause: {
-            mode: 'auto',
-            type: 'state',
-            role: 'button.pause',
-            dp: '',
-        },
-        forward: {
-            mode: 'auto',
-            type: 'state',
-            role: 'button.next',
-            dp: '',
-        },
-        backward: {
-            mode: 'auto',
-            type: 'state',
-            role: 'button.prev',
-            dp: '',
-        },
-        logo: {
-            on: {
-                type: 'const',
-                constVal: true,
+            play: {
+                mode: 'auto',
+                type: 'state',
+                role: ['button.play'],
+                dp: '',
             },
-            text: { type: 'const', constVal: '1' },
-            icon: { type: 'const', constVal: 'home' },
-            color: { type: 'const', constVal: { red: 250, blue: 250, green: 0 } },
-            list: undefined,
-            action: 'cross',
-        },
-        toolbox: [
-            {
-                on: {
-                    type: 'const',
-                    constVal: true,
-                },
-                text: { type: 'const', constVal: 'Repeat' },
-                icon: { type: 'const', constVal: 'repeat' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: { type: 'state', dp: '', mode: 'auto', role: 'media.playlist' },
-                action: 'cross',
+            mediaState: {
+                mode: 'auto',
+                type: 'triggered',
+                role: ['media.state'],
+                dp: '',
             },
-            {
+            stop: {
+                mode: 'auto',
+                type: 'state',
+                role: ['button.stop'],
+                dp: '',
+            },
+            pause: {
+                mode: 'auto',
+                type: 'state',
+                role: 'button.pause',
+                dp: '',
+            },
+            forward: {
+                mode: 'auto',
+                type: 'state',
+                role: 'button.next',
+                dp: '',
+            },
+            backward: {
+                mode: 'auto',
+                type: 'state',
+                role: 'button.prev',
+                dp: '',
+            },
+            logo: {
                 on: {
                     type: 'const',
                     constVal: true,
                 },
                 text: { type: 'const', constVal: '1' },
                 icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
+                color: { type: 'const', constVal: { red: 250, blue: 250, green: 0 } },
                 list: undefined,
                 action: 'cross',
             },
-            {
-                on: {
-                    type: 'const',
-                    constVal: true,
+            toolbox: [
+                {
+                    on: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    text: { type: 'const', constVal: 'Repeat' },
+                    icon: { type: 'const', constVal: 'repeat' },
+                    color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
+                    list: { type: 'state', dp: '', mode: 'auto', role: 'media.playlist' },
+                    action: 'cross',
                 },
-                text: { type: 'const', constVal: '1' },
-                icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: undefined,
-                action: 'cross',
-            },
-            {
-                on: {
-                    type: 'const',
-                    constVal: false,
+                {
+                    on: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    text: { type: 'const', constVal: '1' },
+                    icon: { type: 'const', constVal: 'home' },
+                    color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
+                    list: undefined,
+                    action: 'cross',
                 },
-                text: { type: 'const', constVal: '1' },
-                icon: { true: { type: 'const', constVal: 'reply' }, false: { type: 'const', constVal: 'replay' } },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: undefined,
-                action: 'cross',
-            },
-            {
-                on: {
-                    type: 'const',
-                    constVal: false,
+                {
+                    on: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    text: { type: 'const', constVal: '1' },
+                    icon: { type: 'const', constVal: 'home' },
+                    color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
+                    list: undefined,
+                    action: 'cross',
                 },
-                text: { type: 'const', constVal: '1' },
-                icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: undefined,
-                action: 'cross',
-            },
-            {
-                on: {
-                    type: 'const',
-                    constVal: true,
+                {
+                    on: {
+                        type: 'const',
+                        constVal: false,
+                    },
+                    text: { type: 'const', constVal: '1' },
+                    icon: { true: { type: 'const', constVal: 'reply' }, false: { type: 'const', constVal: 'replay' } },
+                    color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
+                    list: undefined,
+                    action: 'cross',
                 },
-                text: { type: 'const', constVal: '1' },
-                icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: undefined,
-                action: 'cross',
-            },
-            {
-                on: {
-                    type: 'const',
-                    constVal: true,
+                {
+                    on: {
+                        type: 'const',
+                        constVal: false,
+                    },
+                    text: { type: 'const', constVal: '1' },
+                    icon: { type: 'const', constVal: 'home' },
+                    color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
+                    list: undefined,
+                    action: 'cross',
                 },
-                text: { type: 'const', constVal: '1' },
-                icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: undefined,
-                action: 'cross',
-            },
-            {
-                on: {
-                    type: 'const',
-                    constVal: true,
+                {
+                    on: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    text: { type: 'const', constVal: '1' },
+                    icon: { type: 'const', constVal: 'home' },
+                    color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
+                    list: undefined,
+                    action: 'cross',
                 },
-                text: { type: 'const', constVal: '1' },
-                icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
-                list: undefined,
-                action: 'cross',
-            },
-        ],
+                {
+                    on: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    text: { type: 'const', constVal: '1' },
+                    icon: { type: 'const', constVal: 'home' },
+                    color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
+                    list: undefined,
+                    action: 'cross',
+                },
+                {
+                    on: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    text: { type: 'const', constVal: '1' },
+                    icon: { type: 'const', constVal: 'home' },
+                    color: { type: 'const', constVal: { red: 123, blue: 112, green: 0 } },
+                    list: undefined,
+                    action: 'cross',
+                },
+            ],
+        },
     },
     items: undefined,
-    writeItems: undefined,
     pageItems: [
         {
             role: 'text.list',
@@ -264,7 +266,7 @@ export const testConfigMedia: pages.PageBaseConfig = {
                     factor: undefined,
                     unit: undefined,
                 },
-                text1: {
+                text: {
                     true: undefined,
                     false: undefined,
                 },
@@ -276,8 +278,6 @@ export const testConfigMedia: pages.PageBaseConfig = {
                  * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
                  */
                 setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
-                useColor: undefined,
-                setValue1: undefined,
             },
         },
         {
@@ -316,27 +316,118 @@ export const testConfigMedia: pages.PageBaseConfig = {
                     factor: undefined,
                     unit: undefined,
                 },
-                text1: {
+                text: {
                     true: undefined,
                     false: undefined,
                 },
-                /**
-                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
-                 */
-                valueList: { type: 'const', constVal: 'home?butter' },
-                /**
-                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
-                 */
-                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
-                useColor: undefined,
                 setValue1: undefined,
             },
         },
     ],
     uniqueID: 'media1',
+    useColor: false,
+};
+
+const pageThermoTest: pages.PageBaseConfig = {
+    card: 'cardThermo',
+    initMode: 'auto',
+    uniqueID: 'thermo1',
+    dpInit: '',
+    alwaysOn: 'none',
+    pageItems: [
+        {
+            role: 'text.list',
+            type: 'button',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-up' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+                setNavi: {
+                    type: 'const',
+                    constVal: '3',
+                },
+                setValue1: undefined,
+            },
+        },
+    ],
+    config: {
+        card: 'cardThermo',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'headline',
+            },
+            current: {
+                type: 'const',
+                constVal: '20',
+            },
+            unit: {
+                type: 'const',
+                constVal: '°C',
+            },
+            text1: {
+                type: 'const',
+                constVal: 'text1',
+            },
+            text2: {
+                type: 'const',
+                constVal: 'text2',
+            },
+            minTemp: {
+                type: 'const',
+                constVal: '10',
+            },
+            maxTemp: {
+                type: 'const',
+                constVal: '60',
+            },
+            tempStep: {
+                type: 'const',
+                constVal: '5',
+            },
+            set1: { type: 'state', dp: '0_userdata.0.number1' },
+            set2: { type: 'state', dp: '0_userdata.0.number2' },
+        },
+    },
+    items: undefined,
+    useColor: false,
 };
 export const Testconfig: Partial<panelConfigPartial> = {
     pages: [
+        pageThermoTest,
         {
             //type: 'sonstiges',
             card: 'cardGrid',
@@ -344,9 +435,16 @@ export const Testconfig: Partial<panelConfigPartial> = {
             initMode: 'custom',
             alwaysOn: 'none',
             uniqueID: 'grid1',
-            config: undefined,
-            items: undefined,
-            writeItems: undefined,
+            useColor: false,
+            config: {
+                card: 'cardGrid',
+                data: {
+                    headline: {
+                        type: 'const',
+                        constVal: 'Überschrift',
+                    },
+                },
+            },
             pageItems: [
                 {
                     role: 'text.list',
@@ -384,7 +482,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             factor: undefined,
                             unit: undefined,
                         },
-                        text1: {
+                        text: {
                             true: undefined,
                             false: undefined,
                         },
@@ -396,8 +494,6 @@ export const Testconfig: Partial<panelConfigPartial> = {
                          * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
                          */
                         setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
-                        useColor: undefined,
-                        setValue1: undefined,
                     },
                 },
                 {
@@ -436,7 +532,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             factor: undefined,
                             unit: undefined,
                         },
-                        text1: {
+                        text: {
                             true: undefined,
                             false: undefined,
                         },
@@ -444,11 +540,11 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             type: 'const',
                             constVal: '3',
                         },
-                        useColor: undefined,
                         setValue1: undefined,
                     },
                 },
             ],
+            items: undefined,
         },
         {
             //type: 'sonstiges',
@@ -457,9 +553,17 @@ export const Testconfig: Partial<panelConfigPartial> = {
             initMode: 'custom',
             alwaysOn: 'none',
             uniqueID: 'grid3',
-            config: undefined,
+            useColor: false,
+            config: {
+                card: 'cardGrid2',
+                data: {
+                    headline: {
+                        type: 'const',
+                        constVal: 'Überschrift',
+                    },
+                },
+            },
             items: undefined,
-            writeItems: undefined,
             pageItems: [
                 {
                     role: 'text.list',
@@ -497,7 +601,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             factor: undefined,
                             unit: undefined,
                         },
-                        text1: {
+                        text: {
                             true: undefined,
                             false: undefined,
                         },
@@ -509,8 +613,6 @@ export const Testconfig: Partial<panelConfigPartial> = {
                          * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
                          */
                         setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
-                        useColor: undefined,
-                        setValue1: undefined,
                     },
                 },
                 {
@@ -518,6 +620,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     type: 'button',
                     dpInit: undefined,
                     initMode: 'custom',
+
                     data: {
                         color: {
                             true: {
@@ -549,19 +652,10 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             factor: undefined,
                             unit: undefined,
                         },
-                        text1: {
+                        text: {
                             true: undefined,
                             false: undefined,
                         },
-                        /**
-                         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
-                         */
-                        valueList: { type: 'const', constVal: 'home?butter' },
-                        /**
-                         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
-                         */
-                        setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
-                        useColor: undefined,
                         setValue1: undefined,
                     },
                 },
@@ -574,9 +668,17 @@ export const Testconfig: Partial<panelConfigPartial> = {
             initMode: 'custom',
             alwaysOn: 'none',
             uniqueID: 'grid2',
-            config: undefined,
+            useColor: false,
+            config: {
+                card: 'cardGrid',
+                data: {
+                    headline: {
+                        type: 'const',
+                        constVal: 'Überschrift2',
+                    },
+                },
+            },
             items: undefined,
-            writeItems: undefined,
             pageItems: [
                 {
                     role: 'text.list',
@@ -614,7 +716,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             factor: undefined,
                             unit: undefined,
                         },
-                        text1: {
+                        text: {
                             true: undefined,
                             false: undefined,
                         },
@@ -626,8 +728,6 @@ export const Testconfig: Partial<panelConfigPartial> = {
                          * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
                          */
                         setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
-                        useColor: undefined,
-                        setValue1: undefined,
                     },
                 },
                 {
@@ -635,6 +735,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
                     type: 'button',
                     dpInit: undefined,
                     initMode: 'custom',
+
                     data: {
                         color: {
                             true: {
@@ -666,19 +767,11 @@ export const Testconfig: Partial<panelConfigPartial> = {
                             factor: undefined,
                             unit: undefined,
                         },
-                        text1: {
+                        text: {
                             true: undefined,
                             false: undefined,
                         },
-                        /**
-                         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
-                         */
-                        valueList: { type: 'const', constVal: 'home?butter' },
-                        /**
-                         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
-                         */
-                        setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
-                        useColor: undefined,
+
                         setValue1: undefined,
                     },
                 },
@@ -1713,8 +1806,14 @@ export const Testconfig: Partial<panelConfigPartial> = {
     // override by password.ts
     navigation: [
         {
-            name: '1',
+            name: '0',
+            page: 'thermo1',
             left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
+            right: { single: '1' },
+        },
+        {
+            name: '1',
+            left: { single: '0' }, // Die 4 bezieht sich auf den name: 4
             right: { single: '2' },
             page: 'grid1', // das grid1 bezieht sich auf die uniqueID oben in pages
         },

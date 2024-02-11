@@ -1,50 +1,7 @@
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
 import * as Types from './types';
-export type PageBaseItem = {
-    id?: string | null;
-    icon?: string;
-    icon2?: string;
-    onColor?: RGB;
-    offColor?: RGB;
-    useColor?: boolean;
-    interpolateColor?: boolean;
-    minValueBrightness?: number;
-    maxValueBrightness?: number;
-    minValueColorTemp?: number;
-    maxValueColorTemp?: number;
-    minValueLevel?: number;
-    maxValueLevel?: number;
-    minValueTilt?: number;
-    maxValueTilt?: number;
-    minValue?: number;
-    maxValue?: number;
-    stepValue?: number;
-    prefixName?: string;
-    suffixName?: string;
-    name?: string;
-    secondRow?: string;
-    buttonText?: string;
-    unit?: string;
-    navigate?: boolean;
-    colormode?: string;
-    colorScale?: Types.IconScaleElement;
-    //adapterPlayerInstance?: adapterPlayerInstanceType,
-    targetPage?: string;
-    modeList?: string[];
-    hidePassword?: boolean;
-    autoCreateALias?: boolean;
-    yAxis?: string;
-    yAxisTicks?: number[] | string;
-    xAxisDecorationId?: string;
-    useValue?: boolean;
-    monobutton?: boolean;
-    inSel_ChoiceState?: boolean;
-    iconArray?: string[];
-    fontSize?: number;
-    actionStringArray?: string[];
-    alwaysOnDisplay?: boolean;
-};
+
 export type PageLightItem = {
     type: 'light' | 'dimmer' | 'brightnessSlider' | 'hue' | 'rgb';
     bri: PageItemMinMaxValue;
@@ -56,53 +13,8 @@ export type PageLightItem = {
 type PageItemMinMaxValue = { min: number; max: number };
 export type PageItemColorSwitch = { on: RGB; off: RGB };
 
-/*export type PageMediaItem = ChangeTypeOfKeys<PageMediaItemBase, Dataitem>;
-export type PageMediaItemBase = {
-    alwaysOnDisplay: boolean;
-    id: string | null;
-    vol: PageItemMinMaxValue;
-    adapterPlayerInstance: Types.adapterPlayerInstanceType;
-    mediaDevice: string;
-    colorMediaIcon: RGB;
-    colorMediaArtist: RGB;
-    colorMediaTitle: RGB;
-    speakerList: string[];
-    playList: string[];
-    equalizerList: string[];
-    repeatList: string[];
-    globalTracklist: string[];
-    crossfade: boolean;
-} & PageBaseItemMedia;*/
-
-export type PageThermoItem =
-    | ({
-          popupThermoMode1?: string[];
-          popupThermoMode2?: string[];
-          popupThermoMode3?: string[];
-          popUpThermoName?: string[];
-          setThermoAlias?: string[];
-          setThermoDestTemp2?: string;
-      } & PageBaseItem)
-    | ({
-          popupThermoMode1?: string[];
-          popupThermoMode2?: string[];
-          popupThermoMode3?: string[];
-          popUpThermoName?: string[];
-          setThermoAlias?: string[];
-          setThermoDestTemp2?: string;
-      } & PageBaseItem);
 export type IconBoolean = Record<Types.BooleanUnion, string | undefined>;
 export type ThisCardMessageTypes = 'input_sel' | 'button';
-/*export type MessageIstemMedia extends = {
-    type?: Extract<Types.SerialType, ThisCardMessageTypes> | '';
-    intNameEntity: string;
-    iconNumber: 0 | 1 | 2 | 3 | 4 | 5; // media0 usw.
-    mode: MediaToolBoxAction;
-    icon: string;
-    iconColor: string;
-    dislayName: string;
-    optionalValue?: string;
-};*/
 
 export type MessageItemMedia = Partial<MessageItem> & {
     type?: Extract<Types.SerialTypePopup, ThisCardMessageTypes>;
@@ -203,6 +115,43 @@ export type MediaToolBoxAction =
     | 'seek'
     | 'cross'
     | 'nexttool';
+
+export type PageItemButton = Pick<PageItemBase, 'setValue1' | 'text' | 'icon' | 'color' | 'entity1' | 'setNavi'>;
+export type PageItemButtonDataItemsOptions = {
+    type: 'button';
+    data: ChangeTypeOfPageItem<PageItemButton, Types.DataItemsOptions | undefined>;
+};
+export type PageItemButtonDataItems = {
+    type: 'button';
+    data: ChangeTypeOfPageItem<PageItemButton, Dataitem | undefined>;
+};
+
+export type PageItemLight = Pick<
+    PageItemBase,
+    'setValue1' | 'text' | 'icon' | 'color' | 'entity1' | 'Red' | 'Green' | 'Blue' | 'saturation' | 'dimmer' | 'hue'
+>;
+export type PageItemLightDataItemsOptions = {
+    type: 'light';
+    data: ChangeTypeOfPageItem<PageItemLight, Types.DataItemsOptions | undefined>;
+};
+export type PageItemLightDataItems = {
+    type: 'light';
+    data: ChangeTypeOfPageItem<PageItemLight, Dataitem | undefined>;
+};
+
+export type PageItemInputSel = Pick<
+    PageItemBase,
+    'entity1' | 'text' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
+>;
+export type PageItemInputSelDataItemsOptions = {
+    type: 'input_sel';
+    data: ChangeTypeOfPageItem<PageItemInputSel, Types.DataItemsOptions | undefined>;
+};
+export type PageItemInputSelDataItems = {
+    type: 'input_sel';
+    data: ChangeTypeOfPageItem<PageItemInputSel, Dataitem | undefined>;
+};
+
 export type PageItemBase = {
     headline?: string;
     color: ColorEntryType;
@@ -311,13 +260,11 @@ export type ChangeTypeOfPageItem<Obj, N> = Obj extends
                 [K in keyof Obj]: ChangeTypeOfPageItem<Obj[K], N>;
             }
     : N;
-export type PageItemDataItems = Omit<PageItemUnion, 'data'> & {
-    data: ChangeTypeOfPageItem<PageItemUnion['data'], Dataitem | undefined>;
-};
+export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
+    (PageItemButtonDataItems | PageItemInputSelDataItems | PageItemLightDataItems);
 
-export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data'> & {
-    data: ChangeTypeOfPageItem<PageItemUnion['data'], Types.DataItemsOptions | undefined>;
-};
+export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data' | 'type'> &
+    (PageItemButtonDataItemsOptions | PageItemInputSelDataItemsOptions | PageItemLightDataItemsOptions);
 
 export type ColorEntryType = Record<Types.BooleanUnion, RGB> & { scale?: Types.IconScaleElement };
 

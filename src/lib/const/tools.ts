@@ -4,7 +4,7 @@ import {
     ColorEntryType,
     IconEntryType,
     MessageItem,
-    PageItemDataItems,
+    PageItemLightDataItems,
     TextEntryType,
     ValueEntryType,
     messageItemAllInterfaces,
@@ -194,7 +194,7 @@ export function getTranslation(library: Library, key1: any | string, key2?: stri
     return result;
 }
 
-export const getDecfromRGBThree = async (item: PageItemDataItems['data']): Promise<string | null> => {
+export const getDecfromRGBThree = async (item: PageItemLightDataItems['data']): Promise<string | null> => {
     if (!item) return String(rgb_dec565(White));
     const red = (item.Red && (await item.Red.getNumber())) ?? -1;
     const green = (item.Green && (await item.Green.getNumber())) ?? -1;
@@ -203,7 +203,7 @@ export const getDecfromRGBThree = async (item: PageItemDataItems['data']): Promi
     return String(rgb_dec565({ red, green, blue }));
 };
 
-export const getDecfromHue = async (item: PageItemDataItems['data']): Promise<string | null> => {
+export const getDecfromHue = async (item: PageItemLightDataItems['data']): Promise<string | null> => {
     if (!item || !item.hue) return null;
     const hue = await item.hue.getNumber();
     let saturation = Math.abs((item.saturation && (await item.saturation.getNumber())) ?? 1);

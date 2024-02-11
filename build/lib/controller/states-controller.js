@@ -424,7 +424,7 @@ class StatesControler extends import_library.BaseClass {
           }
           for (const id in this.tempObjectDB[dpInit]) {
             const obj = this.tempObjectDB[dpInit][id];
-            if (obj && obj.common && obj.type === "state") {
+            if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp))) {
               if (obj.common.role === role) {
                 if (found) {
                   this.log.warn(`Found more as 1 state for role ${role} in ${dpInit}`);

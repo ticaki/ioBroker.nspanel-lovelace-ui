@@ -33,7 +33,6 @@ export class PageMedia extends Page {
     initMode: 'auto' | 'custom';
     dpInit: string;
     items: pages.PageBaseConfig['items'];
-    writeItems: pages.PageMediaBaseConfigWrite | undefined;
     private step: number = 1;
     private headlinePos: number = 0;
     private titelPos: number = 0;
@@ -44,8 +43,7 @@ export class PageMedia extends Page {
         super(config, options.pageItems);
 
         this.config = options.config;
-        this.writeItems = options.writeItems;
-        this.items = options.items;
+        if (this.items && this.items.card === 'cardMedia') this.items = options.items;
         this.initMode = options.initMode;
         this.dpInit = options.dpInit;
         this.minUpdateInterval = 2000;
@@ -55,24 +53,17 @@ export class PageMedia extends Page {
         const config = { ...this.config };
         // search states for mode auto
         const tempConfig: Partial<pages.PageBaseConfig['config']> =
-            this.initMode === 'auto' ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : {};
+            this.initMode === 'auto'
+                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)
+                : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
         const tempItem: Partial<pages.PageBaseConfig['items']> = await this.panel.statesControler.createDataItems(
             tempConfig,
             this,
         );
+        if (tempItem) tempItem.card = this.config && this.config.card;
         this.items = tempItem as pages.PageBaseConfig['items'];
-        //check if command dps are valid
-        for (const g in this.writeItems) {
-            const d = g as keyof typeof this.writeItems;
-            const item = this.writeItems[d];
-            if (item === undefined) continue;
-            if (!item.dp || !(await this.panel.statesControler.existsState(item.dp))) {
-                this.log.warn(`State ${item.dp} was not found!`);
-                this.writeItems[d] = undefined;
-            }
-        }
     }
     protected async onVisibilityChange(val: boolean): Promise<void> {
         await super.onVisibilityChange(val);
@@ -87,37 +78,38 @@ export class PageMedia extends Page {
         const message: Partial<pages.PageMediaMessage> = {};
         // title
         {
+            if (item.card !== 'cardMedia') return;
             const test: Record<string, string> = {};
             test.bla = 'dd';
             let duration = '0:00',
                 elapsed = '0:00',
                 title = 'unknown';
 
-            if (item.titel && item.titel.text) {
-                const v = await item.titel.text.getString();
+            if (item.data.titel && item.data.titel.text) {
+                const v = await item.data.titel.text.getString();
                 if (v !== null) {
                     title = v;
                 }
             }
-            if (item.artist && item.artist.text) {
-                const v = await item.artist.text.getString();
+            if (item.data.artist && item.data.artist.text) {
+                const v = await item.data.artist.text.getString();
                 if (v !== null) {
                     message.artist = v;
                 }
             }
-            if (item.duration && item.elapsed) {
-                const d = await item.duration.getNumber(); // medialength in seconds
+            if (item.data.duration && item.data.elapsed) {
+                const d = await item.data.duration.getNumber(); // medialength in seconds
                 if (d !== null) {
                     const t = new Date().setHours(0, 0, d, 0);
                     duration = new Date(t).toLocaleTimeString('de-DE', { minute: '2-digit', second: '2-digit' });
                 }
-                if (item.elapsed.type === 'string') {
-                    const e = await item.elapsed.getString();
+                if (item.data.elapsed.type === 'string') {
+                    const e = await item.data.elapsed.getString();
                     if (e !== null) {
                         elapsed = e;
                     }
-                } else if (item.elapsed.type === 'number') {
-                    const e = await item.elapsed.getNumber();
+                } else if (item.data.elapsed.type === 'number') {
+                    const e = await item.data.elapsed.getNumber();
                     if (e !== null) {
                         const t = new Date().setHours(0, 0, e, 0);
                         elapsed = new Date(t).toLocaleTimeString('de-DE', { minute: '2-digit', second: '2-digit' });
@@ -140,8 +132,8 @@ export class PageMedia extends Page {
 
             const maxSize = 35;
             message.name = `(${elapsed}|${duration})`;
-            if (item.album) {
-                const v = await item.album.getString();
+            if (item.data.album) {
+                const v = await item.data.album.getString();
                 if (v !== null) {
                     if (`${v} ${message.name}`.length > maxSize) {
                         const s = v + '          ';
@@ -156,11 +148,11 @@ export class PageMedia extends Page {
             }
         }
         message.shuffle_icon = '';
-        if (item.shuffle && item.shuffle.type) {
+        if (item.data.shuffle && item.data.shuffle.type) {
             let value: null | true | false = null;
-            switch (item.shuffle.type) {
+            switch (item.data.shuffle.type) {
                 case 'string': {
-                    const v = await item.shuffle.getString();
+                    const v = await item.data.shuffle.getString();
                     if (v !== null) {
                         value = ['OFF', 'FALSE'].indexOf(v.toUpperCase()) !== -1;
                     }
@@ -168,7 +160,7 @@ export class PageMedia extends Page {
                 }
                 case 'number':
                 case 'boolean': {
-                    value = await item.shuffle.getBoolean();
+                    value = await item.data.shuffle.getBoolean();
                     break;
                 }
                 case 'undefined':
@@ -184,17 +176,17 @@ export class PageMedia extends Page {
                 message.shuffle_icon = value ? 'shuffle-variant' : 'shuffle-disabled';
             }
         }
-        if (item.volume) {
-            const v = await item.volume.getNumber();
+        if (item.data.volume) {
+            const v = await item.data.volume.getNumber();
             if (v !== null) {
                 message.volume = String(v);
             }
         }
-        if (item.mediaState) {
-            const v = await item.mediaState.getString();
+        if (item.data.mediaState) {
+            const v = await item.data.mediaState.getString();
             if (v !== null) {
                 message.iconplaypause = !(await this.getMediaState()) ? 'play' : 'pause';
-                if (await item.stop) {
+                if (await item.data.stop) {
                     message.onoffbuttonColor = v.toUpperCase() !== 'STOP' ? '65535' : '1374';
                 } else {
                     // no stop control so pause is stop
@@ -203,8 +195,8 @@ export class PageMedia extends Page {
             }
         }
 
-        if (item.titel && item.titel.color) {
-            const v = await getValueFromBoolean(item.titel.color, 'color');
+        if (item.data.titel && item.data.titel.color) {
+            const v = await getValueFromBoolean(item.data.titel.color, 'color');
             if (v !== null) message.titelColor = v;
         }
 
@@ -234,7 +226,7 @@ export class PageMedia extends Page {
             }
         }*/
         //Logo
-        if (item.logo) {
+        if (item.data.logo) {
             message.logo = '~~~~~'; //await this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
         }
         {
@@ -255,8 +247,8 @@ export class PageMedia extends Page {
         //this.log.warn(JSON.stringify(this.getMessage(msg)));
     }
     private async getMediaState(): Promise<boolean | null> {
-        if (!this.items) return null;
-        const item = this.items.mediaState;
+        if (!this.items || this.items.card !== 'cardMedia') return null;
+        const item = this.items.data.mediaState;
         if (item) {
             const v = await item.getString();
             if (v !== null) {
@@ -266,8 +258,8 @@ export class PageMedia extends Page {
         return null;
     }
     private async getOnOffState(): Promise<boolean | null> {
-        if (!this.items) return null;
-        const item = this.items.mediaState;
+        if (!this.items || this.items.card !== 'cardMedia') return null;
+        const item = this.items.data.mediaState;
         if (item) {
             const v = await item.getString();
             if (v !== null) {
@@ -431,34 +423,34 @@ export class PageMedia extends Page {
             this.log.debug('Receive event: ' + JSON.stringify(event));
         } else return;
         const items = this.items;
-        if (!items) return;
+        if (!items || items.card !== 'cardMedia') return;
         switch (event.action) {
             case 'media-back': {
-                items.backward && (await items.backward.setStateTrue());
+                items.data.backward && (await items.data.backward.setStateTrue());
                 break;
             }
             case 'media-pause': {
-                if (items.pause && items.play) {
-                    if (await this.getMediaState()) await items.pause.setStateTrue();
-                    else await items.play.setStateTrue();
-                } else if (items.mediaState) {
+                if (items.data.pause && items.data.play) {
+                    if (await this.getMediaState()) await items.data.pause.setStateTrue();
+                    else await items.data.play.setStateTrue();
+                } else if (items.data.mediaState) {
                 }
                 break;
             }
             case 'media-next': {
-                items.forward && (await items.forward.setStateTrue());
+                items.data.forward && (await items.data.forward.setStateTrue());
                 break;
             }
             case 'media-shuffle': {
-                items.shuffle && (await items.shuffle.setStateTrue());
+                items.data.shuffle && (await items.data.shuffle.setStateTrue());
                 break;
             }
             case 'volumeSlider': {
-                if (items.volume) {
+                if (items.data.volume) {
                     let v = parseInt(event.opt);
                     if (v > 100) v = 100;
                     else if (v < 0) v = 0;
-                    await items.volume.setStateAsync(v);
+                    await items.data.volume.setStateAsync(v);
                 } else {
                     this.log.error(`Missing volumen controller. Report to dev`);
                 }
@@ -492,8 +484,8 @@ export class PageMedia extends Page {
                 break;
             }
             case 'media-OnOff': {
-                if (items.stop) {
-                    if (await this.getOnOffState()) await items.stop.setStateTrue();
+                if (items.data.stop) {
+                    if (await this.getOnOffState()) await items.data.stop.setStateTrue();
                 }
                 break;
             }

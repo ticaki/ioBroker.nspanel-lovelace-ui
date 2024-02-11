@@ -27,7 +27,8 @@ export class PageGrid extends Page {
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options.pageItems);
         this.config = options.config;
-        this.items = options.items;
+        if (options.items && (options.items.card == 'cardGrid' || options.items.card == 'cardGrid2'))
+            this.items = options.items;
         this.minUpdateInterval = 2000;
     }
 
@@ -43,7 +44,8 @@ export class PageGrid extends Page {
                 if (temp) message.options[a] = await temp.getPageItemPayload();
             }
         }
-
+        message.headline =
+            (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '';
         message.navigation = this.getNavigation();
         const msg: pages.PageGridMessage = Object.assign(
             this.card === 'cardGrid' ? PageGridMessageDefault : PageGrid2MessageDefault,

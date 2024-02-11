@@ -1,10 +1,34 @@
 import { Panel } from '../controller/panel';
-import { NavigationItem, NavigationItemConfig } from '../types/navigation';
 import { AdapterClassDefinition, BaseClass } from './library';
 import { rgb_dec565, White } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { Page } from './Page';
 import { getPayload } from '../const/tools';
+
+export type NavigationItemConfig = {
+    name: string;
+    left?: {
+        single?: string;
+        double?: string;
+    };
+    right?: {
+        single?: string;
+        double?: string;
+    };
+    page: string;
+} | null;
+
+export type NavigationItem = {
+    left: {
+        single?: number;
+        double?: number;
+    };
+    right: {
+        single?: number;
+        double?: number;
+    };
+    page: Page;
+} | null;
 
 export interface NavigationConfig {
     adapter: AdapterClassDefinition;
@@ -16,7 +40,7 @@ export class Navigation extends BaseClass {
     panel: Panel;
     private database: NavigationItem[] = [];
     private navigationConfig: NavigationItemConfig[];
-    doubleClickDelay: number = 400;
+    doubleClickDelay: number = 300;
     private doubleClickTimeout: ioBroker.Timeout | undefined;
     private currentItem: number = 0;
     constructor(config: NavigationConfig) {
@@ -106,6 +130,8 @@ export class Navigation extends BaseClass {
                     this.panel.setActivePage(this.database[index]!.page);
                     return;
                 }
+                this.log.debug(`Navigation single click with target ${i[d].single} not work.`);
+                return;
             }
             this.log.debug('Navigation single click not work.');
         }
