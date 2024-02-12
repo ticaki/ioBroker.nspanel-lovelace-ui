@@ -232,12 +232,16 @@ class StatesControler extends import_library.BaseClass {
       const state = await this.adapter.getForeignStateAsync(id);
       if (state) {
         await this.adapter.subscribeForeignStatesAsync(id);
+        const obj = await this.adapter.getForeignObjectAsync(id);
+        if (!obj || !obj.common || obj.type !== "state")
+          throw new Error("Got invalid object for " + id);
         this.triggerDB[id] = {
           state,
           to: [from],
           ts: Date.now(),
           subscribed: [false],
-          response: [response]
+          response: [response],
+          common: obj.common
         };
         if (this.stateDB[id] !== void 0) {
           delete this.stateDB[id];
@@ -293,10 +297,40 @@ class StatesControler extends import_library.BaseClass {
     }
     const state = await this.adapter.getForeignStateAsync(id);
     if (state) {
-      this.stateDB[id] = { state, ts: Date.now() };
+      if (!this.stateDB[id]) {
+        const obj = await this.adapter.getForeignObjectAsync(id);
+        if (!obj || !obj.common || obj.type !== "state")
+          throw new Error("Got invalid object for " + id);
+        this.stateDB[id] = { state, ts: Date.now(), common: obj.common };
+      } else {
+        this.stateDB[id].state = state;
+        this.stateDB[id].ts = Date.now();
+      }
       return state;
     }
     throw new Error(`State id invalid ${id} no data!`);
+  }
+  getType(id) {
+    if (this.triggerDB[id] !== void 0)
+      return this.triggerDB[id].common.type;
+    if (this.stateDB[id] !== void 0)
+      return this.stateDB[id].common.type;
+    return void 0;
+  }
+  getCommonStates(id) {
+    let j = void 0;
+    if (this.triggerDB[id] !== void 0)
+      j = this.triggerDB[id].common.states;
+    else if (this.stateDB[id] !== void 0)
+      j = this.stateDB[id].common.states;
+    if (!j || typeof j === "string")
+      return void 0;
+    if (Array.isArray(j)) {
+      const a = {};
+      j.forEach((e, i) => a[String(i)] = e);
+      j = a;
+    }
+    return j;
   }
   async onStateChange(dp, state) {
     if (dp && state) {
@@ -333,13 +367,13 @@ class StatesControler extends import_library.BaseClass {
       if (item.options.dp) {
         const ack = item.options.dp.startsWith(this.adapter.namespace);
         this.log.debug(`setStateAsync(${item.options.dp}, ${val}, ${ack})`);
-        if (item.trueType === "number" && typeof val === "string")
+        if (item.trueType() === "number" && typeof val === "string")
           val = parseFloat(val);
-        else if (item.trueType === "number" && typeof val === "boolean")
+        else if (item.trueType() === "number" && typeof val === "boolean")
           val = val ? 1 : 0;
-        else if (item.trueType === "boolean")
+        else if (item.trueType() === "boolean")
           val = !!val;
-        if (item.trueType === "string")
+        if (item.trueType() === "string")
           val = String(val);
         this.updateDBState(item.options.dp, val, ack);
         if (writeable)

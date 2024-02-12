@@ -7,7 +7,7 @@ import { BooleanUnion, IncomingEvent } from '../types/types';
 import { PageInterface, isMediaButtonActionType } from '../classes/Page';
 import { Page } from '../classes/Page';
 import { PageItem } from './pageItem';
-import { getPayload, getPayloadArray } from '../const/tools';
+import { getPayload, getPayloadArray, getScaledNumber, setScaledNumber } from '../const/tools';
 
 const PageMediaMessageDefault: pages.PageMediaMessage = {
     event: 'entityUpd',
@@ -163,7 +163,6 @@ export class PageMedia extends Page {
                     value = await item.data.shuffle.getBoolean();
                     break;
                 }
-                case 'undefined':
                 case 'object':
                 case 'array':
                 case 'mixed':
@@ -177,7 +176,7 @@ export class PageMedia extends Page {
             }
         }
         if (item.data.volume) {
-            const v = await item.data.volume.getNumber();
+            const v = await getScaledNumber(item.data.volume);
             if (v !== null) {
                 message.volume = String(v);
             }
@@ -447,10 +446,8 @@ export class PageMedia extends Page {
             }
             case 'volumeSlider': {
                 if (items.data.volume) {
-                    let v = parseInt(event.opt);
-                    if (v > 100) v = 100;
-                    else if (v < 0) v = 0;
-                    await items.data.volume.setStateAsync(v);
+                    const v = parseInt(event.opt);
+                    await setScaledNumber(items.data.volume, v);
                 } else {
                     this.log.error(`Missing volumen controller. Report to dev`);
                 }

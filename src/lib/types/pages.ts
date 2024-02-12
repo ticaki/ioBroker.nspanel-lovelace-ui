@@ -1,7 +1,14 @@
 import * as Types from './types';
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
-import { ColorEntryType, IconBoolean, PageItemDataItemsOptions, TextEntryType, ValueEntryType } from './type-pageItem';
+import {
+    PageItemDataItemsOptions,
+    IconBoolean,
+    TextEntryType,
+    ValueEntryType,
+    ColorEntryType,
+    ScaledNumberType,
+} from './type-pageItem';
 import { MediaToolBoxAction } from './type-pageItem';
 
 export type PageTypeCards =
@@ -271,7 +278,7 @@ type PageMediaBaseConfig = {
     elapsed: string;
     artist: listItem;
     shuffle: string;
-    volume: number;
+    volume: ScaledNumberType;
     icon: string;
     play: string;
     mediaState: string;
@@ -312,6 +319,8 @@ type PageThermoBaseConfig = {
     minTemp: number; // *10
     maxTemp: number; // *10
     tempStep: number; // *10
+    icon?: string;
+    color?: string;
 };
 export function isColorEntryType(F: object | ColorEntryType): F is ColorEntryType {
     if ('true' in F && 'false' in F && 'scale' in F) return true;

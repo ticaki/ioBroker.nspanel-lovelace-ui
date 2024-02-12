@@ -35,7 +35,6 @@ class Dataitem extends import_library.BaseClass {
   options;
   stateDB;
   type = void 0;
-  trueType = void 0;
   parent;
   _writeable = false;
   constructor(adapter, options, parent, db) {
@@ -70,7 +69,6 @@ class Dataitem extends import_library.BaseClass {
           return false;
         }
         this.type = this.type || obj.common.type;
-        this.trueType = obj.common.type;
         this.options.role = obj.common.role;
         this._writeable = !!obj.common.write;
         if (this.options.type == "triggered")
@@ -94,6 +92,13 @@ class Dataitem extends import_library.BaseClass {
       }
     }
     return null;
+  }
+  trueType() {
+    var _a;
+    return "dp" in this.options ? (_a = this.stateDB.getType(this.options.dp)) != null ? _a : this.type : this.type;
+  }
+  getCommonStates() {
+    return "dp" in this.options ? this.stateDB.getCommonStates(this.options.dp) : void 0;
   }
   async getState() {
     let state = await this.getRawState();
@@ -217,7 +222,7 @@ class Dataitem extends import_library.BaseClass {
         this.type = "boolean";
         break;
       case "undefined":
-        this.type = "undefined";
+        this.type = void 0;
       case "symbol":
       case "object":
       case "function":

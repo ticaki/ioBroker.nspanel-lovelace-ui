@@ -42,12 +42,16 @@ class NspanelLovelaceUi extends utils.Adapter {
     private async onReady(): Promise<void> {
         Icons.adapter = this;
         this.library = new Library(this);
-        this.config.Testconfig2 = [Testconfig];
+        if (!this.config.Testconfig2) {
+            this.log.warn('No configuration use dev test config!');
+            this.config.Testconfig2 = [Testconfig];
+        }
         //@ts-expect-error joghurt
         Testconfig.pages![0].mode = this.config.scstype as any;
         //this.log.debug(JSON.stringify(this.config.Testconfig2[0].dpInit))
+
         this.config.Testconfig2[0].timeout = this.config.timeout;
-        this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
+        //this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
         this.setTimeout(async () => {
             //check config
             if (!Testconfig.pages) return;

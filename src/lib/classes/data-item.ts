@@ -8,8 +8,7 @@ export class Dataitem extends BaseClass {
     options: NSPanel.DataItemsOptions;
     //private obj: ioBroker.Object | null | undefined;
     stateDB: StatesControler;
-    type: ioBroker.CommonType | 'undefined' | undefined = undefined;
-    trueType: ioBroker.CommonType | 'undefined' | undefined = undefined;
+    type: ioBroker.CommonType | undefined = undefined;
     parent: BaseClassTriggerd;
     private _writeable: boolean = false;
     /**
@@ -56,7 +55,6 @@ export class Dataitem extends BaseClass {
                     //throw new Error(`801: ${this.options.dp} has no state object! Bye Bye`);
                 }
                 this.type = this.type || obj.common.type;
-                this.trueType = obj.common.type;
                 this.options.role = obj.common.role;
                 this._writeable = !!obj.common.write;
                 if (this.options.type == 'triggered')
@@ -81,6 +79,15 @@ export class Dataitem extends BaseClass {
         }
         return null;
     }
+
+    trueType(): ioBroker.CommonType | undefined {
+        return 'dp' in this.options ? this.stateDB.getType(this.options.dp) ?? this.type : this.type;
+    }
+
+    getCommonStates(): Record<string, string> | undefined {
+        return 'dp' in this.options ? this.stateDB.getCommonStates(this.options.dp) : undefined;
+    }
+
     async getState(): Promise<NSPanel.State | null | undefined> {
         let state = await this.getRawState();
         if (state) {
@@ -203,7 +210,7 @@ export class Dataitem extends BaseClass {
                 this.type = 'boolean';
                 break;
             case 'undefined':
-                this.type = 'undefined';
+                this.type = undefined;
             case 'symbol':
             case 'object':
             case 'function':

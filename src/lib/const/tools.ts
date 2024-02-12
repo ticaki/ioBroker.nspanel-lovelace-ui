@@ -5,6 +5,7 @@ import {
     IconEntryType,
     MessageItem,
     PageItemLightDataItems,
+    ScaledNumberType,
     TextEntryType,
     ValueEntryType,
     messageItemAllInterfaces,
@@ -43,12 +44,51 @@ export async function getValueEntryNumber(
     return null;
 }
 
+export async function getScaledNumber(
+    i: ChangeTypeOfPageItem<ScaledNumberType, Dataitem | undefined>,
+): Promise<number | null> {
+    if (!i) return null;
+    let nval = i.value && (await i.value.getNumber());
+    if (nval !== null && nval !== undefined) {
+        if (i.minScale !== undefined && i.maxScale !== undefined) {
+            const min = await i.minScale.getNumber();
+            const max = await i.maxScale.getNumber();
+            if (min !== null && max !== null) {
+                nval = Math.round(scale(nval, min, max, 0, 100));
+            }
+        }
+        return nval;
+    }
+    return null;
+}
+
+export async function setScaledNumber(
+    i: ChangeTypeOfPageItem<ScaledNumberType, Dataitem | undefined>,
+    value: number,
+): Promise<void> {
+    if (!i || !i.value) return;
+    const nval = (await i.value.getNumber()) ?? null;
+    if (nval !== null) {
+        if (i.minScale !== undefined && i.maxScale !== undefined) {
+            const min = await i.minScale.getNumber();
+            const max = await i.maxScale.getNumber();
+            if (min !== null && max !== null) {
+                value = scale(value, 0, 100, min, max);
+                if (nval > value) value = Math.floor(value);
+                else value = Math.ceil(value);
+            }
+        }
+        if (nval !== value) await i.value.setStateAsync(value);
+    }
+}
+
 export async function getIconEntryValue(
-    i: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined>,
+    i: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined> | undefined,
     on: boolean | null,
     def: string,
     defOff: string | null = null,
 ): Promise<string> {
+    if (i === undefined) return '';
     on = on ?? true;
     if (!i) return Icons.GetIcon(on ? def : defOff ?? def);
     const icon = i.true.value && (await i.true.value.getString());
@@ -79,7 +119,7 @@ export async function getIconEntryColor(
     return icon ?? def;
 }
 export async function GetIconColor(
-    item: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined>,
+    item: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined> | undefined,
     value: boolean | number | null,
     def: string | RGB | number = HMIOn,
     defOff: string | RGB | number = HMIOff,
@@ -89,6 +129,7 @@ export async function GetIconColor(
     max: number | null = null,
 ): Promise<string> {
     // dimmer
+    if (item === undefined) return '';
     const defRGB = typeof def === 'object' ? def : null;
     def = typeof def === 'string' ? def : typeof def === 'number' ? String(def) : String(rgb_dec565(def));
     if (item === undefined || value === null) return def;
@@ -131,10 +172,11 @@ export async function GetIconColor(
 }
 
 export async function getEntryColor(
-    i: ChangeTypeOfPageItem<ColorEntryType, Dataitem | undefined>,
+    i: ChangeTypeOfPageItem<ColorEntryType, Dataitem | undefined> | undefined,
     value: boolean | number,
     def: string | number | RGB,
 ): Promise<string> {
+    if (i === undefined) return '';
     if (typeof def === 'number') def = String(def);
     else if (typeof def !== 'string') def = String(rgb_dec565(def));
     if (!i) return def;

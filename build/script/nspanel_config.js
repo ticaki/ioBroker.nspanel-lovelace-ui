@@ -1,9 +1,7 @@
 "use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -17,17 +15,166 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var config_exports = {};
-__export(config_exports, {
-  Testconfig: () => Testconfig
+var nspanel_config_exports = {};
+__export(nspanel_config_exports, {
+  BatteryEmpty: () => BatteryEmpty,
+  BatteryFull: () => BatteryFull,
+  Black: () => Black,
+  Blue: () => Blue,
+  Cyan: () => Cyan,
+  DarkBlue: () => DarkBlue,
+  Gray: () => Gray,
+  Green: () => Green,
+  HMIDark: () => HMIDark,
+  HMIOff: () => HMIOff,
+  HMIOn: () => HMIOn,
+  MSGreen: () => MSGreen,
+  MSRed: () => MSRed,
+  MSYellow: () => MSYellow,
+  Magenta: () => Magenta,
+  Menu: () => Menu,
+  MenuHighInd: () => MenuHighInd,
+  MenuLowInd: () => MenuLowInd,
+  Off: () => Off,
+  On: () => On,
+  Red: () => Red,
+  Testconfig: () => Testconfig,
+  White: () => White,
+  Yellow: () => Yellow,
+  colorAlexa: () => colorAlexa,
+  colorRadio: () => colorRadio,
+  colorScale0: () => colorScale0,
+  colorScale1: () => colorScale1,
+  colorScale10: () => colorScale10,
+  colorScale2: () => colorScale2,
+  colorScale3: () => colorScale3,
+  colorScale4: () => colorScale4,
+  colorScale5: () => colorScale5,
+  colorScale6: () => colorScale6,
+  colorScale7: () => colorScale7,
+  colorScale8: () => colorScale8,
+  colorScale9: () => colorScale9,
+  colorSonos: () => colorSonos,
+  colorSpotify: () => colorSpotify,
+  scbackground: () => scbackground,
+  scbackgroundInd1: () => scbackgroundInd1,
+  scbackgroundInd2: () => scbackgroundInd2,
+  scbackgroundInd3: () => scbackgroundInd3,
+  scbar: () => scbar,
+  scdate: () => scdate,
+  sctF1Icon: () => sctF1Icon,
+  sctF2Icon: () => sctF2Icon,
+  sctF3Icon: () => sctF3Icon,
+  sctF4Icon: () => sctF4Icon,
+  sctForecast1: () => sctForecast1,
+  sctForecast1Val: () => sctForecast1Val,
+  sctForecast2: () => sctForecast2,
+  sctForecast2Val: () => sctForecast2Val,
+  sctForecast3: () => sctForecast3,
+  sctForecast3Val: () => sctForecast3Val,
+  sctForecast4: () => sctForecast4,
+  sctForecast4Val: () => sctForecast4Val,
+  sctMainIcon: () => sctMainIcon,
+  sctMainIconAlt: () => sctMainIconAlt,
+  sctMainText: () => sctMainText,
+  sctMainTextAlt: () => sctMainTextAlt,
+  sctTimeAdd: () => sctTimeAdd,
+  sctime: () => sctime,
+  sctimeAMPM: () => sctimeAMPM,
+  swClearNight: () => swClearNight,
+  swCloudy: () => swCloudy,
+  swExceptional: () => swExceptional,
+  swFog: () => swFog,
+  swHail: () => swHail,
+  swLightning: () => swLightning,
+  swLightningRainy: () => swLightningRainy,
+  swPartlycloudy: () => swPartlycloudy,
+  swPouring: () => swPouring,
+  swRainy: () => swRainy,
+  swSnowy: () => swSnowy,
+  swSnowyRainy: () => swSnowyRainy,
+  swSunny: () => swSunny,
+  swWindy: () => swWindy
 });
-module.exports = __toCommonJS(config_exports);
-var Color = __toESM(require("./const/Color"));
+module.exports = __toCommonJS(nspanel_config_exports);
+const HMIOff = { red: 68, green: 115, blue: 158 };
+const HMIOn = { red: 3, green: 169, blue: 244 };
+const HMIDark = { red: 29, green: 29, blue: 29 };
+const Off = { red: 253, green: 128, blue: 0 };
+const On = { red: 253, green: 216, blue: 53 };
+const MSRed = { red: 251, green: 105, blue: 98 };
+const MSYellow = { red: 255, green: 235, blue: 156 };
+const MSGreen = { red: 121, green: 222, blue: 121 };
+const Red = { red: 255, green: 0, blue: 0 };
+const White = { red: 255, green: 255, blue: 255 };
+const Yellow = { red: 255, green: 255, blue: 0 };
+const Green = { red: 0, green: 255, blue: 0 };
+const Blue = { red: 0, green: 0, blue: 255 };
+const DarkBlue = { red: 0, green: 0, blue: 136 };
+const Gray = { red: 136, green: 136, blue: 136 };
+const Black = { red: 0, green: 0, blue: 0 };
+const Cyan = { red: 0, green: 255, blue: 255 };
+const Magenta = { red: 255, green: 0, blue: 255 };
+const colorSpotify = { red: 30, green: 215, blue: 96 };
+const colorAlexa = { red: 49, green: 196, blue: 243 };
+const colorSonos = { red: 216, green: 161, blue: 88 };
+const colorRadio = { red: 255, green: 127, blue: 0 };
+const BatteryFull = { red: 96, green: 176, blue: 62 };
+const BatteryEmpty = { red: 179, green: 45, blue: 25 };
+const Menu = { red: 150, green: 150, blue: 100 };
+const MenuLowInd = { red: 255, green: 235, blue: 156 };
+const MenuHighInd = { red: 251, green: 105, blue: 98 };
+const colorScale0 = { red: 99, green: 190, blue: 123 };
+const colorScale1 = { red: 129, green: 199, blue: 126 };
+const colorScale2 = { red: 161, green: 208, blue: 127 };
+const colorScale3 = { red: 129, green: 217, blue: 126 };
+const colorScale4 = { red: 222, green: 226, blue: 131 };
+const colorScale5 = { red: 254, green: 235, blue: 132 };
+const colorScale6 = { red: 255, green: 210, blue: 129 };
+const colorScale7 = { red: 251, green: 185, blue: 124 };
+const colorScale8 = { red: 251, green: 158, blue: 117 };
+const colorScale9 = { red: 248, green: 131, blue: 111 };
+const colorScale10 = { red: 248, green: 105, blue: 107 };
+const scbackground = { red: 0, green: 0, blue: 0 };
+const scbackgroundInd1 = { red: 255, green: 0, blue: 0 };
+const scbackgroundInd2 = { red: 121, green: 222, blue: 121 };
+const scbackgroundInd3 = { red: 255, green: 255, blue: 0 };
+const sctime = { red: 255, green: 255, blue: 255 };
+const sctimeAMPM = { red: 255, green: 255, blue: 255 };
+const scdate = { red: 255, green: 255, blue: 255 };
+const sctMainIcon = { red: 255, green: 255, blue: 255 };
+const sctMainText = { red: 255, green: 255, blue: 255 };
+const sctForecast1 = { red: 255, green: 255, blue: 255 };
+const sctForecast2 = { red: 255, green: 255, blue: 255 };
+const sctForecast3 = { red: 255, green: 255, blue: 255 };
+const sctForecast4 = { red: 255, green: 255, blue: 255 };
+const sctF1Icon = { red: 255, green: 235, blue: 156 };
+const sctF2Icon = { red: 255, green: 235, blue: 156 };
+const sctF3Icon = { red: 255, green: 235, blue: 156 };
+const sctF4Icon = { red: 255, green: 235, blue: 156 };
+const sctForecast1Val = { red: 255, green: 255, blue: 255 };
+const sctForecast2Val = { red: 255, green: 255, blue: 255 };
+const sctForecast3Val = { red: 255, green: 255, blue: 255 };
+const sctForecast4Val = { red: 255, green: 255, blue: 255 };
+const scbar = { red: 255, green: 255, blue: 255 };
+const sctMainIconAlt = { red: 255, green: 255, blue: 255 };
+const sctMainTextAlt = { red: 255, green: 255, blue: 255 };
+const sctTimeAdd = { red: 255, green: 255, blue: 255 };
+const swClearNight = { red: 150, green: 150, blue: 100 };
+const swCloudy = { red: 75, green: 75, blue: 75 };
+const swExceptional = { red: 255, green: 50, blue: 50 };
+const swFog = { red: 150, green: 150, blue: 150 };
+const swHail = { red: 200, green: 200, blue: 200 };
+const swLightning = { red: 200, green: 200, blue: 0 };
+const swLightningRainy = { red: 200, green: 200, blue: 150 };
+const swPartlycloudy = { red: 150, green: 150, blue: 150 };
+const swPouring = { red: 50, green: 50, blue: 255 };
+const swRainy = { red: 100, green: 100, blue: 255 };
+const swSnowy = { red: 150, green: 150, blue: 150 };
+const swSnowyRainy = { red: 150, green: 150, blue: 255 };
+const swSunny = { red: 255, green: 255, blue: 0 };
+const swWindy = { red: 150, green: 150, blue: 150 };
 const pageMediaTest = {
   card: "cardMedia",
   dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
@@ -266,7 +413,7 @@ const pageMediaTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: HMIOn
           },
           false: void 0,
           scale: void 0
@@ -274,11 +421,11 @@ const pageMediaTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -310,7 +457,7 @@ const pageMediaTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: HMIOn
           },
           false: void 0,
           scale: void 0
@@ -318,11 +465,11 @@ const pageMediaTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -374,7 +521,7 @@ const pageGridTest1 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: HMIOn
           },
           false: void 0,
           scale: void 0
@@ -382,11 +529,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -418,7 +565,7 @@ const pageGridTest1 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: HMIOn
           },
           false: void 0,
           scale: void 0
@@ -426,11 +573,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -486,7 +633,7 @@ const pageGridTest2 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: HMIOn
           },
           false: void 0,
           scale: void 0
@@ -494,11 +641,11 @@ const pageGridTest2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -530,7 +677,7 @@ const pageGridTest2 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: HMIOn
           },
           false: void 0,
           scale: void 0
@@ -538,11 +685,11 @@ const pageGridTest2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "account" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -593,7 +740,7 @@ const pageGrid2Test2 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: HMIOn
           },
           false: void 0,
           scale: void 0
@@ -601,11 +748,11 @@ const pageGrid2Test2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -637,7 +784,7 @@ const pageGrid2Test2 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: HMIOn
           },
           false: void 0,
           scale: void 0
@@ -645,11 +792,11 @@ const pageGrid2Test2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -710,7 +857,7 @@ const pageThermoTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: HMIOn
           },
           false: void 0,
           scale: void 0
@@ -718,11 +865,11 @@ const pageThermoTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -903,42 +1050,42 @@ const pageScreensaverTest = {
                         case 24: // Ice
                         case 30: // Hot
                         case 31: // Cold
-                            return Color.swExceptional; // exceptional
+                            return swExceptional; // exceptional
 
                         case 7: // Cloudy
                         case 8: // Dreary (Overcast)
                         case 38: // Mostly Cloudy
-                            return Color.swCloudy; // cloudy
+                            return swCloudy; // cloudy
 
                         case 11: // fog
-                            return Color.swFog; // fog
+                            return swFog; // fog
 
                         case 25: // Sleet
-                            return Color.swHail; // Hail
+                            return swHail; // Hail
 
                         case 15: // T-Storms
-                            return Color.swLightning; // lightning
+                            return swLightning; // lightning
 
                         case 16: // Mostly Cloudy w/ T-Storms
                         case 17: // Partly Sunny w/ T-Storms
                         case 41: // Partly Cloudy w/ T-Storms
                         case 42: // Mostly Cloudy w/ T-Storms
-                            return Color.swLightningRainy; // lightning-rainy
+                            return swLightningRainy; // lightning-rainy
 
                         case 33: // Clear
                         case 34: // Mostly Clear
                         case 37: // Hazy Moonlight
-                            return Color.swClearNight;
+                            return swClearNight;
 
                         case 3: // Partly Sunny
                         case 4: // Intermittent Clouds
                         case 6: // Mostly Cloudy
                         case 35: // Partly Cloudy
                         case 36: // Intermittent Clouds
-                            return Color.swPartlycloudy; // partlycloudy
+                            return swPartlycloudy; // partlycloudy
 
                         case 18: // pouring
-                            return Color.swPouring; // pouring
+                            return swPouring; // pouring
 
                         case 12: // Showers
                         case 13: // Mostly Cloudy w/ Showers
@@ -946,7 +1093,7 @@ const pageScreensaverTest = {
                         case 26: // Freezing Rain
                         case 39: // Partly Cloudy w/ Showers
                         case 40: // Mostly Cloudy w/ Showers
-                            return Color.swRainy; // rainy
+                            return swRainy; // rainy
 
                         case 19: // Flurries
                         case 20: // Mostly Cloudy w/ Flurries
@@ -955,21 +1102,21 @@ const pageScreensaverTest = {
                         case 23: // Mostly Cloudy w/ Snow
                         case 43: // Mostly Cloudy w/ Flurries
                         case 44: // Mostly Cloudy w/ Snow
-                            return Color.swSnowy; // snowy
+                            return swSnowy; // snowy
 
                         case 29: // Rain and Snow
-                            return Color.swSnowyRainy; // snowy-rainy
+                            return swSnowyRainy; // snowy-rainy
 
                         case 1: // Sunny
                         case 2: // Mostly Sunny
                         case 5: // Hazy Sunshine
-                            return Color.swSunny; // sunny
+                            return swSunny; // sunny
 
                         case 32: // windy
-                            return Color.swWindy; // windy
+                            return swWindy; // windy
 
                         default:
-                            return Color.White;
+                            return White;
                     }`
             }
           },
@@ -1160,14 +1307,14 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.Yellow
+              constVal: Yellow
             }
           },
           false: {
             value: void 0,
             color: {
               type: "const",
-              constVal: Color.Blue
+              constVal: Blue
             }
           },
           scale: void 0,
@@ -1449,14 +1596,14 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.Yellow
+              constVal: Yellow
             }
           },
           false: {
             value: void 0,
             color: {
               type: "const",
-              constVal: Color.Blue
+              constVal: Blue
             }
           },
           scale: void 0,
@@ -1688,7 +1835,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.White
+              constVal: White
             }
           },
           false: {
@@ -1805,6 +1952,83 @@ const Testconfig = {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Testconfig
+  BatteryEmpty,
+  BatteryFull,
+  Black,
+  Blue,
+  Cyan,
+  DarkBlue,
+  Gray,
+  Green,
+  HMIDark,
+  HMIOff,
+  HMIOn,
+  MSGreen,
+  MSRed,
+  MSYellow,
+  Magenta,
+  Menu,
+  MenuHighInd,
+  MenuLowInd,
+  Off,
+  On,
+  Red,
+  Testconfig,
+  White,
+  Yellow,
+  colorAlexa,
+  colorRadio,
+  colorScale0,
+  colorScale1,
+  colorScale10,
+  colorScale2,
+  colorScale3,
+  colorScale4,
+  colorScale5,
+  colorScale6,
+  colorScale7,
+  colorScale8,
+  colorScale9,
+  colorSonos,
+  colorSpotify,
+  scbackground,
+  scbackgroundInd1,
+  scbackgroundInd2,
+  scbackgroundInd3,
+  scbar,
+  scdate,
+  sctF1Icon,
+  sctF2Icon,
+  sctF3Icon,
+  sctF4Icon,
+  sctForecast1,
+  sctForecast1Val,
+  sctForecast2,
+  sctForecast2Val,
+  sctForecast3,
+  sctForecast3Val,
+  sctForecast4,
+  sctForecast4Val,
+  sctMainIcon,
+  sctMainIconAlt,
+  sctMainText,
+  sctMainTextAlt,
+  sctTimeAdd,
+  sctime,
+  sctimeAMPM,
+  swClearNight,
+  swCloudy,
+  swExceptional,
+  swFog,
+  swHail,
+  swLightning,
+  swLightningRainy,
+  swPartlycloudy,
+  swPouring,
+  swRainy,
+  swSnowy,
+  swSnowyRainy,
+  swSunny,
+  swWindy
 });
-//# sourceMappingURL=config.js.map
+//# sourceMappingURL=nspanel_config.js.map

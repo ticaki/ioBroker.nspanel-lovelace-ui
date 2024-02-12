@@ -1,8 +1,8 @@
 import { Page, PageInterface } from '../classes/Page';
+import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadArray } from '../const/tools';
 import * as pages from '../types/pages';
-import { IncomingEvent } from '../types/types';
-import { PageItem } from './pageItem';
+import { ButtonActionType, IncomingEvent, PopupType } from '../types/types';
 
 const PageThermoMessageDefault: pages.PageThermoMessage = {
     event: 'entityUpd',
@@ -31,7 +31,7 @@ export class PageThermo extends Page {
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
-    tempItem: PageItem | undefined;
+    //tempItem: PageItem | undefined;
     dpInit: string;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
@@ -64,8 +64,9 @@ export class PageThermo extends Page {
         if (this.items) {
             const item = this.items;
             if (this.pageItems) {
-                for (let a = 0; a < this.pageItems.length && a < message.options.length; a++) {
-                    const temp = this.pageItems[a];
+                const pageItems = this.pageItems.filter((a) => a.dataItems && a.dataItems.type === 'button');
+                for (let a = 0; a < pageItems.length && a < message.options.length; a++) {
+                    const temp = pageItems[a];
                     if (temp) {
                         const arr = (await temp.getPageItemPayload()).split('~');
                         message.options[a] = getPayload(arr[2], arr[3], arr[5] == '1' ? '1' : '0', arr[1]);
@@ -127,7 +128,8 @@ export class PageThermo extends Page {
                 }
             }
 
-            //message.btDetail = '';
+            message.btDetail = '';
+            //this.pageItems && this.pageItems.some((a) => a.dataItems && a.dataItems.type === 'input_sel') ? '' : 1;
         }
         const msg: pages.PageThermoMessage = Object.assign(PageThermoMessageDefault, message);
 
@@ -143,8 +145,45 @@ export class PageThermo extends Page {
             const valLow = (this.items && this.items.data.set1 && (await this.items.data.set1.getNumber())) ?? null;
             const valHigh = (this.items && this.items.data.set2 && (await this.items.data.set2.getNumber())) ?? null;
             if (valLow !== null && newValLow !== valLow) this.items.data.set1!.setStateAsync(newValLow);
-            if (valHigh !== null && newValHigh !== valHigh) this.items.data.set2!.setStateAsync(newValHigh);
+            if (valHigh !== null && newValHigh !== valHigh) await this.items.data.set2!.setStateAsync(newValHigh);
+        } else if (event.action === 'tempUpd') {
+            if (!this.items) return;
+            const newValLow = parseInt(event.opt) / 10;
+            const valLow = (this.items && this.items.data.set1 && (await this.items.data.set1.getNumber())) ?? null;
+            if (valLow !== null && newValLow !== valLow) await this.items.data.set1!.setStateAsync(newValLow);
         }
+    }
+
+    public async onPopupRequest(
+        id: number | string,
+        popup: PopupType | undefined,
+        action: ButtonActionType | undefined | string,
+        value: string | undefined,
+    ): Promise<void> {
+        if (!this.pageItems || !this.pageItems.some((a) => a.dataItems && a.dataItems.type === 'input_sel')) return;
+        const items = this.pageItems.filter((a) => a.dataItems && a.dataItems.type === 'input_sel');
+        let msg: string | null = null;
+        if (popup === 'popupThermo') {
+            const temp = [];
+            const id = this.id;
+            const icon = Icons.GetIcon(
+                (this.items && this.items.data.icon && (await this.items.data.icon.getString())) ?? 'fan',
+            );
+            const color = (this.items && this.items.data.icon && (await this.items.data.icon.getRGBDec())) ?? '11487';
+            for (const i of items) {
+                temp.push(getPayload((await i.GenerateDetailPage(popup)) ?? '~~~'));
+            }
+            for (let a = 0; a < 3; a++) {
+                if (temp[a] === undefined) temp[a] = '~~~';
+            }
+            msg = getPayload('entityUpdateDetail', id, icon, color, temp[0], temp[1], temp[2], '');
+        } else if (action === '' && value !== undefined) {
+            const i = typeof id === 'number' ? id : parseInt(id);
+            const item = items[i];
+            if (!item) return;
+            item.setPopupAction('mode-insel', value);
+        }
+        if (msg !== null) this.sendToPanel(msg);
     }
 
     private getMessage(message: pages.PageThermoMessage): string {

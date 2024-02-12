@@ -54,7 +54,8 @@ export class Navigation extends BaseClass {
             const c = this.navigationConfig[a];
             if (!c) continue;
             const pageID = this.panel.getPagebyUniqueID(c.page);
-            this.database[a] = pageID !== null ? { page: pageID, left: {}, right: {} } : null;
+            this.database[c.name === 'main' ? 0 : a + 1] =
+                pageID !== null ? { page: pageID, left: {}, right: {} } : null;
         }
         for (let a = 0; a < this.database.length; a++) {
             const c = this.navigationConfig[a];

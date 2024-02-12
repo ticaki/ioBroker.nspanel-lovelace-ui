@@ -79,7 +79,7 @@ class Page extends import_states_controller.BaseClassPage {
       `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`
     );
   }
-  async onPopupRequest(id, mode, action, value) {
+  async onPopupRequest(id, popup, action, value) {
     if (!this.pageItems)
       return;
     const i = typeof id === "number" ? id : parseInt(id);
@@ -87,8 +87,8 @@ class Page extends import_states_controller.BaseClassPage {
     if (!item)
       return;
     let msg = null;
-    if ((0, import_types.isPopupType)(mode)) {
-      msg = await item.GenerateDetailPage(mode);
+    if ((0, import_types.isPopupType)(popup)) {
+      msg = await item.GenerateDetailPage(popup);
     }
     if (action === "mode-insel" && value !== void 0) {
       item.setPopupAction(action, value);

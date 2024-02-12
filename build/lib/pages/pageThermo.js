@@ -22,6 +22,7 @@ __export(pageThermo_exports, {
 });
 module.exports = __toCommonJS(pageThermo_exports);
 var import_Page = require("../classes/Page");
+var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
 const PageThermoMessageDefault = {
   event: "entityUpd",
@@ -49,7 +50,6 @@ class PageThermo extends import_Page.Page {
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
-  tempItem;
   dpInit;
   constructor(config, options) {
     super(config, options.pageItems);
@@ -81,8 +81,9 @@ class PageThermo extends import_Page.Page {
     if (this.items) {
       const item = this.items;
       if (this.pageItems) {
-        for (let a = 0; a < this.pageItems.length && a < message.options.length; a++) {
-          const temp = this.pageItems[a];
+        const pageItems = this.pageItems.filter((a) => a.dataItems && a.dataItems.type === "button");
+        for (let a = 0; a < pageItems.length && a < message.options.length; a++) {
+          const temp = pageItems[a];
           if (temp) {
             const arr = (await temp.getPageItemPayload()).split("~");
             message.options[a] = (0, import_tools.getPayload)(arr[2], arr[3], arr[5] == "1" ? "1" : "0", arr[1]);
@@ -143,12 +144,13 @@ class PageThermo extends import_Page.Page {
           message.status = this.library.getTranslation(v);
         }
       }
+      message.btDetail = "";
     }
     const msg = Object.assign(PageThermoMessageDefault, message);
     this.sendToPanel(this.getMessage(msg));
   }
   async onButtonEvent(event) {
-    var _a, _b;
+    var _a, _b, _c;
     if (event.action === "tempUpdHighLow") {
       if (!this.items)
         return;
@@ -160,8 +162,46 @@ class PageThermo extends import_Page.Page {
       if (valLow !== null && newValLow !== valLow)
         this.items.data.set1.setStateAsync(newValLow);
       if (valHigh !== null && newValHigh !== valHigh)
-        this.items.data.set2.setStateAsync(newValHigh);
+        await this.items.data.set2.setStateAsync(newValHigh);
+    } else if (event.action === "tempUpd") {
+      if (!this.items)
+        return;
+      const newValLow = parseInt(event.opt) / 10;
+      const valLow = (_c = this.items && this.items.data.set1 && await this.items.data.set1.getNumber()) != null ? _c : null;
+      if (valLow !== null && newValLow !== valLow)
+        await this.items.data.set1.setStateAsync(newValLow);
     }
+  }
+  async onPopupRequest(id, popup, action, value) {
+    var _a, _b, _c;
+    if (!this.pageItems || !this.pageItems.some((a) => a.dataItems && a.dataItems.type === "input_sel"))
+      return;
+    const items = this.pageItems.filter((a) => a.dataItems && a.dataItems.type === "input_sel");
+    let msg = null;
+    if (popup === "popupThermo") {
+      const temp = [];
+      const id2 = this.id;
+      const icon = import_icon_mapping.Icons.GetIcon(
+        (_a = this.items && this.items.data.icon && await this.items.data.icon.getString()) != null ? _a : "fan"
+      );
+      const color = (_b = this.items && this.items.data.icon && await this.items.data.icon.getRGBDec()) != null ? _b : "11487";
+      for (const i of items) {
+        temp.push((0, import_tools.getPayload)((_c = await i.GenerateDetailPage(popup)) != null ? _c : "~~~"));
+      }
+      for (let a = 0; a < 3; a++) {
+        if (temp[a] === void 0)
+          temp[a] = "~~~";
+      }
+      msg = (0, import_tools.getPayload)("entityUpdateDetail", id2, icon, color, temp[0], temp[1], temp[2], "");
+    } else if (action === "" && value !== void 0) {
+      const i = typeof id === "number" ? id : parseInt(id);
+      const item = items[i];
+      if (!item)
+        return;
+      item.setPopupAction("mode-insel", value);
+    }
+    if (msg !== null)
+      this.sendToPanel(msg);
   }
   getMessage(message) {
     return (0, import_tools.getPayload)(

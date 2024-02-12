@@ -169,7 +169,6 @@ class PageMedia extends import_Page2.Page {
           value = await item.data.shuffle.getBoolean();
           break;
         }
-        case "undefined":
         case "object":
         case "array":
         case "mixed":
@@ -183,7 +182,7 @@ class PageMedia extends import_Page2.Page {
       }
     }
     if (item.data.volume) {
-      const v = await item.data.volume.getNumber();
+      const v = await (0, import_tools.getScaledNumber)(item.data.volume);
       if (v !== null) {
         message.volume = String(v);
       }
@@ -330,12 +329,8 @@ class PageMedia extends import_Page2.Page {
       }
       case "volumeSlider": {
         if (items.data.volume) {
-          let v = parseInt(event.opt);
-          if (v > 100)
-            v = 100;
-          else if (v < 0)
-            v = 0;
-          await items.data.volume.setStateAsync(v);
+          const v = parseInt(event.opt);
+          await (0, import_tools.setScaledNumber)(items.data.volume, v);
         } else {
           this.log.error(`Missing volumen controller. Report to dev`);
         }

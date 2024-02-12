@@ -1,7 +1,7 @@
 import { Panel } from '../controller/panel';
 import { BaseClassPage, BaseClassTriggerdInterface } from '../controller/states-controller';
 import * as pages from '../types/pages';
-import { IncomingEvent, PopupType, isPopupType } from '../types/types';
+import { ButtonActionType, IncomingEvent, PopupType, isPopupType } from '../types/types';
 import { ScreensaverConfig } from '../pages/screensaver';
 import { PageItem } from '../pages/pageItem';
 import { PageItemDataItemsOptions } from '../types/type-pageItem';
@@ -86,7 +86,7 @@ export class Page extends BaseClassPage {
 
     public async onPopupRequest(
         id: number | string,
-        mode: PopupType | undefined,
+        popup: PopupType | undefined,
         action: ButtonActionType | undefined | string,
         value: string | undefined,
     ): Promise<void> {
@@ -95,8 +95,8 @@ export class Page extends BaseClassPage {
         const item = this.pageItems[i];
         if (!item) return;
         let msg: string | null = null;
-        if (isPopupType(mode)) {
-            msg = await item.GenerateDetailPage(mode);
+        if (isPopupType(popup)) {
+            msg = await item.GenerateDetailPage(popup);
         }
         if (action === 'mode-insel' && value !== undefined) {
             item.setPopupAction(action, value);
@@ -150,7 +150,7 @@ type MediaButtonActionType = Extract<
     | 'button'
 >;
 
-export type ButtonActionType =
+/*export type ButtonActionType =
     | 'bExit'
     | 'bUp'
     | 'bNext'
@@ -204,4 +204,4 @@ export type ButtonActionType =
     | 'A3'
     | 'A4'
     | 'D1'
-    | 'U1';
+    | 'U1';*/

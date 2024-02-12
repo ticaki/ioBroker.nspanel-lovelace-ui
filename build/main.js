@@ -45,10 +45,12 @@ class NspanelLovelaceUi extends utils.Adapter {
   async onReady() {
     import_icon_mapping.Icons.adapter = this;
     this.library = new import_library.Library(this);
-    this.config.Testconfig2 = [import_config.Testconfig];
+    if (!this.config.Testconfig2) {
+      this.log.warn("No configuration use dev test config!");
+      this.config.Testconfig2 = [import_config.Testconfig];
+    }
     import_config.Testconfig.pages[0].mode = this.config.scstype;
     this.config.Testconfig2[0].timeout = this.config.timeout;
-    this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
     this.setTimeout(async () => {
       if (!import_config.Testconfig.pages)
         return;

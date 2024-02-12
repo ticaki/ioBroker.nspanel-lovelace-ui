@@ -29,11 +29,13 @@ __export(tools_exports, {
   getItemMesssage: () => getItemMesssage,
   getPayload: () => getPayload,
   getPayloadArray: () => getPayloadArray,
+  getScaledNumber: () => getScaledNumber,
   getTranslation: () => getTranslation,
   getValueEntryBoolean: () => getValueEntryBoolean,
   getValueEntryNumber: () => getValueEntryNumber,
   getValueEntryString: () => getValueEntryString,
-  messageItemDefault: () => messageItemDefault
+  messageItemDefault: () => messageItemDefault,
+  setScaledNumber: () => setScaledNumber
 });
 module.exports = __toCommonJS(tools_exports);
 var import_Color2 = require("./Color");
@@ -64,8 +66,47 @@ async function getValueEntryNumber(i) {
   }
   return null;
 }
+async function getScaledNumber(i) {
+  if (!i)
+    return null;
+  let nval = i.value && await i.value.getNumber();
+  if (nval !== null && nval !== void 0) {
+    if (i.minScale !== void 0 && i.maxScale !== void 0) {
+      const min = await i.minScale.getNumber();
+      const max = await i.maxScale.getNumber();
+      if (min !== null && max !== null) {
+        nval = Math.round((0, import_Color2.scale)(nval, min, max, 0, 100));
+      }
+    }
+    return nval;
+  }
+  return null;
+}
+async function setScaledNumber(i, value) {
+  var _a;
+  if (!i || !i.value)
+    return;
+  const nval = (_a = await i.value.getNumber()) != null ? _a : null;
+  if (nval !== null) {
+    if (i.minScale !== void 0 && i.maxScale !== void 0) {
+      const min = await i.minScale.getNumber();
+      const max = await i.maxScale.getNumber();
+      if (min !== null && max !== null) {
+        value = (0, import_Color2.scale)(value, 0, 100, min, max);
+        if (nval > value)
+          value = Math.floor(value);
+        else
+          value = Math.ceil(value);
+      }
+    }
+    if (nval !== value)
+      await i.value.setStateAsync(value);
+  }
+}
 async function getIconEntryValue(i, on, def, defOff = null) {
   var _a, _b, _c;
+  if (i === void 0)
+    return "";
   on = on != null ? on : true;
   if (!i)
     return import_icon_mapping.Icons.GetIcon(on ? def : defOff != null ? defOff : def);
@@ -98,6 +139,8 @@ async function getIconEntryColor(i, on, def, defOff = null) {
 }
 async function GetIconColor(item, value, def = import_Color2.HMIOn, defOff = import_Color2.HMIOff, useColor = true, interpolateColor = true, min = null, max = null) {
   var _a, _b;
+  if (item === void 0)
+    return "";
   const defRGB = typeof def === "object" ? def : null;
   def = typeof def === "string" ? def : typeof def === "number" ? String(def) : String((0, import_Color2.rgb_dec565)(def));
   if (item === void 0 || value === null)
@@ -129,6 +172,8 @@ async function GetIconColor(item, value, def = import_Color2.HMIOn, defOff = imp
 }
 async function getEntryColor(i, value, def) {
   var _a, _b;
+  if (i === void 0)
+    return "";
   if (typeof def === "number")
     def = String(def);
   else if (typeof def !== "string")
@@ -278,10 +323,12 @@ function getPayload(...s) {
   getItemMesssage,
   getPayload,
   getPayloadArray,
+  getScaledNumber,
   getTranslation,
   getValueEntryBoolean,
   getValueEntryNumber,
   getValueEntryString,
-  messageItemDefault
+  messageItemDefault,
+  setScaledNumber
 });
 //# sourceMappingURL=tools.js.map

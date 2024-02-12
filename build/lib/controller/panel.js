@@ -406,7 +406,7 @@ class Panel extends import_library.BaseClass {
         return true;
       return false;
     });
-    if (index === -1)
+    if (index === -1 || this.isOnline === false && event.method !== "startup")
       return;
     switch (event.method) {
       case "startup": {

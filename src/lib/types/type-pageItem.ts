@@ -46,6 +46,13 @@ export type entityUpdateDetailMessage =
           textColor: string;
           headline: string;
           list: string;
+      }
+    | {
+          type: 'popupThermo';
+          headline: string;
+          entityName: string;
+          value: string;
+          list: string;
       };
 
 export type entityUpdateDetailMessageType = '2Sliders' | 'insel';
@@ -154,16 +161,16 @@ export type PageItemInputSelDataItems = {
 
 export type PageItemBase = {
     headline?: string;
-    color: ColorEntryType;
-    icon: IconEntryType;
+    color?: ColorEntryType;
+    icon?: IconEntryType;
     text?: TextEntryType;
     entity1: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     entity2?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     entity3?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
-    text1: TextEntryType;
+    text1?: TextEntryType;
     text2?: TextEntryType;
     text3?: TextEntryType;
-    setValue1: string;
+    setValue1?: string;
     setValue2?: string;
     setValue3?: string;
     valueList?: number;
@@ -282,6 +289,13 @@ export type ValueEntryType =
           decimal: number;
           factor: number;
           unit: string;
+          minScale?: number;
+          maxScale?: number;
+      }
+    | undefined;
+export type ScaledNumberType =
+    | {
+          value: number;
           minScale?: number;
           maxScale?: number;
       }

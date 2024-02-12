@@ -9,7 +9,7 @@ import {
 } from '../types/type-pageItem';
 import * as tools from '../const/tools';
 import { PopupType } from '../types/types';
-import { templatePageElements, templatePageItems } from '../templates/TpageItem';
+import { templatePageElements } from '../templates/TpageItem';
 import { BaseClassTriggerd } from '../controller/states-controller';
 import { Panel } from '../controller/panel';
 
@@ -62,20 +62,28 @@ export class PageItem extends BaseClassTriggerd {
                     const dimmer = t.data.dimmer ? item.dimmer && (await item.dimmer.getNumber()) : null;
                     const rgb = t.data.RGB3
                         ? (await tools.getDecfromRGBThree(item)) ??
-                          (await tools.getEntryColor(item.color, true, Color.White))
+                          (item.color && (await tools.getEntryColor(item.color, true, Color.White))) ??
+                          null
                         : null;
                     const hue = t.data.hue && item.hue ? Color.hsvtodec(await item.hue.getNumber(), 1, 1) : null;
                     let v = (!!t.data.entity1 && (await tools.getValueEntryBoolean(item.entity1))) ?? true;
                     if (t.data.entity1 === 'invert') v = !v;
-                    message.icon = t.data.icon
-                        ? await tools.getIconEntryValue(item.icon, v, t.data.icon.true.value, t.data.icon.false.value)
-                        : '';
+                    message.icon =
+                        t.data.icon && item.icon
+                            ? await tools.getIconEntryValue(
+                                  item.icon,
+                                  v,
+                                  t.data.icon.true.value,
+                                  t.data.icon.false.value,
+                              )
+                            : '';
                     if (v) {
                         message.optionalValue = '1';
-                        message.iconColor = hue ?? rgb ?? (await tools.GetIconColor(item.icon, dimmer ?? 100));
+                        message.iconColor =
+                            hue ?? rgb ?? (item.icon && (await tools.GetIconColor(item.icon, dimmer ?? 100))) ?? '';
                     } else {
                         message.optionalValue = '0';
-                        message.iconColor = await tools.GetIconColor(item.icon, false);
+                        message.iconColor = (item.icon && (await tools.GetIconColor(item.icon, false))) ?? '';
                     }
                     message.displayName = t.data.text1
                         ? (await tools.getEntryTextOnOff(item.text, v)) ?? v
@@ -482,6 +490,18 @@ export class PageItem extends BaseClassTriggerd {
                 );
                 break;
             }
+            case 'popupThermo': {
+                let result: entityUpdateDetailMessage = {
+                    type: 'popupThermo',
+                    entityName: '',
+                    headline: '',
+                    value: '',
+                    list: '',
+                };
+                result = Object.assign(result, message);
+                return tools.getPayload(result.headline, result.entityName, result.value, result.list);
+                break;
+            }
         }
         return '';
     }
@@ -489,7 +509,7 @@ export class PageItem extends BaseClassTriggerd {
         if (!this.config || !this.dataItems) return null;
         const entry = this.dataItems;
         const message: Partial<entityUpdateDetailMessage> = {};
-        const template = templatePageItems[mode][this.config.role];
+        //const template = templatePageItems[mode][this.config.role];
         message.entityName = this.id;
 
         switch (mode) {
@@ -582,17 +602,41 @@ export class PageItem extends BaseClassTriggerd {
                 }
                 break;
             }*/
+
             case 'popupFan':
-            case 'popupInSel': {
+            case 'popupThermo': {
                 if (entry.type !== 'input_sel') break;
                 const item = entry.data;
-                message.type = 'insel';
+                message.type = 'popupThermo';
 
-                if (message.type !== 'insel') return null;
+                if (message.type !== 'popupThermo') return null;
 
-                const value = (await tools.getValueEntryBoolean(item.entity1)) ?? true;
+                if (
+                    item.entity1 &&
+                    item.entity1.value &&
+                    ['string', 'number'].indexOf(item.entity1.value.trueType() ?? '') &&
+                    item.entity1.value.getCommonStates()
+                ) {
+                    const states = item.entity1.value.getCommonStates();
+                    const value = await tools.getValueEntryString(item.entity1);
+                    if (value !== null && states && states[value] !== undefined) {
+                        message.headline = this.library.getTranslation(
+                            (item.headline && (await item.headline.getString())) ?? '',
+                        );
+                        const list: string[] = [];
+                        for (const a in states) {
+                            list.push(this.library.getTranslation(String(states[a])));
+                        }
+                        if (list.length > 0) {
+                            message.list = Array.isArray(list)
+                                ? list.map((a: string) => tools.formatInSelText(a)).join('?')
+                                : '';
+                            break;
+                        }
+                    }
+                }
 
-                message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+                message.value = (await tools.getValueEntryString(item.entity1)) ?? '';
                 message.headline = this.library.getTranslation(
                     (item.headline && (await item.headline.getString())) ?? '',
                 );
@@ -616,14 +660,71 @@ export class PageItem extends BaseClassTriggerd {
                     if (typeof list === 'string') list = list.split('?');
                 } else list = [];
                 message.list = Array.isArray(list) ? list.map((a: string[]) => tools.formatInSelText(a)).join('?') : '';
+                break;
+            }
+            case 'popupInSel': {
+                if (entry.type !== 'input_sel') break;
+                const item = entry.data;
+                message.type = 'insel';
 
+                if (message.type !== 'insel') return null;
+                if (
+                    item.entity1 &&
+                    item.entity1.value &&
+                    ['string', 'number'].indexOf(item.entity1.value.trueType() ?? '') &&
+                    item.entity1.value.getCommonStates()
+                ) {
+                    const states = item.entity1.value.getCommonStates();
+                    const value = await tools.getValueEntryString(item.entity1);
+                    if (value !== null && states && states[value] !== undefined) {
+                        message.textColor = await tools.getEntryColor(item.color, !!value, Color.White);
+                        message.headline = this.library.getTranslation(
+                            (item.headline && (await item.headline.getString())) ?? '',
+                        );
+                        const list: string[] = [];
+                        for (const a in states) {
+                            list.push(this.library.getTranslation(String(states[a])));
+                        }
+                        if (list.length > 0) {
+                            message.list = Array.isArray(list)
+                                ? list.map((a: string) => tools.formatInSelText(a)).join('?')
+                                : '';
+                            break;
+                        }
+                    }
+                }
+                const value = (await tools.getValueEntryBoolean(item.entity1)) ?? true;
+                message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+                message.headline = this.library.getTranslation(
+                    (item.headline && (await item.headline.getString())) ?? '',
+                );
+                let list = (item.valueList && (await item.valueList.getObject())) ??
+                    (item.valueList && (await item.valueList.getString())) ?? [
+                        '1',
+                        '2',
+                        '3',
+                        '4',
+                        '5',
+                        '6',
+                        '7',
+                        '8',
+                        '9',
+                        '10',
+                        '11',
+                        '12',
+                        '13',
+                    ];
+                if (list !== null) {
+                    if (typeof list === 'string') list = list.split('?');
+                } else list = [];
+                message.list = Array.isArray(list) ? list.map((a: string) => tools.formatInSelText(a)).join('?') : '';
                 break;
             }
         }
 
-        if (template.type !== message.type) {
-            throw new Error(`Template ${template.type} is not ${message.type} for role: ${this.config.role}`);
-        }
+        //if (template.type !== message.type) {
+        //    throw new Error(`Template ${template.type} is not ${message.type} for role: ${this.config.role}`);
+        //}
         return this.getDetailPayload(message);
 
         return null;
@@ -640,7 +741,29 @@ export class PageItem extends BaseClassTriggerd {
             case 'mode-insel':
                 {
                     if (entry.type !== 'input_sel') break;
+
                     const item = entry.data;
+                    if (
+                        item.entity1 &&
+                        item.entity1.value &&
+                        ['string', 'number'].indexOf(item.entity1.value.trueType() ?? '') &&
+                        item.entity1.value.getCommonStates() &&
+                        !item.setList
+                    ) {
+                        const states = item.entity1.value.getCommonStates();
+                        //const value = await tools.getValueEntryString(item.entity1);
+                        if (value !== null && states !== undefined) {
+                            const list: string[] = [];
+                            for (const a in states) {
+                                list.push(this.library.getTranslation(String(a)));
+                            }
+                            if (list[parseInt(value)] !== undefined) {
+                                await item.entity1.value.setStateAsync(list[parseInt(value)]);
+                                break;
+                            }
+                        }
+                    }
+
                     if (!item.setList) return;
                     let list: any = (await item.setList.getObject()) as { id: string; value: any } | null;
                     if (list === null) {

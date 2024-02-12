@@ -69,7 +69,7 @@ export class Panel extends BaseClass {
     readonly controller: Controller;
     readonly topic: string;
     readonly reivCallbacks: callbackMessageType[] = [];
-    _isOnline = false;
+    private _isOnline: boolean = false;
     readonly panelSend: PanelSend;
     readonly statesControler: StatesControler;
     readonly config: ScreensaverConfigType;
@@ -420,7 +420,7 @@ export class Panel extends BaseClass {
             if (a && a.card !== 'screensaver' && a.card !== 'screensaver2') return true;
             return false;
         });
-        if (index === -1) return;
+        if (index === -1 || (this.isOnline === false && event.method !== 'startup')) return;
         switch (event.method) {
             case 'startup': {
                 this.isOnline = true;

@@ -181,10 +181,11 @@ export class StatesControler extends BaseClass {
             ts: number;
             subscribed: boolean[];
             response: ('now' | 'medium' | 'slow')[];
+            common: ioBroker.StateCommon;
         };
     } = {};
     private deletePageTimeout: ioBroker.Interval | undefined;
-    private stateDB: { [key: string]: { state: ioBroker.State; ts: number } } = {};
+    private stateDB: { [key: string]: { state: ioBroker.State; ts: number; common: ioBroker.StateCommon } } = {};
     private tempObjectDB: { [key: string]: { [id: string]: ioBroker.Object } } | undefined = undefined;
     timespan: number;
     constructor(adapter: AdapterClassDefinition, name: string = '', timespan: number = 15000) {
@@ -248,13 +249,15 @@ export class StatesControler extends BaseClass {
             if (state) {
                 // erstelle keinen trigger für das gleiche parent doppelt..
                 await this.adapter.subscribeForeignStatesAsync(id);
-
+                const obj = await this.adapter.getForeignObjectAsync(id);
+                if (!obj || !obj.common || obj.type !== 'state') throw new Error('Got invalid object for ' + id);
                 this.triggerDB[id] = {
                     state,
                     to: [from],
                     ts: Date.now(),
                     subscribed: [false],
                     response: [response],
+                    common: obj.common,
                 };
                 if (this.stateDB[id] !== undefined) {
                     delete this.stateDB[id];
@@ -322,11 +325,38 @@ export class StatesControler extends BaseClass {
         }
         const state = await this.adapter.getForeignStateAsync(id);
         if (state) {
-            this.stateDB[id] = { state: state, ts: Date.now() };
+            if (!this.stateDB[id]) {
+                const obj = await this.adapter.getForeignObjectAsync(id);
+                if (!obj || !obj.common || obj.type !== 'state') throw new Error('Got invalid object for ' + id);
+                this.stateDB[id] = { state: state, ts: Date.now(), common: obj.common };
+            } else {
+                this.stateDB[id].state = state;
+                this.stateDB[id].ts = Date.now();
+            }
             return state;
         }
         throw new Error(`State id invalid ${id} no data!`);
     }
+
+    getType(id: string): ioBroker.CommonType | undefined {
+        if (this.triggerDB[id] !== undefined) return this.triggerDB[id].common.type;
+        if (this.stateDB[id] !== undefined) return this.stateDB[id].common.type;
+        return undefined;
+    }
+
+    getCommonStates(id: string): Record<string, string> | undefined {
+        let j: string | string[] | Record<string, string> | undefined = undefined;
+        if (this.triggerDB[id] !== undefined) j = this.triggerDB[id].common.states;
+        else if (this.stateDB[id] !== undefined) j = this.stateDB[id].common.states;
+        if (!j || typeof j === 'string') return undefined;
+        if (Array.isArray(j)) {
+            const a: Record<string, string> = {};
+            j.forEach((e, i) => (a[String(i)] = e));
+            j = a;
+        }
+        return j;
+    }
+
     async onStateChange(dp: string, state: ioBroker.State | null | undefined): Promise<void> {
         if (dp && state) {
             if (this.triggerDB[dp]) {
@@ -371,10 +401,10 @@ export class StatesControler extends BaseClass {
             if (item.options.dp) {
                 const ack = item.options.dp.startsWith(this.adapter.namespace);
                 this.log.debug(`setStateAsync(${item.options.dp}, ${val}, ${ack})`);
-                if (item.trueType === 'number' && typeof val === 'string') val = parseFloat(val);
-                else if (item.trueType === 'number' && typeof val === 'boolean') val = val ? 1 : 0;
-                else if (item.trueType === 'boolean') val = !!val;
-                if (item.trueType === 'string') val = String(val);
+                if (item.trueType() === 'number' && typeof val === 'string') val = parseFloat(val);
+                else if (item.trueType() === 'number' && typeof val === 'boolean') val = val ? 1 : 0;
+                else if (item.trueType() === 'boolean') val = !!val;
+                if (item.trueType() === 'string') val = String(val);
                 this.updateDBState(item.options.dp, val, ack);
                 if (writeable) await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
                 else this.log.error(`Forbidden write attempts on a read-only state! id: ${item.options.dp}`);
