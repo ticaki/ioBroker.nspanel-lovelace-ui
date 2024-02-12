@@ -170,6 +170,10 @@ class PageThermo extends import_Page.Page {
       const valLow = (_c = this.items && this.items.data.set1 && await this.items.data.set1.getNumber()) != null ? _c : null;
       if (valLow !== null && newValLow !== valLow)
         await this.items.data.set1.setStateAsync(newValLow);
+    } else if (event.action === "hvac_action") {
+      if (!this.pageItems)
+        return;
+      await this.pageItems[Number(event.opt.split("?")[1])].setPopupAction("button", "");
     }
   }
   async onPopupRequest(id, popup, action, value) {

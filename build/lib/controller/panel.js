@@ -291,7 +291,6 @@ class Panel extends import_library.BaseClass {
     } else {
       const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) || [])[0];
       if (command) {
-        this.log.debug(`Receive other message ${topic} with ${message}`);
         switch (command) {
           case "stat/POWER2": {
             this.library.writedp(

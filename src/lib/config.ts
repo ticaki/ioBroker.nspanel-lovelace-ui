@@ -755,11 +755,47 @@ const pageThermoTest: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setNavi: {
-                    type: 'const',
-                    constVal: '3',
-                },
                 setValue1: undefined,
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'button',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: { type: 'state', dp: '0_userdata.0.example_state' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+                setValue1: { type: 'triggered', dp: '0_userdata.0.example_state' },
             },
         },
     ],

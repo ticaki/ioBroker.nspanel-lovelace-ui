@@ -290,7 +290,7 @@ export class Panel extends BaseClass {
             const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) ||
                 [])[0] as NSPanel.TasmotaIncomingTopics | null;
             if (command) {
-                this.log.debug(`Receive other message ${topic} with ${message}`);
+                //this.log.debug(`Receive other message ${topic} with ${message}`);
                 switch (command) {
                     case 'stat/POWER2': {
                         this.library.writedp(

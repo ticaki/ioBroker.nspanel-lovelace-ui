@@ -151,6 +151,9 @@ export class PageThermo extends Page {
             const newValLow = parseInt(event.opt) / 10;
             const valLow = (this.items && this.items.data.set1 && (await this.items.data.set1.getNumber())) ?? null;
             if (valLow !== null && newValLow !== valLow) await this.items.data.set1!.setStateAsync(newValLow);
+        } else if (event.action === 'hvac_action') {
+            if (!this.pageItems) return;
+            await this.pageItems[Number(event.opt.split('?')[1])].setPopupAction('button', '');
         }
     }
 

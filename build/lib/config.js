@@ -741,11 +741,47 @@ const pageThermoTest = {
           true: void 0,
           false: void 0
         },
-        setNavi: {
-          type: "const",
-          constVal: "3"
-        },
         setValue1: void 0
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "state", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: { type: "triggered", dp: "0_userdata.0.example_state" }
       }
     }
   ],
