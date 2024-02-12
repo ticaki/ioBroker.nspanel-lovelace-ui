@@ -28,9 +28,11 @@ Entwickleränderungen / Erklärung
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### 0.0.4-preAlpha.1 (2024-02-12)
+- (ticaki) cardThermo, script config
+
 ### 0.0.4-preAlpha.0 (2024-02-01)
 - (ticaki) admin save - still deep alpha
-
 
 ### 0.0.3-preAlpha.0 (2024-02-01)
 - (ticaki) alot - still dont install this
