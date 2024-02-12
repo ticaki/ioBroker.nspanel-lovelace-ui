@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.0.4-preAlpha.1",
+    "version": "0.0.4-preAlpha.2",
     "news": {
+      "0.0.4-preAlpha.2": {
+        "en": "Add button flip to cardThermo",
+        "de": "Knopf-Flip zur Karte hinzufügen Thermothermometer",
+        "ru": "Добавить флажок на кнопку Thermo",
+        "pt": "Adicionar botão virar para o cartão Termo",
+        "nl": "Knop aan kaart toevoegen Thermo",
+        "fr": "Ajouter le bouton flip à la carte Thermo",
+        "it": "Aggiungi pulsante flip alla scheda Termometro",
+        "es": "Agregue el botón de la tarjeta Thermo",
+        "pl": "Dodaj przycisk flip do karty Thermo",
+        "uk": "Додати кнопку фліп на картку Термообробка",
+        "zh-cn": "向卡片添加按钮翻转 热力"
+      },
       "0.0.4-preAlpha.1": {
         "en": "cardThermo, script config",
         "de": "karte Thermo, Skript config",
