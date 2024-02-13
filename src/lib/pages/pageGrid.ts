@@ -1,6 +1,7 @@
 import { Page, PageInterface } from '../classes/Page';
 import { getPayload, getPayloadArray } from '../const/tools';
 import * as pages from '../types/pages';
+import { IncomingEvent } from '../types/types';
 import { PageItem } from './pageItem';
 
 const PageGridMessageDefault: pages.PageGridMessage = {
@@ -56,5 +57,13 @@ export class PageGrid extends Page {
     }
     private getMessage(message: pages.PageGridMessage): string {
         return getPayload('entityUpd', message.headline, message.navigation, getPayloadArray(message.options));
+    }
+    protected async onStateTrigger(): Promise<void> {
+        this.update();
+    }
+    async onButtonEvent(_event: IncomingEvent): Promise<void> {
+        //if (event.page && event.id && this.pageItems) {
+        //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
+        //}
     }
 }

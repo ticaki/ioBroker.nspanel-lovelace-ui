@@ -236,15 +236,17 @@ class Dataitem extends import_library.BaseClass {
     await this.setStateAsync(false);
   }
   async setStateFlip() {
-    switch (this.type) {
+    const value = await this.getBoolean();
+    this.log.debug(String(value));
+    switch (this.trueType()) {
       case "boolean":
-        await this.setStateAsync(!await this.getBoolean());
+        await this.setStateAsync(!value);
         break;
       case "number":
-        await this.setStateAsync(await this.getBoolean() ? 0 : 1);
+        await this.setStateAsync(value ? 0 : 1);
         break;
       case "string":
-        await this.setStateAsync(await this.getBoolean() ? "OFF" : "ON");
+        await this.setStateAsync(value ? "OFF" : "ON");
         break;
     }
   }

@@ -227,15 +227,17 @@ export class Dataitem extends BaseClass {
      * Flip this 'ON'/'OFF', 0/1 or true/false. Depend on this.type
      */
     async setStateFlip(): Promise<void> {
-        switch (this.type) {
+        const value = await this.getBoolean();
+        this.log.debug(String(value));
+        switch (this.trueType()) {
             case 'boolean':
-                await this.setStateAsync(!(await this.getBoolean()));
+                await this.setStateAsync(!value);
                 break;
             case 'number':
-                await this.setStateAsync((await this.getBoolean()) ? 0 : 1);
+                await this.setStateAsync(value ? 0 : 1);
                 break;
             case 'string':
-                await this.setStateAsync((await this.getBoolean()) ? 'OFF' : 'ON');
+                await this.setStateAsync(value ? 'OFF' : 'ON');
                 break;
         }
     }

@@ -245,7 +245,6 @@ const pageMediaTest: pages.PageBaseConfig = {
                         constVal: Color.HMIOn,
                     },
                     false: undefined,
-                    scale: undefined,
                 },
                 icon: {
                     true: {
@@ -260,7 +259,7 @@ const pageMediaTest: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entity1: {
+                entityInSel: {
                     value: {
                         type: 'const',
                         constVal: true,
@@ -349,6 +348,74 @@ const pageGridTest1: pages.PageBaseConfig = {
     },
     pageItems: [
         {
+            role: 'rgb',
+            type: 'light',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: { type: 'triggered', dp: '0_userdata.0.RGB', response: 'now' },
+                    false: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'lightbulb' },
+                        color: { type: 'const', constVal: Color.Yellow },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'lightbulb-outline' },
+                        color: { type: 'const', constVal: Color.HMIOff },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                dimmer: {
+                    value: {
+                        type: 'triggered',
+                        dp: '0_userdata.0.dimmer',
+                    },
+                },
+                entity1: {
+                    // button
+                    value: { type: 'triggered', dp: '0_userdata.0.example_state' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                entityInSel: undefined,
+                text1: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Detail',
+                    },
+                    false: undefined,
+                },
+                text2: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Picker1',
+                    },
+                    false: undefined,
+                },
+                text3: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Picker2',
+                    },
+                    false: undefined,
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+            },
+        },
+        {
             role: 'text.list',
             type: 'input_sel',
             dpInit: undefined,
@@ -375,7 +442,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entity1: {
+                entityInSel: {
                     value: {
                         type: 'const',
                         constVal: true,
@@ -494,7 +561,7 @@ const pageGridTest2: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entity1: {
+                entityInSel: {
                     value: {
                         type: 'const',
                         constVal: true,
@@ -610,7 +677,7 @@ const pageGrid2Test2: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entity1: {
+                entityInSel: {
                     value: {
                         type: 'const',
                         constVal: true,
@@ -692,7 +759,7 @@ const pageThermoTest: pages.PageBaseConfig = {
             dpInit: undefined,
             initMode: 'custom',
             data: {
-                entity1: {
+                entityInSel: {
                     value: {
                         type: 'state',
                         dp: '0_userdata.0.statesTest',

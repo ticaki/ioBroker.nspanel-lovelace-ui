@@ -268,8 +268,7 @@ const pageMediaTest = {
             type: "const",
             constVal: Color.HMIOn
           },
-          false: void 0,
-          scale: void 0
+          false: void 0
         },
         icon: {
           true: {
@@ -284,7 +283,7 @@ const pageMediaTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entity1: {
+        entityInSel: {
           value: {
             type: "const",
             constVal: true
@@ -366,6 +365,67 @@ const pageGridTest1 = {
   },
   pageItems: [
     {
+      role: "rgb",
+      type: "light",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: { type: "triggered", dp: "0_userdata.0.RGB", response: "now" },
+          false: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.HMIOff }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        dimmer: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.dimmer"
+          }
+        },
+        entity1: {
+          value: { type: "triggered", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        entityInSel: void 0,
+        text1: {
+          true: {
+            type: "const",
+            constVal: "Detail"
+          },
+          false: void 0
+        },
+        text2: {
+          true: {
+            type: "const",
+            constVal: "Picker1"
+          },
+          false: void 0
+        },
+        text3: {
+          true: {
+            type: "const",
+            constVal: "Picker2"
+          },
+          false: void 0
+        },
+        valueList: { type: "const", constVal: "home?butter" },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
       role: "text.list",
       type: "input_sel",
       dpInit: void 0,
@@ -392,7 +452,7 @@ const pageGridTest1 = {
           maxBri: void 0,
           minBri: void 0
         },
-        entity1: {
+        entityInSel: {
           value: {
             type: "const",
             constVal: true
@@ -504,7 +564,7 @@ const pageGridTest2 = {
           maxBri: void 0,
           minBri: void 0
         },
-        entity1: {
+        entityInSel: {
           value: {
             type: "const",
             constVal: true
@@ -611,7 +671,7 @@ const pageGrid2Test2 = {
           maxBri: void 0,
           minBri: void 0
         },
-        entity1: {
+        entityInSel: {
           value: {
             type: "const",
             constVal: true
@@ -686,7 +746,7 @@ const pageThermoTest = {
       dpInit: void 0,
       initMode: "custom",
       data: {
-        entity1: {
+        entityInSel: {
           value: {
             type: "state",
             dp: "0_userdata.0.statesTest"

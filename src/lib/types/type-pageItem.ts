@@ -29,7 +29,7 @@ export type entityUpdateDetailMessage =
     | {
           type: '2Sliders';
           entityName: string;
-          icon?: undefined;
+          icon?: string;
           slidersColor: string | 'disable';
           buttonState: boolean | 'disable';
           slider1Pos: number | 'disable';
@@ -53,7 +53,23 @@ export type entityUpdateDetailMessage =
           entityName: string;
           value: string;
           list: string;
-      };
+      }
+    | ({
+          type: 'popupLight';
+      } & Record<
+          | 'entityName'
+          | 'icon'
+          | 'iconColor'
+          | 'power'
+          | 'sliderBriPos'
+          | 'sliderCtPos'
+          | 'colorMode'
+          | 'colorIdentifier'
+          | 'ctIdentifier'
+          | 'briIdentifier'
+          | 'effect_supported',
+          string
+      >);
 
 export type entityUpdateDetailMessageType = '2Sliders' | 'insel';
 
@@ -135,7 +151,24 @@ export type PageItemButtonDataItems = {
 
 export type PageItemLight = Pick<
     PageItemBase,
-    'setValue1' | 'text' | 'icon' | 'color' | 'entity1' | 'Red' | 'Green' | 'Blue' | 'saturation' | 'dimmer' | 'hue'
+    | 'setValue1'
+    | 'valueList'
+    | 'setList'
+    | 'text1'
+    | 'text2'
+    | 'text3'
+    | 'icon'
+    | 'color'
+    | 'entity1'
+    | 'Red'
+    | 'Green'
+    | 'Blue'
+    | 'saturation'
+    | 'dimmer'
+    | 'hue'
+    | 'entityInSel'
+    | 'ct'
+    | 'headline'
 >;
 export type PageItemLightDataItemsOptions = {
     type: 'light';
@@ -148,7 +181,7 @@ export type PageItemLightDataItems = {
 
 export type PageItemInputSel = Pick<
     PageItemBase,
-    'entity1' | 'text' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
+    'entityInSel' | 'text' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
 >;
 export type PageItemInputSelDataItemsOptions = {
     type: 'input_sel';
@@ -164,7 +197,8 @@ export type PageItemBase = {
     color?: ColorEntryType;
     icon?: IconEntryType;
     text?: TextEntryType;
-    entity1: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+    entityInSel: ValueEntryType;
+    entity1: ValueEntryType; // Readonly Werte die angezeigt werden soll. wird immer für insel verwendet
     entity2?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     entity3?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     text1?: TextEntryType;
@@ -181,7 +215,8 @@ export type PageItemBase = {
     minValue2?: number;
     maxValue2?: number;
     interpolateColor?: boolean;
-    dimmer?: number | boolean;
+    dimmer?: ScaledNumberType;
+    ct?: ScaledNumberType;
     hue?: string;
     saturation?: string;
     useColor: string;
@@ -273,7 +308,7 @@ export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
 export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data' | 'type'> &
     (PageItemButtonDataItemsOptions | PageItemInputSelDataItemsOptions | PageItemLightDataItemsOptions);
 
-export type ColorEntryType = Record<Types.BooleanUnion, RGB> & { scale?: Types.IconScaleElement };
+export type ColorEntryType = Record<Types.BooleanUnion, RGB | undefined> & { scale?: Types.IconScaleElement };
 
 export type IconEntryType = Record<Types.BooleanUnion, { value: string; color: RGB }> & {
     scale: Types.IconScaleElement | undefined;
@@ -300,3 +335,13 @@ export type ScaledNumberType =
           maxScale?: number;
       }
     | undefined;
+export type listCommand = { id: string; value: string; command?: listCommandUnion };
+type listCommandUnion = 'flip';
+export function islistCommandUnion(F: any | listCommandUnion): F is listCommandUnion {
+    switch (F as listCommandUnion) {
+        case 'flip': {
+            return true;
+        }
+    }
+    return false;
+}

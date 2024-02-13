@@ -13,7 +13,7 @@ import {
 import { ChangeTypeOfKeys } from './definition';
 import { Library } from '../classes/library';
 import { RGB } from '../types/Color';
-import { HMIOff, HMIOn, Interpolate, White, hsv2rgb, rgb_dec565, scale } from './Color';
+import { HMIOff, HMIOn, Interpolate, White, getHue, hsv2rgb, isRGB, rgb_dec565, scale } from './Color';
 import { Icons } from './icon_mapping';
 
 export const messageItemDefault: MessageItem = {
@@ -98,7 +98,7 @@ export async function getIconEntryValue(
     return Icons.GetIcon(icon ?? def);
 }
 export async function getIconEntryColor(
-    i: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined>,
+    i: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined> | undefined,
     on: boolean | number | null,
     def: string | RGB | number,
     defOff: string | RGB | null = null,
@@ -119,56 +119,61 @@ export async function getIconEntryColor(
     return icon ?? def;
 }
 export async function GetIconColor(
-    item: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined> | undefined,
+    item: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined> | undefined | RGB,
     value: boolean | number | null,
-    def: string | RGB | number = HMIOn,
-    defOff: string | RGB | number = HMIOff,
-    useColor: boolean = true,
-    interpolateColor: boolean = true,
     min: number | null = null,
     max: number | null = null,
+    offColor: RGB | null = null,
 ): Promise<string> {
     // dimmer
     if (item === undefined) return '';
-    const defRGB = typeof def === 'object' ? def : null;
-    def = typeof def === 'string' ? def : typeof def === 'number' ? String(def) : String(rgb_dec565(def));
-    if (item === undefined || value === null) return def;
-    const defOffRGB = typeof defOff === 'object' ? defOff : null;
-    const newDefOff: string | null =
-        defOff === null
-            ? null
-            : typeof def === 'string'
-              ? def
-              : typeof def === 'number'
-                ? String(def)
-                : String(rgb_dec565(def));
-
-    const onColor = item.true.color && (await item.true.color.getRGBValue());
-    const offColor = item.false.color && (await item.false.color.getRGBValue());
-    if (useColor && interpolateColor && typeof value === 'number') {
-        let val: number = typeof value === 'number' ? value : 0;
-        const maxValue = ((item.maxBri && (await item.maxBri.getNumber())) || max) ?? 100;
-        const minValue = ((item.minBri && (await item.minBri.getNumber())) || min) ?? 0;
-        val = val > maxValue ? maxValue : val;
-        val = val < minValue ? minValue : val;
-
-        return String(
-            rgb_dec565(
-                Interpolate(
-                    offColor ? offColor : defOffRGB ?? HMIOff,
-                    onColor ? onColor : defRGB ?? HMIOn,
-                    scale(100 - val, minValue, maxValue, 0, 1),
+    if (isRGB(item)) {
+        const onColor = item;
+        if (typeof value === 'number') {
+            let val: number = typeof value === 'number' ? value : 0;
+            const maxValue = max ?? 100;
+            const minValue = min ?? 0;
+            val = val > maxValue ? maxValue : val;
+            val = val < minValue ? minValue : val;
+            return String(
+                rgb_dec565(
+                    Interpolate(
+                        offColor ?? { red: 100, green: 100, blue: 100 },
+                        onColor ? onColor : HMIOn,
+                        scale(100 - val, minValue, maxValue, 0, 1),
+                    ),
                 ),
-            ),
-        );
+            );
+        }
+        if (value) {
+            return String(rgb_dec565(onColor ? onColor : HMIOn));
+        }
+        return String(rgb_dec565(offColor ? offColor : HMIOff));
+    } else {
+        const onColor = item.true.color && (await item.true.color.getRGBValue());
+        const offColor = item.false.color && (await item.false.color.getRGBValue());
+        if (typeof value === 'number') {
+            let val: number = typeof value === 'number' ? value : 0;
+            const maxValue = ((item.maxBri && (await item.maxBri.getNumber())) || max) ?? 100;
+            const minValue = ((item.minBri && (await item.minBri.getNumber())) || min) ?? 0;
+            val = val > maxValue ? maxValue : val;
+            val = val < minValue ? minValue : val;
+            return String(
+                rgb_dec565(
+                    Interpolate(
+                        offColor ? offColor : { red: 100, green: 100, blue: 100 },
+                        onColor ? onColor : HMIOn,
+                        scale(100 - val, minValue, maxValue, 0, 1),
+                    ),
+                ),
+            );
+        }
+
+        if (value) {
+            return String(rgb_dec565(onColor ? onColor : HMIOn));
+        }
+        return String(rgb_dec565(offColor ? offColor : HMIOff));
     }
-    if (
-        (useColor && typeof value === 'boolean' && value) ||
-        (typeof value === 'number' && value > ((item.minBri !== undefined && (await item.minBri.getNumber())) || 0))
-    ) {
-        return onColor ? String(rgb_dec565(onColor)) : def;
-    }
-    return offColor ? String(rgb_dec565(offColor)) : newDefOff ?? def;
 }
 
 export async function getEntryColor(
@@ -236,13 +241,24 @@ export function getTranslation(library: Library, key1: any | string, key2?: stri
     return result;
 }
 
-export const getDecfromRGBThree = async (item: PageItemLightDataItems['data']): Promise<string | null> => {
-    if (!item) return String(rgb_dec565(White));
+export const getRGBfromRGBThree = async (item: PageItemLightDataItems['data']): Promise<RGB | null> => {
+    if (!item) return White;
     const red = (item.Red && (await item.Red.getNumber())) ?? -1;
     const green = (item.Green && (await item.Green.getNumber())) ?? -1;
     const blue = (item.Blue && (await item.Blue.getNumber())) ?? -1;
     if (red === -1 || blue === -1 || green === -1) return null;
-    return String(rgb_dec565({ red, green, blue }));
+    return { red, green, blue };
+};
+export const getDecfromRGBThree = async (item: PageItemLightDataItems['data']): Promise<string | null> => {
+    const rgb = await getRGBfromRGBThree(item);
+    if (!rgb) return null;
+    return String(rgb_dec565(rgb));
+};
+export const setRGBThreefromRGB = async (item: PageItemLightDataItems['data'], c: RGB): Promise<void> => {
+    if (!item || !item.Red || !item.Green || !item.Blue) return;
+    await item.Red.setStateAsync(c.red);
+    await item.Green.setStateAsync(c.green);
+    await item.Blue.setStateAsync(c.blue);
 };
 
 export const getDecfromHue = async (item: PageItemLightDataItems['data']): Promise<string | null> => {
@@ -253,6 +269,17 @@ export const getDecfromHue = async (item: PageItemLightDataItems['data']): Promi
     if (hue === null) return null;
     const arr = hsv2rgb(hue, saturation, 1);
     return String(rgb_dec565({ red: arr[0], green: arr[1], blue: arr[2] }));
+};
+
+export const setHuefromRGB = async (item: PageItemLightDataItems['data'], c: RGB): Promise<void> => {
+    if (!item || !item.hue || !isRGB(c)) return;
+    if (!item.hue.writeable) {
+        return;
+    }
+    //let saturation = Math.abs((item.saturation && (await item.saturation.getNumber())) ?? 1);
+    //if (saturation > 1) saturation = 1;
+    const hue = getHue(c.red, c.green, c.blue);
+    await item.hue.setStateAsync(hue);
 };
 
 export function formatInSelText(Text: string[] | string): string {

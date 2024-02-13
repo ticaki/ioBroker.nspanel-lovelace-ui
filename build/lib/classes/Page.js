@@ -54,7 +54,8 @@ class Page extends import_states_controller.BaseClassPage {
             panel: this.panel,
             panelSend: this.panelSend,
             card: "cardItemSpecial",
-            id: `${this.id}?${a}`
+            id: `${this.id}?${a}`,
+            parent: this
           };
           this.pageItems[a] = new import_pageItem.PageItem(config, this.pageItemConfig[a]);
           await this.pageItems[a].init();
@@ -87,13 +88,10 @@ class Page extends import_states_controller.BaseClassPage {
     if (!item)
       return;
     let msg = null;
-    if ((0, import_types.isPopupType)(popup)) {
+    if ((0, import_types.isPopupType)(popup) && action !== "bExit") {
       msg = await item.GenerateDetailPage(popup);
-    }
-    if (action === "mode-insel" && value !== void 0) {
+    } else if (action && value !== void 0) {
       item.setPopupAction(action, value);
-    } else if (action === "button") {
-      item.setPopupAction(action, "");
     }
     if (msg !== null)
       this.sendToPanel(msg);

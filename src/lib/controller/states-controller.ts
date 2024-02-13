@@ -37,6 +37,8 @@ export class BaseClassTriggerd extends BaseClass {
     private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
     protected panel: Panel;
+    parent: BaseClassTriggerd | undefined = undefined;
+    triggerParent: boolean = false;
     protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
         payload: string,
         opt?: IClientPublishOptions,
@@ -53,7 +55,7 @@ export class BaseClassTriggerd extends BaseClass {
 
     constructor(card: BaseClassTriggerdInterface) {
         super(card.adapter, card.name);
-        this.minUpdateInterval = 3000;
+        this.minUpdateInterval = 1000;
         if (!this.adapter.controller) throw new Error('No controller! bye bye');
         this.controller = this.adapter.controller;
         this.panelSend = card.panelSend;
@@ -64,7 +66,6 @@ export class BaseClassTriggerd extends BaseClass {
     readonly onStateTriggerSuperDoNotOverride = async (response: 'now' | 'medium' | 'slow'): Promise<boolean> => {
         if (!this.visibility || this.unload) return false;
         if (this.waitForTimeout) return false;
-
         if (this.updateTimeout && response !== 'now') {
             this.doUpdate = true;
             return false;
@@ -107,6 +108,7 @@ export class BaseClassTriggerd extends BaseClass {
     }
     async delete(): Promise<void> {
         await this.setVisibility(false);
+        this.parent = undefined;
         await super.delete();
         if (this.waitForTimeout) this.adapter.clearTimeout(this.waitForTimeout);
         if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
@@ -184,14 +186,14 @@ export class StatesControler extends BaseClass {
             common: ioBroker.StateCommon;
         };
     } = {};
-    private deletePageTimeout: ioBroker.Interval | undefined;
+    private deletePageInterval: ioBroker.Interval | undefined;
     private stateDB: { [key: string]: { state: ioBroker.State; ts: number; common: ioBroker.StateCommon } } = {};
     private tempObjectDB: { [key: string]: { [id: string]: ioBroker.Object } } | undefined = undefined;
     timespan: number;
     constructor(adapter: AdapterClassDefinition, name: string = '', timespan: number = 15000) {
         super(adapter, name || 'StatesDBReadOnly');
         this.timespan = timespan;
-        this.deletePageTimeout = this.adapter.setInterval(this.deletePageLoop, 60000);
+        this.deletePageInterval = this.adapter.setInterval(this.deletePageLoop, 60000);
     }
     private deletePageLoop = (): void => {
         const removeId = [];
@@ -220,7 +222,8 @@ export class StatesControler extends BaseClass {
 
     async delete(): Promise<void> {
         await super.delete();
-        if (this.deletePageTimeout) this.adapter.clearInterval(this.deletePageTimeout);
+        if (StatesControler.tempObjectDBTimeout) this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
+        if (this.deletePageInterval) this.adapter.clearInterval(this.deletePageInterval);
     }
     /**
      * Set a subscript to a foreignState and write current state/value to db
@@ -271,7 +274,8 @@ export class StatesControler extends BaseClass {
      * Activate the triggers of a page. First subscribes to the state.
      * @param to Page
      */
-    async activateTrigger(to: BaseClassTriggerd): Promise<void> {
+    async activateTrigger(to: BaseClassTriggerd | undefined): Promise<void> {
+        if (!to) return;
         for (const id in this.triggerDB) {
             const entry = this.triggerDB[id];
             const index = entry.to.indexOf(to);
@@ -365,12 +369,16 @@ export class StatesControler extends BaseClass {
                     this.triggerDB[dp].ts = Date.now();
                     if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack) {
                         this.triggerDB[dp].state = state;
-                        if (state.ack) {
-                            this.triggerDB[dp].to.forEach(
-                                (c, index) =>
+                        if (state.ack || dp.startsWith('0_userdata.0')) {
+                            this.triggerDB[dp].to.forEach((c, index) => {
+                                if (c.parent && c.triggerParent && !c.parent.unload) {
+                                    c.parent.onStateTriggerSuperDoNotOverride &&
+                                        c.parent.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]);
+                                } else if (!c.unload) {
                                     c.onStateTriggerSuperDoNotOverride &&
-                                    c.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]),
-                            );
+                                        c.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]);
+                                }
+                            });
                         }
                     }
                 }
@@ -405,7 +413,7 @@ export class StatesControler extends BaseClass {
                 else if (item.trueType() === 'number' && typeof val === 'boolean') val = val ? 1 : 0;
                 else if (item.trueType() === 'boolean') val = !!val;
                 if (item.trueType() === 'string') val = String(val);
-                this.updateDBState(item.options.dp, val, ack);
+                //this.updateDBState(item.options.dp, val, ack);
                 if (writeable) await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
                 else this.log.error(`Forbidden write attempts on a read-only state! id: ${item.options.dp}`);
             }
@@ -464,14 +472,26 @@ export class StatesControler extends BaseClass {
         return target;
     }
 
+    static TempObjectDB: { data: Record<string, ioBroker.Object>; ids: Record<string, boolean> } = {
+        data: {},
+        ids: {},
+    };
+    static tempObjectDBTimeout: ioBroker.Timeout | undefined;
+    static getTempObjectDB(adapter: AdapterClassDefinition): typeof StatesControler.TempObjectDB {
+        if (StatesControler.tempObjectDBTimeout) adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
+
+        StatesControler.tempObjectDBTimeout = adapter.setTimeout(() => {
+            if (adapter.unload) return;
+            StatesControler.tempObjectDBTimeout = undefined;
+            StatesControler.TempObjectDB = { data: {}, ids: {} };
+        }, 60000);
+
+        return StatesControler.TempObjectDB;
+    }
+
     async getDataItemsFromAuto(dpInit: string, data: any): Promise<any> {
         if (dpInit === '') return data;
-        if (this.tempObjectDB === undefined) {
-            this.tempObjectDB = {};
-            this.adapter.setTimeout(() => {
-                this.tempObjectDB = undefined;
-            }, 300000);
-        }
+        const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
         for (const i in data) {
             const t = data[i];
             if (t === undefined) continue;
@@ -485,15 +505,20 @@ export class StatesControler extends BaseClass {
                     if (!isPageRole(role)) {
                         throw new Error(`${d.dp} has a unkowned role ${d.role}`);
                     }
-                    if (!this.tempObjectDB[dpInit]) {
-                        this.tempObjectDB[dpInit] = await this.adapter.getForeignObjectsAsync(`${dpInit}.*`);
+                    if (!tempObjectDB.ids[dpInit]) {
+                        const temp = await this.adapter.getForeignObjectsAsync(`${dpInit}.*`);
+                        if (temp) {
+                            tempObjectDB.ids[dpInit] = true;
+                            tempObjectDB.data = Object.assign(tempObjectDB.data, temp);
+                        }
                     }
-                    if (!this.tempObjectDB[dpInit]) {
+                    if (!tempObjectDB.ids[dpInit]) {
                         this.log.warn(`Dont find states for ${dpInit}!`);
                     }
 
-                    for (const id in this.tempObjectDB[dpInit]) {
-                        const obj: ioBroker.Object = this.tempObjectDB[dpInit][id];
+                    for (const id in tempObjectDB.data) {
+                        if (!id.startsWith(dpInit)) continue;
+                        const obj: ioBroker.Object = tempObjectDB.data[id];
                         if (obj && obj.common && obj.type === 'state' && (d.dp === '' || id.includes(d.dp))) {
                             if (obj.common.role === role) {
                                 if (found) {

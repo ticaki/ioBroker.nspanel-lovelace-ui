@@ -63,11 +63,13 @@ __export(Color_exports, {
   colorSonos: () => colorSonos,
   colorSpotify: () => colorSpotify,
   getHue: () => getHue,
+  hsv2RGB: () => hsv2RGB,
   hsv2rgb: () => hsv2rgb,
   hsvtodec: () => hsvtodec,
   isRGB: () => isRGB,
   pos_to_color: () => pos_to_color,
   rad2deg: () => rad2deg,
+  resultToRgb: () => resultToRgb,
   rgbHexToObject: () => rgbHexToObject,
   rgb_dec565: () => rgb_dec565,
   rgb_to_cie: () => rgb_to_cie,
@@ -268,11 +270,19 @@ function hsv2rgb(hue, saturation, value) {
   const rgb = hue <= 1 ? [chroma, x, 0] : hue <= 2 ? [x, chroma, 0] : hue <= 3 ? [0, chroma, x] : hue <= 4 ? [0, x, chroma] : hue <= 5 ? [x, 0, chroma] : [chroma, 0, x];
   return rgb.map((v) => (v + value - chroma) * 255);
 }
+function hsv2RGB(hue, saturation, value) {
+  const arr = hsv2rgb(hue, saturation, value);
+  return { red: arr[0], green: arr[1], blue: arr[2] };
+}
 function hsvtodec(hue, saturation, value) {
   if (hue === null)
     return null;
   const result = hsv2rgb(hue, saturation, value);
   return String(rgb_dec565({ red: result[0], green: result[1], blue: result[2] }));
+}
+function resultToRgb(r) {
+  const arr = r.split("|");
+  return pos_to_color(parseInt(arr[0]), parseInt(arr[1]));
 }
 function getHue(red, green, blue) {
   const min = Math.min(Math.min(red, green), blue);
@@ -370,11 +380,13 @@ function isRGB(F) {
   colorSonos,
   colorSpotify,
   getHue,
+  hsv2RGB,
   hsv2rgb,
   hsvtodec,
   isRGB,
   pos_to_color,
   rad2deg,
+  resultToRgb,
   rgbHexToObject,
   rgb_dec565,
   rgb_to_cie,

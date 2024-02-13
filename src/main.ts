@@ -20,7 +20,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     mqttClient: MQTT.MQTTClientClass | undefined;
     mqttServer: MQTT.MQTTServerClass | undefined;
     controller: Controller | undefined;
-
+    unload: boolean = false;
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -105,6 +105,7 @@ class NspanelLovelaceUi extends utils.Adapter {
      */
     private onUnload(callback: () => void): void {
         try {
+            this.unload = true;
             // Here you must clear all timeouts or intervals that may still be active
             // clearTimeout(timeout1);
             // clearTimeout(timeout2);

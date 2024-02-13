@@ -205,11 +205,20 @@ export function hsv2rgb(hue: number, saturation: number, value: number): [number
 
     return rgb.map((v) => (v + value - chroma) * 255) as [number, number, number];
 }
+export function hsv2RGB(hue: number, saturation: number, value: number): RGB {
+    const arr = hsv2rgb(hue, saturation, value);
+    return { red: arr[0], green: arr[1], blue: arr[2] };
+}
 
 export function hsvtodec(hue: number | null, saturation: number, value: number): string | null {
     if (hue === null) return null;
     const result = hsv2rgb(hue, saturation, value);
     return String(rgb_dec565({ red: result[0], green: result[1], blue: result[2] }));
+}
+
+export function resultToRgb(r: string): RGB {
+    const arr = r.split('|');
+    return pos_to_color(parseInt(arr[0]), parseInt(arr[1]));
 }
 export function getHue(red: number, green: number, blue: number): number {
     const min = Math.min(Math.min(red, green), blue);

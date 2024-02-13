@@ -30,6 +30,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   mqttClient;
   mqttServer;
   controller;
+  unload = false;
   constructor(options = {}) {
     super({
       ...options,
@@ -100,6 +101,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   onUnload(callback) {
     try {
+      this.unload = true;
       if (this.controller)
         this.controller.delete;
       callback();

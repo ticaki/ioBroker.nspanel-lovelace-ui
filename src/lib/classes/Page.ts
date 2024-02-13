@@ -1,5 +1,5 @@
 import { Panel } from '../controller/panel';
-import { BaseClassPage, BaseClassTriggerdInterface } from '../controller/states-controller';
+import { BaseClassPage, BaseClassTriggerd, BaseClassTriggerdInterface } from '../controller/states-controller';
 import * as pages from '../types/pages';
 import { ButtonActionType, IncomingEvent, PopupType, isPopupType } from '../types/types';
 import { ScreensaverConfig } from '../pages/screensaver';
@@ -14,6 +14,7 @@ export type PageItemInterface = BaseClassTriggerdInterface & {
     card: pages.PageTypeCards;
     panel: Panel;
     id: string;
+    parent: BaseClassTriggerd;
 };
 
 export type PageInterface = BaseClassTriggerdInterface & {
@@ -25,6 +26,7 @@ export type PageInterface = BaseClassTriggerdInterface & {
 
 //interface Page extends BaseClass | PageConfig
 export type PageConfigAll = ScreensaverConfig | pages.PageBaseConfig;
+
 export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
     readonly id: string;
@@ -57,6 +59,7 @@ export class Page extends BaseClassPage {
                         panelSend: this.panelSend,
                         card: 'cardItemSpecial',
                         id: `${this.id}?${a}`,
+                        parent: this,
                     };
                     this.pageItems[a] = new PageItem(config, this.pageItemConfig[a]);
                     await this.pageItems[a].init();
@@ -95,13 +98,10 @@ export class Page extends BaseClassPage {
         const item = this.pageItems[i];
         if (!item) return;
         let msg: string | null = null;
-        if (isPopupType(popup)) {
+        if (isPopupType(popup) && action !== 'bExit') {
             msg = await item.GenerateDetailPage(popup);
-        }
-        if (action === 'mode-insel' && value !== undefined) {
+        } else if (action && value !== undefined) {
             item.setPopupAction(action, value);
-        } else if (action === 'button') {
-            item.setPopupAction(action, '');
         }
         if (msg !== null) this.sendToPanel(msg);
     }

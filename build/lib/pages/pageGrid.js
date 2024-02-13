@@ -75,6 +75,11 @@ class PageGrid extends import_Page.Page {
   getMessage(message) {
     return (0, import_tools.getPayload)("entityUpd", message.headline, message.navigation, (0, import_tools.getPayloadArray)(message.options));
   }
+  async onStateTrigger() {
+    this.update();
+  }
+  async onButtonEvent(_event) {
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

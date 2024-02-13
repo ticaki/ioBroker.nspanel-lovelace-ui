@@ -38,12 +38,13 @@ class Navigation extends import_library.BaseClass {
     this.navigationConfig = config.navigationConfig;
   }
   init() {
+    let b = 1;
     for (let a = 0; a < this.navigationConfig.length; a++) {
       const c = this.navigationConfig[a];
       if (!c)
         continue;
       const pageID = this.panel.getPagebyUniqueID(c.page);
-      this.database[c.name === "main" ? 0 : a + 1] = pageID !== null ? { page: pageID, left: {}, right: {} } : null;
+      this.database[c.name === "main" ? 0 : b++] = pageID !== null ? { page: pageID, left: {}, right: {} } : null;
     }
     for (let a = 0; a < this.database.length; a++) {
       const c = this.navigationConfig[a];

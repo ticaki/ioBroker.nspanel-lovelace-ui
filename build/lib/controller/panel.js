@@ -448,13 +448,15 @@ class Panel extends import_library.BaseClass {
       case "buttonPress2": {
         if (event.id == "screensaver") {
           await this.setActivePage(this.pages[index]);
+        } else if (event.action === "bExit") {
+          await this.setActivePage(true);
         } else {
           if (event.action === "button" && ["bNext", "bPrev", "bUp", "bHome", "bSubNext", "bSubPrev"].indexOf(event.id) != -1) {
             if (["bPrev", "bUp", "bSubPrev"].indexOf(event.id) != -1)
               this.navigation.goLeft();
             else if (["bNext", "bHome", "bSubNext"].indexOf(event.id) != -1)
               this.navigation.goRight();
-            return;
+            break;
           }
           this.getActivePage().onPopupRequest(
             event.id,
@@ -462,8 +464,7 @@ class Panel extends import_library.BaseClass {
             event.action,
             event.opt
           );
-          this.getActivePage().onButtonEvent(event);
-          await this.setActivePage(true);
+          await this.getActivePage().onButtonEvent(event);
         }
         break;
       }

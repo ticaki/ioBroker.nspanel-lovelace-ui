@@ -38,6 +38,8 @@ class BaseClassTriggerd extends import_library.BaseClass {
   alwaysOnState;
   lastMessage = "";
   panel;
+  parent = void 0;
+  triggerParent = false;
   sendToPanel = (payload, opt) => {
     if (payload == this.lastMessage)
       return;
@@ -52,7 +54,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   constructor(card) {
     var _a;
     super(card.adapter, card.name);
-    this.minUpdateInterval = 3e3;
+    this.minUpdateInterval = 1e3;
     if (!this.adapter.controller)
       throw new Error("No controller! bye bye");
     this.controller = this.adapter.controller;
@@ -110,6 +112,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   }
   async delete() {
     await this.setVisibility(false);
+    this.parent = void 0;
     await super.delete();
     if (this.waitForTimeout)
       this.adapter.clearTimeout(this.waitForTimeout);
@@ -172,14 +175,14 @@ class BaseClassPage extends BaseClassTriggerd {
 }
 class StatesControler extends import_library.BaseClass {
   triggerDB = {};
-  deletePageTimeout;
+  deletePageInterval;
   stateDB = {};
   tempObjectDB = void 0;
   timespan;
   constructor(adapter, name = "", timespan = 15e3) {
     super(adapter, name || "StatesDBReadOnly");
     this.timespan = timespan;
-    this.deletePageTimeout = this.adapter.setInterval(this.deletePageLoop, 6e4);
+    this.deletePageInterval = this.adapter.setInterval(this.deletePageLoop, 6e4);
   }
   deletePageLoop = () => {
     const removeId = [];
@@ -208,8 +211,10 @@ class StatesControler extends import_library.BaseClass {
   };
   async delete() {
     await super.delete();
-    if (this.deletePageTimeout)
-      this.adapter.clearInterval(this.deletePageTimeout);
+    if (StatesControler.tempObjectDBTimeout)
+      this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
+    if (this.deletePageInterval)
+      this.adapter.clearInterval(this.deletePageInterval);
   }
   async setTrigger(id, from, response = "slow") {
     if (id.startsWith(this.adapter.namespace)) {
@@ -251,6 +256,8 @@ class StatesControler extends import_library.BaseClass {
     }
   }
   async activateTrigger(to) {
+    if (!to)
+      return;
     for (const id in this.triggerDB) {
       const entry = this.triggerDB[id];
       const index = entry.to.indexOf(to);
@@ -340,10 +347,14 @@ class StatesControler extends import_library.BaseClass {
           this.triggerDB[dp].ts = Date.now();
           if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack) {
             this.triggerDB[dp].state = state;
-            if (state.ack) {
-              this.triggerDB[dp].to.forEach(
-                (c, index) => c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index])
-              );
+            if (state.ack || dp.startsWith("0_userdata.0")) {
+              this.triggerDB[dp].to.forEach((c, index) => {
+                if (c.parent && c.triggerParent && !c.parent.unload) {
+                  c.parent.onStateTriggerSuperDoNotOverride && c.parent.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]);
+                } else if (!c.unload) {
+                  c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]);
+                }
+              });
             }
           }
         }
@@ -375,7 +386,6 @@ class StatesControler extends import_library.BaseClass {
           val = !!val;
         if (item.trueType() === "string")
           val = String(val);
-        this.updateDBState(item.options.dp, val, ack);
         if (writeable)
           await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
         else
@@ -426,15 +436,26 @@ class StatesControler extends import_library.BaseClass {
     }
     return target;
   }
+  static TempObjectDB = {
+    data: {},
+    ids: {}
+  };
+  static tempObjectDBTimeout;
+  static getTempObjectDB(adapter) {
+    if (StatesControler.tempObjectDBTimeout)
+      adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
+    StatesControler.tempObjectDBTimeout = adapter.setTimeout(() => {
+      if (adapter.unload)
+        return;
+      StatesControler.tempObjectDBTimeout = void 0;
+      StatesControler.TempObjectDB = { data: {}, ids: {} };
+    }, 6e4);
+    return StatesControler.TempObjectDB;
+  }
   async getDataItemsFromAuto(dpInit, data) {
     if (dpInit === "")
       return data;
-    if (this.tempObjectDB === void 0) {
-      this.tempObjectDB = {};
-      this.adapter.setTimeout(() => {
-        this.tempObjectDB = void 0;
-      }, 3e5);
-    }
+    const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
     for (const i in data) {
       const t = data[i];
       if (t === void 0)
@@ -450,14 +471,20 @@ class StatesControler extends import_library.BaseClass {
           if (!(0, import_pages.isPageRole)(role)) {
             throw new Error(`${d.dp} has a unkowned role ${d.role}`);
           }
-          if (!this.tempObjectDB[dpInit]) {
-            this.tempObjectDB[dpInit] = await this.adapter.getForeignObjectsAsync(`${dpInit}.*`);
+          if (!tempObjectDB.ids[dpInit]) {
+            const temp = await this.adapter.getForeignObjectsAsync(`${dpInit}.*`);
+            if (temp) {
+              tempObjectDB.ids[dpInit] = true;
+              tempObjectDB.data = Object.assign(tempObjectDB.data, temp);
+            }
           }
-          if (!this.tempObjectDB[dpInit]) {
+          if (!tempObjectDB.ids[dpInit]) {
             this.log.warn(`Dont find states for ${dpInit}!`);
           }
-          for (const id in this.tempObjectDB[dpInit]) {
-            const obj = this.tempObjectDB[dpInit][id];
+          for (const id in tempObjectDB.data) {
+            if (!id.startsWith(dpInit))
+              continue;
+            const obj = tempObjectDB.data[id];
             if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp))) {
               if (obj.common.role === role) {
                 if (found) {
