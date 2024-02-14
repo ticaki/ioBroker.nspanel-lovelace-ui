@@ -292,9 +292,9 @@ class StatesControler extends import_library.BaseClass {
   async getState(id, response = "slow") {
     let timespan = this.timespan;
     if (response === "medium")
-      timespan = 3e3;
+      timespan = 500;
     else if (response === "now")
-      timespan = 0;
+      timespan = 10;
     if (this.triggerDB[id] !== void 0 && this.triggerDB[id].subscribed.some((a) => a)) {
       return this.triggerDB[id].state;
     } else if (this.stateDB[id] && timespan) {

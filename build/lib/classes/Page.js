@@ -29,6 +29,7 @@ class Page extends import_states_controller.BaseClassPage {
   card;
   id;
   uniqueID;
+  dpInit = "";
   constructor(card, pageItemsConfig) {
     super(card, pageItemsConfig);
     this.card = card.card;
@@ -83,6 +84,7 @@ class Page extends import_states_controller.BaseClassPage {
   async onPopupRequest(id, popup, action, value) {
     if (!this.pageItems)
       return;
+    this.log.debug(`Trigger from popupThermo 1 `);
     const i = typeof id === "number" ? id : parseInt(id);
     const item = this.pageItems[i];
     if (!item)

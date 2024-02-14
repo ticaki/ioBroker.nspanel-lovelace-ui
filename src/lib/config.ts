@@ -3,6 +3,321 @@ import * as Color from './const/Color';
 import { panelConfigPartial } from './controller/panel';
 import { ScreensaverConfig } from './pages/screensaver';
 
+const pageEntitiesTest1: pages.PageBaseConfig = {
+    //type: 'sonstiges',
+    card: 'cardEntities',
+    dpInit: '',
+    initMode: 'custom',
+    alwaysOn: 'none',
+    uniqueID: 'entities1',
+    useColor: false,
+    config: {
+        card: 'cardEntities',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'Überschrift',
+            },
+        },
+    },
+    pageItems: [
+        {
+            role: 'rgb',
+            type: 'light',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: { type: 'triggered', dp: '0_userdata.0.RGB', response: 'now' },
+                    false: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'lightbulb' },
+                        color: { type: 'const', constVal: Color.Yellow },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'lightbulb-outline' },
+                        color: { type: 'const', constVal: Color.HMIOff },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                dimmer: {
+                    value: {
+                        type: 'triggered',
+                        dp: '0_userdata.0.dimmer',
+                    },
+                },
+                entity1: {
+                    // button
+                    value: { type: 'triggered', dp: '0_userdata.0.example_state' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                entityInSel: undefined,
+                text1: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Detail',
+                    },
+                    false: undefined,
+                },
+                text2: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Picker1',
+                    },
+                    false: undefined,
+                },
+                text3: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Picker2',
+                    },
+                    false: undefined,
+                },
+                ct: {
+                    value: {
+                        type: 'const',
+                        constVal: '40',
+                    },
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'input_sel',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'home' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entityInSel: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'button',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-up' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+                setNavi: {
+                    type: 'const',
+                    constVal: '3',
+                },
+                setValue1: undefined,
+            },
+        },
+    ],
+    items: undefined,
+};
+const pagePowerTest1: pages.PageBaseConfig = {
+    //type: 'sonstiges',
+    card: 'cardPower',
+    dpInit: '',
+    initMode: 'custom',
+    alwaysOn: 'none',
+    uniqueID: 'power1',
+    useColor: false,
+    pageItems: [],
+    config: {
+        card: 'cardPower',
+        data: {
+            headline: { type: 'const', constVal: 'headline' },
+            homeValueTop: {
+                value: { type: 'const', constVal: 'top' },
+            },
+            homeValueBot: {
+                value: { type: 'const', constVal: 'bot' },
+            },
+            leftTop: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-up' },
+                        color: undefined,
+                    },
+                    false: {
+                        value: undefined,
+                        color: undefined,
+                    },
+                },
+                value: {
+                    value: { type: 'const', constVal: 1 },
+                },
+            },
+            leftMiddle: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-left' },
+                        color: undefined,
+                    },
+                    false: {
+                        value: undefined,
+                        color: undefined,
+                    },
+                },
+                value: {
+                    value: { type: 'const', constVal: 2 },
+                },
+            },
+            leftBottom: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-down' },
+                        color: undefined,
+                    },
+                    false: {
+                        value: undefined,
+                        color: undefined,
+                    },
+                },
+                value: {
+                    value: { type: 'const', constVal: 3 },
+                },
+            },
+            rightTop: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-up' },
+                        color: undefined,
+                    },
+                    false: {
+                        value: undefined,
+                        color: undefined,
+                    },
+                },
+                value: {
+                    value: { type: 'const', constVal: 4 },
+                },
+            },
+            rightMiddle: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-right' },
+                        color: undefined,
+                    },
+                    false: {
+                        value: undefined,
+                        color: undefined,
+                    },
+                },
+                value: {
+                    value: { type: 'const', constVal: 5 },
+                },
+            },
+            rightBottom: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-down' },
+                        color: undefined,
+                    },
+                    false: {
+                        value: undefined,
+                        color: undefined,
+                    },
+                },
+                value: {
+                    value: { type: 'const', constVal: 6 },
+                },
+            },
+            homeIcon: {
+                true: {
+                    value: { type: 'const', constVal: 'home' },
+                    color: undefined,
+                },
+                false: {
+                    value: undefined,
+                    color: undefined,
+                },
+            },
+        },
+    },
+    items: undefined,
+};
 const pageMediaTest: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardMedia',
@@ -325,6 +640,178 @@ const pageMediaTest: pages.PageBaseConfig = {
                 setValue1: undefined,
             },
         },
+        {
+            role: 'text.list',
+            type: 'button',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'home' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+                setValue1: undefined,
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'button',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'home' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+                setValue1: undefined,
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'button',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'home' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+                setValue1: undefined,
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'button',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'home' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+                setValue1: undefined,
+            },
+        },
     ],
     uniqueID: 'media1',
     useColor: false,
@@ -404,6 +891,12 @@ const pageGridTest1: pages.PageBaseConfig = {
                         constVal: 'Picker2',
                     },
                     false: undefined,
+                },
+                ct: {
+                    value: {
+                        type: 'const',
+                        constVal: '40',
+                    },
                 },
                 /**
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
@@ -761,8 +1254,9 @@ const pageThermoTest: pages.PageBaseConfig = {
             data: {
                 entityInSel: {
                     value: {
-                        type: 'state',
+                        type: 'triggered',
                         dp: '0_userdata.0.statesTest',
+                        response: 'now',
                     },
                     decimal: undefined,
                     factor: undefined,
@@ -1933,14 +2427,35 @@ const pageScreensaverTest: ScreensaverConfig = {
     },
 };
 export const Testconfig: Partial<panelConfigPartial> = {
-    pages: [pageThermoTest, pageGridTest1, pageGrid2Test2, pageGridTest2, pageScreensaverTest, pageMediaTest],
+    pages: [
+        pageEntitiesTest1,
+        pagePowerTest1,
+        pageThermoTest,
+        pageGridTest1,
+        pageGrid2Test2,
+        pageGridTest2,
+        pageScreensaverTest,
+        pageMediaTest,
+    ],
     // override by password.ts
     navigation: [
         {
             name: 'main', //main ist die erste Seite
+            page: 'power1',
+            left: { single: '6' }, // Die 4 bezieht sich auf den name: 4
+            right: { single: '1', double: 'main' },
+        },
+        {
+            name: '5', //main ist die erste Seite
             page: 'thermo1',
             left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
-            right: { single: '1', double: 'main' },
+            right: { single: '6', double: 'main' },
+        },
+        {
+            name: '6',
+            page: 'entities1',
+            left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
+            right: { single: 'main', double: 'main' },
         },
         {
             name: '1',
@@ -1963,7 +2478,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
         {
             name: '4',
             left: { single: '3', double: '1' },
-            right: { single: '1', double: '2' },
+            right: { single: '5', double: '2' },
             page: 'grid3',
         },
     ],

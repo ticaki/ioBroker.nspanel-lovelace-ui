@@ -131,7 +131,7 @@ export class Screensaver extends Page {
 
                 let iconColor = String(Color.rgb_dec565(Color.White));
                 let icon = '';
-                if (item.entityIcon && item.entityIcon.true.value) {
+                if (item.entityIcon && item.entityIcon.true && item.entityIcon.true.value) {
                     const val = await item.entityIcon.true.value.getString();
                     if (val !== null) icon = Icons.GetIcon(val);
                 }
@@ -156,7 +156,7 @@ export class Screensaver extends Page {
                 } else if (item.entityValue.value.type == 'boolean') {
                     val = await item.entityValue.value.getBoolean();
                     iconColor = await GetScreenSaverEntityColor(item);
-                    if (!val && item.entityIcon.false.value) {
+                    if (!val && item.entityIcon && item.entityIcon.false && item.entityIcon.false.value) {
                         const t = await item.entityIcon.false.value.getString();
                         if (t !== null) icon = Icons.GetIcon(t);
                     }
@@ -194,7 +194,10 @@ export class Screensaver extends Page {
                     }
                 }
 
-                let temp: any = item.entityIcon.true.color ? await item.entityIcon.true.color.getRGBDec() : null;
+                let temp: any =
+                    item.entityIcon && item.entityIcon.true && item.entityIcon.true.color
+                        ? await item.entityIcon.true.color.getRGBDec()
+                        : null;
                 iconColor = temp ? temp : iconColor;
                 temp = item.entityText && item.entityText.true ? await item.entityText.true.getString() : null;
                 const entityText = temp ? this.library.getTranslation(temp) : '';
@@ -346,10 +349,14 @@ export class Screensaver extends Page {
                         ? await item.entityValue.value.getString()
                         : await item.entityValue.value.getBoolean()
                     : null;
-            const offcolor = item.entityIcon.false.color
-                ? await item.entityIcon.false.color.getRGBDec()
-                : String(Color.rgb_dec565(Color.White));
-            const onColor = item.entityIcon.true.color ? await item.entityIcon.true.color.getRGBDec() : null;
+            const offcolor =
+                item.entityIcon && item.entityIcon.false && item.entityIcon.false.color
+                    ? await item.entityIcon.false.color.getRGBDec()
+                    : String(Color.rgb_dec565(Color.White));
+            const onColor =
+                item.entityIcon && item.entityIcon.true && item.entityIcon.true.color
+                    ? await item.entityIcon.true.color.getRGBDec()
+                    : null;
             payload[`icon${s}Color`] = offcolor !== null ? offcolor : String(Color.rgb_dec565(Color.White));
             if (item.entityValue != null || value !== null || onColor != null) {
                 // Prüfung ob Entity vom Typ String ist
@@ -378,8 +385,14 @@ export class Screensaver extends Page {
                     : null;
 
                 // Icon ermitteln
-                const onIcon = item.entityIcon.true.value ? await item.entityIcon.true.value.getString() : null;
-                const offIcon = item.entityIcon.false.value ? await item.entityIcon.false.value.getString() : null;
+                const onIcon =
+                    item.entityIcon && item.entityIcon.true && item.entityIcon.true.value
+                        ? await item.entityIcon.true.value.getString()
+                        : null;
+                const offIcon =
+                    item.entityIcon && item.entityIcon.false && item.entityIcon.false.value
+                        ? await item.entityIcon.false.value.getString()
+                        : null;
                 const selectIcon =
                     typeof entity !== 'boolean' && entity !== null && entityIconSelect
                         ? (entityIconSelect[entity] as string | undefined)
@@ -426,11 +439,17 @@ async function GetScreenSaverEntityColor(item: NSPanel.ScreenSaverDataItems | nu
         const entityAsNumber = item.entityValue.value !== undefined ? await item.entityValue.value.getNumber() : null;
         const entityFactor = item.entityValue.factor !== undefined ? await item.entityValue.factor.getNumber() : null;
         const entityIconColorScale: NSPanel.IconScaleElement | null =
-            'scale' in item.entityIcon && item.entityIcon.scale !== undefined
+            item.entityIcon && 'scale' in item.entityIcon && item.entityIcon.scale !== undefined
                 ? await item.entityIcon.scale.getIconScale()
                 : null;
-        const entityOnColor = item.entityIcon.true.color ? await item.entityIcon.true.color.getRGBDec() : null;
-        const entityOffColor = item.entityIcon.false.color ? await item.entityIcon.false.color.getRGBDec() : null;
+        const entityOnColor =
+            item.entityIcon && item.entityIcon.true && item.entityIcon.true.color
+                ? await item.entityIcon.true.color.getRGBDec()
+                : null;
+        const entityOffColor =
+            item.entityIcon && item.entityIcon.false && item.entityIcon.false.color
+                ? await item.entityIcon.false.color.getRGBDec()
+                : null;
         if (item.entityValue.value) {
             if (entityIconColorScale !== null) {
                 if (item.entityValue.value.type == 'boolean') {

@@ -19,6 +19,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var tools_exports = {};
 __export(tools_exports, {
   GetIconColor: () => GetIconColor,
+  deepAssign: () => deepAssign,
   formatInSelText: () => formatInSelText,
   getDecfromHue: () => getDecfromHue,
   getDecfromRGBThree: () => getDecfromRGBThree,
@@ -113,9 +114,9 @@ async function getIconEntryValue(i, on, def, defOff = null) {
   on = on != null ? on : true;
   if (!i)
     return import_icon_mapping.Icons.GetIcon(on ? def : defOff != null ? defOff : def);
-  const icon = i.true.value && await i.true.value.getString();
+  const icon = i.true && i.true.value && await i.true.value.getString();
   if (!on) {
-    return import_icon_mapping.Icons.GetIcon((_c = (_b = (_a = i.false.value && await i.false.value.getString()) != null ? _a : defOff) != null ? _b : icon) != null ? _c : def);
+    return import_icon_mapping.Icons.GetIcon((_c = (_b = (_a = i.false && i.false.value && await i.false.value.getString()) != null ? _a : defOff) != null ? _b : icon) != null ? _c : def);
   }
   return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def);
 }
@@ -134,9 +135,9 @@ async function getIconEntryColor(i, on, def, defOff = null) {
     defOff = String((0, import_Color2.rgb_dec565)(defOff));
   if (!i)
     return def;
-  const icon = i.true.color && await i.true.color.getRGBDec();
+  const icon = i.true && i.true.color && await i.true.color.getRGBDec();
   if (!on) {
-    return (_c = (_b = (_a = i.false.color && await i.false.color.getRGBDec()) != null ? _a : defOff) != null ? _b : icon) != null ? _c : def;
+    return (_c = (_b = (_a = i.false && i.false.color && await i.false.color.getRGBDec()) != null ? _a : defOff) != null ? _b : icon) != null ? _c : def;
   }
   return icon != null ? icon : def;
 }
@@ -167,8 +168,8 @@ async function GetIconColor(item, value, min = null, max = null, offColor = null
     }
     return String((0, import_Color2.rgb_dec565)(offColor ? offColor : import_Color2.HMIOff));
   } else {
-    const onColor = item.true.color && await item.true.color.getRGBValue();
-    const offColor2 = item.false.color && await item.false.color.getRGBValue();
+    const onColor = item.true && item.true.color && await item.true.color.getRGBValue();
+    const offColor2 = item.false && item.false.color && await item.false.color.getRGBValue();
     if (typeof value === "number") {
       let val = typeof value === "number" ? value : 0;
       const maxValue = (_a = item.maxBri && await item.maxBri.getNumber() || max) != null ? _a : 100;
@@ -226,11 +227,11 @@ async function getValueEntryBoolean(i) {
   }
   return null;
 }
-async function getValueEntryString(i) {
+async function getValueEntryString(i, v = null) {
   var _a, _b, _c;
   if (!i || !i.value)
     return null;
-  const nval = await getValueEntryNumber(i);
+  const nval = v !== null ? v : await getValueEntryNumber(i);
   if (nval !== null && nval !== void 0) {
     const d = (_a = i.decimal && await i.decimal.getNumber()) != null ? _a : null;
     let result = String(nval);
@@ -301,7 +302,7 @@ const setHuefromRGB = async (item, c) => {
 function formatInSelText(Text) {
   let splitText = Text;
   if (!Array.isArray(splitText))
-    splitText = splitText.split(" ");
+    splitText = splitText.replaceAll("__", "_").replaceAll("_", " ").split(" ");
   let lengthLineOne = 0;
   const arrayLineOne = [];
   for (let i = 0; i < splitText.length; i++) {
@@ -353,9 +354,26 @@ function getPayloadArray(s) {
 function getPayload(...s) {
   return s.join("~");
 }
+function deepAssign(def, source, level = 0) {
+  if (level++ > 20) {
+    throw new Error("Max level reached! Circulating object is suspected!");
+  }
+  for (const k in def) {
+    const entry = def[k];
+    if (typeof def[k] === "object") {
+      if (k in source) {
+        if (source[k] !== void 0)
+          deepAssign(entry, source[k]);
+        def[k] = Object.assign(def[k], source[k]);
+      }
+    }
+  }
+  return Object.assign(def, source);
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
+  deepAssign,
   formatInSelText,
   getDecfromHue,
   getDecfromRGBThree,

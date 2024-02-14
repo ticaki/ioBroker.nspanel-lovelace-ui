@@ -62,7 +62,7 @@ export class PanelSend extends BaseClass {
             return;
         }
         this.addMessageTasmota(this.topic, msg.payload, msg.opt);
-        this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 5000);
+        this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 1000);
     };
 
     readonly addMessageTasmota = (topic: string, payload: string, opt?: IClientPublishOptions): void => {

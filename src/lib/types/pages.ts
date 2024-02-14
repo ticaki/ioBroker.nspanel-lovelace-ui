@@ -8,6 +8,7 @@ import {
     ValueEntryType,
     ColorEntryType,
     ScaledNumberType,
+    IconEntryType,
 } from './type-pageItem';
 import { MediaToolBoxAction } from './type-pageItem';
 
@@ -217,8 +218,29 @@ export type PageBaseConfig = {
     pageItems: PageItemDataItemsOptions[];
 
     //    mediaNamespace: string;
-    config: undefined | cardMediaDataItemOptions | cardGridDataItemOptions | cardThermoDataItemOptions;
-    items: undefined | cardMediaDataItems | cardGridDataItems | cardThermoDataItems;
+    config:
+        | undefined
+        | cardPowerDataItemOptions
+        | cardMediaDataItemOptions
+        | cardGridDataItemOptions
+        | cardThermoDataItemOptions
+        | cardEntitiesDataItemOptions;
+    items:
+        | undefined
+        | cardEntitiesDataItems
+        | cardPowerDataItems
+        | cardMediaDataItems
+        | cardGridDataItems
+        | cardThermoDataItems;
+};
+
+export type cardPowerDataItemOptions = {
+    card: 'cardPower';
+    data: ChangeTypeOfKeys<PageGridPowerConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardPowerDataItems = {
+    card: 'cardPower';
+    data: ChangeTypeOfKeys<PageGridPowerConfig, Dataitem | undefined>;
 };
 
 export type cardGridDataItemOptions = {
@@ -228,6 +250,15 @@ export type cardGridDataItemOptions = {
 export type cardGridDataItems = {
     card: 'cardGrid' | 'cardGrid2';
     data: ChangeTypeOfKeys<PageGridBaseConfig, Dataitem | undefined>;
+};
+
+export type cardEntitiesDataItemOptions = {
+    card: 'cardEntities';
+    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardEntitiesDataItems = {
+    card: 'cardEntities';
+    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Dataitem | undefined>;
 };
 
 export type cardThermoDataItemOptions = {
@@ -245,6 +276,7 @@ export type cardMediaDataItemOptions = {
         toolbox: (toolboxItem | undefined)[];
     } & { logo: toolboxItem | undefined };
 };
+
 export type cardMediaDataItems = {
     card: 'cardMedia';
     data: ChangeTypeOfKeys<PageMediaBaseConfig, Dataitem | undefined> & {
@@ -258,9 +290,11 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | IconBoolean
     | TextEntryType
     | ValueEntryType
+    | IconEntryType
+    | ScaledNumberType
+    | PageGridPowerConfigElement
     | RGB
     | ColorEntryType
-    | Types.IconScaleElement
     | PageMediaBaseConfig
     | Types.SerialTypePageElements
     ? Obj extends RGB | Types.IconScaleElement
@@ -291,6 +325,32 @@ type PageMediaBaseConfig = {
 type PageGridBaseConfig = {
     headline: string;
 };
+
+type PageEntitiesBaseConfig = {
+    headline: string;
+};
+
+type PageGridPowerConfig = {
+    headline: string;
+    homeValueTop: ValueEntryType;
+    homeIcon: IconEntryType;
+    homeValueBot: ValueEntryType;
+    leftTop: PageGridPowerConfigElement;
+    leftMiddle: PageGridPowerConfigElement;
+    leftBottom: PageGridPowerConfigElement;
+    rightTop: PageGridPowerConfigElement;
+    rightMiddle: PageGridPowerConfigElement;
+    rightBottom: PageGridPowerConfigElement;
+};
+
+export type PageGridPowerConfigElement =
+    | {
+          icon?: IconEntryType;
+          value?: ValueEntryType;
+          speed?: ScaledNumberType;
+          text?: TextEntryType;
+      }
+    | undefined;
 
 type PageThermoBaseConfig = {
     current: number;
@@ -357,12 +417,45 @@ export type PageMediaMessage = {
     options: [string?, string?, string?, string?, string?];
 };
 
+export type PagePowerMessage = {
+    event: 'entityUpd';
+    headline: string;
+    navigation: string;
+    homeValueTop: string;
+    homeIcon: string;
+    homeColor: string;
+    homeName: string;
+    homeValueBot: string;
+    leftTop: PagePowerMessageItem;
+    leftMiddle: PagePowerMessageItem;
+    leftBottom: PagePowerMessageItem;
+    rightTop: PagePowerMessageItem;
+    rightMiddle: PagePowerMessageItem;
+    rightBottom: PagePowerMessageItem;
+};
+
+export type PagePowerMessageItem = {
+    icon: string;
+    iconColor: string;
+    name: string;
+    value: string;
+    speed: number;
+};
+
 export type PageGridMessage = {
     event: 'entityUpd';
     headline: string;
     navigation: string;
     options: [string?, string?, string?, string?, string?, string?, string?, string?];
 };
+
+export type PageEntitiesMessage = {
+    event: 'entityUpd';
+    headline: string;
+    navigation: string;
+    options: [string?, string?, string?, string?, string?, string?, string?, string?];
+};
+
 export type PageThermoMessage = {
     event: 'entityUpd';
     headline: string;

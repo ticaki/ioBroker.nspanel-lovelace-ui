@@ -28,6 +28,306 @@ __export(config_exports, {
 });
 module.exports = __toCommonJS(config_exports);
 var Color = __toESM(require("./const/Color"));
+const pageEntitiesTest1 = {
+  card: "cardEntities",
+  dpInit: "",
+  initMode: "custom",
+  alwaysOn: "none",
+  uniqueID: "entities1",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "\xDCberschrift"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "rgb",
+      type: "light",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: { type: "triggered", dp: "0_userdata.0.RGB", response: "now" },
+          false: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.HMIOff }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        dimmer: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.dimmer"
+          }
+        },
+        entity1: {
+          value: { type: "triggered", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        entityInSel: void 0,
+        text1: {
+          true: {
+            type: "const",
+            constVal: "Detail"
+          },
+          false: void 0
+        },
+        text2: {
+          true: {
+            type: "const",
+            constVal: "Picker1"
+          },
+          false: void 0
+        },
+        text3: {
+          true: {
+            type: "const",
+            constVal: "Picker2"
+          },
+          false: void 0
+        },
+        ct: {
+          value: {
+            type: "const",
+            constVal: "40"
+          }
+        },
+        valueList: { type: "const", constVal: "home?butter" },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entityInSel: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        valueList: { type: "const", constVal: "home?butter" },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setNavi: {
+          type: "const",
+          constVal: "3"
+        },
+        setValue1: void 0
+      }
+    }
+  ],
+  items: void 0
+};
+const pagePowerTest1 = {
+  card: "cardPower",
+  dpInit: "",
+  initMode: "custom",
+  alwaysOn: "none",
+  uniqueID: "power1",
+  useColor: false,
+  pageItems: [],
+  config: {
+    card: "cardPower",
+    data: {
+      headline: { type: "const", constVal: "headline" },
+      homeValueTop: {
+        value: { type: "const", constVal: "top" }
+      },
+      homeValueBot: {
+        value: { type: "const", constVal: "bot" }
+      },
+      leftTop: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: void 0
+          },
+          false: {
+            value: void 0,
+            color: void 0
+          }
+        },
+        value: {
+          value: { type: "const", constVal: 1 }
+        }
+      },
+      leftMiddle: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-left" },
+            color: void 0
+          },
+          false: {
+            value: void 0,
+            color: void 0
+          }
+        },
+        value: {
+          value: { type: "const", constVal: 2 }
+        }
+      },
+      leftBottom: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-down" },
+            color: void 0
+          },
+          false: {
+            value: void 0,
+            color: void 0
+          }
+        },
+        value: {
+          value: { type: "const", constVal: 3 }
+        }
+      },
+      rightTop: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: void 0
+          },
+          false: {
+            value: void 0,
+            color: void 0
+          }
+        },
+        value: {
+          value: { type: "const", constVal: 4 }
+        }
+      },
+      rightMiddle: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-right" },
+            color: void 0
+          },
+          false: {
+            value: void 0,
+            color: void 0
+          }
+        },
+        value: {
+          value: { type: "const", constVal: 5 }
+        }
+      },
+      rightBottom: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-down" },
+            color: void 0
+          },
+          false: {
+            value: void 0,
+            color: void 0
+          }
+        },
+        value: {
+          value: { type: "const", constVal: 6 }
+        }
+      },
+      homeIcon: {
+        true: {
+          value: { type: "const", constVal: "home" },
+          color: void 0
+        },
+        false: {
+          value: void 0,
+          color: void 0
+        }
+      }
+    }
+  },
+  items: void 0
+};
 const pageMediaTest = {
   card: "cardMedia",
   dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
@@ -342,6 +642,178 @@ const pageMediaTest = {
         },
         setValue1: void 0
       }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: void 0
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: void 0
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: void 0
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: void 0
+      }
     }
   ],
   uniqueID: "media1",
@@ -420,6 +892,12 @@ const pageGridTest1 = {
             constVal: "Picker2"
           },
           false: void 0
+        },
+        ct: {
+          value: {
+            type: "const",
+            constVal: "40"
+          }
         },
         valueList: { type: "const", constVal: "home?butter" },
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
@@ -748,8 +1226,9 @@ const pageThermoTest = {
       data: {
         entityInSel: {
           value: {
-            type: "state",
-            dp: "0_userdata.0.statesTest"
+            type: "triggered",
+            dp: "0_userdata.0.statesTest",
+            response: "now"
           },
           decimal: void 0,
           factor: void 0,
@@ -1856,13 +2335,34 @@ const pageScreensaverTest = {
   }
 };
 const Testconfig = {
-  pages: [pageThermoTest, pageGridTest1, pageGrid2Test2, pageGridTest2, pageScreensaverTest, pageMediaTest],
+  pages: [
+    pageEntitiesTest1,
+    pagePowerTest1,
+    pageThermoTest,
+    pageGridTest1,
+    pageGrid2Test2,
+    pageGridTest2,
+    pageScreensaverTest,
+    pageMediaTest
+  ],
   navigation: [
     {
       name: "main",
+      page: "power1",
+      left: { single: "6" },
+      right: { single: "1", double: "main" }
+    },
+    {
+      name: "5",
       page: "thermo1",
       left: { single: "4" },
-      right: { single: "1", double: "main" }
+      right: { single: "6", double: "main" }
+    },
+    {
+      name: "6",
+      page: "entities1",
+      left: { single: "4" },
+      right: { single: "main", double: "main" }
     },
     {
       name: "1",
@@ -1885,7 +2385,7 @@ const Testconfig = {
     {
       name: "4",
       left: { single: "3", double: "1" },
-      right: { single: "1", double: "2" },
+      right: { single: "5", double: "2" },
       page: "grid3"
     }
   ],

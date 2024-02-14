@@ -318,8 +318,8 @@ export class StatesControler extends BaseClass {
         response: 'now' | 'medium' | 'slow' = 'slow',
     ): Promise<ioBroker.State | null | undefined> {
         let timespan = this.timespan;
-        if (response === 'medium') timespan = 3000;
-        else if (response === 'now') timespan = 0;
+        if (response === 'medium') timespan = 500;
+        else if (response === 'now') timespan = 10;
         if (this.triggerDB[id] !== undefined && this.triggerDB[id].subscribed.some((a) => a)) {
             return this.triggerDB[id].state;
         } else if (this.stateDB[id] && timespan) {

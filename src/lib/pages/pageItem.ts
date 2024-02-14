@@ -1,5 +1,5 @@
 import * as Color from '../const/Color';
-import { PageItemInterface } from '../classes/Page';
+import { Page, PageItemInterface } from '../classes/Page';
 import {
     PageItemDataItems,
     MessageItem,
@@ -23,6 +23,7 @@ export class PageItem extends BaseClassTriggerd {
     panel: Panel;
     id: string;
     lastPopupType: PopupType | undefined = undefined;
+    parent: Page | undefined;
     constructor(config: Omit<PageItemInterface, 'pageItemsConfig'>, options: PageItemDataItemsOptions | undefined) {
         super({ ...config });
         this.panel = config.panel;
@@ -458,7 +459,7 @@ export class PageItem extends BaseClassTriggerd {
                     type: 'insel',
                     entityName: '',
                     textColor: String(Color.rgb_dec565(Color.White)),
-                    headline: '',
+                    currentState: '',
                     list: '',
                 };
                 result = Object.assign(result, message);
@@ -468,7 +469,7 @@ export class PageItem extends BaseClassTriggerd {
                     '',
                     result.textColor,
                     result.type,
-                    result.headline,
+                    result.currentState,
                     result.list,
                 );
                 break;
@@ -478,11 +479,11 @@ export class PageItem extends BaseClassTriggerd {
                     type: 'popupThermo',
                     entityName: '',
                     headline: '',
-                    value: '',
+                    currentState: '',
                     list: '',
                 };
                 result = Object.assign(result, message);
-                return tools.getPayload(result.headline, result.entityName, result.value, result.list);
+                return tools.getPayload(result.headline, result.entityName, result.currentState, result.list);
                 break;
             }
         }
@@ -492,7 +493,7 @@ export class PageItem extends BaseClassTriggerd {
     async GenerateDetailPage(mode: PopupType): Promise<string | null> {
         if (!this.config || !this.dataItems) return null;
         const entry = this.dataItems;
-        const message: Partial<entityUpdateDetailMessage> = {};
+        let message: Partial<entityUpdateDetailMessage> = {};
         //const template = templatePageItems[mode][this.config.role];
         message.entityName = this.id;
         this.visibility = true;
@@ -563,18 +564,16 @@ export class PageItem extends BaseClassTriggerd {
                                         : 20
                                     : message.buttonState !== 'disable' && message.buttonState !== false,
                             );
-                        } else {
-                            message.slider2Pos = 'disable';
                         }
+                        message.slider2Pos = 'disable';
 
-                        if (rgb === null) {
-                            if (item.ct && item.ct.value) {
-                                const ct = await tools.getScaledNumber(item.ct);
-                                if (ct) {
-                                    message.slider2Pos = Math.trunc(ct);
-                                }
+                        if (item.ct && item.ct.value) {
+                            const ct = await tools.getScaledNumber(item.ct);
+                            if (ct) {
+                                message.slider2Pos = Math.trunc(ct);
                             }
                         }
+
                         message.popup = message.slider2Pos !== 'disable' && rgb !== null;
 
                         message.slider1Translation =
@@ -598,7 +597,7 @@ export class PageItem extends BaseClassTriggerd {
             }
 
             case 'popupFan':
-            case 'popupThermo': {
+            case 'popupThermo': /*{
                 if (entry.type !== 'input_sel') break;
                 const item = entry.data;
                 message.type = 'popupThermo';
@@ -655,13 +654,13 @@ export class PageItem extends BaseClassTriggerd {
                 } else list = [];
                 message.list = Array.isArray(list) ? list.map((a: string[]) => tools.formatInSelText(a)).join('?') : '';
                 break;
-            }
+            }*/
             case 'popupInSel': {
                 if (entry.type !== 'input_sel' && entry.type !== 'light') break;
                 const item = entry.data;
                 message.type = 'insel';
 
-                if (message.type !== 'insel') return null;
+                if (!(message.type === 'insel')) return null;
                 if (
                     item.entityInSel &&
                     item.entityInSel.value &&
@@ -672,9 +671,6 @@ export class PageItem extends BaseClassTriggerd {
                     const value = await tools.getValueEntryString(item.entityInSel);
                     if (value !== null && states && states[value] !== undefined) {
                         message.textColor = await tools.getEntryColor(item.color, !!value, Color.White);
-                        message.headline = this.library.getTranslation(
-                            (item.headline && (await item.headline.getString())) ?? '',
-                        );
                         const list: string[] = [];
                         for (const a in states) {
                             list.push(this.library.getTranslation(String(states[a])));
@@ -683,13 +679,22 @@ export class PageItem extends BaseClassTriggerd {
                             message.list = Array.isArray(list)
                                 ? list.map((a: string) => tools.formatInSelText(a)).join('?')
                                 : '';
+
+                            message.currentState = tools.formatInSelText(this.library.getTranslation(states[value]));
+                            if (mode !== 'popupThermo') break;
+                            message = { ...message, type: 'popupThermo' };
+                            if (message.type === 'popupThermo') {
+                                message.headline = this.library.getTranslation(
+                                    (item.headline && (await item.headline.getString())) ?? '',
+                                );
+                            }
                             break;
                         }
                     }
                 }
                 const value = (await tools.getValueEntryBoolean(item.entityInSel)) ?? true;
                 message.textColor = await tools.getEntryColor(item.color, value, Color.White);
-                message.headline = this.library.getTranslation(
+                message.currentState = this.library.getTranslation(
                     (item.headline && (await item.headline.getString())) ?? '',
                 );
                 let list = (item.valueList && (await item.valueList.getObject())) ??
@@ -716,6 +721,13 @@ export class PageItem extends BaseClassTriggerd {
                     if (typeof list === 'string') list = list.split('?');
                 } else list = [];
                 message.list = Array.isArray(list) ? list.map((a: string) => tools.formatInSelText(a)).join('?') : '';
+                if (mode !== 'popupThermo') break;
+                message = { ...message, type: 'popupThermo' };
+                if (message.type === 'popupThermo') {
+                    message.headline = this.library.getTranslation(
+                        (item.headline && (await item.headline.getString())) ?? '',
+                    );
+                }
                 break;
             }
         }
@@ -732,6 +744,7 @@ export class PageItem extends BaseClassTriggerd {
         this.visibility = false;
         await this.controller.statesControler.deactivateTrigger(this);
         await super.delete();
+        this.parent = undefined;
     }
 
     async setPopupAction(action: string, value: string): Promise<void> {
@@ -758,11 +771,10 @@ export class PageItem extends BaseClassTriggerd {
                         !item.setList
                     ) {
                         const states = item.entityInSel.value.getCommonStates();
-                        //const value = await tools.getValueEntryString(item.entity1);
                         if (value !== null && states !== undefined) {
                             const list: string[] = [];
                             for (const a in states) {
-                                list.push(this.library.getTranslation(String(a)));
+                                list.push(String(a));
                             }
                             if (list[parseInt(value)] !== undefined) {
                                 await item.entityInSel.value.setStateAsync(list[parseInt(value)]);
@@ -896,6 +908,10 @@ export class PageItem extends BaseClassTriggerd {
                     if (value !== null) {
                         await item.setValue1!.setStateFlip();
                     }
+                    if (this.config && this.parent && this.config.role == 'arrow') {
+                        //this.parent.step
+                        //this.parent.update()
+                    }
                 } else if (entry.type === 'light') {
                     const item = entry.data;
                     item.entity1 && item.entity1.value && (await item.entity1.value.setStateFlip());
@@ -996,8 +1012,13 @@ export class PageItem extends BaseClassTriggerd {
     }
     protected async onStateTrigger(): Promise<void> {
         if (this.lastPopupType) {
-            const msg = await this.GenerateDetailPage(this.lastPopupType);
-            if (msg) this.sendToPanel(msg);
+            if (this.lastPopupType === 'popupThermo') {
+                this.log.debug(`Trigger from popupThermo `);
+                this.parent && this.parent.onPopupRequest('0', 'popupThermo', '', '');
+            } else {
+                const msg = await this.GenerateDetailPage(this.lastPopupType);
+                if (msg) this.sendToPanel(msg);
+            }
         }
     }
 }

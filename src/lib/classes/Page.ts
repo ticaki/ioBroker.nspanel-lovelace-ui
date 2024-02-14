@@ -1,5 +1,5 @@
 import { Panel } from '../controller/panel';
-import { BaseClassPage, BaseClassTriggerd, BaseClassTriggerdInterface } from '../controller/states-controller';
+import { BaseClassPage, BaseClassTriggerdInterface } from '../controller/states-controller';
 import * as pages from '../types/pages';
 import { ButtonActionType, IncomingEvent, PopupType, isPopupType } from '../types/types';
 import { ScreensaverConfig } from '../pages/screensaver';
@@ -14,7 +14,7 @@ export type PageItemInterface = BaseClassTriggerdInterface & {
     card: pages.PageTypeCards;
     panel: Panel;
     id: string;
-    parent: BaseClassTriggerd;
+    parent: Page;
 };
 
 export type PageInterface = BaseClassTriggerdInterface & {
@@ -31,6 +31,7 @@ export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
     readonly id: string;
     readonly uniqueID: string;
+    dpInit: string = '';
     //config: Card['config'];
     constructor(card: PageInterface, pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined) {
         super(card, pageItemsConfig);
@@ -94,6 +95,7 @@ export class Page extends BaseClassPage {
         value: string | undefined,
     ): Promise<void> {
         if (!this.pageItems) return;
+        this.log.debug(`Trigger from popupThermo 1 `);
         const i = typeof id === 'number' ? id : parseInt(id);
         const item = this.pageItems[i];
         if (!item) return;

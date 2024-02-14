@@ -15,6 +15,7 @@ import { StatesControler } from './states-controller';
 import { PageGrid } from '../pages/pageGrid';
 import { Navigation, NavigationConfig } from '../classes/navigation';
 import { PageThermo } from '../pages/pageThermo';
+import { PagePower } from '../pages/pagePower';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -110,6 +111,17 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cardEntities': {
+                    const pmconfig = {
+                        card: pageConfig.card,
+                        panel: this,
+                        id: String(a),
+                        name: 'PG',
+                        alwaysOn: pageConfig.alwaysOn,
+                        adapter: this.adapter,
+                        panelSend: this.panelSend,
+                        uniqueID: pageConfig.uniqueID,
+                    };
+                    this.pages[a] = new PageGrid(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardGrid2':
@@ -166,6 +178,17 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cardPower': {
+                    const pmconfig = {
+                        card: pageConfig.card,
+                        panel: this,
+                        id: String(a),
+                        name: 'PM',
+                        alwaysOn: pageConfig.alwaysOn,
+                        adapter: this.adapter,
+                        panelSend: this.panelSend,
+                        uniqueID: pageConfig.uniqueID,
+                    };
+                    this.pages[a] = new PagePower(pmconfig, pageConfig);
                     break;
                 }
                 case 'screensaver':

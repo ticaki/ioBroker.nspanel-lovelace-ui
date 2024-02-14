@@ -59,8 +59,23 @@ class PageMedia extends import_Page2.Page {
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
-  tempItem;
   constructor(config, options) {
+    if (options && options.pageItems)
+      options.pageItems.unshift({
+        type: "button",
+        dpInit: "",
+        initMode: "custom",
+        role: "button",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "arrow-right-bold-circle-outline" },
+              color: { type: "const", constVal: { red: 205, green: 142, blue: 153 } }
+            }
+          },
+          entity1: { value: { type: "const", constVal: true } }
+        }
+      });
     super(config, options.pageItems);
     this.config = options.config;
     if (this.items && this.items.card === "cardMedia")
@@ -210,10 +225,21 @@ class PageMedia extends import_Page2.Page {
     }
     const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
     if (this.pageItems) {
-      for (let a = 0; a < 5; a++) {
+      const localStep = this.pageItems.length > 5 ? 4 : 5;
+      if (this.pageItems.length - 1 <= localStep * (this.step - 1))
+        this.step = 1;
+      const maxSteps = localStep * this.step + 1;
+      const minStep = localStep * (this.step - 1) + 1;
+      for (let a = minStep; a < maxSteps; a++) {
         const temp = this.pageItems[a];
         if (temp)
-          opts[a] = await temp.getPageItemPayload();
+          opts[a - minStep] = await temp.getPageItemPayload();
+      }
+      if (localStep === 4) {
+        this.nextArrow = true;
+        const temp = this.pageItems[0];
+        if (temp)
+          opts[4] = await temp.getPageItemPayload();
       }
     }
     message.navigation = this.getNavigation();
@@ -371,7 +397,7 @@ class PageMedia extends import_Page2.Page {
         break;
       }
       case "button": {
-        if (event.id === "5" && this.nextArrow) {
+        if (event.id === "0" && this.nextArrow) {
           this.step++;
           this.update();
         }

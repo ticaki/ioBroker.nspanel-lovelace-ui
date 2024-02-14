@@ -1,6 +1,5 @@
 import { Dataitem } from '../classes/data-item';
 import {
-    ChangeTypeOfPageItem,
     ColorEntryType,
     IconEntryType,
     MessageItem,
@@ -10,11 +9,11 @@ import {
     ValueEntryType,
     messageItemAllInterfaces,
 } from '../types/type-pageItem';
-import { ChangeTypeOfKeys } from './definition';
 import { Library } from '../classes/library';
 import { RGB } from '../types/Color';
 import { HMIOff, HMIOn, Interpolate, White, getHue, hsv2rgb, isRGB, rgb_dec565, scale } from './Color';
 import { Icons } from './icon_mapping';
+import { ChangeTypeOfKeys } from '../types/pages';
 
 export const messageItemDefault: MessageItem = {
     type: 'input_sel',
@@ -26,7 +25,7 @@ export const messageItemDefault: MessageItem = {
 };
 
 export async function getValueEntryNumber(
-    i: ChangeTypeOfPageItem<ValueEntryType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
 ): Promise<number | null> {
     if (!i) return null;
     const nval = i.value && (await i.value.getNumber());
@@ -45,7 +44,7 @@ export async function getValueEntryNumber(
 }
 
 export async function getScaledNumber(
-    i: ChangeTypeOfPageItem<ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<ScaledNumberType, Dataitem | undefined>,
 ): Promise<number | null> {
     if (!i) return null;
     let nval = i.value && (await i.value.getNumber());
@@ -63,7 +62,7 @@ export async function getScaledNumber(
 }
 
 export async function setScaledNumber(
-    i: ChangeTypeOfPageItem<ScaledNumberType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<ScaledNumberType, Dataitem | undefined>,
     value: number,
 ): Promise<void> {
     if (!i || !i.value) return;
@@ -83,7 +82,7 @@ export async function setScaledNumber(
 }
 
 export async function getIconEntryValue(
-    i: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined> | undefined,
     on: boolean | null,
     def: string,
     defOff: string | null = null,
@@ -91,14 +90,14 @@ export async function getIconEntryValue(
     if (i === undefined) return '';
     on = on ?? true;
     if (!i) return Icons.GetIcon(on ? def : defOff ?? def);
-    const icon = i.true.value && (await i.true.value.getString());
+    const icon = i.true && i.true.value && (await i.true.value.getString());
     if (!on) {
-        return Icons.GetIcon((i.false.value && (await i.false.value.getString())) ?? defOff ?? icon ?? def);
+        return Icons.GetIcon((i.false && i.false.value && (await i.false.value.getString())) ?? defOff ?? icon ?? def);
     }
     return Icons.GetIcon(icon ?? def);
 }
 export async function getIconEntryColor(
-    i: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined> | undefined,
     on: boolean | number | null,
     def: string | RGB | number,
     defOff: string | RGB | null = null,
@@ -112,14 +111,14 @@ export async function getIconEntryColor(
     else if (typeof defOff !== 'string') defOff = String(rgb_dec565(defOff));
 
     if (!i) return def;
-    const icon = i.true.color && (await i.true.color.getRGBDec());
+    const icon = i.true && i.true.color && (await i.true.color.getRGBDec());
     if (!on) {
-        return (i.false.color && (await i.false.color.getRGBDec())) ?? defOff ?? icon ?? def;
+        return (i.false && i.false.color && (await i.false.color.getRGBDec())) ?? defOff ?? icon ?? def;
     }
     return icon ?? def;
 }
 export async function GetIconColor(
-    item: ChangeTypeOfPageItem<IconEntryType, Dataitem | undefined> | undefined | RGB,
+    item: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined> | undefined | RGB,
     value: boolean | number | null,
     min: number | null = null,
     max: number | null = null,
@@ -150,8 +149,8 @@ export async function GetIconColor(
         }
         return String(rgb_dec565(offColor ? offColor : HMIOff));
     } else {
-        const onColor = item.true.color && (await item.true.color.getRGBValue());
-        const offColor = item.false.color && (await item.false.color.getRGBValue());
+        const onColor = item.true && item.true.color && (await item.true.color.getRGBValue());
+        const offColor = item.false && item.false.color && (await item.false.color.getRGBValue());
         if (typeof value === 'number') {
             let val: number = typeof value === 'number' ? value : 0;
             const maxValue = ((item.maxBri && (await item.maxBri.getNumber())) || max) ?? 100;
@@ -177,7 +176,7 @@ export async function GetIconColor(
 }
 
 export async function getEntryColor(
-    i: ChangeTypeOfPageItem<ColorEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<ColorEntryType, Dataitem | undefined> | undefined,
     value: boolean | number,
     def: string | number | RGB,
 ): Promise<string> {
@@ -204,7 +203,7 @@ export async function getEntryTextOnOff(
 }
 
 export async function getValueEntryBoolean(
-    i: ChangeTypeOfPageItem<ValueEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
 ): Promise<boolean | null> {
     if (!i) return null;
     const nval = i.value && (await i.value.getBoolean());
@@ -215,10 +214,11 @@ export async function getValueEntryBoolean(
 }
 
 export async function getValueEntryString(
-    i: ChangeTypeOfPageItem<ValueEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
+    v: number | null = null,
 ): Promise<string | null> {
     if (!i || !i.value) return null;
-    const nval = await getValueEntryNumber(i);
+    const nval = v !== null ? v : await getValueEntryNumber(i);
     if (nval !== null && nval !== undefined) {
         const d = (i.decimal && (await i.decimal.getNumber())) ?? null;
         let result: string = String(nval);
@@ -284,7 +284,8 @@ export const setHuefromRGB = async (item: PageItemLightDataItems['data'], c: RGB
 
 export function formatInSelText(Text: string[] | string): string {
     let splitText = Text;
-    if (!Array.isArray(splitText)) splitText = splitText.split(' ');
+    if (!Array.isArray(splitText)) splitText = splitText.replaceAll('__', '_').replaceAll('_', ' ').split(' ');
+
     let lengthLineOne = 0;
     const arrayLineOne: string[] = [];
     for (let i = 0; i < splitText.length; i++) {
@@ -338,4 +339,27 @@ export function getPayloadArray(s: (string | any)[]): string {
 }
 export function getPayload(...s: string[]): string {
     return s.join('~');
+}
+
+/**
+ * Deep assign of jsons, dont use this for Json with objects/classes
+ * @param def Json with json, number, boolean, strings, null, undefined
+ * @param source Json with json, number, boolean, strings, null, undefined
+ * @param level ignore
+ * @returns
+ */
+export function deepAssign(def: Record<any, any>, source: Record<any, any>, level: number = 0): Record<string, any> {
+    if (level++ > 20) {
+        throw new Error('Max level reached! Circulating object is suspected!');
+    }
+    for (const k in def) {
+        const entry = def[k];
+        if (typeof def[k] === 'object') {
+            if (k in source) {
+                if (source[k] !== undefined) deepAssign(entry, source[k]);
+                def[k] = Object.assign(def[k], source[k]);
+            }
+        }
+    }
+    return Object.assign(def, source);
 }

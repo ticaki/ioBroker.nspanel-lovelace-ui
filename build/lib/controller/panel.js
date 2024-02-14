@@ -38,6 +38,7 @@ var import_pageMedia = require("../pages/pageMedia");
 var import_pageGrid = require("../pages/pageGrid");
 var import_navigation = require("../classes/navigation");
 var import_pageThermo = require("../pages/pageThermo");
+var import_pagePower = require("../pages/pagePower");
 function isPanelConfig(F) {
   if (F.controller === void 0)
     return false;
@@ -115,6 +116,17 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cardEntities": {
+          const pmconfig = {
+            card: pageConfig.card,
+            panel: this,
+            id: String(a),
+            name: "PG",
+            alwaysOn: pageConfig.alwaysOn,
+            adapter: this.adapter,
+            panelSend: this.panelSend,
+            uniqueID: pageConfig.uniqueID
+          };
+          this.pages[a] = new import_pageGrid.PageGrid(pmconfig, pageConfig);
           break;
         }
         case "cardGrid2":
@@ -170,6 +182,17 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cardPower": {
+          const pmconfig = {
+            card: pageConfig.card,
+            panel: this,
+            id: String(a),
+            name: "PM",
+            alwaysOn: pageConfig.alwaysOn,
+            adapter: this.adapter,
+            panelSend: this.panelSend,
+            uniqueID: pageConfig.uniqueID
+          };
+          this.pages[a] = new import_pagePower.PagePower(pmconfig, pageConfig);
           break;
         }
         case "screensaver":

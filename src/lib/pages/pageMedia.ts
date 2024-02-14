@@ -6,7 +6,6 @@ import * as pages from '../types/pages';
 import { BooleanUnion, IncomingEvent } from '../types/types';
 import { PageInterface, isMediaButtonActionType } from '../classes/Page';
 import { Page } from '../classes/Page';
-import { PageItem } from './pageItem';
 import { getPayload, getPayloadArray, getScaledNumber, setScaledNumber } from '../const/tools';
 
 const PageMediaMessageDefault: pages.PageMediaMessage = {
@@ -37,9 +36,24 @@ export class PageMedia extends Page {
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
-    tempItem: PageItem | undefined;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
+        if (options && options.pageItems)
+            options.pageItems.unshift({
+                type: 'button',
+                dpInit: '',
+                initMode: 'custom',
+                role: 'button',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'arrow-right-bold-circle-outline' },
+                            color: { type: 'const', constVal: { red: 205, green: 142, blue: 153 } },
+                        },
+                    },
+                    entity1: { value: { type: 'const', constVal: true } },
+                },
+            });
         super(config, options.pageItems);
 
         this.config = options.config;
@@ -232,9 +246,21 @@ export class PageMedia extends Page {
         }
         const opts: string[] = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
         if (this.pageItems) {
-            for (let a = 0; a < 5; a++) {
+            const localStep = this.pageItems.length > 5 ? 4 : 5;
+            if (this.pageItems.length - 1 <= localStep * (this.step - 1)) this.step = 1;
+            // arrow is at index [0]
+            const maxSteps = localStep * this.step + 1;
+            const minStep = localStep * (this.step - 1) + 1;
+
+            for (let a = minStep; a < maxSteps; a++) {
                 const temp = this.pageItems[a];
-                if (temp) opts[a] = await temp.getPageItemPayload();
+                if (temp) opts[a - minStep] = await temp.getPageItemPayload();
+            }
+
+            if (localStep === 4) {
+                this.nextArrow = true;
+                const temp = this.pageItems[0];
+                if (temp) opts[4] = await temp.getPageItemPayload();
             }
         }
         message.navigation = this.getNavigation();
@@ -315,102 +341,6 @@ export class PageMedia extends Page {
             getPayloadArray(message.options),
         );
     }
-    /**
-     * Create a part of the panel messsage for bottom icons. if event === '' u get '~~~~~~'.
-     * default for event: input_sel
-     * @param msg
-     * @returns string
-
-    private async getItemMessageMedia(msg: Partial<MessageItemMedia> | undefined): Promise<string> {
-        if (!msg || !msg.intNameEntity || !msg.icon) return '~~~~~';
-        msg.type = msg.type === undefined ? 'input_sel' : msg.type;
-        const iconNumber = msg.iconNumber;
-        const temp: Partial<MessageItemMedia> = msg;
-        temp.optionalValue = msg.optionalValue || 'media0';
-        const message: MessageItem = Object.assign(messageItemDefault, temp);
-
-        switch (iconNumber) {
-            case 0: {
-                message.optionalValue = 'media0';
-                break;
-            }
-            case 1: {
-                message.optionalValue = 'media1';
-                break;
-            }
-            case 2: {
-                message.optionalValue = 'media2';
-                break;
-            }
-            case 3: {
-                message.optionalValue = 'media3';
-                break;
-            }
-            case 4: {
-                message.optionalValue = 'media4';
-                break;
-            }
-            case 5: {
-                message.optionalValue = 'media5';
-                break;
-            }
-        }
-        if (!this.tempItem) {
-            const config: PageInterface = {
-                card: 'cardItemSpecial',
-                name: 'test',
-                adapter: this.adapter,
-                panelSend: this.panelSend,
-                panel: this.panel,
-                id: 'irgendwas',
-            };
-            const options: PageItemDataItemsOptions = {
-                role: 'text.list',
-                type: 'input_sel',
-                dpInit: undefined,
-                initMode: 'custom',
-                data: {
-                    color: {
-                        true: {
-                            type: 'const',
-                            constVal: Color.HMIOn,
-                        },
-                        false: undefined,
-                        scale: undefined,
-                    },
-                    icon: {
-                        true: {
-                            value: { type: 'const', constVal: 'home' },
-                            color: { type: 'const', constVal: Color.Green },
-                        },
-                        false: {
-                            value: { type: 'const', constVal: 'fan' },
-                            color: { type: 'const', constVal: Color.Red },
-                        },
-                        scale: undefined,
-                        maxBri: undefined,
-                        minBri: undefined,
-                    },
-                    entity1: {
-                        value: {
-                            type: 'const',
-                            constVal: true,
-                        },
-                        decimal: undefined,
-                        factor: undefined,
-                        unit: undefined,
-                    },
-                    text1: undefined,
-                    setValue1: undefined,
-                    useColor: undefined,
-                },
-            };
-            this.tempItem = new PageItem(config, options);
-            await this.tempItem.init();
-        }
-        return await this.tempItem.getPageItemPayload('test');
-        //return this.getItemMesssage(message);
-    }*/
 
     onStateTrigger = async (): Promise<void> => {
         this.update();
@@ -487,7 +417,7 @@ export class PageMedia extends Page {
                 break;
             }
             case 'button': {
-                if (event.id === '5' && this.nextArrow) {
+                if (event.id === '0' && this.nextArrow) {
                     this.step++;
                     this.update();
                 }

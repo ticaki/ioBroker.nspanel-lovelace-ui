@@ -10,7 +10,6 @@ export type ChangeToChannel<Obj, T> = Obj extends object
     ? { [K in keyof Obj]-?: customChannelType & T }
     : ioBroker.StateObject;
 */
-export type ChangeTypeOfKeys<Obj, N> = Obj extends object ? { [K in keyof Obj]-?: ChangeTypeOfKeys<Obj[K], N> } : N;
 
 export type customChannelType = {
     _channel: ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.FolderObject;

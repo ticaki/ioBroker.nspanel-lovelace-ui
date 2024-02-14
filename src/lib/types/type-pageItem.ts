@@ -1,5 +1,6 @@
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
+import { ChangeTypeOfKeys } from './pages';
 import * as Types from './types';
 
 export type PageLightItem = {
@@ -44,14 +45,14 @@ export type entityUpdateDetailMessage =
           type: 'insel';
           entityName: string;
           textColor: string;
-          headline: string;
+          currentState: string;
           list: string;
       }
     | {
           type: 'popupThermo';
           headline: string;
           entityName: string;
-          value: string;
+          currentState: string;
           list: string;
       }
     | ({
@@ -142,11 +143,11 @@ export type MediaToolBoxAction =
 export type PageItemButton = Pick<PageItemBase, 'setValue1' | 'text' | 'icon' | 'color' | 'entity1' | 'setNavi'>;
 export type PageItemButtonDataItemsOptions = {
     type: 'button';
-    data: ChangeTypeOfPageItem<PageItemButton, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageItemButton, Types.DataItemsOptions | undefined>;
 };
 export type PageItemButtonDataItems = {
     type: 'button';
-    data: ChangeTypeOfPageItem<PageItemButton, Dataitem | undefined>;
+    data: ChangeTypeOfKeys<PageItemButton, Dataitem | undefined>;
 };
 
 export type PageItemLight = Pick<
@@ -172,11 +173,11 @@ export type PageItemLight = Pick<
 >;
 export type PageItemLightDataItemsOptions = {
     type: 'light';
-    data: ChangeTypeOfPageItem<PageItemLight, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageItemLight, Types.DataItemsOptions | undefined>;
 };
 export type PageItemLightDataItems = {
     type: 'light';
-    data: ChangeTypeOfPageItem<PageItemLight, Dataitem | undefined>;
+    data: ChangeTypeOfKeys<PageItemLight, Dataitem | undefined>;
 };
 
 export type PageItemInputSel = Pick<
@@ -185,11 +186,11 @@ export type PageItemInputSel = Pick<
 >;
 export type PageItemInputSelDataItemsOptions = {
     type: 'input_sel';
-    data: ChangeTypeOfPageItem<PageItemInputSel, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageItemInputSel, Types.DataItemsOptions | undefined>;
 };
 export type PageItemInputSelDataItems = {
     type: 'input_sel';
-    data: ChangeTypeOfPageItem<PageItemInputSel, Dataitem | undefined>;
+    data: ChangeTypeOfKeys<PageItemInputSel, Dataitem | undefined>;
 };
 
 export type PageItemBase = {
@@ -281,13 +282,14 @@ export type PageItemUnion = {
         | 'buttonSensor'
         | 'button'
         | 'media.repeat'
-        | 'text.list';
+        | 'text.list'
+        | 'arrow';
     dpInit: string | undefined;
     initMode: 'auto' | 'custom';
     type: Types.SerialTypePageElements;
     data: PageItemBase;
 };
-export type ChangeTypeOfPageItem<Obj, N> = Obj extends
+/*export type ChangeTypeOfPageItem<Obj, N> = Obj extends
     | object
     | IconBoolean
     | TextEntryType
@@ -301,7 +303,7 @@ export type ChangeTypeOfPageItem<Obj, N> = Obj extends
           : {
                 [K in keyof Obj]: ChangeTypeOfPageItem<Obj[K], N>;
             }
-    : N;
+    : N;*/
 export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
     (PageItemButtonDataItems | PageItemInputSelDataItems | PageItemLightDataItems);
 
@@ -310,20 +312,22 @@ export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data' | 'type'> &
 
 export type ColorEntryType = Record<Types.BooleanUnion, RGB | undefined> & { scale?: Types.IconScaleElement };
 
-export type IconEntryType = Record<Types.BooleanUnion, { value: string; color: RGB }> & {
-    scale: Types.IconScaleElement | undefined;
-    maxBri: string;
-    minBri: string;
-};
+export type IconEntryType =
+    | (Partial<Record<Types.BooleanUnion, { value: string; color: RGB }>> & {
+          scale?: Types.IconScaleElement | undefined;
+          maxBri?: string;
+          minBri?: string;
+      })
+    | undefined;
 
 export type TextEntryType = Record<Types.BooleanUnion, string>;
 
 export type ValueEntryType =
     | {
           value: number;
-          decimal: number;
-          factor: number;
-          unit: string;
+          decimal?: number;
+          factor?: number;
+          unit?: string;
           minScale?: number;
           maxScale?: number;
       }

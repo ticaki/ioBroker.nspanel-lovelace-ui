@@ -72,7 +72,7 @@ class PanelSend extends import_library.BaseClass {
       return;
     }
     this.addMessageTasmota(this.topic, msg.payload, msg.opt);
-    this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 5e3);
+    this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 1e3);
   };
   addMessageTasmota = (topic, payload, opt) => {
     if (this.messageDbTasmota.length > 0 && !this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt))

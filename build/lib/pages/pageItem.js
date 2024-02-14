@@ -39,6 +39,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   panel;
   id;
   lastPopupType = void 0;
+  parent;
   constructor(config, options) {
     super({ ...config });
     this.panel = config.panel;
@@ -169,7 +170,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           type: "insel",
           entityName: "",
           textColor: String(Color.rgb_dec565(Color.White)),
-          headline: "",
+          currentState: "",
           list: ""
         };
         result = Object.assign(result, message);
@@ -179,7 +180,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           "",
           result.textColor,
           result.type,
-          result.headline,
+          result.currentState,
           result.list
         );
         break;
@@ -189,22 +190,22 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           type: "popupThermo",
           entityName: "",
           headline: "",
-          value: "",
+          currentState: "",
           list: ""
         };
         result = Object.assign(result, message);
-        return tools.getPayload(result.headline, result.entityName, result.value, result.list);
+        return tools.getPayload(result.headline, result.entityName, result.currentState, result.list);
         break;
       }
     }
     return "";
   }
   async GenerateDetailPage(mode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
     if (!this.config || !this.dataItems)
       return null;
     const entry = this.dataItems;
-    const message = {};
+    let message = {};
     message.entityName = this.id;
     this.visibility = true;
     this.lastPopupType = mode;
@@ -270,15 +271,12 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 rgb,
                 message.slider1Pos !== "disable" && message.slider1Pos !== void 0 ? message.slider1Pos > 20 ? message.slider1Pos : 20 : message.buttonState !== "disable" && message.buttonState !== false
               );
-            } else {
-              message.slider2Pos = "disable";
             }
-            if (rgb === null) {
-              if (item.ct && item.ct.value) {
-                const ct = await tools.getScaledNumber(item.ct);
-                if (ct) {
-                  message.slider2Pos = Math.trunc(ct);
-                }
+            message.slider2Pos = "disable";
+            if (item.ct && item.ct.value) {
+              const ct = await tools.getScaledNumber(item.ct);
+              if (ct) {
+                message.slider2Pos = Math.trunc(ct);
               }
             }
             message.popup = message.slider2Pos !== "disable" && rgb !== null;
@@ -297,32 +295,41 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         break;
       }
       case "popupFan":
-      case "popupThermo": {
-        if (entry.type !== "input_sel")
+      case "popupThermo":
+      case "popupInSel": {
+        if (entry.type !== "input_sel" && entry.type !== "light")
           break;
         const item = entry.data;
-        message.type = "popupThermo";
-        if (message.type !== "popupThermo")
+        message.type = "insel";
+        if (!(message.type === "insel"))
           return null;
         if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_j = item.entityInSel.value.trueType()) != null ? _j : "") && item.entityInSel.value.getCommonStates()) {
           const states = item.entityInSel.value.getCommonStates();
-          const value = await tools.getValueEntryString(item.entityInSel);
-          if (value !== null && states && states[value] !== void 0) {
-            message.headline = this.library.getTranslation(
-              (_k = item.headline && await item.headline.getString()) != null ? _k : ""
-            );
+          const value2 = await tools.getValueEntryString(item.entityInSel);
+          if (value2 !== null && states && states[value2] !== void 0) {
+            message.textColor = await tools.getEntryColor(item.color, !!value2, Color.White);
             const list2 = [];
             for (const a in states) {
               list2.push(this.library.getTranslation(String(states[a])));
             }
             if (list2.length > 0) {
               message.list = Array.isArray(list2) ? list2.map((a) => tools.formatInSelText(a)).join("?") : "";
+              message.currentState = tools.formatInSelText(this.library.getTranslation(states[value2]));
+              if (mode !== "popupThermo")
+                break;
+              message = { ...message, type: "popupThermo" };
+              if (message.type === "popupThermo") {
+                message.headline = this.library.getTranslation(
+                  (_k = item.headline && await item.headline.getString()) != null ? _k : ""
+                );
+              }
               break;
             }
           }
         }
-        message.value = (_l = await tools.getValueEntryString(item.entityInSel)) != null ? _l : "";
-        message.headline = this.library.getTranslation(
+        const value = (_l = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _l : true;
+        message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+        message.currentState = this.library.getTranslation(
           (_m = item.headline && await item.headline.getString()) != null ? _m : ""
         );
         let list = (_o = (_n = item.valueList && await item.valueList.getObject()) != null ? _n : item.valueList && await item.valueList.getString()) != null ? _o : [
@@ -346,59 +353,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         } else
           list = [];
         message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
-        break;
-      }
-      case "popupInSel": {
-        if (entry.type !== "input_sel" && entry.type !== "light")
+        if (mode !== "popupThermo")
           break;
-        const item = entry.data;
-        message.type = "insel";
-        if (message.type !== "insel")
-          return null;
-        if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_p = item.entityInSel.value.trueType()) != null ? _p : "") && item.entityInSel.value.getCommonStates()) {
-          const states = item.entityInSel.value.getCommonStates();
-          const value2 = await tools.getValueEntryString(item.entityInSel);
-          if (value2 !== null && states && states[value2] !== void 0) {
-            message.textColor = await tools.getEntryColor(item.color, !!value2, Color.White);
-            message.headline = this.library.getTranslation(
-              (_q = item.headline && await item.headline.getString()) != null ? _q : ""
-            );
-            const list2 = [];
-            for (const a in states) {
-              list2.push(this.library.getTranslation(String(states[a])));
-            }
-            if (list2.length > 0) {
-              message.list = Array.isArray(list2) ? list2.map((a) => tools.formatInSelText(a)).join("?") : "";
-              break;
-            }
-          }
+        message = { ...message, type: "popupThermo" };
+        if (message.type === "popupThermo") {
+          message.headline = this.library.getTranslation(
+            (_p = item.headline && await item.headline.getString()) != null ? _p : ""
+          );
         }
-        const value = (_r = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _r : true;
-        message.textColor = await tools.getEntryColor(item.color, value, Color.White);
-        message.headline = this.library.getTranslation(
-          (_s = item.headline && await item.headline.getString()) != null ? _s : ""
-        );
-        let list = (_u = (_t = item.valueList && await item.valueList.getObject()) != null ? _t : item.valueList && await item.valueList.getString()) != null ? _u : [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-          "7",
-          "8",
-          "9",
-          "10",
-          "11",
-          "12",
-          "13"
-        ];
-        if (list !== null) {
-          if (typeof list === "string")
-            list = list.split("?");
-        } else
-          list = [];
-        message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
         break;
       }
     }
@@ -409,6 +371,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.visibility = false;
     await this.controller.statesControler.deactivateTrigger(this);
     await super.delete();
+    this.parent = void 0;
   }
   async setPopupAction(action, value) {
     var _a, _b, _c;
@@ -426,7 +389,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             if (value !== null && states !== void 0) {
               const list2 = [];
               for (const a in states) {
-                list2.push(this.library.getTranslation(String(a)));
+                list2.push(String(a));
               }
               if (list2[parseInt(value)] !== void 0) {
                 await item.entityInSel.value.setStateAsync(list2[parseInt(value)]);
@@ -547,6 +510,8 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           if (value2 !== null) {
             await item.setValue1.setStateFlip();
           }
+          if (this.config && this.parent && this.config.role == "arrow") {
+          }
         } else if (entry.type === "light") {
           const item = entry.data;
           item.entity1 && item.entity1.value && await item.entity1.value.setStateFlip();
@@ -613,9 +578,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   }
   async onStateTrigger() {
     if (this.lastPopupType) {
-      const msg = await this.GenerateDetailPage(this.lastPopupType);
-      if (msg)
-        this.sendToPanel(msg);
+      if (this.lastPopupType === "popupThermo") {
+        this.log.debug(`Trigger from popupThermo `);
+        this.parent && this.parent.onPopupRequest("0", "popupThermo", "", "");
+      } else {
+        const msg = await this.GenerateDetailPage(this.lastPopupType);
+        if (msg)
+          this.sendToPanel(msg);
+      }
     }
   }
 }

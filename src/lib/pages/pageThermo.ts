@@ -179,6 +179,7 @@ export class PageThermo extends Page {
             for (let a = 0; a < 3; a++) {
                 if (temp[a] === undefined) temp[a] = '~~~';
             }
+            this.log.debug(`Trigger from popupThermo 3 `);
             msg = getPayload('entityUpdateDetail', id, icon, color, temp[0], temp[1], temp[2], '');
         } else if (action === '' && value !== undefined) {
             const i = typeof id === 'number' ? id : parseInt(id);
@@ -186,7 +187,10 @@ export class PageThermo extends Page {
             if (!item) return;
             item.setPopupAction('mode-insel', value);
         }
-        if (msg !== null) this.sendToPanel(msg);
+        if (msg !== null) {
+            this.log.debug(`Trigger from popupThermo 4 `);
+            this.sendToPanel(msg);
+        }
     }
 
     private getMessage(message: pages.PageThermoMessage): string {
