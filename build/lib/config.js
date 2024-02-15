@@ -1167,6 +1167,113 @@ const pageGridTest2 = {
     }
   ]
 };
+const pageGridTest4 = {
+  card: "cardGrid",
+  dpInit: "",
+  initMode: "custom",
+  alwaysOn: "none",
+  uniqueID: "grid4",
+  useColor: false,
+  config: {
+    card: "cardGrid",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "\xDCberschrift2"
+      }
+    }
+  },
+  items: void 0,
+  pageItems: [
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entityInSel: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        valueList: { type: "const", constVal: "home?butter" },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "account" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: void 0
+      }
+    }
+  ]
+};
 const pageGrid2Test2 = {
   card: "cardGrid2",
   dpInit: "",
@@ -2399,6 +2506,7 @@ const pageScreensaverTest = {
 };
 const Testconfig = {
   pages: [
+    pageGridTest4,
     pageEntitiesTest1,
     pagePowerTest1,
     pageThermoTest,
@@ -2412,7 +2520,7 @@ const Testconfig = {
     {
       name: "main",
       page: "power1",
-      left: { single: "6" },
+      left: { single: "7" },
       right: { single: "1", double: "main" }
     },
     {
@@ -2424,7 +2532,13 @@ const Testconfig = {
     {
       name: "6",
       page: "entities1",
-      left: { single: "4" },
+      left: { single: "5" },
+      right: { single: "7", double: "main" }
+    },
+    {
+      name: "7",
+      page: "grid4",
+      left: { single: "6" },
       right: { single: "main", double: "main" }
     },
     {

@@ -640,7 +640,7 @@ export class PageItem extends BaseClassTriggerd {
                 if (
                     item.entityInSel &&
                     item.entityInSel.value &&
-                    ['string', 'number'].indexOf(item.entityInSel.value.trueType() ?? '') &&
+                    ['string', 'number'].indexOf(item.entityInSel.value.type ?? '') &&
                     item.entityInSel.value.getCommonStates()
                 ) {
                     const states = item.entityInSel.value.getCommonStates();
@@ -714,10 +714,9 @@ export class PageItem extends BaseClassTriggerd {
                 if (entry.type !== 'shutter') break;
                 const item = entry.data;
                 message.type = 'popupShutter';
-                if (!(message.type === 'popupShutter')) return null;
+                if (!(message.type === 'popupShutter')) break;
                 message.text2 = (item.text && item.text.true && (await item.text.true.getString())) ?? '';
                 message.text2 = this.library.getTranslation(message.text2);
-
                 const pos1 = (await tools.getValueEntryNumber(item.entity1)) ?? undefined;
                 const pos2 = (await tools.getValueEntryNumber(item.entity2)) ?? undefined;
                 if (pos1 !== undefined) message.icon = (await tools.getIconEntryValue(item.icon, pos1 < 40, '')) ?? '';
@@ -812,7 +811,7 @@ export class PageItem extends BaseClassTriggerd {
                     if (
                         item.entityInSel &&
                         item.entityInSel.value &&
-                        ['string', 'number'].indexOf(item.entityInSel.value.trueType() ?? '') &&
+                        ['string', 'number'].indexOf(item.entityInSel.value.type ?? '') &&
                         item.entityInSel.value.getCommonStates() &&
                         !item.setList
                     ) {
@@ -1040,18 +1039,24 @@ export class PageItem extends BaseClassTriggerd {
                             if (items.entity1.value.type === 'number') {
                                 switch (action) {
                                     case 'up': {
-                                        const value = await items.entity1.maxScale.getNumber();
-                                        if (value !== null) await items.entity1.value.setStateAsync(value);
+                                        if (tools.ifValueEntryIs(items.entity1, 'number')) {
+                                            const value = await items.entity1.maxScale.getNumber();
+                                            if (value !== null) await items.entity1.value.setStateAsync(value);
+                                        }
                                         break;
                                     }
                                     case 'stop': {
-                                        const value = await tools.getValueEntryNumber(items.entity1);
-                                        if (value !== null) await tools.setValueEntryNumber(items.entity1, value);
+                                        if (tools.ifValueEntryIs(items.entity1, 'number')) {
+                                            const value = await tools.getValueEntryNumber(items.entity1);
+                                            if (value !== null) await tools.setValueEntryNumber(items.entity1, value);
+                                        }
                                         break;
                                     }
                                     case 'down': {
-                                        const value = await items.entity1.minScale.getNumber();
-                                        if (value !== null) await items.entity1.value.setStateAsync(value);
+                                        if (tools.ifValueEntryIs(items.entity1, 'number')) {
+                                            const value = await items.entity1.minScale.getNumber();
+                                            if (value !== null) await items.entity1.value.setStateAsync(value);
+                                        }
                                         break;
                                     }
                                 }
@@ -1069,7 +1074,8 @@ export class PageItem extends BaseClassTriggerd {
             case 'positionSlider': {
                 if (entry.type === 'shutter') {
                     const items = entry.data;
-                    await tools.setValueEntryNumber(items.entity1, parseInt(value));
+                    if (tools.ifValueEntryIs(items.entity1, 'number'))
+                        await tools.setValueEntryNumber(items.entity1, parseInt(value));
                 }
                 break;
             }
@@ -1079,7 +1085,8 @@ export class PageItem extends BaseClassTriggerd {
             case 'tiltSlider': {
                 if (entry.type === 'shutter') {
                     const items = entry.data;
-                    await tools.setValueEntryNumber(items.entity2, parseInt(value));
+                    if (tools.ifValueEntryIs(items.entity2, 'number'))
+                        await tools.setValueEntryNumber(items.entity2, parseInt(value));
                 }
                 break;
             }

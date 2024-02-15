@@ -385,7 +385,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message.type = "insel";
         if (!(message.type === "insel"))
           return null;
-        if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_j = item.entityInSel.value.trueType()) != null ? _j : "") && item.entityInSel.value.getCommonStates()) {
+        if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_j = item.entityInSel.value.type) != null ? _j : "") && item.entityInSel.value.getCommonStates()) {
           const states = item.entityInSel.value.getCommonStates();
           const value2 = await tools.getValueEntryString(item.entityInSel);
           if (value2 !== null && states && states[value2] !== void 0) {
@@ -453,7 +453,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         const item = entry.data;
         message.type = "popupShutter";
         if (!(message.type === "popupShutter"))
-          return null;
+          break;
         message.text2 = (_q = item.text && item.text.true && await item.text.true.getString()) != null ? _q : "";
         message.text2 = this.library.getTranslation(message.text2);
         const pos1 = (_r = await tools.getValueEntryNumber(item.entity1)) != null ? _r : void 0;
@@ -531,7 +531,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           if (entry.type !== "input_sel")
             break;
           const item = entry.data;
-          if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_a = item.entityInSel.value.trueType()) != null ? _a : "") && item.entityInSel.value.getCommonStates() && !item.setList) {
+          if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_a = item.entityInSel.value.type) != null ? _a : "") && item.entityInSel.value.getCommonStates() && !item.setList) {
             const states = item.entityInSel.value.getCommonStates();
             if (value !== null && states !== void 0) {
               const list2 = [];
@@ -738,21 +738,27 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               if (items.entity1.value.type === "number") {
                 switch (action) {
                   case "up": {
-                    const value2 = await items.entity1.maxScale.getNumber();
-                    if (value2 !== null)
-                      await items.entity1.value.setStateAsync(value2);
+                    if (tools.ifValueEntryIs(items.entity1, "number")) {
+                      const value2 = await items.entity1.maxScale.getNumber();
+                      if (value2 !== null)
+                        await items.entity1.value.setStateAsync(value2);
+                    }
                     break;
                   }
                   case "stop": {
-                    const value2 = await tools.getValueEntryNumber(items.entity1);
-                    if (value2 !== null)
-                      await tools.setValueEntryNumber(items.entity1, value2);
+                    if (tools.ifValueEntryIs(items.entity1, "number")) {
+                      const value2 = await tools.getValueEntryNumber(items.entity1);
+                      if (value2 !== null)
+                        await tools.setValueEntryNumber(items.entity1, value2);
+                    }
                     break;
                   }
                   case "down": {
-                    const value2 = await items.entity1.minScale.getNumber();
-                    if (value2 !== null)
-                      await items.entity1.value.setStateAsync(value2);
+                    if (tools.ifValueEntryIs(items.entity1, "number")) {
+                      const value2 = await items.entity1.minScale.getNumber();
+                      if (value2 !== null)
+                        await items.entity1.value.setStateAsync(value2);
+                    }
                     break;
                   }
                 }
@@ -768,14 +774,16 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       case "positionSlider": {
         if (entry.type === "shutter") {
           const items = entry.data;
-          await tools.setValueEntryNumber(items.entity1, parseInt(value));
+          if (tools.ifValueEntryIs(items.entity1, "number"))
+            await tools.setValueEntryNumber(items.entity1, parseInt(value));
         }
         break;
       }
       case "tiltSlider": {
         if (entry.type === "shutter") {
           const items = entry.data;
-          await tools.setValueEntryNumber(items.entity2, parseInt(value));
+          if (tools.ifValueEntryIs(items.entity2, "number"))
+            await tools.setValueEntryNumber(items.entity2, parseInt(value));
         }
         break;
       }

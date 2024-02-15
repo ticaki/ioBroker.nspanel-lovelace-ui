@@ -36,6 +36,7 @@ __export(tools_exports, {
   getValueEntryBoolean: () => getValueEntryBoolean,
   getValueEntryNumber: () => getValueEntryNumber,
   getValueEntryString: () => getValueEntryString,
+  ifValueEntryIs: () => ifValueEntryIs,
   messageItemDefault: () => messageItemDefault,
   setHuefromRGB: () => setHuefromRGB,
   setRGBThreefromRGB: () => setRGBThreefromRGB,
@@ -53,6 +54,11 @@ const messageItemDefault = {
   displayName: "",
   optionalValue: ""
 };
+function ifValueEntryIs(i, type) {
+  if (i && i.value && i.value.type)
+    return i.value.type === type;
+  return false;
+}
 async function setValueEntryNumber(i, value) {
   var _a;
   if (!i || !i.value)
@@ -405,6 +411,7 @@ function deepAssign(def, source, level = 0) {
   getValueEntryBoolean,
   getValueEntryNumber,
   getValueEntryString,
+  ifValueEntryIs,
   messageItemDefault,
   setHuefromRGB,
   setRGBThreefromRGB,

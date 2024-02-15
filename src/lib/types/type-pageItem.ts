@@ -207,10 +207,6 @@ export type PageItemInputSel = Pick<
     'entityInSel' | 'text' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
 >;
 
-export type PageItemShutter = Pick<
-    PageItemBase,
-    'entity1' | 'entity2' | 'text' | 'text1' | 'text2' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
->;
 export type PageItemInputSelDataItemsOptions = {
     type: 'input_sel';
     data: ChangeTypeOfKeys<PageItemInputSel, Types.DataItemsOptions | undefined>;
@@ -221,6 +217,10 @@ export type PageItemInputSelDataItems = {
     data: ChangeTypeOfKeys<PageItemInputSel, Dataitem | undefined>;
 };
 
+export type PageItemShutter = Pick<
+    PageItemBase,
+    'entity1' | 'entity2' | 'text' | 'text1' | 'text2' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
+>;
 export type PageItemShutterDataItemsOptions = {
     type: 'shutter';
     data: ChangeTypeOfKeys<PageItemShutter, Types.DataItemsOptions | undefined>;

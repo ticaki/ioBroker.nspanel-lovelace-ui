@@ -23,6 +23,13 @@ export const messageItemDefault: MessageItem = {
     displayName: '',
     optionalValue: '',
 };
+export function ifValueEntryIs(
+    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
+    type: ioBroker.CommonType,
+): boolean {
+    if (i && i.value && i.value.type) return i.value.type === type;
+    return false;
+}
 export async function setValueEntryNumber(
     i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
     value: number,

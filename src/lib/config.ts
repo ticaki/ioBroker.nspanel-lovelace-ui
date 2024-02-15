@@ -1201,6 +1201,122 @@ const pageGridTest2: pages.PageBaseConfig = {
         },
     ],
 };
+const pageGridTest4: pages.PageBaseConfig = {
+    //type: 'sonstiges',
+    card: 'cardGrid',
+    dpInit: '',
+    initMode: 'custom',
+    alwaysOn: 'none',
+    uniqueID: 'grid4',
+    useColor: false,
+    config: {
+        card: 'cardGrid',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'Überschrift2',
+            },
+        },
+    },
+    items: undefined,
+    pageItems: [
+        {
+            role: 'text.list',
+            type: 'input_sel',
+            dpInit: undefined,
+            initMode: 'custom',
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entityInSel: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'button',
+            dpInit: undefined,
+            initMode: 'custom',
+
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'account' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+
+                setValue1: undefined,
+            },
+        },
+    ],
+};
 const pageGrid2Test2: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardGrid2',
@@ -2505,6 +2621,7 @@ const pageScreensaverTest: ScreensaverConfig = {
 };
 export const Testconfig: Partial<panelConfigPartial> = {
     pages: [
+        pageGridTest4,
         pageEntitiesTest1,
         pagePowerTest1,
         pageThermoTest,
@@ -2519,7 +2636,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
         {
             name: 'main', //main ist die erste Seite
             page: 'power1',
-            left: { single: '6' }, // Die 4 bezieht sich auf den name: 4
+            left: { single: '7' }, // Die 4 bezieht sich auf den name: 4
             right: { single: '1', double: 'main' },
         },
         {
@@ -2531,7 +2648,13 @@ export const Testconfig: Partial<panelConfigPartial> = {
         {
             name: '6',
             page: 'entities1',
-            left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
+            left: { single: '5' }, // Die 4 bezieht sich auf den name: 4
+            right: { single: '7', double: 'main' },
+        },
+        {
+            name: '7', //main ist die erste Seite
+            page: 'grid4',
+            left: { single: '6' }, // Die 4 bezieht sich auf den name: 4
             right: { single: 'main', double: 'main' },
         },
         {
