@@ -37,6 +37,7 @@ export class BaseClassTriggerd extends BaseClass {
     private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
     protected panel: Panel;
+    sleep: boolean = true;
     parent: BaseClassTriggerd | undefined = undefined;
     triggerParent: boolean = false;
     protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
@@ -65,6 +66,7 @@ export class BaseClassTriggerd extends BaseClass {
     }
     readonly onStateTriggerSuperDoNotOverride = async (response: 'now' | 'medium' | 'slow'): Promise<boolean> => {
         if (!this.visibility || this.unload) return false;
+        if (this.sleep) return false;
         if (this.waitForTimeout) return false;
         if (this.updateTimeout && response !== 'now') {
             this.doUpdate = true;
@@ -371,7 +373,7 @@ export class StatesControler extends BaseClass {
                         this.triggerDB[dp].state = state;
                         if (state.ack || dp.startsWith('0_userdata.0')) {
                             this.triggerDB[dp].to.forEach((c, index) => {
-                                if (c.parent && c.triggerParent && !c.parent.unload) {
+                                if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
                                     c.parent.onStateTriggerSuperDoNotOverride &&
                                         c.parent.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]);
                                 } else if (!c.unload) {

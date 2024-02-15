@@ -7,7 +7,6 @@ import {
     ScaledNumberType,
     TextEntryType,
     ValueEntryType,
-    messageItemAllInterfaces,
 } from '../types/type-pageItem';
 import { Library } from '../classes/library';
 import { RGB } from '../types/Color';
@@ -44,7 +43,8 @@ export async function setValueEntryNumber(
             res = Math.round(scale(res, 0, 100, min, max));
         }
     }
-    i.value.setStateAsync(res);
+    if (i.set && i.set.writeable) await i.set.setStateAsync(res);
+    else await i.value.setStateAsync(res);
 }
 export async function getValueEntryNumber(
     i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
@@ -99,7 +99,8 @@ export async function setScaledNumber(
                 else value = Math.ceil(value);
             }
         }
-        if (nval !== value) await i.value.setStateAsync(value);
+        if (i.set && i.set.writeable) await i.value.setStateAsync(value);
+        else if (nval !== value) await i.value.setStateAsync(value);
     }
 }
 
@@ -305,8 +306,9 @@ export const setHuefromRGB = async (item: PageItemLightDataItems['data'], c: RGB
 };
 
 export function formatInSelText(Text: string[] | string): string {
+    if (Text === undefined || Text === null) return `error`;
     let splitText = Text;
-    if (!Array.isArray(splitText)) splitText = splitText.replaceAll('__', '_').replaceAll('_', ' ').split(' ');
+    if (typeof splitText === 'string') splitText = splitText.replaceAll('__', '_').replaceAll('_', ' ').split(' ');
 
     let lengthLineOne = 0;
     const arrayLineOne: string[] = [];
@@ -340,7 +342,7 @@ export function formatInSelText(Text: string[] | string): string {
  * @param msg {Partial<MessageItem>}
  * @returns string
  */
-export function getItemMesssage(msg: Partial<messageItemAllInterfaces> | undefined): string {
+export function getItemMesssage(msg: Partial<MessageItem> | undefined): string {
     if (!msg || !msg.intNameEntity || !msg.type) return '~~~~~';
     const id: string[] = [];
     if (msg.mainId) id.push(msg.mainId);

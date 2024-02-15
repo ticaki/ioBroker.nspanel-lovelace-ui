@@ -191,7 +191,7 @@ export class Navigation extends BaseClass {
         return getPayload(navigationString, navigationString2);
     }
     resetPosition(): void {
-        this.currentItem = 0;
+        this.setTargetPageByName('main');
     }
     getCurrentPage(): Page {
         const page = this.database[this.currentItem];

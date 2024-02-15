@@ -38,6 +38,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   alwaysOnState;
   lastMessage = "";
   panel;
+  sleep = true;
   parent = void 0;
   triggerParent = false;
   sendToPanel = (payload, opt) => {
@@ -66,6 +67,8 @@ class BaseClassTriggerd extends import_library.BaseClass {
   }
   onStateTriggerSuperDoNotOverride = async (response) => {
     if (!this.visibility || this.unload)
+      return false;
+    if (this.sleep)
       return false;
     if (this.waitForTimeout)
       return false;
@@ -349,7 +352,7 @@ class StatesControler extends import_library.BaseClass {
             this.triggerDB[dp].state = state;
             if (state.ack || dp.startsWith("0_userdata.0")) {
               this.triggerDB[dp].to.forEach((c, index) => {
-                if (c.parent && c.triggerParent && !c.parent.unload) {
+                if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
                   c.parent.onStateTriggerSuperDoNotOverride && c.parent.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]);
                 } else if (!c.unload) {
                   c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]);

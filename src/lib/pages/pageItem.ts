@@ -7,6 +7,7 @@ import {
     PageItemDataItemsOptions,
     listCommand,
     islistCommandUnion,
+    spotifyPlaylist,
 } from '../types/type-pageItem';
 import * as tools from '../const/tools';
 import { PopupType } from '../types/types';
@@ -32,6 +33,7 @@ export class PageItem extends BaseClassTriggerd {
         this.id = config.id;
         this.config = options;
         this.parent = options && config.parent;
+        this.sleep = false;
     }
 
     async init(): Promise<void> {
@@ -637,14 +639,38 @@ export class PageItem extends BaseClassTriggerd {
                 message.type = 'insel';
                 if (!(message.type === 'insel')) return null;
 
+                const value = (await tools.getValueEntryBoolean(item.entityInSel)) ?? true;
+                if (message.type === 'insel')
+                    message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+                message.currentState = this.library.getTranslation(
+                    (item.headline && (await item.headline.getString())) ?? '',
+                );
+
                 if (
                     item.entityInSel &&
                     item.entityInSel.value &&
                     ['string', 'number'].indexOf(item.entityInSel.value.type ?? '') &&
-                    item.entityInSel.value.getCommonStates()
+                    (item.entityInSel.value.getCommonStates() || entry.role == 'spotify-playlist')
                 ) {
-                    const states = item.entityInSel.value.getCommonStates();
+                    let states: Record<string | number, string> | undefined = undefined;
                     const value = await tools.getValueEntryString(item.entityInSel);
+                    switch (entry.role) {
+                        case 'spotify-playlist': {
+                            if (item.valueList) {
+                                const val = (await item.valueList.getObject()) as spotifyPlaylist | null;
+                                if (val) {
+                                    states = {};
+                                    for (const a in val) {
+                                        states[a] = val[a].title;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        default: {
+                            states = item.entityInSel.value.getCommonStates();
+                        }
+                    }
                     if (value !== null && states && states[value] !== undefined) {
                         message.textColor = await tools.getEntryColor(item.color, !!value, Color.White);
                         const list: string[] = [];
@@ -667,42 +693,40 @@ export class PageItem extends BaseClassTriggerd {
                             break;
                         }
                     }
-                }
-                const value = (await tools.getValueEntryBoolean(item.entityInSel)) ?? true;
-                message.textColor = await tools.getEntryColor(item.color, value, Color.White);
-                message.currentState = this.library.getTranslation(
-                    (item.headline && (await item.headline.getString())) ?? '',
-                );
-                let list = (item.valueList && (await item.valueList.getObject())) ??
-                    (item.valueList && (await item.valueList.getString())) ?? [
-                        '1',
-                        '2',
-                        '3',
-                        '4',
-                        '5',
-                        '6',
-                        '7',
-                        '8',
-                        '9',
-                        '10',
-                        '11',
-                        '12',
-                        '13',
-                    ];
 
-                /**
-                 * die Liste ist entweder ein mit ? getrennt der String oder ein Array
-                 */
-                if (list !== null) {
-                    if (typeof list === 'string') list = list.split('?');
-                } else list = [];
-                message.list = Array.isArray(list) ? list.map((a: string) => tools.formatInSelText(a)).join('?') : '';
-                if (mode !== 'popupThermo') break;
-                message = { ...message, type: 'popupThermo' };
-                if (message.type === 'popupThermo') {
-                    message.headline = this.library.getTranslation(
-                        (item.headline && (await item.headline.getString())) ?? '',
-                    );
+                    let list = (item.valueList && (await item.valueList.getObject())) ??
+                        (item.valueList && (await item.valueList.getString())) ?? [
+                            '1',
+                            '2',
+                            '3',
+                            '4',
+                            '5',
+                            '6',
+                            '7',
+                            '8',
+                            '9',
+                            '10',
+                            '11',
+                            '12',
+                            '13',
+                        ];
+
+                    /**
+                     * die Liste ist entweder ein mit ? getrennt der String oder ein Array
+                     */
+                    if (list !== null) {
+                        if (typeof list === 'string') list = list.split('?');
+                    } else list = [];
+                    message.list = Array.isArray(list)
+                        ? list.map((a: string) => tools.formatInSelText(a)).join('?')
+                        : '';
+                    if (mode !== 'popupThermo') break;
+                    message = { ...message, type: 'popupThermo' };
+                    if (message.type === 'popupThermo') {
+                        message.headline = this.library.getTranslation(
+                            (item.headline && (await item.headline.getString())) ?? '',
+                        );
+                    }
                 }
                 break;
             }
@@ -808,14 +832,32 @@ export class PageItem extends BaseClassTriggerd {
                     if (entry.type !== 'input_sel') break;
 
                     const item = entry.data;
+
                     if (
                         item.entityInSel &&
                         item.entityInSel.value &&
                         ['string', 'number'].indexOf(item.entityInSel.value.type ?? '') &&
-                        item.entityInSel.value.getCommonStates() &&
+                        (item.entityInSel.value.getCommonStates() || entry.role == 'spotify-playlist') &&
                         !item.setList
                     ) {
-                        const states = item.entityInSel.value.getCommonStates();
+                        let states: Record<string | number, string> | undefined = undefined;
+                        switch (entry.role) {
+                            case 'spotify-playlist': {
+                                if (item.valueList) {
+                                    const val = (await item.valueList.getObject()) as spotifyPlaylist | null;
+                                    if (val) {
+                                        states = {};
+                                        for (const a in val) {
+                                            states[a] = a;
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                            default: {
+                                states = item.entityInSel.value.getCommonStates();
+                            }
+                        }
                         if (value !== null && states !== undefined) {
                             const list: string[] = [];
                             for (const a in states) {
@@ -1126,7 +1168,7 @@ export class PageItem extends BaseClassTriggerd {
         if (this.lastPopupType) {
             if (this.lastPopupType === 'popupThermo') {
                 this.log.debug(`Trigger from popupThermo `);
-                this.parent && this.parent.onPopupRequest('0', 'popupThermo', '', '');
+                this.parent && this.parent.onPopupRequest(this.id, 'popupThermo', '', '', null);
             } else {
                 const msg = await this.GeneratePopup(this.lastPopupType);
                 if (msg) this.sendToPanel(msg);

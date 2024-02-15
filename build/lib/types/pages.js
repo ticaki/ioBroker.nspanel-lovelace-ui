@@ -143,7 +143,7 @@ function convertToEvent(msg) {
       cmd: parseInt(arr[0]),
       popup,
       id: arr[2],
-      action: isButtonActionType(temp[3]) ? temp[3] : "",
+      action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
       opt: (_a = temp[4]) != null ? _a : ""
     };
   if (arr[2])
@@ -154,7 +154,7 @@ function convertToEvent(msg) {
       cmd: parseInt(arr[1]),
       popup,
       id: arr[2],
-      action: isButtonActionType(temp[3]) ? temp[3] : "",
+      action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
       opt: (_b = temp[4]) != null ? _b : ""
     };
   else if (arr[1])
@@ -164,7 +164,7 @@ function convertToEvent(msg) {
       page: parseInt(arr[0]),
       popup,
       id: arr[1],
-      action: isButtonActionType(temp[3]) ? temp[3] : "",
+      action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
       opt: (_c = temp[4]) != null ? _c : ""
     };
   else
@@ -173,7 +173,7 @@ function convertToEvent(msg) {
       method: temp[1],
       popup,
       id: arr[0],
-      action: isButtonActionType(temp[3]) ? temp[3] : "",
+      action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
       opt: (_d = temp[4]) != null ? _d : ""
     };
 }

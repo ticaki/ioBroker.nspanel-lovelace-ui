@@ -66,7 +66,7 @@ class Panel extends import_library.BaseClass {
   minuteLoopTimeout;
   dateUpdateTimeout;
   pages = [];
-  _activePage = { page: null };
+  _activePage = void 0;
   screenSaver;
   InitDone = false;
   navigation;
@@ -259,7 +259,7 @@ class Panel extends import_library.BaseClass {
   async setActivePage(_page, _notSleep) {
     if (_page === void 0)
       return;
-    let page = this._activePage.page;
+    let page = this._activePage;
     let sleep = false;
     if (typeof _page === "boolean") {
       sleep = !_page;
@@ -267,25 +267,32 @@ class Panel extends import_library.BaseClass {
       page = _page;
       sleep = _notSleep != null ? _notSleep : false;
     }
-    if (sleep == !this._activePage.sleep || page != this._activePage.page) {
-      if (page != this._activePage.page) {
-        if (this._activePage.page)
-          await this._activePage.page.setVisibility(false);
-        if (page && !sleep) {
-          await page.setVisibility(true);
+    if (!this._activePage) {
+      if (page === void 0)
+        return;
+      await page.setVisibility(true);
+      this._activePage = page;
+    } else if (sleep !== this._activePage.sleep || page !== this._activePage) {
+      if (page != this._activePage) {
+        if (this._activePage)
+          await this._activePage.setVisibility(false);
+        if (page) {
+          if (!sleep)
+            await page.setVisibility(true);
+          page.sleep = sleep;
+          this._activePage = page;
         }
-        this._activePage = { page, sleep };
-      } else if (sleep == !this._activePage.sleep) {
-        if (this._activePage.page && !sleep)
-          await this._activePage.page.setVisibility(true, true);
+      } else if (sleep !== this._activePage.sleep) {
+        if (!sleep)
+          await this._activePage.setVisibility(true, true);
         this._activePage.sleep = sleep;
       }
     }
   }
   getActivePage() {
-    if (!this._activePage.page)
+    if (!this._activePage)
       throw new Error(`No active page here, check code!`);
-    return this._activePage.page;
+    return this._activePage;
   }
   get isOnline() {
     return this._isOnline;
@@ -464,7 +471,8 @@ class Panel extends import_library.BaseClass {
           event.id,
           event.popup,
           event.action,
-          event.opt
+          event.opt,
+          event
         );
         break;
       }
@@ -485,7 +493,8 @@ class Panel extends import_library.BaseClass {
             event.id,
             event.popup,
             event.action,
-            event.opt
+            event.opt,
+            event
           );
           await this.getActivePage().onButtonEvent(event);
         }

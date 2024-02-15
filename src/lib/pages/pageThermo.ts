@@ -162,9 +162,10 @@ export class PageThermo extends Page {
         popup: PopupType | undefined,
         action: ButtonActionType | undefined | string,
         value: string | undefined,
+        _event: IncomingEvent | null = null,
     ): Promise<void> {
         if (!this.pageItems || !this.pageItems.some((a) => a.dataItems && a.dataItems.type === 'input_sel')) return;
-        const items = this.pageItems.filter((a) => a.dataItems && a.dataItems.type === 'input_sel');
+        const items = this.pageItems; //.filter((a) => a.dataItems && a.dataItems.type === 'input_sel');
         let msg: string | null = null;
         if (popup === 'popupThermo') {
             const temp = [];
@@ -181,9 +182,9 @@ export class PageThermo extends Page {
             }
             this.log.debug(`Trigger from popupThermo 3 `);
             msg = getPayload('entityUpdateDetail', id, icon, color, temp[0], temp[1], temp[2], '');
-        } else if (action === '' && value !== undefined) {
-            const i = typeof id === 'number' ? id : parseInt(id);
-            const item = items[i];
+        } else if (action && action.startsWith('mode') && value !== undefined) {
+            const tempid = parseInt(action.split('?')[1]);
+            const item = items[tempid];
             if (!item) return;
             item.onCommand('mode-insel', value);
         }

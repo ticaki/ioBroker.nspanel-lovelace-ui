@@ -176,11 +176,11 @@ class PageThermo extends import_Page.Page {
       await this.pageItems[Number(event.opt.split("?")[1])].onCommand("button", "");
     }
   }
-  async onPopupRequest(id, popup, action, value) {
+  async onPopupRequest(id, popup, action, value, _event = null) {
     var _a, _b, _c;
     if (!this.pageItems || !this.pageItems.some((a) => a.dataItems && a.dataItems.type === "input_sel"))
       return;
-    const items = this.pageItems.filter((a) => a.dataItems && a.dataItems.type === "input_sel");
+    const items = this.pageItems;
     let msg = null;
     if (popup === "popupThermo") {
       const temp = [];
@@ -198,9 +198,9 @@ class PageThermo extends import_Page.Page {
       }
       this.log.debug(`Trigger from popupThermo 3 `);
       msg = (0, import_tools.getPayload)("entityUpdateDetail", id2, icon, color, temp[0], temp[1], temp[2], "");
-    } else if (action === "" && value !== void 0) {
-      const i = typeof id === "number" ? id : parseInt(id);
-      const item = items[i];
+    } else if (action && action.startsWith("mode") && value !== void 0) {
+      const tempid = parseInt(action.split("?")[1]);
+      const item = items[tempid];
       if (!item)
         return;
       item.onCommand("mode-insel", value);

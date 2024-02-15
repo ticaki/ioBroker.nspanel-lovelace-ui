@@ -1,7 +1,7 @@
 import { Dataitem, isDataItem } from '../classes/data-item';
 import * as Color from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { MessageItemMedia, ColorEntryType } from '../types/type-pageItem';
+import { ColorEntryType } from '../types/type-pageItem';
 import * as pages from '../types/pages';
 import { BooleanUnion, IncomingEvent } from '../types/types';
 import { PageInterface, isMediaButtonActionType } from '../classes/Page';
@@ -162,11 +162,11 @@ export class PageMedia extends Page {
             }
         }
         message.shuffle_icon = '';
-        if (item.data.shuffle && item.data.shuffle.type) {
+        if (item.data.shuffle && item.data.shuffle.value && item.data.shuffle.value.type) {
             let value: null | true | false = null;
-            switch (item.data.shuffle.type) {
+            switch (item.data.shuffle.value.type) {
                 case 'string': {
-                    const v = await item.data.shuffle.getString();
+                    const v = await item.data.shuffle.value.getString();
                     if (v !== null) {
                         value = ['OFF', 'FALSE'].indexOf(v.toUpperCase()) !== -1;
                     }
@@ -174,7 +174,7 @@ export class PageMedia extends Page {
                 }
                 case 'number':
                 case 'boolean': {
-                    value = await item.data.shuffle.getBoolean();
+                    value = await item.data.shuffle.value.getBoolean();
                     break;
                 }
                 case 'object':
@@ -213,31 +213,6 @@ export class PageMedia extends Page {
             if (v !== null) message.titelColor = v;
         }
 
-        /*message.options = [undefined, undefined, undefined, undefined, undefined];
-        if (item.toolbox && Array.isArray(item.toolbox)) {
-            const localStep = item.toolbox.length > 5 ? steps : 5;
-            if (item.toolbox.length <= localStep * (this.step - 1)) this.step = 1;
-            const maxSteps = localStep * this.step;
-            const minStep = localStep * (this.step - 1);
-
-            for (let a = minStep; a < maxSteps; a++) {
-                message.options[a - minStep] = await this.getToolItem(item.toolbox[a], String(a), (a % localStep) + 1);
-            }
-            if (localStep === 4) {
-                this.nextArrow = true;
-                const color = String(Color.rgb_dec565(Color.White));
-                const icon = 'arrow-right';
-                message.options[4] = {
-                    intNameEntity: `5`,
-                    iconNumber: 5,
-                    icon: Icons.GetIcon(icon),
-                    iconColor: color,
-                    mode: 'nexttool',
-                    type: 'button',
-                    displayName: 'next',
-                };
-            }
-        }*/
         //Logo
         if (item.data.logo) {
             message.logo = '~~~~~'; //await this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
@@ -293,35 +268,6 @@ export class PageMedia extends Page {
         }
         return null;
     }
-    private async getToolItem(
-        i: pages.toolboxItemDataItem | undefined,
-        id: string,
-        iconNumber: number,
-    ): Promise<MessageItemMedia | undefined> {
-        if (i) {
-            if (i.on && i.text && i.color && i.icon) {
-                const v = await i.on.getBoolean();
-                const color = await getValueFromBoolean(i.color, 'color', !!v);
-                const icon = await getValueFromBoolean(i.icon, 'string', !!v);
-                const text = await i.text.getString();
-                const list = i.list ? await i.list.getString() : null;
-                if (list) this.log.debug(JSON.stringify(list));
-                if (color && icon && text) {
-                    const tool: MessageItemMedia = {
-                        intNameEntity: `${this.id}?${id}`,
-                        iconNumber: iconNumber as 1 | 2 | 3 | 4 | 5,
-                        icon: Icons.GetIcon(icon),
-                        iconColor: color,
-                        mode: i.action,
-                        type: 'button',
-                        displayName: this.adapter.library.getLocalTranslation('media', text),
-                    };
-                    return tool;
-                }
-            }
-        }
-        return undefined;
-    }
 
     private getMessage(message: pages.PageMediaMessage): string {
         return getPayload(
@@ -346,7 +292,7 @@ export class PageMedia extends Page {
         this.update();
     };
     async onButtonEvent(event: IncomingEvent): Promise<void> {
-        if (!this.getVisibility()) return;
+        if (!this.getVisibility() || this.sleep) return;
         //if (event.mode !== 'media') return;
         if (isMediaButtonActionType(event.action)) {
             this.log.debug('Receive event: ' + JSON.stringify(event));
@@ -371,7 +317,9 @@ export class PageMedia extends Page {
                 break;
             }
             case 'media-shuffle': {
-                items.data.shuffle && (await items.data.shuffle.setStateTrue());
+                items.data.shuffle &&
+                    ((items.data.shuffle.set && (await items.data.shuffle.set.setStateTrue())) ||
+                        (items.data.shuffle.value && (await items.data.shuffle.value.setStateTrue())));
                 break;
             }
             case 'volumeSlider': {

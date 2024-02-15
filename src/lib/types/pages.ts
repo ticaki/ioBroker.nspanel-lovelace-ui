@@ -64,7 +64,8 @@ export type PageMediaRoles =
     | 'media.mute'
     | 'level.volume'
     | 'media.album'
-    | 'media.playlist';
+    | 'media.playlist'
+    | 'spotify-playlist';
 
 export function isPageRole(F: string | PageRole): F is PageRole {
     switch (F as PageRole) {
@@ -173,7 +174,7 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             cmd: parseInt(arr[0]),
             popup: popup,
             id: arr[2],
-            action: isButtonActionType(temp[3]) ? temp[3] : '',
+            action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
             opt: temp[4] ?? '',
         };
     if (arr[2])
@@ -184,7 +185,7 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             cmd: parseInt(arr[1]),
             popup: popup,
             id: arr[2],
-            action: isButtonActionType(temp[3]) ? temp[3] : '',
+            action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
             opt: temp[4] ?? '',
         };
     else if (arr[1])
@@ -194,7 +195,7 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             page: parseInt(arr[0]),
             popup: popup,
             id: arr[1],
-            action: isButtonActionType(temp[3]) ? temp[3] : '',
+            action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
             opt: temp[4] ?? '',
         };
     else
@@ -203,7 +204,7 @@ export function convertToEvent(msg: string): Types.IncomingEvent | null {
             method: temp[1],
             popup: popup,
             id: arr[0],
-            action: isButtonActionType(temp[3]) ? temp[3] : '',
+            action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
             opt: temp[4] ?? '',
         };
 }
@@ -272,9 +273,7 @@ export type cardThermoDataItems = {
 
 export type cardMediaDataItemOptions = {
     card: 'cardMedia';
-    data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {
-        toolbox: (toolboxItem | undefined)[];
-    } & { logo: toolboxItem | undefined };
+    data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & { logo: toolboxItem | undefined };
 };
 
 export type cardMediaDataItems = {
@@ -311,7 +310,7 @@ type PageMediaBaseConfig = {
     duration: string;
     elapsed: string;
     artist: listItem;
-    shuffle: string;
+    shuffle: ScaledNumberType;
     volume: ScaledNumberType;
     icon: string;
     play: string;

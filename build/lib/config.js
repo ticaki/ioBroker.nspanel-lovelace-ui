@@ -24,7 +24,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var config_exports = {};
 __export(config_exports, {
-  Testconfig: () => Testconfig
+  Testconfig: () => Testconfig,
+  pageMediaTest2: () => pageMediaTest2
 });
 module.exports = __toCommonJS(config_exports);
 var Color = __toESM(require("./const/Color"));
@@ -419,10 +420,8 @@ const pageMediaTest = {
           constVal: true
         },
         text: {
-          mode: "auto",
           type: "triggered",
-          role: "media.title",
-          dp: ""
+          dp: "0_userdata.0.spotify-premium.0.player.playlist.trackNo"
         },
         color: {
           type: "const",
@@ -444,9 +443,17 @@ const pageMediaTest = {
       volume: {
         value: {
           mode: "auto",
-          type: "triggered",
+          type: "state",
           role: ["level.volume"],
           response: "now",
+          scale: { min: 0, max: 100 },
+          dp: ""
+        },
+        set: {
+          mode: "auto",
+          type: "state",
+          role: ["level.volume"],
+          response: "medium",
           scale: { min: 0, max: 100 },
           dp: ""
         }
@@ -470,10 +477,18 @@ const pageMediaTest = {
         list: void 0
       },
       shuffle: {
-        mode: "auto",
-        type: "state",
-        role: "media.mode.shuffle",
-        dp: ""
+        value: {
+          mode: "auto",
+          type: "state",
+          role: "media.mode.shuffle",
+          dp: ""
+        },
+        set: {
+          mode: "auto",
+          type: "state",
+          role: "media.mode.shuffle",
+          dp: ""
+        }
       },
       icon: {
         type: "const",
@@ -525,101 +540,53 @@ const pageMediaTest = {
         color: { type: "const", constVal: { red: 250, blue: 250, green: 0 } },
         list: void 0,
         action: "cross"
-      },
-      toolbox: [
-        {
-          on: {
-            type: "const",
-            constVal: true
-          },
-          text: { type: "const", constVal: "Repeat" },
-          icon: { type: "const", constVal: "repeat" },
-          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-          list: { type: "state", dp: "", mode: "auto", role: "media.playlist" },
-          action: "cross"
-        },
-        {
-          on: {
-            type: "const",
-            constVal: true
-          },
-          text: { type: "const", constVal: "1" },
-          icon: { type: "const", constVal: "home" },
-          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-          list: void 0,
-          action: "cross"
-        },
-        {
-          on: {
-            type: "const",
-            constVal: true
-          },
-          text: { type: "const", constVal: "1" },
-          icon: { type: "const", constVal: "home" },
-          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-          list: void 0,
-          action: "cross"
-        },
-        {
-          on: {
-            type: "const",
-            constVal: false
-          },
-          text: { type: "const", constVal: "1" },
-          icon: { true: { type: "const", constVal: "reply" }, false: { type: "const", constVal: "replay" } },
-          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-          list: void 0,
-          action: "cross"
-        },
-        {
-          on: {
-            type: "const",
-            constVal: false
-          },
-          text: { type: "const", constVal: "1" },
-          icon: { type: "const", constVal: "home" },
-          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-          list: void 0,
-          action: "cross"
-        },
-        {
-          on: {
-            type: "const",
-            constVal: true
-          },
-          text: { type: "const", constVal: "1" },
-          icon: { type: "const", constVal: "home" },
-          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-          list: void 0,
-          action: "cross"
-        },
-        {
-          on: {
-            type: "const",
-            constVal: true
-          },
-          text: { type: "const", constVal: "1" },
-          icon: { type: "const", constVal: "home" },
-          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-          list: void 0,
-          action: "cross"
-        },
-        {
-          on: {
-            type: "const",
-            constVal: true
-          },
-          text: { type: "const", constVal: "1" },
-          icon: { type: "const", constVal: "home" },
-          color: { type: "const", constVal: { red: 123, blue: 112, green: 0 } },
-          list: void 0,
-          action: "cross"
-        }
-      ]
+      }
     }
   },
   items: void 0,
   pageItems: [
+    {
+      role: "spotify-playlist",
+      type: "input_sel",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entityInSel: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.spotify-premium.0.player.playlist.trackNo"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        valueList: { type: "state", dp: "0_userdata.0.spotify-premium.0.player.playlist.trackListArray" }
+      }
+    },
     {
       role: "text.list",
       type: "input_sel",
@@ -660,6 +627,423 @@ const pageMediaTest = {
           false: void 0
         },
         valueList: { type: "const", constVal: "home?butter" },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: void 0
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: void 0
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: void 0
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: void 0
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: void 0
+      }
+    }
+  ],
+  uniqueID: "media1",
+  useColor: false
+};
+const pageMediaTest2 = {
+  card: "cardMedia",
+  dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
+  initMode: "auto",
+  alwaysOn: "none",
+  config: {
+    card: "cardMedia",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "home"
+      },
+      alwaysOnDisplay: {
+        type: "const",
+        constVal: "test"
+      },
+      album: {
+        mode: "auto",
+        type: "state",
+        role: "media.album",
+        dp: ""
+      },
+      titel: {
+        on: {
+          type: "const",
+          constVal: true
+        },
+        text: {
+          mode: "auto",
+          type: "triggered",
+          role: "media.title",
+          dp: ""
+        },
+        color: {
+          type: "const",
+          constVal: { red: 250, green: 2, blue: 3 }
+        }
+      },
+      duration: {
+        mode: "auto",
+        type: "state",
+        role: "media.duration",
+        dp: ""
+      },
+      elapsed: {
+        mode: "auto",
+        type: "triggered",
+        role: ["media.elapsed", "media.elapsed.text"],
+        dp: ""
+      },
+      volume: {
+        value: {
+          mode: "auto",
+          type: "state",
+          role: ["level.volume"],
+          response: "now",
+          scale: { min: 0, max: 100 },
+          dp: ""
+        },
+        set: {
+          mode: "auto",
+          type: "state",
+          role: ["level.volume"],
+          response: "medium",
+          scale: { min: 0, max: 100 },
+          dp: ""
+        }
+      },
+      artist: {
+        on: {
+          type: "const",
+          constVal: true
+        },
+        text: {
+          mode: "auto",
+          type: "state",
+          role: "media.artist",
+          dp: ""
+        },
+        color: void 0,
+        icon: {
+          type: "const",
+          constVal: "diameter"
+        },
+        list: void 0
+      },
+      shuffle: {
+        value: {
+          mode: "auto",
+          type: "state",
+          role: "media.mode.shuffle",
+          dp: ""
+        },
+        set: {
+          mode: "auto",
+          type: "state",
+          role: "media.mode.shuffle",
+          dp: ""
+        }
+      },
+      icon: {
+        type: "const",
+        constVal: "dialpad"
+      },
+      play: {
+        mode: "auto",
+        type: "state",
+        role: ["button.play"],
+        dp: ""
+      },
+      mediaState: {
+        mode: "auto",
+        type: "triggered",
+        role: ["media.state"],
+        dp: ""
+      },
+      stop: {
+        mode: "auto",
+        type: "state",
+        role: ["button.stop"],
+        dp: ""
+      },
+      pause: {
+        mode: "auto",
+        type: "state",
+        role: "button.pause",
+        dp: ""
+      },
+      forward: {
+        mode: "auto",
+        type: "state",
+        role: "button.next",
+        dp: ""
+      },
+      backward: {
+        mode: "auto",
+        type: "state",
+        role: "button.prev",
+        dp: ""
+      },
+      logo: {
+        on: {
+          type: "const",
+          constVal: true
+        },
+        text: { type: "const", constVal: "1" },
+        icon: { type: "const", constVal: "home" },
+        color: { type: "const", constVal: { red: 250, blue: 250, green: 0 } },
+        list: void 0,
+        action: "cross"
+      }
+    }
+  },
+  items: void 0,
+  pageItems: [
+    {
+      role: "spotify-playlist",
+      type: "input_sel",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entityInSel: {
+          value: {
+            type: "state",
+            dp: "0_userdata.0.spotify-premium.0.player.playlist.trackNo"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        valueList: { type: "state", dp: "0_userdata.0.spotify-premium.0.player.playlist.trackListArray" },
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -2578,6 +2962,7 @@ const Testconfig = {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Testconfig
+  Testconfig,
+  pageMediaTest2
 });
 //# sourceMappingURL=config.js.map

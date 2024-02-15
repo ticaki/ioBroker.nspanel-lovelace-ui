@@ -62,7 +62,7 @@ export class Panel extends BaseClass {
     private minuteLoopTimeout: ioBroker.Timeout | undefined;
     private dateUpdateTimeout: ioBroker.Timeout | undefined;
     private pages: (Page | undefined)[] = [];
-    private _activePage: { page: Page | null; sleep?: boolean } = { page: null };
+    private _activePage: Page | undefined = undefined;
     private screenSaver: Screensaver | undefined;
     private InitDone: boolean = false;
     readonly navigation: Navigation;
@@ -259,7 +259,7 @@ export class Panel extends BaseClass {
     async setActivePage(_page?: Page | boolean | undefined): Promise<void>;
     async setActivePage(_page?: Page | boolean | undefined, _notSleep?: boolean): Promise<void> {
         if (_page === undefined) return;
-        let page = this._activePage.page;
+        let page = this._activePage;
         let sleep = false;
         if (typeof _page === 'boolean') {
             sleep = !_page;
@@ -267,22 +267,28 @@ export class Panel extends BaseClass {
             page = _page;
             sleep = _notSleep ?? false;
         }
-        if (sleep == !this._activePage.sleep || page != this._activePage.page) {
-            if (page != this._activePage.page) {
-                if (this._activePage.page) await this._activePage.page.setVisibility(false);
-                if (page && !sleep) {
-                    await page.setVisibility(true);
+        if (!this._activePage) {
+            if (page === undefined) return;
+            await page.setVisibility(true);
+
+            this._activePage = page;
+        } else if (sleep !== this._activePage.sleep || page !== this._activePage) {
+            if (page != this._activePage) {
+                if (this._activePage) await this._activePage.setVisibility(false);
+                if (page) {
+                    if (!sleep) await page.setVisibility(true);
+                    page.sleep = sleep;
+                    this._activePage = page;
                 }
-                this._activePage = { page, sleep };
-            } else if (sleep == !this._activePage.sleep) {
-                if (this._activePage.page && !sleep) await this._activePage.page.setVisibility(true, true);
+            } else if (sleep !== this._activePage.sleep) {
+                if (!sleep) await this._activePage.setVisibility(true, true);
                 this._activePage.sleep = sleep;
             }
         }
     }
     getActivePage(): Page {
-        if (!this._activePage.page) throw new Error(`No active page here, check code!`);
-        return this._activePage.page;
+        if (!this._activePage) throw new Error(`No active page here, check code!`);
+        return this._activePage;
     }
     get isOnline(): boolean {
         return this._isOnline;
@@ -480,6 +486,7 @@ export class Panel extends BaseClass {
                     event.popup as NSPanel.PopupType,
                     event.action,
                     event.opt,
+                    event,
                 );
                 break;
             }
@@ -502,6 +509,7 @@ export class Panel extends BaseClass {
                         event.popup as NSPanel.PopupType,
                         event.action,
                         event.opt,
+                        event,
                     );
                     await this.getActivePage().onButtonEvent(event);
                     //

@@ -169,11 +169,11 @@ class PageMedia extends import_Page2.Page {
       }
     }
     message.shuffle_icon = "";
-    if (item.data.shuffle && item.data.shuffle.type) {
+    if (item.data.shuffle && item.data.shuffle.value && item.data.shuffle.value.type) {
       let value = null;
-      switch (item.data.shuffle.type) {
+      switch (item.data.shuffle.value.type) {
         case "string": {
-          const v = await item.data.shuffle.getString();
+          const v = await item.data.shuffle.value.getString();
           if (v !== null) {
             value = ["OFF", "FALSE"].indexOf(v.toUpperCase()) !== -1;
           }
@@ -181,7 +181,7 @@ class PageMedia extends import_Page2.Page {
         }
         case "number":
         case "boolean": {
-          value = await item.data.shuffle.getBoolean();
+          value = await item.data.shuffle.value.getBoolean();
           break;
         }
         case "object":
@@ -273,32 +273,6 @@ class PageMedia extends import_Page2.Page {
     }
     return null;
   }
-  async getToolItem(i, id, iconNumber) {
-    if (i) {
-      if (i.on && i.text && i.color && i.icon) {
-        const v = await i.on.getBoolean();
-        const color = await getValueFromBoolean(i.color, "color", !!v);
-        const icon = await getValueFromBoolean(i.icon, "string", !!v);
-        const text = await i.text.getString();
-        const list = i.list ? await i.list.getString() : null;
-        if (list)
-          this.log.debug(JSON.stringify(list));
-        if (color && icon && text) {
-          const tool = {
-            intNameEntity: `${this.id}?${id}`,
-            iconNumber,
-            icon: import_icon_mapping.Icons.GetIcon(icon),
-            iconColor: color,
-            mode: i.action,
-            type: "button",
-            displayName: this.adapter.library.getLocalTranslation("media", text)
-          };
-          return tool;
-        }
-      }
-    }
-    return void 0;
-  }
   getMessage(message) {
     return (0, import_tools.getPayload)(
       "entityUpd",
@@ -321,7 +295,7 @@ class PageMedia extends import_Page2.Page {
     this.update();
   };
   async onButtonEvent(event) {
-    if (!this.getVisibility())
+    if (!this.getVisibility() || this.sleep)
       return;
     if ((0, import_Page.isMediaButtonActionType)(event.action)) {
       this.log.debug("Receive event: " + JSON.stringify(event));
@@ -350,7 +324,7 @@ class PageMedia extends import_Page2.Page {
         break;
       }
       case "media-shuffle": {
-        items.data.shuffle && await items.data.shuffle.setStateTrue();
+        items.data.shuffle && (items.data.shuffle.set && await items.data.shuffle.set.setStateTrue() || items.data.shuffle.value && await items.data.shuffle.value.setStateTrue());
         break;
       }
       case "volumeSlider": {

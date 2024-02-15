@@ -47,6 +47,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.id = config.id;
     this.config = options;
     this.parent = options && config.parent;
+    this.sleep = false;
   }
   async init() {
     if (!this.config)
@@ -385,9 +386,32 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message.type = "insel";
         if (!(message.type === "insel"))
           return null;
-        if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_j = item.entityInSel.value.type) != null ? _j : "") && item.entityInSel.value.getCommonStates()) {
-          const states = item.entityInSel.value.getCommonStates();
+        const value = (_j = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _j : true;
+        if (message.type === "insel")
+          message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+        message.currentState = this.library.getTranslation(
+          (_k = item.headline && await item.headline.getString()) != null ? _k : ""
+        );
+        if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_l = item.entityInSel.value.type) != null ? _l : "") && (item.entityInSel.value.getCommonStates() || entry.role == "spotify-playlist")) {
+          let states = void 0;
           const value2 = await tools.getValueEntryString(item.entityInSel);
+          switch (entry.role) {
+            case "spotify-playlist": {
+              if (item.valueList) {
+                const val = await item.valueList.getObject();
+                if (val) {
+                  states = {};
+                  for (const a in val) {
+                    states[a] = val[a].title;
+                  }
+                }
+              }
+              break;
+            }
+            default: {
+              states = item.entityInSel.value.getCommonStates();
+            }
+          }
           if (value2 !== null && states && states[value2] !== void 0) {
             message.textColor = await tools.getEntryColor(item.color, !!value2, Color.White);
             const list2 = [];
@@ -402,46 +426,41 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               message = { ...message, type: "popupThermo" };
               if (message.type === "popupThermo") {
                 message.headline = this.library.getTranslation(
-                  (_k = item.headline && await item.headline.getString()) != null ? _k : ""
+                  (_m = item.headline && await item.headline.getString()) != null ? _m : ""
                 );
               }
               break;
             }
           }
-        }
-        const value = (_l = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _l : true;
-        message.textColor = await tools.getEntryColor(item.color, value, Color.White);
-        message.currentState = this.library.getTranslation(
-          (_m = item.headline && await item.headline.getString()) != null ? _m : ""
-        );
-        let list = (_o = (_n = item.valueList && await item.valueList.getObject()) != null ? _n : item.valueList && await item.valueList.getString()) != null ? _o : [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-          "7",
-          "8",
-          "9",
-          "10",
-          "11",
-          "12",
-          "13"
-        ];
-        if (list !== null) {
-          if (typeof list === "string")
-            list = list.split("?");
-        } else
-          list = [];
-        message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
-        if (mode !== "popupThermo")
-          break;
-        message = { ...message, type: "popupThermo" };
-        if (message.type === "popupThermo") {
-          message.headline = this.library.getTranslation(
-            (_p = item.headline && await item.headline.getString()) != null ? _p : ""
-          );
+          let list = (_o = (_n = item.valueList && await item.valueList.getObject()) != null ? _n : item.valueList && await item.valueList.getString()) != null ? _o : [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13"
+          ];
+          if (list !== null) {
+            if (typeof list === "string")
+              list = list.split("?");
+          } else
+            list = [];
+          message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
+          if (mode !== "popupThermo")
+            break;
+          message = { ...message, type: "popupThermo" };
+          if (message.type === "popupThermo") {
+            message.headline = this.library.getTranslation(
+              (_p = item.headline && await item.headline.getString()) != null ? _p : ""
+            );
+          }
         }
         break;
       }
@@ -531,8 +550,25 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           if (entry.type !== "input_sel")
             break;
           const item = entry.data;
-          if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_a = item.entityInSel.value.type) != null ? _a : "") && item.entityInSel.value.getCommonStates() && !item.setList) {
-            const states = item.entityInSel.value.getCommonStates();
+          if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_a = item.entityInSel.value.type) != null ? _a : "") && (item.entityInSel.value.getCommonStates() || entry.role == "spotify-playlist") && !item.setList) {
+            let states = void 0;
+            switch (entry.role) {
+              case "spotify-playlist": {
+                if (item.valueList) {
+                  const val = await item.valueList.getObject();
+                  if (val) {
+                    states = {};
+                    for (const a in val) {
+                      states[a] = a;
+                    }
+                  }
+                }
+                break;
+              }
+              default: {
+                states = item.entityInSel.value.getCommonStates();
+              }
+            }
             if (value !== null && states !== void 0) {
               const list2 = [];
               for (const a in states) {
@@ -793,7 +829,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     if (this.lastPopupType) {
       if (this.lastPopupType === "popupThermo") {
         this.log.debug(`Trigger from popupThermo `);
-        this.parent && this.parent.onPopupRequest("0", "popupThermo", "", "");
+        this.parent && this.parent.onPopupRequest(this.id, "popupThermo", "", "", null);
       } else {
         const msg = await this.GeneratePopup(this.lastPopupType);
         if (msg)

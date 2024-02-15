@@ -81,7 +81,7 @@ class Page extends import_states_controller.BaseClassPage {
       `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`
     );
   }
-  async onPopupRequest(id, popup, action, value) {
+  async onPopupRequest(id, popup, action, value, _event = null) {
     if (!this.pageItems)
       return;
     this.log.debug(`Trigger from popupThermo 1 `);
@@ -94,9 +94,12 @@ class Page extends import_states_controller.BaseClassPage {
       msg = await item.GeneratePopup(popup);
     } else if (action && value !== void 0) {
       item.onCommand(action, value);
+      return;
     }
-    if (msg !== null)
+    if (msg !== null) {
+      this.sleep = true;
       this.sendToPanel(msg);
+    }
   }
 }
 function isMediaButtonActionType(F) {

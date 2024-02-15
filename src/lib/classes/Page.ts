@@ -93,6 +93,7 @@ export class Page extends BaseClassPage {
         popup: PopupType | undefined,
         action: ButtonActionType | undefined | string,
         value: string | undefined,
+        _event: IncomingEvent | null = null,
     ): Promise<void> {
         if (!this.pageItems) return;
         this.log.debug(`Trigger from popupThermo 1 `);
@@ -104,8 +105,12 @@ export class Page extends BaseClassPage {
             msg = await item.GeneratePopup(popup);
         } else if (action && value !== undefined) {
             item.onCommand(action, value);
+            return;
         }
-        if (msg !== null) this.sendToPanel(msg);
+        if (msg !== null) {
+            this.sleep = true;
+            this.sendToPanel(msg);
+        }
     }
 }
 

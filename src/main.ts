@@ -65,8 +65,10 @@ class NspanelLovelaceUi extends utils.Adapter {
 
             this.library.init();
             this.log.debug('Check configuration!');
-            if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword))
+            if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
+                this.log.error('Invalid admin configuration for mqtt!');
                 return;
+            }
             this.mqttClient = new MQTT.MQTTClientClass(
                 this,
                 this.config.mqttIp,

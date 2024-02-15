@@ -71,7 +71,10 @@ async function setValueEntryNumber(i, value) {
       res = Math.round((0, import_Color2.scale)(res, 0, 100, min, max));
     }
   }
-  i.value.setStateAsync(res);
+  if (i.set && i.set.writeable)
+    await i.set.setStateAsync(res);
+  else
+    await i.value.setStateAsync(res);
 }
 async function getValueEntryNumber(i) {
   var _a;
@@ -124,7 +127,9 @@ async function setScaledNumber(i, value) {
           value = Math.ceil(value);
       }
     }
-    if (nval !== value)
+    if (i.set && i.set.writeable)
+      await i.value.setStateAsync(value);
+    else if (nval !== value)
       await i.value.setStateAsync(value);
   }
 }
@@ -321,8 +326,10 @@ const setHuefromRGB = async (item, c) => {
   await item.hue.setStateAsync(hue);
 };
 function formatInSelText(Text) {
+  if (Text === void 0 || Text === null)
+    return `error`;
   let splitText = Text;
-  if (!Array.isArray(splitText))
+  if (typeof splitText === "string")
     splitText = splitText.replaceAll("__", "_").replaceAll("_", " ").split(" ");
   let lengthLineOne = 0;
   const arrayLineOne = [];

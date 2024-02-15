@@ -349,7 +349,7 @@ type internalDatapoints = 'Relais1' | 'Relais2';
 export type IncomingEvent = {
     type: EventType;
     method: EventMethod;
-    action: ButtonActionType | '';
+    action: ButtonActionType | '' | string;
     target?: number;
     page?: number;
     cmd?: number;

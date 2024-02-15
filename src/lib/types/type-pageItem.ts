@@ -17,11 +17,6 @@ export type PageItemColorSwitch = { on: RGB; off: RGB };
 export type IconBoolean = Record<Types.BooleanUnion, string | undefined>;
 export type ThisCardMessageTypes = 'input_sel' | 'button';
 
-export type MessageItemMedia = Partial<MessageItem> & {
-    type?: Extract<Types.SerialTypePopup, ThisCardMessageTypes>;
-    iconNumber: 0 | 1 | 2 | 3 | 4 | 5; // media0 usw.
-    mode: MediaToolBoxAction;
-};
 export interface MessageItem extends MessageItemInterface {
     mainId?: string;
     subId?: string;
@@ -141,7 +136,6 @@ export type entityUpdateDetailMessageTemplate =
           textHeadline: string | false;
           list: string[] | false;
       };
-export type messageItemAllInterfaces = MessageItemMedia | MessageItem;
 export interface MessageItemInterface {
     type: Types.SerialTypePopup;
     intNameEntity: string;
@@ -320,7 +314,8 @@ export type PageItemUnion = {
         | 'button'
         | 'media.repeat'
         | 'text.list'
-        | 'arrow';
+        | 'arrow'
+        | 'spotify-playlist';
     dpInit: string | undefined;
     initMode: 'auto' | 'custom';
     type: Types.SerialTypePageElements;
@@ -358,6 +353,7 @@ export type ValueEntryType =
           unit?: string;
           minScale?: number;
           maxScale?: number;
+          set?: number;
       }
     | undefined;
 export type ScaledNumberType =
@@ -365,6 +361,7 @@ export type ScaledNumberType =
           value: number;
           minScale?: number;
           maxScale?: number;
+          set?: number;
       }
     | undefined;
 export type listCommand = { id: string; value: string; command?: listCommandUnion };
@@ -377,3 +374,25 @@ export function islistCommandUnion(F: any | listCommandUnion): F is listCommandU
     }
     return false;
 }
+
+export type spotifyPlaylist = Array<{
+    id: string;
+    title: string;
+    artistName: string;
+    artistArray: Array<{
+        id: string;
+        name: string;
+    }>;
+    album: {
+        id: string;
+        name: string;
+    };
+    durationMs: number;
+    duration: string;
+    addedAt: string;
+    addedBy: string;
+    discNumber: number;
+    episode: boolean;
+    explicit: boolean;
+    popularity: number;
+}>;
