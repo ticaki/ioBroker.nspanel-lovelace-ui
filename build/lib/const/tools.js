@@ -39,7 +39,8 @@ __export(tools_exports, {
   messageItemDefault: () => messageItemDefault,
   setHuefromRGB: () => setHuefromRGB,
   setRGBThreefromRGB: () => setRGBThreefromRGB,
-  setScaledNumber: () => setScaledNumber
+  setScaledNumber: () => setScaledNumber,
+  setValueEntryNumber: () => setValueEntryNumber
 });
 module.exports = __toCommonJS(tools_exports);
 var import_Color2 = require("./Color");
@@ -52,6 +53,20 @@ const messageItemDefault = {
   displayName: "",
   optionalValue: ""
 };
+async function setValueEntryNumber(i, value) {
+  var _a;
+  if (!i || !i.value)
+    return;
+  let res = value / ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
+  if (i.minScale !== void 0 && i.maxScale !== void 0) {
+    const min = await i.minScale.getNumber();
+    const max = await i.maxScale.getNumber();
+    if (min !== null && max !== null) {
+      res = Math.round((0, import_Color2.scale)(res, 0, 100, min, max));
+    }
+  }
+  i.value.setStateAsync(res);
+}
 async function getValueEntryNumber(i) {
   var _a;
   if (!i)
@@ -393,6 +408,7 @@ function deepAssign(def, source, level = 0) {
   messageItemDefault,
   setHuefromRGB,
   setRGBThreefromRGB,
-  setScaledNumber
+  setScaledNumber,
+  setValueEntryNumber
 });
 //# sourceMappingURL=tools.js.map

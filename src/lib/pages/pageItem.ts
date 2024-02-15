@@ -13,6 +13,8 @@ import { PopupType } from '../types/types';
 import { Panel } from '../controller/panel';
 import { BaseClassTriggerd } from '../controller/states-controller';
 import { RGB } from '../types/Color';
+import { Icons } from '../const/icon_mapping';
+import { Dataitem } from '../classes/data-item';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseClassTriggerd {
@@ -85,62 +87,46 @@ export class PageItem extends BaseClassTriggerd {
                     return tools.getItemMesssage(message);
                     break;
                 }
-                /*case 'shutter': {
+                case 'shutter': {
                     const item = entry.data;
 
                     message.type = 'shutter';
-                    const t =
-                        'item.role' in template &&
-                        (template[this.config.role as keyof typeof template] as PageTypeUnionTemplate | undefined);
-                    if (!t) break;
-                    let value = await tools.getValueEntryNumber(item.entity1);
+
+                    const value = await tools.getValueEntryNumber(item.entity1);
                     if (value === null) {
                         this.log.warn(`Entity ${this.config.role} has no value!`);
                         break;
                     }
-                    if (t.data.entity1 === 'invert') value = 100 - value;
-                    message.icon = await tools.getIconEntryValue(item.icon, value < 5, 'window-open');
-                    message.icon = t.data.icon
-                        ? await tools.getIconEntryValue(
-                              item.icon,
-                              value < 5,
-                              t.data.icon.true.value,
-                              t.data.icon.false.value,
-                          )
-                        : '';
-                    const optionalValue =
-                        t.data.optionalData === true
-                            ? [
-                                  Icons.GetIcon('arrow-up'), //up
-                                  Icons.GetIcon('stop'), //stop
-                                  Icons.GetIcon('arrow-down'), //down
-                                  'enable', // up status
-                                  'enable', // stop status
-                                  'enable', // down status
-                              ]
-                            : t.data.optionalData === undefined
-                              ? ['', '', '', 'disable', 'disable', 'disable']
-                              : t.data.optionalData === 'state' && item.valueList
-                                ? await item.valueList.getObject()
-                                : [
-                                      Icons.GetIcon(t.data.optionalData[0]),
-                                      Icons.GetIcon(t.data.optionalData[1]),
-                                      Icons.GetIcon(t.data.optionalData[2]),
-                                      t.data.optionalData[3],
-                                      t.data.optionalData[4],
-                                      t.data.optionalData[5],
-                                  ];
-                    const optionalValueC =
+                    message.icon = await tools.getIconEntryValue(item.icon, value < 40, 'window-open');
+                    message.iconColor = await tools.getIconEntryColor(item.icon, value < 40, Color.White);
+                    const optionalValue = item.valueList
+                        ? await item.valueList.getObject()
+                        : [
+                              Icons.GetIcon('arrow-up'), //up
+                              Icons.GetIcon('stop'), //stop
+                              Icons.GetIcon('arrow-down'), //down
+                              'enable', // up status
+                              'enable', // stop status
+                              'enable', // down status
+                          ];
+                    let optionalValueC =
                         Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === 'string')
-                            ? optionalValue
-                            : ['', '', '', 'disable', 'disable', 'disable'];
+                            ? [...optionalValue]
+                            : ['', '', ''];
+                    optionalValueC = optionalValueC.splice(0, 3);
+                    optionalValueC.forEach((a, i) => {
+                        if (a) optionalValueC[i + 3] = 'enable';
+                        else {
+                            optionalValueC[i] = '';
+                            optionalValueC[i + 3] = 'disable';
+                        }
+                    });
                     message.optionalValue = optionalValueC.join('|');
-                    message.displayName =
-                        (t.data.text && ((await tools.getEntryTextOnOff(item.text, true)) || t.data.text.true)) ??
-                        message.displayName;
+                    message.displayName = (item.headline && (await item.headline.getString())) ?? '';
+                    message.displayName = this.library.getTranslation(message.displayName);
                     return tools.getItemMesssage(message);
                     break;
-                }
+                } /*
                 case 'text': {
                     const item = entry.data;
                     message.type = 'text';
@@ -486,11 +472,58 @@ export class PageItem extends BaseClassTriggerd {
                 return tools.getPayload(result.headline, result.entityName, result.currentState, result.list);
                 break;
             }
+            case 'popupShutter': {
+                let result: entityUpdateDetailMessage = {
+                    type: 'popupShutter',
+                    entityName: '',
+                    pos1: '',
+                    text2: '',
+                    pos1text: '',
+                    icon: '',
+                    iconL1: '',
+                    iconM1: '',
+                    iconR1: '',
+                    statusL1: 'disable',
+                    statusM1: 'disable',
+                    statusR1: 'disable',
+                    pos2text: '',
+                    iconL2: '',
+                    iconM2: '',
+                    iconR2: '',
+                    statusL2: 'disable',
+                    statusM2: 'disable',
+                    statusR2: 'disable',
+                    pos2: '',
+                };
+                result = Object.assign(result, message);
+                return tools.getPayload(
+                    'entityUpdateDetail',
+                    result.entityName,
+                    result.pos1,
+                    result.text2,
+                    result.pos1text,
+                    result.icon,
+                    result.iconL1,
+                    result.iconM1,
+                    result.iconR1,
+                    result.statusL1,
+                    result.statusM1,
+                    result.statusR1,
+                    result.pos2text,
+                    result.iconL2,
+                    result.iconM2,
+                    result.iconR2,
+                    result.statusL2,
+                    result.statusM2,
+                    result.statusR2,
+                    result.pos2,
+                );
+            }
         }
         return '';
     }
 
-    async GenerateDetailPage(mode: PopupType): Promise<string | null> {
+    async GeneratePopup(mode: PopupType): Promise<string | null> {
         if (!this.config || !this.dataItems) return null;
         const entry = this.dataItems;
         let message: Partial<entityUpdateDetailMessage> = {};
@@ -597,70 +630,13 @@ export class PageItem extends BaseClassTriggerd {
             }
 
             case 'popupFan':
-            case 'popupThermo': /*{
-                if (entry.type !== 'input_sel') break;
-                const item = entry.data;
-                message.type = 'popupThermo';
-
-                if (message.type !== 'popupThermo') return null;
-
-                if (
-                    item.entityInSel &&
-                    item.entityInSel.value &&
-                    ['string', 'number'].indexOf(item.entityInSel.value.trueType() ?? '') &&
-                    item.entityInSel.value.getCommonStates()
-                ) {
-                    const states = item.entityInSel.value.getCommonStates();
-                    const value = await tools.getValueEntryString(item.entityInSel);
-                    if (value !== null && states && states[value] !== undefined) {
-                        message.headline = this.library.getTranslation(
-                            (item.headline && (await item.headline.getString())) ?? '',
-                        );
-                        const list: string[] = [];
-                        for (const a in states) {
-                            list.push(this.library.getTranslation(String(states[a])));
-                        }
-                        if (list.length > 0) {
-                            message.list = Array.isArray(list)
-                                ? list.map((a: string) => tools.formatInSelText(a)).join('?')
-                                : '';
-                            break;
-                        }
-                    }
-                }
-
-                message.value = (await tools.getValueEntryString(item.entityInSel)) ?? '';
-                message.headline = this.library.getTranslation(
-                    (item.headline && (await item.headline.getString())) ?? '',
-                );
-                let list = (item.valueList && (await item.valueList.getObject())) ??
-                    (item.valueList && (await item.valueList.getString())) ?? [
-                        '1',
-                        '2',
-                        '3',
-                        '4',
-                        '5',
-                        '6',
-                        '7',
-                        '8',
-                        '9',
-                        '10',
-                        '11',
-                        '12',
-                        '13',
-                    ];
-                if (list !== null) {
-                    if (typeof list === 'string') list = list.split('?');
-                } else list = [];
-                message.list = Array.isArray(list) ? list.map((a: string[]) => tools.formatInSelText(a)).join('?') : '';
-                break;
-            }*/
+            case 'popupThermo':
             case 'popupInSel': {
                 if (entry.type !== 'input_sel' && entry.type !== 'light') break;
                 const item = entry.data;
                 message.type = 'insel';
-
                 if (!(message.type === 'insel')) return null;
+
                 if (
                     item.entityInSel &&
                     item.entityInSel.value &&
@@ -730,6 +706,76 @@ export class PageItem extends BaseClassTriggerd {
                 }
                 break;
             }
+            case 'popupLightNew':
+            case 'popupNotify':
+            case 'popupShutter': {
+                //entityUpdateDetail~entityName~*sliderPos*~2ndrow~textPosition~icon1~iconUp~iconStop~iconDown~iconUpStatus~iconStopStatus~iconDownStatus
+                //~textTilt~iconTiltLeft~iconTiltStop~iconTiltRight~iconTiltLeftStatus~iconTiltStopStatus~iconTiltLeftStatus~tiltPos
+                if (entry.type !== 'shutter') break;
+                const item = entry.data;
+                message.type = 'popupShutter';
+                if (!(message.type === 'popupShutter')) return null;
+                message.text2 = (item.text && item.text.true && (await item.text.true.getString())) ?? '';
+                message.text2 = this.library.getTranslation(message.text2);
+
+                const pos1 = (await tools.getValueEntryNumber(item.entity1)) ?? undefined;
+                const pos2 = (await tools.getValueEntryNumber(item.entity2)) ?? undefined;
+                if (pos1 !== undefined) message.icon = (await tools.getIconEntryValue(item.icon, pos1 < 40, '')) ?? '';
+                else if (pos2 !== undefined)
+                    message.icon = (await tools.getIconEntryValue(item.icon, pos2 < 40, '')) ?? '';
+                const optionalValue = item.valueList
+                    ? await item.valueList.getObject()
+                    : [
+                          Icons.GetIcon('arrow-up'), //up
+                          Icons.GetIcon('stop'), //stop
+                          Icons.GetIcon('arrow-down'), //down
+                          Icons.GetIcon('arrow-up'), //up
+                          Icons.GetIcon('stop'), //stop
+                          Icons.GetIcon('arrow-down'), //down
+                      ];
+                const arr = [pos1, pos2];
+                for (let index = 0; index < arr.length; index++) {
+                    const pos = arr[index];
+                    if (pos == undefined) continue;
+
+                    const i = index * 3;
+
+                    let optionalValueC =
+                        Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === 'string')
+                            ? [...optionalValue]
+                            : ['', '', ''];
+                    optionalValueC = optionalValueC.splice(i, 3);
+                    optionalValueC.forEach((a, i) => {
+                        if (a) optionalValueC[i + 3] = 'enable';
+                        else {
+                            optionalValueC[i] = '';
+                            optionalValueC[i + 3] = 'disable';
+                        }
+                    });
+                    if (index === 0) {
+                        message.pos1 = String(pos);
+                        message.pos1text = (await tools.getEntryTextOnOff(item.text1, true)) ?? '';
+                        message.pos1text = this.library.getTranslation(message.pos1text);
+                        message.iconL1 = optionalValueC[0];
+                        message.iconM1 = optionalValueC[1];
+                        message.iconR1 = optionalValueC[2];
+                        message.statusL1 = optionalValueC[3];
+                        message.statusM1 = optionalValueC[4];
+                        message.statusR1 = optionalValueC[5];
+                    } else {
+                        message.pos2 = String(pos);
+                        message.pos2text = (await tools.getEntryTextOnOff(item.text2, true)) ?? '';
+                        message.pos2text = this.library.getTranslation(message.pos2text);
+                        message.iconL2 = optionalValueC[0];
+                        message.iconM2 = optionalValueC[1];
+                        message.iconR2 = optionalValueC[2];
+                        message.statusL2 = optionalValueC[3];
+                        message.statusM2 = optionalValueC[4];
+                        message.statusR2 = optionalValueC[5];
+                    }
+                }
+            }
+            case 'popupTimer':
         }
 
         //if (template.type !== message.type) {
@@ -747,7 +793,7 @@ export class PageItem extends BaseClassTriggerd {
         this.parent = undefined;
     }
 
-    async setPopupAction(action: string, value: string): Promise<void> {
+    async onCommand(action: string, value: string): Promise<void> {
         if (value === undefined || this.dataItems === undefined) return;
         const entry = this.dataItems;
         switch (action) {
@@ -784,19 +830,9 @@ export class PageItem extends BaseClassTriggerd {
                     }
 
                     if (!item.setList) return;
-                    let list: listCommand[] | null = (await item.setList.getObject()) as listCommand[] | null;
-                    if (list === null) {
-                        const temp = await item.setList.getString();
-                        if (temp === null) return;
-                        list = temp.split('|').map((a: string): listCommand => {
-                            const t = a.split('?');
-                            return islistCommandUnion(t[2])
-                                ? { id: t[0], value: t[1], command: t[2] }
-                                : { id: t[0], value: t[1] };
-                        });
-                    }
-                    const v = parseInt(value);
-                    if (list[v]) {
+                    const list = await this.getListCommands(item.setList);
+                    const v = value as keyof typeof list;
+                    if (list && list[v]) {
                         try {
                             const obj = await this.adapter.getForeignObjectAsync(list[v].id);
                             if (!obj || !obj.common || obj.type !== 'state') throw new Error('Dont get obj!');
@@ -977,7 +1013,76 @@ export class PageItem extends BaseClassTriggerd {
                 }
                 break;
             }
+            case 'up':
+            case 'stop':
+            case 'down': {
+                if (entry.type === 'shutter') {
+                    const items = entry.data;
 
+                    const list = await this.getListCommands(items.setList);
+                    if (list !== null && list.length > 2) {
+                        switch (action) {
+                            case 'up': {
+                                await this.adapter.setStateAsync(list[0].id, parseInt(list[0].value));
+                                break;
+                            }
+                            case 'stop': {
+                                await this.adapter.setStateAsync(list[1].id, parseInt(list[1].value));
+                                break;
+                            }
+                            case 'down': {
+                                await this.adapter.setStateAsync(list[2].id, parseInt(list[2].value));
+                                break;
+                            }
+                        }
+                    } else {
+                        if (items.entity1 && items.entity1.value && items.entity1.minScale && items.entity1.maxScale) {
+                            if (items.entity1.value.type === 'number') {
+                                switch (action) {
+                                    case 'up': {
+                                        const value = await items.entity1.maxScale.getNumber();
+                                        if (value !== null) await items.entity1.value.setStateAsync(value);
+                                        break;
+                                    }
+                                    case 'stop': {
+                                        const value = await tools.getValueEntryNumber(items.entity1);
+                                        if (value !== null) await tools.setValueEntryNumber(items.entity1, value);
+                                        break;
+                                    }
+                                    case 'down': {
+                                        const value = await items.entity1.minScale.getNumber();
+                                        if (value !== null) await items.entity1.value.setStateAsync(value);
+                                        break;
+                                    }
+                                }
+                            } else if (items.entity1.value.type === 'boolean') {
+                                if (action !== 'stop') await items.entity1.value.setStateFlip();
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+            /**
+             * zu 100% geschlossen zu 0% geschlossen
+             */
+            case 'positionSlider': {
+                if (entry.type === 'shutter') {
+                    const items = entry.data;
+                    await tools.setValueEntryNumber(items.entity1, parseInt(value));
+                }
+                break;
+            }
+            /**
+             * zu 100% geschlossen zu 0% geschlossen
+             */
+            case 'tiltSlider': {
+                if (entry.type === 'shutter') {
+                    const items = entry.data;
+                    await tools.setValueEntryNumber(items.entity2, parseInt(value));
+                }
+                break;
+            }
             /*let rgb = null;
                         switch (this.config.role) {
                             case 'socket':
@@ -1016,9 +1121,22 @@ export class PageItem extends BaseClassTriggerd {
                 this.log.debug(`Trigger from popupThermo `);
                 this.parent && this.parent.onPopupRequest('0', 'popupThermo', '', '');
             } else {
-                const msg = await this.GenerateDetailPage(this.lastPopupType);
+                const msg = await this.GeneratePopup(this.lastPopupType);
                 if (msg) this.sendToPanel(msg);
             }
         }
+    }
+    async getListCommands(setList: Dataitem | undefined): Promise<listCommand[] | null> {
+        if (!setList) return null;
+        let list: listCommand[] | null = (await setList.getObject()) as listCommand[] | null;
+        if (list === null) {
+            const temp = await setList.getString();
+            if (temp === null) return null;
+            list = temp.split('|').map((a: string): listCommand => {
+                const t = a.split('?');
+                return islistCommandUnion(t[2]) ? { id: t[0], value: t[1], command: t[2] } : { id: t[0], value: t[1] };
+            });
+        }
+        return list;
     }
 }

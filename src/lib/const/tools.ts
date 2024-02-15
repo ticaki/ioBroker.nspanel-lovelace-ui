@@ -23,7 +23,22 @@ export const messageItemDefault: MessageItem = {
     displayName: '',
     optionalValue: '',
 };
+export async function setValueEntryNumber(
+    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
+    value: number,
+): Promise<void> {
+    if (!i || !i.value) return;
 
+    let res = value / ((i.factor && (await i.factor.getNumber())) ?? 1);
+    if (i.minScale !== undefined && i.maxScale !== undefined) {
+        const min = await i.minScale.getNumber();
+        const max = await i.maxScale.getNumber();
+        if (min !== null && max !== null) {
+            res = Math.round(scale(res, 0, 100, min, max));
+        }
+    }
+    i.value.setStateAsync(res);
+}
 export async function getValueEntryNumber(
     i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
 ): Promise<number | null> {

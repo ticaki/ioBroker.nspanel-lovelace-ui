@@ -31,6 +31,7 @@ var Color = __toESM(require("../const/Color"));
 var import_type_pageItem = require("../types/type-pageItem");
 var tools = __toESM(require("../const/tools"));
 var import_states_controller = require("../controller/states-controller");
+var import_icon_mapping = require("../const/icon_mapping");
 class PageItem extends import_states_controller.BaseClassTriggerd {
   defaultOnColor = Color.White;
   defaultOffColor = Color.Blue;
@@ -59,7 +60,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.dataItems = { ...config, data: tempItem };
   }
   async getPageItemPayload() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -89,11 +90,45 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           return tools.getItemMesssage(message);
           break;
         }
+        case "shutter": {
+          const item = entry.data;
+          message.type = "shutter";
+          const value = await tools.getValueEntryNumber(item.entity1);
+          if (value === null) {
+            this.log.warn(`Entity ${this.config.role} has no value!`);
+            break;
+          }
+          message.icon = await tools.getIconEntryValue(item.icon, value < 40, "window-open");
+          message.iconColor = await tools.getIconEntryColor(item.icon, value < 40, Color.White);
+          const optionalValue = item.valueList ? await item.valueList.getObject() : [
+            import_icon_mapping.Icons.GetIcon("arrow-up"),
+            import_icon_mapping.Icons.GetIcon("stop"),
+            import_icon_mapping.Icons.GetIcon("arrow-down"),
+            "enable",
+            "enable",
+            "enable"
+          ];
+          let optionalValueC = Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === "string") ? [...optionalValue] : ["", "", ""];
+          optionalValueC = optionalValueC.splice(0, 3);
+          optionalValueC.forEach((a, i) => {
+            if (a)
+              optionalValueC[i + 3] = "enable";
+            else {
+              optionalValueC[i] = "";
+              optionalValueC[i + 3] = "disable";
+            }
+          });
+          message.optionalValue = optionalValueC.join("|");
+          message.displayName = (_i = item.headline && await item.headline.getString()) != null ? _i : "";
+          message.displayName = this.library.getTranslation(message.displayName);
+          return tools.getItemMesssage(message);
+          break;
+        }
         case "button": {
           const item = entry.data;
           if (item.entity1 && item.entity1.value) {
             message.optionalValue = !!(item.setValue1 && await item.setValue1.getBoolean()) ? "0" : "1";
-            message.displayName = (_i = await tools.getEntryTextOnOff(item.text, message.optionalValue === "1")) != null ? _i : "test1";
+            message.displayName = (_j = await tools.getEntryTextOnOff(item.text, message.optionalValue === "1")) != null ? _j : "test1";
             message.icon = await tools.getIconEntryValue(
               item.icon,
               message.optionalValue === "1",
@@ -115,10 +150,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         case "input_sel": {
           const item = entry.data;
           message.type = "input_sel";
-          const value = (_j = await tools.getValueEntryNumber(item.entityInSel)) != null ? _j : await tools.getValueEntryBoolean(item.entityInSel);
+          const value = (_k = await tools.getValueEntryNumber(item.entityInSel)) != null ? _k : await tools.getValueEntryBoolean(item.entityInSel);
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
-          message.iconColor = (_k = await tools.GetIconColor(item.icon, value != null ? value : true, 0, 100, Color.HMIOff)) != null ? _k : Color.HMIOn;
-          message.optionalValue = (_l = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _l : "PRESS";
+          message.iconColor = (_l = await tools.GetIconColor(item.icon, value != null ? value : true, 0, 100, Color.HMIOff)) != null ? _l : Color.HMIOn;
+          message.optionalValue = (_m = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _m : "PRESS";
           this.log.debug(JSON.stringify(message));
           return tools.getItemMesssage(message);
           break;
@@ -197,11 +232,58 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         return tools.getPayload(result.headline, result.entityName, result.currentState, result.list);
         break;
       }
+      case "popupShutter": {
+        let result = {
+          type: "popupShutter",
+          entityName: "",
+          pos1: "",
+          text2: "",
+          pos1text: "",
+          icon: "",
+          iconL1: "",
+          iconM1: "",
+          iconR1: "",
+          statusL1: "disable",
+          statusM1: "disable",
+          statusR1: "disable",
+          pos2text: "",
+          iconL2: "",
+          iconM2: "",
+          iconR2: "",
+          statusL2: "disable",
+          statusM2: "disable",
+          statusR2: "disable",
+          pos2: ""
+        };
+        result = Object.assign(result, message);
+        return tools.getPayload(
+          "entityUpdateDetail",
+          result.entityName,
+          result.pos1,
+          result.text2,
+          result.pos1text,
+          result.icon,
+          result.iconL1,
+          result.iconM1,
+          result.iconR1,
+          result.statusL1,
+          result.statusM1,
+          result.statusR1,
+          result.pos2text,
+          result.iconL2,
+          result.iconM2,
+          result.iconR2,
+          result.statusL2,
+          result.statusM2,
+          result.statusR2,
+          result.pos2
+        );
+      }
     }
     return "";
   }
-  async GenerateDetailPage(mode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+  async GeneratePopup(mode) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w;
     if (!this.config || !this.dataItems)
       return null;
     const entry = this.dataItems;
@@ -363,6 +445,71 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         }
         break;
       }
+      case "popupLightNew":
+      case "popupNotify":
+      case "popupShutter": {
+        if (entry.type !== "shutter")
+          break;
+        const item = entry.data;
+        message.type = "popupShutter";
+        if (!(message.type === "popupShutter"))
+          return null;
+        message.text2 = (_q = item.text && item.text.true && await item.text.true.getString()) != null ? _q : "";
+        message.text2 = this.library.getTranslation(message.text2);
+        const pos1 = (_r = await tools.getValueEntryNumber(item.entity1)) != null ? _r : void 0;
+        const pos2 = (_s = await tools.getValueEntryNumber(item.entity2)) != null ? _s : void 0;
+        if (pos1 !== void 0)
+          message.icon = (_t = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _t : "";
+        else if (pos2 !== void 0)
+          message.icon = (_u = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _u : "";
+        const optionalValue = item.valueList ? await item.valueList.getObject() : [
+          import_icon_mapping.Icons.GetIcon("arrow-up"),
+          import_icon_mapping.Icons.GetIcon("stop"),
+          import_icon_mapping.Icons.GetIcon("arrow-down"),
+          import_icon_mapping.Icons.GetIcon("arrow-up"),
+          import_icon_mapping.Icons.GetIcon("stop"),
+          import_icon_mapping.Icons.GetIcon("arrow-down")
+        ];
+        const arr = [pos1, pos2];
+        for (let index = 0; index < arr.length; index++) {
+          const pos = arr[index];
+          if (pos == void 0)
+            continue;
+          const i = index * 3;
+          let optionalValueC = Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === "string") ? [...optionalValue] : ["", "", ""];
+          optionalValueC = optionalValueC.splice(i, 3);
+          optionalValueC.forEach((a, i2) => {
+            if (a)
+              optionalValueC[i2 + 3] = "enable";
+            else {
+              optionalValueC[i2] = "";
+              optionalValueC[i2 + 3] = "disable";
+            }
+          });
+          if (index === 0) {
+            message.pos1 = String(pos);
+            message.pos1text = (_v = await tools.getEntryTextOnOff(item.text1, true)) != null ? _v : "";
+            message.pos1text = this.library.getTranslation(message.pos1text);
+            message.iconL1 = optionalValueC[0];
+            message.iconM1 = optionalValueC[1];
+            message.iconR1 = optionalValueC[2];
+            message.statusL1 = optionalValueC[3];
+            message.statusM1 = optionalValueC[4];
+            message.statusR1 = optionalValueC[5];
+          } else {
+            message.pos2 = String(pos);
+            message.pos2text = (_w = await tools.getEntryTextOnOff(item.text2, true)) != null ? _w : "";
+            message.pos2text = this.library.getTranslation(message.pos2text);
+            message.iconL2 = optionalValueC[0];
+            message.iconM2 = optionalValueC[1];
+            message.iconR2 = optionalValueC[2];
+            message.statusL2 = optionalValueC[3];
+            message.statusM2 = optionalValueC[4];
+            message.statusR2 = optionalValueC[5];
+          }
+        }
+      }
+      case "popupTimer":
     }
     return this.getDetailPayload(message);
     return null;
@@ -373,7 +520,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     await super.delete();
     this.parent = void 0;
   }
-  async setPopupAction(action, value) {
+  async onCommand(action, value) {
     var _a, _b, _c;
     if (value === void 0 || this.dataItems === void 0)
       return;
@@ -399,18 +546,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           }
           if (!item.setList)
             return;
-          let list = await item.setList.getObject();
-          if (list === null) {
-            const temp = await item.setList.getString();
-            if (temp === null)
-              return;
-            list = temp.split("|").map((a) => {
-              const t = a.split("?");
-              return (0, import_type_pageItem.islistCommandUnion)(t[2]) ? { id: t[0], value: t[1], command: t[2] } : { id: t[0], value: t[1] };
-            });
-          }
-          const v = parseInt(value);
-          if (list[v]) {
+          const list = await this.getListCommands(item.setList);
+          const v = value;
+          if (list && list[v]) {
             try {
               const obj = await this.adapter.getForeignObjectAsync(list[v].id);
               if (!obj || !obj.common || obj.type !== "state")
@@ -574,6 +712,73 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         }
         break;
       }
+      case "up":
+      case "stop":
+      case "down": {
+        if (entry.type === "shutter") {
+          const items = entry.data;
+          const list = await this.getListCommands(items.setList);
+          if (list !== null && list.length > 2) {
+            switch (action) {
+              case "up": {
+                await this.adapter.setStateAsync(list[0].id, parseInt(list[0].value));
+                break;
+              }
+              case "stop": {
+                await this.adapter.setStateAsync(list[1].id, parseInt(list[1].value));
+                break;
+              }
+              case "down": {
+                await this.adapter.setStateAsync(list[2].id, parseInt(list[2].value));
+                break;
+              }
+            }
+          } else {
+            if (items.entity1 && items.entity1.value && items.entity1.minScale && items.entity1.maxScale) {
+              if (items.entity1.value.type === "number") {
+                switch (action) {
+                  case "up": {
+                    const value2 = await items.entity1.maxScale.getNumber();
+                    if (value2 !== null)
+                      await items.entity1.value.setStateAsync(value2);
+                    break;
+                  }
+                  case "stop": {
+                    const value2 = await tools.getValueEntryNumber(items.entity1);
+                    if (value2 !== null)
+                      await tools.setValueEntryNumber(items.entity1, value2);
+                    break;
+                  }
+                  case "down": {
+                    const value2 = await items.entity1.minScale.getNumber();
+                    if (value2 !== null)
+                      await items.entity1.value.setStateAsync(value2);
+                    break;
+                  }
+                }
+              } else if (items.entity1.value.type === "boolean") {
+                if (action !== "stop")
+                  await items.entity1.value.setStateFlip();
+              }
+            }
+          }
+        }
+        break;
+      }
+      case "positionSlider": {
+        if (entry.type === "shutter") {
+          const items = entry.data;
+          await tools.setValueEntryNumber(items.entity1, parseInt(value));
+        }
+        break;
+      }
+      case "tiltSlider": {
+        if (entry.type === "shutter") {
+          const items = entry.data;
+          await tools.setValueEntryNumber(items.entity2, parseInt(value));
+        }
+        break;
+      }
     }
   }
   async onStateTrigger() {
@@ -582,11 +787,26 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         this.log.debug(`Trigger from popupThermo `);
         this.parent && this.parent.onPopupRequest("0", "popupThermo", "", "");
       } else {
-        const msg = await this.GenerateDetailPage(this.lastPopupType);
+        const msg = await this.GeneratePopup(this.lastPopupType);
         if (msg)
           this.sendToPanel(msg);
       }
     }
+  }
+  async getListCommands(setList) {
+    if (!setList)
+      return null;
+    let list = await setList.getObject();
+    if (list === null) {
+      const temp = await setList.getString();
+      if (temp === null)
+        return null;
+      list = temp.split("|").map((a) => {
+        const t = a.split("?");
+        return (0, import_type_pageItem.islistCommandUnion)(t[2]) ? { id: t[0], value: t[1], command: t[2] } : { id: t[0], value: t[1] };
+      });
+    }
+    return list;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

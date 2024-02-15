@@ -70,6 +70,28 @@ export type entityUpdateDetailMessage =
           | 'briIdentifier'
           | 'effect_supported',
           string
+      >)
+    | ({ type: 'popupShutter' } & Record<
+          | 'entityName'
+          | 'pos1'
+          | 'text2'
+          | 'pos1text'
+          | 'icon'
+          | 'iconL1'
+          | 'iconM1'
+          | 'iconR1'
+          | 'statusL1'
+          | 'statusM1'
+          | 'statusR1'
+          | 'pos2text'
+          | 'iconL2'
+          | 'iconM2'
+          | 'iconR2'
+          | 'statusL2'
+          | 'statusM2'
+          | 'statusR2'
+          | 'pos2',
+          string
       >);
 
 export type entityUpdateDetailMessageType = '2Sliders' | 'insel';
@@ -184,13 +206,28 @@ export type PageItemInputSel = Pick<
     PageItemBase,
     'entityInSel' | 'text' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
 >;
+
+export type PageItemShutter = Pick<
+    PageItemBase,
+    'entity1' | 'entity2' | 'text' | 'text1' | 'text2' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
+>;
 export type PageItemInputSelDataItemsOptions = {
     type: 'input_sel';
     data: ChangeTypeOfKeys<PageItemInputSel, Types.DataItemsOptions | undefined>;
 };
+
 export type PageItemInputSelDataItems = {
     type: 'input_sel';
     data: ChangeTypeOfKeys<PageItemInputSel, Dataitem | undefined>;
+};
+
+export type PageItemShutterDataItemsOptions = {
+    type: 'shutter';
+    data: ChangeTypeOfKeys<PageItemShutter, Types.DataItemsOptions | undefined>;
+};
+export type PageItemShutterDataItems = {
+    type: 'shutter';
+    data: ChangeTypeOfKeys<PageItemShutter, Dataitem | undefined>;
 };
 
 export type PageItemBase = {
@@ -289,26 +326,17 @@ export type PageItemUnion = {
     type: Types.SerialTypePageElements;
     data: PageItemBase;
 };
-/*export type ChangeTypeOfPageItem<Obj, N> = Obj extends
-    | object
-    | IconBoolean
-    | TextEntryType
-    | ValueEntryType
-    | ColorEntryType
-    | PageItemBase
-    ? Obj extends undefined
-        ? undefined
-        : Obj extends RGB
-          ? N
-          : {
-                [K in keyof Obj]: ChangeTypeOfPageItem<Obj[K], N>;
-            }
-    : N;*/
+
 export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
-    (PageItemButtonDataItems | PageItemInputSelDataItems | PageItemLightDataItems);
+    (PageItemButtonDataItems | PageItemShutterDataItems | PageItemInputSelDataItems | PageItemLightDataItems);
 
 export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data' | 'type'> &
-    (PageItemButtonDataItemsOptions | PageItemInputSelDataItemsOptions | PageItemLightDataItemsOptions);
+    (
+        | PageItemButtonDataItemsOptions
+        | PageItemShutterDataItemsOptions
+        | PageItemInputSelDataItemsOptions
+        | PageItemLightDataItemsOptions
+    );
 
 export type ColorEntryType = Record<Types.BooleanUnion, RGB | undefined> & { scale?: Types.IconScaleElement };
 

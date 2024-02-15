@@ -91,9 +91,9 @@ class Page extends import_states_controller.BaseClassPage {
       return;
     let msg = null;
     if ((0, import_types.isPopupType)(popup) && action !== "bExit") {
-      msg = await item.GenerateDetailPage(popup);
+      msg = await item.GeneratePopup(popup);
     } else if (action && value !== void 0) {
-      item.setPopupAction(action, value);
+      item.onCommand(action, value);
     }
     if (msg !== null)
       this.sendToPanel(msg);

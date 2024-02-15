@@ -153,7 +153,7 @@ export class PageThermo extends Page {
             if (valLow !== null && newValLow !== valLow) await this.items.data.set1!.setStateAsync(newValLow);
         } else if (event.action === 'hvac_action') {
             if (!this.pageItems) return;
-            await this.pageItems[Number(event.opt.split('?')[1])].setPopupAction('button', '');
+            await this.pageItems[Number(event.opt.split('?')[1])].onCommand('button', '');
         }
     }
 
@@ -174,7 +174,7 @@ export class PageThermo extends Page {
             );
             const color = (this.items && this.items.data.icon && (await this.items.data.icon.getRGBDec())) ?? '11487';
             for (const i of items) {
-                temp.push(getPayload((await i.GenerateDetailPage(popup)) ?? '~~~'));
+                temp.push(getPayload((await i.GeneratePopup(popup)) ?? '~~~'));
             }
             for (let a = 0; a < 3; a++) {
                 if (temp[a] === undefined) temp[a] = '~~~';
@@ -185,7 +185,7 @@ export class PageThermo extends Page {
             const i = typeof id === 'number' ? id : parseInt(id);
             const item = items[i];
             if (!item) return;
-            item.setPopupAction('mode-insel', value);
+            item.onCommand('mode-insel', value);
         }
         if (msg !== null) {
             this.log.debug(`Trigger from popupThermo 4 `);

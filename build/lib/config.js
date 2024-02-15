@@ -47,6 +47,69 @@ const pageEntitiesTest1 = {
   pageItems: [
     {
       role: "rgb",
+      type: "shutter",
+      dpInit: void 0,
+      initMode: "custom",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-shutter-open" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "window-shutter" },
+            color: { type: "const", constVal: Color.HMIOff }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "triggered", dp: "0_userdata.0.shutter" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0,
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 100 }
+        },
+        entity2: {
+          value: { type: "triggered", dp: "0_userdata.0.shutter" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0,
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 100 }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "text"
+          },
+          false: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Headline"
+        },
+        text1: {
+          true: {
+            type: "const",
+            constVal: "text1"
+          },
+          false: void 0
+        },
+        text2: {
+          true: {
+            type: "const",
+            constVal: "text2"
+          },
+          false: void 0
+        },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "rgb",
       type: "light",
       dpInit: void 0,
       initMode: "custom",

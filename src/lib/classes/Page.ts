@@ -101,9 +101,9 @@ export class Page extends BaseClassPage {
         if (!item) return;
         let msg: string | null = null;
         if (isPopupType(popup) && action !== 'bExit') {
-            msg = await item.GenerateDetailPage(popup);
+            msg = await item.GeneratePopup(popup);
         } else if (action && value !== undefined) {
-            item.setPopupAction(action, value);
+            item.onCommand(action, value);
         }
         if (msg !== null) this.sendToPanel(msg);
     }
