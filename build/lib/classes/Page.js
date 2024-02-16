@@ -90,11 +90,10 @@ class Page extends import_states_controller.BaseClassPage {
     if (!item)
       return;
     let msg = null;
-    if ((0, import_types.isPopupType)(popup) && action !== "bExit") {
-      msg = await item.GeneratePopup(popup);
-    } else if (action && value !== void 0) {
-      item.onCommand(action, value);
+    if (action && value !== void 0 && await item.onCommand(action, value)) {
       return;
+    } else if ((0, import_types.isPopupType)(popup) && action !== "bExit") {
+      msg = await item.GeneratePopup(popup);
     }
     if (msg !== null) {
       this.sleep = true;

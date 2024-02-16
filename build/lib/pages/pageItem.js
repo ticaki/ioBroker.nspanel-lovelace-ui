@@ -106,15 +106,15 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           message.icon = await tools.getIconEntryValue(item.icon, value < 40, "window-open");
           message.iconColor = await tools.getIconEntryColor(item.icon, value < 40, Color.White);
           const optionalValue = item.valueList ? await item.valueList.getObject() : [
-            import_icon_mapping.Icons.GetIcon("arrow-up"),
-            import_icon_mapping.Icons.GetIcon("stop"),
-            import_icon_mapping.Icons.GetIcon("arrow-down"),
+            "arrow-up",
+            "stop",
+            "arrow-down",
             "enable",
             "enable",
             "enable"
           ];
           let optionalValueC = Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === "string") ? [...optionalValue] : ["", "", ""];
-          optionalValueC = optionalValueC.splice(0, 3);
+          optionalValueC = optionalValueC.splice(0, 3).map((a) => a ? import_icon_mapping.Icons.GetIcon(a) : a);
           optionalValueC.forEach((a, i) => {
             if (a)
               optionalValueC[i + 3] = "enable";
@@ -535,12 +535,12 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         else if (pos2 !== void 0)
           message.icon = (_v = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _v : "";
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
-          import_icon_mapping.Icons.GetIcon("arrow-up"),
-          import_icon_mapping.Icons.GetIcon("stop"),
-          import_icon_mapping.Icons.GetIcon("arrow-down"),
-          import_icon_mapping.Icons.GetIcon("arrow-up"),
-          import_icon_mapping.Icons.GetIcon("stop"),
-          import_icon_mapping.Icons.GetIcon("arrow-down")
+          "arrow-up",
+          "stop",
+          "arrow-down",
+          "arrow-up",
+          "stop",
+          "arrow-down"
         ];
         const arr = [pos1, pos2];
         for (let index = 0; index < arr.length; index++) {
@@ -549,7 +549,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             continue;
           const i = index * 3;
           let optionalValueC = Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === "string") ? [...optionalValue] : ["", "", ""];
-          optionalValueC = optionalValueC.splice(i, 3);
+          optionalValueC = optionalValueC.splice(i, 3).map((a) => a ? import_icon_mapping.Icons.GetIcon(a) : a);
           optionalValueC.forEach((a, i2) => {
             if (a)
               optionalValueC[i2 + 3] = "enable";
@@ -595,7 +595,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   async onCommand(action, value) {
     var _a, _b, _c;
     if (value === void 0 || this.dataItems === void 0)
-      return;
+      return false;
     const entry = this.dataItems;
     switch (action) {
       case "mode-insel":
@@ -634,7 +634,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             }
           }
           if (!item.setList)
-            return;
+            return false;
           const list = await this.getListCommands(item.setList);
           const v = value;
           if (list && list[v]) {
@@ -699,7 +699,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                       case "undefined":
                       case "object":
                       case "function":
-                        return;
+                        return false;
                     }
                   }
                   break;
@@ -814,8 +814,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         }
         break;
       }
-      case "up":
-      case "stop":
+      case "up": {
+        if (entry.type !== "shutter")
+          break;
+      }
+      case "stop": {
+        if (entry.type !== "shutter")
+          break;
+      }
       case "down": {
         if (entry.type === "shutter") {
           const items = entry.data;
@@ -823,15 +829,15 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           if (list !== null && list.length > 2) {
             switch (action) {
               case "up": {
-                await this.adapter.setStateAsync(list[0].id, parseInt(list[0].value));
+                await this.adapter.setForeignStateAsync(list[0].id, list[0].value);
                 break;
               }
               case "stop": {
-                await this.adapter.setStateAsync(list[1].id, parseInt(list[1].value));
+                await this.adapter.setForeignStateAsync(list[1].id, list[1].value);
                 break;
               }
               case "down": {
-                await this.adapter.setStateAsync(list[2].id, parseInt(list[2].value));
+                await this.adapter.setForeignStateAsync(list[2].id, list[2].value);
                 break;
               }
             }
@@ -895,7 +901,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           await tools.setValueEntryNumber(item.entity1, parseInt(value), false);
         }
       }
+      default: {
+        return false;
+      }
     }
+    return true;
   }
   async onStateTrigger() {
     if (this.lastPopupType) {

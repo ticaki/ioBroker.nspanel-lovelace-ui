@@ -114,9 +114,9 @@ export class PageItem extends BaseClassTriggerd {
                     const optionalValue = item.valueList
                         ? await item.valueList.getObject()
                         : [
-                              Icons.GetIcon('arrow-up'), //up
-                              Icons.GetIcon('stop'), //stop
-                              Icons.GetIcon('arrow-down'), //down
+                              'arrow-up', //up
+                              'stop', //stop
+                              'arrow-down', //down
                               'enable', // up status
                               'enable', // stop status
                               'enable', // down status
@@ -125,7 +125,7 @@ export class PageItem extends BaseClassTriggerd {
                         Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === 'string')
                             ? [...optionalValue]
                             : ['', '', ''];
-                    optionalValueC = optionalValueC.splice(0, 3);
+                    optionalValueC = optionalValueC.splice(0, 3).map((a) => (a ? Icons.GetIcon(a) : a));
                     optionalValueC.forEach((a, i) => {
                         if (a) optionalValueC[i + 3] = 'enable';
                         else {
@@ -759,12 +759,12 @@ export class PageItem extends BaseClassTriggerd {
                 const optionalValue = item.valueList
                     ? await item.valueList.getObject()
                     : [
-                          Icons.GetIcon('arrow-up'), //up
-                          Icons.GetIcon('stop'), //stop
-                          Icons.GetIcon('arrow-down'), //down
-                          Icons.GetIcon('arrow-up'), //up
-                          Icons.GetIcon('stop'), //stop
-                          Icons.GetIcon('arrow-down'), //down
+                          'arrow-up', //up
+                          'stop', //stop
+                          'arrow-down', //down
+                          'arrow-up', //up
+                          'stop', //stop
+                          'arrow-down', //down
                       ];
                 const arr = [pos1, pos2];
                 for (let index = 0; index < arr.length; index++) {
@@ -777,7 +777,7 @@ export class PageItem extends BaseClassTriggerd {
                         Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === 'string')
                             ? [...optionalValue]
                             : ['', '', ''];
-                    optionalValueC = optionalValueC.splice(i, 3);
+                    optionalValueC = optionalValueC.splice(i, 3).map((a) => (a ? Icons.GetIcon(a) : a));
                     optionalValueC.forEach((a, i) => {
                         if (a) optionalValueC[i + 3] = 'enable';
                         else {
@@ -826,8 +826,8 @@ export class PageItem extends BaseClassTriggerd {
         this.parent = undefined;
     }
 
-    async onCommand(action: string, value: string): Promise<void> {
-        if (value === undefined || this.dataItems === undefined) return;
+    async onCommand(action: string, value: string): Promise<boolean> {
+        if (value === undefined || this.dataItems === undefined) return false;
         const entry = this.dataItems;
         switch (action) {
             case 'mode-insel':
@@ -880,7 +880,7 @@ export class PageItem extends BaseClassTriggerd {
                         }
                     }
 
-                    if (!item.setList) return;
+                    if (!item.setList) return false;
                     const list = await this.getListCommands(item.setList);
                     const v = value as keyof typeof list;
                     if (list && list[v]) {
@@ -956,7 +956,7 @@ export class PageItem extends BaseClassTriggerd {
                                             case 'undefined':
                                             case 'object':
                                             case 'function':
-                                                return;
+                                                return false;
                                         }
                                     }
                                     break;
@@ -1077,8 +1077,14 @@ export class PageItem extends BaseClassTriggerd {
                 }
                 break;
             }
-            case 'up':
-            case 'stop':
+            case 'up': {
+                if (entry.type !== 'shutter') break;
+                //const items = entry.data;
+            }
+            case 'stop': {
+                if (entry.type !== 'shutter') break;
+                //const items = entry.data;
+            }
             case 'down': {
                 if (entry.type === 'shutter') {
                     const items = entry.data;
@@ -1087,15 +1093,15 @@ export class PageItem extends BaseClassTriggerd {
                     if (list !== null && list.length > 2) {
                         switch (action) {
                             case 'up': {
-                                await this.adapter.setStateAsync(list[0].id, parseInt(list[0].value));
+                                await this.adapter.setForeignStateAsync(list[0].id, list[0].value);
                                 break;
                             }
                             case 'stop': {
-                                await this.adapter.setStateAsync(list[1].id, parseInt(list[1].value));
+                                await this.adapter.setForeignStateAsync(list[1].id, list[1].value);
                                 break;
                             }
                             case 'down': {
-                                await this.adapter.setStateAsync(list[2].id, parseInt(list[2].value));
+                                await this.adapter.setForeignStateAsync(list[2].id, list[2].value);
                                 break;
                             }
                         }
@@ -1161,6 +1167,9 @@ export class PageItem extends BaseClassTriggerd {
                     await tools.setValueEntryNumber(item.entity1, parseInt(value), false);
                 }
             }
+            default: {
+                return false;
+            }
             /*let rgb = null;
                         switch (this.config.role) {
                             case 'socket':
@@ -1192,6 +1201,7 @@ export class PageItem extends BaseClassTriggerd {
                             }
                         }*/
         }
+        return true;
     }
     protected async onStateTrigger(): Promise<void> {
         if (this.lastPopupType) {

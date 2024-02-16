@@ -14,6 +14,16 @@ declare global {
             mediaid: string;
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             scstype: string;
+            pw1: string;
+            pw2: string;
+            pw3: string;
+            pw4: string;
+            pw5: string;
+            pw6: string;
+            pw7: string;
+            pw8: string;
+            pw9: string;
+            pw0: string;
         }
     }
 }

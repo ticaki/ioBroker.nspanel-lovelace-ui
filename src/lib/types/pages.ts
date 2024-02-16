@@ -172,14 +172,33 @@ export type PageBaseConfig = {
         | cardMediaDataItemOptions
         | cardGridDataItemOptions
         | cardThermoDataItemOptions
-        | cardEntitiesDataItemOptions;
+        | cardEntitiesDataItemOptions
+        | cardAlarmDataItemOptions;
     items:
         | undefined
         | cardEntitiesDataItems
         | cardPowerDataItems
         | cardMediaDataItems
         | cardGridDataItems
-        | cardThermoDataItems;
+        | cardThermoDataItems
+        | cardAlarmDataItems;
+};
+type PageAlarmPowerConfig = {
+    headline: string;
+    entity1: ValueEntryType;
+    button1: string;
+    button2: string;
+    button3: string;
+    button4: string;
+    icon: IconEntryType;
+};
+export type cardAlarmDataItemOptions = {
+    card: 'cardAlarm';
+    data: ChangeTypeOfKeys<PageAlarmPowerConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardAlarmDataItems = {
+    card: 'cardAlarm';
+    data: ChangeTypeOfKeys<PageAlarmPowerConfig, Dataitem | undefined>;
 };
 
 export type cardPowerDataItemOptions = {
@@ -380,6 +399,21 @@ export type PagePowerMessage = {
     rightBottom: PagePowerMessageItem;
 };
 
+export type PageAlarmMessage = {
+    event: 'entityUpd';
+    intNameEntity: string;
+    headline: string;
+    navigation: string;
+    button1: string;
+    button2: string;
+    button3: string;
+    button4: string;
+    icon: string;
+    iconColor: string;
+    numpad: 'enable' | 'disable';
+    flashing: 'enable' | 'disable';
+};
+
 export type PagePowerMessageItem = {
     icon: string;
     iconColor: string;
@@ -405,8 +439,8 @@ export type PageEntitiesMessage = {
 export type PageThermoMessage = {
     event: 'entityUpd';
     headline: string;
-    navigation: string;
     intNameEntity: string;
+    navigation: string;
     currentTemp: number | string;
     dstTemp: number | string; // *10
     status: string;

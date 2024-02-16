@@ -101,11 +101,10 @@ export class Page extends BaseClassPage {
         const item = this.pageItems[i];
         if (!item) return;
         let msg: string | null = null;
-        if (isPopupType(popup) && action !== 'bExit') {
-            msg = await item.GeneratePopup(popup);
-        } else if (action && value !== undefined) {
-            item.onCommand(action, value);
+        if (action && value !== undefined && (await item.onCommand(action, value))) {
             return;
+        } else if (isPopupType(popup) && action !== 'bExit') {
+            msg = await item.GeneratePopup(popup);
         }
         if (msg !== null) {
             this.sleep = true;

@@ -247,6 +247,11 @@ export class Panel extends BaseClass {
             undefined === 'ON',
             genericStateObjects.panel.panels.cmd._channel,
         );
+        this.library.writedp(
+            `panel.${this.name}.alarm`,
+            undefined === 'ON',
+            genericStateObjects.panel.panels.alarm._channel,
+        );
         for (const page of this.pages) {
             if (page) this.log.debug('init page ' + page.uniqueID);
             if (page) await page.init();

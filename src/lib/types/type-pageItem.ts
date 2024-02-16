@@ -207,7 +207,6 @@ export type PageItemButtonDataItems = {
 
 export type PageItemLight = Pick<
     PageItemBase,
-    | 'setValue1'
     | 'valueList'
     | 'setList'
     | 'text1'
@@ -296,6 +295,12 @@ export type PageItemBase = {
     Red?: number;
     Green?: number;
     Blue?: number;
+    up: number;
+    stop: number;
+    left: number;
+    up2: number;
+    stop2: number;
+    down2: number;
 };
 
 export type PageTypeUnionTemplate = {

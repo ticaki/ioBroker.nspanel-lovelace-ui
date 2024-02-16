@@ -243,6 +243,11 @@ class Panel extends import_library.BaseClass {
       void 0 === "ON",
       import_definition.genericStateObjects.panel.panels.cmd._channel
     );
+    this.library.writedp(
+      `panel.${this.name}.alarm`,
+      void 0 === "ON",
+      import_definition.genericStateObjects.panel.panels.alarm._channel
+    );
     for (const page of this.pages) {
       if (page)
         this.log.debug("init page " + page.uniqueID);

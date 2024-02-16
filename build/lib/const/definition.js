@@ -145,6 +145,63 @@ const genericStateObjects = {
           },
           native: {}
         }
+      },
+      alarm: {
+        _channel: {
+          _id: "",
+          type: "channel",
+          common: {
+            name: "genericStateObjects.alarm"
+          },
+          native: {}
+        },
+        cardAlarm: {
+          _channel: {
+            _id: "",
+            type: "channel",
+            common: {
+              name: "genericStateObjects.cardAlarm"
+            },
+            native: {}
+          },
+          status: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.power2",
+              type: "number",
+              role: "value",
+              states: ["disarmed", "armed", "arming", "pending", "triggered"],
+              read: true,
+              write: false
+            },
+            native: {}
+          },
+          trigger: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.power2",
+              type: "boolean",
+              role: "button",
+              read: false,
+              write: true
+            },
+            native: {}
+          },
+          arm: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.power2",
+              type: "boolean",
+              role: "button",
+              read: false,
+              write: true
+            },
+            native: {}
+          }
+        }
       }
     }
   },
