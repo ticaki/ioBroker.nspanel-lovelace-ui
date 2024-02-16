@@ -1,0 +1,118 @@
+{
+  "0_userdata.0.shutter_test": {
+    "common": {
+      "name": "shutter_test",
+      "desc": "Manually created",
+      "role": "",
+      "icon": ""
+    },
+    "type": "channel",
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1708104073887,
+    "_id": "0_userdata.0.shutter_test"
+  },
+  "0_userdata.0.shutter_test.shutterdown": {
+    "common": {
+      "name": "up",
+      "desc": "Manually created",
+      "role": "button.close.blind",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.shutter_test.shutterdown",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1708104304125
+  },
+  "0_userdata.0.shutter_test.shutterstop": {
+    "common": {
+      "name": "up",
+      "desc": "Manually created",
+      "role": "button.stop.blind",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.shutter_test.shutterstop",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1708104283222
+  },
+  "0_userdata.0.shutter_test.shutterup": {
+    "common": {
+      "name": "up",
+      "desc": "Manually created",
+      "role": "button.open.blind",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.shutter_test.shutterup",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1708104262786
+  },
+  "0_userdata.0.shutter_test.tiltdown": {
+    "common": {
+      "name": "up",
+      "desc": "Manually created",
+      "role": "button.close.tilt",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.shutter_test.tiltdown",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1708104492223
+  },
+  "0_userdata.0.shutter_test.tiltstop": {
+    "common": {
+      "name": "up",
+      "desc": "Manually created",
+      "role": "button.stop.tilt",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1708104073980,
+    "_id": "0_userdata.0.shutter_test.tiltstop"
+  },
+  "0_userdata.0.shutter_test.tiltup": {
+    "common": {
+      "name": "up",
+      "desc": "Manually created",
+      "role": "button.open.tilt",
+      "type": "boolean",
+      "read": true,
+      "write": true,
+      "def": false
+    },
+    "type": "state",
+    "native": {},
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1708104073962,
+    "_id": "0_userdata.0.shutter_test.tiltup"
+  }
+}
