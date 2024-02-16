@@ -48,7 +48,7 @@ export class Dataitem extends BaseClass {
             case 'state':
             case 'triggered':
                 if (!this.options.dp) return false;
-                const obj = await this.adapter.getForeignObjectAsync(this.options.dp);
+                const obj = await this.stateDB.getObjectAsync(this.options.dp);
                 if (!obj || obj.type != 'state' || !obj.common) {
                     this.log.warn(`801: ${this.options.dp} has a invalid state object!`);
                     return false;

@@ -40,7 +40,7 @@ export class Navigation extends BaseClass {
     panel: Panel;
     private database: NavigationItem[] = [];
     private navigationConfig: NavigationItemConfig[];
-    doubleClickDelay: number = 300;
+    doubleClickDelay: number = 400;
     private doubleClickTimeout: ioBroker.Timeout | undefined;
     private currentItem: number = 0;
     constructor(config: NavigationConfig) {

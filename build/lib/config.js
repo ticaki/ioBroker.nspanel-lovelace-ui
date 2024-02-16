@@ -75,7 +75,7 @@ const pageEntitiesTest1 = {
         text: {
           true: {
             type: "const",
-            constVal: "text"
+            constVal: "Number"
           },
           false: void 0
         }
@@ -84,7 +84,7 @@ const pageEntitiesTest1 = {
     {
       role: "rgb",
       type: "shutter",
-      dpInit: "0_userdata.0.shutter_test",
+      dpInit: "",
       data: {
         icon: {
           true: {
@@ -124,7 +124,7 @@ const pageEntitiesTest1 = {
         },
         headline: {
           type: "const",
-          constVal: "Headline"
+          constVal: "Shutter"
         },
         text1: {
           true: {
@@ -152,30 +152,7 @@ const pageEntitiesTest1 = {
           mode: "auto",
           role: ["button.close.blind", "button.close"]
         },
-        stop: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.stop.blind", "button.stop"]
-        },
-        up2: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.open.tilt"]
-        },
-        stop2: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.stop.tilt"]
-        },
-        down2: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.close.tilt"]
-        }
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
     {
@@ -201,13 +178,6 @@ const pageEntitiesTest1 = {
           minBri: void 0
         },
         colorMode: { type: "const", constVal: true },
-        ct: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.ct"
-          },
-          mode: { type: "const", constVal: "kelvin" }
-        },
         dimmer: {
           value: {
             type: "triggered",
@@ -224,7 +194,7 @@ const pageEntitiesTest1 = {
         text1: {
           true: {
             type: "const",
-            constVal: "Detail"
+            constVal: "Licht"
           },
           false: void 0
         },
@@ -242,6 +212,12 @@ const pageEntitiesTest1 = {
           },
           false: void 0
         },
+        ct: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.ct"
+          }
+        },
         valueList: { type: "const", constVal: "home?butter" },
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
@@ -254,6 +230,7 @@ const pageEntitiesTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
+            text: { type: "const", constVal: "22.2" },
             color: { type: "const", constVal: Color.Green }
           },
           false: {
@@ -1277,7 +1254,7 @@ const pageGridTest1 = {
     data: {
       headline: {
         type: "const",
-        constVal: "\xDCberschrift"
+        constVal: "grid1"
       }
     }
   },
@@ -1312,7 +1289,7 @@ const pageGridTest1 = {
         text: {
           true: {
             type: "const",
-            constVal: "text"
+            constVal: "Number"
           },
           false: void 0
         }
@@ -1361,7 +1338,7 @@ const pageGridTest1 = {
         },
         headline: {
           type: "const",
-          constVal: "Headline"
+          constVal: "Shutter"
         },
         text1: {
           true: {
@@ -1431,7 +1408,7 @@ const pageGridTest1 = {
         text1: {
           true: {
             type: "const",
-            constVal: "Detail"
+            constVal: "Licht"
           },
           false: void 0
         },
@@ -1472,6 +1449,7 @@ const pageGridTest1 = {
           false: void 0,
           scale: void 0
         },
+        headline: { type: "const", constVal: "insel" },
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
@@ -1517,8 +1495,8 @@ const pageGridTest1 = {
         },
         icon: {
           true: {
-            value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
+            value: { type: "const", constVal: "music" },
+            color: { type: "const", constVal: Color.Gray }
           },
           false: {
             value: { type: "const", constVal: "fan" },
@@ -1538,7 +1516,7 @@ const pageGridTest1 = {
           unit: void 0
         },
         text: {
-          true: void 0,
+          true: { type: "const", constVal: "Navbutton" },
           false: void 0
         },
         setNavi: {
@@ -3035,9 +3013,9 @@ const Testconfig = {
   navigation: [
     {
       name: "main",
-      page: "power1",
+      page: "entities1",
       left: { single: "7" },
-      right: { single: "1", double: "main" }
+      right: { single: "1", double: "2" }
     },
     {
       name: "5",
@@ -3047,7 +3025,7 @@ const Testconfig = {
     },
     {
       name: "6",
-      page: "entities1",
+      page: "power1",
       left: { single: "5" },
       right: { single: "7", double: "main" }
     },
@@ -3059,7 +3037,7 @@ const Testconfig = {
     },
     {
       name: "1",
-      left: { single: "4" },
+      left: { single: "main" },
       right: { single: "2" },
       page: "grid1"
     },

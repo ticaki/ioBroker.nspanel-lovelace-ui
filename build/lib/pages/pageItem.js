@@ -76,7 +76,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         const list = await this.getListCommands(data.setList);
         if (list) {
           for (let a = 0; a < 6; a++) {
-            const test = list && list[a] && list[a].id && await this.adapter.getForeignObjectAsync(list[a].id);
+            const test = list && list[a] && list[a].id && await this.panel.statesControler.getObjectAsync(list[a].id);
             if (test && test.common && test.common.write)
               this.tempData[a] = true;
           }
@@ -101,7 +101,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     }
   }
   async getPageItemPayload() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -243,7 +243,8 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           const value = (_u = await tools.getValueEntryNumber(item.entityInSel)) != null ? _u : await tools.getValueEntryBoolean(item.entityInSel);
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
           message.iconColor = (_v = await tools.GetIconColor(item.icon, value != null ? value : true, 0, 100, Color.HMIOff)) != null ? _v : Color.HMIOn;
-          message.optionalValue = (_w = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _w : "PRESS";
+          message.displayName = (_w = item.headline && await item.headline.getString()) != null ? _w : "";
+          message.optionalValue = (_x = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _x : "PRESS";
           this.log.debug(JSON.stringify(message));
           return tools.getItemMesssage(message);
           break;
@@ -525,35 +526,35 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               break;
             }
           }
-          let list = (_p = (_o = item.valueList && await item.valueList.getObject()) != null ? _o : item.valueList && await item.valueList.getString()) != null ? _p : [
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7",
-            "8",
-            "9",
-            "10",
-            "11",
-            "12",
-            "13"
-          ];
-          if (list !== null) {
-            if (typeof list === "string")
-              list = list.split("?");
-          } else
-            list = [];
-          message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
-          if (mode !== "popupThermo")
-            break;
-          message = { ...message, type: "popupThermo" };
-          if (message.type === "popupThermo") {
-            message.headline = this.library.getTranslation(
-              (_q = item.headline && await item.headline.getString()) != null ? _q : ""
-            );
-          }
+        }
+        let list = (_p = (_o = item.valueList && await item.valueList.getObject()) != null ? _o : item.valueList && await item.valueList.getString()) != null ? _p : [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13"
+        ];
+        if (list !== null) {
+          if (typeof list === "string")
+            list = list.split("?");
+        } else
+          list = [];
+        message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
+        if (mode !== "popupThermo")
+          break;
+        message = { ...message, type: "popupThermo" };
+        if (message.type === "popupThermo") {
+          message.headline = this.library.getTranslation(
+            (_q = item.headline && await item.headline.getString()) != null ? _q : ""
+          );
         }
         break;
       }
@@ -679,7 +680,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           const v = value;
           if (list && list[v]) {
             try {
-              const obj = await this.adapter.getForeignObjectAsync(list[v].id);
+              const obj = await this.panel.statesControler.getObjectAsync(list[v].id);
               if (!obj || !obj.common || obj.type !== "state")
                 throw new Error("Dont get obj!");
               const type = obj.common.type;

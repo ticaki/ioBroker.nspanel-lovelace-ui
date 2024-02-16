@@ -189,12 +189,20 @@ export class StatesControler extends BaseClass {
     } = {};
     private deletePageInterval: ioBroker.Interval | undefined;
     private stateDB: { [key: string]: { state: ioBroker.State; ts: number; common: ioBroker.StateCommon } } = {};
-    private tempObjectDB: { [key: string]: { [id: string]: ioBroker.Object } } | undefined = undefined;
+    objectDatabase: Record<string, ioBroker.Object | null> = {};
+    intervalObjectDatabase: ioBroker.Interval | undefined;
+
     timespan: number;
+
     constructor(adapter: AdapterClassDefinition, name: string = '', timespan: number = 15000) {
         super(adapter, name || 'StatesDBReadOnly');
         this.timespan = timespan;
         this.deletePageInterval = this.adapter.setInterval(this.deletePageLoop, 60000);
+        this.intervalObjectDatabase = this.adapter.setInterval(() => {
+            if (this.unload) return;
+            this.intervalObjectDatabase = undefined;
+            this.objectDatabase = {};
+        }, 1800000);
     }
     private deletePageLoop = (): void => {
         const removeId = [];
@@ -223,6 +231,7 @@ export class StatesControler extends BaseClass {
 
     async delete(): Promise<void> {
         await super.delete();
+        if (this.intervalObjectDatabase) this.adapter.clearInterval(this.intervalObjectDatabase);
         if (StatesControler.tempObjectDBTimeout) this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
         if (this.deletePageInterval) this.adapter.clearInterval(this.deletePageInterval);
     }
@@ -253,7 +262,7 @@ export class StatesControler extends BaseClass {
             if (state) {
                 // erstelle keinen trigger für das gleiche parent doppelt..
                 await this.adapter.subscribeForeignStatesAsync(id);
-                const obj = await this.adapter.getForeignObjectAsync(id);
+                const obj = await this.getObjectAsync(id);
                 if (!obj || !obj.common || obj.type !== 'state') throw new Error('Got invalid object for ' + id);
                 this.triggerDB[id] = {
                     state,
@@ -331,7 +340,7 @@ export class StatesControler extends BaseClass {
         const state = await this.adapter.getForeignStateAsync(id);
         if (state) {
             if (!this.stateDB[id]) {
-                const obj = await this.adapter.getForeignObjectAsync(id);
+                const obj = await this.getObjectAsync(id);
                 if (!obj || !obj.common || obj.type !== 'state') throw new Error('Got invalid object for ' + id);
                 this.stateDB[id] = { state: state, ts: Date.now(), common: obj.common };
             } else {
@@ -436,16 +445,6 @@ export class StatesControler extends BaseClass {
             return true;
         }
         return false;
-    }
-
-    private updateDBState(id: string, val: ioBroker.StateValue, ack: boolean): void {
-        if (this.triggerDB[id] !== undefined) {
-            this.triggerDB[id].state.val = val;
-            this.triggerDB[id].state.ack = ack;
-        } else if (this.stateDB[id] !== undefined) {
-            this.stateDB[id].state.val = val;
-            this.stateDB[id].state.ack = ack;
-        }
     }
 
     /**
@@ -554,5 +553,12 @@ export class StatesControler extends BaseClass {
         } else {
             return (await this.adapter.getForeignStateAsync(id)) !== undefined;
         }
+    }
+
+    async getObjectAsync(id: string): Promise<ioBroker.Object | null> {
+        if (this.objectDatabase[id] !== undefined) return this.objectDatabase[id];
+        const obj = await this.adapter.getForeignObjectAsync(id);
+        this.objectDatabase[id] = obj ?? null;
+        return obj ?? null;
     }
 }

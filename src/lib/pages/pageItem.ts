@@ -69,7 +69,10 @@ export class PageItem extends BaseClassTriggerd {
                 if (list) {
                     for (let a = 0; a < 6; a++) {
                         const test =
-                            list && list[a] && list[a].id && (await this.adapter.getForeignObjectAsync(list[a].id));
+                            list &&
+                            list[a] &&
+                            list[a].id &&
+                            (await this.panel.statesControler.getObjectAsync(list[a].id));
                         if (test && test.common && test.common.write) this.tempData[a] = true;
                     }
                 }
@@ -281,6 +284,7 @@ export class PageItem extends BaseClassTriggerd {
 
                     message.iconColor =
                         (await tools.GetIconColor(item.icon, value ?? true, 0, 100, Color.HMIOff)) ?? Color.HMIOn;
+                    message.displayName = (item.headline && (await item.headline.getString())) ?? '';
 
                     message.optionalValue = (await tools.getEntryTextOnOff(item.text, !!value)) ?? 'PRESS';
                     this.log.debug(JSON.stringify(message));
@@ -759,41 +763,40 @@ export class PageItem extends BaseClassTriggerd {
                             break;
                         }
                     }
-
-                    let list = (item.valueList && (await item.valueList.getObject())) ??
-                        (item.valueList && (await item.valueList.getString())) ?? [
-                            '1',
-                            '2',
-                            '3',
-                            '4',
-                            '5',
-                            '6',
-                            '7',
-                            '8',
-                            '9',
-                            '10',
-                            '11',
-                            '12',
-                            '13',
-                        ];
-
-                    /**
-                     * die Liste ist entweder ein mit ? getrennt der String oder ein Array
-                     */
-                    if (list !== null) {
-                        if (typeof list === 'string') list = list.split('?');
-                    } else list = [];
-                    message.list = Array.isArray(list)
-                        ? list.map((a: string) => tools.formatInSelText(a)).join('?')
-                        : '';
-                    if (mode !== 'popupThermo') break;
-                    message = { ...message, type: 'popupThermo' };
-                    if (message.type === 'popupThermo') {
-                        message.headline = this.library.getTranslation(
-                            (item.headline && (await item.headline.getString())) ?? '',
-                        );
-                    }
                 }
+
+                let list = (item.valueList && (await item.valueList.getObject())) ??
+                    (item.valueList && (await item.valueList.getString())) ?? [
+                        '1',
+                        '2',
+                        '3',
+                        '4',
+                        '5',
+                        '6',
+                        '7',
+                        '8',
+                        '9',
+                        '10',
+                        '11',
+                        '12',
+                        '13',
+                    ];
+
+                /**
+                 * die Liste ist entweder ein mit ? getrennt der String oder ein Array
+                 */
+                if (list !== null) {
+                    if (typeof list === 'string') list = list.split('?');
+                } else list = [];
+                message.list = Array.isArray(list) ? list.map((a: string) => tools.formatInSelText(a)).join('?') : '';
+                if (mode !== 'popupThermo') break;
+                message = { ...message, type: 'popupThermo' };
+                if (message.type === 'popupThermo') {
+                    message.headline = this.library.getTranslation(
+                        (item.headline && (await item.headline.getString())) ?? '',
+                    );
+                }
+
                 break;
             }
             case 'popupLightNew':
@@ -941,7 +944,7 @@ export class PageItem extends BaseClassTriggerd {
                     const v = value as keyof typeof list;
                     if (list && list[v]) {
                         try {
-                            const obj = await this.adapter.getForeignObjectAsync(list[v].id);
+                            const obj = await this.panel.statesControler.getObjectAsync(list[v].id);
                             if (!obj || !obj.common || obj.type !== 'state') throw new Error('Dont get obj!');
 
                             const type = obj.common.type;

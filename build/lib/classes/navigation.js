@@ -29,7 +29,7 @@ class Navigation extends import_library.BaseClass {
   panel;
   database = [];
   navigationConfig;
-  doubleClickDelay = 300;
+  doubleClickDelay = 400;
   doubleClickTimeout;
   currentItem = 0;
   constructor(config) {

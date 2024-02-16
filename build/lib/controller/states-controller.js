@@ -180,12 +180,19 @@ class StatesControler extends import_library.BaseClass {
   triggerDB = {};
   deletePageInterval;
   stateDB = {};
-  tempObjectDB = void 0;
+  objectDatabase = {};
+  intervalObjectDatabase;
   timespan;
   constructor(adapter, name = "", timespan = 15e3) {
     super(adapter, name || "StatesDBReadOnly");
     this.timespan = timespan;
     this.deletePageInterval = this.adapter.setInterval(this.deletePageLoop, 6e4);
+    this.intervalObjectDatabase = this.adapter.setInterval(() => {
+      if (this.unload)
+        return;
+      this.intervalObjectDatabase = void 0;
+      this.objectDatabase = {};
+    }, 18e5);
   }
   deletePageLoop = () => {
     const removeId = [];
@@ -214,6 +221,8 @@ class StatesControler extends import_library.BaseClass {
   };
   async delete() {
     await super.delete();
+    if (this.intervalObjectDatabase)
+      this.adapter.clearInterval(this.intervalObjectDatabase);
     if (StatesControler.tempObjectDBTimeout)
       this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
     if (this.deletePageInterval)
@@ -240,7 +249,7 @@ class StatesControler extends import_library.BaseClass {
       const state = await this.adapter.getForeignStateAsync(id);
       if (state) {
         await this.adapter.subscribeForeignStatesAsync(id);
-        const obj = await this.adapter.getForeignObjectAsync(id);
+        const obj = await this.getObjectAsync(id);
         if (!obj || !obj.common || obj.type !== "state")
           throw new Error("Got invalid object for " + id);
         this.triggerDB[id] = {
@@ -308,7 +317,7 @@ class StatesControler extends import_library.BaseClass {
     const state = await this.adapter.getForeignStateAsync(id);
     if (state) {
       if (!this.stateDB[id]) {
-        const obj = await this.adapter.getForeignObjectAsync(id);
+        const obj = await this.getObjectAsync(id);
         if (!obj || !obj.common || obj.type !== "state")
           throw new Error("Got invalid object for " + id);
         this.stateDB[id] = { state, ts: Date.now(), common: obj.common };
@@ -413,15 +422,6 @@ class StatesControler extends import_library.BaseClass {
     }
     return false;
   }
-  updateDBState(id, val, ack) {
-    if (this.triggerDB[id] !== void 0) {
-      this.triggerDB[id].state.val = val;
-      this.triggerDB[id].state.ack = ack;
-    } else if (this.stateDB[id] !== void 0) {
-      this.stateDB[id].state.val = val;
-      this.stateDB[id].state.ack = ack;
-    }
-  }
   async createDataItems(data, parent, target = {}) {
     var _a;
     for (const i in data) {
@@ -516,6 +516,13 @@ class StatesControler extends import_library.BaseClass {
     } else {
       return await this.adapter.getForeignStateAsync(id) !== void 0;
     }
+  }
+  async getObjectAsync(id) {
+    if (this.objectDatabase[id] !== void 0)
+      return this.objectDatabase[id];
+    const obj = await this.adapter.getForeignObjectAsync(id);
+    this.objectDatabase[id] = obj != null ? obj : null;
+    return obj != null ? obj : null;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

@@ -51,7 +51,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                 text: {
                     true: {
                         type: 'const',
-                        constVal: 'text',
+                        constVal: 'Number',
                     },
                     false: undefined,
                 },
@@ -63,7 +63,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
              */
             role: 'rgb',
             type: 'shutter',
-            dpInit: '0_userdata.0.shutter_test',
+            dpInit: '',
 
             data: {
                 icon: {
@@ -108,7 +108,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                 },
                 headline: {
                     type: 'const',
-                    constVal: 'Headline',
+                    constVal: 'Shutter',
                 },
                 text1: {
                     true: {
@@ -136,31 +136,6 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                     mode: 'auto',
                     role: ['button.close.blind', 'button.close'],
                 },
-                stop: {
-                    type: 'state',
-                    dp: '',
-                    mode: 'auto',
-                    role: ['button.stop.blind', 'button.stop'],
-                },
-                up2: {
-                    type: 'state',
-                    dp: '',
-                    mode: 'auto',
-                    role: ['button.open.tilt'],
-                },
-                stop2: {
-                    type: 'state',
-                    dp: '',
-                    mode: 'auto',
-                    role: ['button.stop.tilt'],
-                },
-                down2: {
-                    type: 'state',
-                    dp: '',
-                    mode: 'auto',
-                    role: ['button.close.tilt'],
-                },
-
                 /**
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                  */
@@ -168,7 +143,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                 /**
                  * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
                  */
-                //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
             },
         },
         {
@@ -195,13 +170,6 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                     minBri: undefined,
                 },
                 colorMode: { type: 'const', constVal: true },
-                ct: {
-                    value: {
-                        type: 'triggered',
-                        dp: '0_userdata.0.ct',
-                    },
-                    mode: { type: 'const', constVal: 'kelvin' },
-                },
                 dimmer: {
                     value: {
                         type: 'triggered',
@@ -219,7 +187,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                 text1: {
                     true: {
                         type: 'const',
-                        constVal: 'Detail',
+                        constVal: 'Licht',
                     },
                     false: undefined,
                 },
@@ -237,7 +205,12 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                     },
                     false: undefined,
                 },
-
+                ct: {
+                    value: {
+                        type: 'triggered',
+                        dp: '0_userdata.0.ct',
+                    },
+                },
                 /**
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                  */
@@ -257,6 +230,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'home' },
+                        text: { type: 'const', constVal: '22.2' },
                         color: { type: 'const', constVal: Color.Green },
                     },
                     false: {
@@ -1321,7 +1295,7 @@ const pageGridTest1: pages.PageBaseConfig = {
         data: {
             headline: {
                 type: 'const',
-                constVal: 'Überschrift',
+                constVal: 'grid1',
             },
         },
     },
@@ -1357,7 +1331,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                 text: {
                     true: {
                         type: 'const',
-                        constVal: 'text',
+                        constVal: 'Number',
                     },
                     false: undefined,
                 },
@@ -1414,7 +1388,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                 },
                 headline: {
                     type: 'const',
-                    constVal: 'Headline',
+                    constVal: 'Shutter',
                 },
                 text1: {
                     true: {
@@ -1493,7 +1467,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                 text1: {
                     true: {
                         type: 'const',
-                        constVal: 'Detail',
+                        constVal: 'Licht',
                     },
                     false: undefined,
                 },
@@ -1541,6 +1515,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                     false: undefined,
                     scale: undefined,
                 },
+                headline: { type: 'const', constVal: 'insel' },
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'home' },
@@ -1593,8 +1568,8 @@ const pageGridTest1: pages.PageBaseConfig = {
                 },
                 icon: {
                     true: {
-                        value: { type: 'const', constVal: 'arrow-up' },
-                        color: { type: 'const', constVal: Color.Blue },
+                        value: { type: 'const', constVal: 'music' },
+                        color: { type: 'const', constVal: Color.Gray },
                     },
                     false: {
                         value: { type: 'const', constVal: 'fan' },
@@ -1614,7 +1589,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                     unit: undefined,
                 },
                 text: {
-                    true: undefined,
+                    true: { type: 'const', constVal: 'Navbutton' },
                     false: undefined,
                 },
                 setNavi: {
@@ -3213,9 +3188,9 @@ export const Testconfig: Partial<panelConfigPartial> = {
     navigation: [
         {
             name: 'main', //main ist die erste Seite
-            page: 'power1',
+            page: 'entities1',
             left: { single: '7' }, // Die 4 bezieht sich auf den name: 4
-            right: { single: '1', double: 'main' },
+            right: { single: '1', double: '2' },
         },
         {
             name: '5', //main ist die erste Seite
@@ -3225,7 +3200,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
         },
         {
             name: '6',
-            page: 'entities1',
+            page: 'power1',
             left: { single: '5' }, // Die 4 bezieht sich auf den name: 4
             right: { single: '7', double: 'main' },
         },
@@ -3237,7 +3212,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
         },
         {
             name: '1',
-            left: { single: '4' }, // Die 0 bezieht sich auf den name: 0
+            left: { single: 'main' }, // Die 0 bezieht sich auf den name: 0
             right: { single: '2' },
             page: 'grid1', // das grid1 bezieht sich auf die uniqueID oben in pages
         },
