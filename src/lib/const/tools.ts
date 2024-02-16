@@ -10,7 +10,19 @@ import {
 } from '../types/type-pageItem';
 import { Library } from '../classes/library';
 import { RGB } from '../types/Color';
-import { HMIOff, HMIOn, Interpolate, White, getHue, hsv2rgb, isRGB, rgb_dec565, scale } from './Color';
+import {
+    HMIOff,
+    HMIOn,
+    Interpolate,
+    White,
+    darken,
+    getHue,
+    hsv2rgb,
+    isRGB,
+    kelvinToRGB,
+    rgb_dec565,
+    scale,
+} from './Color';
 import { Icons } from './icon_mapping';
 import { ChangeTypeOfKeys } from '../types/pages';
 
@@ -32,11 +44,12 @@ export function ifValueEntryIs(
 export async function setValueEntryNumber(
     i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
     value: number,
+    s: boolean = true,
 ): Promise<void> {
     if (!i || !i.value) return;
 
     let res = value / ((i.factor && (await i.factor.getNumber())) ?? 1);
-    if (i.minScale !== undefined && i.maxScale !== undefined) {
+    if (s && i.minScale !== undefined && i.maxScale !== undefined) {
         const min = await i.minScale.getNumber();
         const max = await i.maxScale.getNumber();
         if (min !== null && max !== null) {
@@ -48,12 +61,13 @@ export async function setValueEntryNumber(
 }
 export async function getValueEntryNumber(
     i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
+    s: boolean = true,
 ): Promise<number | null> {
     if (!i) return null;
     const nval = i.value && (await i.value.getNumber());
     if (nval !== null && nval !== undefined) {
         let res = nval * ((i.factor && (await i.factor.getNumber())) ?? 1);
-        if (i.minScale !== undefined && i.maxScale !== undefined) {
+        if (s && i.minScale !== undefined && i.maxScale !== undefined) {
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
             if (min !== null && max !== null) {
@@ -63,6 +77,27 @@ export async function getValueEntryNumber(
         return res;
     }
     return null;
+}
+function getScaledNumberRaw(
+    n: number,
+    min: number | null,
+    max: number | null,
+    oldValue: number | null | false = null,
+): number {
+    if (min !== null && max !== null) {
+        if (oldValue === null) {
+            n = Math.round(scale(n, min, max, 0, 100));
+        } else {
+            n = scale(n, 0, 100, min, max);
+            if (oldValue !== false) {
+                if (oldValue >= n) n = Math.floor(n);
+                else n = Math.ceil(n);
+            } else {
+                n = Math.round(n);
+            }
+        }
+    }
+    return n;
 }
 
 export async function getScaledNumber(
@@ -74,13 +109,88 @@ export async function getScaledNumber(
         if (i.minScale !== undefined && i.maxScale !== undefined) {
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
-            if (min !== null && max !== null) {
-                nval = Math.round(scale(nval, min, max, 0, 100));
-            }
+            nval = getScaledNumberRaw(nval, min, max);
         }
         return nval;
     }
     return null;
+}
+
+export async function getTemperaturColorFromValue(
+    i: ChangeTypeOfKeys<ScaledNumberType, Dataitem | undefined>,
+    dimmer: number = 100,
+): Promise<string | null> {
+    if (!i) return null;
+    let nval = i.value && (await i.value.getNumber());
+    const mode = i.mode && (await i.mode.getString());
+    let kelvin = 3500;
+    if (nval !== null && nval !== undefined) {
+        if (i.minScale !== undefined && i.maxScale !== undefined) {
+            const min = await i.minScale.getNumber();
+            const max = await i.maxScale.getNumber();
+            nval = getScaledNumberRaw(nval, min, max);
+        }
+        if (mode === 'mired') {
+            kelvin = 10 ** 6 / nval;
+        } else {
+            kelvin = nval;
+        }
+        kelvin = kelvin > 7000 ? 7000 : kelvin < 1800 ? 1800 : kelvin;
+
+        let r = kelvinToRGB[Math.trunc(kelvin / 100) * 100];
+        r = darken(r, scale(dimmer, 100, 0, 0, 1));
+        return r ? String(rgb_dec565(r)) : null;
+    }
+    return null;
+}
+
+export async function getSliderCTFromValue(
+    i: ChangeTypeOfKeys<ScaledNumberType, Dataitem | undefined>,
+): Promise<string | null> {
+    if (!i) return null;
+    let nval = i.value && (await i.value.getNumber());
+    const mode = i.mode && (await i.mode.getString());
+    let r = 3500;
+    if (nval !== null && nval !== undefined) {
+        if (i.minScale !== undefined && i.maxScale !== undefined) {
+            const min = await i.minScale.getNumber();
+            const max = await i.maxScale.getNumber();
+            if (min !== null && max !== null) nval = Math.round(scale(nval, min, max, 1800, 7000));
+        }
+        if (mode === 'mired') {
+            r = 10 ** 6 / nval;
+        } else {
+            r = nval;
+        }
+        r = r > 7000 ? 7000 : r < 1800 ? 1800 : r;
+
+        r = getScaledNumberRaw(r, 1800, 7000);
+        return r !== null ? String(r) : null;
+    }
+    return null;
+}
+export async function setSliderCTFromValue(
+    i: ChangeTypeOfKeys<ScaledNumberType, Dataitem | undefined>,
+    value: number,
+): Promise<void> {
+    if (!i || !i.value) return;
+    const nval = (i.value && (await i.value.getNumber())) ?? null;
+    const mode = i.mode && (await i.mode.getString());
+    //value = 100 - value;
+    if (nval !== null) {
+        let r = getScaledNumberRaw(value, 1800, 7000, false);
+        r = r > 7000 ? 7000 : r < 1800 ? 1800 : r;
+        if (mode === 'mired') {
+            r = 10 ** 6 / r;
+        }
+        if (i.minScale !== undefined && i.maxScale !== undefined) {
+            const min = await i.minScale.getNumber();
+            const max = await i.maxScale.getNumber();
+            if (min !== null && max !== null) r = Math.round(scale(nval, 1800, 7000, min, max));
+        }
+        if (i.set && i.set.writeable) await i.value.setStateAsync(r);
+        else if (nval !== value) await i.value.setStateAsync(r);
+    }
 }
 
 export async function setScaledNumber(
@@ -91,13 +201,7 @@ export async function setScaledNumber(
     const nval = (await i.value.getNumber()) ?? null;
     if (nval !== null) {
         if (i.minScale !== undefined && i.maxScale !== undefined) {
-            const min = await i.minScale.getNumber();
-            const max = await i.maxScale.getNumber();
-            if (min !== null && max !== null) {
-                value = scale(value, 0, 100, min, max);
-                if (nval > value) value = Math.floor(value);
-                else value = Math.ceil(value);
-            }
+            value = getScaledNumberRaw(value, await i.minScale.getNumber(), await i.maxScale.getNumber(), value);
         }
         if (i.set && i.set.writeable) await i.value.setStateAsync(value);
         else if (nval !== value) await i.value.setStateAsync(value);
@@ -113,7 +217,12 @@ export async function getIconEntryValue(
     if (i === undefined) return '';
     on = on ?? true;
     if (!i) return Icons.GetIcon(on ? def : defOff ?? def);
-    const icon = i.true && i.true.value && (await i.true.value.getString());
+    const text = (i.true && i.true.text && (await i.true.text.getString())) ?? null;
+    if (text !== null) {
+        if (!on) return (i.false && i.false.text && (await i.false.text.getString())) ?? text;
+        return text;
+    }
+    const icon = (i.true && i.true.value && (await i.true.value.getString())) ?? null;
     if (!on) {
         return Icons.GetIcon((i.false && i.false.value && (await i.false.value.getString())) ?? defOff ?? icon ?? def);
     }
@@ -159,11 +268,9 @@ export async function GetIconColor(
             val = val < minValue ? minValue : val;
             return String(
                 rgb_dec565(
-                    Interpolate(
-                        offColor ?? { red: 100, green: 100, blue: 100 },
-                        onColor ? onColor : HMIOn,
-                        scale(100 - val, minValue, maxValue, 0, 1),
-                    ),
+                    !offColor
+                        ? darken(onColor ? onColor : HMIOn, scale(100 - val, minValue, maxValue, 0, 1))
+                        : Interpolate(offColor, onColor ? onColor : HMIOn, scale(100 - val, minValue, maxValue, 0, 1)),
                 ),
             );
         }
@@ -182,11 +289,9 @@ export async function GetIconColor(
             val = val < minValue ? minValue : val;
             return String(
                 rgb_dec565(
-                    Interpolate(
-                        offColor ? offColor : { red: 100, green: 100, blue: 100 },
-                        onColor ? onColor : HMIOn,
-                        scale(100 - val, minValue, maxValue, 0, 1),
-                    ),
+                    !offColor
+                        ? darken(onColor ? onColor : HMIOn, scale(100 - val, minValue, maxValue, 0, 1))
+                        : Interpolate(offColor, onColor ? onColor : HMIOn, scale(100 - val, minValue, maxValue, 0, 1)),
                 ),
             );
         }
@@ -207,11 +312,11 @@ export async function getEntryColor(
     if (typeof def === 'number') def = String(def);
     else if (typeof def !== 'string') def = String(rgb_dec565(def));
     if (!i) return def;
-    const icon = i.true && (await i.true.getRGBDec());
+    const color = i.true && (await i.true.getRGBDec());
     if (!value) {
-        return (i.false && (await i.false.getRGBDec())) ?? icon ?? def;
+        return (i.false && (await i.false.getRGBDec())) ?? color ?? def;
     }
-    return icon ?? def;
+    return color ?? def;
 }
 export async function getEntryTextOnOff(
     i: ChangeTypeOfKeys<TextEntryType, Dataitem | undefined> | undefined,
@@ -270,7 +375,7 @@ export const getRGBfromRGBThree = async (item: PageItemLightDataItems['data']): 
     const green = (item.Green && (await item.Green.getNumber())) ?? -1;
     const blue = (item.Blue && (await item.Blue.getNumber())) ?? -1;
     if (red === -1 || blue === -1 || green === -1) return null;
-    return { red, green, blue };
+    return { r: red, g: green, b: blue };
 };
 export const getDecfromRGBThree = async (item: PageItemLightDataItems['data']): Promise<string | null> => {
     const rgb = await getRGBfromRGBThree(item);
@@ -279,9 +384,9 @@ export const getDecfromRGBThree = async (item: PageItemLightDataItems['data']): 
 };
 export const setRGBThreefromRGB = async (item: PageItemLightDataItems['data'], c: RGB): Promise<void> => {
     if (!item || !item.Red || !item.Green || !item.Blue) return;
-    await item.Red.setStateAsync(c.red);
-    await item.Green.setStateAsync(c.green);
-    await item.Blue.setStateAsync(c.blue);
+    await item.Red.setStateAsync(c.r);
+    await item.Green.setStateAsync(c.g);
+    await item.Blue.setStateAsync(c.b);
 };
 
 export const getDecfromHue = async (item: PageItemLightDataItems['data']): Promise<string | null> => {
@@ -291,7 +396,7 @@ export const getDecfromHue = async (item: PageItemLightDataItems['data']): Promi
     if (saturation > 1) saturation = 1;
     if (hue === null) return null;
     const arr = hsv2rgb(hue, saturation, 1);
-    return String(rgb_dec565({ red: arr[0], green: arr[1], blue: arr[2] }));
+    return String(rgb_dec565({ r: arr[0], g: arr[1], b: arr[2] }));
 };
 
 export const setHuefromRGB = async (item: PageItemLightDataItems['data'], c: RGB): Promise<void> => {
@@ -301,7 +406,7 @@ export const setHuefromRGB = async (item: PageItemLightDataItems['data'], c: RGB
     }
     //let saturation = Math.abs((item.saturation && (await item.saturation.getNumber())) ?? 1);
     //if (saturation > 1) saturation = 1;
-    const hue = getHue(c.red, c.green, c.blue);
+    const hue = getHue(c.r, c.g, c.b);
     await item.hue.setStateAsync(hue);
 };
 

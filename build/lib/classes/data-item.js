@@ -148,6 +148,9 @@ class Dataitem extends import_library.BaseClass {
     if (value) {
       if (Color.isRGB(value))
         return value;
+      if (typeof value == "object" && "red" in value && "blue" in value && "green" in value) {
+        return { r: value.red, g: value.green, b: value.blue };
+      }
     }
     return null;
   }

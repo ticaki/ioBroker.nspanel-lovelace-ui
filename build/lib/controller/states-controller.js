@@ -89,7 +89,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
             this.panel.timeout * 1e3 || 5e3
           );
         }
-      }, 50);
+      }, 10);
       this.updateTimeout = this.adapter.setTimeout(async () => {
         if (this.unload)
           return;
@@ -133,7 +133,6 @@ class BaseClassTriggerd extends import_library.BaseClass {
         if (this.unload)
           return;
         if (this.alwaysOn != "none") {
-          await this.panel.sendScreeensaverTimeout(0);
           if (this.alwaysOn === "action") {
             this.alwaysOnState = this.adapter.setTimeout(
               async () => {
@@ -141,6 +140,8 @@ class BaseClassTriggerd extends import_library.BaseClass {
               },
               this.panel.timeout * 2 * 1e3 || 5e3
             );
+          } else {
+            await this.panel.sendScreeensaverTimeout(0);
           }
         } else
           this.panel.sendScreeensaverTimeout(this.panel.timeout);

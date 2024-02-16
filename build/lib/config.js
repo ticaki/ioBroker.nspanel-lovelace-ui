@@ -32,7 +32,6 @@ var Color = __toESM(require("./const/Color"));
 const pageEntitiesTest1 = {
   card: "cardEntities",
   dpInit: "",
-  initMode: "custom",
   alwaysOn: "none",
   uniqueID: "entities1",
   useColor: false,
@@ -47,10 +46,45 @@ const pageEntitiesTest1 = {
   },
   pageItems: [
     {
+      role: "text.list",
+      type: "number",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: 23
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "text"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
       role: "rgb",
       type: "shutter",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         icon: {
           true: {
@@ -112,8 +146,7 @@ const pageEntitiesTest1 = {
     {
       role: "rgb",
       type: "light",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: { type: "triggered", dp: "0_userdata.0.RGB", response: "now" },
@@ -131,6 +164,14 @@ const pageEntitiesTest1 = {
           scale: void 0,
           maxBri: void 0,
           minBri: void 0
+        },
+        colorMode: { type: "const", constVal: true },
+        ct: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.ct"
+          },
+          mode: { type: "const", constVal: "kelvin" }
         },
         dimmer: {
           value: {
@@ -166,78 +207,19 @@ const pageEntitiesTest1 = {
           },
           false: void 0
         },
-        ct: {
-          value: {
-            type: "const",
-            constVal: "40"
-          }
-        },
         valueList: { type: "const", constVal: "home?butter" },
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
     {
       role: "text.list",
-      type: "input_sel",
-      dpInit: void 0,
-      initMode: "custom",
+      type: "text",
+      dpInit: "",
       data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
             color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entityInSel: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        },
-        valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: void 0,
-      initMode: "custom",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
@@ -257,14 +239,13 @@ const pageEntitiesTest1 = {
           unit: void 0
         },
         text: {
-          true: void 0,
+          true: { type: "const", constVal: "text" },
           false: void 0
         },
-        setNavi: {
-          type: "const",
-          constVal: "3"
-        },
-        setValue1: void 0
+        text1: {
+          true: { type: "const", constVal: "text1" },
+          false: void 0
+        }
       }
     }
   ],
@@ -273,7 +254,6 @@ const pageEntitiesTest1 = {
 const pagePowerTest1 = {
   card: "cardPower",
   dpInit: "",
-  initMode: "custom",
   alwaysOn: "none",
   uniqueID: "power1",
   useColor: false,
@@ -395,7 +375,6 @@ const pagePowerTest1 = {
 const pageMediaTest = {
   card: "cardMedia",
   dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
-  initMode: "auto",
   alwaysOn: "none",
   config: {
     card: "cardMedia",
@@ -425,7 +404,7 @@ const pageMediaTest = {
         },
         color: {
           type: "const",
-          constVal: { red: 250, green: 2, blue: 3 }
+          constVal: { r: 250, g: 2, b: 3 }
         }
       },
       duration: {
@@ -537,7 +516,7 @@ const pageMediaTest = {
         },
         text: { type: "const", constVal: "1" },
         icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { red: 250, blue: 250, green: 0 } },
+        color: { type: "const", constVal: { r: 250, b: 250, g: 0 } },
         list: void 0,
         action: "cross"
       }
@@ -548,8 +527,7 @@ const pageMediaTest = {
     {
       role: "spotify-playlist",
       type: "input_sel",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -590,8 +568,7 @@ const pageMediaTest = {
     {
       role: "text.list",
       type: "input_sel",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -633,8 +610,7 @@ const pageMediaTest = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -676,8 +652,7 @@ const pageMediaTest = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -719,8 +694,7 @@ const pageMediaTest = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -762,8 +736,7 @@ const pageMediaTest = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -805,8 +778,7 @@ const pageMediaTest = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -852,7 +824,6 @@ const pageMediaTest = {
 const pageMediaTest2 = {
   card: "cardMedia",
   dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
-  initMode: "auto",
   alwaysOn: "none",
   config: {
     card: "cardMedia",
@@ -884,7 +855,7 @@ const pageMediaTest2 = {
         },
         color: {
           type: "const",
-          constVal: { red: 250, green: 2, blue: 3 }
+          constVal: { r: 250, g: 2, b: 3 }
         }
       },
       duration: {
@@ -996,7 +967,7 @@ const pageMediaTest2 = {
         },
         text: { type: "const", constVal: "1" },
         icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { red: 250, blue: 250, green: 0 } },
+        color: { type: "const", constVal: { r: 250, b: 250, g: 0 } },
         list: void 0,
         action: "cross"
       }
@@ -1007,8 +978,7 @@ const pageMediaTest2 = {
     {
       role: "spotify-playlist",
       type: "input_sel",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1050,8 +1020,7 @@ const pageMediaTest2 = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1093,8 +1062,7 @@ const pageMediaTest2 = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1136,8 +1104,7 @@ const pageMediaTest2 = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1179,8 +1146,7 @@ const pageMediaTest2 = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1222,8 +1188,7 @@ const pageMediaTest2 = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1269,7 +1234,6 @@ const pageMediaTest2 = {
 const pageGridTest1 = {
   card: "cardGrid",
   dpInit: "",
-  initMode: "custom",
   alwaysOn: "none",
   uniqueID: "grid1",
   useColor: false,
@@ -1284,10 +1248,107 @@ const pageGridTest1 = {
   },
   pageItems: [
     {
+      role: "text.list",
+      type: "number",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: 23
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "text"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "rgb",
+      type: "shutter",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-shutter-open" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "window-shutter" },
+            color: { type: "const", constVal: Color.HMIOff }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "triggered", dp: "0_userdata.0.shutter" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0,
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 100 }
+        },
+        entity2: {
+          value: { type: "triggered", dp: "0_userdata.0.shutter" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0,
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 100 }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "text"
+          },
+          false: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Headline"
+        },
+        text1: {
+          true: {
+            type: "const",
+            constVal: "text1"
+          },
+          false: void 0
+        },
+        text2: {
+          true: {
+            type: "const",
+            constVal: "text2"
+          },
+          false: void 0
+        },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
       role: "rgb",
       type: "light",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: { type: "triggered", dp: "0_userdata.0.RGB", response: "now" },
@@ -1306,6 +1367,7 @@ const pageGridTest1 = {
           maxBri: void 0,
           minBri: void 0
         },
+        colorMode: { type: "const", constVal: true },
         dimmer: {
           value: {
             type: "triggered",
@@ -1342,8 +1404,8 @@ const pageGridTest1 = {
         },
         ct: {
           value: {
-            type: "const",
-            constVal: "40"
+            type: "triggered",
+            dp: "0_userdata.0.ct"
           }
         },
         valueList: { type: "const", constVal: "home?butter" },
@@ -1353,8 +1415,7 @@ const pageGridTest1 = {
     {
       role: "text.list",
       type: "input_sel",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1397,8 +1458,7 @@ const pageGridTest1 = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1440,6 +1500,44 @@ const pageGridTest1 = {
         },
         setValue1: void 0
       }
+    },
+    {
+      role: "text.list",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            text: { type: "const", constVal: "22.2" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: { type: "const", constVal: "text" },
+          false: void 0
+        },
+        text1: {
+          true: { type: "const", constVal: "text1" },
+          false: void 0
+        }
+      }
     }
   ],
   items: void 0
@@ -1447,7 +1545,6 @@ const pageGridTest1 = {
 const pageGridTest2 = {
   card: "cardGrid",
   dpInit: "",
-  initMode: "custom",
   alwaysOn: "none",
   uniqueID: "grid2",
   useColor: false,
@@ -1465,8 +1562,7 @@ const pageGridTest2 = {
     {
       role: "text.list",
       type: "input_sel",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1509,8 +1605,7 @@ const pageGridTest2 = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1554,7 +1649,6 @@ const pageGridTest2 = {
 const pageGridTest4 = {
   card: "cardGrid",
   dpInit: "",
-  initMode: "custom",
   alwaysOn: "none",
   uniqueID: "grid4",
   useColor: false,
@@ -1572,8 +1666,7 @@ const pageGridTest4 = {
     {
       role: "text.list",
       type: "input_sel",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1616,8 +1709,7 @@ const pageGridTest4 = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1661,7 +1753,6 @@ const pageGridTest4 = {
 const pageGrid2Test2 = {
   card: "cardGrid2",
   dpInit: "",
-  initMode: "custom",
   alwaysOn: "none",
   uniqueID: "grid3",
   useColor: false,
@@ -1679,8 +1770,7 @@ const pageGrid2Test2 = {
     {
       role: "text.list",
       type: "input_sel",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1723,8 +1813,7 @@ const pageGrid2Test2 = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1767,7 +1856,6 @@ const pageGrid2Test2 = {
 };
 const pageThermoTest = {
   card: "cardThermo",
-  initMode: "auto",
   uniqueID: "thermo1",
   dpInit: "",
   alwaysOn: "none",
@@ -1775,8 +1863,7 @@ const pageThermoTest = {
     {
       role: "text.list",
       type: "input_sel",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         entityInSel: {
           value: {
@@ -1797,8 +1884,7 @@ const pageThermoTest = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -1840,8 +1926,7 @@ const pageThermoTest = {
     {
       role: "text.list",
       type: "button",
-      dpInit: void 0,
-      initMode: "custom",
+      dpInit: "",
       data: {
         color: {
           true: {
@@ -2958,7 +3043,9 @@ const Testconfig = {
     iconBig1: false,
     iconBig2: false
   },
-  timeout: 30
+  timeout: 30,
+  dimLow: 20,
+  dimHigh: 90
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

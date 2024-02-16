@@ -31,6 +31,7 @@ module.exports = __toCommonJS(panel_exports);
 var import_panel_message = require("./panel-message");
 var import_dayjs = __toESM(require("dayjs"));
 var import_screensaver = require("../pages/screensaver");
+var NSPanel = __toESM(require("../types/types"));
 var pages = __toESM(require("../types/pages"));
 var import_library = require("../classes/library");
 var import_definition = require("../const/definition");
@@ -69,6 +70,7 @@ class Panel extends import_library.BaseClass {
   _activePage = void 0;
   screenSaver;
   InitDone = false;
+  dimMode;
   navigation;
   format;
   controller;
@@ -84,7 +86,7 @@ class Panel extends import_library.BaseClass {
   };
   fName = "";
   constructor(adapter, options) {
-    var _a;
+    var _a, _b, _c;
     super(adapter, options.name);
     this.fName = options.name;
     this.panelSend = new import_panel_message.PanelSend(adapter, {
@@ -103,6 +105,7 @@ class Panel extends import_library.BaseClass {
     if (typeof this.panelSend.addMessageTasmota === "function")
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     this.statesControler = options.controller.statesControler;
+    this.dimMode = { low: (_b = options.dimLow) != null ? _b : 70, high: (_c = options.dimHigh) != null ? _c : 90 };
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
       const pageConfig = options.pages[a];
@@ -314,7 +317,7 @@ class Panel extends import_library.BaseClass {
         fn(topic, message);
     }
     if (topic.endsWith(import_definition.ReiveTopicAppendix)) {
-      const event = pages.convertToEvent(message);
+      const event = this.convertToEvent(message);
       if (event) {
         this.HandleIncomingMessage(event);
       }
@@ -446,7 +449,7 @@ class Panel extends import_library.BaseClass {
           return;
         this.restartLoops();
         this.sendScreeensaverTimeout(3);
-        this.sendToPanel("dimmode~80~100~6371");
+        this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~6371`);
         this.navigation.resetPosition();
         const page = this.navigation.getCurrentPage();
         const test = false;
@@ -478,7 +481,7 @@ class Panel extends import_library.BaseClass {
       }
       case "buttonPress2": {
         if (event.id == "screensaver") {
-          await this.setActivePage(this.pages[index]);
+          await this.setActivePage(this.navigation.getCurrentPage());
         } else if (event.action === "bExit") {
           await this.setActivePage(true);
         } else {
@@ -512,6 +515,67 @@ class Panel extends import_library.BaseClass {
         break;
       }
     }
+  }
+  convertToEvent(msg) {
+    var _a, _b, _c, _d;
+    try {
+      msg = (JSON.parse(msg) || {}).CustomRecv;
+    } catch (e) {
+      this.log.warn("Receive a broken msg from mqtt: " + msg);
+    }
+    if (msg === void 0)
+      return null;
+    const temp = msg.split(",");
+    if (!NSPanel.isEventType(temp[0]))
+      return null;
+    if (!NSPanel.isEventMethod(temp[1]))
+      return null;
+    let popup = void 0;
+    if (temp[1] === "pageOpenDetail")
+      popup = temp.splice(2, 1)[0];
+    const arr = String(temp[2]).split("?");
+    if (arr[3])
+      return {
+        type: temp[0],
+        method: temp[1],
+        target: parseInt(arr[3]),
+        page: parseInt(arr[1]),
+        cmd: parseInt(arr[0]),
+        popup,
+        id: arr[2],
+        action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+        opt: (_a = temp[4]) != null ? _a : ""
+      };
+    if (arr[2])
+      return {
+        type: temp[0],
+        method: temp[1],
+        page: parseInt(arr[0]),
+        cmd: parseInt(arr[1]),
+        popup,
+        id: arr[2],
+        action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+        opt: (_b = temp[4]) != null ? _b : ""
+      };
+    else if (arr[1])
+      return {
+        type: temp[0],
+        method: temp[1],
+        page: parseInt(arr[0]),
+        popup,
+        id: arr[1],
+        action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+        opt: (_c = temp[4]) != null ? _c : ""
+      };
+    else
+      return {
+        type: temp[0],
+        method: temp[1],
+        popup,
+        id: arr[0],
+        action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+        opt: (_d = temp[4]) != null ? _d : ""
+      };
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

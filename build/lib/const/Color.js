@@ -62,11 +62,14 @@ __export(Color_exports, {
   colorScale9: () => colorScale9,
   colorSonos: () => colorSonos,
   colorSpotify: () => colorSpotify,
+  darken: () => darken,
   getHue: () => getHue,
   hsv2RGB: () => hsv2RGB,
   hsv2rgb: () => hsv2rgb,
   hsvtodec: () => hsvtodec,
+  isOldRGB: () => isOldRGB,
   isRGB: () => isRGB,
+  kelvinToRGB: () => kelvinToRGB,
   pos_to_color: () => pos_to_color,
   rad2deg: () => rad2deg,
   resultToRgb: () => resultToRgb,
@@ -115,92 +118,93 @@ __export(Color_exports, {
   swWindy: () => swWindy
 });
 module.exports = __toCommonJS(Color_exports);
-const HMIOff = { red: 68, green: 115, blue: 158 };
-const HMIOn = { red: 3, green: 169, blue: 244 };
-const HMIDark = { red: 29, green: 29, blue: 29 };
-const Off = { red: 253, green: 128, blue: 0 };
-const On = { red: 253, green: 216, blue: 53 };
-const MSRed = { red: 251, green: 105, blue: 98 };
-const MSYellow = { red: 255, green: 235, blue: 156 };
-const MSGreen = { red: 121, green: 222, blue: 121 };
-const Red = { red: 255, green: 0, blue: 0 };
-const White = { red: 255, green: 255, blue: 255 };
-const Yellow = { red: 255, green: 255, blue: 0 };
-const Green = { red: 0, green: 255, blue: 0 };
-const Blue = { red: 0, green: 0, blue: 255 };
-const DarkBlue = { red: 0, green: 0, blue: 136 };
-const Gray = { red: 136, green: 136, blue: 136 };
-const Black = { red: 0, green: 0, blue: 0 };
-const Cyan = { red: 0, green: 255, blue: 255 };
-const Magenta = { red: 255, green: 0, blue: 255 };
-const colorSpotify = { red: 30, green: 215, blue: 96 };
-const colorAlexa = { red: 49, green: 196, blue: 243 };
-const colorSonos = { red: 216, green: 161, blue: 88 };
-const colorRadio = { red: 255, green: 127, blue: 0 };
-const BatteryFull = { red: 96, green: 176, blue: 62 };
-const BatteryEmpty = { red: 179, green: 45, blue: 25 };
-const Menu = { red: 150, green: 150, blue: 100 };
-const MenuLowInd = { red: 255, green: 235, blue: 156 };
-const MenuHighInd = { red: 251, green: 105, blue: 98 };
-const colorScale0 = { red: 99, green: 190, blue: 123 };
-const colorScale1 = { red: 129, green: 199, blue: 126 };
-const colorScale2 = { red: 161, green: 208, blue: 127 };
-const colorScale3 = { red: 129, green: 217, blue: 126 };
-const colorScale4 = { red: 222, green: 226, blue: 131 };
-const colorScale5 = { red: 254, green: 235, blue: 132 };
-const colorScale6 = { red: 255, green: 210, blue: 129 };
-const colorScale7 = { red: 251, green: 185, blue: 124 };
-const colorScale8 = { red: 251, green: 158, blue: 117 };
-const colorScale9 = { red: 248, green: 131, blue: 111 };
-const colorScale10 = { red: 248, green: 105, blue: 107 };
-const scbackground = { red: 0, green: 0, blue: 0 };
-const scbackgroundInd1 = { red: 255, green: 0, blue: 0 };
-const scbackgroundInd2 = { red: 121, green: 222, blue: 121 };
-const scbackgroundInd3 = { red: 255, green: 255, blue: 0 };
-const sctime = { red: 255, green: 255, blue: 255 };
-const sctimeAMPM = { red: 255, green: 255, blue: 255 };
-const scdate = { red: 255, green: 255, blue: 255 };
-const sctMainIcon = { red: 255, green: 255, blue: 255 };
-const sctMainText = { red: 255, green: 255, blue: 255 };
-const sctForecast1 = { red: 255, green: 255, blue: 255 };
-const sctForecast2 = { red: 255, green: 255, blue: 255 };
-const sctForecast3 = { red: 255, green: 255, blue: 255 };
-const sctForecast4 = { red: 255, green: 255, blue: 255 };
-const sctF1Icon = { red: 255, green: 235, blue: 156 };
-const sctF2Icon = { red: 255, green: 235, blue: 156 };
-const sctF3Icon = { red: 255, green: 235, blue: 156 };
-const sctF4Icon = { red: 255, green: 235, blue: 156 };
-const sctForecast1Val = { red: 255, green: 255, blue: 255 };
-const sctForecast2Val = { red: 255, green: 255, blue: 255 };
-const sctForecast3Val = { red: 255, green: 255, blue: 255 };
-const sctForecast4Val = { red: 255, green: 255, blue: 255 };
-const scbar = { red: 255, green: 255, blue: 255 };
-const sctMainIconAlt = { red: 255, green: 255, blue: 255 };
-const sctMainTextAlt = { red: 255, green: 255, blue: 255 };
-const sctTimeAdd = { red: 255, green: 255, blue: 255 };
-const swClearNight = { red: 150, green: 150, blue: 100 };
-const swCloudy = { red: 75, green: 75, blue: 75 };
-const swExceptional = { red: 255, green: 50, blue: 50 };
-const swFog = { red: 150, green: 150, blue: 150 };
-const swHail = { red: 200, green: 200, blue: 200 };
-const swLightning = { red: 200, green: 200, blue: 0 };
-const swLightningRainy = { red: 200, green: 200, blue: 150 };
-const swPartlycloudy = { red: 150, green: 150, blue: 150 };
-const swPouring = { red: 50, green: 50, blue: 255 };
-const swRainy = { red: 100, green: 100, blue: 255 };
-const swSnowy = { red: 150, green: 150, blue: 150 };
-const swSnowyRainy = { red: 150, green: 150, blue: 255 };
-const swSunny = { red: 255, green: 255, blue: 0 };
-const swWindy = { red: 150, green: 150, blue: 150 };
+var import_colord = require("colord");
+const HMIOff = { r: 68, g: 115, b: 158 };
+const HMIOn = { r: 3, g: 169, b: 244 };
+const HMIDark = { r: 29, g: 29, b: 29 };
+const Off = { r: 253, g: 128, b: 0 };
+const On = { r: 253, g: 216, b: 53 };
+const MSRed = { r: 251, g: 105, b: 98 };
+const MSYellow = { r: 255, g: 235, b: 156 };
+const MSGreen = { r: 121, g: 222, b: 121 };
+const Red = { r: 255, g: 0, b: 0 };
+const White = { r: 255, g: 255, b: 255 };
+const Yellow = { r: 255, g: 255, b: 0 };
+const Green = { r: 0, g: 255, b: 0 };
+const Blue = { r: 0, g: 0, b: 255 };
+const DarkBlue = { r: 0, g: 0, b: 136 };
+const Gray = { r: 136, g: 136, b: 136 };
+const Black = { r: 0, g: 0, b: 0 };
+const Cyan = { r: 0, g: 255, b: 255 };
+const Magenta = { r: 255, g: 0, b: 255 };
+const colorSpotify = { r: 30, g: 215, b: 96 };
+const colorAlexa = { r: 49, g: 196, b: 243 };
+const colorSonos = { r: 216, g: 161, b: 88 };
+const colorRadio = { r: 255, g: 127, b: 0 };
+const BatteryFull = { r: 96, g: 176, b: 62 };
+const BatteryEmpty = { r: 179, g: 45, b: 25 };
+const Menu = { r: 150, g: 150, b: 100 };
+const MenuLowInd = { r: 255, g: 235, b: 156 };
+const MenuHighInd = { r: 251, g: 105, b: 98 };
+const colorScale0 = { r: 99, g: 190, b: 123 };
+const colorScale1 = { r: 129, g: 199, b: 126 };
+const colorScale2 = { r: 161, g: 208, b: 127 };
+const colorScale3 = { r: 129, g: 217, b: 126 };
+const colorScale4 = { r: 222, g: 226, b: 131 };
+const colorScale5 = { r: 254, g: 235, b: 132 };
+const colorScale6 = { r: 255, g: 210, b: 129 };
+const colorScale7 = { r: 251, g: 185, b: 124 };
+const colorScale8 = { r: 251, g: 158, b: 117 };
+const colorScale9 = { r: 248, g: 131, b: 111 };
+const colorScale10 = { r: 248, g: 105, b: 107 };
+const scbackground = { r: 0, g: 0, b: 0 };
+const scbackgroundInd1 = { r: 255, g: 0, b: 0 };
+const scbackgroundInd2 = { r: 121, g: 222, b: 121 };
+const scbackgroundInd3 = { r: 255, g: 255, b: 0 };
+const sctime = { r: 255, g: 255, b: 255 };
+const sctimeAMPM = { r: 255, g: 255, b: 255 };
+const scdate = { r: 255, g: 255, b: 255 };
+const sctMainIcon = { r: 255, g: 255, b: 255 };
+const sctMainText = { r: 255, g: 255, b: 255 };
+const sctForecast1 = { r: 255, g: 255, b: 255 };
+const sctForecast2 = { r: 255, g: 255, b: 255 };
+const sctForecast3 = { r: 255, g: 255, b: 255 };
+const sctForecast4 = { r: 255, g: 255, b: 255 };
+const sctF1Icon = { r: 255, g: 235, b: 156 };
+const sctF2Icon = { r: 255, g: 235, b: 156 };
+const sctF3Icon = { r: 255, g: 235, b: 156 };
+const sctF4Icon = { r: 255, g: 235, b: 156 };
+const sctForecast1Val = { r: 255, g: 255, b: 255 };
+const sctForecast2Val = { r: 255, g: 255, b: 255 };
+const sctForecast3Val = { r: 255, g: 255, b: 255 };
+const sctForecast4Val = { r: 255, g: 255, b: 255 };
+const scbar = { r: 255, g: 255, b: 255 };
+const sctMainIconAlt = { r: 255, g: 255, b: 255 };
+const sctMainTextAlt = { r: 255, g: 255, b: 255 };
+const sctTimeAdd = { r: 255, g: 255, b: 255 };
+const swClearNight = { r: 150, g: 150, b: 100 };
+const swCloudy = { r: 75, g: 75, b: 75 };
+const swExceptional = { r: 255, g: 50, b: 50 };
+const swFog = { r: 150, g: 150, b: 150 };
+const swHail = { r: 200, g: 200, b: 200 };
+const swLightning = { r: 200, g: 200, b: 0 };
+const swLightningRainy = { r: 200, g: 200, b: 150 };
+const swPartlycloudy = { r: 150, g: 150, b: 150 };
+const swPouring = { r: 50, g: 50, b: 255 };
+const swRainy = { r: 100, g: 100, b: 255 };
+const swSnowy = { r: 150, g: 150, b: 150 };
+const swSnowyRainy = { r: 150, g: 150, b: 255 };
+const swSunny = { r: 255, g: 255, b: 0 };
+const swWindy = { r: 150, g: 150, b: 150 };
 function rgb_dec565(rgb) {
-  return rgb.red >> 3 << 11 | rgb.green >> 2 << 5 | rgb.blue >> 3;
+  return rgb.r >> 3 << 11 | rgb.g >> 2 << 5 | rgb.b >> 3;
 }
 function rgbHexToObject(rgb) {
-  const result = { red: 0, green: 0, blue: 0 };
+  const result = { r: 0, g: 0, b: 0 };
   if (rgb.startsWith("#") && rgb.length == 7) {
-    result.red = parseInt(rgb.substring(1, 3), 16);
-    result.green = parseInt(rgb.substring(3, 5), 16);
-    result.blue = parseInt(rgb.substring(5), 16);
+    result.r = parseInt(rgb.substring(1, 3), 16);
+    result.g = parseInt(rgb.substring(3, 5), 16);
+    result.b = parseInt(rgb.substring(5), 16);
   }
   return result;
 }
@@ -238,13 +242,17 @@ function HandleColorScale(valueScaletemp) {
   }
 }
 function Interpolate(color1, color2, fraction) {
-  const r = InterpolateNum(color1.red, color2.red, fraction);
-  const g = InterpolateNum(color1.green, color2.green, fraction);
-  const b = InterpolateNum(color1.blue, color2.blue, fraction);
-  return { red: Math.round(r), green: Math.round(g), blue: Math.round(b) };
+  const r = InterpolateNum(color1.r, color2.r, fraction);
+  const g = InterpolateNum(color1.g, color2.g, fraction);
+  const b = InterpolateNum(color1.b, color2.b, fraction);
+  return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
 }
 function InterpolateNum(d1, d2, fraction) {
   return d1 + (d2 - d1) * fraction;
+}
+function darken(c, s) {
+  s = scale(s, 0, 1, 0, 0.6);
+  return (0, import_colord.colord)(c).darken(s).toRgb();
 }
 function rad2deg(rad) {
   return (360 + 180 * rad / Math.PI) % 360;
@@ -258,9 +266,9 @@ function ConvertRGBtoHex(red, green, blue) {
 }
 function ConvertHexToRgb(hex) {
   return {
-    red: parseInt(hex.substring(1, 3), 16),
-    green: parseInt(hex.substring(3, 5), 16),
-    blue: parseInt(hex.substring(5, 7), 16)
+    r: parseInt(hex.substring(1, 3), 16),
+    g: parseInt(hex.substring(3, 5), 16),
+    b: parseInt(hex.substring(5, 7), 16)
   };
 }
 function hsv2rgb(hue, saturation, value) {
@@ -272,13 +280,13 @@ function hsv2rgb(hue, saturation, value) {
 }
 function hsv2RGB(hue, saturation, value) {
   const arr = hsv2rgb(hue, saturation, value);
-  return { red: arr[0], green: arr[1], blue: arr[2] };
+  return { r: arr[0], g: arr[1], b: arr[2] };
 }
 function hsvtodec(hue, saturation, value) {
   if (hue === null)
     return null;
   const result = hsv2rgb(hue, saturation, value);
-  return String(rgb_dec565({ red: result[0], green: result[1], blue: result[2] }));
+  return String(rgb_dec565({ r: result[0], g: result[1], b: result[2] }));
 }
 function resultToRgb(r) {
   const arr = r.split("|");
@@ -316,7 +324,7 @@ function pos_to_color(x, y) {
   }
   const hsv = rad2deg(Math.atan2(y, x));
   const rgb = hsv2rgb(hsv, sat, 1);
-  return { red: Math.round(rgb[0]), green: Math.round(rgb[1]), blue: Math.round(rgb[2]) };
+  return { r: Math.round(rgb[0]), g: Math.round(rgb[1]), b: Math.round(rgb[2]) };
 }
 function rgb_to_cie(red, green, blue) {
   const vred = red > 0.04045 ? Math.pow((red + 0.055) / (1 + 0.055), 2.4) : red / 12.92;
@@ -331,8 +339,124 @@ function rgb_to_cie(red, green, blue) {
   return cie;
 }
 function isRGB(F) {
-  return typeof F == "object" && "red" in F && "blue" in F && "green" in F;
+  return typeof F == "object" && "r" in F && "b" in F && "g" in F;
 }
+function isOldRGB(F) {
+  return typeof F == "object" && "r" in F && "b" in F && "g" in F;
+}
+const kelvinToRGB = {
+  1e3: { r: 255, g: 56, b: 0 },
+  1100: { r: 255, g: 71, b: 0 },
+  1200: { r: 255, g: 83, b: 0 },
+  1300: { r: 255, g: 93, b: 0 },
+  1400: { r: 255, g: 101, b: 0 },
+  1500: { r: 255, g: 109, b: 0 },
+  1600: { r: 255, g: 115, b: 0 },
+  1700: { r: 255, g: 121, b: 0 },
+  1800: { r: 255, g: 126, b: 0 },
+  1900: { r: 255, g: 131, b: 0 },
+  2e3: { r: 255, g: 138, b: 18 },
+  2100: { r: 255, g: 142, b: 33 },
+  2200: { r: 255, g: 147, b: 44 },
+  2300: { r: 255, g: 152, b: 54 },
+  2400: { r: 255, g: 157, b: 63 },
+  2500: { r: 255, g: 161, b: 72 },
+  2600: { r: 255, g: 165, b: 79 },
+  2700: { r: 255, g: 169, b: 87 },
+  2800: { r: 255, g: 173, b: 94 },
+  2900: { r: 255, g: 177, b: 101 },
+  3e3: { r: 255, g: 180, b: 107 },
+  3100: { r: 255, g: 184, b: 114 },
+  3200: { r: 255, g: 187, b: 120 },
+  3300: { r: 255, g: 190, b: 126 },
+  3400: { r: 255, g: 193, b: 132 },
+  3500: { r: 255, g: 196, b: 137 },
+  3600: { r: 255, g: 199, b: 143 },
+  3700: { r: 255, g: 201, b: 148 },
+  3800: { r: 255, g: 204, b: 153 },
+  3900: { r: 255, g: 206, b: 159 },
+  4e3: { r: 255, g: 209, b: 163 },
+  4100: { r: 255, g: 211, b: 168 },
+  4200: { r: 255, g: 213, b: 173 },
+  4300: { r: 255, g: 215, b: 177 },
+  4400: { r: 255, g: 217, b: 182 },
+  4500: { r: 255, g: 219, b: 186 },
+  4600: { r: 255, g: 221, b: 190 },
+  4700: { r: 255, g: 223, b: 194 },
+  4800: { r: 255, g: 225, b: 198 },
+  4900: { r: 255, g: 227, b: 202 },
+  5e3: { r: 255, g: 228, b: 206 },
+  5100: { r: 255, g: 230, b: 210 },
+  5200: { r: 255, g: 232, b: 213 },
+  5300: { r: 255, g: 233, b: 217 },
+  5400: { r: 255, g: 235, b: 220 },
+  5500: { r: 255, g: 236, b: 224 },
+  5600: { r: 255, g: 238, b: 227 },
+  5700: { r: 255, g: 239, b: 230 },
+  5800: { r: 255, g: 240, b: 233 },
+  5900: { r: 255, g: 242, b: 236 },
+  6e3: { r: 255, g: 243, b: 239 },
+  6100: { r: 255, g: 244, b: 242 },
+  6200: { r: 255, g: 245, b: 245 },
+  6300: { r: 255, g: 246, b: 247 },
+  6400: { r: 255, g: 248, b: 251 },
+  6500: { r: 255, g: 249, b: 253 },
+  6600: { r: 254, g: 249, b: 255 },
+  6700: { r: 252, g: 247, b: 255 },
+  6800: { r: 249, g: 246, b: 255 },
+  6900: { r: 247, g: 245, b: 255 },
+  7e3: { r: 245, g: 243, b: 255 },
+  7100: { r: 243, g: 242, b: 255 },
+  7200: { r: 240, g: 241, b: 255 },
+  7300: { r: 239, g: 240, b: 255 },
+  7400: { r: 237, g: 239, b: 255 },
+  7500: { r: 235, g: 238, b: 255 },
+  7600: { r: 233, g: 237, b: 255 },
+  7700: { r: 231, g: 236, b: 255 },
+  7800: { r: 230, g: 235, b: 255 },
+  7900: { r: 228, g: 234, b: 255 },
+  8e3: { r: 227, g: 233, b: 255 },
+  8100: { r: 225, g: 232, b: 255 },
+  8200: { r: 224, g: 231, b: 255 },
+  8300: { r: 222, g: 230, b: 255 },
+  8400: { r: 221, g: 230, b: 255 },
+  8500: { r: 220, g: 229, b: 255 },
+  8600: { r: 218, g: 229, b: 255 },
+  8700: { r: 217, g: 227, b: 255 },
+  8800: { r: 216, g: 227, b: 255 },
+  8900: { r: 215, g: 226, b: 255 },
+  9e3: { r: 214, g: 225, b: 255 },
+  9100: { r: 212, g: 225, b: 255 },
+  9200: { r: 211, g: 224, b: 255 },
+  9300: { r: 210, g: 223, b: 255 },
+  9400: { r: 209, g: 223, b: 255 },
+  9500: { r: 208, g: 222, b: 255 },
+  9600: { r: 207, g: 221, b: 255 },
+  9700: { r: 207, g: 221, b: 255 },
+  9800: { r: 206, g: 220, b: 255 },
+  9900: { r: 205, g: 220, b: 255 },
+  1e4: { r: 207, g: 218, b: 255 },
+  10100: { r: 207, g: 218, b: 255 },
+  10200: { r: 206, g: 217, b: 255 },
+  10300: { r: 205, g: 217, b: 255 },
+  10400: { r: 204, g: 216, b: 255 },
+  10500: { r: 204, g: 216, b: 255 },
+  10600: { r: 203, g: 215, b: 255 },
+  10700: { r: 202, g: 215, b: 255 },
+  10800: { r: 202, g: 214, b: 255 },
+  10900: { r: 201, g: 214, b: 255 },
+  11e3: { r: 200, g: 213, b: 255 },
+  11100: { r: 200, g: 213, b: 255 },
+  11200: { r: 199, g: 212, b: 255 },
+  11300: { r: 198, g: 212, b: 255 },
+  11400: { r: 198, g: 212, b: 255 },
+  11500: { r: 197, g: 211, b: 255 },
+  11600: { r: 197, g: 211, b: 255 },
+  11700: { r: 197, g: 210, b: 255 },
+  11800: { r: 196, g: 210, b: 255 },
+  11900: { r: 195, g: 210, b: 255 },
+  12e3: { r: 195, g: 209, b: 255 }
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   BatteryEmpty,
@@ -379,11 +503,14 @@ function isRGB(F) {
   colorScale9,
   colorSonos,
   colorSpotify,
+  darken,
   getHue,
   hsv2RGB,
   hsv2rgb,
   hsvtodec,
+  isOldRGB,
   isRGB,
+  kelvinToRGB,
   pos_to_color,
   rad2deg,
   resultToRgb,

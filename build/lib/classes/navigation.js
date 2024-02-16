@@ -169,7 +169,10 @@ class Navigation extends import_library.BaseClass {
     return (0, import_tools.getPayload)(navigationString, navigationString2);
   }
   resetPosition() {
-    this.setTargetPageByName("main");
+    const index = this.navigationConfig.findIndex((a) => a && a.name === "main");
+    if (index !== -1 && this.database[index]) {
+      this.currentItem = index;
+    }
   }
   getCurrentPage() {
     const page = this.database[this.currentItem];

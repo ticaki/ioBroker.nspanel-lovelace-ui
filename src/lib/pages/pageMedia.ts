@@ -29,7 +29,6 @@ const PageMediaMessageDefault: pages.PageMediaMessage = {
 
 export class PageMedia extends Page {
     config: pages.PageBaseConfig['config'];
-    initMode: 'auto' | 'custom';
     dpInit: string;
     items: pages.PageBaseConfig['items'];
     private step: number = 1;
@@ -42,7 +41,6 @@ export class PageMedia extends Page {
             options.pageItems.unshift({
                 type: 'button',
                 dpInit: '',
-                initMode: 'custom',
                 role: 'button',
                 data: {
                     icon: {
@@ -58,7 +56,6 @@ export class PageMedia extends Page {
 
         this.config = options.config;
         if (this.items && this.items.card === 'cardMedia') this.items = options.items;
-        this.initMode = options.initMode;
         this.dpInit = options.dpInit;
         this.minUpdateInterval = 2000;
     }
@@ -66,10 +63,9 @@ export class PageMedia extends Page {
     async init(): Promise<void> {
         const config = { ...this.config };
         // search states for mode auto
-        const tempConfig: Partial<pages.PageBaseConfig['config']> =
-            this.initMode === 'auto'
-                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)
-                : config;
+        const tempConfig: Partial<pages.PageBaseConfig['config']> = this.dpInit
+            ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)
+            : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
         const tempItem: Partial<pages.PageBaseConfig['items']> = await this.panel.statesControler.createDataItems(

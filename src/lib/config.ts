@@ -7,7 +7,6 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardEntities',
     dpInit: '',
-    initMode: 'custom',
     alwaysOn: 'none',
     uniqueID: 'entities1',
     useColor: false,
@@ -22,13 +21,50 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
     },
     pageItems: [
         {
+            role: 'text.list',
+            type: 'number',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-up' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: 23,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: {
+                        type: 'const',
+                        constVal: 'text',
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
             /**
              * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
              */
             role: 'rgb',
             type: 'shutter',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 icon: {
                     true: {
@@ -101,8 +137,8 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
         {
             role: 'rgb',
             type: 'light',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: { type: 'triggered', dp: '0_userdata.0.RGB', response: 'now' },
@@ -120,6 +156,14 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                     scale: undefined,
                     maxBri: undefined,
                     minBri: undefined,
+                },
+                colorMode: { type: 'const', constVal: true },
+                ct: {
+                    value: {
+                        type: 'triggered',
+                        dp: '0_userdata.0.ct',
+                    },
+                    mode: { type: 'const', constVal: 'kelvin' },
                 },
                 dimmer: {
                     value: {
@@ -156,12 +200,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                     },
                     false: undefined,
                 },
-                ct: {
-                    value: {
-                        type: 'const',
-                        constVal: '40',
-                    },
-                },
+
                 /**
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                  */
@@ -174,72 +213,14 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
         },
         {
             role: 'text.list',
-            type: 'input_sel',
-            dpInit: undefined,
-            initMode: 'custom',
+            type: 'text',
+            dpInit: '',
+
             data: {
-                color: {
-                    true: {
-                        type: 'const',
-                        constVal: Color.HMIOn,
-                    },
-                    false: undefined,
-                    scale: undefined,
-                },
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'home' },
                         color: { type: 'const', constVal: Color.Green },
-                    },
-                    false: {
-                        value: { type: 'const', constVal: 'fan' },
-                        color: { type: 'const', constVal: Color.Red },
-                    },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
-                },
-                entityInSel: {
-                    value: {
-                        type: 'const',
-                        constVal: true,
-                    },
-                    decimal: undefined,
-                    factor: undefined,
-                    unit: undefined,
-                },
-                text: {
-                    true: undefined,
-                    false: undefined,
-                },
-                /**
-                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
-                 */
-                valueList: { type: 'const', constVal: 'home?butter' },
-                /**
-                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
-                 */
-                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
-            },
-        },
-        {
-            role: 'text.list',
-            type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
-            data: {
-                color: {
-                    true: {
-                        type: 'const',
-                        constVal: Color.HMIOn,
-                    },
-                    false: undefined,
-                    scale: undefined,
-                },
-                icon: {
-                    true: {
-                        value: { type: 'const', constVal: 'arrow-up' },
-                        color: { type: 'const', constVal: Color.Blue },
                     },
                     false: {
                         value: { type: 'const', constVal: 'fan' },
@@ -259,14 +240,13 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                     unit: undefined,
                 },
                 text: {
-                    true: undefined,
+                    true: { type: 'const', constVal: 'text' },
                     false: undefined,
                 },
-                setNavi: {
-                    type: 'const',
-                    constVal: '3',
+                text1: {
+                    true: { type: 'const', constVal: 'text1' },
+                    false: undefined,
                 },
-                setValue1: undefined,
             },
         },
     ],
@@ -276,7 +256,7 @@ const pagePowerTest1: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardPower',
     dpInit: '',
-    initMode: 'custom',
+
     alwaysOn: 'none',
     uniqueID: 'power1',
     useColor: false,
@@ -399,7 +379,7 @@ const pageMediaTest: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardMedia',
     dpInit: 'alexa2.0.Echo-Devices.G091EV0704641J8R.Player',
-    initMode: 'auto',
+
     alwaysOn: 'none',
     config: {
         card: 'cardMedia',
@@ -429,7 +409,7 @@ const pageMediaTest: pages.PageBaseConfig = {
                 },
                 color: {
                     type: 'const',
-                    constVal: { red: 250, green: 2, blue: 3 },
+                    constVal: { r: 250, g: 2, b: 3 },
                 },
             },
             duration: {
@@ -541,7 +521,7 @@ const pageMediaTest: pages.PageBaseConfig = {
                 },
                 text: { type: 'const', constVal: '1' },
                 icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 250, blue: 250, green: 0 } },
+                color: { type: 'const', constVal: { r: 250, b: 250, g: 0 } },
                 list: undefined,
                 action: 'cross',
             },
@@ -552,8 +532,8 @@ const pageMediaTest: pages.PageBaseConfig = {
         {
             role: 'spotify-playlist',
             type: 'input_sel',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -601,8 +581,8 @@ const pageMediaTest: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'input_sel',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -650,8 +630,8 @@ const pageMediaTest: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -693,8 +673,8 @@ const pageMediaTest: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -736,8 +716,8 @@ const pageMediaTest: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -779,8 +759,8 @@ const pageMediaTest: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -822,8 +802,8 @@ const pageMediaTest: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -871,7 +851,7 @@ export const pageMediaTest2: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardMedia',
     dpInit: 'alexa2.0.Echo-Devices.G091EV0704641J8R.Player',
-    initMode: 'auto',
+
     alwaysOn: 'none',
     config: {
         card: 'cardMedia',
@@ -903,7 +883,7 @@ export const pageMediaTest2: pages.PageBaseConfig = {
                 },
                 color: {
                     type: 'const',
-                    constVal: { red: 250, green: 2, blue: 3 },
+                    constVal: { r: 250, g: 2, b: 3 },
                 },
             },
             duration: {
@@ -1015,7 +995,7 @@ export const pageMediaTest2: pages.PageBaseConfig = {
                 },
                 text: { type: 'const', constVal: '1' },
                 icon: { type: 'const', constVal: 'home' },
-                color: { type: 'const', constVal: { red: 250, blue: 250, green: 0 } },
+                color: { type: 'const', constVal: { r: 250, b: 250, g: 0 } },
                 list: undefined,
                 action: 'cross',
             },
@@ -1026,8 +1006,8 @@ export const pageMediaTest2: pages.PageBaseConfig = {
         {
             role: 'spotify-playlist',
             type: 'input_sel',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1075,8 +1055,8 @@ export const pageMediaTest2: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1118,8 +1098,8 @@ export const pageMediaTest2: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1161,8 +1141,8 @@ export const pageMediaTest2: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1204,8 +1184,8 @@ export const pageMediaTest2: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1247,8 +1227,8 @@ export const pageMediaTest2: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1295,7 +1275,7 @@ const pageGridTest1: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardGrid',
     dpInit: '',
-    initMode: 'custom',
+
     alwaysOn: 'none',
     uniqueID: 'grid1',
     useColor: false,
@@ -1310,10 +1290,124 @@ const pageGridTest1: pages.PageBaseConfig = {
     },
     pageItems: [
         {
+            role: 'text.list',
+            type: 'number',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-up' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: 23,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: {
+                        type: 'const',
+                        constVal: 'text',
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            /**
+             * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
+             */
+            role: 'rgb',
+            type: 'shutter',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'window-shutter-open' },
+                        color: { type: 'const', constVal: Color.Yellow },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'window-shutter' },
+                        color: { type: 'const', constVal: Color.HMIOff },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                // 1. slider
+                entity1: {
+                    // button
+                    value: { type: 'triggered', dp: '0_userdata.0.shutter' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 100 },
+                },
+                // 2. slider
+                entity2: {
+                    // button
+                    value: { type: 'triggered', dp: '0_userdata.0.shutter' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 100 },
+                },
+                text: {
+                    true: {
+                        type: 'const',
+                        constVal: 'text',
+                    },
+                    false: undefined,
+                },
+                headline: {
+                    type: 'const',
+                    constVal: 'Headline',
+                },
+                text1: {
+                    true: {
+                        type: 'const',
+                        constVal: 'text1',
+                    },
+                    false: undefined,
+                },
+                text2: {
+                    true: {
+                        type: 'const',
+                        constVal: 'text2',
+                    },
+                    false: undefined,
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                //valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+            },
+        },
+        {
             role: 'rgb',
             type: 'light',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: { type: 'triggered', dp: '0_userdata.0.RGB', response: 'now' },
@@ -1332,6 +1426,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
+                colorMode: { type: 'const', constVal: true },
                 dimmer: {
                     value: {
                         type: 'triggered',
@@ -1369,8 +1464,8 @@ const pageGridTest1: pages.PageBaseConfig = {
                 },
                 ct: {
                     value: {
-                        type: 'const',
-                        constVal: '40',
+                        type: 'triggered',
+                        dp: '0_userdata.0.ct',
                     },
                 },
                 /**
@@ -1386,8 +1481,8 @@ const pageGridTest1: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'input_sel',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1436,8 +1531,8 @@ const pageGridTest1: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1480,6 +1575,45 @@ const pageGridTest1: pages.PageBaseConfig = {
                 setValue1: undefined,
             },
         },
+        {
+            role: 'text.list',
+            type: 'text',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'home' },
+                        text: { type: 'const', constVal: '22.2' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: { type: 'const', constVal: 'text' },
+                    false: undefined,
+                },
+                text1: {
+                    true: { type: 'const', constVal: 'text1' },
+                    false: undefined,
+                },
+            },
+        },
     ],
     items: undefined,
 };
@@ -1487,7 +1621,7 @@ const pageGridTest2: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardGrid',
     dpInit: '',
-    initMode: 'custom',
+
     alwaysOn: 'none',
     uniqueID: 'grid2',
     useColor: false,
@@ -1505,8 +1639,8 @@ const pageGridTest2: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'input_sel',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1555,8 +1689,7 @@ const pageGridTest2: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
 
             data: {
                 color: {
@@ -1603,7 +1736,7 @@ const pageGridTest4: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardGrid',
     dpInit: '',
-    initMode: 'custom',
+
     alwaysOn: 'none',
     uniqueID: 'grid4',
     useColor: false,
@@ -1621,8 +1754,8 @@ const pageGridTest4: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'input_sel',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1671,8 +1804,7 @@ const pageGridTest4: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
 
             data: {
                 color: {
@@ -1719,7 +1851,7 @@ const pageGrid2Test2: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardGrid2',
     dpInit: '',
-    initMode: 'custom',
+
     alwaysOn: 'none',
     uniqueID: 'grid3',
     useColor: false,
@@ -1737,8 +1869,8 @@ const pageGrid2Test2: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'input_sel',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1787,8 +1919,7 @@ const pageGrid2Test2: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
 
             data: {
                 color: {
@@ -1832,7 +1963,7 @@ const pageGrid2Test2: pages.PageBaseConfig = {
 };
 const pageThermoTest: pages.PageBaseConfig = {
     card: 'cardThermo',
-    initMode: 'auto',
+
     uniqueID: 'thermo1',
     dpInit: '',
     alwaysOn: 'none',
@@ -1840,8 +1971,8 @@ const pageThermoTest: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'input_sel',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 entityInSel: {
                     value: {
@@ -1870,8 +2001,8 @@ const pageThermoTest: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -1913,8 +2044,8 @@ const pageThermoTest: pages.PageBaseConfig = {
         {
             role: 'text.list',
             type: 'button',
-            dpInit: undefined,
-            initMode: 'custom',
+            dpInit: '',
+
             data: {
                 color: {
                     true: {
@@ -3090,6 +3221,8 @@ export const Testconfig: Partial<panelConfigPartial> = {
         iconBig2: false,
     },
     timeout: 30, // dat kommt vom Admin
+    dimLow: 20,
+    dimHigh: 90,
 };
 
 /**

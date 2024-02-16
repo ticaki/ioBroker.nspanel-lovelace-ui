@@ -63,9 +63,8 @@ class PageThermo extends import_Page.Page {
     this.dpInit = options.dpInit;
   }
   async init() {
-    var _a;
     const config = { ...this.config };
-    const tempConfig = (_a = await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)) != null ? _a : config;
+    const tempConfig = this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : config;
     const tempItem = await this.panel.statesControler.createDataItems(
       tempConfig,
       this

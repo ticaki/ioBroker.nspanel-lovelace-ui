@@ -135,6 +135,9 @@ export class Dataitem extends BaseClass {
         const value = await this.getObject();
         if (value) {
             if (Color.isRGB(value)) return value;
+            if (typeof value == 'object' && 'red' in value && 'blue' in value && 'green' in value) {
+                return { r: value.red as number, g: value.green as number, b: value.blue as number };
+            }
         }
         return null;
     }

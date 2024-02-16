@@ -56,7 +56,13 @@ const DefaultOptions = {
     pages: [],
 };
 
-type panelConfigTop = { CustomFormat: string; locale: Intl.LocalesArgument; timeout: number };
+type panelConfigTop = {
+    CustomFormat: string;
+    locale: Intl.LocalesArgument;
+    timeout: number;
+    dimLow: number;
+    dimHigh: number;
+};
 
 export class Panel extends BaseClass {
     private minuteLoopTimeout: ioBroker.Timeout | undefined;
@@ -65,6 +71,7 @@ export class Panel extends BaseClass {
     private _activePage: Page | undefined = undefined;
     private screenSaver: Screensaver | undefined;
     private InitDone: boolean = false;
+    dimMode: { low: number; high: number };
     readonly navigation: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
     readonly controller: Controller;
@@ -98,6 +105,8 @@ export class Panel extends BaseClass {
         if (typeof this.panelSend.addMessageTasmota === 'function')
             this.sendToTasmota = this.panelSend.addMessageTasmota;
         this.statesControler = options.controller.statesControler;
+
+        this.dimMode = { low: options.dimLow ?? 70, high: options.dimHigh ?? 90 };
 
         let scsFound = 0;
         for (let a = 0; a < options.pages.length; a++) {
@@ -311,7 +320,7 @@ export class Panel extends BaseClass {
         }
         if (topic.endsWith(ReiveTopicAppendix)) {
             //this.log.debug(`Receive message ${topic} with ${message}`);
-            const event: NSPanel.IncomingEvent | null = pages.convertToEvent(message);
+            const event: NSPanel.IncomingEvent | null = this.convertToEvent(message);
             if (event) {
                 this.HandleIncomingMessage(event);
             }
@@ -458,7 +467,7 @@ export class Panel extends BaseClass {
                 this.restartLoops();
                 //this.sendScreeensaverTimeout(this.timeout);
                 this.sendScreeensaverTimeout(3);
-                this.sendToPanel('dimmode~80~100~6371');
+                this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~6371`);
 
                 this.navigation.resetPosition();
                 const page = this.navigation.getCurrentPage();
@@ -492,7 +501,7 @@ export class Panel extends BaseClass {
             }
             case 'buttonPress2': {
                 if (event.id == 'screensaver') {
-                    await this.setActivePage(this.pages[index]);
+                    await this.setActivePage(this.navigation.getCurrentPage());
                 } else if (event.action === 'bExit') {
                     await this.setActivePage(true);
                 } else {
@@ -530,6 +539,62 @@ export class Panel extends BaseClass {
                 break;
             }
         }
+    }
+    private convertToEvent(msg: string): NSPanel.IncomingEvent | null {
+        try {
+            msg = (JSON.parse(msg) || {}).CustomRecv;
+        } catch (e) {
+            this.log.warn('Receive a broken msg from mqtt: ' + msg);
+        }
+        if (msg === undefined) return null;
+        const temp = msg.split(',');
+        if (!NSPanel.isEventType(temp[0])) return null;
+        if (!NSPanel.isEventMethod(temp[1])) return null;
+        let popup: undefined | string = undefined;
+        if (temp[1] === 'pageOpenDetail') popup = temp.splice(2, 1)[0];
+        const arr = String(temp[2]).split('?');
+        if (arr[3])
+            return {
+                type: temp[0],
+                method: temp[1],
+                target: parseInt(arr[3]),
+                page: parseInt(arr[1]),
+                cmd: parseInt(arr[0]),
+                popup: popup,
+                id: arr[2],
+                action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+                opt: temp[4] ?? '',
+            };
+        if (arr[2])
+            return {
+                type: temp[0],
+                method: temp[1],
+                page: parseInt(arr[0]),
+                cmd: parseInt(arr[1]),
+                popup: popup,
+                id: arr[2],
+                action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+                opt: temp[4] ?? '',
+            };
+        else if (arr[1])
+            return {
+                type: temp[0],
+                method: temp[1],
+                page: parseInt(arr[0]),
+                popup: popup,
+                id: arr[1],
+                action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+                opt: temp[4] ?? '',
+            };
+        else
+            return {
+                type: temp[0],
+                method: temp[1],
+                popup: popup,
+                id: arr[0],
+                action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+                opt: temp[4] ?? '',
+            };
     }
 
     /*

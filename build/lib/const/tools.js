@@ -32,6 +32,8 @@ __export(tools_exports, {
   getPayloadArray: () => getPayloadArray,
   getRGBfromRGBThree: () => getRGBfromRGBThree,
   getScaledNumber: () => getScaledNumber,
+  getSliderCTFromValue: () => getSliderCTFromValue,
+  getTemperaturColorFromValue: () => getTemperaturColorFromValue,
   getTranslation: () => getTranslation,
   getValueEntryBoolean: () => getValueEntryBoolean,
   getValueEntryNumber: () => getValueEntryNumber,
@@ -41,6 +43,7 @@ __export(tools_exports, {
   setHuefromRGB: () => setHuefromRGB,
   setRGBThreefromRGB: () => setRGBThreefromRGB,
   setScaledNumber: () => setScaledNumber,
+  setSliderCTFromValue: () => setSliderCTFromValue,
   setValueEntryNumber: () => setValueEntryNumber
 });
 module.exports = __toCommonJS(tools_exports);
@@ -59,12 +62,12 @@ function ifValueEntryIs(i, type) {
     return i.value.type === type;
   return false;
 }
-async function setValueEntryNumber(i, value) {
+async function setValueEntryNumber(i, value, s = true) {
   var _a;
   if (!i || !i.value)
     return;
   let res = value / ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
-  if (i.minScale !== void 0 && i.maxScale !== void 0) {
+  if (s && i.minScale !== void 0 && i.maxScale !== void 0) {
     const min = await i.minScale.getNumber();
     const max = await i.maxScale.getNumber();
     if (min !== null && max !== null) {
@@ -76,14 +79,14 @@ async function setValueEntryNumber(i, value) {
   else
     await i.value.setStateAsync(res);
 }
-async function getValueEntryNumber(i) {
+async function getValueEntryNumber(i, s = true) {
   var _a;
   if (!i)
     return null;
   const nval = i.value && await i.value.getNumber();
   if (nval !== null && nval !== void 0) {
     let res = nval * ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
-    if (i.minScale !== void 0 && i.maxScale !== void 0) {
+    if (s && i.minScale !== void 0 && i.maxScale !== void 0) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
       if (min !== null && max !== null) {
@@ -94,6 +97,24 @@ async function getValueEntryNumber(i) {
   }
   return null;
 }
+function getScaledNumberRaw(n, min, max, oldValue = null) {
+  if (min !== null && max !== null) {
+    if (oldValue === null) {
+      n = Math.round((0, import_Color2.scale)(n, min, max, 0, 100));
+    } else {
+      n = (0, import_Color2.scale)(n, 0, 100, min, max);
+      if (oldValue !== false) {
+        if (oldValue >= n)
+          n = Math.floor(n);
+        else
+          n = Math.ceil(n);
+      } else {
+        n = Math.round(n);
+      }
+    }
+  }
+  return n;
+}
 async function getScaledNumber(i) {
   if (!i)
     return null;
@@ -102,13 +123,83 @@ async function getScaledNumber(i) {
     if (i.minScale !== void 0 && i.maxScale !== void 0) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
-      if (min !== null && max !== null) {
-        nval = Math.round((0, import_Color2.scale)(nval, min, max, 0, 100));
-      }
+      nval = getScaledNumberRaw(nval, min, max);
     }
     return nval;
   }
   return null;
+}
+async function getTemperaturColorFromValue(i, dimmer = 100) {
+  if (!i)
+    return null;
+  let nval = i.value && await i.value.getNumber();
+  const mode = i.mode && await i.mode.getString();
+  let kelvin = 3500;
+  if (nval !== null && nval !== void 0) {
+    if (i.minScale !== void 0 && i.maxScale !== void 0) {
+      const min = await i.minScale.getNumber();
+      const max = await i.maxScale.getNumber();
+      nval = getScaledNumberRaw(nval, min, max);
+    }
+    if (mode === "mired") {
+      kelvin = 10 ** 6 / nval;
+    } else {
+      kelvin = nval;
+    }
+    kelvin = kelvin > 7e3 ? 7e3 : kelvin < 1800 ? 1800 : kelvin;
+    let r = import_Color2.kelvinToRGB[Math.trunc(kelvin / 100) * 100];
+    r = (0, import_Color2.darken)(r, (0, import_Color2.scale)(dimmer, 100, 0, 0, 1));
+    return r ? String((0, import_Color2.rgb_dec565)(r)) : null;
+  }
+  return null;
+}
+async function getSliderCTFromValue(i) {
+  if (!i)
+    return null;
+  let nval = i.value && await i.value.getNumber();
+  const mode = i.mode && await i.mode.getString();
+  let r = 3500;
+  if (nval !== null && nval !== void 0) {
+    if (i.minScale !== void 0 && i.maxScale !== void 0) {
+      const min = await i.minScale.getNumber();
+      const max = await i.maxScale.getNumber();
+      if (min !== null && max !== null)
+        nval = Math.round((0, import_Color2.scale)(nval, min, max, 1800, 7e3));
+    }
+    if (mode === "mired") {
+      r = 10 ** 6 / nval;
+    } else {
+      r = nval;
+    }
+    r = r > 7e3 ? 7e3 : r < 1800 ? 1800 : r;
+    r = getScaledNumberRaw(r, 1800, 7e3);
+    return r !== null ? String(r) : null;
+  }
+  return null;
+}
+async function setSliderCTFromValue(i, value) {
+  var _a;
+  if (!i || !i.value)
+    return;
+  const nval = (_a = i.value && await i.value.getNumber()) != null ? _a : null;
+  const mode = i.mode && await i.mode.getString();
+  if (nval !== null) {
+    let r = getScaledNumberRaw(value, 1800, 7e3, false);
+    r = r > 7e3 ? 7e3 : r < 1800 ? 1800 : r;
+    if (mode === "mired") {
+      r = 10 ** 6 / r;
+    }
+    if (i.minScale !== void 0 && i.maxScale !== void 0) {
+      const min = await i.minScale.getNumber();
+      const max = await i.maxScale.getNumber();
+      if (min !== null && max !== null)
+        r = Math.round((0, import_Color2.scale)(nval, 1800, 7e3, min, max));
+    }
+    if (i.set && i.set.writeable)
+      await i.value.setStateAsync(r);
+    else if (nval !== value)
+      await i.value.setStateAsync(r);
+  }
 }
 async function setScaledNumber(i, value) {
   var _a;
@@ -117,15 +208,7 @@ async function setScaledNumber(i, value) {
   const nval = (_a = await i.value.getNumber()) != null ? _a : null;
   if (nval !== null) {
     if (i.minScale !== void 0 && i.maxScale !== void 0) {
-      const min = await i.minScale.getNumber();
-      const max = await i.maxScale.getNumber();
-      if (min !== null && max !== null) {
-        value = (0, import_Color2.scale)(value, 0, 100, min, max);
-        if (nval > value)
-          value = Math.floor(value);
-        else
-          value = Math.ceil(value);
-      }
+      value = getScaledNumberRaw(value, await i.minScale.getNumber(), await i.maxScale.getNumber(), value);
     }
     if (i.set && i.set.writeable)
       await i.value.setStateAsync(value);
@@ -134,15 +217,21 @@ async function setScaledNumber(i, value) {
   }
 }
 async function getIconEntryValue(i, on, def, defOff = null) {
-  var _a, _b, _c;
+  var _a, _b, _c, _d, _e, _f;
   if (i === void 0)
     return "";
   on = on != null ? on : true;
   if (!i)
     return import_icon_mapping.Icons.GetIcon(on ? def : defOff != null ? defOff : def);
-  const icon = i.true && i.true.value && await i.true.value.getString();
+  const text = (_a = i.true && i.true.text && await i.true.text.getString()) != null ? _a : null;
+  if (text !== null) {
+    if (!on)
+      return (_b = i.false && i.false.text && await i.false.text.getString()) != null ? _b : text;
+    return text;
+  }
+  const icon = (_c = i.true && i.true.value && await i.true.value.getString()) != null ? _c : null;
   if (!on) {
-    return import_icon_mapping.Icons.GetIcon((_c = (_b = (_a = i.false && i.false.value && await i.false.value.getString()) != null ? _a : defOff) != null ? _b : icon) != null ? _c : def);
+    return import_icon_mapping.Icons.GetIcon((_f = (_e = (_d = i.false && i.false.value && await i.false.value.getString()) != null ? _d : defOff) != null ? _e : icon) != null ? _f : def);
   }
   return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def);
 }
@@ -181,11 +270,7 @@ async function GetIconColor(item, value, min = null, max = null, offColor = null
       val = val < minValue ? minValue : val;
       return String(
         (0, import_Color2.rgb_dec565)(
-          (0, import_Color2.Interpolate)(
-            offColor != null ? offColor : { red: 100, green: 100, blue: 100 },
-            onColor ? onColor : import_Color2.HMIOn,
-            (0, import_Color2.scale)(100 - val, minValue, maxValue, 0, 1)
-          )
+          !offColor ? (0, import_Color2.darken)(onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(100 - val, minValue, maxValue, 0, 1)) : (0, import_Color2.Interpolate)(offColor, onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(100 - val, minValue, maxValue, 0, 1))
         )
       );
     }
@@ -204,11 +289,7 @@ async function GetIconColor(item, value, min = null, max = null, offColor = null
       val = val < minValue ? minValue : val;
       return String(
         (0, import_Color2.rgb_dec565)(
-          (0, import_Color2.Interpolate)(
-            offColor2 ? offColor2 : { red: 100, green: 100, blue: 100 },
-            onColor ? onColor : import_Color2.HMIOn,
-            (0, import_Color2.scale)(100 - val, minValue, maxValue, 0, 1)
-          )
+          !offColor2 ? (0, import_Color2.darken)(onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(100 - val, minValue, maxValue, 0, 1)) : (0, import_Color2.Interpolate)(offColor2, onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(100 - val, minValue, maxValue, 0, 1))
         )
       );
     }
@@ -228,11 +309,11 @@ async function getEntryColor(i, value, def) {
     def = String((0, import_Color2.rgb_dec565)(def));
   if (!i)
     return def;
-  const icon = i.true && await i.true.getRGBDec();
+  const color = i.true && await i.true.getRGBDec();
   if (!value) {
-    return (_b = (_a = i.false && await i.false.getRGBDec()) != null ? _a : icon) != null ? _b : def;
+    return (_b = (_a = i.false && await i.false.getRGBDec()) != null ? _a : color) != null ? _b : def;
   }
-  return icon != null ? icon : def;
+  return color != null ? color : def;
 }
 async function getEntryTextOnOff(i, on) {
   var _a, _b;
@@ -288,7 +369,7 @@ const getRGBfromRGBThree = async (item) => {
   const blue = (_c = item.Blue && await item.Blue.getNumber()) != null ? _c : -1;
   if (red === -1 || blue === -1 || green === -1)
     return null;
-  return { red, green, blue };
+  return { r: red, g: green, b: blue };
 };
 const getDecfromRGBThree = async (item) => {
   const rgb = await getRGBfromRGBThree(item);
@@ -299,9 +380,9 @@ const getDecfromRGBThree = async (item) => {
 const setRGBThreefromRGB = async (item, c) => {
   if (!item || !item.Red || !item.Green || !item.Blue)
     return;
-  await item.Red.setStateAsync(c.red);
-  await item.Green.setStateAsync(c.green);
-  await item.Blue.setStateAsync(c.blue);
+  await item.Red.setStateAsync(c.r);
+  await item.Green.setStateAsync(c.g);
+  await item.Blue.setStateAsync(c.b);
 };
 const getDecfromHue = async (item) => {
   var _a;
@@ -314,7 +395,7 @@ const getDecfromHue = async (item) => {
   if (hue === null)
     return null;
   const arr = (0, import_Color2.hsv2rgb)(hue, saturation, 1);
-  return String((0, import_Color2.rgb_dec565)({ red: arr[0], green: arr[1], blue: arr[2] }));
+  return String((0, import_Color2.rgb_dec565)({ r: arr[0], g: arr[1], b: arr[2] }));
 };
 const setHuefromRGB = async (item, c) => {
   if (!item || !item.hue || !(0, import_Color2.isRGB)(c))
@@ -322,7 +403,7 @@ const setHuefromRGB = async (item, c) => {
   if (!item.hue.writeable) {
     return;
   }
-  const hue = (0, import_Color2.getHue)(c.red, c.green, c.blue);
+  const hue = (0, import_Color2.getHue)(c.r, c.g, c.b);
   await item.hue.setStateAsync(hue);
 };
 function formatInSelText(Text) {
@@ -414,6 +495,8 @@ function deepAssign(def, source, level = 0) {
   getPayloadArray,
   getRGBfromRGBThree,
   getScaledNumber,
+  getSliderCTFromValue,
+  getTemperaturColorFromValue,
   getTranslation,
   getValueEntryBoolean,
   getValueEntryNumber,
@@ -423,6 +506,7 @@ function deepAssign(def, source, level = 0) {
   setHuefromRGB,
   setRGBThreefromRGB,
   setScaledNumber,
+  setSliderCTFromValue,
   setValueEntryNumber
 });
 //# sourceMappingURL=tools.js.map

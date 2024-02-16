@@ -155,6 +155,45 @@ export type MediaToolBoxAction =
     | 'seek'
     | 'cross'
     | 'nexttool';
+export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
+    (
+        | PageItemNumberDataItems
+        | PageItemButtonDataItems
+        | PageItemShutterDataItems
+        | PageItemInputSelDataItems
+        | PageItemLightDataItems
+        | PageItemTextDataItems
+    );
+
+export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data' | 'type'> &
+    (
+        | PageItemButtonDataItemsOptions
+        | PageItemShutterDataItemsOptions
+        | PageItemInputSelDataItemsOptions
+        | PageItemLightDataItemsOptions
+        | PageItemNumberDataItemsOptions
+        | PageItemTextDataItemsOptions
+    );
+
+export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'icon'>;
+export type PageItemTextDataItemsOptions = {
+    type: 'text';
+    data: ChangeTypeOfKeys<PageItemText, Types.DataItemsOptions | undefined>;
+};
+export type PageItemTextDataItems = {
+    type: 'text';
+    data: ChangeTypeOfKeys<PageItemText, Dataitem | undefined>;
+};
+
+export type PageItemNumber = Pick<PageItemBase, 'entity1' | 'text' | 'icon'>;
+export type PageItemNumberDataItemsOptions = {
+    type: 'number';
+    data: ChangeTypeOfKeys<PageItemNumber, Types.DataItemsOptions | undefined>;
+};
+export type PageItemNumberDataItems = {
+    type: 'number';
+    data: ChangeTypeOfKeys<PageItemNumber, Dataitem | undefined>;
+};
 
 export type PageItemButton = Pick<PageItemBase, 'setValue1' | 'text' | 'icon' | 'color' | 'entity1' | 'setNavi'>;
 export type PageItemButtonDataItemsOptions = {
@@ -186,6 +225,7 @@ export type PageItemLight = Pick<
     | 'entityInSel'
     | 'ct'
     | 'headline'
+    | 'colorMode'
 >;
 export type PageItemLightDataItemsOptions = {
     type: 'light';
@@ -250,6 +290,7 @@ export type PageItemBase = {
     dimmer?: ScaledNumberType;
     ct?: ScaledNumberType;
     hue?: string;
+    colorMode: boolean; // true rgb, false ct
     saturation?: string;
     useColor: string;
     Red?: number;
@@ -316,27 +357,15 @@ export type PageItemUnion = {
         | 'text.list'
         | 'arrow'
         | 'spotify-playlist';
-    dpInit: string | undefined;
-    initMode: 'auto' | 'custom';
+    dpInit: string;
     type: Types.SerialTypePageElements;
     data: PageItemBase;
 };
 
-export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
-    (PageItemButtonDataItems | PageItemShutterDataItems | PageItemInputSelDataItems | PageItemLightDataItems);
-
-export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data' | 'type'> &
-    (
-        | PageItemButtonDataItemsOptions
-        | PageItemShutterDataItemsOptions
-        | PageItemInputSelDataItemsOptions
-        | PageItemLightDataItemsOptions
-    );
-
 export type ColorEntryType = Record<Types.BooleanUnion, RGB | undefined> & { scale?: Types.IconScaleElement };
 
 export type IconEntryType =
-    | (Partial<Record<Types.BooleanUnion, { value: string; color: RGB }>> & {
+    | (Partial<Record<Types.BooleanUnion, { value: string; color: RGB; text?: string }>> & {
           scale?: Types.IconScaleElement | undefined;
           maxBri?: string;
           minBri?: string;
@@ -362,6 +391,7 @@ export type ScaledNumberType =
           minScale?: number;
           maxScale?: number;
           set?: number;
+          mode?: string; // atm 'kelvin' | 'mired'
       }
     | undefined;
 export type listCommand = { id: string; value: string; command?: listCommandUnion };

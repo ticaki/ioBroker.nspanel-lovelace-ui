@@ -191,7 +191,10 @@ export class Navigation extends BaseClass {
         return getPayload(navigationString, navigationString2);
     }
     resetPosition(): void {
-        this.setTargetPageByName('main');
+        const index = this.navigationConfig.findIndex((a) => a && a.name === 'main');
+        if (index !== -1 && this.database[index]) {
+            this.currentItem = index;
+        }
     }
     getCurrentPage(): Page {
         const page = this.database[this.currentItem];

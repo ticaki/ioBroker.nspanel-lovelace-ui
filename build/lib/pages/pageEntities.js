@@ -45,6 +45,14 @@ class PageEntities extends import_Page.Page {
     this.minUpdateInterval = 2e3;
   }
   async init() {
+    const config = { ...this.config };
+    const tempConfig = this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : config;
+    const tempItem = await this.panel.statesControler.createDataItems(
+      tempConfig,
+      this
+    );
+    this.items = tempItem;
+    this.items.card = this.card;
   }
   async update() {
     var _a;

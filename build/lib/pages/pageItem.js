@@ -53,7 +53,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     if (!this.config)
       return;
     const config = { ...this.config };
-    const tempConfig = this.config.initMode === "auto" && this.config.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.config.dpInit, config.data) : config.data;
+    const tempConfig = this.config.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.config.dpInit, config.data) : config.data;
     const tempItem = await this.panel.statesControler.createDataItems(
       tempConfig,
       this
@@ -61,7 +61,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.dataItems = { ...config, data: tempItem };
   }
   async getPageItemPayload() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -81,7 +81,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           if (rgb === null && nhue)
             rgb = (_e = Color.hsv2RGB(nhue, 1, 1)) != null ? _e : null;
           message.icon = await tools.getIconEntryValue(item.icon, v, "", "");
-          message.iconColor = (_g = (_f = rgb && await tools.GetIconColor(rgb, dimmer !== null ? dimmer > 20 ? dimmer : 20 : v)) != null ? _f : await tools.GetIconColor(item.icon, dimmer !== null ? dimmer > 20 ? dimmer : 20 : v)) != null ? _g : "";
+          const colorMode = !item.colorMode ? "none" : await item.colorMode.getBoolean() ? "hue" : "ct";
+          message.iconColor = (_g = (_f = colorMode === "hue" ? await tools.GetIconColor(
+            rgb != null ? rgb : void 0,
+            dimmer !== null ? dimmer > 5 ? dimmer : 5 : v
+          ) : await tools.getTemperaturColorFromValue(item.ct, dimmer != null ? dimmer : 100)) != null ? _f : await tools.GetIconColor(item.icon, dimmer !== null ? dimmer > 5 ? dimmer : 5 : v)) != null ? _g : "";
           if (v) {
             message.optionalValue = "1";
           } else {
@@ -125,11 +129,56 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           return tools.getItemMesssage(message);
           break;
         }
+        case "number": {
+          if (entry.type === "number") {
+            const item = entry.data;
+            message.type = "number";
+            const number = (_j = await tools.getValueEntryNumber(item.entity1, false)) != null ? _j : 0;
+            message.displayName = (_k = await tools.getEntryTextOnOff(item.text, true)) != null ? _k : "";
+            message.icon = (_l = await tools.getIconEntryValue(item.icon, true, "")) != null ? _l : "";
+            message.iconColor = (_m = await tools.getIconEntryColor(item.icon, true, Color.HMIOn)) != null ? _m : "";
+            const min = (_n = item.entity1 && item.entity1.minScale && await item.entity1.minScale.getNumber()) != null ? _n : 0;
+            const max = (_o = item.entity1 && item.entity1.maxScale && await item.entity1.maxScale.getNumber()) != null ? _o : 100;
+            return tools.getPayload(
+              message.type,
+              message.intNameEntity,
+              message.icon,
+              message.iconColor,
+              message.displayName,
+              `${number}|${min}|${max}`
+            );
+          }
+          break;
+        }
+        case "text": {
+          if (entry.type === "text") {
+            const item = entry.data;
+            message.type = "text";
+            let value = await tools.getValueEntryNumber(item.entity1, false);
+            if (value === null)
+              value = await tools.getValueEntryBoolean(item.entity1);
+            if (value === null)
+              value = true;
+            message.displayName = (_p = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _p : "";
+            message.optionalValue = (_q = await tools.getEntryTextOnOff(item.text1, !!value)) != null ? _q : "";
+            message.icon = (_r = await tools.getIconEntryValue(item.icon, !!value, "")) != null ? _r : "";
+            message.iconColor = (_s = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _s : "";
+            return tools.getPayload(
+              message.type,
+              message.intNameEntity,
+              message.icon,
+              message.iconColor,
+              message.displayName,
+              message.optionalValue
+            );
+          }
+          break;
+        }
         case "button": {
           const item = entry.data;
           if (item.entity1 && item.entity1.value) {
             message.optionalValue = !!(item.setValue1 && await item.setValue1.getBoolean()) ? "0" : "1";
-            message.displayName = (_j = await tools.getEntryTextOnOff(item.text, message.optionalValue === "1")) != null ? _j : "test1";
+            message.displayName = (_t = await tools.getEntryTextOnOff(item.text, message.optionalValue === "1")) != null ? _t : "test1";
             message.icon = await tools.getIconEntryValue(
               item.icon,
               message.optionalValue === "1",
@@ -151,10 +200,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         case "input_sel": {
           const item = entry.data;
           message.type = "input_sel";
-          const value = (_k = await tools.getValueEntryNumber(item.entityInSel)) != null ? _k : await tools.getValueEntryBoolean(item.entityInSel);
+          const value = (_u = await tools.getValueEntryNumber(item.entityInSel)) != null ? _u : await tools.getValueEntryBoolean(item.entityInSel);
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
-          message.iconColor = (_l = await tools.GetIconColor(item.icon, value != null ? value : true, 0, 100, Color.HMIOff)) != null ? _l : Color.HMIOn;
-          message.optionalValue = (_m = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _m : "PRESS";
+          message.iconColor = (_v = await tools.GetIconColor(item.icon, value != null ? value : true, 0, 100, Color.HMIOff)) != null ? _v : Color.HMIOn;
+          message.optionalValue = (_w = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _w : "PRESS";
           this.log.debug(JSON.stringify(message));
           return tools.getItemMesssage(message);
           break;
@@ -284,7 +333,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     return "";
   }
   async GeneratePopup(mode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
     if (!this.config || !this.dataItems)
       return null;
     const entry = this.dataItems;
@@ -348,24 +397,28 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 break;
               }
             }
-            if (rgb !== null) {
-              message.hueMode = true;
+            message.slider2Pos = "disable";
+            if (item.ct && item.ct.value) {
+              const ct = await tools.getSliderCTFromValue(item.ct);
+              if (ct !== null) {
+                message.slider2Pos = parseInt(ct);
+              }
+            }
+            const colorMode = !item.colorMode ? "none" : await item.colorMode.getBoolean() ? "hue" : "ct";
+            message.hueMode = rgb !== null;
+            if (rgb !== null && colorMode === "hue") {
               message.slidersColor = await tools.GetIconColor(
                 rgb,
                 message.slider1Pos !== "disable" && message.slider1Pos !== void 0 ? message.slider1Pos > 20 ? message.slider1Pos : 20 : message.buttonState !== "disable" && message.buttonState !== false
               );
             }
-            message.slider2Pos = "disable";
-            if (item.ct && item.ct.value) {
-              const ct = await tools.getScaledNumber(item.ct);
-              if (ct) {
-                message.slider2Pos = Math.trunc(ct);
-              }
+            if (message.slider2Pos !== "disable" && colorMode === "ct") {
+              message.slidersColor = (_g = await tools.getTemperaturColorFromValue(item.ct, dimmer != null ? dimmer : 100)) != null ? _g : "";
             }
             message.popup = message.slider2Pos !== "disable" && rgb !== null;
-            message.slider1Translation = (_g = item.text1 && item.text1.true && await item.text1.true.getString()) != null ? _g : void 0;
-            message.slider2Translation = (_h = item.text2 && item.text2.true && await item.text2.true.getString()) != null ? _h : void 0;
-            message.hue_translation = (_i = item.text3 && item.text3.true && await item.text3.true.getString()) != null ? _i : void 0;
+            message.slider1Translation = (_h = item.text1 && item.text1.true && await item.text1.true.getString()) != null ? _h : void 0;
+            message.slider2Translation = (_i = item.text2 && item.text2.true && await item.text2.true.getString()) != null ? _i : void 0;
+            message.hue_translation = (_j = item.text3 && item.text3.true && await item.text3.true.getString()) != null ? _j : void 0;
             if (message.slider1Translation !== void 0)
               message.slider1Translation = this.library.getTranslation(message.slider1Translation);
             if (message.slider2Translation !== void 0)
@@ -386,13 +439,13 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message.type = "insel";
         if (!(message.type === "insel"))
           return null;
-        const value = (_j = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _j : true;
+        const value = (_k = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _k : true;
         if (message.type === "insel")
           message.textColor = await tools.getEntryColor(item.color, value, Color.White);
         message.currentState = this.library.getTranslation(
-          (_k = item.headline && await item.headline.getString()) != null ? _k : ""
+          (_l = item.headline && await item.headline.getString()) != null ? _l : ""
         );
-        if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_l = item.entityInSel.value.type) != null ? _l : "") && (item.entityInSel.value.getCommonStates() || entry.role == "spotify-playlist")) {
+        if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_m = item.entityInSel.value.type) != null ? _m : "") && (item.entityInSel.value.getCommonStates() || entry.role == "spotify-playlist")) {
           let states = void 0;
           const value2 = await tools.getValueEntryString(item.entityInSel);
           switch (entry.role) {
@@ -426,13 +479,13 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               message = { ...message, type: "popupThermo" };
               if (message.type === "popupThermo") {
                 message.headline = this.library.getTranslation(
-                  (_m = item.headline && await item.headline.getString()) != null ? _m : ""
+                  (_n = item.headline && await item.headline.getString()) != null ? _n : ""
                 );
               }
               break;
             }
           }
-          let list = (_o = (_n = item.valueList && await item.valueList.getObject()) != null ? _n : item.valueList && await item.valueList.getString()) != null ? _o : [
+          let list = (_p = (_o = item.valueList && await item.valueList.getObject()) != null ? _o : item.valueList && await item.valueList.getString()) != null ? _p : [
             "1",
             "2",
             "3",
@@ -458,7 +511,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           message = { ...message, type: "popupThermo" };
           if (message.type === "popupThermo") {
             message.headline = this.library.getTranslation(
-              (_p = item.headline && await item.headline.getString()) != null ? _p : ""
+              (_q = item.headline && await item.headline.getString()) != null ? _q : ""
             );
           }
         }
@@ -473,14 +526,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message.type = "popupShutter";
         if (!(message.type === "popupShutter"))
           break;
-        message.text2 = (_q = item.text && item.text.true && await item.text.true.getString()) != null ? _q : "";
+        message.text2 = (_r = item.text && item.text.true && await item.text.true.getString()) != null ? _r : "";
         message.text2 = this.library.getTranslation(message.text2);
-        const pos1 = (_r = await tools.getValueEntryNumber(item.entity1)) != null ? _r : void 0;
-        const pos2 = (_s = await tools.getValueEntryNumber(item.entity2)) != null ? _s : void 0;
+        const pos1 = (_s = await tools.getValueEntryNumber(item.entity1)) != null ? _s : void 0;
+        const pos2 = (_t = await tools.getValueEntryNumber(item.entity2)) != null ? _t : void 0;
         if (pos1 !== void 0)
-          message.icon = (_t = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _t : "";
+          message.icon = (_u = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _u : "";
         else if (pos2 !== void 0)
-          message.icon = (_u = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _u : "";
+          message.icon = (_v = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _v : "";
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
           import_icon_mapping.Icons.GetIcon("arrow-up"),
           import_icon_mapping.Icons.GetIcon("stop"),
@@ -507,7 +560,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           });
           if (index === 0) {
             message.pos1 = String(pos);
-            message.pos1text = (_v = await tools.getEntryTextOnOff(item.text1, true)) != null ? _v : "";
+            message.pos1text = (_w = await tools.getEntryTextOnOff(item.text1, true)) != null ? _w : "";
             message.pos1text = this.library.getTranslation(message.pos1text);
             message.iconL1 = optionalValueC[0];
             message.iconM1 = optionalValueC[1];
@@ -517,7 +570,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.statusR1 = optionalValueC[5];
           } else {
             message.pos2 = String(pos);
-            message.pos2text = (_w = await tools.getEntryTextOnOff(item.text2, true)) != null ? _w : "";
+            message.pos2text = (_x = await tools.getEntryTextOnOff(item.text2, true)) != null ? _x : "";
             message.pos2text = this.library.getTranslation(message.pos2text);
             message.iconL2 = optionalValueC[0];
             message.iconM2 = optionalValueC[1];
@@ -705,6 +758,19 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         }
         break;
       }
+      case "colorTempSlider": {
+        if (entry.type === "light") {
+          const item = entry.data;
+          if (item && item.ct && item.ct.value && item.ct.value.writeable) {
+            const ct = await tools.getSliderCTFromValue(item.ct);
+            if (ct !== null && String(ct) != value)
+              await tools.setSliderCTFromValue(item.ct, parseInt(value));
+          } else {
+            this.log.warn("ct is not writeable!");
+          }
+        }
+        break;
+      }
       case "OnOff": {
         if (entry.type === "light") {
           const item = entry.data;
@@ -822,6 +888,12 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             await tools.setValueEntryNumber(items.entity2, parseInt(value));
         }
         break;
+      }
+      case "number-set": {
+        if (entry.type === "number") {
+          const item = entry.data;
+          await tools.setValueEntryNumber(item.entity1, parseInt(value), false);
+        }
       }
     }
   }

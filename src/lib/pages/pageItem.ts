@@ -40,10 +40,9 @@ export class PageItem extends BaseClassTriggerd {
         if (!this.config) return;
         const config = { ...this.config };
         // search states for mode auto
-        const tempConfig: Partial<PageItemDataItemsOptions['data']> =
-            this.config.initMode === 'auto' && this.config.dpInit
-                ? await this.panel.statesControler.getDataItemsFromAuto(this.config.dpInit, config.data)
-                : config.data;
+        const tempConfig: Partial<PageItemDataItemsOptions['data']> = this.config.dpInit
+            ? await this.panel.statesControler.getDataItemsFromAuto(this.config.dpInit, config.data)
+            : config.data;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
         const tempItem: PageItemDataItems['data'] = (await this.panel.statesControler.createDataItems(
@@ -76,9 +75,20 @@ export class PageItem extends BaseClassTriggerd {
                     const nhue = (item.hue && (await item.hue.getNumber())) ?? null;
                     if (rgb === null && nhue) rgb = Color.hsv2RGB(nhue, 1, 1) ?? null;
                     message.icon = await tools.getIconEntryValue(item.icon, v, '', '');
+                    const colorMode: 'ct' | 'hue' | 'none' = !item.colorMode
+                        ? 'none'
+                        : (await item.colorMode.getBoolean())
+                          ? 'hue'
+                          : 'ct';
+
                     message.iconColor =
-                        (rgb && (await tools.GetIconColor(rgb, dimmer !== null ? (dimmer > 20 ? dimmer : 20) : v))) ??
-                        (await tools.GetIconColor(item.icon, dimmer !== null ? (dimmer > 20 ? dimmer : 20) : v)) ??
+                        (colorMode === 'hue'
+                            ? await tools.GetIconColor(
+                                  rgb ?? undefined,
+                                  dimmer !== null ? (dimmer > 5 ? dimmer : 5) : v,
+                              )
+                            : await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ??
+                        (await tools.GetIconColor(item.icon, dimmer !== null ? (dimmer > 5 ? dimmer : 5) : v)) ??
                         '';
                     if (v) {
                         message.optionalValue = '1';
@@ -128,54 +138,53 @@ export class PageItem extends BaseClassTriggerd {
                     message.displayName = this.library.getTranslation(message.displayName);
                     return tools.getItemMesssage(message);
                     break;
-                } /*
-                case 'text': {
-                    const item = entry.data;
-                    message.type = 'text';
-                    const t =
-                        this.config.role in template &&
-                        (template[this.config.role as keyof typeof template] as PageTypeUnionTemplate | undefined);
-                    if (!t) break;
-                    let value = t.data.entity1 ? await tools.getValueEntryBoolean(item.entity1) : null;
-                    if (value !== null) {
-                        // gate works revese true is closed -> invert value
-                        if (t.data.entity1 === 'invert') value = !value;
-                        let icon = '';
-                        message.iconColor = await tools.GetIconColor(item.icon, value ?? true ? true : false);
+                }
 
-                        icon = t.data.icon
-                            ? await tools.getIconEntryValue(
-                                  item.icon,
-                                  value,
-                                  t.data.icon.true.value,
-                                  t.data.icon.false.value,
-                              )
-                            : '';
-                        if (t.data.optionalData) {
-                            if (typeof t.data.optionalData === 'string') {
-                                const arr = t.data.optionalData.split('?');
-                                if (arr.length > 0) {
-                                    message.optionalValue = !value && arr.length > 1 ? arr[1] : arr[0];
-                                }
-                            } else
-                                message.optionalValue = this.library.getTranslation(
-                                    (await tools.getEntryTextOnOff(item.text, value)) ?? '',
-                                );
-                        }
-                        message.displayName =
-                            (t.data.text && (await tools.getEntryTextOnOff(item.text, value))) ?? message.displayName;
-                        message.icon = Icons.GetIcon(icon);
-                        return tools.getItemMesssage(message);
-                    } else {
-                        this.log.error(`Missing data value for ${this.name}-${this.id} role:${this.config.role}`);
+                case 'number': {
+                    if (entry.type === 'number') {
+                        const item = entry.data;
+                        message.type = 'number';
+                        const number = (await tools.getValueEntryNumber(item.entity1, false)) ?? 0;
+                        message.displayName = (await tools.getEntryTextOnOff(item.text, true)) ?? '';
+                        message.icon = (await tools.getIconEntryValue(item.icon, true, '')) ?? '';
+                        message.iconColor = (await tools.getIconEntryColor(item.icon, true, Color.HMIOn)) ?? '';
+                        const min =
+                            (item.entity1 && item.entity1.minScale && (await item.entity1.minScale.getNumber())) ?? 0;
+                        const max =
+                            (item.entity1 && item.entity1.maxScale && (await item.entity1.maxScale.getNumber())) ?? 100;
+                        return tools.getPayload(
+                            message.type,
+                            message.intNameEntity,
+                            message.icon,
+                            message.iconColor,
+                            message.displayName,
+                            `${number}|${min}|${max}`,
+                        );
                     }
-                    this.log.debug(JSON.stringify(message));
                     break;
                 }
-                case 'number': {
-                    const item = entry.data;
+                case 'text': {
+                    if (entry.type === 'text') {
+                        const item = entry.data;
+                        message.type = 'text';
+                        let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1, false);
+                        if (value === null) value = await tools.getValueEntryBoolean(item.entity1);
+                        if (value === null) value = true;
+                        message.displayName = (await tools.getEntryTextOnOff(item.text, !!value)) ?? '';
+                        message.optionalValue = (await tools.getEntryTextOnOff(item.text1, !!value)) ?? '';
+                        message.icon = (await tools.getIconEntryValue(item.icon, !!value, '')) ?? '';
+                        message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
+                        return tools.getPayload(
+                            message.type,
+                            message.intNameEntity,
+                            message.icon,
+                            message.iconColor,
+                            message.displayName,
+                            message.optionalValue,
+                        );
+                    }
                     break;
-                }*/
+                }
                 case 'button': {
                     /**
                      * Alles was einen Druckfläche sein kann. D
@@ -183,14 +192,6 @@ export class PageItem extends BaseClassTriggerd {
                     const item = entry.data;
 
                     if (item.entity1 && item.entity1.value) {
-                        /*let value;
-                        if (item.entity1.value.type === 'string') {
-                        } else if (item.entity1.value.type === 'number') {
-                        } else if (item.entity1.value.type === 'boolean') {
-                            value = await tools.getValueEntryBoolean(item.entity1);
-                        }
-                        if (value === undefined) break;
-*/
                         message.optionalValue = !!(item.setValue1 && (await item.setValue1.getBoolean())) ? '0' : '1';
                         message.displayName =
                             (await tools.getEntryTextOnOff(item.text, message.optionalValue === '1')) ?? 'test1';
@@ -565,7 +566,6 @@ export class PageItem extends BaseClassTriggerd {
                                 message.slider1Pos = dimmer;
                             }
                         }
-
                         message.slidersColor =
                             (await tools.getIconEntryColor(item.icon, false, Color.White)) ?? 'disable';
                         let rgb = null;
@@ -589,8 +589,22 @@ export class PageItem extends BaseClassTriggerd {
                                 break;
                             }
                         }
-                        if (rgb !== null) {
-                            message.hueMode = true;
+                        message.slider2Pos = 'disable';
+
+                        if (item.ct && item.ct.value) {
+                            const ct = await tools.getSliderCTFromValue(item.ct);
+                            if (ct !== null) {
+                                message.slider2Pos = parseInt(ct);
+                            }
+                        }
+                        const colorMode: 'ct' | 'hue' | 'none' = !item.colorMode
+                            ? 'none'
+                            : (await item.colorMode.getBoolean())
+                              ? 'hue'
+                              : 'ct';
+
+                        message.hueMode = rgb !== null;
+                        if (rgb !== null && colorMode === 'hue') {
                             message.slidersColor = await tools.GetIconColor(
                                 rgb,
                                 message.slider1Pos !== 'disable' && message.slider1Pos !== undefined
@@ -600,13 +614,9 @@ export class PageItem extends BaseClassTriggerd {
                                     : message.buttonState !== 'disable' && message.buttonState !== false,
                             );
                         }
-                        message.slider2Pos = 'disable';
-
-                        if (item.ct && item.ct.value) {
-                            const ct = await tools.getScaledNumber(item.ct);
-                            if (ct) {
-                                message.slider2Pos = Math.trunc(ct);
-                            }
+                        if (message.slider2Pos !== 'disable' && colorMode === 'ct') {
+                            message.slidersColor =
+                                (await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ?? '';
                         }
 
                         message.popup = message.slider2Pos !== 'disable' && rgb !== null;
@@ -1008,6 +1018,19 @@ export class PageItem extends BaseClassTriggerd {
                 }
                 break;
             }
+            case 'colorTempSlider': {
+                if (entry.type === 'light') {
+                    const item = entry.data;
+                    if (item && item.ct && item.ct.value && item.ct.value.writeable) {
+                        const ct = await tools.getSliderCTFromValue(item.ct);
+                        if (ct !== null && String(ct) != value)
+                            await tools.setSliderCTFromValue(item.ct, parseInt(value));
+                    } else {
+                        this.log.warn('ct is not writeable!');
+                    }
+                }
+                break;
+            }
             case 'OnOff': {
                 if (entry.type === 'light') {
                     const item = entry.data;
@@ -1131,6 +1154,12 @@ export class PageItem extends BaseClassTriggerd {
                         await tools.setValueEntryNumber(items.entity2, parseInt(value));
                 }
                 break;
+            }
+            case 'number-set': {
+                if (entry.type === 'number') {
+                    const item = entry.data;
+                    await tools.setValueEntryNumber(item.entity1, parseInt(value), false);
+                }
             }
             /*let rgb = null;
                         switch (this.config.role) {

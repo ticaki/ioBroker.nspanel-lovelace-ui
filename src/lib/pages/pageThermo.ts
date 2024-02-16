@@ -46,8 +46,9 @@ export class PageThermo extends Page {
     async init(): Promise<void> {
         const config = { ...this.config };
         // search states for mode auto
-        const tempConfig: Partial<pages.cardThermoDataItems> =
-            (await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)) ?? config;
+        const tempConfig: Partial<pages.cardThermoDataItems> = this.dpInit
+            ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)
+            : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
         const tempItem: Partial<pages.cardThermoDataItems> = await this.panel.statesControler.createDataItems(

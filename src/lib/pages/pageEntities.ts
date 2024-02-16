@@ -27,7 +27,22 @@ export class PageEntities extends Page {
         this.minUpdateInterval = 2000;
     }
 
-    async init(): Promise<void> {}
+    async init(): Promise<void> {
+        const config = { ...this.config };
+        // search states for mode auto
+        const tempConfig: Partial<pages.cardEntitiesDataItemOptions> = this.dpInit
+            ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)
+            : config;
+        // create Dataitems
+        //this.log.debug(JSON.stringify(tempConfig));
+        const tempItem: Partial<pages.cardEntitiesDataItems> = await this.panel.statesControler.createDataItems(
+            tempConfig,
+            this,
+        );
+        this.items = tempItem as pages.cardEntitiesDataItems;
+        // set card because we lose it
+        this.items.card = this.card as 'cardEntities';
+    }
 
     public async update(): Promise<void> {
         const message: Partial<pages.PageEntitiesMessage> = {};

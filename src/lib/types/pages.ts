@@ -41,9 +41,8 @@ export type PageTypeCards =
     | Types.PageAlarm
     | Types.PagePower;
 */
-export type PageRole = PageMediaRoles;
 
-export type PageMediaRoles =
+export type PageRole =
     | 'button.play'
     | 'button.pause'
     | 'button.next'
@@ -156,62 +155,10 @@ export function isButtonActionType(F: string | Types.ButtonActionType): F is Typ
             return false;
     }
 }
-export function convertToEvent(msg: string): Types.IncomingEvent | null {
-    msg = (JSON.parse(msg) || {}).CustomRecv;
-    if (msg === undefined) return null;
-    const temp = msg.split(',');
-    if (!Types.isEventType(temp[0])) return null;
-    if (!Types.isEventMethod(temp[1])) return null;
-    let popup: undefined | string = undefined;
-    if (temp[1] === 'pageOpenDetail') popup = temp.splice(2, 1)[0];
-    const arr = String(temp[2]).split('?');
-    if (arr[3])
-        return {
-            type: temp[0],
-            method: temp[1],
-            target: parseInt(arr[3]),
-            page: parseInt(arr[1]),
-            cmd: parseInt(arr[0]),
-            popup: popup,
-            id: arr[2],
-            action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
-            opt: temp[4] ?? '',
-        };
-    if (arr[2])
-        return {
-            type: temp[0],
-            method: temp[1],
-            page: parseInt(arr[0]),
-            cmd: parseInt(arr[1]),
-            popup: popup,
-            id: arr[2],
-            action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
-            opt: temp[4] ?? '',
-        };
-    else if (arr[1])
-        return {
-            type: temp[0],
-            method: temp[1],
-            page: parseInt(arr[0]),
-            popup: popup,
-            id: arr[1],
-            action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
-            opt: temp[4] ?? '',
-        };
-    else
-        return {
-            type: temp[0],
-            method: temp[1],
-            popup: popup,
-            id: arr[0],
-            action: isButtonActionType(temp[3]) ? temp[3] : temp[3],
-            opt: temp[4] ?? '',
-        };
-}
+
 export type PageBaseConfig = {
     //    type: PlayerType;
     card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
-    initMode: 'auto' | 'custom';
     uniqueID: string;
     dpInit: string; // '' and initMode 'auto' throw an error
     alwaysOn: 'none' | 'always' | 'action';

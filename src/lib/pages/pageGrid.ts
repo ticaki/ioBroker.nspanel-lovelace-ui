@@ -33,7 +33,22 @@ export class PageGrid extends Page {
         this.minUpdateInterval = 2000;
     }
 
-    async init(): Promise<void> {}
+    async init(): Promise<void> {
+        const config = { ...this.config };
+        // search states for mode auto
+        const tempConfig: Partial<pages.cardGridDataItems> = this.dpInit
+            ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)
+            : config;
+        // create Dataitems
+        //this.log.debug(JSON.stringify(tempConfig));
+        const tempItem: Partial<pages.cardGridDataItems> = await this.panel.statesControler.createDataItems(
+            tempConfig,
+            this,
+        );
+        this.items = tempItem as pages.cardGridDataItems;
+        // set card because we lose it
+        this.items.card = this.card as 'cardGrid' | 'cardGrid2';
+    }
 
     public async update(): Promise<void> {
         const message: Partial<pages.PageGridMessage> = {};

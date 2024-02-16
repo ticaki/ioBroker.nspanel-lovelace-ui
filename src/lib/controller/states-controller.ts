@@ -84,7 +84,7 @@ export class BaseClassTriggerd extends BaseClass {
                         this.panel.timeout * 1000 || 5000,
                     );
                 }
-            }, 50);
+            }, 10);
             this.updateTimeout = this.adapter.setTimeout(async () => {
                 if (this.unload) return;
                 this.updateTimeout = undefined;
@@ -126,8 +126,6 @@ export class BaseClassTriggerd extends BaseClass {
                 if (this.unload) return;
 
                 if (this.alwaysOn != 'none') {
-                    await this.panel.sendScreeensaverTimeout(0);
-
                     if (this.alwaysOn === 'action') {
                         this.alwaysOnState = this.adapter.setTimeout(
                             async () => {
@@ -135,6 +133,8 @@ export class BaseClassTriggerd extends BaseClass {
                             },
                             this.panel.timeout * 2 * 1000 || 5000,
                         );
+                    } else {
+                        await this.panel.sendScreeensaverTimeout(0);
                     }
                 } else this.panel.sendScreeensaverTimeout(this.panel.timeout);
                 this.log.debug(`Switch page to visible${force ? ' (forced)' : ''}!`);

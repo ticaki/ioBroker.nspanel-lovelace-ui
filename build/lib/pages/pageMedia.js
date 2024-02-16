@@ -52,7 +52,6 @@ const PageMediaMessageDefault = {
 };
 class PageMedia extends import_Page2.Page {
   config;
-  initMode;
   dpInit;
   items;
   step = 1;
@@ -64,7 +63,6 @@ class PageMedia extends import_Page2.Page {
       options.pageItems.unshift({
         type: "button",
         dpInit: "",
-        initMode: "custom",
         role: "button",
         data: {
           icon: {
@@ -80,13 +78,12 @@ class PageMedia extends import_Page2.Page {
     this.config = options.config;
     if (this.items && this.items.card === "cardMedia")
       this.items = options.items;
-    this.initMode = options.initMode;
     this.dpInit = options.dpInit;
     this.minUpdateInterval = 2e3;
   }
   async init() {
     const config = { ...this.config };
-    const tempConfig = this.initMode === "auto" ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : config;
+    const tempConfig = this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : config;
     const tempItem = await this.panel.statesControler.createDataItems(
       tempConfig,
       this
