@@ -64,7 +64,16 @@ export type PageRole =
     | 'level.volume'
     | 'media.album'
     | 'media.playlist'
-    | 'spotify-playlist';
+    | 'spotify-playlist'
+    | 'button.open.blind'
+    | 'button.open'
+    | 'button.close.blind'
+    | 'button.close'
+    | 'button.stop.blind'
+    | 'button.stop'
+    | 'button.open.tilt'
+    | 'button.stop.tilt'
+    | 'button.close.tilt';
 
 export function isPageRole(F: string | PageRole): F is PageRole {
     switch (F as PageRole) {

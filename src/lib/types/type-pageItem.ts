@@ -252,7 +252,22 @@ export type PageItemInputSelDataItems = {
 
 export type PageItemShutter = Pick<
     PageItemBase,
-    'entity1' | 'entity2' | 'text' | 'text1' | 'text2' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
+    | 'up'
+    | 'down'
+    | 'stop'
+    | 'up2'
+    | 'down2'
+    | 'stop2'
+    | 'entity1'
+    | 'entity2'
+    | 'text'
+    | 'text1'
+    | 'text2'
+    | 'icon'
+    | 'color'
+    | 'headline'
+    | 'valueList'
+    | 'setList'
 >;
 export type PageItemShutterDataItemsOptions = {
     type: 'shutter';
@@ -296,11 +311,11 @@ export type PageItemBase = {
     Green?: number;
     Blue?: number;
     up: number;
-    stop: number;
-    left: number;
-    up2: number;
-    stop2: number;
-    down2: number;
+    stop?: number;
+    down: number;
+    up2?: number;
+    stop2?: number;
+    down2?: number;
 };
 
 export type PageTypeUnionTemplate = {

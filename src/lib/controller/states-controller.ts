@@ -6,7 +6,6 @@ import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { DataItemsOptions } from '../types/types';
 import { Controller } from './controller';
 import { PanelSend } from './panel-message';
-import { isPageRole } from '../types/pages';
 import { Panel } from './panel';
 import { PageItemDataItemsOptions } from '../types/type-pageItem';
 import { PageItem } from '../pages/pageItem';
@@ -504,8 +503,8 @@ export class StatesControler extends BaseClass {
                 let found = false;
                 if ((d.type !== 'triggered' && d.type !== 'state') || !d.mode || d.mode !== 'auto') continue;
                 for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
-                    if (!isPageRole(role)) {
-                        throw new Error(`${d.dp} has a unkowned role ${d.role}`);
+                    if (false) {
+                        //throw new Error(`${d.dp} has a unkowned role ${d.role}`);
                     }
                     if (!tempObjectDB.ids[dpInit]) {
                         const temp = await this.adapter.getForeignObjectsAsync(`${dpInit}.*`);

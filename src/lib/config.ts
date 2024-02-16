@@ -63,7 +63,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
              */
             role: 'rgb',
             type: 'shutter',
-            dpInit: '',
+            dpInit: '0_userdata.0.shutter_test',
 
             data: {
                 icon: {
@@ -124,6 +124,43 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                     },
                     false: undefined,
                 },
+                up: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.open.blind', 'button.open'],
+                },
+                down: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.close.blind', 'button.close'],
+                },
+                stop: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.stop.blind', 'button.stop'],
+                },
+                up2: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.open.tilt'],
+                },
+                stop2: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.stop.tilt'],
+                },
+                down2: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.close.tilt'],
+                },
+
                 /**
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                  */
@@ -131,7 +168,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                 /**
                  * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
                  */
-                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
             },
         },
         {
@@ -1392,6 +1429,18 @@ const pageGridTest1: pages.PageBaseConfig = {
                         constVal: 'text2',
                     },
                     false: undefined,
+                },
+                up: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.open.blind', 'button.open'],
+                },
+                down: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.close.blind', 'button.close'],
                 },
                 /**
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}

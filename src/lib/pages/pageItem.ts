@@ -27,6 +27,7 @@ export class PageItem extends BaseClassTriggerd {
     id: string;
     lastPopupType: PopupType | undefined = undefined;
     parent: Page | undefined;
+    tempData: any = undefined; // use this to save some data while object is active
     constructor(config: Omit<PageItemInterface, 'pageItemsConfig'>, options: PageItemDataItemsOptions | undefined) {
         super({ ...config });
         this.panel = config.panel;
@@ -50,6 +51,61 @@ export class PageItem extends BaseClassTriggerd {
             this,
         )) as PageItemDataItems['data'];
         this.dataItems = { ...config, data: tempItem } as PageItemDataItems;
+
+        switch (this.dataItems.type) {
+            case 'number':
+            case 'button':
+                break;
+            case 'shutter': {
+                const data = this.dataItems.data;
+                this.tempData = [];
+                this.tempData[0] = data.up && data.up.writeable;
+                this.tempData[1] = data.stop && data.stop.writeable;
+                this.tempData[2] = data.down && data.down.writeable;
+                this.tempData[3] = data.up2 && data.up2.writeable;
+                this.tempData[4] = data.stop2 && data.stop2.writeable;
+                this.tempData[5] = data.down2 && data.down2.writeable;
+                const list = await this.getListCommands(data.setList);
+                if (list) {
+                    for (let a = 0; a < 6; a++) {
+                        const test =
+                            list && list[a] && list[a].id && (await this.adapter.getForeignObjectAsync(list[a].id));
+                        if (test && test.common && test.common.write) this.tempData[a] = true;
+                    }
+                }
+                if (data.entity1 && data.entity1.value) {
+                    if (
+                        (data.entity1.value.type === 'number' &&
+                            data.entity1.minScale &&
+                            data.entity1.maxScale &&
+                            data.entity1.value &&
+                            data.entity1.value.writeable) ||
+                        (data.entity1.value.type === 'boolean' && data.entity1.value && data.entity1.value.writeable)
+                    ) {
+                        this.tempData[1] = true;
+                        this.tempData[3] = true;
+                    }
+                }
+
+                if (data.entity2 && data.entity2.value) {
+                    if (
+                        data.entity2.value.type === 'number' &&
+                        data.entity2.minScale &&
+                        data.entity2.maxScale &&
+                        data.entity2.value &&
+                        data.entity2.value.writeable
+                    ) {
+                        this.tempData[3] = true;
+                        this.tempData[5] = true;
+                    }
+                }
+
+                break;
+            }
+            case 'input_sel':
+            case 'light':
+            case 'text':
+        }
     }
 
     async getPageItemPayload(): Promise<string> {
@@ -127,7 +183,7 @@ export class PageItem extends BaseClassTriggerd {
                             : ['', '', ''];
                     optionalValueC = optionalValueC.splice(0, 3).map((a) => (a ? Icons.GetIcon(a) : a));
                     optionalValueC.forEach((a, i) => {
-                        if (a) optionalValueC[i + 3] = 'enable';
+                        if (a) optionalValueC[i + 3] = this.tempData[i] ? 'enable' : 'disable';
                         else {
                             optionalValueC[i] = '';
                             optionalValueC[i + 3] = 'disable';
@@ -779,7 +835,7 @@ export class PageItem extends BaseClassTriggerd {
                             : ['', '', ''];
                     optionalValueC = optionalValueC.splice(i, 3).map((a) => (a ? Icons.GetIcon(a) : a));
                     optionalValueC.forEach((a, i) => {
-                        if (a) optionalValueC[i + 3] = 'enable';
+                        if (a) optionalValueC[i + 3] = this.tempData[i + index * 6] ? 'enable' : 'disable';
                         else {
                             optionalValueC[i] = '';
                             optionalValueC[i + 3] = 'disable';
@@ -1077,16 +1133,98 @@ export class PageItem extends BaseClassTriggerd {
                 }
                 break;
             }
+            case 'tiltOpen': {
+                if (entry.type !== 'shutter') break;
+                if (entry.data.up2 && entry.data.up2.writeable) {
+                    entry.data.up2.setStateTrue();
+                    break;
+                }
+            }
+            case 'tiltClose': {
+                if (entry.type !== 'shutter') break;
+                if (entry.data.down2 && entry.data.down2.writeable) {
+                    entry.data.down2.setStateTrue();
+                    break;
+                }
+            }
+            case 'tiltStop': {
+                if (entry.type !== 'shutter') break;
+                if (entry.data.stop2 && entry.data.stop2.writeable) {
+                    entry.data.stop2.setStateTrue();
+                    break;
+                }
+                const items = entry.data;
+                const list = await this.getListCommands(items.setList);
+                if (list !== null && list.length > 2) {
+                    switch (action) {
+                        case 'tiltOpen': {
+                            await this.adapter.setForeignStateAsync(list[0].id, list[0].value);
+                            break;
+                        }
+                        case 'tiltStop': {
+                            await this.adapter.setForeignStateAsync(list[1].id, list[1].value);
+                            break;
+                        }
+                        case 'tiltClose': {
+                            await this.adapter.setForeignStateAsync(list[2].id, list[2].value);
+                            break;
+                        }
+                    }
+                } else {
+                    if (items.entity2 && items.entity2.value) {
+                        if (items.entity2.value.type === 'number' && items.entity2.minScale && items.entity2.maxScale) {
+                            switch (action) {
+                                case 'tiltOpen': {
+                                    if (tools.ifValueEntryIs(items.entity2, 'number')) {
+                                        const value = await items.entity2.maxScale.getNumber();
+                                        if (value !== null) await items.entity2.value.setStateAsync(value);
+                                    }
+                                    break;
+                                }
+                                case 'tiltStop': {
+                                    if (tools.ifValueEntryIs(items.entity2, 'number')) {
+                                        const value = await tools.getValueEntryNumber(items.entity2);
+                                        if (value !== null) await tools.setValueEntryNumber(items.entity2, value);
+                                    }
+                                    break;
+                                }
+                                case 'tiltClose': {
+                                    if (tools.ifValueEntryIs(items.entity2, 'number')) {
+                                        const value = await items.entity2.minScale.getNumber();
+                                        if (value !== null) await items.entity2.value.setStateAsync(value);
+                                    }
+                                    break;
+                                }
+                            }
+                        } else if (items.entity2.value.type === 'boolean') {
+                            if (action !== 'tiltStop') await items.entity2.value.setStateFlip();
+                        }
+                    }
+                }
+
+                break;
+            }
+
             case 'up': {
                 if (entry.type !== 'shutter') break;
-                //const items = entry.data;
+                if (entry.data.up && entry.data.up.writeable) {
+                    entry.data.up.setStateTrue();
+                    break;
+                }
             }
             case 'stop': {
                 if (entry.type !== 'shutter') break;
-                //const items = entry.data;
+                if (entry.data.stop && entry.data.stop.writeable) {
+                    entry.data.stop.setStateTrue();
+                    break;
+                }
             }
             case 'down': {
                 if (entry.type === 'shutter') {
+                    if (entry.data.down && entry.data.down.writeable) {
+                        entry.data.down.setStateTrue();
+                        break;
+                    }
                     const items = entry.data;
 
                     const list = await this.getListCommands(items.setList);

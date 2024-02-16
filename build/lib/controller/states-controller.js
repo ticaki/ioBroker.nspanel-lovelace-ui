@@ -25,7 +25,6 @@ __export(states_controller_exports, {
 module.exports = __toCommonJS(states_controller_exports);
 var import_data_item = require("../classes/data-item");
 var import_library = require("../classes/library");
-var import_pages = require("../types/pages");
 class BaseClassTriggerd extends import_library.BaseClass {
   updateTimeout;
   waitForTimeout;
@@ -472,8 +471,7 @@ class StatesControler extends import_library.BaseClass {
         if (d.type !== "triggered" && d.type !== "state" || !d.mode || d.mode !== "auto")
           continue;
         for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
-          if (!(0, import_pages.isPageRole)(role)) {
-            throw new Error(`${d.dp} has a unkowned role ${d.role}`);
+          if (false) {
           }
           if (!tempObjectDB.ids[dpInit]) {
             const temp = await this.adapter.getForeignObjectsAsync(`${dpInit}.*`);

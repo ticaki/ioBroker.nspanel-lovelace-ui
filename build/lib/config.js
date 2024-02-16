@@ -84,7 +84,7 @@ const pageEntitiesTest1 = {
     {
       role: "rgb",
       type: "shutter",
-      dpInit: "",
+      dpInit: "0_userdata.0.shutter_test",
       data: {
         icon: {
           true: {
@@ -140,7 +140,42 @@ const pageEntitiesTest1 = {
           },
           false: void 0
         },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+        up: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.open.blind", "button.open"]
+        },
+        down: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.close.blind", "button.close"]
+        },
+        stop: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.stop.blind", "button.stop"]
+        },
+        up2: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.open.tilt"]
+        },
+        stop2: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.stop.tilt"]
+        },
+        down2: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.close.tilt"]
+        }
       }
     },
     {
@@ -1341,6 +1376,18 @@ const pageGridTest1 = {
             constVal: "text2"
           },
           false: void 0
+        },
+        up: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.open.blind", "button.open"]
+        },
+        down: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.close.blind", "button.close"]
         },
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
