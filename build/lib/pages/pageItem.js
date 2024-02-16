@@ -865,7 +865,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       case "tiltClose": {
         if (entry.type !== "shutter")
           break;
-        if (entry.data.down2 && entry.data.down2.writeable) {
+        if (action === "tiltClose" && entry.data.down2 && entry.data.down2.writeable) {
           entry.data.down2.setStateTrue();
           break;
         }
@@ -873,7 +873,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       case "tiltStop": {
         if (entry.type !== "shutter")
           break;
-        if (entry.data.stop2 && entry.data.stop2.writeable) {
+        if (action === "tiltStop" && entry.data.stop2 && entry.data.stop2.writeable) {
           entry.data.stop2.setStateTrue();
           break;
         }
@@ -942,14 +942,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       case "stop": {
         if (entry.type !== "shutter")
           break;
-        if (entry.data.stop && entry.data.stop.writeable) {
+        if (action === "stop" && entry.data.stop && entry.data.stop.writeable) {
           entry.data.stop.setStateTrue();
           break;
         }
       }
       case "down": {
         if (entry.type === "shutter") {
-          if (entry.data.down && entry.data.down.writeable) {
+          if (action === "down" && entry.data.down && entry.data.down.writeable) {
             entry.data.down.setStateTrue();
             break;
           }
