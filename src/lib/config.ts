@@ -15,7 +15,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
         data: {
             headline: {
                 type: 'const',
-                constVal: 'Überschrift',
+                constVal: 'entities1',
             },
         },
     },
@@ -288,6 +288,59 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                  */
                 valueList: { type: 'const', constVal: '1?2?3?4' },
+            },
+        },
+    ],
+    items: undefined,
+};
+const pageEntitiesTest2: pages.PageBaseConfig = {
+    //type: 'sonstiges',
+    card: 'cardEntities',
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: 'entities2',
+    useColor: false,
+    config: {
+        card: 'cardEntities',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'entities2',
+            },
+        },
+    },
+    pageItems: [
+        {
+            role: 'timer',
+            type: 'timer',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'timer' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    false: {
+                        value: undefined,
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                headline: { type: 'const', constVal: 'Timer' },
+
+                setValue1: { type: 'state', dp: '0_userdata.0.example_state' },
             },
         },
     ],
@@ -3234,6 +3287,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
         pageGridTest2,
         pageScreensaverTest,
         pageMediaTest,
+        pageEntitiesTest2,
     ],
     // override by password.ts
     navigation: [
@@ -3241,13 +3295,19 @@ export const Testconfig: Partial<panelConfigPartial> = {
             name: 'main', //main ist die erste Seite
             page: 'entities1',
             left: { single: '7' }, // Die 4 bezieht sich auf den name: 4
-            right: { single: '1', double: '2' },
+            right: { single: 'entities2', double: '2' },
         },
         {
             name: '5', //main ist die erste Seite
             page: 'thermo1',
             left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
             right: { single: '6', double: 'main' },
+        },
+        {
+            name: 'entities2', //main ist die erste Seite
+            page: 'entities2',
+            left: { single: 'main' }, // Die 4 bezieht sich auf den name: 4
+            right: { single: '1', double: 'main' },
         },
         {
             name: '6',

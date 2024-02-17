@@ -343,15 +343,17 @@ export class PageItem extends BaseClassTriggerd {
                             : (this.tempData && this.tempData.time) ?? 0;
 
                         if (value !== null) {
-                            const d: Date = new Date();
-                            d.setHours(0, 0, 0, 0);
-                            d.setSeconds(value);
+                            let opt = '';
+                            if (this.tempData) {
+                                opt = new Date(new Date().setHours(0, 0, this.tempData.value, 0)).toLocaleTimeString(
+                                    'de',
+                                    { minute: '2-digit', second: '2-digit' },
+                                );
+                            }
                             message.iconColor = await tools.GetIconColor(item.icon, value);
                             message.icon = await tools.getIconEntryValue(item.icon, true, 'gesture-tap-button');
-                            message.optionalValue = d.toLocaleTimeString('de', {
-                                second: '2-digit',
-                                minute: '2-digit',
-                            });
+                            message.optionalValue = (await tools.getEntryTextOnOff(item.text, value !== 0)) ?? opt;
+
                             message.displayName = (item.headline && (await item.headline.getString())) ?? '';
                             return tools.getPayload(
                                 message.type,
@@ -359,7 +361,7 @@ export class PageItem extends BaseClassTriggerd {
                                 message.icon,
                                 message.iconColor,
                                 message.displayName,
-                                value ? '1' : '0',
+                                message.optionalValue,
                             );
                         }
                     }
@@ -1306,11 +1308,12 @@ export class PageItem extends BaseClassTriggerd {
                 if (this.tempInterval) this.adapter.clearInterval(this.tempInterval);
                 if (value) {
                     this.tempData.value = value.split(':').reduce((p, c, i) => {
-                        return p + parseInt(c) * 60 ** (2 - i);
+                        return String(parseInt(p) + parseInt(c) * 60 ** (2 - i));
                     });
                 } else {
                     this.tempData.status = 'run';
                     if (this.visibility) this.onStateTrigger();
+
                     this.tempInterval = this.adapter.setInterval(() => {
                         if (this.unload && this.tempInterval) this.adapter.clearInterval(this.tempInterval);
                         if (--this.tempData.value == 0) {
@@ -1326,6 +1329,8 @@ export class PageItem extends BaseClassTriggerd {
                             this.tempInterval = undefined;
                         } else if (this.tempData.value > 0) {
                             if (this.visibility) this.onStateTrigger();
+                            else if (this.parent && !this.parent.sleep && this.parent.getVisibility())
+                                this.parent.onStateTriggerSuperDoNotOverride('now');
                         }
                     }, 1000);
                 }
@@ -1394,6 +1399,7 @@ export class PageItem extends BaseClassTriggerd {
             if (this.lastPopupType === 'popupThermo') {
                 this.log.debug(`Trigger from popupThermo `);
                 this.parent && this.parent.onPopupRequest(this.id, 'popupThermo', '', '', null);
+                return;
             } else {
                 const msg = await this.GeneratePopup(this.lastPopupType);
                 if (msg) this.sendToPanel(msg);

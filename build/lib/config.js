@@ -40,7 +40,7 @@ const pageEntitiesTest1 = {
     data: {
       headline: {
         type: "const",
-        constVal: "\xDCberschrift"
+        constVal: "entities1"
       }
     }
   },
@@ -284,6 +284,56 @@ const pageEntitiesTest1 = {
         },
         entityInSel: { value: { type: "const", constVal: "2" } },
         valueList: { type: "const", constVal: "1?2?3?4" }
+      }
+    }
+  ],
+  items: void 0
+};
+const pageEntitiesTest2 = {
+  card: "cardEntities",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "entities2",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "entities2"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "timer",
+      type: "timer",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "timer" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: void 0,
+            color: { type: "const", constVal: Color.Green }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: { type: "const", constVal: "Timer" },
+        setValue1: { type: "state", dp: "0_userdata.0.example_state" }
       }
     }
   ],
@@ -3056,20 +3106,27 @@ const Testconfig = {
     pageGrid2Test2,
     pageGridTest2,
     pageScreensaverTest,
-    pageMediaTest
+    pageMediaTest,
+    pageEntitiesTest2
   ],
   navigation: [
     {
       name: "main",
       page: "entities1",
       left: { single: "7" },
-      right: { single: "1", double: "2" }
+      right: { single: "entities2", double: "2" }
     },
     {
       name: "5",
       page: "thermo1",
       left: { single: "4" },
       right: { single: "6", double: "main" }
+    },
+    {
+      name: "entities2",
+      page: "entities2",
+      left: { single: "main" },
+      right: { single: "1", double: "main" }
     },
     {
       name: "6",

@@ -118,7 +118,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     }
   }
   async getPageItemPayload() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -290,23 +290,24 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.type = "timer";
             const value = !item.setValue1 ? (_C = item.entity1 && await tools.getValueEntryNumber(item.entity1)) != null ? _C : null : (_D = this.tempData && this.tempData.time) != null ? _D : 0;
             if (value !== null) {
-              const d = new Date();
-              d.setHours(0, 0, 0, 0);
-              d.setSeconds(value);
+              let opt = "";
+              if (this.tempData) {
+                opt = new Date(new Date().setHours(0, 0, this.tempData.value, 0)).toLocaleTimeString(
+                  "de",
+                  { minute: "2-digit", second: "2-digit" }
+                );
+              }
               message.iconColor = await tools.GetIconColor(item.icon, value);
               message.icon = await tools.getIconEntryValue(item.icon, true, "gesture-tap-button");
-              message.optionalValue = d.toLocaleTimeString("de", {
-                second: "2-digit",
-                minute: "2-digit"
-              });
-              message.displayName = (_E = item.headline && await item.headline.getString()) != null ? _E : "";
+              message.optionalValue = (_E = await tools.getEntryTextOnOff(item.text, value !== 0)) != null ? _E : opt;
+              message.displayName = (_F = item.headline && await item.headline.getString()) != null ? _F : "";
               return tools.getPayload(
                 message.type,
                 message.intNameEntity,
                 message.icon,
                 message.iconColor,
                 message.displayName,
-                value ? "1" : "0"
+                message.optionalValue
               );
             }
           }
@@ -1105,7 +1106,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           this.adapter.clearInterval(this.tempInterval);
         if (value) {
           this.tempData.value = value.split(":").reduce((p, c, i) => {
-            return p + parseInt(c) * 60 ** (2 - i);
+            return String(parseInt(p) + parseInt(c) * 60 ** (2 - i));
           });
         } else {
           this.tempData.status = "run";
@@ -1126,6 +1127,8 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             } else if (this.tempData.value > 0) {
               if (this.visibility)
                 this.onStateTrigger();
+              else if (this.parent && !this.parent.sleep && this.parent.getVisibility())
+                this.parent.onStateTriggerSuperDoNotOverride("now");
             }
           }, 1e3);
         }
@@ -1166,6 +1169,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       if (this.lastPopupType === "popupThermo") {
         this.log.debug(`Trigger from popupThermo `);
         this.parent && this.parent.onPopupRequest(this.id, "popupThermo", "", "", null);
+        return;
       } else {
         const msg = await this.GeneratePopup(this.lastPopupType);
         if (msg)
