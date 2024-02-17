@@ -21,7 +21,7 @@ var utils = __toESM(require("@iobroker/adapter-core"));
 var import_library = require("./lib/classes/library");
 var import_register = require("source-map-support/register");
 var MQTT = __toESM(require("./lib/classes/mqtt"));
-var import_config = require("./lib/config");
+var import_config_custom = require("./lib/config-custom");
 var import_controller = require("./lib/controller/controller");
 var import_icon_mapping = require("./lib/const/icon_mapping");
 var import_definition = require("./lib/const/definition");
@@ -48,15 +48,15 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.library = new import_library.Library(this);
     if (!this.config.Testconfig2) {
       this.log.warn("No configuration use dev test config!");
-      this.config.Testconfig2 = [import_config.Testconfig];
+      this.config.Testconfig2 = [import_config_custom.Testconfig];
     }
-    import_config.Testconfig.pages[0].mode = this.config.scstype;
+    import_config_custom.Testconfig.pages[0].mode = this.config.scstype;
     this.config.Testconfig2[0].timeout = this.config.timeout;
     this.setTimeout(async () => {
-      if (!import_config.Testconfig.pages)
+      if (!import_config_custom.Testconfig.pages)
         return;
       const names = [];
-      for (const p of import_config.Testconfig.pages) {
+      for (const p of import_config_custom.Testconfig.pages) {
         if (p.card === "screensaver" || p.card === "screensaver2")
           continue;
         if (!("uniqueID" in p))
