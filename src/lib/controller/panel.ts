@@ -16,6 +16,7 @@ import { PageGrid } from '../pages/pageGrid';
 import { Navigation, NavigationConfig } from '../classes/navigation';
 import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
+import { PageItem } from '../pages/pageItem';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -84,6 +85,7 @@ export class Panel extends BaseClass {
     readonly timeout: number;
     readonly CustomFormat: string;
     readonly sendToTasmota: (topic: string, payload: string, opt?: IClientPublishOptions) => void = () => {};
+    public persistentPageItems: Record<string, PageItem> = {};
     fName: string = '';
 
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
@@ -448,6 +450,7 @@ export class Panel extends BaseClass {
     async delete(): Promise<void> {
         await super.delete();
         this.isOnline = false;
+        this.persistentPageItems = {};
         if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
         if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
     }

@@ -1,6 +1,6 @@
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
-import { ChangeTypeOfKeys } from './pages';
+import { ChangeTypeOfKeys, PageRole } from './pages';
 import * as Types from './types';
 
 export type PageLightItem = {
@@ -101,6 +101,22 @@ export type entityUpdateDetailMessage =
           | 'mode'
           | 'modeList',
           string
+      >)
+    | ({
+          type: 'popupTimer';
+      } & Record<
+          | 'entityName'
+          | 'iconColor'
+          | 'minutes'
+          | 'seconds'
+          | 'editable'
+          | 'action1'
+          | 'action2'
+          | 'action3'
+          | 'text1'
+          | 'text2'
+          | 'text3',
+          string
       >);
 
 //export type entityUpdateDetailMessageType = '2Sliders' | 'insel';
@@ -133,6 +149,7 @@ export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
         | PageItemLightDataItems
         | PageItemTextDataItems
         | PageItemFanDataItems
+        | PageItemTimerDataItems
     );
 
 export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data' | 'type'> &
@@ -144,7 +161,19 @@ export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data' | 'type'> &
         | PageItemNumberDataItemsOptions
         | PageItemTextDataItemsOptions
         | PageItemFanDataItemsOptions
+        | PageItemTimerDataItemsOptions
     );
+
+export type PageItemTimer = Pick<PageItemBase, 'entity1' | 'text' | 'headline' | 'icon' | 'setValue1'>;
+export type PageItemTimerDataItemsOptions = {
+    type: 'timer';
+    data: ChangeTypeOfKeys<PageItemTimer, Types.DataItemsOptions | undefined>;
+};
+export type PageItemTimerDataItems = {
+    type: 'timer';
+    data: ChangeTypeOfKeys<PageItemTimer, Dataitem | undefined>;
+};
+
 export type PageItemFan = Pick<
     PageItemBase,
     'entity1' | 'speed' | 'text' | 'headline' | 'icon' | 'entityInSel' | 'valueList' | 'setList'
@@ -360,7 +389,8 @@ export type PageItemUnion = {
         | 'media.repeat'
         | 'text.list'
         | 'arrow'
-        | 'spotify-playlist';
+        | 'spotify-playlist'
+        | PageRole;
     dpInit: string;
     type: Types.SerialTypePageElements;
     data: PageItemBase;

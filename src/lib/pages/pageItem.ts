@@ -28,6 +28,7 @@ export class PageItem extends BaseClassTriggerd {
     lastPopupType: PopupType | undefined = undefined;
     parent: Page | undefined;
     tempData: any = undefined; // use this to save some data while object is active
+    tempInterval: ioBroker.Interval | undefined;
     constructor(config: Omit<PageItemInterface, 'pageItemsConfig'>, options: PageItemDataItemsOptions | undefined) {
         super({ ...config });
         this.panel = config.panel;
@@ -37,6 +38,13 @@ export class PageItem extends BaseClassTriggerd {
         this.sleep = false;
     }
 
+    static getPageItem(
+        config: Omit<PageItemInterface, 'pageItemsConfig'>,
+        options: PageItemDataItemsOptions | undefined,
+    ): PageItem {
+        if (config.panel.persistentPageItems[config.id]) return config.panel.persistentPageItems[config.id];
+        return new PageItem(config, options);
+    }
     async init(): Promise<void> {
         if (!this.config) return;
         const config = { ...this.config };
@@ -108,6 +116,16 @@ export class PageItem extends BaseClassTriggerd {
             case 'input_sel':
             case 'light':
             case 'text':
+            case 'fan': {
+                break;
+            }
+            case 'timer': {
+                if (this.dataItems.role === 'timer' && this.tempData === undefined) {
+                    this.tempData = { status: 'pause', value: 0 };
+                    if (!this.panel.persistentPageItems[this.id]) this.panel.persistentPageItems[this.id] = this;
+                }
+                break;
+            }
         }
     }
 
@@ -316,74 +334,37 @@ export class PageItem extends BaseClassTriggerd {
                         );
                     }
                 }
-                /*case 'volumeGroup': {
-                break;
-            }
-            case 'volume': {
-                break;
-            }
-            case 'info':
-            case 'humidity':
-            case 'temperature':
-            case 'value.temperature':
-            case 'value.humidity':
-            case 'sensor.door':
-            case 'sensor.window':
-            case 'thermostat': {
-                break;
-            }
-            case 'warning': {
-                break;
-            }
-            case 'ct': {
-                break;
-            }
-            case 'cie': {
-                break;
-            }
-            case 'motion': {
-                message.type = 'text';
-                const value = await tools.getValueEntryBoolean(item.data.entity1);
-                if (value !== null) {
-                    message.iconColor = await tools.GetIconColor(item.data.icon, value ?? true ? true : false);
-                    message.icon = await tools.getIconEntryValue(item.data.icon, value, 'motion-sensor');
-                    message.optionalValue = tools.getTranslation(this.library, value ? 'on' : 'off');
-                    message.displayName = (await tools.getEntryTextOnOff(item.data.text, value)) ?? message.displayName;
-                    return this.getItemMesssage(message);
-                } else {
-                    this.log.error(`Missing data value for ${this.name}-${id} role:${item.role}`);
-                }
-                break;
-            }
+                case 'timer': {
+                    if (entry.type === 'timer') {
+                        const item = entry.data;
+                        message.type = 'timer';
+                        const value: number | null = !item.setValue1
+                            ? (item.entity1 && (await tools.getValueEntryNumber(item.entity1))) ?? null
+                            : (this.tempData && this.tempData.time) ?? 0;
 
-            case 'button': {
-                let value = (item.data.setValue1 && (await item.data.setValue1.getBoolean())) ?? null;
-                if (value === null && item.role === 'buttonSensor') value = true;
-                if (value !== null) {
-                    message.type = item.role === 'buttonSensor' ? 'input_sel' : 'button';
-                    message.iconColor = await tools.GetIconColor(item.data.icon, value);
-                    message.icon = await tools.getIconEntryValue(item.data.icon, value, 'gesture-tap-button');
-                    message.displayName = (await tools.getEntryTextOnOff(item.data.text, value)) ?? '';
-                    message.optionalValue = (await tools.getValueEntryString(item.data.entity1)) ?? 'PRESS';
-                    return this.getItemMesssage(message);
-                } else {
-                    this.log.error(`Missing set value for ${this.name}-${id} role:${item.role}`);
-                }
-                break;
-            }
-            case 'timer': {
-                const value = (item.data.setValue1 && (await item.data.setValue1.getNumber())) ?? null;
-                if (value !== null) {
-                    message.type = 'timer';
-                    message.iconColor = await tools.GetIconColor(item.data.icon, value);
-                    message.icon = await tools.getIconEntryValue(item.data.icon, true, 'gesture-tap-button');
-                    message.optionalValue = (await tools.getEntryTextOnOff(item.data.text, true)) ?? 'PRESS';
-                    return this.getItemMesssage(message);
-                } else {
-                    this.log.error(`Missing set value for ${this.name}-${id} role:${item.role}`);
-                }
-                break;
-            }
+                        if (value !== null) {
+                            const d: Date = new Date();
+                            d.setHours(0, 0, 0, 0);
+                            d.setSeconds(value);
+                            message.iconColor = await tools.GetIconColor(item.icon, value);
+                            message.icon = await tools.getIconEntryValue(item.icon, true, 'gesture-tap-button');
+                            message.optionalValue = d.toLocaleTimeString('de', {
+                                second: '2-digit',
+                                minute: '2-digit',
+                            });
+                            message.displayName = (item.headline && (await item.headline.getString())) ?? '';
+                            return tools.getPayload(
+                                message.type,
+                                message.intNameEntity,
+                                message.icon,
+                                message.iconColor,
+                                message.displayName,
+                                value ? '1' : '0',
+                            );
+                        }
+                    }
+                    break;
+                } /*
             case 'value.alarmtime': {
                 const value = (item.data.setValue1 && (await item.data.setValue1.getNumber())) ?? null;
                 if (value !== null) {
@@ -487,6 +468,7 @@ export class PageItem extends BaseClassTriggerd {
             }*/
             }
         }
+        this.log.warn(`Something went wrong on ${this.id} type: ${this.config && this.config.type}!`);
         return '~~~~~';
     }
 
@@ -583,6 +565,40 @@ export class PageItem extends BaseClassTriggerd {
                     result.speedText,
                     result.mode,
                     result.modeList,
+                );
+                break;
+            }
+            case 'popupTimer': {
+                let result: entityUpdateDetailMessage = {
+                    type: 'popupTimer',
+                    entityName: '',
+                    iconColor: '',
+                    minutes: '',
+                    seconds: '',
+                    editable: '0',
+                    action1: '',
+                    action2: '',
+                    action3: '',
+                    text1: '',
+                    text2: '',
+                    text3: '',
+                };
+                result = Object.assign(result, message);
+                return tools.getPayload(
+                    'entityUpdateDetail',
+                    result.entityName,
+                    '',
+                    result.iconColor,
+                    result.entityName,
+                    result.minutes,
+                    result.seconds,
+                    result.editable,
+                    result.action1,
+                    result.action2,
+                    result.action3,
+                    result.text1,
+                    result.text2,
+                    result.text3,
                 );
                 break;
             }
@@ -922,7 +938,7 @@ export class PageItem extends BaseClassTriggerd {
                             : ['', '', ''];
                     optionalValueC = optionalValueC.splice(i, 3).map((a) => (a ? Icons.GetIcon(a) : a));
                     optionalValueC.forEach((a, i) => {
-                        if (a) optionalValueC[i + 3] = this.tempData[i + index * 6] ? 'enable' : 'disable';
+                        if (a) optionalValueC[i + 3] = this.tempData[i + 3] ? 'enable' : 'disable';
                         else {
                             optionalValueC[i] = '';
                             optionalValueC[i + 3] = 'disable';
@@ -950,8 +966,42 @@ export class PageItem extends BaseClassTriggerd {
                         message.statusR2 = optionalValueC[5];
                     }
                 }
+                break;
             }
-            case 'popupTimer':
+            case 'popupTimer': {
+                if (entry.type !== 'timer') break;
+                const item = entry.data;
+                message.type = 'popupTimer';
+                if (!(message.type === 'popupTimer')) break;
+                if (this.tempData !== undefined) {
+                    message.iconColor = await tools.GetIconColor(item.icon, this.tempData.status === 'run');
+                    message.minutes = Math.floor(this.tempData.value / 60).toFixed(0);
+                    message.seconds = Math.floor(this.tempData.value % 60).toFixed(0);
+
+                    if (this.tempData.status === 'run') {
+                        message.editable = '0';
+                        message.action1 = 'pause';
+                        message.action3 = 'clear';
+                        //message.action3 = 'finish';
+                        message.text1 = this.library.getTranslation('Pause');
+                        message.text3 = this.library.getTranslation('Clear');
+                        //message.text3 = this.library.getTranslation('Finish');
+                    } else if (this.tempData.value > 0) {
+                        message.editable = '0';
+                        message.action1 = 'start';
+                        message.action3 = 'clear';
+                        //message.action3 = 'finish';
+                        message.text1 = this.library.getTranslation('Continue');
+                        message.text3 = this.library.getTranslation('Clear');
+                        //message.text3 = this.library.getTranslation('Finish');
+                    } else {
+                        message.editable = '1';
+                        message.action2 = 'start';
+                        message.text2 = this.library.getTranslation('Start');
+                    }
+                }
+                break;
+            }
         }
 
         //if (template.type !== message.type) {
@@ -965,6 +1015,9 @@ export class PageItem extends BaseClassTriggerd {
     async delete(): Promise<void> {
         this.visibility = false;
         await this.controller.statesControler.deactivateTrigger(this);
+        if (this.panel.persistentPageItems[this.id]) {
+            if (!this.panel.unload) return;
+        }
         await super.delete();
         this.parent = undefined;
     }
@@ -1042,7 +1095,7 @@ export class PageItem extends BaseClassTriggerd {
             case 'colorWheel': {
                 if (entry.type === 'light') {
                     const item = entry.data;
-                    if (item && this.config && item.entity1 && item.entity1.value && item.entity1.value.writeable) {
+                    if (item && this.config) {
                         switch (this.config.role) {
                             case 'socket':
                             case 'light':
@@ -1248,6 +1301,57 @@ export class PageItem extends BaseClassTriggerd {
                     const item = entry.data;
                     await tools.setValueEntryNumber(item.speed, parseInt(value), false);
                 }
+            }
+            case 'timer-start': {
+                if (this.tempInterval) this.adapter.clearInterval(this.tempInterval);
+                if (value) {
+                    this.tempData.value = value.split(':').reduce((p, c, i) => {
+                        return p + parseInt(c) * 60 ** (2 - i);
+                    });
+                } else {
+                    this.tempData.status = 'run';
+                    if (this.visibility) this.onStateTrigger();
+                    this.tempInterval = this.adapter.setInterval(() => {
+                        if (this.unload && this.tempInterval) this.adapter.clearInterval(this.tempInterval);
+                        if (--this.tempData.value == 0) {
+                            this.tempData.value = 0;
+                            this.tempData.status = 'stop';
+                            this.dataItems &&
+                                this.dataItems.type == 'timer' &&
+                                this.dataItems.data &&
+                                this.dataItems.data.setValue1 &&
+                                this.dataItems.data.setValue1.setStateTrue();
+                            if (this.visibility) this.onStateTrigger();
+                            if (this.tempInterval) this.adapter.clearInterval(this.tempInterval);
+                            this.tempInterval = undefined;
+                        } else if (this.tempData.value > 0) {
+                            if (this.visibility) this.onStateTrigger();
+                        }
+                    }, 1000);
+                }
+                break;
+            }
+            case 'timer-finish': {
+                break;
+            }
+            case 'timer-clear': {
+                if (this.tempData) {
+                    this.tempData.value = 0;
+                    this.tempData.status = 'stop';
+                    if (this.visibility) this.onStateTrigger();
+                    if (this.tempInterval) this.adapter.clearInterval(this.tempInterval);
+                }
+
+                break;
+            }
+            case 'timer-pause': {
+                if (this.tempData) {
+                    this.tempData.status = 'pause';
+                    if (this.visibility) this.onStateTrigger();
+                    if (this.tempInterval) this.adapter.clearInterval(this.tempInterval);
+                }
+
+                break;
             }
             default: {
                 return false;

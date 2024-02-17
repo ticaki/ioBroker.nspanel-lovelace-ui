@@ -152,7 +152,18 @@ const pageEntitiesTest1 = {
           mode: "auto",
           role: ["button.close.blind", "button.close"]
         },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+        up2: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.open.tilt"]
+        },
+        stop2: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.stop.tilt"]
+        }
       }
     },
     {
@@ -1673,6 +1684,37 @@ const pageGridTest2 = {
           false: void 0
         },
         setValue1: void 0
+      }
+    },
+    {
+      role: "timer",
+      type: "timer",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "timer" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: void 0,
+            color: { type: "const", constVal: Color.Green }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: { type: "const", constVal: "Timer" },
+        setValue1: { type: "state", dp: "0_userdata.0.example_state" }
       }
     }
   ]

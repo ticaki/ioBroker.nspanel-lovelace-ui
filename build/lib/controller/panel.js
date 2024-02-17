@@ -84,6 +84,7 @@ class Panel extends import_library.BaseClass {
   CustomFormat;
   sendToTasmota = () => {
   };
+  persistentPageItems = {};
   fName = "";
   constructor(adapter, options) {
     var _a, _b, _c;
@@ -424,6 +425,7 @@ class Panel extends import_library.BaseClass {
   async delete() {
     await super.delete();
     this.isOnline = false;
+    this.persistentPageItems = {};
     if (this.minuteLoopTimeout)
       this.adapter.clearTimeout(this.minuteLoopTimeout);
     if (this.dateUpdateTimeout)

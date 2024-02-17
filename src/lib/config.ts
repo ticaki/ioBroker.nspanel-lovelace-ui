@@ -136,6 +136,18 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                     mode: 'auto',
                     role: ['button.close.blind', 'button.close'],
                 },
+                up2: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.open.tilt'],
+                },
+                stop2: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.stop.tilt'],
+                },
                 /**
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                  */
@@ -143,7 +155,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                 /**
                  * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
                  */
-                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
             },
         },
         {
@@ -1758,6 +1770,39 @@ const pageGridTest2: pages.PageBaseConfig = {
                 },
 
                 setValue1: undefined,
+            },
+        },
+        {
+            role: 'timer',
+            type: 'timer',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'timer' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    false: {
+                        value: undefined,
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                headline: { type: 'const', constVal: 'Timer' },
+
+                setValue1: { type: 'state', dp: '0_userdata.0.example_state' },
             },
         },
     ],

@@ -42,6 +42,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   lastPopupType = void 0;
   parent;
   tempData = void 0;
+  tempInterval;
   constructor(config, options) {
     super({ ...config });
     this.panel = config.panel;
@@ -49,6 +50,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.config = options;
     this.parent = options && config.parent;
     this.sleep = false;
+  }
+  static getPageItem(config, options) {
+    if (config.panel.persistentPageItems[config.id])
+      return config.panel.persistentPageItems[config.id];
+    return new PageItem(config, options);
   }
   async init() {
     if (!this.config)
@@ -98,10 +104,21 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       case "input_sel":
       case "light":
       case "text":
+      case "fan": {
+        break;
+      }
+      case "timer": {
+        if (this.dataItems.role === "timer" && this.tempData === void 0) {
+          this.tempData = { status: "pause", value: 0 };
+          if (!this.panel.persistentPageItems[this.id])
+            this.panel.persistentPageItems[this.id] = this;
+        }
+        break;
+      }
     }
   }
   async getPageItemPayload() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -267,8 +284,37 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             );
           }
         }
+        case "timer": {
+          if (entry.type === "timer") {
+            const item = entry.data;
+            message.type = "timer";
+            const value = !item.setValue1 ? (_C = item.entity1 && await tools.getValueEntryNumber(item.entity1)) != null ? _C : null : (_D = this.tempData && this.tempData.time) != null ? _D : 0;
+            if (value !== null) {
+              const d = new Date();
+              d.setHours(0, 0, 0, 0);
+              d.setSeconds(value);
+              message.iconColor = await tools.GetIconColor(item.icon, value);
+              message.icon = await tools.getIconEntryValue(item.icon, true, "gesture-tap-button");
+              message.optionalValue = d.toLocaleTimeString("de", {
+                second: "2-digit",
+                minute: "2-digit"
+              });
+              message.displayName = (_E = item.headline && await item.headline.getString()) != null ? _E : "";
+              return tools.getPayload(
+                message.type,
+                message.intNameEntity,
+                message.icon,
+                message.iconColor,
+                message.displayName,
+                value ? "1" : "0"
+              );
+            }
+          }
+          break;
+        }
       }
     }
+    this.log.warn(`Something went wrong on ${this.id} type: ${this.config && this.config.type}!`);
     return "~~~~~";
   }
   getDetailPayload(message) {
@@ -366,6 +412,40 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           result.speedText,
           result.mode,
           result.modeList
+        );
+        break;
+      }
+      case "popupTimer": {
+        let result = {
+          type: "popupTimer",
+          entityName: "",
+          iconColor: "",
+          minutes: "",
+          seconds: "",
+          editable: "0",
+          action1: "",
+          action2: "",
+          action3: "",
+          text1: "",
+          text2: "",
+          text3: ""
+        };
+        result = Object.assign(result, message);
+        return tools.getPayload(
+          "entityUpdateDetail",
+          result.entityName,
+          "",
+          result.iconColor,
+          result.entityName,
+          result.minutes,
+          result.seconds,
+          result.editable,
+          result.action1,
+          result.action2,
+          result.action3,
+          result.text1,
+          result.text2,
+          result.text3
         );
         break;
       }
@@ -663,7 +743,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           optionalValueC = optionalValueC.splice(i, 3).map((a) => a ? import_icon_mapping.Icons.GetIcon(a) : a);
           optionalValueC.forEach((a, i2) => {
             if (a)
-              optionalValueC[i2 + 3] = this.tempData[i2 + index * 6] ? "enable" : "disable";
+              optionalValueC[i2 + 3] = this.tempData[i2 + 3] ? "enable" : "disable";
             else {
               optionalValueC[i2] = "";
               optionalValueC[i2 + 3] = "disable";
@@ -691,8 +771,39 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.statusR2 = optionalValueC[5];
           }
         }
+        break;
       }
-      case "popupTimer":
+      case "popupTimer": {
+        if (entry.type !== "timer")
+          break;
+        const item = entry.data;
+        message.type = "popupTimer";
+        if (!(message.type === "popupTimer"))
+          break;
+        if (this.tempData !== void 0) {
+          message.iconColor = await tools.GetIconColor(item.icon, this.tempData.status === "run");
+          message.minutes = Math.floor(this.tempData.value / 60).toFixed(0);
+          message.seconds = Math.floor(this.tempData.value % 60).toFixed(0);
+          if (this.tempData.status === "run") {
+            message.editable = "0";
+            message.action1 = "pause";
+            message.action3 = "clear";
+            message.text1 = this.library.getTranslation("Pause");
+            message.text3 = this.library.getTranslation("Clear");
+          } else if (this.tempData.value > 0) {
+            message.editable = "0";
+            message.action1 = "start";
+            message.action3 = "clear";
+            message.text1 = this.library.getTranslation("Continue");
+            message.text3 = this.library.getTranslation("Clear");
+          } else {
+            message.editable = "1";
+            message.action2 = "start";
+            message.text2 = this.library.getTranslation("Start");
+          }
+        }
+        break;
+      }
     }
     return this.getDetailPayload(message);
     return null;
@@ -700,6 +811,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   async delete() {
     this.visibility = false;
     await this.controller.statesControler.deactivateTrigger(this);
+    if (this.panel.persistentPageItems[this.id]) {
+      if (!this.panel.unload)
+        return;
+    }
     await super.delete();
     this.parent = void 0;
   }
@@ -777,7 +892,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       case "colorWheel": {
         if (entry.type === "light") {
           const item = entry.data;
-          if (item && this.config && item.entity1 && item.entity1.value && item.entity1.value.writeable) {
+          if (item && this.config) {
             switch (this.config.role) {
               case "socket":
               case "light":
@@ -984,6 +1099,61 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           const item = entry.data;
           await tools.setValueEntryNumber(item.speed, parseInt(value), false);
         }
+      }
+      case "timer-start": {
+        if (this.tempInterval)
+          this.adapter.clearInterval(this.tempInterval);
+        if (value) {
+          this.tempData.value = value.split(":").reduce((p, c, i) => {
+            return p + parseInt(c) * 60 ** (2 - i);
+          });
+        } else {
+          this.tempData.status = "run";
+          if (this.visibility)
+            this.onStateTrigger();
+          this.tempInterval = this.adapter.setInterval(() => {
+            if (this.unload && this.tempInterval)
+              this.adapter.clearInterval(this.tempInterval);
+            if (--this.tempData.value == 0) {
+              this.tempData.value = 0;
+              this.tempData.status = "stop";
+              this.dataItems && this.dataItems.type == "timer" && this.dataItems.data && this.dataItems.data.setValue1 && this.dataItems.data.setValue1.setStateTrue();
+              if (this.visibility)
+                this.onStateTrigger();
+              if (this.tempInterval)
+                this.adapter.clearInterval(this.tempInterval);
+              this.tempInterval = void 0;
+            } else if (this.tempData.value > 0) {
+              if (this.visibility)
+                this.onStateTrigger();
+            }
+          }, 1e3);
+        }
+        break;
+      }
+      case "timer-finish": {
+        break;
+      }
+      case "timer-clear": {
+        if (this.tempData) {
+          this.tempData.value = 0;
+          this.tempData.status = "stop";
+          if (this.visibility)
+            this.onStateTrigger();
+          if (this.tempInterval)
+            this.adapter.clearInterval(this.tempInterval);
+        }
+        break;
+      }
+      case "timer-pause": {
+        if (this.tempData) {
+          this.tempData.status = "pause";
+          if (this.visibility)
+            this.onStateTrigger();
+          if (this.tempInterval)
+            this.adapter.clearInterval(this.tempInterval);
+        }
+        break;
       }
       default: {
         return false;

@@ -487,16 +487,14 @@ class StatesControler extends import_library.BaseClass {
             if (!id.startsWith(dpInit))
               continue;
             const obj = tempObjectDB.data[id];
-            if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp))) {
-              if (obj.common.role === role) {
-                if (found) {
-                  this.log.warn(`Found more as 1 state for role ${role} in ${dpInit}`);
-                  break;
-                }
-                d.dp = id;
-                d.mode = "done";
-                found = true;
+            if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp)) && obj.common.role === role) {
+              if (found) {
+                this.log.warn(`Found more as 1 state for role ${role} in ${dpInit}`);
+                break;
               }
+              d.dp = id;
+              d.mode = "done";
+              found = true;
             }
           }
           if (found)

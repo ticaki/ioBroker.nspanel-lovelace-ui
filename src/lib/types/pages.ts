@@ -75,7 +75,8 @@ export type PageRole =
     | 'button.stop.tilt'
     | 'button.close.tilt'
     | 'level.tilt'
-    | 'level.blind';
+    | 'level.blind'
+    | 'timer'; // timer with internal counter
 
 export function isPageRole(F: string | PageRole): F is PageRole {
     switch (F as PageRole) {

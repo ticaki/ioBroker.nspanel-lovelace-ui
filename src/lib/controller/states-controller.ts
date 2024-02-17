@@ -519,16 +519,20 @@ export class StatesControler extends BaseClass {
                     for (const id in tempObjectDB.data) {
                         if (!id.startsWith(dpInit)) continue;
                         const obj: ioBroker.Object = tempObjectDB.data[id];
-                        if (obj && obj.common && obj.type === 'state' && (d.dp === '' || id.includes(d.dp))) {
-                            if (obj.common.role === role) {
-                                if (found) {
-                                    this.log.warn(`Found more as 1 state for role ${role} in ${dpInit}`);
-                                    break;
-                                }
-                                d.dp = id;
-                                d.mode = 'done';
-                                found = true;
+                        if (
+                            obj &&
+                            obj.common &&
+                            obj.type === 'state' &&
+                            (d.dp === '' || id.includes(d.dp)) &&
+                            obj.common.role === role
+                        ) {
+                            if (found) {
+                                this.log.warn(`Found more as 1 state for role ${role} in ${dpInit}`);
+                                break;
                             }
+                            d.dp = id;
+                            d.mode = 'done';
+                            found = true;
                         }
                     }
                     if (found) break;
