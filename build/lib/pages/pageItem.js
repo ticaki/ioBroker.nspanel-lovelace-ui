@@ -501,7 +501,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     return "";
   }
   async GeneratePopup(mode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H;
     if (!this.config || !this.dataItems)
       return null;
     const entry = this.dataItems;
@@ -519,6 +519,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           case "ct":
           case "rgbSingle":
           case "rgb":
+          case "rgb.hex":
           default: {
             message.type = "2Sliders";
             if (message.type !== "2Sliders" || entry.type !== "light")
@@ -564,6 +565,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 rgb = (_f = item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _f : null;
                 break;
               }
+              case "rgb.hex": {
+                rgb = (_g = item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _g : null;
+                break;
+              }
             }
             message.slider2Pos = "disable";
             if (item.ct && item.ct.value) {
@@ -581,12 +586,12 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               );
             }
             if (message.slider2Pos !== "disable" && colorMode === "ct") {
-              message.slidersColor = (_g = await tools.getTemperaturColorFromValue(item.ct, dimmer != null ? dimmer : 100)) != null ? _g : "";
+              message.slidersColor = (_h = await tools.getTemperaturColorFromValue(item.ct, dimmer != null ? dimmer : 100)) != null ? _h : "";
             }
             message.popup = message.slider2Pos !== "disable" && rgb !== null;
-            message.slider1Translation = (_h = item.text1 && item.text1.true && await item.text1.true.getString()) != null ? _h : void 0;
-            message.slider2Translation = (_i = item.text2 && item.text2.true && await item.text2.true.getString()) != null ? _i : void 0;
-            message.hue_translation = (_j = item.text3 && item.text3.true && await item.text3.true.getString()) != null ? _j : void 0;
+            message.slider1Translation = (_i = item.text1 && item.text1.true && await item.text1.true.getString()) != null ? _i : void 0;
+            message.slider2Translation = (_j = item.text2 && item.text2.true && await item.text2.true.getString()) != null ? _j : void 0;
+            message.hue_translation = (_k = item.text3 && item.text3.true && await item.text3.true.getString()) != null ? _k : void 0;
             if (message.slider1Translation !== void 0)
               message.slider1Translation = this.library.getTranslation(message.slider1Translation);
             if (message.slider2Translation !== void 0)
@@ -604,17 +609,17 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           message.type = "popupFan";
           if (message.type !== "popupFan")
             break;
-          const value = (_k = await tools.getValueEntryBoolean(item.entity1)) != null ? _k : null;
-          message.icon = (_l = await tools.getIconEntryValue(item.icon, value, "")) != null ? _l : "";
-          message.iconColor = (_m = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _m : "";
-          message.slider1 = String((_n = await tools.getScaledNumber(item.speed)) != null ? _n : "");
+          const value = (_l = await tools.getValueEntryBoolean(item.entity1)) != null ? _l : null;
+          message.icon = (_m = await tools.getIconEntryValue(item.icon, value, "")) != null ? _m : "";
+          message.iconColor = (_n = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _n : "";
+          message.slider1 = String((_o = await tools.getScaledNumber(item.speed)) != null ? _o : "");
           message.slider1Max = String(
-            (_o = item.speed && item.speed.maxScale && await item.speed.maxScale.getNumber()) != null ? _o : "100"
+            (_p = item.speed && item.speed.maxScale && await item.speed.maxScale.getNumber()) != null ? _p : "100"
           );
           message.buttonstate = value ? "1" : "0";
-          message.speedText = (_p = await tools.getEntryTextOnOff(item.text, value)) != null ? _p : "";
-          message.mode = (_q = await tools.getValueEntryString(item.entityInSel)) != null ? _q : "";
-          let list = (_s = (_r = item.valueList && await item.valueList.getObject()) != null ? _r : item.valueList && await item.valueList.getString()) != null ? _s : "";
+          message.speedText = (_q = await tools.getEntryTextOnOff(item.text, value)) != null ? _q : "";
+          message.mode = (_r = await tools.getValueEntryString(item.entityInSel)) != null ? _r : "";
+          let list = (_t = (_s = item.valueList && await item.valueList.getObject()) != null ? _s : item.valueList && await item.valueList.getString()) != null ? _t : "";
           if (list !== null) {
             if (Array.isArray(list))
               list = list.join("?");
@@ -631,13 +636,13 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message.type = "insel";
         if (!(message.type === "insel"))
           return null;
-        const value = (_t = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _t : true;
+        const value = (_u = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _u : true;
         if (message.type === "insel")
           message.textColor = await tools.getEntryColor(item.color, value, Color.White);
         message.currentState = this.library.getTranslation(
-          (_u = item.headline && await item.headline.getString()) != null ? _u : ""
+          (_v = item.headline && await item.headline.getString()) != null ? _v : ""
         );
-        if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_v = item.entityInSel.value.type) != null ? _v : "") && (item.entityInSel.value.getCommonStates() || entry.role == "spotify-playlist")) {
+        if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_w = item.entityInSel.value.type) != null ? _w : "") && (item.entityInSel.value.getCommonStates() || entry.role == "spotify-playlist")) {
           let states = void 0;
           const value2 = await tools.getValueEntryString(item.entityInSel);
           switch (entry.role) {
@@ -671,14 +676,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               message = { ...message, type: "popupThermo" };
               if (message.type === "popupThermo") {
                 message.headline = this.library.getTranslation(
-                  (_w = item.headline && await item.headline.getString()) != null ? _w : ""
+                  (_x = item.headline && await item.headline.getString()) != null ? _x : ""
                 );
               }
               break;
             }
           }
         }
-        let list = (_y = (_x = item.valueList && await item.valueList.getObject()) != null ? _x : item.valueList && await item.valueList.getString()) != null ? _y : [
+        let list = (_z = (_y = item.valueList && await item.valueList.getObject()) != null ? _y : item.valueList && await item.valueList.getString()) != null ? _z : [
           "1",
           "2",
           "3",
@@ -704,7 +709,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message = { ...message, type: "popupThermo" };
         if (message.type === "popupThermo") {
           message.headline = this.library.getTranslation(
-            (_z = item.headline && await item.headline.getString()) != null ? _z : ""
+            (_A = item.headline && await item.headline.getString()) != null ? _A : ""
           );
         }
         break;
@@ -718,14 +723,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message.type = "popupShutter";
         if (!(message.type === "popupShutter"))
           break;
-        message.text2 = (_A = item.text && item.text.true && await item.text.true.getString()) != null ? _A : "";
+        message.text2 = (_B = item.text && item.text.true && await item.text.true.getString()) != null ? _B : "";
         message.text2 = this.library.getTranslation(message.text2);
-        const pos1 = (_B = await tools.getValueEntryNumber(item.entity1)) != null ? _B : void 0;
-        const pos2 = (_C = await tools.getValueEntryNumber(item.entity2)) != null ? _C : void 0;
+        const pos1 = (_C = await tools.getValueEntryNumber(item.entity1)) != null ? _C : void 0;
+        const pos2 = (_D = await tools.getValueEntryNumber(item.entity2)) != null ? _D : void 0;
         if (pos1 !== void 0)
-          message.icon = (_D = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _D : "";
+          message.icon = (_E = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _E : "";
         else if (pos2 !== void 0)
-          message.icon = (_E = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _E : "";
+          message.icon = (_F = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _F : "";
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
           "arrow-up",
           "stop",
@@ -752,7 +757,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           });
           if (index === 0) {
             message.pos1 = String(pos);
-            message.pos1text = (_F = await tools.getEntryTextOnOff(item.text1, true)) != null ? _F : "";
+            message.pos1text = (_G = await tools.getEntryTextOnOff(item.text1, true)) != null ? _G : "";
             message.pos1text = this.library.getTranslation(message.pos1text);
             message.iconL1 = optionalValueC[0];
             message.iconM1 = optionalValueC[1];
@@ -762,7 +767,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.statusR1 = optionalValueC[5];
           } else {
             message.pos2 = String(pos);
-            message.pos2text = (_G = await tools.getEntryTextOnOff(item.text2, true)) != null ? _G : "";
+            message.pos2text = (_H = await tools.getEntryTextOnOff(item.text2, true)) != null ? _H : "";
             message.pos2text = this.library.getTranslation(message.pos2text);
             message.iconL2 = optionalValueC[0];
             message.iconM2 = optionalValueC[1];
@@ -912,6 +917,15 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 const rgb = Color.resultToRgb(value);
                 if (Color.isRGB(rgb)) {
                   item.color && item.color.true && await item.color.true.setStateAsync(JSON.stringify(rgb));
+                }
+                break;
+              }
+              case "rgb.hex": {
+                const rgb = Color.resultToRgb(value);
+                if (Color.isRGB(rgb)) {
+                  item.color && item.color.true && await item.color.true.setStateAsync(
+                    Color.ConvertRGBtoHex(rgb.r, rgb.g, rgb.b)
+                  );
                 }
                 break;
               }

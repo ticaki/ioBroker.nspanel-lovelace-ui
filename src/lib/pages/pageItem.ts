@@ -673,6 +673,7 @@ export class PageItem extends BaseClassTriggerd {
                     case 'ct':
                     case 'rgbSingle':
                     case 'rgb':
+                    case 'rgb.hex':
                     default: {
                         message.type = '2Sliders';
                         if (message.type !== '2Sliders' || entry.type !== 'light') return null;
@@ -714,6 +715,10 @@ export class PageItem extends BaseClassTriggerd {
                                 break;
                             }
                             case 'rgb': {
+                                rgb = (item.color && item.color.true && (await item.color.true.getRGBValue())) ?? null;
+                                break;
+                            }
+                            case 'rgb.hex': {
                                 rgb = (item.color && item.color.true && (await item.color.true.getRGBValue())) ?? null;
                                 break;
                             }
@@ -1118,6 +1123,18 @@ export class PageItem extends BaseClassTriggerd {
                                     item.color &&
                                         item.color.true &&
                                         (await item.color.true.setStateAsync(JSON.stringify(rgb)));
+                                }
+
+                                break;
+                            }
+                            case 'rgb.hex': {
+                                const rgb = Color.resultToRgb(value);
+                                if (Color.isRGB(rgb)) {
+                                    item.color &&
+                                        item.color.true &&
+                                        (await item.color.true.setStateAsync(
+                                            Color.ConvertRGBtoHex(rgb.r, rgb.g, rgb.b),
+                                        ));
                                 }
 
                                 break;
