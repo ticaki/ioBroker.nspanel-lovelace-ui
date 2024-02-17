@@ -10,7 +10,7 @@ import 'source-map-support/register';
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 import * as MQTT from './lib/classes/mqtt';
-import { Testconfig } from './lib/config';
+import { Testconfig } from './lib/config-custom';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import { ScreenSaverConst } from './lib/const/definition';
