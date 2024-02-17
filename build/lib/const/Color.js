@@ -208,10 +208,10 @@ function rgbHexToObject(rgb) {
   }
   return result;
 }
-function scale(number, inMin, inMax, outMin, outMax) {
+function scale(number, inMax, inMin, outMin, outMax) {
   if (inMin === null || inMax === null)
     return number;
-  return outMax + outMin - ((number - inMin) * (outMax - outMin) / (inMax - inMin) + outMin);
+  return outMax + outMin - ((number - inMax) * (outMax - outMin) / (inMin - inMax) + outMin);
 }
 function HandleColorScale(valueScaletemp) {
   switch (valueScaletemp) {

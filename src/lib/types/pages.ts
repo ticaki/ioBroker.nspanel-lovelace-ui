@@ -73,7 +73,9 @@ export type PageRole =
     | 'button.stop'
     | 'button.open.tilt'
     | 'button.stop.tilt'
-    | 'button.close.tilt';
+    | 'button.close.tilt'
+    | 'level.tilt'
+    | 'level.blind';
 
 export function isPageRole(F: string | PageRole): F is PageRole {
     switch (F as PageRole) {

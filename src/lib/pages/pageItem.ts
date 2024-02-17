@@ -292,7 +292,30 @@ export class PageItem extends BaseClassTriggerd {
 
                     break;
                 }
-                //case 'switch':
+                case 'fan': {
+                    if (entry.type === 'fan') {
+                        const item = entry.data;
+                        message.type = 'fan';
+                        //const speed = (await tools.getValueEntryNumber(item.speed, true)) ?? null;
+                        const value = (await tools.getValueEntryBoolean(item.entity1)) ?? null;
+                        message.displayName = (item.headline && (await item.headline.getString())) ?? '';
+                        message.icon = (await tools.getIconEntryValue(item.icon, value, '')) ?? '';
+                        message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
+                        /*const min =
+                        (item.entity1 && item.entity1.minScale && (await item.entity1.minScale.getNumber())) ?? 0;
+                        const max =
+                        (item.entity1 && item.entity1.maxScale && (await item.entity1.maxScale.getNumber())) ?? 100;
+                        */
+                        return tools.getPayload(
+                            message.type,
+                            message.intNameEntity,
+                            message.icon,
+                            message.iconColor,
+                            message.displayName,
+                            value ? '1' : '0',
+                        );
+                    }
+                }
                 /*case 'volumeGroup': {
                 break;
             }
@@ -535,6 +558,34 @@ export class PageItem extends BaseClassTriggerd {
                 return tools.getPayload(result.headline, result.entityName, result.currentState, result.list);
                 break;
             }
+            case 'popupFan': {
+                let result: entityUpdateDetailMessage = {
+                    type: 'popupFan',
+                    entityName: '',
+                    icon: '',
+                    iconColor: '',
+                    buttonstate: '',
+                    slider1: '',
+                    slider1Max: '',
+                    speedText: '',
+                    mode: '',
+                    modeList: '',
+                };
+                result = Object.assign(result, message);
+                return tools.getPayload(
+                    'entityUpdateDetail',
+                    result.entityName,
+                    result.icon,
+                    result.iconColor,
+                    result.buttonstate,
+                    result.slider1,
+                    result.slider1Max,
+                    result.speedText,
+                    result.mode,
+                    result.modeList,
+                );
+                break;
+            }
             case 'popupShutter': {
                 let result: entityUpdateDetailMessage = {
                     type: 'popupShutter',
@@ -701,7 +752,40 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
 
-            case 'popupFan':
+            case 'popupFan': {
+                if (entry.type === 'fan') {
+                    const item = entry.data;
+                    message.type = 'popupFan';
+                    if (message.type !== 'popupFan') break;
+                    //const speed = (await tools.getValueEntryNumber(item.speed, true)) ?? null;
+                    const value = (await tools.getValueEntryBoolean(item.entity1)) ?? null;
+                    message.icon = (await tools.getIconEntryValue(item.icon, value, '')) ?? '';
+                    message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
+                    /*const min =
+                    (item.entity1 && item.entity1.minScale && (await item.entity1.minScale.getNumber())) ?? 0;*/
+                    message.slider1 = String((await tools.getScaledNumber(item.speed)) ?? '');
+                    message.slider1Max = String(
+                        (item.speed && item.speed.maxScale && (await item.speed.maxScale.getNumber())) ?? '100',
+                    );
+
+                    message.buttonstate = value ? '1' : '0';
+                    message.speedText = (await tools.getEntryTextOnOff(item.text, value)) ?? '';
+                    message.mode = (await tools.getValueEntryString(item.entityInSel)) ?? '';
+                    let list =
+                        (item.valueList && (await item.valueList.getObject())) ??
+                        (item.valueList && (await item.valueList.getString())) ??
+                        '';
+
+                    /**
+                     * die Liste ist entweder ein mit ? getrennt der String oder ein Array
+                     */
+                    if (list !== null) {
+                        if (Array.isArray(list)) list = list.join('?');
+                    }
+                    message.modeList = typeof list === 'string' ? list : '';
+                }
+                break;
+            }
             case 'popupThermo':
             case 'popupInSel': {
                 if (entry.type !== 'input_sel' && entry.type !== 'light') break;
@@ -889,157 +973,11 @@ export class PageItem extends BaseClassTriggerd {
         if (value === undefined || this.dataItems === undefined) return false;
         const entry = this.dataItems;
         switch (action) {
+            case 'mode-preset_modes':
             case 'mode-insel':
                 {
-                    /**
-                     * Die Setzliste besteht aus 1 Arrays in Stringform mit trenner | und einem json mit trenner ? { id: t[0], value: t[1] }
-                     * oder { id: t[0], value: t[1], command: t[2]} command bitte in der funktion nachsehen. Hier sind meist nicht alle beschrieben
-                     *
-                     * Standardnutzung, NSPanelauswahl von z.B. Eintrag 2 benutzt das Element 2 aus diesem Array und setzt die ID auf den Wert value
-                     * 'flip': Liest den State mit ID ein, negiert den Wert und schreibt ihn wieder zurück. string, number, boolean möglich.
-                     */
-                    if (entry.type !== 'input_sel') break;
-
-                    const item = entry.data;
-
-                    if (
-                        item.entityInSel &&
-                        item.entityInSel.value &&
-                        ['string', 'number'].indexOf(item.entityInSel.value.type ?? '') &&
-                        (item.entityInSel.value.getCommonStates() || entry.role == 'spotify-playlist') &&
-                        !item.setList
-                    ) {
-                        let states: Record<string | number, string> | undefined = undefined;
-                        switch (entry.role) {
-                            case 'spotify-playlist': {
-                                if (item.valueList) {
-                                    const val = (await item.valueList.getObject()) as spotifyPlaylist | null;
-                                    if (val) {
-                                        states = {};
-                                        for (const a in val) {
-                                            states[a] = a;
-                                        }
-                                    }
-                                }
-                                break;
-                            }
-                            default: {
-                                states = item.entityInSel.value.getCommonStates();
-                            }
-                        }
-                        if (value !== null && states !== undefined) {
-                            const list: string[] = [];
-                            for (const a in states) {
-                                list.push(String(a));
-                            }
-                            if (list[parseInt(value)] !== undefined) {
-                                await item.entityInSel.value.setStateAsync(list[parseInt(value)]);
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!item.setList) return false;
-                    const list = await this.getListCommands(item.setList);
-                    const v = value as keyof typeof list;
-                    if (list && list[v]) {
-                        try {
-                            const obj = await this.panel.statesControler.getObjectAsync(list[v].id);
-                            if (!obj || !obj.common || obj.type !== 'state') throw new Error('Dont get obj!');
-
-                            const type = obj.common.type;
-                            let newValue: any = null;
-                            switch (list[v].command) {
-                                case 'flip': {
-                                    const state = await this.adapter.getForeignStateAsync(list[v].id);
-                                    if (state) {
-                                        switch (typeof state.val) {
-                                            case 'string': {
-                                                switch (
-                                                    state.val as
-                                                        | 'ON'
-                                                        | 'OFF'
-                                                        | 'TRUE'
-                                                        | 'FALSE'
-                                                        | 'START'
-                                                        | 'STOP'
-                                                        | '0'
-                                                        | '1'
-                                                ) {
-                                                    case 'ON': {
-                                                        newValue = 'OFF';
-                                                        break;
-                                                    }
-                                                    case 'OFF': {
-                                                        newValue = 'ON';
-                                                        break;
-                                                    }
-                                                    case 'TRUE': {
-                                                        newValue = 'FALSE';
-                                                        break;
-                                                    }
-                                                    case 'FALSE': {
-                                                        newValue = 'TRUE';
-                                                        break;
-                                                    }
-                                                    case 'START': {
-                                                        newValue = 'STOP';
-                                                        break;
-                                                    }
-                                                    case 'STOP': {
-                                                        newValue = 'START';
-                                                        break;
-                                                    }
-                                                    case '0': {
-                                                        newValue = '1';
-                                                        break;
-                                                    }
-                                                    case '1': {
-                                                        newValue = '0';
-                                                        break;
-                                                    }
-                                                }
-                                                break;
-                                            }
-                                            case 'number':
-                                            case 'bigint': {
-                                                newValue = state.val === 1 ? 0 : 1;
-                                                break;
-                                            }
-                                            case 'boolean': {
-                                                newValue = !state.val;
-                                                break;
-                                            }
-
-                                            case 'symbol':
-                                            case 'undefined':
-                                            case 'object':
-                                            case 'function':
-                                                return false;
-                                        }
-                                    }
-                                    break;
-                                }
-                                case undefined: {
-                                    newValue = this.adapter.library.convertToType(list[v].value, type);
-                                }
-                            }
-
-                            if (newValue !== null) {
-                                await this.adapter.setForeignStateAsync(
-                                    list[v].id,
-                                    newValue,
-                                    list[v].id.startsWith(this.adapter.namespace),
-                                );
-                                this.log.debug(`------------Set dp ${list[v].id} to ${String(newValue)}!`);
-                            } else {
-                                this.log.error(`Try to set a null value to ${list[v].id}!`);
-                            }
-                        } catch (e) {
-                            this.log.error(`Id ${list[v].id} is not valid!`);
-                        }
-                    } else {
-                    }
+                    if (!('entityInSel' in entry.data)) break;
+                    await this.setListCommand(entry, value);
                 }
                 break;
             case 'button': {
@@ -1281,7 +1219,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             /**
-             * zu 100% geschlossen zu 0% geschlossen
+             * 100 is right 0 left
              */
             case 'positionSlider': {
                 if (entry.type === 'shutter') {
@@ -1306,6 +1244,9 @@ export class PageItem extends BaseClassTriggerd {
                 if (entry.type === 'number') {
                     const item = entry.data;
                     await tools.setValueEntryNumber(item.entity1, parseInt(value), false);
+                } else if (entry.type === 'fan') {
+                    const item = entry.data;
+                    await tools.setValueEntryNumber(item.speed, parseInt(value), false);
                 }
             }
             default: {
@@ -1367,5 +1308,149 @@ export class PageItem extends BaseClassTriggerd {
             });
         }
         return list;
+    }
+
+    /**
+     * Die Setzliste besteht aus 1 Arrays in Stringform mit trenner | und einem json mit trenner ? { id: t[0], value: t[1] }
+     * oder { id: t[0], value: t[1], command: t[2]} command bitte in der funktion nachsehen. Hier sind meist nicht alle beschrieben
+     *
+     * Standardnutzung, NSPanelauswahl von z.B. Eintrag 2 benutzt das Element 2 aus diesem Array und setzt die ID auf den Wert value
+     * 'flip': Liest den State mit ID ein, negiert den Wert und schreibt ihn wieder zurück. string, number, boolean möglich.
+     */
+
+    async setListCommand(entry: PageItemDataItems, value: string): Promise<boolean> {
+        //if (entry.type !== 'input_sel') return false;
+        const item = entry.data;
+        if (!('entityInSel' in item)) return false;
+        if (
+            item.entityInSel &&
+            item.entityInSel.value &&
+            ['string', 'number'].indexOf(item.entityInSel.value.type ?? '') &&
+            (item.entityInSel.value.getCommonStates() || entry.role == 'spotify-playlist') &&
+            !item.setList
+        ) {
+            let states: Record<string | number, string> | undefined = undefined;
+            switch (entry.role) {
+                case 'spotify-playlist': {
+                    if (item.valueList) {
+                        const val = (await item.valueList.getObject()) as spotifyPlaylist | null;
+                        if (val) {
+                            states = {};
+                            for (const a in val) {
+                                states[a] = a;
+                            }
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    states = item.entityInSel.value.getCommonStates();
+                }
+            }
+            if (value !== null && states !== undefined) {
+                const list: string[] = [];
+                for (const a in states) {
+                    list.push(String(a));
+                }
+                if (list[parseInt(value)] !== undefined) {
+                    await item.entityInSel.value.setStateAsync(list[parseInt(value)]);
+                    return true;
+                }
+            }
+        }
+
+        if (!item.setList) return false;
+        const list = await this.getListCommands(item.setList);
+        const v = value as keyof typeof list;
+        if (list && list[v]) {
+            try {
+                const obj = await this.panel.statesControler.getObjectAsync(list[v].id);
+                if (!obj || !obj.common || obj.type !== 'state') throw new Error('Dont get obj!');
+
+                const type = obj.common.type;
+                let newValue: any = null;
+                switch (list[v].command) {
+                    case 'flip': {
+                        const state = await this.adapter.getForeignStateAsync(list[v].id);
+                        if (state) {
+                            switch (typeof state.val) {
+                                case 'string': {
+                                    switch (
+                                        state.val as 'ON' | 'OFF' | 'TRUE' | 'FALSE' | 'START' | 'STOP' | '0' | '1'
+                                    ) {
+                                        case 'ON': {
+                                            newValue = 'OFF';
+                                            break;
+                                        }
+                                        case 'OFF': {
+                                            newValue = 'ON';
+                                            break;
+                                        }
+                                        case 'TRUE': {
+                                            newValue = 'FALSE';
+                                            break;
+                                        }
+                                        case 'FALSE': {
+                                            newValue = 'TRUE';
+                                            break;
+                                        }
+                                        case 'START': {
+                                            newValue = 'STOP';
+                                            break;
+                                        }
+                                        case 'STOP': {
+                                            newValue = 'START';
+                                            break;
+                                        }
+                                        case '0': {
+                                            newValue = '1';
+                                            break;
+                                        }
+                                        case '1': {
+                                            newValue = '0';
+                                            break;
+                                        }
+                                    }
+                                    break;
+                                }
+                                case 'number':
+                                case 'bigint': {
+                                    newValue = state.val === 1 ? 0 : 1;
+                                    break;
+                                }
+                                case 'boolean': {
+                                    newValue = !state.val;
+                                    break;
+                                }
+
+                                case 'symbol':
+                                case 'undefined':
+                                case 'object':
+                                case 'function':
+                                    return false;
+                            }
+                        }
+                        break;
+                    }
+                    case undefined: {
+                        newValue = this.adapter.library.convertToType(list[v].value, type);
+                    }
+                }
+
+                if (newValue !== null) {
+                    await this.adapter.setForeignStateAsync(
+                        list[v].id,
+                        newValue,
+                        list[v].id.startsWith(this.adapter.namespace),
+                    );
+                    return true;
+                } else {
+                    this.log.error(`Try to set a null value to ${list[v].id}!`);
+                }
+            } catch (e) {
+                this.log.error(`Id ${list[v].id} is not valid!`);
+            }
+        }
+        return false;
     }
 }

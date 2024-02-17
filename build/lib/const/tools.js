@@ -71,7 +71,7 @@ async function setValueEntryNumber(i, value, s = true) {
     const min = await i.minScale.getNumber();
     const max = await i.maxScale.getNumber();
     if (min !== null && max !== null) {
-      res = Math.round((0, import_Color2.scale)(res, 0, 100, min, max));
+      res = Math.round((0, import_Color2.scale)(res, 100, 0, min, max));
     }
   }
   if (i.set && i.set.writeable)
@@ -90,7 +90,7 @@ async function getValueEntryNumber(i, s = true) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
       if (min !== null && max !== null) {
-        res = (0, import_Color2.scale)(res, min, max, 0, 100);
+        res = (0, import_Color2.scale)(res, max, min, 0, 100);
       }
     }
     return res;
@@ -100,9 +100,9 @@ async function getValueEntryNumber(i, s = true) {
 function getScaledNumberRaw(n, min, max, oldValue = null) {
   if (min !== null && max !== null) {
     if (oldValue === null) {
-      n = Math.round((0, import_Color2.scale)(n, min, max, 0, 100));
+      n = Math.round((0, import_Color2.scale)(n, max, min, 0, 100));
     } else {
-      n = (0, import_Color2.scale)(n, 0, 100, min, max);
+      n = (0, import_Color2.scale)(n, 100, 0, min, max);
       if (oldValue !== false) {
         if (oldValue >= n)
           n = Math.floor(n);
@@ -164,7 +164,7 @@ async function getSliderCTFromValue(i) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
       if (min !== null && max !== null)
-        nval = Math.round((0, import_Color2.scale)(nval, min, max, 1800, 7e3));
+        nval = Math.round((0, import_Color2.scale)(nval, max, min, 1800, 7e3));
     }
     if (mode === "mired") {
       r = 10 ** 6 / nval;
@@ -193,7 +193,7 @@ async function setSliderCTFromValue(i, value) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
       if (min !== null && max !== null)
-        r = Math.round((0, import_Color2.scale)(nval, 1800, 7e3, min, max));
+        r = Math.round((0, import_Color2.scale)(nval, 7e3, 1800, min, max));
     }
     if (i.set && i.set.writeable)
       await i.value.setStateAsync(r);
@@ -270,7 +270,7 @@ async function GetIconColor(item, value, min = null, max = null, offColor = null
       val = val < minValue ? minValue : val;
       return String(
         (0, import_Color2.rgb_dec565)(
-          !offColor ? (0, import_Color2.darken)(onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(100 - val, minValue, maxValue, 0, 1)) : (0, import_Color2.Interpolate)(offColor, onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(100 - val, minValue, maxValue, 0, 1))
+          !offColor ? (0, import_Color2.darken)(onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(val, maxValue, minValue, 0, 1)) : (0, import_Color2.Interpolate)(offColor, onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(val, maxValue, minValue, 0, 1))
         )
       );
     }
@@ -289,7 +289,7 @@ async function GetIconColor(item, value, min = null, max = null, offColor = null
       val = val < minValue ? minValue : val;
       return String(
         (0, import_Color2.rgb_dec565)(
-          !offColor2 ? (0, import_Color2.darken)(onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(100 - val, minValue, maxValue, 0, 1)) : (0, import_Color2.Interpolate)(offColor2, onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(100 - val, minValue, maxValue, 0, 1))
+          !offColor2 ? (0, import_Color2.darken)(onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(val, maxValue, minValue, 0, 1)) : (0, import_Color2.Interpolate)(offColor2, onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(val, maxValue, minValue, 0, 1))
         )
       );
     }

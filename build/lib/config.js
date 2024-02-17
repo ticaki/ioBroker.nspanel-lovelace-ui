@@ -84,7 +84,7 @@ const pageEntitiesTest1 = {
     {
       role: "rgb",
       type: "shutter",
-      dpInit: "",
+      dpInit: "0_userdata.0.shutter_test",
       data: {
         icon: {
           true: {
@@ -100,7 +100,7 @@ const pageEntitiesTest1 = {
           minBri: void 0
         },
         entity1: {
-          value: { type: "triggered", dp: "0_userdata.0.shutter" },
+          value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
           decimal: void 0,
           factor: void 0,
           unit: void 0,
@@ -108,7 +108,7 @@ const pageEntitiesTest1 = {
           maxScale: { type: "const", constVal: 100 }
         },
         entity2: {
-          value: { type: "triggered", dp: "0_userdata.0.shutter" },
+          value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
           decimal: void 0,
           factor: void 0,
           unit: void 0,
@@ -224,14 +224,13 @@ const pageEntitiesTest1 = {
     },
     {
       role: "text.list",
-      type: "text",
+      type: "fan",
       dpInit: "",
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "home" },
-            text: { type: "const", constVal: "22.2" },
-            color: { type: "const", constVal: Color.Green }
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
@@ -250,14 +249,30 @@ const pageEntitiesTest1 = {
           factor: void 0,
           unit: void 0
         },
+        speed: {
+          value: {
+            type: "const",
+            constVal: 1e3
+          },
+          factor: void 0,
+          maxScale: {
+            type: "const",
+            constVal: 3e3
+          }
+        },
+        headline: {
+          type: "const",
+          constVal: "Football-Fan"
+        },
         text: {
-          true: { type: "const", constVal: "text" },
+          true: {
+            type: "const",
+            constVal: "Details"
+          },
           false: void 0
         },
-        text1: {
-          true: { type: "const", constVal: "text1" },
-          false: void 0
-        }
+        entityInSel: { value: { type: "const", constVal: "2" } },
+        valueList: { type: "const", constVal: "1?2?3?4" }
       }
     }
   ],
@@ -1314,7 +1329,7 @@ const pageGridTest1 = {
           minBri: void 0
         },
         entity1: {
-          value: { type: "triggered", dp: "0_userdata.0.shutter" },
+          value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
           decimal: void 0,
           factor: void 0,
           unit: void 0,
@@ -1322,7 +1337,7 @@ const pageGridTest1 = {
           maxScale: { type: "const", constVal: 100 }
         },
         entity2: {
-          value: { type: "triggered", dp: "0_userdata.0.shutter" },
+          value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
           decimal: void 0,
           factor: void 0,
           unit: void 0,
@@ -1578,7 +1593,7 @@ const pageGridTest2 = {
     data: {
       headline: {
         type: "const",
-        constVal: "\xDCberschrift2"
+        constVal: "grid2"
       }
     }
   },
@@ -1586,17 +1601,9 @@ const pageGridTest2 = {
   pageItems: [
     {
       role: "text.list",
-      type: "input_sel",
+      type: "fan",
       dpInit: "",
       data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
@@ -1610,7 +1617,7 @@ const pageGridTest2 = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityInSel: {
+        entity1: {
           value: {
             type: "const",
             constVal: true
@@ -1623,8 +1630,7 @@ const pageGridTest2 = {
           true: void 0,
           false: void 0
         },
-        valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+        entityInSel: void 0
       }
     },
     {

@@ -63,7 +63,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
              */
             role: 'rgb',
             type: 'shutter',
-            dpInit: '',
+            dpInit: '0_userdata.0.shutter_test',
 
             data: {
                 icon: {
@@ -82,7 +82,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                 // 1. slider
                 entity1: {
                     // button
-                    value: { type: 'triggered', dp: '0_userdata.0.shutter' },
+                    value: { mode: 'auto', role: 'level.blind', type: 'triggered', dp: '' },
                     decimal: undefined,
                     factor: undefined,
                     unit: undefined,
@@ -92,7 +92,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                 // 2. slider
                 entity2: {
                     // button
-                    value: { type: 'triggered', dp: '0_userdata.0.shutter' },
+                    value: { mode: 'auto', role: 'level.tilt', type: 'triggered', dp: '' },
                     decimal: undefined,
                     factor: undefined,
                     unit: undefined,
@@ -223,15 +223,14 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
         },
         {
             role: 'text.list',
-            type: 'text',
+            type: 'fan',
             dpInit: '',
 
             data: {
                 icon: {
                     true: {
-                        value: { type: 'const', constVal: 'home' },
-                        text: { type: 'const', constVal: '22.2' },
-                        color: { type: 'const', constVal: Color.Green },
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Blue },
                     },
                     false: {
                         value: { type: 'const', constVal: 'fan' },
@@ -250,14 +249,33 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                     factor: undefined,
                     unit: undefined,
                 },
+                speed: {
+                    value: {
+                        type: 'const',
+                        constVal: 1000,
+                    },
+                    factor: undefined,
+                    maxScale: {
+                        type: 'const',
+                        constVal: 3000,
+                    },
+                },
+                headline: {
+                    type: 'const',
+                    constVal: 'Football-Fan',
+                },
                 text: {
-                    true: { type: 'const', constVal: 'text' },
+                    true: {
+                        type: 'const',
+                        constVal: 'Details',
+                    },
                     false: undefined,
                 },
-                text1: {
-                    true: { type: 'const', constVal: 'text1' },
-                    false: undefined,
-                },
+                entityInSel: { value: { type: 'const', constVal: '2' } },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                valueList: { type: 'const', constVal: '1?2?3?4' },
             },
         },
     ],
@@ -1362,7 +1380,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                 // 1. slider
                 entity1: {
                     // button
-                    value: { type: 'triggered', dp: '0_userdata.0.shutter' },
+                    value: { mode: 'auto', role: 'level.blind', type: 'triggered', dp: '' },
                     decimal: undefined,
                     factor: undefined,
                     unit: undefined,
@@ -1372,7 +1390,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                 // 2. slider
                 entity2: {
                     // button
-                    value: { type: 'triggered', dp: '0_userdata.0.shutter' },
+                    value: { mode: 'auto', role: 'level.tilt', type: 'triggered', dp: '' },
                     decimal: undefined,
                     factor: undefined,
                     unit: undefined,
@@ -1654,7 +1672,7 @@ const pageGridTest2: pages.PageBaseConfig = {
         data: {
             headline: {
                 type: 'const',
-                constVal: 'Überschrift2',
+                constVal: 'grid2',
             },
         },
     },
@@ -1662,18 +1680,10 @@ const pageGridTest2: pages.PageBaseConfig = {
     pageItems: [
         {
             role: 'text.list',
-            type: 'input_sel',
+            type: 'fan',
             dpInit: '',
 
             data: {
-                color: {
-                    true: {
-                        type: 'const',
-                        constVal: Color.HMIOn,
-                    },
-                    false: undefined,
-                    scale: undefined,
-                },
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'fan' },
@@ -1687,7 +1697,7 @@ const pageGridTest2: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entityInSel: {
+                entity1: {
                     value: {
                         type: 'const',
                         constVal: true,
@@ -1700,14 +1710,10 @@ const pageGridTest2: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
+                entityInSel: undefined,
                 /**
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                  */
-                valueList: { type: 'const', constVal: 'home?butter' },
-                /**
-                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
-                 */
-                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
             },
         },
         {

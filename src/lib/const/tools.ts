@@ -53,14 +53,14 @@ export async function setValueEntryNumber(
         const min = await i.minScale.getNumber();
         const max = await i.maxScale.getNumber();
         if (min !== null && max !== null) {
-            res = Math.round(scale(res, 0, 100, min, max));
+            res = Math.round(scale(res, 100, 0, min, max));
         }
     }
     if (i.set && i.set.writeable) await i.set.setStateAsync(res);
     else await i.value.setStateAsync(res);
 }
 export async function getValueEntryNumber(
-    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
+    i: ChangeTypeOfKeys<ValueEntryType | ScaledNumberType, Dataitem | undefined>,
     s: boolean = true,
 ): Promise<number | null> {
     if (!i) return null;
@@ -71,7 +71,7 @@ export async function getValueEntryNumber(
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
             if (min !== null && max !== null) {
-                res = scale(res, min, max, 0, 100);
+                res = scale(res, max, min, 0, 100);
             }
         }
         return res;
@@ -86,9 +86,9 @@ function getScaledNumberRaw(
 ): number {
     if (min !== null && max !== null) {
         if (oldValue === null) {
-            n = Math.round(scale(n, min, max, 0, 100));
+            n = Math.round(scale(n, max, min, 0, 100));
         } else {
-            n = scale(n, 0, 100, min, max);
+            n = scale(n, 100, 0, min, max);
             if (oldValue !== false) {
                 if (oldValue >= n) n = Math.floor(n);
                 else n = Math.ceil(n);
@@ -155,7 +155,7 @@ export async function getSliderCTFromValue(
         if (i.minScale !== undefined && i.maxScale !== undefined) {
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
-            if (min !== null && max !== null) nval = Math.round(scale(nval, min, max, 1800, 7000));
+            if (min !== null && max !== null) nval = Math.round(scale(nval, max, min, 1800, 7000));
         }
         if (mode === 'mired') {
             r = 10 ** 6 / nval;
@@ -186,7 +186,7 @@ export async function setSliderCTFromValue(
         if (i.minScale !== undefined && i.maxScale !== undefined) {
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
-            if (min !== null && max !== null) r = Math.round(scale(nval, 1800, 7000, min, max));
+            if (min !== null && max !== null) r = Math.round(scale(nval, 7000, 1800, min, max));
         }
         if (i.set && i.set.writeable) await i.value.setStateAsync(r);
         else if (nval !== value) await i.value.setStateAsync(r);
@@ -269,8 +269,8 @@ export async function GetIconColor(
             return String(
                 rgb_dec565(
                     !offColor
-                        ? darken(onColor ? onColor : HMIOn, scale(100 - val, minValue, maxValue, 0, 1))
-                        : Interpolate(offColor, onColor ? onColor : HMIOn, scale(100 - val, minValue, maxValue, 0, 1)),
+                        ? darken(onColor ? onColor : HMIOn, scale(val, maxValue, minValue, 0, 1))
+                        : Interpolate(offColor, onColor ? onColor : HMIOn, scale(val, maxValue, minValue, 0, 1)),
                 ),
             );
         }
@@ -290,8 +290,8 @@ export async function GetIconColor(
             return String(
                 rgb_dec565(
                     !offColor
-                        ? darken(onColor ? onColor : HMIOn, scale(100 - val, minValue, maxValue, 0, 1))
-                        : Interpolate(offColor, onColor ? onColor : HMIOn, scale(100 - val, minValue, maxValue, 0, 1)),
+                        ? darken(onColor ? onColor : HMIOn, scale(val, maxValue, minValue, 0, 1))
+                        : Interpolate(offColor, onColor ? onColor : HMIOn, scale(val, maxValue, minValue, 0, 1)),
                 ),
             );
         }

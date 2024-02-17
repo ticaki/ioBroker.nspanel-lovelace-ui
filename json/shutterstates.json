@@ -30,6 +30,40 @@
     "user": "system.user.admin",
     "ts": 1708104304125
   },
+  "0_userdata.0.shutter_test.level_tilt": {
+    "common": {
+      "name": "level tilt",
+      "desc": "Manually created",
+      "role": "level.tild",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 10
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.shutter_test.shutterdown",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1708104304125
+  },
+  "0_userdata.0.shutter_test.level_blind": {
+    "common": {
+      "name": "level blind",
+      "desc": "Manually created",
+      "role": "level.blind",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 90
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.shutter_test.shutterdown",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1708104304125
+  },
   "0_userdata.0.shutter_test.shutterstop": {
     "common": {
       "name": "up",

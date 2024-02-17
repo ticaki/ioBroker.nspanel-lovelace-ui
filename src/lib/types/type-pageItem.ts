@@ -87,55 +87,24 @@ export type entityUpdateDetailMessage =
           | 'statusR2'
           | 'pos2',
           string
+      >)
+    | ({
+          type: 'popupFan';
+      } & Record<
+          | 'entityName'
+          | 'icon'
+          | 'iconColor'
+          | 'buttonstate'
+          | 'slider1'
+          | 'slider1Max'
+          | 'speedText'
+          | 'mode'
+          | 'modeList',
+          string
       >);
 
-export type entityUpdateDetailMessageType = '2Sliders' | 'insel';
+//export type entityUpdateDetailMessageType = '2Sliders' | 'insel';
 
-export type entityUpdateDetailMessageTemplate2 = Record<
-    PageItemUnion['role'] | Types.roles,
-    entityUpdateDetailMessageTemplate
->;
-
-export type entityUpdateDetailMessageTemplate =
-    | {
-          type: '2Sliders';
-          slidersColor: RGB | false;
-          buttonState: true | false;
-          slider1Pos: number | false;
-          slider2Pos: number | false;
-          hueMode: boolean;
-          hue_translation: string | false;
-          slider2Translation: string | false;
-          slider1Translation: string | false;
-          popup: boolean;
-      }
-    | {
-          type: 'popupShutter';
-          slider1Pos: number | false;
-          slider2Pos: number | false;
-          textHeadline: string | false;
-          textStatus: string | false;
-          iconUp: string | false;
-          iconStop: string | false;
-          iconDown: string | false;
-          iconUpStatus: string | false;
-          iconStopStatus: string | false;
-          iconDownStatus: string | false;
-          textTilt: string | false;
-          iconTiltLeft: string | false;
-          iconTiltStop: string | false;
-          iconTiltRight: string | false;
-          iconTiltLeftStatus: string | false;
-          iconTiltStopStatus: string | false;
-          iconTiltRightStatus: string | false;
-      }
-    | {
-          type: 'insel';
-          value: boolean;
-          textColor: RGB;
-          textHeadline: string | false;
-          list: string[] | false;
-      };
 export interface MessageItemInterface {
     type: Types.SerialTypePopup;
     intNameEntity: string;
@@ -163,6 +132,7 @@ export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
         | PageItemInputSelDataItems
         | PageItemLightDataItems
         | PageItemTextDataItems
+        | PageItemFanDataItems
     );
 
 export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data' | 'type'> &
@@ -173,7 +143,20 @@ export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data' | 'type'> &
         | PageItemLightDataItemsOptions
         | PageItemNumberDataItemsOptions
         | PageItemTextDataItemsOptions
+        | PageItemFanDataItemsOptions
     );
+export type PageItemFan = Pick<
+    PageItemBase,
+    'entity1' | 'speed' | 'text' | 'headline' | 'icon' | 'entityInSel' | 'valueList' | 'setList'
+>;
+export type PageItemFanDataItemsOptions = {
+    type: 'fan';
+    data: ChangeTypeOfKeys<PageItemFan, Types.DataItemsOptions | undefined>;
+};
+export type PageItemFanDataItems = {
+    type: 'fan';
+    data: ChangeTypeOfKeys<PageItemFan, Dataitem | undefined>;
+};
 
 export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'icon'>;
 export type PageItemTextDataItemsOptions = {
@@ -302,6 +285,7 @@ export type PageItemBase = {
     maxValue2?: number;
     interpolateColor?: boolean;
     dimmer?: ScaledNumberType;
+    speed?: ScaledNumberType;
     ct?: ScaledNumberType;
     hue?: string;
     colorMode: boolean; // true rgb, false ct
@@ -410,6 +394,7 @@ export type ScaledNumberType =
           value: number;
           minScale?: number;
           maxScale?: number;
+          factor?: number;
           set?: number;
           mode?: string; // atm 'kelvin' | 'mired'
       }

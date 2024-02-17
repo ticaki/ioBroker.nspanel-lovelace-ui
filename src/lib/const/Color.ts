@@ -107,13 +107,13 @@ export function rgbHexToObject(rgb: string): RGB {
 
 export function scale(
     number: number,
-    inMin: number | null,
     inMax: number | null,
+    inMin: number | null,
     outMin: number,
     outMax: number,
 ): number {
     if (inMin === null || inMax === null) return number;
-    return outMax + outMin - (((number - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin);
+    return outMax + outMin - (((number - inMax) * (outMax - outMin)) / (inMin - inMax) + outMin);
 }
 
 export function HandleColorScale(valueScaletemp: string): number {
