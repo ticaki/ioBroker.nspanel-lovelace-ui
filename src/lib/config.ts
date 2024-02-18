@@ -3277,6 +3277,43 @@ const pageScreensaverTest: ScreensaverConfig = {
     },
 };
 
+export const pageAbfall: pages.PageBaseConfig = {
+    //type: 'sonstiges',
+    card: 'cardEntities',
+    dpInit: '0_userdata.0.Abfallkalender',
+    alwaysOn: 'none',
+    uniqueID: 'abfall1',
+    useColor: false,
+    config: {
+        card: 'cardEntities',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'Abfalltermine',
+            },
+        },
+    },
+    pageItems: [
+        {
+            template: 'waste-calendar.plastic',
+            dpInit: '',
+        },
+        {
+            template: 'waste-calendar.bio',
+            dpInit: '',
+        },
+        {
+            template: 'waste-calendar.house',
+            dpInit: '',
+        },
+        {
+            template: 'waste-calendar.paper',
+            dpInit: '',
+        },
+    ],
+    items: undefined,
+};
+
 export const Testconfig: Partial<panelConfigPartial> = {
     pages: [
         pageGridTest4,

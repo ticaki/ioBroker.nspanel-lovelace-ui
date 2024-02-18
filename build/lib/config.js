@@ -25,6 +25,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var config_exports = {};
 __export(config_exports, {
   Testconfig: () => Testconfig,
+  pageAbfall: () => pageAbfall,
   pageMediaTest2: () => pageMediaTest2
 });
 module.exports = __toCommonJS(config_exports);
@@ -3096,6 +3097,41 @@ const pageScreensaverTest = {
     ]
   }
 };
+const pageAbfall = {
+  card: "cardEntities",
+  dpInit: "0_userdata.0.Abfallkalender",
+  alwaysOn: "none",
+  uniqueID: "abfall1",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Abfalltermine"
+      }
+    }
+  },
+  pageItems: [
+    {
+      template: "waste-calendar.plastic",
+      dpInit: ""
+    },
+    {
+      template: "waste-calendar.bio",
+      dpInit: ""
+    },
+    {
+      template: "waste-calendar.house",
+      dpInit: ""
+    },
+    {
+      template: "waste-calendar.paper",
+      dpInit: ""
+    }
+  ],
+  items: void 0
+};
 const Testconfig = {
   pages: [
     pageGridTest4,
@@ -3180,6 +3216,7 @@ const Testconfig = {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Testconfig,
+  pageAbfall,
   pageMediaTest2
 });
 //# sourceMappingURL=config.js.map
