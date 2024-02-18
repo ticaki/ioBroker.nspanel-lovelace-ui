@@ -36,7 +36,7 @@ Eingabe geht über folgende common Eigenschaftenmöglichkeiten
 - type: string
   - stringify Json: {r:0,g:0,b:0} oder {red:0,green:0,blue:0}
   - hexcolor - 7 Stellen beginned mit #
-  - css color names (role: level.color.name)
+  - css color names (role: level.color.name) https://www.tutorialrepublic.com/css-reference/css-color-names.php
   - hsl: "hsl(0, 50%, 50%)" (role: level.color.name)
 
 ## Changelog
