@@ -3276,6 +3276,7 @@ const pageScreensaverTest: ScreensaverConfig = {
         ],
     },
 };
+
 export const Testconfig: Partial<panelConfigPartial> = {
     pages: [
         pageGridTest4,

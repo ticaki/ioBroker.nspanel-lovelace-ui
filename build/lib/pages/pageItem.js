@@ -32,6 +32,7 @@ var import_type_pageItem = require("../types/type-pageItem");
 var tools = __toESM(require("../const/tools"));
 var import_states_controller = require("../controller/states-controller");
 var import_icon_mapping = require("../const/icon_mapping");
+var import_text = require("../templates/text");
 var import_shutter = require("../templates/shutter");
 class PageItem extends import_states_controller.BaseClassTriggerd {
   defaultOnColor = Color.White;
@@ -49,20 +50,27 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.panel = config.panel;
     this.id = config.id;
     this.config = options;
-    this.parent = options && config.parent;
+    this.parent = config && config.parent;
     this.sleep = false;
   }
   static getPageItem(config, options, that) {
     if (options === void 0)
       return void 0;
     if ("template" in options && options.template) {
-      const index = import_shutter.shutterTemplates.findIndex((a) => a.template === options.template);
-      if (index === -1) {
+      let index = -1;
+      let template;
+      for (const i of [import_text.textTemplates, import_shutter.shutterTemplates]) {
+        index = i.findIndex((a) => a.template === options.template);
+        if (index !== -1) {
+          template = i[index];
+          break;
+        }
+      }
+      if (index === -1 || !template) {
         that.log.error("dont find template " + options.template);
         return void 0;
       }
-      const template = import_shutter.shutterTemplates[index];
-      if (template.adapter && !options.dpInit.startsWith(template.adapter)) {
+      if (template.adapter && !options.dpInit.startsWith(template.adapter) && !(config.parent && config.parent.dpInit.startsWith(template.adapter))) {
         return void 0;
       }
       const newTemplate = JSON.parse(JSON.stringify(template));

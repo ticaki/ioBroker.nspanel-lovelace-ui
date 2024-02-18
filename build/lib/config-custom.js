@@ -837,6 +837,41 @@ const pageMediaTest = {
   uniqueID: "media1",
   useColor: false
 };
+const pageAbfall = {
+  card: "cardEntities",
+  dpInit: "0_userdata.0.Abfallkalender",
+  alwaysOn: "none",
+  uniqueID: "abfall1",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Abfalltermine"
+      }
+    }
+  },
+  pageItems: [
+    {
+      template: "waste-calendar.plastic",
+      dpInit: ""
+    },
+    {
+      template: "waste-calendar.bio",
+      dpInit: ""
+    },
+    {
+      template: "waste-calendar.house",
+      dpInit: ""
+    },
+    {
+      template: "waste-calendar.paper",
+      dpInit: ""
+    }
+  ],
+  items: void 0
+};
 const pageMediaTest2 = {
   card: "cardMedia",
   dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
@@ -3035,20 +3070,27 @@ const Testconfig = {
     pageGridTest2,
     pageScreensaverTest,
     pageMediaTest,
-    pageEntitiesTest2
+    pageEntitiesTest2,
+    pageAbfall
   ],
   navigation: [
     {
       name: "main",
       page: "entities1",
       left: { single: "7" },
-      right: { single: "entities2", double: "2" }
+      right: { single: "abfall1", double: "2" }
     },
     {
       name: "5",
       page: "thermo1",
       left: { single: "4" },
       right: { single: "6", double: "main" }
+    },
+    {
+      name: "abfall1",
+      page: "abfall1",
+      left: { single: "main" },
+      right: { single: "entities2", double: "main" }
     },
     {
       name: "entities2",

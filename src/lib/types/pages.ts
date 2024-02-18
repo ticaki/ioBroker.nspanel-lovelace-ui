@@ -74,7 +74,8 @@ export type StateRole =
     | 'button.close.tilt'
     | 'level.tilt'
     | 'level.blind'
-    | 'level.color.name';
+    | 'level.color.name'
+    | 'state';
 
 export type DeviceRole =
     | 'socket'

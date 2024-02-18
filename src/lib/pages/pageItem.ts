@@ -18,6 +18,8 @@ import { BaseClassTriggerd } from '../controller/states-controller';
 import { RGB } from '../types/Color';
 import { Icons } from '../const/icon_mapping';
 import { Dataitem } from '../classes/data-item';
+
+import { textTemplates } from '../templates/text';
 import { shutterTemplates } from '../templates/shutter';
 import { BaseClass } from '../classes/library';
 
@@ -41,7 +43,7 @@ export class PageItem extends BaseClassTriggerd {
         this.panel = config.panel;
         this.id = config.id;
         this.config = options;
-        this.parent = options && config.parent;
+        this.parent = config && config.parent;
         this.sleep = false;
     }
 
@@ -52,13 +54,24 @@ export class PageItem extends BaseClassTriggerd {
     ): PageItem | undefined {
         if (options === undefined) return undefined;
         if ('template' in options && options.template) {
-            const index = shutterTemplates.findIndex((a) => a.template === options!.template);
-            if (index === -1) {
+            let index = -1;
+            let template: PageItemOptionsTemplate | undefined;
+            for (const i of [textTemplates, shutterTemplates]) {
+                index = i.findIndex((a) => a.template === options!.template);
+                if (index !== -1) {
+                    template = i[index];
+                    break;
+                }
+            }
+            if (index === -1 || !template) {
                 that.log.error('dont find template ' + options.template);
                 return undefined;
             }
-            const template = shutterTemplates[index];
-            if (template.adapter && !options.dpInit.startsWith(template.adapter)) {
+            if (
+                template.adapter &&
+                !options.dpInit.startsWith(template.adapter) &&
+                !(config.parent && config.parent.dpInit.startsWith(template.adapter))
+            ) {
                 return undefined;
             }
             const newTemplate = JSON.parse(JSON.stringify(template)) as Partial<PageItemOptionsTemplate>;
