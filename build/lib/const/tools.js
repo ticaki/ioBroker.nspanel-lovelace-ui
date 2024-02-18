@@ -468,16 +468,20 @@ function deepAssign(def, source, level = 0) {
     throw new Error("Max level reached! Circulating object is suspected!");
   }
   for (const k in def) {
-    const entry = def[k];
     if (typeof def[k] === "object") {
-      if (k in source) {
-        if (source[k] !== void 0)
-          deepAssign(entry, source[k]);
-        def[k] = Object.assign(def[k], source[k]);
+      if (source[k] !== void 0) {
+        def[k] = deepAssign(def[k], source[k]);
+      } else if (def[k] !== void 0) {
+        source[k] = Object.assign({}, def[k]);
       }
     }
   }
-  return Object.assign(def, source);
+  for (const k in source) {
+    if (typeof source[k] === "object" && source[k] !== void 0) {
+      def[k] = deepAssign(def[k] || {}, source[k]);
+    }
+  }
+  return Object.assign(def || {}, source);
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

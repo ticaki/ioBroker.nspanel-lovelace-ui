@@ -52,7 +52,6 @@ class PageAlarm extends import_Page.Page {
     if (options.config && options.config.card == "cardPower")
       this.config = options.config;
     this.minUpdateInterval = 500;
-    this.dpInit = options.dpInit;
   }
   async init() {
     const config = { ...this.config };

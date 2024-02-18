@@ -41,8 +41,7 @@ export type PageTypeCards =
     | Types.PageAlarm
     | Types.PagePower;
 */
-
-export type PageRole =
+export type StateRole =
     | 'button.play'
     | 'button.pause'
     | 'button.next'
@@ -64,7 +63,6 @@ export type PageRole =
     | 'level.volume'
     | 'media.album'
     | 'media.playlist'
-    | 'spotify-playlist'
     | 'button.open.blind'
     | 'button.open'
     | 'button.close.blind'
@@ -75,12 +73,37 @@ export type PageRole =
     | 'button.stop.tilt'
     | 'button.close.tilt'
     | 'level.tilt'
-    | 'level.blind'
-    | 'timer'
-    | 'rgb.hex'; // timer with internal counter
+    | 'level.blind';
 
-export function isPageRole(F: string | PageRole): F is PageRole {
-    switch (F as PageRole) {
+export type DeviceRole =
+    | 'socket'
+    | 'light'
+    | 'dimmer'
+    | 'hue'
+    | 'ct'
+    | 'cie'
+    | 'rgbSingle'
+    | 'rgb'
+    | 'ct'
+    | 'blind'
+    | 'door'
+    | 'window'
+    | 'gate'
+    | 'motion'
+    | 'buttonSensor'
+    | 'button'
+    | 'media.repeat'
+    | 'text.list'
+    | 'arrow'
+    | 'spotify-playlist'
+    | 'spotify-playlist'
+    | 'timer'
+    | 'rgb.hex'
+    | 'text.list'
+    | 'rgb'; // timer with internal counter
+
+export function isStateRole(F: string | StateRole): F is StateRole {
+    switch (F as StateRole) {
         case 'button.play':
         case 'button.pause':
         case 'button.next':
@@ -103,7 +126,7 @@ export function isPageRole(F: string | PageRole): F is PageRole {
         case 'media.playlist':
             return true;
         default:
-            return false;
+            return true;
     }
 }
 export function isButtonActionType(F: string | Types.ButtonActionType): F is Types.ButtonActionType {
@@ -173,7 +196,7 @@ export type PageBaseConfig = {
     //    type: PlayerType;
     card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
     uniqueID: string;
-    dpInit: string; // '' and initMode 'auto' throw an error
+    dpInit?: string; // '' and initMode 'auto' throw an error
     alwaysOn: 'none' | 'always' | 'action';
     useColor: boolean;
     pageItems: PageItemDataItemsOptions[];

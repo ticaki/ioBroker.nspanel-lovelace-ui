@@ -82,88 +82,16 @@ const pageEntitiesTest1 = {
       }
     },
     {
-      role: "rgb",
-      type: "shutter",
+      template: "generic.shutter",
       dpInit: "0_userdata.0.shutter_test",
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "window-shutter-open" },
-            color: { type: "const", constVal: Color.Yellow }
-          },
-          false: {
-            value: { type: "const", constVal: "window-shutter" },
-            color: { type: "const", constVal: Color.HMIOff }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+            value: { type: "const", constVal: "window-open" },
+            color: { type: "const", constVal: Color.Green }
+          }
         },
-        entity1: {
-          value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0,
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 100 }
-        },
-        entity2: {
-          value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0,
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 100 }
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "text"
-          },
-          false: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Shutter"
-        },
-        text1: {
-          true: {
-            type: "const",
-            constVal: "text1"
-          },
-          false: void 0
-        },
-        text2: {
-          true: {
-            type: "const",
-            constVal: "text2"
-          },
-          false: void 0
-        },
-        up: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.open.blind", "button.open"]
-        },
-        down: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.close.blind", "button.close"]
-        },
-        up2: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.open.tilt"]
-        },
-        stop2: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.stop.tilt"]
-        }
+        entity1: void 0
       }
     },
     {

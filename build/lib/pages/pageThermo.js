@@ -50,7 +50,6 @@ class PageThermo extends import_Page.Page {
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
-  dpInit;
   constructor(config, options) {
     super(config, options.pageItems);
     if (options.config && options.config.card == "cardThermo")
@@ -60,7 +59,6 @@ class PageThermo extends import_Page.Page {
     if (options.items && options.items.card == "cardThermo")
       this.items = options.items;
     this.minUpdateInterval = 2e3;
-    this.dpInit = options.dpInit;
   }
   async init() {
     const config = { ...this.config };
@@ -80,7 +78,7 @@ class PageThermo extends import_Page.Page {
     if (this.items) {
       const item = this.items;
       if (this.pageItems) {
-        const pageItems = this.pageItems.filter((a) => a.dataItems && a.dataItems.type === "button");
+        const pageItems = this.pageItems.filter((a) => a && a.dataItems && a.dataItems.type === "button");
         for (let a = 0; a < pageItems.length && a < message.options.length; a++) {
           const temp = pageItems[a];
           if (temp) {
@@ -169,13 +167,13 @@ class PageThermo extends import_Page.Page {
       const valLow = (_c = this.items && this.items.data.set1 && await this.items.data.set1.getNumber()) != null ? _c : null;
       if (valLow !== null && newValLow !== valLow)
         await this.items.data.set1.setStateAsync(newValLow);
-    } else if (event.action === "hvac_action" && this.pageItems && await this.pageItems[Number(event.opt.split("?")[1])].onCommand("button", "")) {
+    } else if (event.action === "hvac_action" && this.pageItems && this.pageItems[Number(event.opt.split("?")[1])] && await this.pageItems[Number(event.opt.split("?")[1])].onCommand("button", "")) {
       return;
     }
   }
   async onPopupRequest(id, popup, action, value, _event = null) {
     var _a, _b, _c;
-    if (!this.pageItems || !this.pageItems.some((a) => a.dataItems && a.dataItems.type === "input_sel"))
+    if (!this.pageItems || !this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === "input_sel"))
       return;
     const items = this.pageItems;
     let msg = null;
@@ -187,7 +185,7 @@ class PageThermo extends import_Page.Page {
       );
       const color = (_b = this.items && this.items.data.icon && await this.items.data.icon.getRGBDec()) != null ? _b : "11487";
       for (const i of items) {
-        temp.push((0, import_tools.getPayload)((_c = await i.GeneratePopup(popup)) != null ? _c : "~~~"));
+        i && temp.push((0, import_tools.getPayload)((_c = await i.GeneratePopup(popup)) != null ? _c : "~~~"));
       }
       for (let a = 0; a < 3; a++) {
         if (temp[a] === void 0)

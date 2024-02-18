@@ -17,6 +17,7 @@ export interface BaseClassTriggerdInterface {
     panelSend: PanelSend;
     alwaysOn?: 'none' | 'always' | 'action';
     panel: Panel;
+    dpInit?: string;
 }
 
 /**
@@ -39,6 +40,7 @@ export class BaseClassTriggerd extends BaseClass {
     sleep: boolean = true;
     parent: BaseClassTriggerd | undefined = undefined;
     triggerParent: boolean = false;
+    dpInit: string = '';
     protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
         payload: string,
         opt?: IClientPublishOptions,
@@ -164,7 +166,7 @@ export class BaseClassTriggerd extends BaseClass {
 
 export class BaseClassPage extends BaseClassTriggerd {
     readonly pageItemConfig: (PageItemDataItemsOptions | undefined)[] | undefined;
-    pageItems: PageItem[] | undefined;
+    pageItems: (PageItem | undefined)[] | undefined;
     constructor(card: PageInterface, pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined) {
         super(card);
         this.pageItemConfig = pageItemsConfig;

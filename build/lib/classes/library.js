@@ -242,9 +242,9 @@ class Library extends BaseClass {
     }
     if (obj && obj.type !== "state")
       return;
-    if (node)
+    if (node && !(node.type === "state" && val === void 0))
       this.setdb(dp, node.type, val, node.stateTyp, true);
-    if (node && (this.defaults.updateStateOnChangeOnly || node.val != val || !node.ack)) {
+    if (node && val !== void 0 && (this.defaults.updateStateOnChangeOnly || node.val != val || !node.ack)) {
       const typ = obj && obj.common && obj.common.type || node.stateTyp;
       if (typ && typ != typeof val && val !== void 0)
         val = this.convertToType(val, typ);

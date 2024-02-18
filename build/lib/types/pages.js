@@ -20,10 +20,10 @@ var pages_exports = {};
 __export(pages_exports, {
   isButtonActionType: () => isButtonActionType,
   isColorEntryType: () => isColorEntryType,
-  isPageRole: () => isPageRole
+  isStateRole: () => isStateRole
 });
 module.exports = __toCommonJS(pages_exports);
-function isPageRole(F) {
+function isStateRole(F) {
   switch (F) {
     case "button.play":
     case "button.pause":
@@ -47,7 +47,7 @@ function isPageRole(F) {
     case "media.playlist":
       return true;
     default:
-      return false;
+      return true;
   }
 }
 function isButtonActionType(F) {
@@ -121,6 +121,6 @@ function isColorEntryType(F) {
 0 && (module.exports = {
   isButtonActionType,
   isColorEntryType,
-  isPageRole
+  isStateRole
 });
 //# sourceMappingURL=pages.js.map

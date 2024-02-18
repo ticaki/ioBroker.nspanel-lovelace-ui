@@ -38,6 +38,7 @@ export class Page extends BaseClassPage {
         this.card = card.card;
         this.id = card.id;
         this.uniqueID = card.uniqueID;
+        this.dpInit = card.dpInit ?? '';
     }
     async init(): Promise<void> {}
 
@@ -62,8 +63,8 @@ export class Page extends BaseClassPage {
                         id: `${this.id}?${a}`,
                         parent: this,
                     };
-                    this.pageItems[a] = PageItem.getPageItem(config, this.pageItemConfig[a]);
-                    await this.pageItems[a].init();
+                    this.pageItems[a] = PageItem.getPageItem(config, this.pageItemConfig[a], this);
+                    this.pageItems[a] && (await this.pageItems[a]!.init());
                 }
             }
             this.sendType();
@@ -71,7 +72,7 @@ export class Page extends BaseClassPage {
         } else {
             if (this.pageItems) {
                 for (const item of this.pageItems) {
-                    await item.delete();
+                    item && (await item.delete());
                 }
                 this.pageItems = undefined;
             }

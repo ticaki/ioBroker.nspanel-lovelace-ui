@@ -85,11 +85,11 @@ class Panel extends import_library.BaseClass {
   sendToTasmota = () => {
   };
   persistentPageItems = {};
-  fName = "";
+  friendlyName = "";
   constructor(adapter, options) {
     var _a, _b, _c;
     super(adapter, options.name);
-    this.fName = options.name;
+    this.friendlyName = options.name;
     this.panelSend = new import_panel_message.PanelSend(adapter, {
       name: `${options.name}-SendClass`,
       mqttClient: options.controller.mqttClient,
@@ -128,7 +128,8 @@ class Panel extends import_library.BaseClass {
             alwaysOn: pageConfig.alwaysOn,
             adapter: this.adapter,
             panelSend: this.panelSend,
-            uniqueID: pageConfig.uniqueID
+            uniqueID: pageConfig.uniqueID,
+            dpInit: pageConfig.dpInit
           };
           this.pages[a] = new import_pageGrid.PageGrid(pmconfig, pageConfig);
           break;
@@ -143,7 +144,8 @@ class Panel extends import_library.BaseClass {
             alwaysOn: pageConfig.alwaysOn,
             adapter: this.adapter,
             panelSend: this.panelSend,
-            uniqueID: pageConfig.uniqueID
+            uniqueID: pageConfig.uniqueID,
+            dpInit: pageConfig.dpInit
           };
           this.pages[a] = new import_pageGrid.PageGrid(pmconfig, pageConfig);
           break;
@@ -157,7 +159,8 @@ class Panel extends import_library.BaseClass {
             alwaysOn: pageConfig.alwaysOn,
             adapter: this.adapter,
             panelSend: this.panelSend,
-            uniqueID: pageConfig.uniqueID
+            uniqueID: pageConfig.uniqueID,
+            dpInit: pageConfig.dpInit
           };
           this.pages[a] = new import_pageThermo.PageThermo(pmconfig, pageConfig);
           break;
@@ -171,7 +174,8 @@ class Panel extends import_library.BaseClass {
             alwaysOn: pageConfig.alwaysOn,
             adapter: this.adapter,
             panelSend: this.panelSend,
-            uniqueID: pageConfig.uniqueID
+            uniqueID: pageConfig.uniqueID,
+            dpInit: pageConfig.dpInit
           };
           this.pages[a] = new import_pageMedia.PageMedia(pmconfig, pageConfig);
           break;
@@ -194,7 +198,8 @@ class Panel extends import_library.BaseClass {
             alwaysOn: pageConfig.alwaysOn,
             adapter: this.adapter,
             panelSend: this.panelSend,
-            uniqueID: pageConfig.uniqueID
+            uniqueID: pageConfig.uniqueID,
+            dpInit: pageConfig.dpInit
           };
           this.pages[a] = new import_pagePower.PagePower(pmconfig, pageConfig);
           break;
@@ -210,7 +215,8 @@ class Panel extends import_library.BaseClass {
             name: "SrS",
             adapter: this.adapter,
             panelSend: this.panelSend,
-            uniqueID: ""
+            uniqueID: "",
+            dpInit: ""
           };
           this.screenSaver = new import_screensaver.Screensaver(ssconfig, pageConfig);
           break;
@@ -237,14 +243,14 @@ class Panel extends import_library.BaseClass {
   };
   start = async () => {
     this.adapter.subscribeStates(`panel.${this.name}.cmd.*`);
-    import_definition.genericStateObjects.panel.panels._channel.common.name = this.fName;
-    this.library.writedp(`panel.${this.name}`, void 0, import_definition.genericStateObjects.panel.panels._channel);
-    this.library.writedp(
+    import_definition.genericStateObjects.panel.panels._channel.common.name = this.friendlyName;
+    await this.library.writedp(`panel.${this.name}`, void 0, import_definition.genericStateObjects.panel.panels._channel);
+    await this.library.writedp(
       `panel.${this.name}.cmd`,
       void 0 === "ON",
       import_definition.genericStateObjects.panel.panels.cmd._channel
     );
-    this.library.writedp(
+    await this.library.writedp(
       `panel.${this.name}.alarm`,
       void 0 === "ON",
       import_definition.genericStateObjects.panel.panels.alarm._channel
@@ -455,7 +461,6 @@ class Panel extends import_library.BaseClass {
         else
           return;
         this.restartLoops();
-        this.sendScreeensaverTimeout(3);
         this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~6371`);
         this.navigation.resetPosition();
         const page = this.navigation.getCurrentPage();

@@ -31,8 +31,6 @@ export class PageThermo extends Page {
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
-    //tempItem: PageItem | undefined;
-    dpInit: string;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options.pageItems);
@@ -40,7 +38,6 @@ export class PageThermo extends Page {
         else throw new Error('Missing config!');
         if (options.items && options.items.card == 'cardThermo') this.items = options.items;
         this.minUpdateInterval = 2000;
-        this.dpInit = options.dpInit;
     }
 
     async init(): Promise<void> {
@@ -65,7 +62,7 @@ export class PageThermo extends Page {
         if (this.items) {
             const item = this.items;
             if (this.pageItems) {
-                const pageItems = this.pageItems.filter((a) => a.dataItems && a.dataItems.type === 'button');
+                const pageItems = this.pageItems.filter((a) => a && a.dataItems && a.dataItems.type === 'button');
                 for (let a = 0; a < pageItems.length && a < message.options.length; a++) {
                     const temp = pageItems[a];
                     if (temp) {
@@ -155,7 +152,8 @@ export class PageThermo extends Page {
         } else if (
             event.action === 'hvac_action' &&
             this.pageItems &&
-            (await this.pageItems[Number(event.opt.split('?')[1])].onCommand('button', ''))
+            this.pageItems[Number(event.opt.split('?')[1])] &&
+            (await this.pageItems[Number(event.opt.split('?')[1])]!.onCommand('button', ''))
         ) {
             return;
         }
@@ -168,7 +166,8 @@ export class PageThermo extends Page {
         value: string | undefined,
         _event: IncomingEvent | null = null,
     ): Promise<void> {
-        if (!this.pageItems || !this.pageItems.some((a) => a.dataItems && a.dataItems.type === 'input_sel')) return;
+        if (!this.pageItems || !this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === 'input_sel'))
+            return;
         const items = this.pageItems; //.filter((a) => a.dataItems && a.dataItems.type === 'input_sel');
         let msg: string | null = null;
         if (popup === 'popupThermo') {
@@ -179,7 +178,7 @@ export class PageThermo extends Page {
             );
             const color = (this.items && this.items.data.icon && (await this.items.data.icon.getRGBDec())) ?? '11487';
             for (const i of items) {
-                temp.push(getPayload((await i.GeneratePopup(popup)) ?? '~~~'));
+                i && temp.push(getPayload((await i.GeneratePopup(popup)) ?? '~~~'));
             }
             for (let a = 0; a < 3; a++) {
                 if (temp[a] === undefined) temp[a] = '~~~';

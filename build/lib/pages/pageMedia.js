@@ -52,7 +52,6 @@ const PageMediaMessageDefault = {
 };
 class PageMedia extends import_Page2.Page {
   config;
-  dpInit;
   items;
   step = 1;
   headlinePos = 0;
@@ -78,7 +77,6 @@ class PageMedia extends import_Page2.Page {
     this.config = options.config;
     if (this.items && this.items.card === "cardMedia")
       this.items = options.items;
-    this.dpInit = options.dpInit;
     this.minUpdateInterval = 2e3;
   }
   async init() {

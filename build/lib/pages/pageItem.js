@@ -32,6 +32,7 @@ var import_type_pageItem = require("../types/type-pageItem");
 var tools = __toESM(require("../const/tools"));
 var import_states_controller = require("../controller/states-controller");
 var import_icon_mapping = require("../const/icon_mapping");
+var import_shutter = require("../templates/shutter");
 class PageItem extends import_states_controller.BaseClassTriggerd {
   defaultOnColor = Color.White;
   defaultOffColor = Color.Blue;
@@ -51,16 +52,40 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.parent = options && config.parent;
     this.sleep = false;
   }
-  static getPageItem(config, options) {
+  static getPageItem(config, options, that) {
+    if (options === void 0)
+      return void 0;
+    if ("template" in options && options.template) {
+      const index = import_shutter.shutterTemplates.findIndex((a) => a.template === options.template);
+      if (index === -1) {
+        that.log.error("dont find template " + options.template);
+        return void 0;
+      }
+      const template = import_shutter.shutterTemplates[index];
+      if (template.adapter && !options.dpInit.startsWith(template.adapter)) {
+        return void 0;
+      }
+      const newTemplate = JSON.parse(JSON.stringify(template));
+      delete newTemplate.adapter;
+      if (options.type && options.type !== template.type) {
+        that.log.error(options.type + "is not equal with " + template.type);
+        return void 0;
+      }
+      options.type = template.type;
+      options.role = template.role;
+      options = tools.deepAssign(newTemplate, options);
+    }
     if (config.panel.persistentPageItems[config.id])
       return config.panel.persistentPageItems[config.id];
     return new PageItem(config, options);
   }
   async init() {
+    var _a;
     if (!this.config)
       return;
     const config = { ...this.config };
-    const tempConfig = this.config.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.config.dpInit, config.data) : config.data;
+    const dpInit = (_a = this.parent && this.parent.dpInit ? this.parent.dpInit : this.config.dpInit) != null ? _a : "";
+    const tempConfig = dpInit ? await this.panel.statesControler.getDataItemsFromAuto(dpInit, config.data) : config.data;
     const tempItem = await this.panel.statesControler.createDataItems(
       tempConfig,
       this

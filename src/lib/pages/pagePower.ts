@@ -72,16 +72,11 @@ const PagePowerMessageDefault: pages.PagePowerMessage = {
 export class PagePower extends Page {
     config: pages.PageBaseConfig['config'];
     items: pages.PageBaseConfig['items'];
-    private step: number = 1;
-    private headlinePos: number = 0;
-    private titelPos: number = 0;
-    private nextArrow: boolean = false;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options.pageItems);
         if (options.config && options.config.card == 'cardPower') this.config = options.config;
         this.minUpdateInterval = 2000;
-        this.dpInit = options.dpInit;
     }
 
     async init(): Promise<void> {

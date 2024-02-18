@@ -31,10 +31,12 @@ class Page extends import_states_controller.BaseClassPage {
   uniqueID;
   dpInit = "";
   constructor(card, pageItemsConfig) {
+    var _a;
     super(card, pageItemsConfig);
     this.card = card.card;
     this.id = card.id;
     this.uniqueID = card.uniqueID;
+    this.dpInit = (_a = card.dpInit) != null ? _a : "";
   }
   async init() {
   }
@@ -58,8 +60,8 @@ class Page extends import_states_controller.BaseClassPage {
             id: `${this.id}?${a}`,
             parent: this
           };
-          this.pageItems[a] = import_pageItem.PageItem.getPageItem(config, this.pageItemConfig[a]);
-          await this.pageItems[a].init();
+          this.pageItems[a] = import_pageItem.PageItem.getPageItem(config, this.pageItemConfig[a], this);
+          this.pageItems[a] && await this.pageItems[a].init();
         }
       }
       this.sendType();
@@ -67,7 +69,7 @@ class Page extends import_states_controller.BaseClassPage {
     } else {
       if (this.pageItems) {
         for (const item of this.pageItems) {
-          await item.delete();
+          item && await item.delete();
         }
         this.pageItems = void 0;
       }

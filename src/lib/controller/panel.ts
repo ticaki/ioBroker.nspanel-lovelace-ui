@@ -86,11 +86,11 @@ export class Panel extends BaseClass {
     readonly CustomFormat: string;
     readonly sendToTasmota: (topic: string, payload: string, opt?: IClientPublishOptions) => void = () => {};
     public persistentPageItems: Record<string, PageItem> = {};
-    fName: string = '';
+    friendlyName: string = '';
 
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
         super(adapter, options.name);
-        this.fName = options.name;
+        this.friendlyName = options.name;
         this.panelSend = new PanelSend(adapter, {
             name: `${options.name}-SendClass`,
             mqttClient: options.controller.mqttClient,
@@ -131,6 +131,7 @@ export class Panel extends BaseClass {
                         adapter: this.adapter,
                         panelSend: this.panelSend,
                         uniqueID: pageConfig.uniqueID,
+                        dpInit: pageConfig.dpInit,
                     };
                     this.pages[a] = new PageGrid(pmconfig, pageConfig);
                     break;
@@ -146,6 +147,7 @@ export class Panel extends BaseClass {
                         adapter: this.adapter,
                         panelSend: this.panelSend,
                         uniqueID: pageConfig.uniqueID,
+                        dpInit: pageConfig.dpInit,
                     };
                     this.pages[a] = new PageGrid(pmconfig, pageConfig);
                     break;
@@ -161,6 +163,7 @@ export class Panel extends BaseClass {
                         adapter: this.adapter,
                         panelSend: this.panelSend,
                         uniqueID: pageConfig.uniqueID,
+                        dpInit: pageConfig.dpInit,
                     };
                     this.pages[a] = new PageThermo(pmconfig, pageConfig);
                     break;
@@ -175,6 +178,7 @@ export class Panel extends BaseClass {
                         adapter: this.adapter,
                         panelSend: this.panelSend,
                         uniqueID: pageConfig.uniqueID,
+                        dpInit: pageConfig.dpInit,
                     };
                     this.pages[a] = new PageMedia(pmconfig, pageConfig);
                     break;
@@ -198,6 +202,7 @@ export class Panel extends BaseClass {
                         adapter: this.adapter,
                         panelSend: this.panelSend,
                         uniqueID: pageConfig.uniqueID,
+                        dpInit: pageConfig.dpInit,
                     };
                     this.pages[a] = new PagePower(pmconfig, pageConfig);
                     break;
@@ -215,6 +220,7 @@ export class Panel extends BaseClass {
                         adapter: this.adapter,
                         panelSend: this.panelSend,
                         uniqueID: '',
+                        dpInit: '',
                     };
                     this.screenSaver = new Screensaver(ssconfig, pageConfig);
                     break;
@@ -242,14 +248,14 @@ export class Panel extends BaseClass {
     };
     start = async (): Promise<void> => {
         this.adapter.subscribeStates(`panel.${this.name}.cmd.*`);
-        genericStateObjects.panel.panels._channel.common.name = this.fName;
-        this.library.writedp(`panel.${this.name}`, undefined, genericStateObjects.panel.panels._channel);
-        this.library.writedp(
+        genericStateObjects.panel.panels._channel.common.name = this.friendlyName;
+        await this.library.writedp(`panel.${this.name}`, undefined, genericStateObjects.panel.panels._channel);
+        await this.library.writedp(
             `panel.${this.name}.cmd`,
             undefined === 'ON',
             genericStateObjects.panel.panels.cmd._channel,
         );
-        this.library.writedp(
+        await this.library.writedp(
             `panel.${this.name}.alarm`,
             undefined === 'ON',
             genericStateObjects.panel.panels.alarm._channel,
@@ -473,8 +479,7 @@ export class Panel extends BaseClass {
                 if (this.screenSaver) await this.screenSaver.init();
                 else return;
                 this.restartLoops();
-                //this.sendScreeensaverTimeout(this.timeout);
-                this.sendScreeensaverTimeout(3);
+
                 this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~6371`);
 
                 this.navigation.resetPosition();
@@ -529,11 +534,11 @@ export class Panel extends BaseClass {
                         event,
                     );
                     await this.getActivePage().onButtonEvent(event);
-                    //
                 }
                 break;
             }
             case 'renderCurrentPage': {
+                // Event only for HA at this Moment
                 break;
             }
             case 'button1': {

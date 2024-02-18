@@ -40,6 +40,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   sleep = true;
   parent = void 0;
   triggerParent = false;
+  dpInit = "";
   sendToPanel = (payload, opt) => {
     if (payload == this.lastMessage)
       return;

@@ -8,6 +8,8 @@ import {
     listCommand,
     islistCommandUnion,
     spotifyPlaylist,
+    PageItemDataItemsOptionsWithOutTemplate,
+    PageItemOptionsTemplate,
 } from '../types/type-pageItem';
 import * as tools from '../const/tools';
 import { PopupType } from '../types/types';
@@ -16,12 +18,14 @@ import { BaseClassTriggerd } from '../controller/states-controller';
 import { RGB } from '../types/Color';
 import { Icons } from '../const/icon_mapping';
 import { Dataitem } from '../classes/data-item';
+import { shutterTemplates } from '../templates/shutter';
+import { BaseClass } from '../classes/library';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseClassTriggerd {
     defaultOnColor = Color.White;
     defaultOffColor = Color.Blue;
-    config: PageItemDataItemsOptions | undefined;
+    config: PageItemDataItemsOptionsWithOutTemplate | undefined;
     dataItems: PageItemDataItems | undefined;
     panel: Panel;
     id: string;
@@ -29,7 +33,10 @@ export class PageItem extends BaseClassTriggerd {
     parent: Page | undefined;
     tempData: any = undefined; // use this to save some data while object is active
     tempInterval: ioBroker.Interval | undefined;
-    constructor(config: Omit<PageItemInterface, 'pageItemsConfig'>, options: PageItemDataItemsOptions | undefined) {
+    constructor(
+        config: Omit<PageItemInterface, 'pageItemsConfig'>,
+        options: PageItemDataItemsOptionsWithOutTemplate | undefined,
+    ) {
         super({ ...config });
         this.panel = config.panel;
         this.id = config.id;
@@ -41,16 +48,39 @@ export class PageItem extends BaseClassTriggerd {
     static getPageItem(
         config: Omit<PageItemInterface, 'pageItemsConfig'>,
         options: PageItemDataItemsOptions | undefined,
-    ): PageItem {
+        that: BaseClass,
+    ): PageItem | undefined {
+        if (options === undefined) return undefined;
+        if ('template' in options && options.template) {
+            const index = shutterTemplates.findIndex((a) => a.template === options!.template);
+            if (index === -1) {
+                that.log.error('dont find template ' + options.template);
+                return undefined;
+            }
+            const template = shutterTemplates[index];
+            if (template.adapter && !options.dpInit.startsWith(template.adapter)) {
+                return undefined;
+            }
+            const newTemplate = JSON.parse(JSON.stringify(template)) as Partial<PageItemOptionsTemplate>;
+            delete newTemplate.adapter;
+            if (options.type && options.type !== template.type) {
+                that.log.error(options.type + 'is not equal with ' + template.type);
+                return undefined;
+            }
+            options.type = template.type;
+            options.role = template.role;
+            options = tools.deepAssign(newTemplate, options);
+        }
         if (config.panel.persistentPageItems[config.id]) return config.panel.persistentPageItems[config.id];
-        return new PageItem(config, options);
+        return new PageItem(config, options as PageItemDataItemsOptionsWithOutTemplate);
     }
     async init(): Promise<void> {
         if (!this.config) return;
         const config = { ...this.config };
         // search states for mode auto
-        const tempConfig: Partial<PageItemDataItemsOptions['data']> = this.config.dpInit
-            ? await this.panel.statesControler.getDataItemsFromAuto(this.config.dpInit, config.data)
+        const dpInit = (this.parent && this.parent.dpInit ? this.parent.dpInit : this.config.dpInit) ?? '';
+        const tempConfig: Partial<PageItemDataItemsOptions['data']> = dpInit
+            ? await this.panel.statesControler.getDataItemsFromAuto(dpInit, config.data)
             : config.data;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));

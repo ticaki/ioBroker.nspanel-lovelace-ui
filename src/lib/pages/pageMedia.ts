@@ -29,7 +29,6 @@ const PageMediaMessageDefault: pages.PageMediaMessage = {
 
 export class PageMedia extends Page {
     config: pages.PageBaseConfig['config'];
-    dpInit: string;
     items: pages.PageBaseConfig['items'];
     private step: number = 1;
     private headlinePos: number = 0;
@@ -56,7 +55,6 @@ export class PageMedia extends Page {
 
         this.config = options.config;
         if (this.items && this.items.card === 'cardMedia') this.items = options.items;
-        this.dpInit = options.dpInit;
         this.minUpdateInterval = 2000;
     }
 

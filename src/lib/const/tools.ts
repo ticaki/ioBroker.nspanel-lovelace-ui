@@ -477,18 +477,23 @@ export function getPayload(...s: string[]): string {
  * @param level ignore
  * @returns
  */
-export function deepAssign(def: Record<any, any>, source: Record<any, any>, level: number = 0): Record<string, any> {
+export function deepAssign(def: Record<any, any>, source: Record<any, any>, level: number = 0): any {
     if (level++ > 20) {
         throw new Error('Max level reached! Circulating object is suspected!');
     }
     for (const k in def) {
-        const entry = def[k];
         if (typeof def[k] === 'object') {
-            if (k in source) {
-                if (source[k] !== undefined) deepAssign(entry, source[k]);
-                def[k] = Object.assign(def[k], source[k]);
+            if (source[k] !== undefined) {
+                def[k] = deepAssign(def[k], source[k]);
+            } else if (def[k] !== undefined) {
+                source[k] = Object.assign({}, def[k]);
             }
         }
     }
-    return Object.assign(def, source);
+    for (const k in source) {
+        if (typeof source[k] === 'object' && source[k] !== undefined) {
+            def[k] = deepAssign(def[k] || {}, source[k]);
+        }
+    }
+    return Object.assign(def || {}, source);
 }

@@ -1,6 +1,6 @@
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
-import { ChangeTypeOfKeys, PageRole } from './pages';
+import { ChangeTypeOfKeys, DeviceRole } from './pages';
 import * as Types from './types';
 
 export type PageLightItem = {
@@ -152,7 +152,44 @@ export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
         | PageItemTimerDataItems
     );
 
-export type PageItemDataItemsOptions = Omit<PageItemUnion, 'data' | 'type'> &
+export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data' | 'type'> &
+    (
+        | PageItemButtonDataItemsOptions
+        | PageItemShutterDataItemsOptions
+        | PageItemInputSelDataItemsOptions
+        | PageItemLightDataItemsOptions
+        | PageItemNumberDataItemsOptions
+        | PageItemTextDataItemsOptions
+        | PageItemFanDataItemsOptions
+        | PageItemTimerDataItemsOptions
+    );
+
+export type PageItemDataItemsOptions =
+    | ({
+          template: string;
+          dpInit: string;
+      } & Partial<
+          Omit<PageItemUnion, 'template' | 'data' | 'type'> &
+              Partial<
+                  | PageItemButtonDataItemsOptions
+                  | PageItemShutterDataItemsOptions
+                  | PageItemInputSelDataItemsOptions
+                  | PageItemLightDataItemsOptions
+                  | PageItemNumberDataItemsOptions
+                  | PageItemTextDataItemsOptions
+                  | PageItemFanDataItemsOptions
+                  | PageItemTimerDataItemsOptions
+              >
+      >)
+    | PageItemDataItemsOptionsWithOutTemplate;
+
+export type PageItemOptionsTemplate = {
+    template: string;
+    role: DeviceRole;
+    adapter: string;
+    //dpInit: string;
+    type: Types.SerialTypePageElements;
+} & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit'> &
     (
         | PageItemButtonDataItemsOptions
         | PageItemShutterDataItemsOptions
@@ -365,8 +402,7 @@ export type PageTypeUnionTemplate = {
 //XOR<XOR<A, B>, C>
 
 export type PageItemUnion = {
-    role:
-        | 'socket'
+    role: /*| 'socket'
         | 'value.time'
         | 'level.timer'
         | 'level.mode.fan'
@@ -389,9 +425,10 @@ export type PageItemUnion = {
         | 'media.repeat'
         | 'text.list'
         | 'arrow'
-        | 'spotify-playlist'
-        | PageRole;
-    dpInit: string;
+        | 'spotify-playlist'*/
+    DeviceRole;
+    template?: undefined;
+    dpInit?: string;
     type: Types.SerialTypePageElements;
     data: PageItemBase;
 };
