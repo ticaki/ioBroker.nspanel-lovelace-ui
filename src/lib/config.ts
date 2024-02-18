@@ -41,8 +41,8 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                 },
                 entity1: {
                     value: {
-                        type: 'const',
-                        constVal: 23,
+                        type: 'triggered',
+                        dp: '0_userdata.0.dimmer',
                     },
                     decimal: undefined,
                     factor: undefined,

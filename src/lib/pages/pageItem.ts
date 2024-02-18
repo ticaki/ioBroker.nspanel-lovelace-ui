@@ -210,6 +210,9 @@ export class PageItem extends BaseClassTriggerd {
                             optionalValueC[i + 3] = 'disable';
                         }
                     });
+
+                    optionalValueC[3] = value === 0 ? 'disable' : optionalValueC[3];
+                    optionalValueC[5] = value === 100 ? 'disable' : optionalValueC[5];
                     message.optionalValue = optionalValueC.join('|');
                     message.displayName = (item.headline && (await item.headline.getString())) ?? '';
                     message.displayName = this.library.getTranslation(message.displayName);
@@ -958,9 +961,9 @@ export class PageItem extends BaseClassTriggerd {
                         message.iconL1 = optionalValueC[0];
                         message.iconM1 = optionalValueC[1];
                         message.iconR1 = optionalValueC[2];
-                        message.statusL1 = optionalValueC[3];
+                        message.statusL1 = pos === 0 ? 'disable' : optionalValueC[3];
                         message.statusM1 = optionalValueC[4];
-                        message.statusR1 = optionalValueC[5];
+                        message.statusR1 = pos === 100 ? 'disable' : optionalValueC[5];
                     } else {
                         message.pos2 = String(pos);
                         message.pos2text = (await tools.getEntryTextOnOff(item.text2, true)) ?? '';
@@ -968,9 +971,9 @@ export class PageItem extends BaseClassTriggerd {
                         message.iconL2 = optionalValueC[0];
                         message.iconM2 = optionalValueC[1];
                         message.iconR2 = optionalValueC[2];
-                        message.statusL2 = optionalValueC[3];
+                        message.statusL2 = pos === 0 ? 'disable' : optionalValueC[3];
                         message.statusM2 = optionalValueC[4];
-                        message.statusR2 = optionalValueC[5];
+                        message.statusR2 = pos === 100 ? 'disable' : optionalValueC[5];
                     }
                 }
                 break;
@@ -1320,6 +1323,7 @@ export class PageItem extends BaseClassTriggerd {
                     const item = entry.data;
                     await tools.setValueEntryNumber(item.speed, parseInt(value), false);
                 }
+                break;
             }
             case 'timer-start': {
                 if (this.tempInterval) this.adapter.clearInterval(this.tempInterval);

@@ -65,8 +65,8 @@ const pageEntitiesTest1 = {
         },
         entity1: {
           value: {
-            type: "const",
-            constVal: 23
+            type: "triggered",
+            dp: "0_userdata.0.dimmer"
           },
           decimal: void 0,
           factor: void 0,
