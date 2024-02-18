@@ -95,6 +95,14 @@ export function rgb_dec565(rgb: RGB): number {
     return ((rgb.r >> 3) << 11) | ((rgb.g >> 2) << 5) | (rgb.b >> 3);
 }
 
+export function decToRgb(decimal: number): RGB {
+    return {
+        r: ((decimal >> 11) << 3) & 0xff,
+        g: ((decimal >> 5) << 2) & 0xff,
+        b: (decimal << 3) & 0xff,
+    };
+}
+
 export function rgbHexToObject(rgb: string): RGB {
     const result: RGB = { r: 0, g: 0, b: 0 };
     if (rgb.startsWith('#') && rgb.length == 7) {

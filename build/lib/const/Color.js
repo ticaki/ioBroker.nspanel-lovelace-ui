@@ -63,6 +63,7 @@ __export(Color_exports, {
   colorSonos: () => colorSonos,
   colorSpotify: () => colorSpotify,
   darken: () => darken,
+  decToRgb: () => decToRgb,
   getHue: () => getHue,
   hsv2RGB: () => hsv2RGB,
   hsv2rgb: () => hsv2rgb,
@@ -198,6 +199,13 @@ const swSunny = { r: 255, g: 255, b: 0 };
 const swWindy = { r: 150, g: 150, b: 150 };
 function rgb_dec565(rgb) {
   return rgb.r >> 3 << 11 | rgb.g >> 2 << 5 | rgb.b >> 3;
+}
+function decToRgb(decimal) {
+  return {
+    r: decimal >> 11 << 3 & 255,
+    g: decimal >> 5 << 2 & 255,
+    b: decimal << 3 & 255
+  };
 }
 function rgbHexToObject(rgb) {
   const result = { r: 0, g: 0, b: 0 };
@@ -504,6 +512,7 @@ const kelvinToRGB = {
   colorSonos,
   colorSpotify,
   darken,
+  decToRgb,
   getHue,
   hsv2RGB,
   hsv2rgb,

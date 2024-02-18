@@ -126,6 +126,8 @@ export class Dataitem extends BaseClass {
                 }
             } else if (typeof state.val === 'object') {
                 return state.val;
+            } else if (typeof state.val === 'number') {
+                return Color.decToRgb(state.val);
             }
         }
         return null;
