@@ -17,11 +17,27 @@ NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in th
 
 Entwickleränderungen / Erklärung
 
-## Änderung:
-- cardMedia: Titel steht in der Headline ohne Zeit, Album steht in der 2. Zeile mit der Laufzeit.
+## Eingebaut:
+- cardMedia 
+- cardGrid/2
+- cardEntities
+- cardPower
+- cardThermo
+- screensaver
+- cardMedia
+- alle Popups und PageItems
 
 ## Erklärungen
 
+Zu Icon.x.color: (nix was mit Licht zu tun hat.)
+Eingabe geht über folgende common Eigenschaftenmöglichkeiten
+- type: number
+  - decimal
+- type: string
+  - stringify Json: {r:0,g:0,b:0} oder {red:0,green:0,blue:0}
+  - hexcolor - 7 Stellen beginned mit #
+  - css color names (role: level.color.name)
+  - hsl: "hsl(0, 50%, 50%)" (role: level.color.name)
 
 ## Changelog
 <!--

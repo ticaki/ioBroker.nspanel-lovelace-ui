@@ -88,7 +88,7 @@ const pageEntitiesTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "window-open" },
-            color: { type: "const", constVal: 38944 }
+            color: { type: "const", constVal: "aqua", role: "level.color.name" }
           }
         },
         entity1: void 0

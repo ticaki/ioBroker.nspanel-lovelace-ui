@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,10 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var Color_exports = {};
 __export(Color_exports, {
@@ -24,6 +30,7 @@ __export(Color_exports, {
   Blue: () => Blue,
   ColorToHex: () => ColorToHex,
   ConvertHexToRgb: () => ConvertHexToRgb,
+  ConvertNametoRgb: () => ConvertNametoRgb,
   ConvertRGBtoHex: () => ConvertRGBtoHex,
   Cyan: () => Cyan,
   DarkBlue: () => DarkBlue,
@@ -120,6 +127,8 @@ __export(Color_exports, {
 });
 module.exports = __toCommonJS(Color_exports);
 var import_colord = require("colord");
+var import_names = __toESM(require("colord/plugins/names"));
+(0, import_colord.extend)([import_names.default]);
 const HMIOff = { r: 68, g: 115, b: 158 };
 const HMIOn = { r: 3, g: 169, b: 244 };
 const HMIDark = { r: 29, g: 29, b: 29 };
@@ -271,6 +280,9 @@ function ColorToHex(color) {
 }
 function ConvertRGBtoHex(red, green, blue) {
   return "#" + ColorToHex(red) + ColorToHex(green) + ColorToHex(blue);
+}
+function ConvertNametoRgb(colorName) {
+  return (0, import_colord.colord)(colorName).toRgb();
 }
 function ConvertHexToRgb(hex) {
   return {
@@ -473,6 +485,7 @@ const kelvinToRGB = {
   Blue,
   ColorToHex,
   ConvertHexToRgb,
+  ConvertNametoRgb,
   ConvertRGBtoHex,
   Cyan,
   DarkBlue,

@@ -128,12 +128,15 @@ class Dataitem extends import_library.BaseClass {
           const value = JSON.parse(state.val);
           return value;
         } catch (e) {
-          const value = state.val;
+          let value = state.val;
           if (typeof value === "string") {
+            value = value.trim();
             if (value.startsWith("#") && value.length === 7) {
               const v = Color.rgbHexToObject(value);
               if (Color.isRGB(v))
                 return v;
+            } else if (this.options.role === "level.color.name" || this.options.role === "level.color.rgb") {
+              return Color.ConvertNametoRgb(value);
             }
           }
         }

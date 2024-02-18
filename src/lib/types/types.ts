@@ -1,7 +1,7 @@
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
 import { IconEntryType, TextEntryType, ValueEntryType } from './type-pageItem';
-import { ChangeTypeOfKeys, DeviceRole, StateRole } from './pages';
+import { ChangeTypeOfKeys, StateRole } from './pages';
 
 export function isEventMethod(F: string | EventMethod): F is EventMethod {
     switch (F as EventMethod) {
@@ -312,7 +312,7 @@ type DataItemsOptionsCustom = {
 
 type DataItemsOptionsConst = {
     type: 'const';
-    role?: DeviceRole;
+    role?: StateRole;
     constVal: StateValue | AllIcons;
     state?: State | null; // use just inside of class
     forceType?: 'string' | 'number' | 'boolean'; // force a type

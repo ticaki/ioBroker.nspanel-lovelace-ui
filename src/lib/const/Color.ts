@@ -1,4 +1,8 @@
-import { colord } from 'colord';
+import { colord, extend } from 'colord';
+import namesPlugin from 'colord/plugins/names';
+
+extend([namesPlugin]);
+
 import { RGB } from '../types/Color';
 
 export const HMIOff: RGB = { r: 68, g: 115, b: 158 }; // Blue-Off - Original Entity Off
@@ -183,6 +187,9 @@ export function ColorToHex(color: number): string {
 
 export function ConvertRGBtoHex(red: number, green: number, blue: number): string {
     return '#' + ColorToHex(red) + ColorToHex(green) + ColorToHex(blue);
+}
+export function ConvertNametoRgb(colorName: string): RGB {
+    return colord(colorName).toRgb();
 }
 export function ConvertHexToRgb(hex: string): RGB {
     return {
