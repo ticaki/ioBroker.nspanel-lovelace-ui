@@ -68,7 +68,7 @@ class Page extends import_states_controller.BaseClassPage {
       if (template.adapter && !config.dpInit.startsWith(template.adapter)) {
         return config;
       }
-      const newTemplate = JSON.parse(JSON.stringify(template));
+      const newTemplate = structuredClone(template);
       delete newTemplate.adapter;
       if (config.card && config.card !== template.card) {
         that.log.error(config.card + "is not equal with " + template.card);

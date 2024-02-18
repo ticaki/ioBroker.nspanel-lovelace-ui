@@ -499,6 +499,7 @@ export function deepAssign(def: Record<any, any>, source: Record<any, any>, leve
             def[k] = deepAssign(def[k], source[k]);
         }
     }
+
     if (!def) {
         if (Array.isArray(source)) def = [];
         else if (typeof source === 'object') def = {};

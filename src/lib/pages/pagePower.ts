@@ -79,7 +79,7 @@ export class PagePower extends Page {
     }
 
     async init(): Promise<void> {
-        const config = { ...this.config };
+        const config = structuredClone(this.config);
         // search states for mode auto
         const tempConfig: Partial<pages.cardPowerDataItemOptions> = this.dpInit
             ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)

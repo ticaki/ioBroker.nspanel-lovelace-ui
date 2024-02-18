@@ -71,7 +71,7 @@ export class Page extends BaseClassPage {
             if (template.adapter && !config.dpInit.startsWith(template.adapter)) {
                 return config;
             }
-            const newTemplate = JSON.parse(JSON.stringify(template)) as Partial<pages.PageBaseConfigTemplate>;
+            const newTemplate = structuredClone(template) as Partial<pages.PageBaseConfigTemplate>;
             delete newTemplate.adapter;
             if (config.card && config.card !== template.card) {
                 that.log.error(config.card + 'is not equal with ' + template.card);

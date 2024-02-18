@@ -80,7 +80,7 @@ class PageMedia extends import_Page2.Page {
     this.minUpdateInterval = 2e3;
   }
   async init() {
-    const config = { ...this.config };
+    const config = structuredClone(this.config);
     const tempConfig = this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : config;
     const tempItem = await this.panel.statesControler.createDataItems(
       tempConfig,

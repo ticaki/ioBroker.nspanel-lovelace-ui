@@ -74,7 +74,7 @@ export class PageItem extends BaseClassTriggerd {
             ) {
                 return undefined;
             }
-            const newTemplate = JSON.parse(JSON.stringify(template)) as Partial<PageItemOptionsTemplate>;
+            const newTemplate = structuredClone(template) as Partial<PageItemOptionsTemplate>;
             delete newTemplate.adapter;
             if (options.type && options.type !== template.type) {
                 that.log.error(options.type + 'is not equal with ' + template.type);
@@ -89,7 +89,7 @@ export class PageItem extends BaseClassTriggerd {
     }
     async init(): Promise<void> {
         if (!this.config) return;
-        const config = { ...this.config };
+        const config = structuredClone(this.config);
         // search states for mode auto
         const dpInit = (this.parent && this.parent.dpInit ? this.parent.dpInit : this.config.dpInit) ?? '';
         const tempConfig: Partial<PageItemDataItemsOptions['data']> = dpInit
