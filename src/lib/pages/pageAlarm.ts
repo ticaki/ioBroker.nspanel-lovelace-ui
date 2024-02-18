@@ -33,7 +33,6 @@ const PageAlarmMessageDefault: pages.PageAlarmMessage = {
  * untested
  */
 export class PageAlarm extends Page {
-    config: pages.PageBaseConfig['config'];
     items: pages.PageBaseConfig['items'];
     private step: number = 1;
     private headlinePos: number = 0;
@@ -42,7 +41,7 @@ export class PageAlarm extends Page {
     private status: 'disarmed' | 'armed' | 'arming' | 'pending' | 'triggered' = 'disarmed';
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        super(config, options.pageItems);
+        super(config, options);
         if (options.config && options.config.card == 'cardPower') this.config = options.config;
         this.minUpdateInterval = 500;
     }

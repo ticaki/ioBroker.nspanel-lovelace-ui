@@ -112,7 +112,8 @@ export class Panel extends BaseClass {
 
         let scsFound = 0;
         for (let a = 0; a < options.pages.length; a++) {
-            const pageConfig = options.pages[a];
+            let pageConfig = options.pages[a];
+
             if (!pageConfig) continue;
             switch (pageConfig.card) {
                 case 'cardChart': {
@@ -133,6 +134,7 @@ export class Panel extends BaseClass {
                         uniqueID: pageConfig.uniqueID,
                         dpInit: pageConfig.dpInit,
                     };
+                    pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageGrid(pmconfig, pageConfig);
                     break;
                 }
@@ -149,6 +151,7 @@ export class Panel extends BaseClass {
                         uniqueID: pageConfig.uniqueID,
                         dpInit: pageConfig.dpInit,
                     };
+                    pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageGrid(pmconfig, pageConfig);
                     break;
                 }
@@ -165,6 +168,7 @@ export class Panel extends BaseClass {
                         uniqueID: pageConfig.uniqueID,
                         dpInit: pageConfig.dpInit,
                     };
+                    pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageThermo(pmconfig, pageConfig);
                     break;
                 }
@@ -180,6 +184,7 @@ export class Panel extends BaseClass {
                         uniqueID: pageConfig.uniqueID,
                         dpInit: pageConfig.dpInit,
                     };
+                    pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageMedia(pmconfig, pageConfig);
                     break;
                 }
@@ -204,6 +209,7 @@ export class Panel extends BaseClass {
                         uniqueID: pageConfig.uniqueID,
                         dpInit: pageConfig.dpInit,
                     };
+                    pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PagePower(pmconfig, pageConfig);
                     break;
                 }

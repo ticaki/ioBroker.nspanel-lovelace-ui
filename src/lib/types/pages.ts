@@ -194,11 +194,10 @@ export function isButtonActionType(F: string | Types.ButtonActionType): F is Typ
     }
 }
 
-export type PageBaseConfig = {
-    //    type: PlayerType;
+export type PageBaseConfigTemplate = {
     card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
-    uniqueID: string;
-    dpInit?: string; // '' and initMode 'auto' throw an error
+    template: string;
+    adapter: string;
     alwaysOn: 'none' | 'always' | 'action';
     useColor: boolean;
     pageItems: PageItemDataItemsOptions[];
@@ -212,7 +211,38 @@ export type PageBaseConfig = {
         | cardThermoDataItemOptions
         | cardEntitiesDataItemOptions
         | cardAlarmDataItemOptions;
-    items:
+    items: undefined;
+};
+
+export type PageBaseConfig = (
+    | {
+          //    type: PlayerType;
+          card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
+          uniqueID: string;
+          template?: string;
+          dpInit: string; // '' and initMode 'auto' throw an error
+          alwaysOn: 'none' | 'always' | 'action';
+          useColor: boolean;
+          pageItems: PageItemDataItemsOptions[];
+
+          //    mediaNamespace: string;
+          config:
+              | undefined
+              | cardPowerDataItemOptions
+              | cardMediaDataItemOptions
+              | cardGridDataItemOptions
+              | cardThermoDataItemOptions
+              | cardEntitiesDataItemOptions
+              | cardAlarmDataItemOptions;
+      }
+    | ({
+          card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
+          uniqueID: string;
+          template: string;
+          dpInit: string;
+      } & Partial<Omit<PageBaseConfigTemplate, 'card' | 'template'>>)
+) & {
+    items?:
         | undefined
         | cardEntitiesDataItems
         | cardPowerDataItems

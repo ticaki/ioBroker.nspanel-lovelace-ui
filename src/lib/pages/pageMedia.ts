@@ -51,7 +51,7 @@ export class PageMedia extends Page {
                     entity1: { value: { type: 'const', constVal: true } },
                 },
             });
-        super(config, options.pageItems);
+        super(config, options);
 
         this.config = options.config;
         if (this.items && this.items.card === 'cardMedia') this.items = options.items;

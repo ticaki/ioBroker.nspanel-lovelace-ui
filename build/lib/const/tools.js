@@ -472,16 +472,28 @@ function deepAssign(def, source, level = 0) {
       if (source[k] !== void 0) {
         def[k] = deepAssign(def[k], source[k]);
       } else if (def[k] !== void 0) {
-        source[k] = Object.assign({}, def[k]);
+        source[k] = Object.assign(def[k]);
       }
     }
   }
   for (const k in source) {
     if (typeof source[k] === "object" && source[k] !== void 0) {
-      def[k] = deepAssign(def[k] || {}, source[k]);
+      if (!def) {
+        if (Array.isArray(source))
+          def = [];
+        else if (typeof source === "object")
+          def = {};
+      }
+      def[k] = deepAssign(def[k], source[k]);
     }
   }
-  return Object.assign(def || {}, source);
+  if (!def) {
+    if (Array.isArray(source))
+      def = [];
+    else if (typeof source === "object")
+      def = {};
+  }
+  return Object.assign(def, source);
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

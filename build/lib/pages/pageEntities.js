@@ -38,7 +38,7 @@ class PageEntities extends import_Page.Page {
   nextArrow = false;
   tempItem;
   constructor(config, options) {
-    super(config, options.pageItems);
+    super(config, options);
     this.config = options.config;
     if (options.items && options.items.card == "cardEntities")
       this.items = options.items;

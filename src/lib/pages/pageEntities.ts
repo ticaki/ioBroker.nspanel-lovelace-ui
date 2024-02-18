@@ -21,7 +21,7 @@ export class PageEntities extends Page {
     tempItem: PageItem | undefined;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        super(config, options.pageItems);
+        super(config, options);
         this.config = options.config;
         if (options.items && options.items.card == 'cardEntities') this.items = options.items;
         this.minUpdateInterval = 2000;

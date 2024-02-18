@@ -28,7 +28,7 @@ export type ScreensaverConfig = {
 export class Screensaver extends Page {
     private entitysConfig: NSPanel.ScreensaverOptionsType;
     readonly layout: NSPanel.ScreensaverModeType = 'standard';
-    private config: ScreensaverConfigType;
+    private config2: ScreensaverConfigType;
     private items: Record<
         keyof Omit<NSPanel.ScreensaverOptionsType, 'mrIconEntity'>,
         (NSPanel.ScreenSaverDataItems | undefined)[]
@@ -65,8 +65,8 @@ export class Screensaver extends Page {
         this.entitysConfig = options.entitysConfig;
         this.layout = options.mode;
 
-        this.config = this.panel.config;
-        moment.locale(this.config.momentLocale);
+        this.config2 = this.panel.config;
+        moment.locale(this.config2.momentLocale);
         this.rotationTime = options.rotationTime !== 0 && options.rotationTime < 3 ? 3000 : options.rotationTime * 1000;
     }
     async init(): Promise<void> {
@@ -188,7 +188,7 @@ export class Screensaver extends Page {
                         const DatumZeit = moment(val, pformat).unix(); // Conversion to Unix time stamp
                         const entityDateFormat = item.entityDateFormat ? await item.entityDateFormat.getObject() : null;
                         val = new Date(DatumZeit * 1000).toLocaleString(
-                            this.config.locale,
+                            this.config2.locale,
                             entityDateFormat !== null ? entityDateFormat : undefined,
                         );
                     }
@@ -423,7 +423,7 @@ export class Screensaver extends Page {
             } else {
                 payload[`icon${s}Color`] = String(Color.rgb_dec565(Color.Black));
             }
-            payload[`icon${s}Font`] = this.config[`iconBig${s}`] ? '1' : '';
+            payload[`icon${s}Font`] = this.config2[`iconBig${s}`] ? '1' : '';
         }
         this.sendStatusUpdate(payload as sendTemplates['statusUpdate'], this.layout);
     }

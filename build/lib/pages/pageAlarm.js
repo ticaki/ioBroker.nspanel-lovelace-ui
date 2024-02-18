@@ -40,7 +40,6 @@ const PageAlarmMessageDefault = {
   flashing: "disable"
 };
 class PageAlarm extends import_Page.Page {
-  config;
   items;
   step = 1;
   headlinePos = 0;
@@ -48,7 +47,7 @@ class PageAlarm extends import_Page.Page {
   nextArrow = false;
   status = "disarmed";
   constructor(config, options) {
-    super(config, options.pageItems);
+    super(config, options);
     if (options.config && options.config.card == "cardPower")
       this.config = options.config;
     this.minUpdateInterval = 500;

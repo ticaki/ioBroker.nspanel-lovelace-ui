@@ -35,6 +35,7 @@ var NSPanel = __toESM(require("../types/types"));
 var pages = __toESM(require("../types/pages"));
 var import_library = require("../classes/library");
 var import_definition = require("../const/definition");
+var import_Page = require("../classes/Page");
 var import_pageMedia = require("../pages/pageMedia");
 var import_pageGrid = require("../pages/pageGrid");
 var import_navigation = require("../classes/navigation");
@@ -109,7 +110,7 @@ class Panel extends import_library.BaseClass {
     this.dimMode = { low: (_b = options.dimLow) != null ? _b : 70, high: (_c = options.dimHigh) != null ? _c : 90 };
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
-      const pageConfig = options.pages[a];
+      let pageConfig = options.pages[a];
       if (!pageConfig)
         continue;
       switch (pageConfig.card) {
@@ -131,6 +132,7 @@ class Panel extends import_library.BaseClass {
             uniqueID: pageConfig.uniqueID,
             dpInit: pageConfig.dpInit
           };
+          pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pageGrid.PageGrid(pmconfig, pageConfig);
           break;
         }
@@ -147,6 +149,7 @@ class Panel extends import_library.BaseClass {
             uniqueID: pageConfig.uniqueID,
             dpInit: pageConfig.dpInit
           };
+          pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pageGrid.PageGrid(pmconfig, pageConfig);
           break;
         }
@@ -162,6 +165,7 @@ class Panel extends import_library.BaseClass {
             uniqueID: pageConfig.uniqueID,
             dpInit: pageConfig.dpInit
           };
+          pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pageThermo.PageThermo(pmconfig, pageConfig);
           break;
         }
@@ -177,6 +181,7 @@ class Panel extends import_library.BaseClass {
             uniqueID: pageConfig.uniqueID,
             dpInit: pageConfig.dpInit
           };
+          pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pageMedia.PageMedia(pmconfig, pageConfig);
           break;
         }
@@ -201,6 +206,7 @@ class Panel extends import_library.BaseClass {
             uniqueID: pageConfig.uniqueID,
             dpInit: pageConfig.dpInit
           };
+          pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pagePower.PagePower(pmconfig, pageConfig);
           break;
         }

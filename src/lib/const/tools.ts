@@ -486,14 +486,22 @@ export function deepAssign(def: Record<any, any>, source: Record<any, any>, leve
             if (source[k] !== undefined) {
                 def[k] = deepAssign(def[k], source[k]);
             } else if (def[k] !== undefined) {
-                source[k] = Object.assign({}, def[k]);
+                source[k] = Object.assign(def[k]);
             }
         }
     }
     for (const k in source) {
         if (typeof source[k] === 'object' && source[k] !== undefined) {
-            def[k] = deepAssign(def[k] || {}, source[k]);
+            if (!def) {
+                if (Array.isArray(source)) def = [];
+                else if (typeof source === 'object') def = {};
+            }
+            def[k] = deepAssign(def[k], source[k]);
         }
     }
-    return Object.assign(def || {}, source);
+    if (!def) {
+        if (Array.isArray(source)) def = [];
+        else if (typeof source === 'object') def = {};
+    }
+    return Object.assign(def, source);
 }

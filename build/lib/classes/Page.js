@@ -25,18 +25,22 @@ module.exports = __toCommonJS(Page_exports);
 var import_states_controller = require("../controller/states-controller");
 var import_types = require("../types/types");
 var import_pageItem = require("../pages/pageItem");
+var import_card = require("../templates/card");
+var import_tools = require("../const/tools");
 class Page extends import_states_controller.BaseClassPage {
   card;
   id;
   uniqueID;
+  config;
   dpInit = "";
   constructor(card, pageItemsConfig) {
     var _a;
-    super(card, pageItemsConfig);
+    super(card, pageItemsConfig && pageItemsConfig.pageItems);
     this.card = card.card;
     this.id = card.id;
     this.uniqueID = card.uniqueID;
     this.dpInit = (_a = card.dpInit) != null ? _a : "";
+    this.config = pageItemsConfig && pageItemsConfig.config;
   }
   async init() {
   }
@@ -45,6 +49,34 @@ class Page extends import_states_controller.BaseClassPage {
   }
   sendType() {
     this.sendToPanel(`pageType~${this.card}`);
+  }
+  static getPage(config, that) {
+    if ("template" in config && config.template) {
+      let index = -1;
+      let template;
+      for (const i of [import_card.cardTemplates]) {
+        index = i.findIndex((a) => a.template === config.template);
+        if (index !== -1) {
+          template = i[index];
+          break;
+        }
+      }
+      if (index === -1 || !template) {
+        that.log.error("dont find template " + config.template);
+        return config;
+      }
+      if (template.adapter && !config.dpInit.startsWith(template.adapter)) {
+        return config;
+      }
+      const newTemplate = JSON.parse(JSON.stringify(template));
+      delete newTemplate.adapter;
+      if (config.card && config.card !== template.card) {
+        that.log.error(config.card + "is not equal with " + template.card);
+        return config;
+      }
+      config = (0, import_tools.deepAssign)(newTemplate, config);
+    }
+    return config;
   }
   async onVisibilityChange(val) {
     if (val) {

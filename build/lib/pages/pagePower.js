@@ -77,10 +77,9 @@ const PagePowerMessageDefault = {
   }
 };
 class PagePower extends import_Page.Page {
-  config;
   items;
   constructor(config, options) {
-    super(config, options.pageItems);
+    super(config, options);
     if (options.config && options.config.card == "cardPower")
       this.config = options.config;
     this.minUpdateInterval = 2e3;

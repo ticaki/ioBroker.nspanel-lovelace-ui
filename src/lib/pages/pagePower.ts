@@ -70,11 +70,10 @@ const PagePowerMessageDefault: pages.PagePowerMessage = {
  * untested
  */
 export class PagePower extends Page {
-    config: pages.PageBaseConfig['config'];
     items: pages.PageBaseConfig['items'];
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        super(config, options.pageItems);
+        super(config, options);
         if (options.config && options.config.card == 'cardPower') this.config = options.config;
         this.minUpdateInterval = 2000;
     }

@@ -44,7 +44,7 @@ class PageGrid extends import_Page.Page {
   nextArrow = false;
   tempItem;
   constructor(config, options) {
-    super(config, options.pageItems);
+    super(config, options);
     this.config = options.config;
     if (options.items && (options.items.card == "cardGrid" || options.items.card == "cardGrid2"))
       this.items = options.items;

@@ -33,7 +33,7 @@ export class PageThermo extends Page {
     private nextArrow: boolean = false;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        super(config, options.pageItems);
+        super(config, options);
         if (options.config && options.config.card == 'cardThermo') this.config = options.config;
         else throw new Error('Missing config!');
         if (options.items && options.items.card == 'cardThermo') this.items = options.items;

@@ -38,7 +38,7 @@ var import_tools = require("../const/tools");
 class Screensaver extends import_Page.Page {
   entitysConfig;
   layout = "standard";
-  config;
+  config2;
   items = {
     favoritEntity: [],
     leftEntity: [],
@@ -66,8 +66,8 @@ class Screensaver extends import_Page.Page {
     super(config, void 0);
     this.entitysConfig = options.entitysConfig;
     this.layout = options.mode;
-    this.config = this.panel.config;
-    import_moment.default.locale(this.config.momentLocale);
+    this.config2 = this.panel.config;
+    import_moment.default.locale(this.config2.momentLocale);
     this.rotationTime = options.rotationTime !== 0 && options.rotationTime < 3 ? 3e3 : options.rotationTime * 1e3;
   }
   async init() {
@@ -176,7 +176,7 @@ class Screensaver extends import_Page.Page {
             const DatumZeit = (0, import_moment.default)(val, pformat).unix();
             const entityDateFormat = item.entityDateFormat ? await item.entityDateFormat.getObject() : null;
             val = new Date(DatumZeit * 1e3).toLocaleString(
-              this.config.locale,
+              this.config2.locale,
               entityDateFormat !== null ? entityDateFormat : void 0
             );
           }
@@ -376,7 +376,7 @@ class Screensaver extends import_Page.Page {
       } else {
         payload[`icon${s}Color`] = String(Color.rgb_dec565(Color.Black));
       }
-      payload[`icon${s}Font`] = this.config[`iconBig${s}`] ? "1" : "";
+      payload[`icon${s}Font`] = this.config2[`iconBig${s}`] ? "1" : "";
     }
     this.sendStatusUpdate(payload, this.layout);
   }

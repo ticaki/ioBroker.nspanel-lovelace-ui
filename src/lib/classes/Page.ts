@@ -4,7 +4,9 @@ import * as pages from '../types/pages';
 import { ButtonActionType, IncomingEvent, PopupType, isPopupType } from '../types/types';
 import { ScreensaverConfig } from '../pages/screensaver';
 import { PageItem } from '../pages/pageItem';
-import { PageItemDataItemsOptions } from '../types/type-pageItem';
+import { BaseClass } from './library';
+import { cardTemplates } from '../templates/card';
+import { deepAssign } from '../const/tools';
 
 export interface PageConfigInterface {
     config: pages.PageBaseConfig;
@@ -31,14 +33,16 @@ export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
     readonly id: string;
     readonly uniqueID: string;
+    config: pages.PageBaseConfig['config'];
     dpInit: string = '';
     //config: Card['config'];
-    constructor(card: PageInterface, pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined) {
-        super(card, pageItemsConfig);
+    constructor(card: PageInterface, pageItemsConfig: pages.PageBaseConfig | undefined) {
+        super(card, pageItemsConfig && pageItemsConfig.pageItems);
         this.card = card.card;
         this.id = card.id;
         this.uniqueID = card.uniqueID;
         this.dpInit = card.dpInit ?? '';
+        this.config = pageItemsConfig && pageItemsConfig.config;
     }
     async init(): Promise<void> {}
 
@@ -49,6 +53,35 @@ export class Page extends BaseClassPage {
         this.sendToPanel(`pageType~${this.card}`);
     }
 
+    static getPage(config: pages.PageBaseConfig, that: BaseClass): pages.PageBaseConfig {
+        if ('template' in config && config.template) {
+            let index = -1;
+            let template: pages.PageBaseConfigTemplate | undefined;
+            for (const i of [cardTemplates]) {
+                index = i.findIndex((a) => a.template === config.template);
+                if (index !== -1) {
+                    template = i[index];
+                    break;
+                }
+            }
+            if (index === -1 || !template) {
+                that.log.error('dont find template ' + config.template);
+                return config;
+            }
+            if (template.adapter && !config.dpInit.startsWith(template.adapter)) {
+                return config;
+            }
+            const newTemplate = JSON.parse(JSON.stringify(template)) as Partial<pages.PageBaseConfigTemplate>;
+            delete newTemplate.adapter;
+            if (config.card && config.card !== template.card) {
+                that.log.error(config.card + 'is not equal with ' + template.card);
+                return config;
+            }
+
+            config = deepAssign(newTemplate, config);
+        }
+        return config;
+    }
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
             if (!this.pageItems && this.pageItemConfig) {

@@ -51,7 +51,7 @@ class PageThermo extends import_Page.Page {
   titelPos = 0;
   nextArrow = false;
   constructor(config, options) {
-    super(config, options.pageItems);
+    super(config, options);
     if (options.config && options.config.card == "cardThermo")
       this.config = options.config;
     else
