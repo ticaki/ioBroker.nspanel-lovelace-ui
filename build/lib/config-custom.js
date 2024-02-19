@@ -269,6 +269,11 @@ const pageEntitiesTest2 = {
       type: "light",
       dpInit: "0_userdata.0.shelly.0.SHRGBW2#258794#1",
       template: "light.shelly.rgbw2"
+    },
+    {
+      type: "shutter",
+      dpInit: "0_userdata.0.shelly.0.SHSW-25#C45BBE5FC53F#1",
+      template: "shutter.shelly.2PM"
     }
   ],
   items: void 0

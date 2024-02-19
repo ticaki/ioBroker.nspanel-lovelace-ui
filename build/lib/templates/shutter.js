@@ -114,6 +114,73 @@ const shutterTemplates = [
         role: ["button.stop.tilt"]
       }
     }
+  },
+  {
+    role: "rgb",
+    type: "shutter",
+    template: "shutter.shelly.2PM",
+    adapter: "0_userdata.0",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "window-shutter-open" },
+          color: { type: "const", constVal: Color.Green }
+        },
+        false: {
+          value: { type: "const", constVal: "window-shutter" },
+          color: { type: "const", constVal: Color.HMIOff }
+        },
+        scale: void 0,
+        maxBri: void 0,
+        minBri: void 0
+      },
+      entity1: {
+        value: { mode: "auto", role: "level.blind", type: "triggered", dp: ".Shutter.Position" },
+        decimal: void 0,
+        factor: void 0,
+        unit: void 0,
+        minScale: { type: "const", constVal: 0 },
+        maxScale: { type: "const", constVal: 100 }
+      },
+      entity2: void 0,
+      text: {
+        true: {
+          type: "const",
+          constVal: "text"
+        },
+        false: void 0
+      },
+      headline: {
+        type: "const",
+        constVal: "SHSW-25"
+      },
+      text1: {
+        true: {
+          type: "const",
+          constVal: "Shutter position"
+        },
+        false: void 0
+      },
+      text2: void 0,
+      up: {
+        type: "state",
+        dp: ".Shutter.Open",
+        mode: "auto",
+        role: ["button"]
+      },
+      down: {
+        type: "state",
+        dp: ".Shutter.Close",
+        mode: "auto",
+        role: ["button"]
+      },
+      stop: {
+        type: "state",
+        dp: ".Shutter.Pause",
+        mode: "auto",
+        role: ["button"]
+      }
+    }
   }
 ];
 // Annotate the CommonJS export names for ESM import in node:

@@ -672,7 +672,7 @@ export class PageItem extends BaseClassTriggerd {
                     statusL2: 'disable',
                     statusM2: 'disable',
                     statusR2: 'disable',
-                    pos2: '',
+                    pos2: 'disable',
                 };
                 result = Object.assign(result, message);
                 return tools.getPayload(
@@ -966,10 +966,10 @@ export class PageItem extends BaseClassTriggerd {
                 if (!(message.type === 'popupShutter')) break;
                 message.text2 = (item.text && item.text.true && (await item.text.true.getString())) ?? '';
                 message.text2 = this.library.getTranslation(message.text2);
-                const pos1 = (await tools.getValueEntryNumber(item.entity1)) ?? undefined;
-                const pos2 = (await tools.getValueEntryNumber(item.entity2)) ?? undefined;
-                if (pos1 !== undefined) message.icon = (await tools.getIconEntryValue(item.icon, pos1 < 40, '')) ?? '';
-                else if (pos2 !== undefined)
+                const pos1 = (await tools.getValueEntryNumber(item.entity1)) ?? 'disable';
+                const pos2 = (await tools.getValueEntryNumber(item.entity2)) ?? 'disable';
+                if (pos1 !== 'disable') message.icon = (await tools.getIconEntryValue(item.icon, pos1 < 40, '')) ?? '';
+                else if (pos2 !== 'disable')
                     message.icon = (await tools.getIconEntryValue(item.icon, pos2 < 40, '')) ?? '';
                 const optionalValue = item.valueList
                     ? await item.valueList.getObject()
@@ -984,7 +984,7 @@ export class PageItem extends BaseClassTriggerd {
                 const arr = [pos1, pos2];
                 for (let index = 0; index < arr.length; index++) {
                     const pos = arr[index];
-                    if (pos == undefined) continue;
+                    if (pos == 'disable') continue;
 
                     const i = index * 3;
 
@@ -994,7 +994,7 @@ export class PageItem extends BaseClassTriggerd {
                             : ['', '', ''];
                     optionalValueC = optionalValueC.splice(i, 3).map((a) => (a ? Icons.GetIcon(a) : a));
                     optionalValueC.forEach((a, i) => {
-                        if (a) optionalValueC[i + 3] = this.tempData[i + 3] ? 'enable' : 'disable';
+                        if (a) optionalValueC[i + 3] = this.tempData[i] ? 'enable' : 'disable';
                         else {
                             optionalValueC[i] = '';
                             optionalValueC[i + 3] = 'disable';
@@ -1008,7 +1008,7 @@ export class PageItem extends BaseClassTriggerd {
                         message.iconM1 = optionalValueC[1];
                         message.iconR1 = optionalValueC[2];
                         message.statusL1 = pos === 0 ? 'disable' : optionalValueC[3];
-                        message.statusM1 = optionalValueC[4];
+                        message.statusM1 = pos === 'disabled' ? 'disable' : optionalValueC[4];
                         message.statusR1 = pos === 100 ? 'disable' : optionalValueC[5];
                     } else {
                         message.pos2 = String(pos);

@@ -103,4 +103,75 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
             //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
         },
     },
+    {
+        role: 'rgb',
+        type: 'shutter',
+        template: 'shutter.shelly.2PM',
+        adapter: '0_userdata.0',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'window-shutter-open' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'window-shutter' },
+                    color: { type: 'const', constVal: Color.HMIOff },
+                },
+                scale: undefined,
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            // 1. slider
+            entity1: {
+                // button
+                value: { mode: 'auto', role: 'level.blind', type: 'triggered', dp: '.Shutter.Position' },
+                decimal: undefined,
+                factor: undefined,
+                unit: undefined,
+                minScale: { type: 'const', constVal: 0 },
+                maxScale: { type: 'const', constVal: 100 },
+            },
+            // 2. slider
+            entity2: undefined,
+            text: {
+                true: {
+                    type: 'const',
+                    constVal: 'text',
+                },
+                false: undefined,
+            },
+            headline: {
+                type: 'const',
+                constVal: 'SHSW-25',
+            },
+            text1: {
+                true: {
+                    type: 'const',
+                    constVal: 'Shutter position',
+                },
+                false: undefined,
+            },
+            text2: undefined,
+            up: {
+                type: 'state',
+                dp: '.Shutter.Open',
+                mode: 'auto',
+                role: ['button'],
+            },
+            down: {
+                type: 'state',
+                dp: '.Shutter.Close',
+                mode: 'auto',
+                role: ['button'],
+            },
+            stop: {
+                type: 'state',
+                dp: '.Shutter.Pause',
+                mode: 'auto',
+                role: ['button'],
+            },
+        },
+    },
 ];

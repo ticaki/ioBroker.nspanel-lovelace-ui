@@ -81,7 +81,8 @@ export type StateRole =
     | 'level.color.green'
     | 'level.color.white'
     | 'level.brightness'
-    | 'switch';
+    | 'switch'
+    | 'button';
 
 export type DeviceRole =
     | 'socket'

@@ -507,7 +507,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           statusL2: "disable",
           statusM2: "disable",
           statusR2: "disable",
-          pos2: ""
+          pos2: "disable"
         };
         result = Object.assign(result, message);
         return tools.getPayload(
@@ -764,11 +764,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           break;
         message.text2 = (_B = item.text && item.text.true && await item.text.true.getString()) != null ? _B : "";
         message.text2 = this.library.getTranslation(message.text2);
-        const pos1 = (_C = await tools.getValueEntryNumber(item.entity1)) != null ? _C : void 0;
-        const pos2 = (_D = await tools.getValueEntryNumber(item.entity2)) != null ? _D : void 0;
-        if (pos1 !== void 0)
+        const pos1 = (_C = await tools.getValueEntryNumber(item.entity1)) != null ? _C : "disable";
+        const pos2 = (_D = await tools.getValueEntryNumber(item.entity2)) != null ? _D : "disable";
+        if (pos1 !== "disable")
           message.icon = (_E = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _E : "";
-        else if (pos2 !== void 0)
+        else if (pos2 !== "disable")
           message.icon = (_F = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _F : "";
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
           "arrow-up",
@@ -781,14 +781,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         const arr = [pos1, pos2];
         for (let index = 0; index < arr.length; index++) {
           const pos = arr[index];
-          if (pos == void 0)
+          if (pos == "disable")
             continue;
           const i = index * 3;
           let optionalValueC = Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === "string") ? [...optionalValue] : ["", "", ""];
           optionalValueC = optionalValueC.splice(i, 3).map((a) => a ? import_icon_mapping.Icons.GetIcon(a) : a);
           optionalValueC.forEach((a, i2) => {
             if (a)
-              optionalValueC[i2 + 3] = this.tempData[i2 + 3] ? "enable" : "disable";
+              optionalValueC[i2 + 3] = this.tempData[i2] ? "enable" : "disable";
             else {
               optionalValueC[i2] = "";
               optionalValueC[i2 + 3] = "disable";
@@ -802,7 +802,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.iconM1 = optionalValueC[1];
             message.iconR1 = optionalValueC[2];
             message.statusL1 = pos === 0 ? "disable" : optionalValueC[3];
-            message.statusM1 = optionalValueC[4];
+            message.statusM1 = pos === "disabled" ? "disable" : optionalValueC[4];
             message.statusR1 = pos === 100 ? "disable" : optionalValueC[5];
           } else {
             message.pos2 = String(pos);
