@@ -2019,7 +2019,7 @@ const pageThermoTest = {
       }
     },
     {
-      role: "text.list",
+      role: "indicator",
       type: "button",
       dpInit: "",
       data: {

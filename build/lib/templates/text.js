@@ -118,7 +118,7 @@ const textTemplates = [
             mode: "auto",
             role: "value.temperature",
             dp: "",
-            read: "return Math.random(val*10)/10"
+            read: "return Math.round(val*10)/10"
           },
           color: { type: "const", constVal: Color.Red }
         },
@@ -146,7 +146,7 @@ const textTemplates = [
           mode: "auto",
           role: "value.temperature",
           dp: "",
-          read: "return Math.random(val*10)/10"
+          read: "return Math.round(parseFloat(val)*10)/10"
         },
         false: void 0
       }
