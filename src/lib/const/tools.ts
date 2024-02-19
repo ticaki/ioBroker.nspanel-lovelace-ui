@@ -1,4 +1,4 @@
-import { Dataitem } from '../classes/data-item';
+import { Dataitem, isDataItem } from '../classes/data-item';
 import {
     ColorEntryType,
     IconEntryType,
@@ -213,11 +213,12 @@ export async function getIconEntryValue(
     on: boolean | null,
     def: string,
     defOff: string | null = null,
+    getText: boolean = false,
 ): Promise<string> {
     if (i === undefined) return '';
     on = on ?? true;
     if (!i) return Icons.GetIcon(on ? def : defOff ?? def);
-    const text = (i.true && i.true.text && (await i.true.text.getString())) ?? null;
+    const text = getText ? (i.true && i.true.text && (await i.true.text.getString())) ?? null : null;
     if (text !== null) {
         if (!on) return (i.false && i.false.text && (await i.false.text.getString())) ?? text;
         return text;
@@ -323,8 +324,8 @@ export async function getEntryTextOnOff(
     on: boolean | null,
 ): Promise<string | null> {
     if (!i) return null;
-    if ('true' in i || 'false' in i) {
-        i = i as ChangeTypeOfKeys<TextEntryType, Dataitem>;
+    if (!isDataItem(i)) {
+        //i = i as ChangeTypeOfKeys<TextEntryType, Dataitem>;
         const value = i.true && (await i.true.getString());
         if (!(on ?? true)) {
             return (i.false && (await i.false.getString())) ?? value ?? null;

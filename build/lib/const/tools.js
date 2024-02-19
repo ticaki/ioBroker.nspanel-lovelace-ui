@@ -47,6 +47,7 @@ __export(tools_exports, {
   setValueEntryNumber: () => setValueEntryNumber
 });
 module.exports = __toCommonJS(tools_exports);
+var import_data_item = require("../classes/data-item");
 var import_Color2 = require("./Color");
 var import_icon_mapping = require("./icon_mapping");
 const messageItemDefault = {
@@ -216,14 +217,14 @@ async function setScaledNumber(i, value) {
       await i.value.setStateAsync(value);
   }
 }
-async function getIconEntryValue(i, on, def, defOff = null) {
+async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   var _a, _b, _c, _d, _e, _f;
   if (i === void 0)
     return "";
   on = on != null ? on : true;
   if (!i)
     return import_icon_mapping.Icons.GetIcon(on ? def : defOff != null ? defOff : def);
-  const text = (_a = i.true && i.true.text && await i.true.text.getString()) != null ? _a : null;
+  const text = getText ? (_a = i.true && i.true.text && await i.true.text.getString()) != null ? _a : null : null;
   if (text !== null) {
     if (!on)
       return (_b = i.false && i.false.text && await i.false.text.getString()) != null ? _b : text;
@@ -319,8 +320,7 @@ async function getEntryTextOnOff(i, on) {
   var _a, _b, _c;
   if (!i)
     return null;
-  if ("true" in i || "false" in i) {
-    i = i;
+  if (!(0, import_data_item.isDataItem)(i)) {
     const value = i.true && await i.true.getString();
     if (!(on != null ? on : true)) {
       return (_b = (_a = i.false && await i.false.getString()) != null ? _a : value) != null ? _b : null;

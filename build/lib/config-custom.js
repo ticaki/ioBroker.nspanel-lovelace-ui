@@ -274,6 +274,11 @@ const pageEntitiesTest2 = {
       type: "shutter",
       dpInit: "0_userdata.0.shelly.0.SHSW-25#C45BBE5FC53F#1",
       template: "shutter.shelly.2PM"
+    },
+    {
+      type: "text",
+      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
+      template: "text.temperature.grid"
     }
   ],
   items: void 0
@@ -1711,6 +1716,11 @@ const pageGridTest2 = {
         headline: { type: "const", constVal: "Timer" },
         setValue1: { type: "state", dp: "0_userdata.0.example_state" }
       }
+    },
+    {
+      type: "text",
+      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
+      template: "text.temperatures"
     }
   ]
 };

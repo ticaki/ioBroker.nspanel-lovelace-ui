@@ -3,6 +3,46 @@ import { RGB } from './Color';
 import { IconEntryType, TextEntryType, ValueEntryType } from './type-pageItem';
 import { ChangeTypeOfKeys, StateRole } from './pages';
 
+export type TemplateIdent =
+    | 'generic.shutter'
+    | 'shutter.shelly.2PM'
+    | 'light.shelly.rgbw2'
+    | 'waste-calendar.entities'
+    | 'text.window.isClose'
+    | 'text.window.isOpen'
+    | 'text.battery'
+    | 'text.temperatures'
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | '';
+
 export function isEventMethod(F: string | EventMethod): F is EventMethod {
     switch (F as EventMethod) {
         case 'startup':

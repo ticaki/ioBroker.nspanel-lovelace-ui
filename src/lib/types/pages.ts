@@ -82,9 +82,12 @@ export type StateRole =
     | 'level.color.white'
     | 'level.brightness'
     | 'switch'
-    | 'button';
+    | 'button'
+    | 'sensor.window'
+    | 'value.temperature';
 
 export type DeviceRole =
+    | 'text'
     | 'socket'
     | 'light'
     | 'dimmer'
@@ -226,7 +229,7 @@ export type PageBaseConfig = (
           //    type: PlayerType;
           card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
           uniqueID: string;
-          template?: undefined;
+          template?: Types.TemplateIdent;
           dpInit: string; // '' and initMode 'auto' throw an error
           alwaysOn: 'none' | 'always' | 'action';
           useColor: boolean;

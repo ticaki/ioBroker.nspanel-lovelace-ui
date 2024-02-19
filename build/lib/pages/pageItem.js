@@ -68,16 +68,19 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         }
       }
       if (index === -1 || !template) {
-        that.log.error("dont find template " + options.template);
+        that.log.error("Dont find template " + options.template);
         return void 0;
       }
       if (template.adapter && !options.dpInit.startsWith(template.adapter) && !(config.parent && config.parent.dpInit.startsWith(template.adapter))) {
+        that.log.error(
+          "Missing dbInit or dbInit not starts with" + template.adapter + " for template " + options.template
+        );
         return void 0;
       }
       const newTemplate = structuredClone(template);
       delete newTemplate.adapter;
       if (options.type && options.type !== template.type) {
-        that.log.error(options.type + "is not equal with " + template.type);
+        that.log.error("Type: " + options.type + "is not equal with " + template.type);
         return void 0;
       }
       options.type = template.type;
@@ -152,7 +155,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     }
   }
   async getPageItemPayload() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -254,8 +257,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               value = true;
             message.displayName = (_p = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _p : "";
             message.optionalValue = (_q = await tools.getEntryTextOnOff(item.text1, !!value)) != null ? _q : "";
-            message.icon = (_r = await tools.getIconEntryValue(item.icon, !!value, "")) != null ? _r : "";
-            message.iconColor = (_s = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _s : "";
+            message.icon = (_s = await tools.getIconEntryValue(
+              item.icon,
+              !!value,
+              "",
+              null,
+              (_r = this.parent && this.parent.card !== "cardEntities") != null ? _r : false
+            )) != null ? _s : "";
+            message.iconColor = (_t = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _t : "";
             return tools.getPayload(
               message.type,
               message.intNameEntity,
@@ -271,7 +280,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           const item = entry.data;
           if (item.entity1 && item.entity1.value) {
             message.optionalValue = !!(item.setValue1 && await item.setValue1.getBoolean()) ? "0" : "1";
-            message.displayName = (_t = await tools.getEntryTextOnOff(item.text, message.optionalValue === "1")) != null ? _t : "test1";
+            message.displayName = (_u = await tools.getEntryTextOnOff(item.text, message.optionalValue === "1")) != null ? _u : "test1";
             message.icon = await tools.getIconEntryValue(
               item.icon,
               message.optionalValue === "1",
@@ -293,11 +302,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         case "input_sel": {
           const item = entry.data;
           message.type = "input_sel";
-          const value = (_u = await tools.getValueEntryNumber(item.entityInSel)) != null ? _u : await tools.getValueEntryBoolean(item.entityInSel);
+          const value = (_v = await tools.getValueEntryNumber(item.entityInSel)) != null ? _v : await tools.getValueEntryBoolean(item.entityInSel);
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
-          message.iconColor = (_v = await tools.GetIconColor(item.icon, value != null ? value : true, 0, 100, Color.HMIOff)) != null ? _v : Color.HMIOn;
-          message.displayName = (_w = item.headline && await item.headline.getString()) != null ? _w : "";
-          message.optionalValue = (_x = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _x : "PRESS";
+          message.iconColor = (_w = await tools.GetIconColor(item.icon, value != null ? value : true, 0, 100, Color.HMIOff)) != null ? _w : Color.HMIOn;
+          message.displayName = (_x = item.headline && await item.headline.getString()) != null ? _x : "";
+          message.optionalValue = (_y = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _y : "PRESS";
           this.log.debug(JSON.stringify(message));
           return tools.getItemMesssage(message);
           break;
@@ -306,10 +315,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           if (entry.type === "fan") {
             const item = entry.data;
             message.type = "fan";
-            const value = (_y = await tools.getValueEntryBoolean(item.entity1)) != null ? _y : null;
-            message.displayName = (_z = item.headline && await item.headline.getString()) != null ? _z : "";
-            message.icon = (_A = await tools.getIconEntryValue(item.icon, value, "")) != null ? _A : "";
-            message.iconColor = (_B = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _B : "";
+            const value = (_z = await tools.getValueEntryBoolean(item.entity1)) != null ? _z : null;
+            message.displayName = (_A = item.headline && await item.headline.getString()) != null ? _A : "";
+            message.icon = (_B = await tools.getIconEntryValue(item.icon, value, "")) != null ? _B : "";
+            message.iconColor = (_C = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _C : "";
             return tools.getPayload(
               message.type,
               message.intNameEntity,
@@ -324,7 +333,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           if (entry.type === "timer") {
             const item = entry.data;
             message.type = "timer";
-            const value = !item.setValue1 ? (_C = item.entity1 && await tools.getValueEntryNumber(item.entity1)) != null ? _C : null : (_D = this.tempData && this.tempData.time) != null ? _D : 0;
+            const value = !item.setValue1 ? (_D = item.entity1 && await tools.getValueEntryNumber(item.entity1)) != null ? _D : null : (_E = this.tempData && this.tempData.time) != null ? _E : 0;
             if (value !== null) {
               let opt = "";
               if (this.tempData) {
@@ -335,8 +344,8 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               }
               message.iconColor = await tools.GetIconColor(item.icon, value);
               message.icon = await tools.getIconEntryValue(item.icon, true, "gesture-tap-button");
-              message.optionalValue = (_E = await tools.getEntryTextOnOff(item.text, value !== 0)) != null ? _E : opt;
-              message.displayName = (_F = item.headline && await item.headline.getString()) != null ? _F : "";
+              message.optionalValue = (_F = await tools.getEntryTextOnOff(item.text, value !== 0)) != null ? _F : opt;
+              message.displayName = (_G = item.headline && await item.headline.getString()) != null ? _G : "";
               return tools.getPayload(
                 message.type,
                 message.intNameEntity,

@@ -299,7 +299,14 @@ export class PageItem extends BaseClassTriggerd {
                         if (value === null) value = true;
                         message.displayName = (await tools.getEntryTextOnOff(item.text, !!value)) ?? '';
                         message.optionalValue = (await tools.getEntryTextOnOff(item.text1, !!value)) ?? '';
-                        message.icon = (await tools.getIconEntryValue(item.icon, !!value, '')) ?? '';
+                        message.icon =
+                            (await tools.getIconEntryValue(
+                                item.icon,
+                                !!value,
+                                '',
+                                null,
+                                (this.parent && this.parent.card !== 'cardEntities') ?? false,
+                            )) ?? '';
                         message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
                         return tools.getPayload(
                             message.type,

@@ -184,7 +184,7 @@ export type PageItemDataItemsOptions =
     | PageItemDataItemsOptionsWithOutTemplate;
 
 export type PageItemOptionsTemplate = {
-    template: string;
+    template: Types.TemplateIdent;
     role: DeviceRole;
     adapter: string;
     //dpInit: string;

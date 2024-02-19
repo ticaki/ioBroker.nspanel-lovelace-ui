@@ -96,7 +96,7 @@ export class Dataitem extends BaseClass {
     async getState(): Promise<NSPanel.State | null | undefined> {
         let state = await this.getRawState();
         if (state) {
-            state = { ...state };
+            state = structuredClone(state);
             if (this.options.type !== 'const' && this.options.type !== 'internal' && this.options.read) {
                 try {
                     if (typeof this.options.read === 'string')
