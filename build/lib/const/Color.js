@@ -78,6 +78,7 @@ __export(Color_exports, {
   isOldRGB: () => isOldRGB,
   isRGB: () => isRGB,
   kelvinToRGB: () => kelvinToRGB,
+  mixColor: () => mixColor,
   pos_to_color: () => pos_to_color,
   rad2deg: () => rad2deg,
   resultToRgb: () => resultToRgb,
@@ -128,7 +129,8 @@ __export(Color_exports, {
 module.exports = __toCommonJS(Color_exports);
 var import_colord = require("colord");
 var import_names = __toESM(require("colord/plugins/names"));
-(0, import_colord.extend)([import_names.default]);
+var import_mix = __toESM(require("colord/plugins/mix"));
+(0, import_colord.extend)([import_names.default, import_mix.default]);
 const HMIOff = { r: 68, g: 115, b: 158 };
 const HMIOn = { r: 3, g: 169, b: 244 };
 const HMIDark = { r: 29, g: 29, b: 29 };
@@ -263,6 +265,9 @@ function Interpolate(color1, color2, fraction) {
   const g = InterpolateNum(color1.g, color2.g, fraction);
   const b = InterpolateNum(color1.b, color2.b, fraction);
   return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
+}
+function mixColor(c1, c2, r) {
+  return (0, import_colord.colord)(c1).mix(c2, r).toRgb();
 }
 function InterpolateNum(d1, d2, fraction) {
   return d1 + (d2 - d1) * fraction;
@@ -533,6 +538,7 @@ const kelvinToRGB = {
   isOldRGB,
   isRGB,
   kelvinToRGB,
+  mixColor,
   pos_to_color,
   rad2deg,
   resultToRgb,

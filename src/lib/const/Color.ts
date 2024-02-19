@@ -1,7 +1,8 @@
 import { colord, extend } from 'colord';
 import namesPlugin from 'colord/plugins/names';
+import mixPlugin from 'colord/plugins/mix';
 
-extend([namesPlugin]);
+extend([namesPlugin, mixPlugin]);
 
 import { RGB } from '../types/Color';
 
@@ -163,6 +164,16 @@ export function Interpolate(color1: RGB, color2: RGB, fraction: number): RGB {
     return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
 }
 
+/**
+ *
+ * @param c1 from this color
+ * @param c2 to this
+ * @param r 0-1 mix value
+ * @returns RGB
+ */
+export function mixColor(c1: RGB, c2: RGB, r: number): RGB {
+    return colord(c1).mix(c2, r).toRgb();
+}
 export function InterpolateNum(d1: number, d2: number, fraction: number): number {
     return d1 + (d2 - d1) * fraction;
 }

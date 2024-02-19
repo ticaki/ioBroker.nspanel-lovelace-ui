@@ -85,7 +85,8 @@ export type StateRole =
     | 'button'
     | 'sensor.window'
     | 'value.temperature'
-    | 'value.battery';
+    | 'value.battery'
+    | 'indicator.lowbat';
 
 export type DeviceRole =
     | 'text'

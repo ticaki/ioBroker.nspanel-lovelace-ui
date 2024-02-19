@@ -190,34 +190,18 @@ const textTemplates = [
             dp: ""
           },
           color: {
-            type: "triggered",
-            mode: "auto",
-            role: "value.battery",
-            dp: "",
-            read: `const v = Math.round(val / 10);
-                        switch (v) {
-                            case 0:
-                                case 1:
-                                return Color.Red;
-                            
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 5:
-                            case 6:
-                            case 7:
-                            case 8:
-                            case 9:
-                            case 10:
-                            default:
-                                return Color.Green; }`
+            type: "const",
+            constVal: Color.Green
           }
         },
         false: {
-          value: { type: "const", constVal: "battery-outline" },
-          color: { type: "const", constVal: Color.Red }
+          value: void 0,
+          color: {
+            type: "const",
+            constVal: Color.Red
+          }
         },
-        scale: { type: "const", constVal: { min: 0, max: 100 } }
+        scale: { type: "const", constVal: { val_min: 0, val_max: 30 } }
       },
       entity1: {
         value: {
@@ -239,6 +223,40 @@ const textTemplates = [
           dp: ""
         },
         unit: { type: "const", constVal: "%" }
+      }
+    }
+  },
+  {
+    template: "text.battery.low",
+    role: "text",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "battery-outline" },
+          color: { type: "const", constVal: Color.Red }
+        },
+        false: {
+          value: { type: "const", constVal: "battery" },
+          color: { type: "const", constVal: Color.Green }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "indicator.lowbat",
+          dp: ""
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "Battery" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "ok" },
+        false: { type: "const", constVal: "low" }
       }
     }
   }

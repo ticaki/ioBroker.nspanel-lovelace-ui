@@ -265,7 +265,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               null,
               (_s = this.parent && this.parent.card !== "cardEntities") != null ? _s : false
             )) != null ? _t : "";
-            message.iconColor = (_u = await tools.getIconEntryColor(item.icon, val, Color.HMIOn)) != null ? _u : "";
+            message.iconColor = (_u = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _u : "";
             return tools.getPayload(
               message.type,
               message.intNameEntity,

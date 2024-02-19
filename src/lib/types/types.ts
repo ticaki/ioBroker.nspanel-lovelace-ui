@@ -12,7 +12,7 @@ export type TemplateIdent =
     | 'text.window.isOpen'
     | 'text.battery'
     | 'text.temperature'
-    | ''
+    | 'text.battery.low'
     | ''
     | ''
     | ''

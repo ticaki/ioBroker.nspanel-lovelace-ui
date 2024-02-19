@@ -16,15 +16,18 @@ import {
     Interpolate,
     White,
     darken,
+    decToRgb,
     getHue,
     hsv2rgb,
     isRGB,
     kelvinToRGB,
+    mixColor,
     rgb_dec565,
     scale,
 } from './Color';
 import { Icons } from './icon_mapping';
 import { ChangeTypeOfKeys } from '../types/pages';
+import { isIconScaleElement } from '../types/types';
 
 export const messageItemDefault: MessageItem = {
     type: 'input_sel',
@@ -229,26 +232,69 @@ export async function getIconEntryValue(
     }
     return Icons.GetIcon(icon ?? def);
 }
+
 export async function getIconEntryColor(
     i: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined> | undefined,
-    on: boolean | number | null,
+    value: boolean | number | null,
     def: string | RGB | number,
     defOff: string | RGB | null = null,
 ): Promise<string> {
-    on = on ?? true;
-    if (typeof def === 'number') def = String(def);
-    else if (typeof def !== 'string') def = String(rgb_dec565(def));
+    value = value ?? true;
+    if (typeof def === 'number') def = decToRgb(def);
+    else if (typeof def === 'string') def = decToRgb(parseInt(def));
 
-    if (typeof defOff === 'number') defOff = String(def);
+    if (typeof defOff === 'number') defOff = decToRgb(defOff);
     else if (defOff === null) defOff = null;
-    else if (typeof defOff !== 'string') defOff = String(rgb_dec565(defOff));
+    else if (typeof defOff === 'string') defOff = decToRgb(parseInt(defOff));
 
-    if (!i) return def;
-    const icon = i.true && i.true.color && (await i.true.color.getRGBDec());
-    if (!on) {
-        return (i.false && i.false.color && (await i.false.color.getRGBDec())) ?? defOff ?? icon ?? def;
+    if (!i) return String(rgb_dec565(def));
+    if (typeof value === 'boolean') {
+        const color = i.true && i.true.color && (await i.true.color.getRGBDec());
+        if (!value) {
+            return (
+                (i.false && i.false.color && (await i.false.color.getRGBDec())) ??
+                (defOff && String(rgb_dec565(defOff))) ??
+                color ??
+                String(rgb_dec565(def))
+            );
+        }
+        return color ?? String(rgb_dec565(def));
+    } else if (typeof value === 'number') {
+        let cto = i.true && i.true.color && (await i.true.color.getRGBValue());
+        let cfrom = i.false && i.false.color && (await i.false.color.getRGBValue());
+        const scale = i.scale && (await i.scale.getObject());
+        if (cto && cfrom) {
+            let rColor: RGB | null = null;
+            if (scale && isIconScaleElement(scale)) {
+                let vMin = scale.val_min < value ? scale.val_min : value;
+                let vMax = scale.val_max > value ? scale.val_max : value;
+                if (vMax < vMin) {
+                    const temp = vMax;
+                    vMax = vMin;
+                    vMin = temp;
+                    const temp2 = cto;
+                    cto = cfrom;
+                    cfrom = temp2;
+                }
+                const vBest = scale.val_best ?? undefined;
+                if (vMin == vMax) {
+                    rColor = cto;
+                } else if (vBest === undefined) {
+                    rColor = mixColor(cfrom, cto, value / (vMax - vMin));
+                } else if (value >= vBest) {
+                    rColor = mixColor(cfrom, cto, value / (vMax - vBest));
+                } else {
+                    rColor = mixColor(cfrom, cto, value / (vBest - vMin));
+                }
+                return String(rgb_dec565(rColor));
+            }
+        }
+        if (value) {
+            if (cto) return String(rgb_dec565(cto));
+        } else if (cfrom) return String(rgb_dec565(cfrom));
+        else if (cto) return String(rgb_dec565(cto));
     }
-    return icon ?? def;
+    return String(rgb_dec565(def));
 }
 export async function GetIconColor(
     item: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined> | undefined | RGB,

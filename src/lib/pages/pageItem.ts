@@ -311,7 +311,7 @@ export class PageItem extends BaseClassTriggerd {
                                 null,
                                 (this.parent && this.parent.card !== 'cardEntities') ?? false,
                             )) ?? '';
-                        message.iconColor = (await tools.getIconEntryColor(item.icon, val, Color.HMIOn)) ?? '';
+                        message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
                         return tools.getPayload(
                             message.type,
                             message.intNameEntity,

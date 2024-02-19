@@ -167,6 +167,10 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                         dp: '',
                     },
                     color: {
+                        type: 'const',
+                        constVal: Color.Green,
+
+                        /*
                         type: 'triggered',
                         mode: 'auto',
                         role: 'value.battery',
@@ -176,7 +180,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                             case 0:
                                 case 1:
                                 return Color.Red;
-                            
+
                             case 2:
                             case 3:
                             case 4:
@@ -187,14 +191,17 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                             case 9:
                             case 10:
                             default:
-                                return Color.Green; }`,
+                                return Color.Green; }`,*/
                     },
                 },
                 false: {
-                    value: { type: 'const', constVal: 'battery-outline' },
-                    color: { type: 'const', constVal: Color.Red },
+                    value: undefined,
+                    color: {
+                        type: 'const',
+                        constVal: Color.Red,
+                    },
                 },
-                scale: { type: 'const', constVal: { min: 0, max: 100 } },
+                scale: { type: 'const', constVal: { val_min: 0, val_max: 30 } },
             },
             entity1: {
                 value: {
@@ -216,6 +223,41 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                     dp: '',
                 },
                 unit: { type: 'const', constVal: '%' },
+            },
+        },
+    },
+    {
+        template: 'text.battery.low',
+        role: 'text',
+        adapter: '',
+        type: 'text',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'battery-outline' },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'battery' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'indicator.lowbat',
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Battery' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'ok' },
+                false: { type: 'const', constVal: 'low' },
             },
         },
     },

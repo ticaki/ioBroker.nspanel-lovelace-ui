@@ -50,6 +50,7 @@ module.exports = __toCommonJS(tools_exports);
 var import_data_item = require("../classes/data-item");
 var import_Color2 = require("./Color");
 var import_icon_mapping = require("./icon_mapping");
+var import_types = require("../types/types");
 const messageItemDefault = {
   type: "input_sel",
   intNameEntity: "",
@@ -236,26 +237,66 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   }
   return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def);
 }
-async function getIconEntryColor(i, on, def, defOff = null) {
-  var _a, _b, _c;
-  on = on != null ? on : true;
+async function getIconEntryColor(i, value, def, defOff = null) {
+  var _a, _b, _c, _d;
+  value = value != null ? value : true;
   if (typeof def === "number")
-    def = String(def);
-  else if (typeof def !== "string")
-    def = String((0, import_Color2.rgb_dec565)(def));
+    def = (0, import_Color2.decToRgb)(def);
+  else if (typeof def === "string")
+    def = (0, import_Color2.decToRgb)(parseInt(def));
   if (typeof defOff === "number")
-    defOff = String(def);
+    defOff = (0, import_Color2.decToRgb)(defOff);
   else if (defOff === null)
     defOff = null;
-  else if (typeof defOff !== "string")
-    defOff = String((0, import_Color2.rgb_dec565)(defOff));
+  else if (typeof defOff === "string")
+    defOff = (0, import_Color2.decToRgb)(parseInt(defOff));
   if (!i)
-    return def;
-  const icon = i.true && i.true.color && await i.true.color.getRGBDec();
-  if (!on) {
-    return (_c = (_b = (_a = i.false && i.false.color && await i.false.color.getRGBDec()) != null ? _a : defOff) != null ? _b : icon) != null ? _c : def;
+    return String((0, import_Color2.rgb_dec565)(def));
+  if (typeof value === "boolean") {
+    const color = i.true && i.true.color && await i.true.color.getRGBDec();
+    if (!value) {
+      return (_c = (_b = (_a = i.false && i.false.color && await i.false.color.getRGBDec()) != null ? _a : defOff && String((0, import_Color2.rgb_dec565)(defOff))) != null ? _b : color) != null ? _c : String((0, import_Color2.rgb_dec565)(def));
+    }
+    return color != null ? color : String((0, import_Color2.rgb_dec565)(def));
+  } else if (typeof value === "number") {
+    let cto = i.true && i.true.color && await i.true.color.getRGBValue();
+    let cfrom = i.false && i.false.color && await i.false.color.getRGBValue();
+    const scale2 = i.scale && await i.scale.getObject();
+    if (cto && cfrom) {
+      let rColor = null;
+      if (scale2 && (0, import_types.isIconScaleElement)(scale2)) {
+        let vMin = scale2.val_min < value ? scale2.val_min : value;
+        let vMax = scale2.val_max > value ? scale2.val_max : value;
+        if (vMax < vMin) {
+          const temp = vMax;
+          vMax = vMin;
+          vMin = temp;
+          const temp2 = cto;
+          cto = cfrom;
+          cfrom = temp2;
+        }
+        const vBest = (_d = scale2.val_best) != null ? _d : void 0;
+        if (vMin == vMax) {
+          rColor = cto;
+        } else if (vBest === void 0) {
+          rColor = (0, import_Color2.mixColor)(cfrom, cto, value / (vMax - vMin));
+        } else if (value >= vBest) {
+          rColor = (0, import_Color2.mixColor)(cfrom, cto, value / (vMax - vBest));
+        } else {
+          rColor = (0, import_Color2.mixColor)(cfrom, cto, value / (vBest - vMin));
+        }
+        return String((0, import_Color2.rgb_dec565)(rColor));
+      }
+    }
+    if (value) {
+      if (cto)
+        return String((0, import_Color2.rgb_dec565)(cto));
+    } else if (cfrom)
+      return String((0, import_Color2.rgb_dec565)(cfrom));
+    else if (cto)
+      return String((0, import_Color2.rgb_dec565)(cto));
   }
-  return icon != null ? icon : def;
+  return String((0, import_Color2.rgb_dec565)(def));
 }
 async function GetIconColor(item, value, min = null, max = null, offColor = null) {
   var _a, _b;
