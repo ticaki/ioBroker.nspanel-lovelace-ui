@@ -220,7 +220,7 @@ class PageMedia extends import_Page2.Page {
     }
     const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
     if (this.pageItems) {
-      const localStep = this.pageItems.length > 5 ? 4 : 5;
+      const localStep = this.pageItems.length > 6 ? 4 : 5;
       if (this.pageItems.length - 1 <= localStep * (this.step - 1))
         this.step = 1;
       const maxSteps = localStep * this.step + 1;

@@ -51,6 +51,21 @@ class PageThermo extends import_Page.Page {
   titelPos = 0;
   nextArrow = false;
   constructor(config, options) {
+    if (options && options.pageItems)
+      options.pageItems.unshift({
+        type: "button",
+        dpInit: "",
+        role: "button",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "arrow-right-bold-circle-outline" },
+              color: { type: "const", constVal: { red: 205, green: 142, blue: 153 } }
+            }
+          },
+          entity1: { value: { type: "const", constVal: true } }
+        }
+      });
     super(config, options);
     if (options.config && options.config.card == "cardThermo")
       this.config = options.config;
@@ -74,20 +89,33 @@ class PageThermo extends import_Page.Page {
   async update() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
     const message = {};
-    message.options = [...PageThermoMessageDefault.options];
+    message.options = ["~~~", "~~~", "~~~", "~~~", "~~~", "~~~", "~~~", "~~~"];
     if (this.items) {
       const item = this.items;
       if (this.pageItems) {
+        const pageItems = this.pageItems.filter((a) => a && a.dataItems && a.dataItems.type === "button");
+        const localStep = pageItems.length > 9 ? 7 : 8;
+        if (pageItems.length - 1 <= localStep * (this.step - 1))
+          this.step = 1;
+        const maxSteps = localStep * this.step + 1;
+        const minStep = localStep * (this.step - 1) + 1;
         let b = 0;
-        const pageItems = this.pageItems.filter(
-          (a) => a && a.dataItems && (a.dataItems.type !== "input_sel" || b++ > 2)
-        );
-        for (let a = 0; a < pageItems.length && a < message.options.length; a++) {
+        for (let a = minStep; a < maxSteps; a++, b++) {
           const temp = pageItems[a];
           if (temp) {
             const arr = (await temp.getPageItemPayload()).split("~");
-            message.options[a] = (0, import_tools.getPayload)(arr[2], arr[3], arr[5] == "1" ? "1" : "0", arr[1]);
-          }
+            message.options[b] = (0, import_tools.getPayload)(arr[2], arr[3], arr[5] == "1" ? "1" : "0", arr[1]);
+          } else
+            (0, import_tools.getPayload)("", "", "", "");
+        }
+        if (localStep === 7) {
+          this.nextArrow = true;
+          const temp = this.pageItems[0];
+          if (temp) {
+            const arr = (await temp.getPageItemPayload()).split("~");
+            message.options[7] = (0, import_tools.getPayload)(arr[2], arr[3], arr[5] == "1" ? "1" : "0", arr[1]);
+          } else
+            (0, import_tools.getPayload)("", "", "", "");
         }
       }
       message.intNameEntity = this.id;
@@ -170,8 +198,12 @@ class PageThermo extends import_Page.Page {
       const valLow = (_c = this.items && this.items.data.set1 && await this.items.data.set1.getNumber()) != null ? _c : null;
       if (valLow !== null && newValLow !== valLow)
         await this.items.data.set1.setStateAsync(newValLow);
-    } else if (event.action === "hvac_action" && this.pageItems && this.pageItems[Number(event.opt.split("?")[1])] && await this.pageItems[Number(event.opt.split("?")[1])].onCommand("button", "")) {
-      return;
+    } else if (event.action === "hvac_action" && this.pageItems && this.pageItems[Number(event.opt.split("?")[1])]) {
+      if (this.nextArrow && event.opt.split("?")[1] === "0") {
+        this.step++;
+        this.update();
+      } else if (await this.pageItems[Number(event.opt.split("?")[1])].onCommand("button", ""))
+        return;
     }
   }
   async onPopupRequest(id, popup, action, value, _event = null) {

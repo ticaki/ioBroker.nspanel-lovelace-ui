@@ -1939,87 +1939,129 @@ const pageThermoTest = {
   alwaysOn: "none",
   pageItems: [
     {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        entityInSel: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.statesTest"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Test"
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        entityInSel: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.statesTest"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Test"
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        entityInSel: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.statesTest"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Test"
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        entityInSel: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.statesTest"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Test"
-        }
-      }
-    },
-    {
       role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-right" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        setValue1: void 0
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        entityInSel: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.statesTest"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Test"
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        entityInSel: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.statesTest"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Test"
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        entityInSel: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.statesTest"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Test"
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        entityInSel: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.statesTest"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Test"
+        }
+      }
+    },
+    {
+      role: "button",
       type: "button",
       dpInit: "",
       data: {
@@ -2058,6 +2100,196 @@ const pageThermoTest = {
           false: void 0
         },
         setValue1: void 0
+      }
+    },
+    {
+      role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "state", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "state", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "state", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "state", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "state", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
       }
     },
     {

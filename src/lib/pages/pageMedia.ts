@@ -215,7 +215,7 @@ export class PageMedia extends Page {
         }
         const opts: string[] = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
         if (this.pageItems) {
-            const localStep = this.pageItems.length > 5 ? 4 : 5;
+            const localStep = this.pageItems.length > 6 ? 4 : 5;
             if (this.pageItems.length - 1 <= localStep * (this.step - 1)) this.step = 1;
             // arrow is at index [0]
             const maxSteps = localStep * this.step + 1;

@@ -33,6 +33,21 @@ export class PageThermo extends Page {
     private nextArrow: boolean = false;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
+        if (options && options.pageItems)
+            options.pageItems.unshift({
+                type: 'button',
+                dpInit: '',
+                role: 'button',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'arrow-right-bold-circle-outline' },
+                            color: { type: 'const', constVal: { red: 205, green: 142, blue: 153 } },
+                        },
+                    },
+                    entity1: { value: { type: 'const', constVal: true } },
+                },
+            });
         super(config, options);
         if (options.config && options.config.card == 'cardThermo') this.config = options.config;
         else throw new Error('Missing config!');
@@ -58,21 +73,41 @@ export class PageThermo extends Page {
 
     public async update(): Promise<void> {
         const message: Partial<pages.PageThermoMessage> = {};
-        message.options = [...PageThermoMessageDefault.options];
+        message.options = ['~~~', '~~~', '~~~', '~~~', '~~~', '~~~', '~~~', '~~~'];
         if (this.items) {
             const item = this.items;
             if (this.pageItems) {
+                const pageItems = this.pageItems.filter((a) => a && a.dataItems && a.dataItems.type === 'button');
+                const localStep = pageItems.length > 9 ? 7 : 8;
+                if (pageItems.length - 1 <= localStep * (this.step - 1)) this.step = 1;
+                // arrow is at index [0]
+                const maxSteps = localStep * this.step + 1;
+                const minStep = localStep * (this.step - 1) + 1;
                 let b = 0;
-                const pageItems = this.pageItems.filter(
-                    (a) => a && a.dataItems && (a.dataItems.type !== 'input_sel' || b++ > 2),
-                );
-                for (let a = 0; a < pageItems.length && a < message.options.length; a++) {
+                for (let a = minStep; a < maxSteps; a++, b++) {
+                    const temp = pageItems[a];
+                    if (temp) {
+                        const arr = (await temp.getPageItemPayload()).split('~');
+                        message.options[b] = getPayload(arr[2], arr[3], arr[5] == '1' ? '1' : '0', arr[1]);
+                    } else getPayload('', '', '', '');
+                }
+
+                if (localStep === 7) {
+                    this.nextArrow = true;
+                    const temp = this.pageItems[0];
+                    if (temp) {
+                        const arr = (await temp.getPageItemPayload()).split('~');
+                        message.options[7] = getPayload(arr[2], arr[3], arr[5] == '1' ? '1' : '0', arr[1]);
+                    } else getPayload('', '', '', '');
+                }
+
+                /*for (let a = 0; a < pageItems.length && a < message.options.length; a++) {
                     const temp = pageItems[a];
                     if (temp) {
                         const arr = (await temp.getPageItemPayload()).split('~');
                         message.options[a] = getPayload(arr[2], arr[3], arr[5] == '1' ? '1' : '0', arr[1]);
                     }
-                }
+                }*/
             }
             message.intNameEntity = this.id;
             message.headline = (item.data.headline && (await item.data.headline.getString())) ?? '';
@@ -155,10 +190,12 @@ export class PageThermo extends Page {
         } else if (
             event.action === 'hvac_action' &&
             this.pageItems &&
-            this.pageItems[Number(event.opt.split('?')[1])] &&
-            (await this.pageItems[Number(event.opt.split('?')[1])]!.onCommand('button', ''))
+            this.pageItems[Number(event.opt.split('?')[1])]
         ) {
-            return;
+            if (this.nextArrow && event.opt.split('?')[1] === '0') {
+                this.step++;
+                this.update();
+            } else if (await this.pageItems[Number(event.opt.split('?')[1])]!.onCommand('button', '')) return;
         }
     }
 
