@@ -188,7 +188,7 @@ export function ColorToHex(color: number): string {
 export function ConvertRGBtoHex(red: number, green: number, blue: number): string {
     return '#' + ColorToHex(red) + ColorToHex(green) + ColorToHex(blue);
 }
-export function ConvertNametoRgb(colorName: string): RGB {
+export function ConvertWithColordtoRgb(colorName: string): RGB {
     return colord(colorName).toRgb();
 }
 export function ConvertHexToRgb(hex: string): RGB {

@@ -37,6 +37,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   alwaysOnState;
   lastMessage = "";
   panel;
+  responseTime = 1e10;
   sleep = true;
   parent = void 0;
   triggerParent = false;
@@ -65,14 +66,14 @@ class BaseClassTriggerd extends import_library.BaseClass {
     if (typeof this.panelSend.addMessage === "function")
       this.sendToPanelClass = card.panelSend.addMessage;
   }
-  onStateTriggerSuperDoNotOverride = async (response) => {
+  onStateTriggerSuperDoNotOverride = async () => {
     if (!this.visibility || this.unload)
       return false;
     if (this.sleep)
       return false;
     if (this.waitForTimeout)
       return false;
-    if (this.updateTimeout && response !== "now") {
+    if (this.updateTimeout) {
       this.doUpdate = true;
       return false;
     } else {
@@ -229,7 +230,7 @@ class StatesControler extends import_library.BaseClass {
     if (this.deletePageInterval)
       this.adapter.clearInterval(this.deletePageInterval);
   }
-  async setTrigger(id, from, response = "slow") {
+  async setTrigger(id, from) {
     if (id.startsWith(this.adapter.namespace)) {
       this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
       return;
@@ -239,12 +240,7 @@ class StatesControler extends import_library.BaseClass {
       if (index === -1) {
         this.triggerDB[id].to.push(from);
         this.triggerDB[id].subscribed.push(false);
-        this.triggerDB[id].response.push(response);
       } else {
-        if (this.triggerDB[id].response[index] !== response) {
-          if (response === "now")
-            this.triggerDB[id].response[index] = "now";
-        }
       }
     } else {
       const state = await this.adapter.getForeignStateAsync(id);
@@ -258,7 +254,6 @@ class StatesControler extends import_library.BaseClass {
           to: [from],
           ts: Date.now(),
           subscribed: [false],
-          response: [response],
           common: obj.common
         };
         if (this.stateDB[id] !== void 0) {
@@ -302,12 +297,14 @@ class StatesControler extends import_library.BaseClass {
       }
     }
   }
-  async getState(id, response = "slow") {
+  async getState(id, response = "medium") {
     let timespan = this.timespan;
-    if (response === "medium")
-      timespan = 500;
+    if (response === "slow")
+      timespan = 1e4;
     else if (response === "now")
       timespan = 10;
+    else
+      timespan = 1e3;
     if (this.triggerDB[id] !== void 0 && this.triggerDB[id].subscribed.some((a) => a)) {
       return this.triggerDB[id].state;
     } else if (this.stateDB[id] && timespan) {
@@ -361,11 +358,11 @@ class StatesControler extends import_library.BaseClass {
           if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack) {
             this.triggerDB[dp].state = state;
             if (state.ack || dp.startsWith("0_userdata.0")) {
-              this.triggerDB[dp].to.forEach((c, index) => {
+              this.triggerDB[dp].to.forEach((c) => {
                 if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
-                  c.parent.onStateTriggerSuperDoNotOverride && c.parent.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]);
+                  c.parent.onStateTriggerSuperDoNotOverride && c.parent.onStateTriggerSuperDoNotOverride();
                 } else if (!c.unload) {
-                  c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]);
+                  c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride();
                 }
               });
             }

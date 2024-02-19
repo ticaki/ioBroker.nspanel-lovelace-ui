@@ -75,7 +75,13 @@ export type StateRole =
     | 'level.tilt'
     | 'level.blind'
     | 'level.color.name'
-    | 'state';
+    | 'state'
+    | 'level.color.blue'
+    | 'level.color.red'
+    | 'level.color.green'
+    | 'level.color.white'
+    | 'level.brightness'
+    | 'switch';
 
 export type DeviceRole =
     | 'socket'
@@ -219,7 +225,7 @@ export type PageBaseConfig = (
           //    type: PlayerType;
           card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
           uniqueID: string;
-          template?: string;
+          template?: undefined;
           dpInit: string; // '' and initMode 'auto' throw an error
           alwaysOn: 'none' | 'always' | 'action';
           useColor: boolean;
@@ -316,6 +322,28 @@ export type cardMediaDataItems = {
         toolbox: (toolboxItemDataItem | undefined)[];
     } & { logo: toolboxItemDataItem | undefined };
 };
+
+export type ChangeDeepPartial<Obj> = Obj extends
+    | object
+    | listItem
+    | PageTypeCards
+    | IconBoolean
+    | TextEntryType
+    | ValueEntryType
+    | IconEntryType
+    | ScaledNumberType
+    | PageGridPowerConfigElement
+    | RGB
+    | ColorEntryType
+    | PageMediaBaseConfig
+    | Types.SerialTypePageElements
+    ? Obj extends Types.DataItemsOptions
+        ? Types.DataItemsOptions | null
+        : {
+              [K in keyof Obj]?: ChangeDeepPartial<Obj[K]> | null;
+          }
+    : Types.DataItemsOptions | null;
+
 export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | object
     | listItem
@@ -336,6 +364,28 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
               [K in keyof Obj]: ChangeTypeOfKeys<Obj[K], N>;
           }
     : N;
+
+/*export type DeepPartial<Obj, N> = Obj extends
+    | object
+    | listItem
+    | PageTypeCards
+    | IconBoolean
+    | TextEntryType
+    | ValueEntryType
+    | IconEntryType
+    | ScaledNumberType
+    | PageGridPowerConfigElement
+    | RGB
+    | ColorEntryType
+    | PageMediaBaseConfig
+    | Types.SerialTypePageElements
+    ? Obj extends Dataitem
+        ? Dataitem
+        : {
+              [K in keyof Obj]+?: ChangeTypeOfKeys<Obj[K], N>;
+          }
+    : Dataitem;*/
+
 type PageMediaBaseConfig = {
     headline: string;
     alwaysOnDisplay: boolean;

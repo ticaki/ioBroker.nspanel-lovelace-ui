@@ -58,104 +58,16 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
             },
         },
         {
-            /**
-             * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
-             */
-            role: 'rgb',
-            type: 'shutter',
+            template: 'generic.shutter',
             dpInit: '0_userdata.0.shutter_test',
-
             data: {
                 icon: {
                     true: {
-                        value: { type: 'const', constVal: 'window-shutter-open' },
-                        color: { type: 'const', constVal: Color.Yellow },
+                        value: { type: 'const', constVal: 'window-open' },
+                        color: { type: 'const', constVal: 'aqua', role: 'level.color.name' },
                     },
-                    false: {
-                        value: { type: 'const', constVal: 'window-shutter' },
-                        color: { type: 'const', constVal: Color.HMIOff },
-                    },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
+                    false: null,
                 },
-                // 1. slider
-                entity1: {
-                    // button
-                    value: { mode: 'auto', role: 'level.blind', type: 'triggered', dp: '' },
-                    decimal: undefined,
-                    factor: undefined,
-                    unit: undefined,
-                    minScale: { type: 'const', constVal: 0 },
-                    maxScale: { type: 'const', constVal: 100 },
-                },
-                // 2. slider
-                entity2: {
-                    // button
-                    value: { mode: 'auto', role: 'level.tilt', type: 'triggered', dp: '' },
-                    decimal: undefined,
-                    factor: undefined,
-                    unit: undefined,
-                    minScale: { type: 'const', constVal: 0 },
-                    maxScale: { type: 'const', constVal: 100 },
-                },
-                text: {
-                    true: {
-                        type: 'const',
-                        constVal: 'text',
-                    },
-                    false: undefined,
-                },
-                headline: {
-                    type: 'const',
-                    constVal: 'Shutter',
-                },
-                text1: {
-                    true: {
-                        type: 'const',
-                        constVal: 'text1',
-                    },
-                    false: undefined,
-                },
-                text2: {
-                    true: {
-                        type: 'const',
-                        constVal: 'text2',
-                    },
-                    false: undefined,
-                },
-                up: {
-                    type: 'state',
-                    dp: '',
-                    mode: 'auto',
-                    role: ['button.open.blind', 'button.open'],
-                },
-                down: {
-                    type: 'state',
-                    dp: '',
-                    mode: 'auto',
-                    role: ['button.close.blind', 'button.close'],
-                },
-                up2: {
-                    type: 'state',
-                    dp: '',
-                    mode: 'auto',
-                    role: ['button.open.tilt'],
-                },
-                stop2: {
-                    type: 'state',
-                    dp: '',
-                    mode: 'auto',
-                    role: ['button.stop.tilt'],
-                },
-                /**
-                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
-                 */
-                //valueList: { type: 'const', constVal: 'home?butter' },
-                /**
-                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
-                 */
-                //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
             },
         },
         {
@@ -165,7 +77,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
 
             data: {
                 color: {
-                    true: { type: 'triggered', dp: '0_userdata.0.RGB', response: 'now' },
+                    true: { type: 'triggered', dp: '0_userdata.0.RGB' },
                     false: undefined,
                 },
                 icon: {
@@ -941,6 +853,14 @@ const pageMediaTest: pages.PageBaseConfig = {
     useColor: false,
 };
 
+const pageAbfall: pages.PageBaseConfig = {
+    //type: 'sonstiges',
+    card: 'cardEntities',
+    dpInit: '0_userdata.0.Abfallkalender',
+    uniqueID: 'abfall1',
+    template: 'waste-calendar.entities',
+};
+
 export const pageMediaTest2: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardMedia',
@@ -1516,7 +1436,7 @@ const pageGridTest1: pages.PageBaseConfig = {
 
             data: {
                 color: {
-                    true: { type: 'triggered', dp: '0_userdata.0.RGB', response: 'now' },
+                    true: { type: 'triggered', dp: '0_userdata.0.RGB' },
                     false: undefined,
                 },
                 icon: {
@@ -2106,7 +2026,6 @@ const pageThermoTest: pages.PageBaseConfig = {
                     value: {
                         type: 'triggered',
                         dp: '0_userdata.0.statesTest',
-                        response: 'now',
                     },
                     decimal: undefined,
                     factor: undefined,
@@ -3276,44 +3195,6 @@ const pageScreensaverTest: ScreensaverConfig = {
         ],
     },
 };
-
-export const pageAbfall: pages.PageBaseConfig = {
-    //type: 'sonstiges',
-    card: 'cardEntities',
-    dpInit: '0_userdata.0.Abfallkalender',
-    alwaysOn: 'none',
-    uniqueID: 'abfall1',
-    useColor: false,
-    config: {
-        card: 'cardEntities',
-        data: {
-            headline: {
-                type: 'const',
-                constVal: 'Abfalltermine',
-            },
-        },
-    },
-    pageItems: [
-        {
-            template: 'waste-calendar.plastic',
-            dpInit: '',
-        },
-        {
-            template: 'waste-calendar.bio',
-            dpInit: '',
-        },
-        {
-            template: 'waste-calendar.house',
-            dpInit: '',
-        },
-        {
-            template: 'waste-calendar.paper',
-            dpInit: '',
-        },
-    ],
-    items: undefined,
-};
-
 export const Testconfig: Partial<panelConfigPartial> = {
     pages: [
         pageGridTest4,
@@ -3326,6 +3207,7 @@ export const Testconfig: Partial<panelConfigPartial> = {
         pageScreensaverTest,
         pageMediaTest,
         pageEntitiesTest2,
+        pageAbfall,
     ],
     // override by password.ts
     navigation: [
@@ -3333,13 +3215,19 @@ export const Testconfig: Partial<panelConfigPartial> = {
             name: 'main', //main ist die erste Seite
             page: 'entities1',
             left: { single: '7' }, // Die 4 bezieht sich auf den name: 4
-            right: { single: 'entities2', double: '2' },
+            right: { single: 'abfall1', double: '2' },
         },
         {
             name: '5', //main ist die erste Seite
             page: 'thermo1',
             left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
             right: { single: '6', double: 'main' },
+        },
+        {
+            name: 'abfall1', //main ist die erste Seite
+            page: 'abfall1',
+            left: { single: 'main' }, // Die 4 bezieht sich auf den name: 4
+            right: { single: 'entities2', double: 'main' },
         },
         {
             name: 'entities2', //main ist die erste Seite

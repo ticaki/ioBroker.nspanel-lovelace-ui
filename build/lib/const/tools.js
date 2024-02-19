@@ -316,14 +316,19 @@ async function getEntryColor(i, value, def) {
   return color != null ? color : def;
 }
 async function getEntryTextOnOff(i, on) {
-  var _a, _b;
+  var _a, _b, _c;
   if (!i)
     return null;
-  const value = i.true && await i.true.getString();
-  if (!(on != null ? on : true)) {
-    return (_b = (_a = i.false && await i.false.getString()) != null ? _a : value) != null ? _b : null;
+  if ("true" in i || "false" in i) {
+    i = i;
+    const value = i.true && await i.true.getString();
+    if (!(on != null ? on : true)) {
+      return (_b = (_a = i.false && await i.false.getString()) != null ? _a : value) != null ? _b : null;
+    }
+    return value != null ? value : null;
+  } else {
+    return (_c = await i.getString()) != null ? _c : null;
   }
-  return value != null ? value : null;
 }
 async function getValueEntryBoolean(i) {
   if (!i)
@@ -469,29 +474,25 @@ function deepAssign(def, source, level = 0) {
   }
   for (const k in def) {
     if (typeof def[k] === "object") {
-      if (source[k] !== void 0) {
+      if (source[k] === null || def[k] === null) {
+        source[k] = void 0;
+        def[k] = void 0;
+      } else if (source[k] !== void 0) {
         def[k] = deepAssign(def[k], source[k]);
       } else if (def[k] !== void 0) {
-        source[k] = Object.assign(def[k]);
+        source[k] = def[k];
       }
     }
   }
   for (const k in source) {
-    if (typeof source[k] === "object" && source[k] !== void 0) {
-      if (!def) {
-        if (Array.isArray(source))
-          def = [];
-        else if (typeof source === "object")
-          def = {};
+    if (typeof source[k] === "object" && k in source) {
+      if (source[k] === null) {
+        source[k] = void 0;
+        def[k] = void 0;
+      } else if (def[k] === void 0) {
+        def[k] = source[k];
       }
-      def[k] = deepAssign(def[k], source[k]);
     }
-  }
-  if (!def) {
-    if (Array.isArray(source))
-      def = [];
-    else if (typeof source === "object")
-      def = {};
   }
   return Object.assign(def, source);
 }

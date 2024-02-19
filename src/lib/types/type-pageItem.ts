@@ -1,6 +1,6 @@
 import { Dataitem } from '../classes/data-item';
 import { RGB } from './Color';
-import { ChangeTypeOfKeys, DeviceRole } from './pages';
+import { ChangeDeepPartial, ChangeTypeOfKeys, DeviceRole } from './pages';
 import * as Types from './types';
 
 export type PageLightItem = {
@@ -170,7 +170,7 @@ export type PageItemDataItemsOptions =
           dpInit: string;
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &
-              Partial<
+              ChangeDeepPartial<
                   | PageItemButtonDataItemsOptions
                   | PageItemShutterDataItemsOptions
                   | PageItemInputSelDataItemsOptions
@@ -267,6 +267,7 @@ export type PageItemLight = Pick<
     | 'Red'
     | 'Green'
     | 'Blue'
+    | 'White'
     | 'saturation'
     | 'dimmer'
     | 'hue'
@@ -360,6 +361,7 @@ export type PageItemBase = {
     Red?: number;
     Green?: number;
     Blue?: number;
+    White?: ScaledNumberType;
     up: number;
     stop?: number;
     down: number;

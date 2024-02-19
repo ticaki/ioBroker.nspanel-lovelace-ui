@@ -72,8 +72,11 @@ class Dataitem extends import_library.BaseClass {
         this.options.role = obj.common.role;
         this._writeable = !!obj.common.write;
         if (this.options.type == "triggered")
-          this.stateDB.setTrigger(this.options.dp, this.parent, this.options.response);
-        const value = await this.stateDB.getState(this.options.dp, this.options.response);
+          this.stateDB.setTrigger(this.options.dp, this.parent);
+        const value = await this.stateDB.getState(
+          this.options.dp,
+          this.options.type == "triggered" ? "medium" : this.options.response
+        );
         return !!value;
     }
     return false;
@@ -87,7 +90,10 @@ class Dataitem extends import_library.BaseClass {
         if (!this.options.dp) {
           throw new Error(`Error 1002 type is ${this.options.type} but dp is undefined`);
         }
-        return await this.stateDB.getState(this.options.dp, this.options.response);
+        return await this.stateDB.getState(
+          this.options.dp,
+          this.options.type == "triggered" ? "medium" : this.options.response
+        );
       case "internal": {
       }
     }
@@ -131,12 +137,12 @@ class Dataitem extends import_library.BaseClass {
           let value = state.val;
           if (typeof value === "string") {
             value = value.trim();
-            if (value.startsWith("#") && value.length === 7) {
-              const v = Color.rgbHexToObject(value);
+            if (value.startsWith("#")) {
+              const v = Color.ConvertWithColordtoRgb(value);
               if (Color.isRGB(v))
                 return v;
             } else if (this.options.role === "level.color.name" || this.options.role === "level.color.rgb") {
-              return Color.ConvertNametoRgb(value);
+              return Color.ConvertWithColordtoRgb(value);
             }
           }
         }

@@ -89,9 +89,9 @@ const pageEntitiesTest1 = {
           true: {
             value: { type: "const", constVal: "window-open" },
             color: { type: "const", constVal: "aqua", role: "level.color.name" }
-          }
-        },
-        entity1: void 0
+          },
+          false: null
+        }
       }
     },
     {
@@ -100,7 +100,7 @@ const pageEntitiesTest1 = {
       dpInit: "",
       data: {
         color: {
-          true: { type: "triggered", dp: "0_userdata.0.RGB", response: "now" },
+          true: { type: "triggered", dp: "0_userdata.0.RGB" },
           false: void 0
         },
         icon: {
@@ -263,6 +263,12 @@ const pageEntitiesTest2 = {
         headline: { type: "const", constVal: "Timer" },
         setValue1: { type: "state", dp: "0_userdata.0.example_state" }
       }
+    },
+    {
+      role: "rgbSingle",
+      type: "light",
+      dpInit: "0_userdata.0.shelly.0.SHRGBW2#258794#1",
+      template: "light.shelly.rgbw2"
     }
   ],
   items: void 0
@@ -1385,7 +1391,7 @@ const pageGridTest1 = {
       dpInit: "",
       data: {
         color: {
-          true: { type: "triggered", dp: "0_userdata.0.RGB", response: "now" },
+          true: { type: "triggered", dp: "0_userdata.0.RGB" },
           false: void 0
         },
         icon: {
@@ -1925,8 +1931,7 @@ const pageThermoTest = {
         entityInSel: {
           value: {
             type: "triggered",
-            dp: "0_userdata.0.statesTest",
-            response: "now"
+            dp: "0_userdata.0.statesTest"
           },
           decimal: void 0,
           factor: void 0,

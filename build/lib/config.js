@@ -25,7 +25,6 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var config_exports = {};
 __export(config_exports, {
   Testconfig: () => Testconfig,
-  pageAbfall: () => pageAbfall,
   pageMediaTest2: () => pageMediaTest2
 });
 module.exports = __toCommonJS(config_exports);
@@ -83,87 +82,15 @@ const pageEntitiesTest1 = {
       }
     },
     {
-      role: "rgb",
-      type: "shutter",
+      template: "generic.shutter",
       dpInit: "0_userdata.0.shutter_test",
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "window-shutter-open" },
-            color: { type: "const", constVal: Color.Yellow }
+            value: { type: "const", constVal: "window-open" },
+            color: { type: "const", constVal: "aqua", role: "level.color.name" }
           },
-          false: {
-            value: { type: "const", constVal: "window-shutter" },
-            color: { type: "const", constVal: Color.HMIOff }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0,
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 100 }
-        },
-        entity2: {
-          value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0,
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 100 }
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "text"
-          },
-          false: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Shutter"
-        },
-        text1: {
-          true: {
-            type: "const",
-            constVal: "text1"
-          },
-          false: void 0
-        },
-        text2: {
-          true: {
-            type: "const",
-            constVal: "text2"
-          },
-          false: void 0
-        },
-        up: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.open.blind", "button.open"]
-        },
-        down: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.close.blind", "button.close"]
-        },
-        up2: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.open.tilt"]
-        },
-        stop2: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.stop.tilt"]
+          false: null
         }
       }
     },
@@ -173,7 +100,7 @@ const pageEntitiesTest1 = {
       dpInit: "",
       data: {
         color: {
-          true: { type: "triggered", dp: "0_userdata.0.RGB", response: "now" },
+          true: { type: "triggered", dp: "0_userdata.0.RGB" },
           false: void 0
         },
         icon: {
@@ -910,6 +837,12 @@ const pageMediaTest = {
   uniqueID: "media1",
   useColor: false
 };
+const pageAbfall = {
+  card: "cardEntities",
+  dpInit: "0_userdata.0.Abfallkalender",
+  uniqueID: "abfall1",
+  template: "waste-calendar.entities"
+};
 const pageMediaTest2 = {
   card: "cardMedia",
   dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
@@ -1452,7 +1385,7 @@ const pageGridTest1 = {
       dpInit: "",
       data: {
         color: {
-          true: { type: "triggered", dp: "0_userdata.0.RGB", response: "now" },
+          true: { type: "triggered", dp: "0_userdata.0.RGB" },
           false: void 0
         },
         icon: {
@@ -1992,8 +1925,7 @@ const pageThermoTest = {
         entityInSel: {
           value: {
             type: "triggered",
-            dp: "0_userdata.0.statesTest",
-            response: "now"
+            dp: "0_userdata.0.statesTest"
           },
           decimal: void 0,
           factor: void 0,
@@ -3097,41 +3029,6 @@ const pageScreensaverTest = {
     ]
   }
 };
-const pageAbfall = {
-  card: "cardEntities",
-  dpInit: "0_userdata.0.Abfallkalender",
-  alwaysOn: "none",
-  uniqueID: "abfall1",
-  useColor: false,
-  config: {
-    card: "cardEntities",
-    data: {
-      headline: {
-        type: "const",
-        constVal: "Abfalltermine"
-      }
-    }
-  },
-  pageItems: [
-    {
-      template: "waste-calendar.plastic",
-      dpInit: ""
-    },
-    {
-      template: "waste-calendar.bio",
-      dpInit: ""
-    },
-    {
-      template: "waste-calendar.house",
-      dpInit: ""
-    },
-    {
-      template: "waste-calendar.paper",
-      dpInit: ""
-    }
-  ],
-  items: void 0
-};
 const Testconfig = {
   pages: [
     pageGridTest4,
@@ -3143,20 +3040,27 @@ const Testconfig = {
     pageGridTest2,
     pageScreensaverTest,
     pageMediaTest,
-    pageEntitiesTest2
+    pageEntitiesTest2,
+    pageAbfall
   ],
   navigation: [
     {
       name: "main",
       page: "entities1",
       left: { single: "7" },
-      right: { single: "entities2", double: "2" }
+      right: { single: "abfall1", double: "2" }
     },
     {
       name: "5",
       page: "thermo1",
       left: { single: "4" },
       right: { single: "6", double: "main" }
+    },
+    {
+      name: "abfall1",
+      page: "abfall1",
+      left: { single: "main" },
+      right: { single: "entities2", double: "main" }
     },
     {
       name: "entities2",
@@ -3216,7 +3120,6 @@ const Testconfig = {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Testconfig,
-  pageAbfall,
   pageMediaTest2
 });
 //# sourceMappingURL=config.js.map

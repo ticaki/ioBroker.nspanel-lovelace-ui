@@ -319,15 +319,20 @@ export async function getEntryColor(
     return color ?? def;
 }
 export async function getEntryTextOnOff(
-    i: ChangeTypeOfKeys<TextEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<TextEntryType, Dataitem | undefined> | undefined | Dataitem,
     on: boolean | null,
 ): Promise<string | null> {
     if (!i) return null;
-    const value = i.true && (await i.true.getString());
-    if (!(on ?? true)) {
-        return (i.false && (await i.false.getString())) ?? value ?? null;
+    if ('true' in i || 'false' in i) {
+        i = i as ChangeTypeOfKeys<TextEntryType, Dataitem>;
+        const value = i.true && (await i.true.getString());
+        if (!(on ?? true)) {
+            return (i.false && (await i.false.getString())) ?? value ?? null;
+        }
+        return value ?? null;
+    } else {
+        return (await i.getString()) ?? null;
     }
-    return value ?? null;
 }
 
 export async function getValueEntryBoolean(
@@ -483,26 +488,25 @@ export function deepAssign(def: Record<any, any>, source: Record<any, any>, leve
     }
     for (const k in def) {
         if (typeof def[k] === 'object') {
-            if (source[k] !== undefined) {
+            if (source[k] === null || def[k] === null) {
+                source[k] = undefined;
+                def[k] = undefined;
+            } else if (source[k] !== undefined) {
                 def[k] = deepAssign(def[k], source[k]);
             } else if (def[k] !== undefined) {
-                source[k] = Object.assign(def[k]);
+                source[k] = def[k];
             }
         }
     }
     for (const k in source) {
-        if (typeof source[k] === 'object' && source[k] !== undefined) {
-            if (!def) {
-                if (Array.isArray(source)) def = [];
-                else if (typeof source === 'object') def = {};
+        if (typeof source[k] === 'object' && k in source) {
+            if (source[k] === null) {
+                source[k] = undefined;
+                def[k] = undefined;
+            } else if (def[k] === undefined) {
+                def[k] = source[k];
             }
-            def[k] = deepAssign(def[k], source[k]);
         }
-    }
-
-    if (!def) {
-        if (Array.isArray(source)) def = [];
-        else if (typeof source === 'object') def = {};
     }
     return Object.assign(def, source);
 }

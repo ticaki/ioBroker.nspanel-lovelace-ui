@@ -22,6 +22,7 @@ import { Dataitem } from '../classes/data-item';
 import { textTemplates } from '../templates/text';
 import { shutterTemplates } from '../templates/shutter';
 import { BaseClass } from '../classes/library';
+import { lightTemplates } from '../templates/light';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseClassTriggerd {
@@ -56,7 +57,7 @@ export class PageItem extends BaseClassTriggerd {
         if ('template' in options && options.template) {
             let index = -1;
             let template: PageItemOptionsTemplate | undefined;
-            for (const i of [textTemplates, shutterTemplates]) {
+            for (const i of [textTemplates, shutterTemplates, lightTemplates]) {
                 index = i.findIndex((a) => a.template === options!.template);
                 if (index !== -1) {
                     template = i[index];
@@ -215,7 +216,7 @@ export class PageItem extends BaseClassTriggerd {
                     } else {
                         message.optionalValue = '0';
                     }
-                    message.displayName = (await tools.getEntryTextOnOff(item.text1, v)) ?? message.displayName;
+                    message.displayName = (await tools.getEntryTextOnOff(item.headline, v)) ?? message.displayName;
                     return tools.getItemMesssage(message);
                     break;
                 }
@@ -770,8 +771,10 @@ export class PageItem extends BaseClassTriggerd {
                             }
                         }
                         message.slider2Pos = 'disable';
-
-                        if (item.ct && item.ct.value) {
+                        if (item.White) {
+                            const val = await tools.getScaledNumber(item.White);
+                            message.slider2Pos = val ?? 'disable';
+                        } else if (item.ct && item.ct.value) {
                             const ct = await tools.getSliderCTFromValue(item.ct);
                             if (ct !== null) {
                                 message.slider2Pos = parseInt(ct);
@@ -1124,6 +1127,9 @@ export class PageItem extends BaseClassTriggerd {
             case 'colorTempSlider': {
                 if (entry.type === 'light') {
                     const item = entry.data;
+                    if (item && item.White && item.White.value) {
+                        await tools.setScaledNumber(item.White, parseInt(value));
+                    }
                     if (item && item.ct && item.ct.value && item.ct.value.writeable) {
                         const ct = await tools.getSliderCTFromValue(item.ct);
                         if (ct !== null && String(ct) != value)
@@ -1394,7 +1400,7 @@ export class PageItem extends BaseClassTriggerd {
                         } else if (this.tempData.value > 0) {
                             if (this.visibility) this.onStateTrigger();
                             else if (this.parent && !this.parent.sleep && this.parent.getVisibility())
-                                this.parent.onStateTriggerSuperDoNotOverride('now');
+                                this.parent.onStateTriggerSuperDoNotOverride();
                         }
                     }, 1000);
                 }

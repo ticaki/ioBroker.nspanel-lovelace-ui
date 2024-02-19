@@ -34,6 +34,7 @@ var import_states_controller = require("../controller/states-controller");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_text = require("../templates/text");
 var import_shutter = require("../templates/shutter");
+var import_light = require("../templates/light");
 class PageItem extends import_states_controller.BaseClassTriggerd {
   defaultOnColor = Color.White;
   defaultOffColor = Color.Blue;
@@ -59,7 +60,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     if ("template" in options && options.template) {
       let index = -1;
       let template;
-      for (const i of [import_text.textTemplates, import_shutter.shutterTemplates]) {
+      for (const i of [import_text.textTemplates, import_shutter.shutterTemplates, import_light.lightTemplates]) {
         index = i.findIndex((a) => a.template === options.template);
         if (index !== -1) {
           template = i[index];
@@ -181,7 +182,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           } else {
             message.optionalValue = "0";
           }
-          message.displayName = (_h = await tools.getEntryTextOnOff(item.text1, v)) != null ? _h : message.displayName;
+          message.displayName = (_h = await tools.getEntryTextOnOff(item.headline, v)) != null ? _h : message.displayName;
           return tools.getItemMesssage(message);
           break;
         }
@@ -606,7 +607,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               }
             }
             message.slider2Pos = "disable";
-            if (item.ct && item.ct.value) {
+            if (item.White) {
+              const val = await tools.getScaledNumber(item.White);
+              message.slider2Pos = val != null ? val : "disable";
+            } else if (item.ct && item.ct.value) {
               const ct = await tools.getSliderCTFromValue(item.ct);
               if (ct !== null) {
                 message.slider2Pos = parseInt(ct);
@@ -909,6 +913,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       case "colorTempSlider": {
         if (entry.type === "light") {
           const item = entry.data;
+          if (item && item.White && item.White.value) {
+            await tools.setScaledNumber(item.White, parseInt(value));
+          }
           if (item && item.ct && item.ct.value && item.ct.value.writeable) {
             const ct = await tools.getSliderCTFromValue(item.ct);
             if (ct !== null && String(ct) != value)
@@ -1178,7 +1185,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               if (this.visibility)
                 this.onStateTrigger();
               else if (this.parent && !this.parent.sleep && this.parent.getVisibility())
-                this.parent.onStateTriggerSuperDoNotOverride("now");
+                this.parent.onStateTriggerSuperDoNotOverride();
             }
           }, 1e3);
         }

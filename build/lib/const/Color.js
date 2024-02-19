@@ -30,8 +30,8 @@ __export(Color_exports, {
   Blue: () => Blue,
   ColorToHex: () => ColorToHex,
   ConvertHexToRgb: () => ConvertHexToRgb,
-  ConvertNametoRgb: () => ConvertNametoRgb,
   ConvertRGBtoHex: () => ConvertRGBtoHex,
+  ConvertWithColordtoRgb: () => ConvertWithColordtoRgb,
   Cyan: () => Cyan,
   DarkBlue: () => DarkBlue,
   Gray: () => Gray,
@@ -281,7 +281,7 @@ function ColorToHex(color) {
 function ConvertRGBtoHex(red, green, blue) {
   return "#" + ColorToHex(red) + ColorToHex(green) + ColorToHex(blue);
 }
-function ConvertNametoRgb(colorName) {
+function ConvertWithColordtoRgb(colorName) {
   return (0, import_colord.colord)(colorName).toRgb();
 }
 function ConvertHexToRgb(hex) {
@@ -485,8 +485,8 @@ const kelvinToRGB = {
   Blue,
   ColorToHex,
   ConvertHexToRgb,
-  ConvertNametoRgb,
   ConvertRGBtoHex,
+  ConvertWithColordtoRgb,
   Cyan,
   DarkBlue,
   Gray,

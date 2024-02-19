@@ -37,6 +37,7 @@ export class BaseClassTriggerd extends BaseClass {
     private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
     protected panel: Panel;
+    private responseTime: number = 10000000000;
     sleep: boolean = true;
     parent: BaseClassTriggerd | undefined = undefined;
     triggerParent: boolean = false;
@@ -65,11 +66,11 @@ export class BaseClassTriggerd extends BaseClass {
         this.panel = card.panel;
         if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
     }
-    readonly onStateTriggerSuperDoNotOverride = async (response: 'now' | 'medium' | 'slow'): Promise<boolean> => {
+    readonly onStateTriggerSuperDoNotOverride = async (): Promise<boolean> => {
         if (!this.visibility || this.unload) return false;
         if (this.sleep) return false;
         if (this.waitForTimeout) return false;
-        if (this.updateTimeout && response !== 'now') {
+        if (this.updateTimeout) {
             this.doUpdate = true;
             return false;
         } else {
@@ -185,7 +186,6 @@ export class StatesControler extends BaseClass {
             to: BaseClassTriggerd[];
             ts: number;
             subscribed: boolean[];
-            response: ('now' | 'medium' | 'slow')[];
             common: ioBroker.StateCommon;
         };
     } = {};
@@ -242,7 +242,7 @@ export class StatesControler extends BaseClass {
      * @param id state id
      * @param from the page that handle the trigger
      */
-    async setTrigger(id: string, from: BaseClassTriggerd, response: 'now' | 'medium' | 'slow' = 'slow'): Promise<void> {
+    async setTrigger(id: string, from: BaseClassTriggerd): Promise<void> {
         if (id.startsWith(this.adapter.namespace)) {
             this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
             return;
@@ -253,11 +253,7 @@ export class StatesControler extends BaseClass {
             if (index === -1) {
                 this.triggerDB[id].to.push(from);
                 this.triggerDB[id].subscribed.push(false);
-                this.triggerDB[id].response.push(response);
             } else {
-                if (this.triggerDB[id].response[index] !== response) {
-                    if (response === 'now') this.triggerDB[id].response[index] = 'now';
-                }
             }
         } else {
             const state = await this.adapter.getForeignStateAsync(id);
@@ -271,7 +267,6 @@ export class StatesControler extends BaseClass {
                     to: [from],
                     ts: Date.now(),
                     subscribed: [false],
-                    response: [response],
                     common: obj.common,
                 };
                 if (this.stateDB[id] !== undefined) {
@@ -327,11 +322,12 @@ export class StatesControler extends BaseClass {
      */
     async getState(
         id: string,
-        response: 'now' | 'medium' | 'slow' = 'slow',
+        response: 'now' | 'medium' | 'slow' = 'medium',
     ): Promise<ioBroker.State | null | undefined> {
         let timespan = this.timespan;
-        if (response === 'medium') timespan = 500;
+        if (response === 'slow') timespan = 10000;
         else if (response === 'now') timespan = 10;
+        else timespan = 1000;
         if (this.triggerDB[id] !== undefined && this.triggerDB[id].subscribed.some((a) => a)) {
             return this.triggerDB[id].state;
         } else if (this.stateDB[id] && timespan) {
@@ -382,13 +378,12 @@ export class StatesControler extends BaseClass {
                     if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack) {
                         this.triggerDB[dp].state = state;
                         if (state.ack || dp.startsWith('0_userdata.0')) {
-                            this.triggerDB[dp].to.forEach((c, index) => {
+                            this.triggerDB[dp].to.forEach((c) => {
                                 if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
                                     c.parent.onStateTriggerSuperDoNotOverride &&
-                                        c.parent.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]);
+                                        c.parent.onStateTriggerSuperDoNotOverride();
                                 } else if (!c.unload) {
-                                    c.onStateTriggerSuperDoNotOverride &&
-                                        c.onStateTriggerSuperDoNotOverride(this.triggerDB[dp].response[index]);
+                                    c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride();
                                 }
                             });
                         }

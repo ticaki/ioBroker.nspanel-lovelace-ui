@@ -342,7 +342,6 @@ type DataItemsOptionsTriggered = (DataItemsOptionsAuto | DataItemsOptionsCustom)
     forceType?: 'string' | 'number' | 'boolean'; // force a type
     read?: string | ((val: any) => any);
     write?: string | ((val: any) => any);
-    response?: 'now' | 'medium' | 'slow';
 };
 
 type internalDatapoints = 'Relais1' | 'Relais2';
