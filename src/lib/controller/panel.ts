@@ -270,6 +270,20 @@ export class Panel extends BaseClass {
             if (page) this.log.debug('init page ' + page.uniqueID);
             if (page) await page.init();
         }
+        this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
+            name: 'power1',
+            type: 'boolean',
+            write: false,
+            read: true,
+            role: 'value',
+        });
+        this.statesControler.setInternalState(`${this.name}/cmd/power2`, false, true, {
+            name: 'power1',
+            type: 'boolean',
+            write: false,
+            read: true,
+            role: 'value',
+        });
         this.sendToTasmota(this.topic + '/cmnd/POWER1', '');
         this.sendToTasmota(this.topic + '/cmnd/POWER2', '');
         this.navigation.init();
@@ -355,6 +369,7 @@ export class Panel extends BaseClass {
                             message === 'ON',
                             genericStateObjects.panel.panels.cmd.power2,
                         );
+                        this.statesControler.setInternalState(`${this.name}/cmd/power2`, message === 'ON', true);
                         break;
                     }
                     case 'stat/POWER1': {
@@ -363,7 +378,7 @@ export class Panel extends BaseClass {
                             message === 'ON',
                             genericStateObjects.panel.panels.cmd.power1,
                         );
-
+                        this.statesControler.setInternalState(`${this.name}/cmd/power1`, message === 'ON', true);
                         break;
                     }
                     case 'stat/STATUS0': {

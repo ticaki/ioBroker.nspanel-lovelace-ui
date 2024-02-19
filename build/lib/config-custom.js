@@ -278,7 +278,7 @@ const pageEntitiesTest2 = {
     {
       type: "text",
       dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
-      template: "text.temperature"
+      template: "text.battery"
     }
   ],
   items: void 0
@@ -1960,6 +1960,66 @@ const pageThermoTest = {
     },
     {
       role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        entityInSel: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.statesTest"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Test"
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        entityInSel: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.statesTest"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Test"
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        entityInSel: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.statesTest"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Test"
+        }
+      }
+    },
+    {
+      role: "text.list",
       type: "button",
       dpInit: "",
       data: {
@@ -2001,7 +2061,7 @@ const pageThermoTest = {
       }
     },
     {
-      role: "text.list",
+      role: "indicator",
       type: "button",
       dpInit: "",
       data: {
@@ -2035,9 +2095,13 @@ const pageThermoTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: { type: "triggered", dp: "0_userdata.0.example_state" }
+        }
       }
+    },
+    {
+      type: "text",
+      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
+      template: "text.battery"
     }
   ],
   config: {
@@ -2264,10 +2328,7 @@ const pageScreensaverTest = {
                     }`
             }
           },
-          false: { value: void 0, color: void 0 },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          false: { value: void 0, color: void 0 }
         },
         entityText: {
           true: void 0,
@@ -2957,17 +3018,8 @@ const pageScreensaverTest = {
       {
         entityValue: {
           value: {
-            type: "state",
-            dp: "accuweather.0.Current.WindDirectionText"
-          },
-          decimal: {
-            type: "const",
-            constVal: 0
-          },
-          factor: void 0,
-          unit: {
-            type: "const",
-            constVal: "\xB0"
+            type: "internal",
+            dp: "cmd/power1"
           }
         },
         entityDateFormat: void 0,
@@ -2975,16 +3027,22 @@ const pageScreensaverTest = {
           true: {
             value: {
               type: "const",
-              constVal: "windsock"
+              constVal: "lightbulb"
             },
             color: {
               type: "const",
-              constVal: Color.White
+              constVal: Color.Yellow
             }
           },
           false: {
-            value: void 0,
-            color: void 0
+            value: {
+              type: "const",
+              constVal: "lightbulb-outline"
+            },
+            color: {
+              type: "const",
+              constVal: Color.HMIOff
+            }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2992,27 +3050,15 @@ const pageScreensaverTest = {
         },
         entityIconSelect: void 0,
         entityText: {
-          true: {
-            type: "const",
-            constVal: "Windr."
-          },
+          true: void 0,
           false: void 0
         }
       },
       {
         entityValue: {
           value: {
-            type: "state",
-            dp: "accuweather.0.Current.WindDirectionText"
-          },
-          decimal: {
-            type: "const",
-            constVal: 0
-          },
-          factor: void 0,
-          unit: {
-            type: "const",
-            constVal: "\xB0"
+            type: "internal",
+            dp: "cmd/power2"
           }
         },
         entityDateFormat: void 0,
@@ -3020,30 +3066,27 @@ const pageScreensaverTest = {
           true: {
             value: {
               type: "const",
-              constVal: "windsock"
+              constVal: "lightbulb"
             },
             color: {
               type: "const",
-              constVal: "#FF00FF"
+              constVal: Color.Yellow
             }
           },
           false: {
-            value: void 0,
+            value: {
+              type: "const",
+              constVal: "lightbulb-outline"
+            },
             color: {
               type: "const",
-              constVal: "#FF00FF"
+              constVal: Color.HMIOff
             }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          }
         },
         entityIconSelect: void 0,
         entityText: {
-          true: {
-            type: "const",
-            constVal: "Windr."
-          },
+          true: void 0,
           false: void 0
         }
       }

@@ -36,7 +36,7 @@ export class BaseClassTriggerd extends BaseClass {
     public alwaysOn: 'none' | 'always' | 'action';
     private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
-    protected panel: Panel;
+    public panel: Panel;
     private responseTime: number = 10000000000;
     sleep: boolean = true;
     parent: BaseClassTriggerd | undefined = undefined;
@@ -187,6 +187,7 @@ export class StatesControler extends BaseClass {
             ts: number;
             subscribed: boolean[];
             common: ioBroker.StateCommon;
+            internal?: boolean;
         };
     } = {};
     private deletePageInterval: ioBroker.Interval | undefined;
@@ -242,7 +243,7 @@ export class StatesControler extends BaseClass {
      * @param id state id
      * @param from the page that handle the trigger
      */
-    async setTrigger(id: string, from: BaseClassTriggerd): Promise<void> {
+    async setTrigger(id: string, from: BaseClassTriggerd, internal: boolean = false): Promise<void> {
         if (id.startsWith(this.adapter.namespace)) {
             this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
             return;
@@ -255,6 +256,8 @@ export class StatesControler extends BaseClass {
                 this.triggerDB[id].subscribed.push(false);
             } else {
             }
+        } else if (internal) {
+            this.log.error('setInternal Trigger too early');
         } else {
             const state = await this.adapter.getForeignStateAsync(id);
             if (state) {
@@ -323,42 +326,48 @@ export class StatesControler extends BaseClass {
     async getState(
         id: string,
         response: 'now' | 'medium' | 'slow' = 'medium',
+        internal: boolean = false,
     ): Promise<ioBroker.State | null | undefined> {
         let timespan = this.timespan;
         if (response === 'slow') timespan = 10000;
         else if (response === 'now') timespan = 10;
         else timespan = 1000;
-        if (this.triggerDB[id] !== undefined && this.triggerDB[id].subscribed.some((a) => a)) {
+        if (
+            this.triggerDB[id] !== undefined &&
+            (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some((a) => a))
+        ) {
             return this.triggerDB[id].state;
         } else if (this.stateDB[id] && timespan) {
             if (Date.now() - timespan - this.stateDB[id].ts < 0) {
                 return this.stateDB[id].state;
             }
         }
-        const state = await this.adapter.getForeignStateAsync(id);
-        if (state) {
-            if (!this.stateDB[id]) {
-                const obj = await this.getObjectAsync(id);
-                if (!obj || !obj.common || obj.type !== 'state') throw new Error('Got invalid object for ' + id);
-                this.stateDB[id] = { state: state, ts: Date.now(), common: obj.common };
-            } else {
-                this.stateDB[id].state = state;
-                this.stateDB[id].ts = Date.now();
+        if (!internal) {
+            const state = await this.adapter.getForeignStateAsync(id);
+            if (state) {
+                if (!this.stateDB[id]) {
+                    const obj = await this.getObjectAsync(id);
+                    if (!obj || !obj.common || obj.type !== 'state') throw new Error('Got invalid object for ' + id);
+                    this.stateDB[id] = { state: state, ts: Date.now(), common: obj.common };
+                } else {
+                    this.stateDB[id].state = state;
+                    this.stateDB[id].ts = Date.now();
+                }
+                return state;
             }
-            return state;
         }
         throw new Error(`State id invalid ${id} no data!`);
     }
 
     getType(id: string): ioBroker.CommonType | undefined {
-        if (this.triggerDB[id] !== undefined) return this.triggerDB[id].common.type;
+        if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) return this.triggerDB[id].common!.type;
         if (this.stateDB[id] !== undefined) return this.stateDB[id].common.type;
         return undefined;
     }
 
     getCommonStates(id: string): Record<string, string> | undefined {
         let j: string | string[] | Record<string, string> | undefined = undefined;
-        if (this.triggerDB[id] !== undefined) j = this.triggerDB[id].common.states;
+        if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) j = this.triggerDB[id].common!.states;
         else if (this.stateDB[id] !== undefined) j = this.stateDB[id].common.states;
         if (!j || typeof j === 'string') return undefined;
         if (Array.isArray(j)) {
@@ -426,20 +435,35 @@ export class StatesControler extends BaseClass {
             }
         } else if (item.options.type === 'internal') {
             if (this.triggerDB[item.options.dp]) {
-                if (this.setInternalState(item.options.dp, val))
-                    await this.onStateChange(item.options.dp, this.triggerDB[item.options.dp].state);
+                this.setInternalState(item.options.dp, val);
             }
         }
     }
-    private setInternalState(id: string, val: ioBroker.StateValue): boolean {
+    public setInternalState(
+        id: string,
+        val: ioBroker.StateValue,
+        ack: boolean = false,
+        common: ioBroker.StateCommon | undefined = undefined,
+    ): boolean {
         if (this.triggerDB[id] !== undefined) {
-            this.triggerDB[id].state = {
+            const state = {
                 ...this.triggerDB[id].state,
                 val,
-                ack: true,
+                ack: ack,
                 ts: Date.now(),
             };
-            return true;
+
+            if (ack) this.onStateChange(id, state);
+            else this.triggerDB[id].state = state;
+        } else if (common) {
+            this.triggerDB[id] = {
+                state: { ts: Date.now(), val: null, ack: ack, from: '', lc: Date.now() },
+                to: [],
+                ts: Date.now(),
+                subscribed: [],
+                common: common,
+                internal: true,
+            };
         }
         return false;
     }
@@ -558,6 +582,9 @@ export class StatesControler extends BaseClass {
 
     async getObjectAsync(id: string): Promise<ioBroker.Object | null> {
         if (this.objectDatabase[id] !== undefined) return this.objectDatabase[id];
+        else if (this.triggerDB[id] !== undefined && this.triggerDB[id].internal) {
+            return { _id: '', type: 'state', common: this.triggerDB[id].common, native: {} };
+        }
         const obj = await this.adapter.getForeignObjectAsync(id);
         this.objectDatabase[id] = obj ?? null;
         return obj ?? null;

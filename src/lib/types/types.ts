@@ -360,7 +360,7 @@ type DataItemsOptionsConst = {
 type DataItemsOptionsInternal = {
     type: 'internal';
     role?: string;
-    dp: internalDatapoints;
+    dp: string;
     read?: string | ((val: any) => any);
     write?: string | ((val: any) => any);
 };
@@ -384,7 +384,7 @@ type DataItemsOptionsTriggered = (DataItemsOptionsAuto | DataItemsOptionsCustom)
     write?: string | ((val: any) => any);
 };
 
-type internalDatapoints = 'Relais1' | 'Relais2';
+//type internalDatapoints = 'Relais1' | 'Relais2';
 export type IncomingEvent = {
     type: EventType;
     method: EventMethod;

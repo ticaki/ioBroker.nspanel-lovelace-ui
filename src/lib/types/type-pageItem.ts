@@ -224,7 +224,7 @@ export type PageItemFanDataItems = {
     data: ChangeTypeOfKeys<PageItemFan, Dataitem | undefined>;
 };
 
-export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'icon'>;
+export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'entity2' | 'icon'>;
 export type PageItemTextDataItemsOptions = {
     type: 'text';
     data: ChangeTypeOfKeys<PageItemText, Types.DataItemsOptions | undefined>;

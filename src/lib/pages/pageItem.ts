@@ -297,17 +297,21 @@ export class PageItem extends BaseClassTriggerd {
                         let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1, false);
                         if (value === null) value = await tools.getValueEntryBoolean(item.entity1);
                         if (value === null) value = true;
-                        message.displayName = (await tools.getEntryTextOnOff(item.text, !!value)) ?? '';
-                        message.optionalValue = (await tools.getEntryTextOnOff(item.text1, !!value)) ?? '';
+                        const val = typeof value === 'number' ? value >= 10 : value;
+                        message.displayName = (await tools.getEntryTextOnOff(item.text, val)) ?? '';
+                        message.optionalValue =
+                            (await tools.getValueEntryString(item.entity2)) ??
+                            (await tools.getEntryTextOnOff(item.text1, val)) ??
+                            '';
                         message.icon =
                             (await tools.getIconEntryValue(
                                 item.icon,
-                                !!value,
+                                val,
                                 '',
                                 null,
                                 (this.parent && this.parent.card !== 'cardEntities') ?? false,
                             )) ?? '';
-                        message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
+                        message.iconColor = (await tools.getIconEntryColor(item.icon, val, Color.HMIOn)) ?? '';
                         return tools.getPayload(
                             message.type,
                             message.intNameEntity,
@@ -1101,6 +1105,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             case 'button': {
                 if (entry.type === 'button') {
+                    if (entry.role === 'indicator') break;
                     const item = entry.data;
                     let value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
                     if (value !== null) {

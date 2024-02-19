@@ -32,6 +32,11 @@ export class Dataitem extends BaseClass {
                 this.type = this.options.forceType ? this.options.forceType : undefined;
                 // all work is done in isValidAndInit
                 break;
+            case 'internal': {
+                if (!this.options.dp.startsWith('///'))
+                    this.options.dp = this.parent.panel.name + '/' + this.options.dp;
+                this.type = undefined;
+            }
         }
     }
     public get writeable(): boolean {
@@ -46,6 +51,7 @@ export class Dataitem extends BaseClass {
             case 'const':
                 return !(this.options.constVal === undefined || this.options.constVal === null);
             case 'state':
+            case 'internal':
             case 'triggered':
                 if (!this.options.dp) return false;
                 const obj = await this.stateDB.getObjectAsync(this.options.dp);
@@ -58,9 +64,12 @@ export class Dataitem extends BaseClass {
                 this.options.role = obj.common.role;
                 this._writeable = !!obj.common.write;
                 if (this.options.type == 'triggered') this.stateDB.setTrigger(this.options.dp, this.parent);
+                else if (this.options.type == 'internal') this.stateDB.setTrigger(this.options.dp, this.parent, true);
                 const value = await this.stateDB.getState(
                     this.options.dp,
-                    this.options.type == 'triggered' ? 'medium' : this.options.response,
+                    this.options.type == 'triggered' || this.options.type == 'internal'
+                        ? 'medium'
+                        : this.options.response,
                 );
                 return !!value;
         }
@@ -80,6 +89,7 @@ export class Dataitem extends BaseClass {
                     this.options.type == 'triggered' ? 'medium' : this.options.response,
                 );
             case 'internal': {
+                return await this.stateDB.getState(this.options.dp, 'now');
             }
         }
         return null;
@@ -97,7 +107,7 @@ export class Dataitem extends BaseClass {
         let state = await this.getRawState();
         if (state) {
             state = structuredClone(state);
-            if (this.options.type !== 'const' && this.options.type !== 'internal' && this.options.read) {
+            if (this.options.type !== 'const' && this.options.read) {
                 try {
                     if (typeof this.options.read === 'string')
                         state.val = new Function('val', 'Color', `${this.options.read}`)(state.val, Color);

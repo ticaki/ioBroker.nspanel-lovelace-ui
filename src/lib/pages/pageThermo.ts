@@ -62,7 +62,10 @@ export class PageThermo extends Page {
         if (this.items) {
             const item = this.items;
             if (this.pageItems) {
-                const pageItems = this.pageItems.filter((a) => a && a.dataItems && a.dataItems.type === 'button');
+                let b = 0;
+                const pageItems = this.pageItems.filter(
+                    (a) => a && a.dataItems && (a.dataItems.type !== 'input_sel' || b++ > 2),
+                );
                 for (let a = 0; a < pageItems.length && a < message.options.length; a++) {
                     const temp = pageItems[a];
                     if (temp) {

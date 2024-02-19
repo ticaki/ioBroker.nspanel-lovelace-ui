@@ -128,4 +128,51 @@ export const textTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
+    {
+        template: 'text.battery',
+        role: 'text',
+        adapter: '',
+        type: 'text',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'battery' },
+                    text: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.battery',
+                        dp: '',
+                    },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'battery-outline' },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+                scale: { type: 'const', constVal: { min: 0, max: 100 } },
+            },
+            entity1: {
+                value: {
+                    type: 'state',
+                    mode: 'auto',
+                    role: 'value.battery',
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Battery' },
+                false: undefined,
+            },
+            entity2: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.battery',
+                    dp: '',
+                },
+                unit: { type: 'const', constVal: '%' },
+            },
+        },
+    },
 ];

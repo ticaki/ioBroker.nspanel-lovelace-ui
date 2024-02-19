@@ -230,7 +230,7 @@ class StatesControler extends import_library.BaseClass {
     if (this.deletePageInterval)
       this.adapter.clearInterval(this.deletePageInterval);
   }
-  async setTrigger(id, from) {
+  async setTrigger(id, from, internal = false) {
     if (id.startsWith(this.adapter.namespace)) {
       this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
       return;
@@ -242,6 +242,8 @@ class StatesControler extends import_library.BaseClass {
         this.triggerDB[id].subscribed.push(false);
       } else {
       }
+    } else if (internal) {
+      this.log.error("setInternal Trigger too early");
     } else {
       const state = await this.adapter.getForeignStateAsync(id);
       if (state) {
@@ -297,7 +299,7 @@ class StatesControler extends import_library.BaseClass {
       }
     }
   }
-  async getState(id, response = "medium") {
+  async getState(id, response = "medium", internal = false) {
     let timespan = this.timespan;
     if (response === "slow")
       timespan = 1e4;
@@ -305,30 +307,32 @@ class StatesControler extends import_library.BaseClass {
       timespan = 10;
     else
       timespan = 1e3;
-    if (this.triggerDB[id] !== void 0 && this.triggerDB[id].subscribed.some((a) => a)) {
+    if (this.triggerDB[id] !== void 0 && (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some((a) => a))) {
       return this.triggerDB[id].state;
     } else if (this.stateDB[id] && timespan) {
       if (Date.now() - timespan - this.stateDB[id].ts < 0) {
         return this.stateDB[id].state;
       }
     }
-    const state = await this.adapter.getForeignStateAsync(id);
-    if (state) {
-      if (!this.stateDB[id]) {
-        const obj = await this.getObjectAsync(id);
-        if (!obj || !obj.common || obj.type !== "state")
-          throw new Error("Got invalid object for " + id);
-        this.stateDB[id] = { state, ts: Date.now(), common: obj.common };
-      } else {
-        this.stateDB[id].state = state;
-        this.stateDB[id].ts = Date.now();
+    if (!internal) {
+      const state = await this.adapter.getForeignStateAsync(id);
+      if (state) {
+        if (!this.stateDB[id]) {
+          const obj = await this.getObjectAsync(id);
+          if (!obj || !obj.common || obj.type !== "state")
+            throw new Error("Got invalid object for " + id);
+          this.stateDB[id] = { state, ts: Date.now(), common: obj.common };
+        } else {
+          this.stateDB[id].state = state;
+          this.stateDB[id].ts = Date.now();
+        }
+        return state;
       }
-      return state;
     }
     throw new Error(`State id invalid ${id} no data!`);
   }
   getType(id) {
-    if (this.triggerDB[id] !== void 0)
+    if (this.triggerDB[id] !== void 0 && this.triggerDB[id].common)
       return this.triggerDB[id].common.type;
     if (this.stateDB[id] !== void 0)
       return this.stateDB[id].common.type;
@@ -336,7 +340,7 @@ class StatesControler extends import_library.BaseClass {
   }
   getCommonStates(id) {
     let j = void 0;
-    if (this.triggerDB[id] !== void 0)
+    if (this.triggerDB[id] !== void 0 && this.triggerDB[id].common)
       j = this.triggerDB[id].common.states;
     else if (this.stateDB[id] !== void 0)
       j = this.stateDB[id].common.states;
@@ -403,20 +407,31 @@ class StatesControler extends import_library.BaseClass {
       }
     } else if (item.options.type === "internal") {
       if (this.triggerDB[item.options.dp]) {
-        if (this.setInternalState(item.options.dp, val))
-          await this.onStateChange(item.options.dp, this.triggerDB[item.options.dp].state);
+        this.setInternalState(item.options.dp, val);
       }
     }
   }
-  setInternalState(id, val) {
+  setInternalState(id, val, ack = false, common = void 0) {
     if (this.triggerDB[id] !== void 0) {
-      this.triggerDB[id].state = {
+      const state = {
         ...this.triggerDB[id].state,
         val,
-        ack: true,
+        ack,
         ts: Date.now()
       };
-      return true;
+      if (ack)
+        this.onStateChange(id, state);
+      else
+        this.triggerDB[id].state = state;
+    } else if (common) {
+      this.triggerDB[id] = {
+        state: { ts: Date.now(), val: null, ack, from: "", lc: Date.now() },
+        to: [],
+        ts: Date.now(),
+        subscribed: [],
+        common,
+        internal: true
+      };
     }
     return false;
   }
@@ -516,6 +531,9 @@ class StatesControler extends import_library.BaseClass {
   async getObjectAsync(id) {
     if (this.objectDatabase[id] !== void 0)
       return this.objectDatabase[id];
+    else if (this.triggerDB[id] !== void 0 && this.triggerDB[id].internal) {
+      return { _id: "", type: "state", common: this.triggerDB[id].common, native: {} };
+    }
     const obj = await this.adapter.getForeignObjectAsync(id);
     this.objectDatabase[id] = obj != null ? obj : null;
     return obj != null ? obj : null;

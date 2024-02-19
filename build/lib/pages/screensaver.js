@@ -290,39 +290,16 @@ class Screensaver extends import_Page.Page {
         payload[`icon${s}Font`] = "";
         continue;
       }
-      let value = null;
-      if (item.entityValue && item.entityValue.value) {
-        switch (item.entityValue.value.type) {
-          case "string": {
-            const v = await item.entityValue.value.getString();
-            if (v !== null)
-              value = v;
-            break;
-          }
-          case "number": {
-            value = 0;
-            const v = await item.entityValue.value.getNumber();
-            const c = item.entityValue.decimal ? await item.entityValue.decimal.getNumber() : null;
-            if (v !== null)
-              value = v;
-            if (c !== null)
-              value = (value || 0).toFixed(c);
-            break;
-          }
-          case "boolean": {
-            value = false;
-            const v = item.entityValue.value ? await item.entityValue.value.getBoolean() : null;
-            if (v !== null)
-              value = v;
-            break;
-          }
-          case "object":
-            const s2 = i == 0 ? "1" : "2";
-            payload[`icon${s2}`] = "";
-            payload[`icon${s2}Color`] = "";
-            payload[`icon${s2}Font`] = "";
-            continue;
-        }
+      let value = await (0, import_tools.getValueEntryNumber)(item.entityValue);
+      if (value === null)
+        value = await (0, import_tools.getValueEntryString)(item.entityValue);
+      if (value === null)
+        value = await (0, import_tools.getValueEntryBoolean)(item.entityValue);
+      if (value === null) {
+        payload[`icon${s}`] = "";
+        payload[`icon${s}Color`] = "";
+        payload[`icon${s}Font`] = "";
+        continue;
       }
       const entity = item.entityValue && item.entityValue.value ? item.entityValue.value.type == "string" ? await item.entityValue.value.getString() : await item.entityValue.value.getBoolean() : null;
       const offcolor = item.entityIcon && item.entityIcon.false && item.entityIcon.false.color ? await item.entityIcon.false.color.getRGBDec() : String(Color.rgb_dec565(Color.White));
@@ -368,7 +345,7 @@ class Screensaver extends import_Page.Page {
           }
         }
         if (value !== null && value !== void 0) {
-          payload[`icon${s}`] += String(value);
+          payload[`icon${s}`] += typeof value === "string" ? value : "";
           const unit = item.entityValue && item.entityValue.unit ? await item.entityValue.unit.getString() : null;
           if (unit !== null)
             payload[`icon${s}`] += unit;

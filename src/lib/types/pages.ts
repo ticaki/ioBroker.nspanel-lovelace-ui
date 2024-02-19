@@ -84,7 +84,8 @@ export type StateRole =
     | 'switch'
     | 'button'
     | 'sensor.window'
-    | 'value.temperature';
+    | 'value.temperature'
+    | 'value.battery';
 
 export type DeviceRole =
     | 'text'
@@ -112,7 +113,8 @@ export type DeviceRole =
     | 'timer'
     | 'rgb.hex'
     | 'text.list'
-    | 'rgb'; // timer with internal counter
+    | 'rgb'
+    | 'indicator'; // timer with internal counter
 
 export function isStateRole(F: string | StateRole): F is StateRole {
     switch (F as StateRole) {

@@ -9,7 +9,13 @@ import { sendTemplates, weatherUpdateTestArray } from '../types/msg-def';
 import { Page, PageInterface } from '../classes/Page';
 import { Icons } from '../const/icon_mapping';
 import { PageTypeCards } from '../types/pages';
-import { getPayload, getPayloadArray } from '../const/tools';
+import {
+    getPayload,
+    getPayloadArray,
+    getValueEntryBoolean,
+    getValueEntryNumber,
+    getValueEntryString,
+} from '../const/tools';
 
 export type ScreensaverConfigType = {
     momentLocale: string;
@@ -312,37 +318,17 @@ export class Screensaver extends Page {
                 continue;
             }
 
-            let value: string | boolean | number | null = null;
-            if (item.entityValue && item.entityValue.value) {
-                switch (item.entityValue.value.type) {
-                    case 'string': {
-                        const v = await item.entityValue.value.getString();
-                        if (v !== null) value = v;
-                        break;
-                    }
-                    case 'number': {
-                        value = 0;
-                        const v = await item.entityValue.value.getNumber();
-                        const c = item.entityValue.decimal ? await item.entityValue.decimal.getNumber() : null;
-                        if (v !== null) value = v;
-                        if (c !== null) value = (value || 0).toFixed(c);
-                        break;
-                    }
-                    case 'boolean': {
-                        value = false;
-                        const v = item.entityValue.value ? await item.entityValue.value.getBoolean() : null;
-                        if (v !== null) value = v;
-                        break;
-                    }
+            let value: number | boolean | string | null = await getValueEntryNumber(item.entityValue);
+            if (value === null) value = await getValueEntryString(item.entityValue);
+            if (value === null) value = await getValueEntryBoolean(item.entityValue);
 
-                    case 'object':
-                        const s: '1' | '2' = i == 0 ? '1' : '2';
-                        payload[`icon${s}`] = '';
-                        payload[`icon${s}Color`] = '';
-                        payload[`icon${s}Font`] = '';
-                        continue;
-                }
+            if (value === null) {
+                payload[`icon${s}`] = '';
+                payload[`icon${s}Color`] = '';
+                payload[`icon${s}Font`] = '';
+                continue;
             }
+
             const entity =
                 item.entityValue && item.entityValue.value
                     ? item.entityValue.value.type == 'string'
@@ -415,7 +401,7 @@ export class Screensaver extends Page {
                 }
 
                 if (value !== null && value !== undefined) {
-                    payload[`icon${s}`] += String(value);
+                    payload[`icon${s}`] += typeof value === 'string' ? value : '';
                     const unit =
                         item.entityValue && item.entityValue.unit ? await item.entityValue.unit.getString() : null;
                     if (unit !== null) payload[`icon${s}`] += unit;
