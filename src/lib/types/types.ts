@@ -11,7 +11,7 @@ export type TemplateIdent =
     | 'text.window.isClose'
     | 'text.window.isOpen'
     | 'text.battery'
-    | 'text.temperatures'
+    | 'text.temperature'
     | ''
     | ''
     | ''

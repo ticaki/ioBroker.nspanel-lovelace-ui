@@ -105,7 +105,7 @@ const textTemplates = [
     }
   },
   {
-    template: "text.temperatures",
+    template: "text.temperature",
     role: "text",
     adapter: "",
     type: "text",

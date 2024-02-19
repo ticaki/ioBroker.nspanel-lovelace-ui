@@ -166,7 +166,7 @@ export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data'
 
 export type PageItemDataItemsOptions =
     | ({
-          template: string;
+          template: Types.TemplateIdent;
           dpInit: string;
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &

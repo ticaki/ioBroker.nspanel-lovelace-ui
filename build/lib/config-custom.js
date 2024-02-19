@@ -278,7 +278,7 @@ const pageEntitiesTest2 = {
     {
       type: "text",
       dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
-      template: "text.temperature.grid"
+      template: "text.temperature"
     }
   ],
   items: void 0
@@ -1720,7 +1720,7 @@ const pageGridTest2 = {
     {
       type: "text",
       dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
-      template: "text.temperatures"
+      template: "text.temperature"
     }
   ]
 };
