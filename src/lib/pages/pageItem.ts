@@ -65,7 +65,7 @@ export class PageItem extends BaseClassTriggerd {
                 }
             }
             if (index === -1 || !template) {
-                that.log.error('dont find template ' + options.template);
+                that.log.error('Dont find template ' + options.template);
                 return undefined;
             }
             if (
@@ -73,12 +73,15 @@ export class PageItem extends BaseClassTriggerd {
                 !options.dpInit.startsWith(template.adapter) &&
                 !(config.parent && config.parent.dpInit.startsWith(template.adapter))
             ) {
+                that.log.error(
+                    'Missing dbInit or dbInit not starts with' + template.adapter + ' for template ' + options.template,
+                );
                 return undefined;
             }
             const newTemplate = structuredClone(template) as Partial<PageItemOptionsTemplate>;
             delete newTemplate.adapter;
             if (options.type && options.type !== template.type) {
-                that.log.error(options.type + 'is not equal with ' + template.type);
+                that.log.error('Type: ' + options.type + 'is not equal with ' + template.type);
                 return undefined;
             }
             options.type = template.type;
