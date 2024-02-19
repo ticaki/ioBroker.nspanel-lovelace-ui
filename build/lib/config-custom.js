@@ -2097,11 +2097,6 @@ const pageThermoTest = {
           false: void 0
         }
       }
-    },
-    {
-      type: "text",
-      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
-      template: "text.battery"
     }
   ],
   config: {

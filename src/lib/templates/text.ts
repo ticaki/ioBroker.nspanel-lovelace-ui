@@ -137,14 +137,58 @@ export const textTemplates: PageItemOptionsTemplate[] = [
         data: {
             icon: {
                 true: {
-                    value: { type: 'const', constVal: 'battery' },
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.battery',
+                        dp: '',
+                        read: `const v = Math.round(val / 10);
+                        switch (v) {
+                            case 0:
+                                return 'battery-outline';
+                            case 1:
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 5:
+                            case 6:
+                            case 7:
+                            case 8:
+                            case 9:
+                                return 'battery-' + v + '0';
+                            case 10:
+                            default:
+                                return 'battery';}`,
+                    },
                     text: {
                         type: 'triggered',
                         mode: 'auto',
                         role: 'value.battery',
                         dp: '',
                     },
-                    color: { type: 'const', constVal: Color.Green },
+                    color: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.battery',
+                        dp: '',
+                        read: `const v = Math.round(val / 10);
+                        switch (v) {
+                            case 0:
+                                case 1:
+                                return Color.Red;
+                            
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 5:
+                            case 6:
+                            case 7:
+                            case 8:
+                            case 9:
+                            case 10:
+                            default:
+                                return Color.Green; }`,
+                    },
                 },
                 false: {
                     value: { type: 'const', constVal: 'battery-outline' },
