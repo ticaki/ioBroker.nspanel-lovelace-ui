@@ -245,7 +245,10 @@ export type PageItemNumberDataItems = {
     data: pages.ChangeTypeOfKeys<PageItemNumber, dataItem.Dataitem | undefined>;
 };
 
-export type PageItemButton = Pick<PageItemBase, 'setValue1' | 'text' | 'icon' | 'color' | 'entity1' | 'setNavi'>;
+export type PageItemButton = Pick<
+    PageItemBase,
+    'setValue1' | 'setValue2' | 'text' | 'icon' | 'color' | 'entity1' | 'setNavi'
+>;
 export type PageItemButtonDataItemsOptions = {
     type: 'button';
     data: pages.ChangeTypeOfKeys<PageItemButton, Types.DataItemsOptions | undefined>;

@@ -7,7 +7,6 @@ export const textTemplates: PageItemOptionsTemplate[] = [
         role: 'text',
         adapter: '',
         type: 'text',
-
         data: {
             icon: {
                 true: {
@@ -18,9 +17,6 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                     value: { type: 'const', constVal: 'window-closed-variant' },
                     color: { type: 'const', constVal: Color.Green },
                 },
-                scale: undefined,
-                maxBri: undefined,
-                minBri: undefined,
             },
             entity1: {
                 value: {
@@ -29,9 +25,6 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                     role: 'sensor.window',
                     dp: '',
                 },
-                decimal: undefined,
-                factor: undefined,
-                unit: undefined,
             },
             text: {
                 true: { type: 'const', constVal: 'text' },

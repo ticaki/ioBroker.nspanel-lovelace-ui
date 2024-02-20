@@ -677,8 +677,7 @@ const pageMediaTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -719,8 +718,7 @@ const pageMediaTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -761,8 +759,7 @@ const pageMediaTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -803,8 +800,7 @@ const pageMediaTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -845,8 +841,7 @@ const pageMediaTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     }
   ],
@@ -1093,8 +1088,7 @@ const pageMediaTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -1135,8 +1129,7 @@ const pageMediaTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -1177,8 +1170,7 @@ const pageMediaTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -1219,8 +1211,7 @@ const pageMediaTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -1261,8 +1252,7 @@ const pageMediaTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     }
   ],
@@ -1548,8 +1538,7 @@ const pageGridTest1 = {
         setNavi: {
           type: "const",
           constVal: "3"
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -1682,8 +1671,7 @@ const pageGridTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -2003,8 +1991,7 @@ const pageGridTest5 = {
         setNavi: {
           type: "const",
           constVal: "3"
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -2146,8 +2133,7 @@ const pageGridTest4 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     }
   ]
@@ -2250,8 +2236,7 @@ const pageGrid2Test3 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     }
   ]
@@ -2300,8 +2285,7 @@ const pageThermoTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -2422,8 +2406,7 @@ const pageThermoTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {

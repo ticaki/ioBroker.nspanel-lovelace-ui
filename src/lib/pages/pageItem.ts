@@ -171,7 +171,7 @@ export class PageItem extends BaseClassTriggerd {
                                   dimmer !== null ? (dimmer > 5 ? dimmer : 5) : v,
                               )
                             : await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ??
-                        (await tools.GetIconColor(item.icon, dimmer !== null ? (dimmer > 5 ? dimmer : 5) : v)) ??
+                        (await tools.getIconEntryColor(item.icon, dimmer ?? v, Color.Yellow)) ??
                         '';
                     if (v) {
                         message.optionalValue = '1';
@@ -193,16 +193,13 @@ export class PageItem extends BaseClassTriggerd {
                         break;
                     }
                     message.icon = await tools.getIconEntryValue(item.icon, value < 40, 'window-open');
-                    message.iconColor = await tools.getIconEntryColor(item.icon, value < 40, Color.White);
+                    message.iconColor = await tools.getIconEntryColor(item.icon, value, Color.White);
                     const optionalValue = item.valueList
                         ? await item.valueList.getObject()
                         : [
                               'arrow-up', //up
                               'stop', //stop
                               'arrow-down', //down
-                              'enable', // up status
-                              'enable', // stop status
-                              'enable', // down status
                           ];
                     let optionalValueC =
                         Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === 'string')
@@ -288,27 +285,26 @@ export class PageItem extends BaseClassTriggerd {
                      */
                     const item = entry.data;
 
-                    if (item.entity1 && item.entity1.value) {
-                        message.optionalValue = !!(item.setValue1 && (await item.setValue1.getBoolean())) ? '0' : '1';
-                        message.displayName =
-                            (await tools.getEntryTextOnOff(item.text, message.optionalValue === '1')) ?? 'test1';
+                    message.optionalValue = (await tools.getValueEntryBoolean(item.entity1)) ?? true ? '0' : '1';
+                    message.displayName =
+                        (await tools.getEntryTextOnOff(item.text, message.optionalValue === '1')) ?? 'test1';
 
-                        message.icon = await tools.getIconEntryValue(
-                            item.icon,
-                            message.optionalValue === '1',
-                            'home',
-                            'account',
-                        );
-                        message.iconColor = await tools.GetIconColor(item.icon, message.optionalValue === '1');
-                        return tools.getPayload(
-                            'button',
-                            message.intNameEntity,
-                            message.icon,
-                            message.iconColor,
-                            message.displayName,
-                            message.optionalValue,
-                        );
-                    }
+                    message.icon = await tools.getIconEntryValue(
+                        item.icon,
+                        message.optionalValue === '1',
+                        'home',
+                        'account',
+                    );
+                    message.iconColor = await tools.GetIconColor(item.icon, message.optionalValue === '1');
+                    return tools.getPayload(
+                        'button',
+                        message.intNameEntity,
+                        message.icon,
+                        message.iconColor,
+                        message.displayName,
+                        message.optionalValue,
+                    );
+
                     break;
                 }
 
@@ -370,7 +366,7 @@ export class PageItem extends BaseClassTriggerd {
                                     { minute: '2-digit', second: '2-digit' },
                                 );
                             }
-                            message.iconColor = await tools.GetIconColor(item.icon, value);
+                            message.iconColor = await tools.getIconEntryColor(item.icon, value, Color.White);
                             message.icon = await tools.getIconEntryValue(item.icon, true, 'gesture-tap-button');
                             message.optionalValue = (await tools.getEntryTextOnOff(item.text, value !== 0)) ?? opt;
 
@@ -1072,12 +1068,11 @@ export class PageItem extends BaseClassTriggerd {
                         break;
                     }
                     value = (item.setValue1 && (await item.setValue1.getBoolean())) ?? null;
-                    if (value !== null) {
-                        await item.setValue1!.setStateFlip();
+                    if (value !== null && item.setValue1) {
+                        await item.setValue1.setStateFlip();
                     }
-                    if (this.config && this.parent && this.config.role == 'arrow') {
-                        //this.parent.step
-                        //this.parent.update()
+                    if (item.setValue2) {
+                        await item.setValue2.setStateFalse();
                     }
                 } else if (entry.type === 'light') {
                     const item = entry.data;
@@ -1216,21 +1211,21 @@ export class PageItem extends BaseClassTriggerd {
                                 case 'tiltOpen': {
                                     if (tools.ifValueEntryIs(items.entity2, 'number')) {
                                         const value = await items.entity2.maxScale.getNumber();
-                                        if (value !== null) await items.entity2.value.setStateAsync(value);
+                                        if (value !== null) await tools.setValueEntry(items.entity2, value);
                                     }
                                     break;
                                 }
                                 case 'tiltStop': {
                                     if (tools.ifValueEntryIs(items.entity2, 'number')) {
                                         const value = await tools.getValueEntryNumber(items.entity2);
-                                        if (value !== null) await tools.setValueEntryNumber(items.entity2, value);
+                                        if (value !== null) await tools.setValueEntry(items.entity2, value);
                                     }
                                     break;
                                 }
                                 case 'tiltClose': {
                                     if (tools.ifValueEntryIs(items.entity2, 'number')) {
                                         const value = await items.entity2.minScale.getNumber();
-                                        if (value !== null) await items.entity2.value.setStateAsync(value);
+                                        if (value !== null) await tools.setValueEntry(items.entity2, value);
                                     }
                                     break;
                                 }
@@ -1289,21 +1284,21 @@ export class PageItem extends BaseClassTriggerd {
                                     case 'up': {
                                         if (tools.ifValueEntryIs(items.entity1, 'number')) {
                                             const value = await items.entity1.maxScale.getNumber();
-                                            if (value !== null) await items.entity1.value.setStateAsync(value);
+                                            if (value !== null) await tools.setValueEntry(items.entity1, value);
                                         }
                                         break;
                                     }
                                     case 'stop': {
                                         if (tools.ifValueEntryIs(items.entity1, 'number')) {
                                             const value = await tools.getValueEntryNumber(items.entity1);
-                                            if (value !== null) await tools.setValueEntryNumber(items.entity1, value);
+                                            if (value !== null) await tools.setValueEntry(items.entity1, value);
                                         }
                                         break;
                                     }
                                     case 'down': {
                                         if (tools.ifValueEntryIs(items.entity1, 'number')) {
                                             const value = await items.entity1.minScale.getNumber();
-                                            if (value !== null) await items.entity1.value.setStateAsync(value);
+                                            if (value !== null) await tools.setValueEntry(items.entity1, value);
                                         }
                                         break;
                                     }
@@ -1323,7 +1318,7 @@ export class PageItem extends BaseClassTriggerd {
                 if (entry.type === 'shutter') {
                     const items = entry.data;
                     if (tools.ifValueEntryIs(items.entity1, 'number'))
-                        await tools.setValueEntryNumber(items.entity1, parseInt(value));
+                        await tools.setValueEntry(items.entity1, parseInt(value));
                 }
                 break;
             }
@@ -1334,17 +1329,17 @@ export class PageItem extends BaseClassTriggerd {
                 if (entry.type === 'shutter') {
                     const items = entry.data;
                     if (tools.ifValueEntryIs(items.entity2, 'number'))
-                        await tools.setValueEntryNumber(items.entity2, parseInt(value));
+                        await tools.setValueEntry(items.entity2, parseInt(value));
                 }
                 break;
             }
             case 'number-set': {
                 if (entry.type === 'number') {
                     const item = entry.data;
-                    await tools.setValueEntryNumber(item.entity1, parseInt(value), false);
+                    await tools.setValueEntry(item.entity1, parseInt(value), false);
                 } else if (entry.type === 'fan') {
                     const item = entry.data;
-                    await tools.setValueEntryNumber(item.speed, parseInt(value), false);
+                    await tools.setValueEntry(item.speed, parseInt(value), false);
                 }
                 break;
             }

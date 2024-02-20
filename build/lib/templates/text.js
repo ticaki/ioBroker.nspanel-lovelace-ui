@@ -43,10 +43,7 @@ const textTemplates = [
         false: {
           value: { type: "const", constVal: "window-closed-variant" },
           color: { type: "const", constVal: Color.Green }
-        },
-        scale: void 0,
-        maxBri: void 0,
-        minBri: void 0
+        }
       },
       entity1: {
         value: {
@@ -54,10 +51,7 @@ const textTemplates = [
           mode: "auto",
           role: "sensor.window",
           dp: ""
-        },
-        decimal: void 0,
-        factor: void 0,
-        unit: void 0
+        }
       },
       text: {
         true: { type: "const", constVal: "text" },

@@ -44,19 +44,23 @@ export function ifValueEntryIs(
     if (i && i.value && i.value.type) return i.value.type === type;
     return false;
 }
-export async function setValueEntryNumber(
+
+export async function setValueEntry(
     i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>,
-    value: number,
-    s: boolean = true,
+    value: number | boolean | string,
+    sca: boolean = true,
 ): Promise<void> {
     if (!i || !i.value) return;
 
-    let res = value / ((i.factor && (await i.factor.getNumber())) ?? 1);
-    if (s && i.minScale !== undefined && i.maxScale !== undefined) {
-        const min = await i.minScale.getNumber();
-        const max = await i.maxScale.getNumber();
-        if (min !== null && max !== null) {
-            res = Math.round(scale(res, 100, 0, min, max));
+    let res: number | boolean | string = value;
+    if (typeof value === 'number') {
+        res = value / ((i.factor && (await i.factor.getNumber())) ?? 1);
+        if (sca && i.minScale !== undefined && i.maxScale !== undefined) {
+            const min = await i.minScale.getNumber();
+            const max = await i.maxScale.getNumber();
+            if (min !== null && max !== null) {
+                res = Math.round(scale(res, 100, 0, min, max));
+            }
         }
     }
     if (i.set && i.set.writeable) await i.set.setStateAsync(res);

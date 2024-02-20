@@ -65,7 +65,57 @@ scale bekommt eine eigenen Punkt: das object besteht aus folgenden typen: `{val_
 - wenn zusätzlich log10 definiert ist, wird bei `max` ein log10() 1 false, 10 true ausgeführt, bei `min` (10-value) -> 10 false, 1 true. 
 
 
+### PageItems
+#### vormalig CreateEntity()
 
+##### light
+- entity1 ist der Schalter
+- icon (entity1)
+- iconColor: Leuchtmittelfarbe kommt von dem definierten RGB Wert oder von CT (kelvin/mired) oder von IconEntryType entweder  scaliert mit dimmer oder entity1 
+- dimmer ist ein Zahlenwert 
+- colorMode kann die Eigenschaft undefined | 'hue' | 'ct' haben und bestimmt welcher Modus für das Icon verwendet werden soll.
+- headline ist die Item Beschreibung 
+
+##### shutter
+- entity1 ist das level muß eine Zahl sein 0-100
+- icon & iconColor (IconEntryType)(entity1)
+- headline ist die Item Beschreibung  
+- valueList ist ein array mit 3 oder 6 Einträgen die die Iconbezeichnung enthält - '' für disable. Felder werden ebenfalls disabled wenn keine Befehlsstate gefunden wird.
+
+##### number
+- entity1 ist das level muß eine Zahl sein 0-100
+- text.true ist die Bezeichnung
+- icon & iconColor wie shutter
+
+##### text
+- entity1 kann zahl,boolean sein. Falls es nicht klappt wird von true ausgegangen.
+- entity2 oder text1 ist der text rechts in cardEntites
+- text.true ist die Bezeichnung
+- icon & iconColor wie shutter
+
+##### button
+- entity1 bestimmt den button Status oder true
+- icon & iconColor wie shutter
+- setValue1 schaltet den angegebenen State um (optional)
+- setValue2 schaltet den angegebenen State auf false (optional)
+- setNavi springt zur angegebenen NavigationsID
+
+##### input_sel
+- entityInSel als nummer oder boolean oder undefined
+- Icon/Color wie gehabt
+- headline ist die Beschreibung
+- text ist der text rechts in entities
+
+##### fan
+- entity1 ist der Schalter
+- icon...
+- headline die Beschreibung
+
+##### timer
+- im moment nur die interne Version komplett eingebaut
+- entity1 noch zu verstreichende Sekunden oder interner Zähler
+- icon...
+- text alternativer text für die anzeige rechts in entitiys standard ist Zeit.
 
 
 

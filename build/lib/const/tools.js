@@ -44,7 +44,7 @@ __export(tools_exports, {
   setRGBThreefromRGB: () => setRGBThreefromRGB,
   setScaledNumber: () => setScaledNumber,
   setSliderCTFromValue: () => setSliderCTFromValue,
-  setValueEntryNumber: () => setValueEntryNumber
+  setValueEntry: () => setValueEntry
 });
 module.exports = __toCommonJS(tools_exports);
 var import_data_item = require("../classes/data-item");
@@ -64,16 +64,19 @@ function ifValueEntryIs(i, type) {
     return i.value.type === type;
   return false;
 }
-async function setValueEntryNumber(i, value, s = true) {
+async function setValueEntry(i, value, sca = true) {
   var _a;
   if (!i || !i.value)
     return;
-  let res = value / ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
-  if (s && i.minScale !== void 0 && i.maxScale !== void 0) {
-    const min = await i.minScale.getNumber();
-    const max = await i.maxScale.getNumber();
-    if (min !== null && max !== null) {
-      res = Math.round((0, import_Color2.scale)(res, 100, 0, min, max));
+  let res = value;
+  if (typeof value === "number") {
+    res = value / ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
+    if (sca && i.minScale !== void 0 && i.maxScale !== void 0) {
+      const min = await i.minScale.getNumber();
+      const max = await i.maxScale.getNumber();
+      if (min !== null && max !== null) {
+        res = Math.round((0, import_Color2.scale)(res, 100, 0, min, max));
+      }
     }
   }
   if (i.set && i.set.writeable)
@@ -592,6 +595,6 @@ function deepAssign(def, source, level = 0) {
   setRGBThreefromRGB,
   setScaledNumber,
   setSliderCTFromValue,
-  setValueEntryNumber
+  setValueEntry
 });
 //# sourceMappingURL=tools.js.map
