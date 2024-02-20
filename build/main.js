@@ -48,10 +48,12 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.library = new import_library.Library(this);
     if (!this.config.Testconfig2) {
       this.log.warn("No configuration use dev test config!");
+      this.log.warn("Adapter on hold, user restart needed!");
+      return;
       this.config.Testconfig2 = import_config_custom.Testconfig;
     }
     this.config.Testconfig2[0].pages[0].mode = this.config.scstype;
-    this.config.Testconfig2[0].timeout = this.config.timeout;
+    this.config.Testconfig2[0].timeout = 3;
     this.setTimeout(async () => {
       if (!import_config_custom.Testconfig[0].pages)
         return;

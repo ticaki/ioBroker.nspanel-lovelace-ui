@@ -44,6 +44,8 @@ class NspanelLovelaceUi extends utils.Adapter {
         this.library = new Library(this);
         if (!this.config.Testconfig2) {
             this.log.warn('No configuration use dev test config!');
+            this.log.warn('Adapter on hold, user restart needed!');
+            return;
             this.config.Testconfig2 = Testconfig;
         }
 
@@ -53,7 +55,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         /*const d = await this.getEnumsAsync('rooms.Haus');
         if (d) this.log.debug(JSON.stringify(d));
         return;*/
-        this.config.Testconfig2[0].timeout = this.config.timeout;
+        this.config.Testconfig2[0].timeout = 3; // this.config.timeout;
         //this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
         this.setTimeout(async () => {
             //check config

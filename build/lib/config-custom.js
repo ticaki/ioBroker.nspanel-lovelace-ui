@@ -2998,8 +2998,8 @@ const pageScreensaverTest = {
               constVal: "windsock"
             },
             color: {
-              type: "const",
-              constVal: "#FF00FF"
+              type: "state",
+              dp: "0_userdata.0.dimmer"
             }
           },
           false: {
