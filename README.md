@@ -60,9 +60,9 @@ scale bekommt eine eigenen Punkt: das object besteht aus folgenden typen: `{val_
 - wenn nur val_min definiert ist bedeutet val_min >= Value das die Farbe bei true gewählt wird.
 - wenn nur val_max definiert ist bedeutet val_max <= Value das die Farbe bei true gewählt wird.
 - wenn val_max und val_min definiert sind, wird die Farbe von false (val_min) zu true (val_max) interpoliert
-- val_max und val_min werden getauscht, ebenso die farben für true und false, wenn max < min ist. Falls min und max gleich sind wird die Farbe von true zurückgegeben.
+- val_max und val_min werden getauscht, ebenso die Farben für true und false, wenn max < min ist. Falls min und max gleich sind wird die Farbe von true zurückgegeben.
 - wenn zusätzlich val_best definiert ist, ist val_best die Farbe von true und wird jeweils in die Richtungen von val_min/max zu false interpoliert
-- wenn zusätzlich log10 definiert ist, wird bei `max` ein log10() 1 false, 10 true ausgeführt, bei `min` 10 false, 1 true,
+- wenn zusätzlich log10 definiert ist, wird bei `max` ein log10() 1 false, 10 true ausgeführt, bei `min` (10-value) -> 10 false, 1 true. 
 
 
 
