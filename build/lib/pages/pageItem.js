@@ -59,14 +59,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     return new PageItem(config, options);
   }
   async init() {
-    var _a;
     if (!this.config)
       return;
     const config = structuredClone(this.config);
-    const dpInit = (_a = this.parent && this.parent.dpInit ? this.parent.dpInit : this.config.dpInit) != null ? _a : "";
-    const tempConfig = dpInit ? await this.panel.statesControler.getDataItemsFromAuto(dpInit, config.data) : config.data;
     const tempItem = await this.panel.statesControler.createDataItems(
-      tempConfig,
+      config.data,
       this
     );
     this.dataItems = { ...config, data: tempItem };

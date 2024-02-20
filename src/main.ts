@@ -44,10 +44,10 @@ class NspanelLovelaceUi extends utils.Adapter {
         this.library = new Library(this);
         if (!this.config.Testconfig2) {
             this.log.warn('No configuration use dev test config!');
-            this.config.Testconfig2 = [Testconfig];
+            this.config.Testconfig2 = Testconfig;
         }
-        //@ts-expect-error joghurt
-        Testconfig.pages![0].mode = this.config.scstype as any;
+
+        this.config.Testconfig2[0].pages![0].mode = this.config.scstype as any;
         //this.log.debug(JSON.stringify(this.config.Testconfig2[0].dpInit))
 
         /*const d = await this.getEnumsAsync('rooms.Haus');
@@ -57,9 +57,9 @@ class NspanelLovelaceUi extends utils.Adapter {
         //this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
         this.setTimeout(async () => {
             //check config
-            if (!Testconfig.pages) return;
+            if (!Testconfig[0].pages) return;
             const names: string[] = [];
-            for (const p of Testconfig.pages) {
+            for (const p of Testconfig[0].pages) {
                 if (p.card === 'screensaver' || p.card === 'screensaver2') continue;
                 if (!('uniqueID' in p)) continue;
                 if (names.indexOf(p.uniqueID) !== -1) throw new Error(`uniqueID ${p.uniqueID} is double!`);
@@ -91,7 +91,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.controller = new Controller(this, {
                 mqttClient: this.mqttClient,
                 name: 'controller',
-                panels: JSON.parse(JSON.stringify(testconfig)),
+                panels: testconfig,
             });
             await this.controller.init();
             setInterval(() => {

@@ -1,6 +1,6 @@
 import * as Definition from '../const/definition';
 import * as Color from '../const/Color';
-import * as NSPanel from '../types/types';
+import * as Types from '../types/types';
 
 //import dayjs from 'dayjs';
 import moment from 'moment';
@@ -8,14 +8,8 @@ import parseFormat from 'moment-parseformat';
 import { sendTemplates, weatherUpdateTestArray } from '../types/msg-def';
 import { Page, PageInterface } from '../classes/Page';
 import { Icons } from '../const/icon_mapping';
-import { PageTypeCards } from '../types/pages';
-import {
-    getPayload,
-    getPayloadArray,
-    getValueEntryBoolean,
-    getValueEntryNumber,
-    getValueEntryString,
-} from '../const/tools';
+import * as pages from '../types/pages';
+import * as tools from '../const/tools';
 
 export type ScreensaverConfigType = {
     momentLocale: string;
@@ -25,24 +19,21 @@ export type ScreensaverConfigType = {
 };
 
 export type ScreensaverConfig = {
-    card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
-    mode: NSPanel.ScreensaverModeType;
-    entitysConfig: NSPanel.ScreensaverOptionsType;
+    card: Extract<pages.PageTypeCards, 'screensaver' | 'screensaver2'>;
+    mode: Types.ScreensaverModeType;
+    entitysConfig: Types.ScreensaverOptionsType;
     rotationTime: number;
 };
 
 export class Screensaver extends Page {
-    private entitysConfig: NSPanel.ScreensaverOptionsType;
-    readonly layout: NSPanel.ScreensaverModeType = 'standard';
+    private entitysConfig: Types.ScreensaverOptionsType;
+    readonly layout: Types.ScreensaverModeType = 'standard';
     private config2: ScreensaverConfigType;
     private items: Record<
-        keyof Omit<NSPanel.ScreensaverOptionsType, 'mrIconEntity'>,
-        (NSPanel.ScreenSaverDataItems | undefined)[]
+        keyof Omit<Types.ScreensaverOptionsType, 'mrIconEntity'>,
+        (Types.ScreenSaverDataItems | undefined)[]
     > &
-        Record<
-            keyof Pick<NSPanel.ScreensaverOptionsType, 'mrIconEntity'>,
-            (NSPanel.ScreenSaverDataItems | undefined)[]
-        > = {
+        Record<keyof Pick<Types.ScreensaverOptionsType, 'mrIconEntity'>, (Types.ScreenSaverDataItems | undefined)[]> = {
         favoritEntity: [],
         leftEntity: [],
         bottomEntity: [],
@@ -123,7 +114,7 @@ export class Screensaver extends Page {
                 this.log.debug('');
             }*/
             for (i; i < maxItems; i++) {
-                const item: NSPanel.ScreenSaverDataItems | undefined = this.items[place][i];
+                const item: Types.ScreenSaverDataItems | undefined = this.items[place][i];
                 if (
                     item === null ||
                     item === undefined ||
@@ -226,12 +217,12 @@ export class Screensaver extends Page {
 
     sendStatusUpdate(
         payload: sendTemplates['statusUpdate'] | sendTemplates['weatherUpdate'],
-        layout: NSPanel.ScreensaverModeType,
+        layout: Types.ScreensaverModeType,
     ): void {
         switch (payload.eventType) {
             case 'statusUpdate':
                 this.sendToPanel(
-                    getPayload(
+                    tools.getPayload(
                         payload.eventType,
                         payload.icon1,
                         payload.icon1Color,
@@ -260,7 +251,7 @@ export class Screensaver extends Page {
                     (a) =>
                         a &&
                         result.push(
-                            getPayload(
+                            tools.getPayload(
                                 '',
                                 '',
                                 a.icon,
@@ -270,7 +261,7 @@ export class Screensaver extends Page {
                             ),
                         ),
                 );
-                this.sendToPanel(getPayloadArray([...result, '']));
+                this.sendToPanel(tools.getPayloadArray([...result, '']));
                 break;
             }
         }
@@ -318,9 +309,9 @@ export class Screensaver extends Page {
                 continue;
             }
 
-            let value: number | boolean | string | null = await getValueEntryNumber(item.entityValue);
-            if (value === null) value = await getValueEntryString(item.entityValue);
-            if (value === null) value = await getValueEntryBoolean(item.entityValue);
+            let value: number | boolean | string | null = await tools.getValueEntryNumber(item.entityValue);
+            if (value === null) value = await tools.getValueEntryString(item.entityValue);
+            if (value === null) value = await tools.getValueEntryBoolean(item.entityValue);
 
             if (value === null) {
                 payload[`icon${s}`] = '';
@@ -419,12 +410,12 @@ export class Screensaver extends Page {
     }
 }
 
-async function GetScreenSaverEntityColor(item: NSPanel.ScreenSaverDataItems | null): Promise<string> {
+async function GetScreenSaverEntityColor(item: Types.ScreenSaverDataItems | null): Promise<string> {
     if (item && item.entityValue) {
         let colorReturn: number | string;
         const entityAsNumber = item.entityValue.value !== undefined ? await item.entityValue.value.getNumber() : null;
         const entityFactor = item.entityValue.factor !== undefined ? await item.entityValue.factor.getNumber() : null;
-        const entityIconColorScale: NSPanel.IconScaleElement | null =
+        const entityIconColorScale: Types.IconScaleElement | null =
             item.entityIcon && 'scale' in item.entityIcon && item.entityIcon.scale !== undefined
                 ? await item.entityIcon.scale.getIconScale()
                 : null;

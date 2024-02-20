@@ -34,7 +34,7 @@ var import_moment_parseformat = __toESM(require("moment-parseformat"));
 var import_msg_def = require("../types/msg-def");
 var import_Page = require("../classes/Page");
 var import_icon_mapping = require("../const/icon_mapping");
-var import_tools = require("../const/tools");
+var tools = __toESM(require("../const/tools"));
 class Screensaver extends import_Page.Page {
   entitysConfig;
   layout = "standard";
@@ -201,7 +201,7 @@ class Screensaver extends import_Page.Page {
     switch (payload.eventType) {
       case "statusUpdate":
         this.sendToPanel(
-          (0, import_tools.getPayload)(
+          tools.getPayload(
             payload.eventType,
             payload.icon1,
             payload.icon1Color,
@@ -233,7 +233,7 @@ class Screensaver extends import_Page.Page {
         });
         value.forEach(
           (a) => a && result.push(
-            (0, import_tools.getPayload)(
+            tools.getPayload(
               "",
               "",
               a.icon,
@@ -243,7 +243,7 @@ class Screensaver extends import_Page.Page {
             )
           )
         );
-        this.sendToPanel((0, import_tools.getPayloadArray)([...result, ""]));
+        this.sendToPanel(tools.getPayloadArray([...result, ""]));
         break;
       }
     }
@@ -290,11 +290,11 @@ class Screensaver extends import_Page.Page {
         payload[`icon${s}Font`] = "";
         continue;
       }
-      let value = await (0, import_tools.getValueEntryNumber)(item.entityValue);
+      let value = await tools.getValueEntryNumber(item.entityValue);
       if (value === null)
-        value = await (0, import_tools.getValueEntryString)(item.entityValue);
+        value = await tools.getValueEntryString(item.entityValue);
       if (value === null)
-        value = await (0, import_tools.getValueEntryBoolean)(item.entityValue);
+        value = await tools.getValueEntryBoolean(item.entityValue);
       if (value === null) {
         payload[`icon${s}`] = "";
         payload[`icon${s}Color`] = "";

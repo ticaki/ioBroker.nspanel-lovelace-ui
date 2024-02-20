@@ -10,7 +10,7 @@ import { deepAssign } from '../const/tools';
 import { lightTemplates } from '../templates/light';
 import { shutterTemplates } from '../templates/shutter';
 import { textTemplates } from '../templates/text';
-import { PageItemOptionsTemplate } from '../types/type-pageItem';
+import { PageItemDataItemsOptions, PageItemOptionsTemplate } from '../types/type-pageItem';
 
 export interface PageConfigInterface {
     config: pages.PageBaseConfig;
@@ -50,52 +50,78 @@ export class Page extends BaseClassPage {
     }
 
     async init(): Promise<void> {
+        // do the work für PageItems only one time - changes in ObjectDB need a adapter restart.
         if (this.pageItemConfig) {
             for (let a = 0; a < this.pageItemConfig.length; a++) {
-                const options = this.pageItemConfig[a];
+                let options = this.pageItemConfig[a];
                 if (options === undefined) continue;
-                if ('template' in options && options.template) {
-                    let index = -1;
-                    let template: PageItemOptionsTemplate | undefined;
-                    for (const i of [textTemplates, shutterTemplates, lightTemplates]) {
-                        index = i.findIndex((a) => a.template === options!.template);
-                        if (index !== -1) {
-                            template = i[index];
-                            break;
-                        }
-                    }
-                    if (index === -1 || !template) {
-                        this.log.error('Dont find template ' + options.template);
-                        this.pageItemConfig[a] = undefined;
-                        continue;
-                    }
-                    if (
-                        template.adapter &&
-                        !options.dpInit.startsWith(template.adapter) &&
-                        !this.dpInit.startsWith(template.adapter)
-                    ) {
-                        this.log.error(
-                            'Missing dbInit or dbInit not starts with' +
-                                template.adapter +
-                                ' for template ' +
-                                options.template,
-                        );
-                        this.pageItemConfig[a] = undefined;
-                        continue;
-                    }
-                    const newTemplate = structuredClone(template) as Partial<PageItemOptionsTemplate>;
-                    delete newTemplate.adapter;
-                    if (options.type && options.type !== template.type) {
-                        this.log.error('Type: ' + options.type + 'is not equal with ' + template.type);
-                        this.pageItemConfig[a] = undefined;
-                        continue;
-                    }
-                    options.type = template.type;
-                    options.role = template.role;
-                    this.pageItemConfig[a] = deepAssign(newTemplate, options);
-                }
+                options = await this.getItemFromTemplate(options);
+                if (!options) continue;
+
+                // search states for mode auto
+                const dpInit = (this.dpInit ? this.dpInit : options.dpInit) ?? '';
+                options.data = dpInit
+                    ? await this.panel.statesControler.getDataItemsFromAuto(dpInit, options.data)
+                    : options.data;
+
+                this.pageItemConfig[a] = options;
             }
         }
+    }
+
+    async getItemFromTemplate(
+        options: PageItemDataItemsOptions,
+        subTemplate: string = '',
+        loop: number = 0,
+    ): Promise<PageItemDataItemsOptions | undefined> {
+        if ('template' in options && options.template) {
+            let index = -1;
+            let template: PageItemOptionsTemplate | undefined;
+            const n = loop === 0 ? options.template : subTemplate;
+            if (!n) return undefined;
+            for (const i of [textTemplates, shutterTemplates, lightTemplates]) {
+                index = i.findIndex((a) => a.template === n);
+                if (index !== -1) {
+                    template = i[index];
+                    break;
+                }
+            }
+            if (index === -1 || !template) {
+                this.log.error('Dont find template ' + options.template);
+                return undefined;
+            }
+            if (
+                template.adapter &&
+                !options.dpInit.startsWith(template.adapter) &&
+                !this.dpInit.startsWith(template.adapter)
+            ) {
+                this.log.error(
+                    'Missing dbInit or dbInit not starts with' + template.adapter + ' for template ' + options.template,
+                );
+                return undefined;
+            }
+
+            const newTemplate = structuredClone(template) as Partial<PageItemOptionsTemplate>;
+            delete newTemplate.adapter;
+            if (options.type && options.type !== template.type) {
+                this.log.error('Type: ' + options.type + 'is not equal with ' + template.type);
+                return undefined;
+            }
+            options.type = template.type;
+            options.role = template.role;
+            options = deepAssign(newTemplate, options);
+            if (template.subTemplate !== undefined) {
+                if (loop > 10) {
+                    throw new Error(
+                        `Endless loop in getItemFromTemplate() detected! From ${template.subTemplate} for ${template.template}. Bye Bye`,
+                    );
+                }
+                const o = await this.getItemFromTemplate(options, template.subTemplate, ++loop);
+                if (o !== undefined) options = o;
+                else this.log.warn(`Dont get a template from ${template.subTemplate} for ${template.template}`);
+            }
+        }
+        return options;
     }
 
     async onButtonEvent(event: IncomingEvent): Promise<void> {

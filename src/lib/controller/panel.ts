@@ -2,7 +2,7 @@ import { PanelSend } from './panel-message';
 
 import dayjs from 'dayjs';
 import { Screensaver, ScreensaverConfigType } from '../pages/screensaver';
-import * as NSPanel from '../types/types';
+import * as Types from '../types/types';
 import * as pages from '../types/pages';
 import { Controller } from './controller';
 import { AdapterClassDefinition, BaseClass } from '../classes/library';
@@ -17,6 +17,7 @@ import { Navigation, NavigationConfig } from '../classes/navigation';
 import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
 import { PageItem } from '../pages/pageItem';
+import { PageEntities } from '../pages/pageEntities';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -135,7 +136,7 @@ export class Panel extends BaseClass {
                         dpInit: pageConfig.dpInit,
                     };
                     pageConfig = Page.getPage(pageConfig, this);
-                    this.pages[a] = new PageGrid(pmconfig, pageConfig);
+                    this.pages[a] = new PageEntities(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardGrid2':
@@ -353,13 +354,13 @@ export class Panel extends BaseClass {
         }
         if (topic.endsWith(ReiveTopicAppendix)) {
             //this.log.debug(`Receive message ${topic} with ${message}`);
-            const event: NSPanel.IncomingEvent | null = this.convertToEvent(message);
+            const event: Types.IncomingEvent | null = this.convertToEvent(message);
             if (event) {
                 this.HandleIncomingMessage(event);
             }
         } else {
             const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) ||
-                [])[0] as NSPanel.TasmotaIncomingTopics | null;
+                [])[0] as Types.TasmotaIncomingTopics | null;
             if (command) {
                 //this.log.debug(`Receive other message ${topic} with ${message}`);
                 switch (command) {
@@ -382,7 +383,7 @@ export class Panel extends BaseClass {
                         break;
                     }
                     case 'stat/STATUS0': {
-                        const data = JSON.parse(message) as NSPanel.STATUS0;
+                        const data = JSON.parse(message) as Types.STATUS0;
                         this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
                         if (!this.InitDone) {
                             this.sendToTasmota(
@@ -487,7 +488,7 @@ export class Panel extends BaseClass {
         const index = this.pages.findIndex((a) => a && a.uniqueID && a.uniqueID === uniqueID);
         return this.pages[index] ?? null;
     }
-    async HandleIncomingMessage(event: NSPanel.IncomingEvent): Promise<void> {
+    async HandleIncomingMessage(event: Types.IncomingEvent): Promise<void> {
         this.log.debug('Receive message:' + JSON.stringify(event));
         const index = this.pages.findIndex((a) => {
             if (a && a.card !== 'screensaver' && a.card !== 'screensaver2') return true;
@@ -526,7 +527,7 @@ export class Panel extends BaseClass {
                 await this.setActivePage(false);
                 this.getActivePage().onPopupRequest(
                     event.id,
-                    event.popup as NSPanel.PopupType,
+                    event.popup as Types.PopupType,
                     event.action,
                     event.opt,
                     event,
@@ -549,7 +550,7 @@ export class Panel extends BaseClass {
                     }
                     this.getActivePage().onPopupRequest(
                         event.id,
-                        event.popup as NSPanel.PopupType,
+                        event.popup as Types.PopupType,
                         event.action,
                         event.opt,
                         event,
@@ -574,7 +575,7 @@ export class Panel extends BaseClass {
             }
         }
     }
-    private convertToEvent(msg: string): NSPanel.IncomingEvent | null {
+    private convertToEvent(msg: string): Types.IncomingEvent | null {
         try {
             msg = (JSON.parse(msg) || {}).CustomRecv;
         } catch (e) {
@@ -582,8 +583,8 @@ export class Panel extends BaseClass {
         }
         if (msg === undefined) return null;
         const temp = msg.split(',');
-        if (!NSPanel.isEventType(temp[0])) return null;
-        if (!NSPanel.isEventMethod(temp[1])) return null;
+        if (!Types.isEventType(temp[0])) return null;
+        if (!Types.isEventMethod(temp[1])) return null;
         let popup: undefined | string = undefined;
         if (temp[1] === 'pageOpenDetail') popup = temp.splice(2, 1)[0];
         const arr = String(temp[2]).split('?');

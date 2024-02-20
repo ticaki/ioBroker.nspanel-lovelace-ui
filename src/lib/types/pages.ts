@@ -1,16 +1,8 @@
 import * as Types from './types';
-import { Dataitem } from '../classes/data-item';
-import { RGB } from './Color';
-import {
-    PageItemDataItemsOptions,
-    IconBoolean,
-    TextEntryType,
-    ValueEntryType,
-    ColorEntryType,
-    ScaledNumberType,
-    IconEntryType,
-} from './type-pageItem';
-import { MediaToolBoxAction } from './type-pageItem';
+import * as dataItem from '../classes/data-item';
+import * as Color from '../const/Color';
+import * as typePageItem from './type-pageItem';
+import * as typePageItem_1 from './type-pageItem';
 
 export type PageTypeCards =
     | 'cardChart'
@@ -213,7 +205,7 @@ export type PageBaseConfigTemplate = {
     adapter: string;
     alwaysOn: 'none' | 'always' | 'action';
     useColor: boolean;
-    pageItems: PageItemDataItemsOptions[];
+    pageItems: typePageItem.PageItemDataItemsOptions[];
 
     //    mediaNamespace: string;
     config:
@@ -236,7 +228,7 @@ export type PageBaseConfig = (
           dpInit: string; // '' and initMode 'auto' throw an error
           alwaysOn: 'none' | 'always' | 'action';
           useColor: boolean;
-          pageItems: PageItemDataItemsOptions[];
+          pageItems: typePageItem.PageItemDataItemsOptions[];
 
           //    mediaNamespace: string;
           config:
@@ -266,12 +258,12 @@ export type PageBaseConfig = (
 };
 type PageAlarmPowerConfig = {
     headline: string;
-    entity1: ValueEntryType;
+    entity1: typePageItem.ValueEntryType;
     button1: string;
     button2: string;
     button3: string;
     button4: string;
-    icon: IconEntryType;
+    icon: typePageItem.IconEntryType;
 };
 export type cardAlarmDataItemOptions = {
     card: 'cardAlarm';
@@ -279,7 +271,7 @@ export type cardAlarmDataItemOptions = {
 };
 export type cardAlarmDataItems = {
     card: 'cardAlarm';
-    data: ChangeTypeOfKeys<PageAlarmPowerConfig, Dataitem | undefined>;
+    data: ChangeTypeOfKeys<PageAlarmPowerConfig, dataItem.Dataitem | undefined>;
 };
 
 export type cardPowerDataItemOptions = {
@@ -288,7 +280,7 @@ export type cardPowerDataItemOptions = {
 };
 export type cardPowerDataItems = {
     card: 'cardPower';
-    data: ChangeTypeOfKeys<PageGridPowerConfig, Dataitem | undefined>;
+    data: ChangeTypeOfKeys<PageGridPowerConfig, dataItem.Dataitem | undefined>;
 };
 
 export type cardGridDataItemOptions = {
@@ -297,7 +289,7 @@ export type cardGridDataItemOptions = {
 };
 export type cardGridDataItems = {
     card: 'cardGrid' | 'cardGrid2';
-    data: ChangeTypeOfKeys<PageGridBaseConfig, Dataitem | undefined>;
+    data: ChangeTypeOfKeys<PageGridBaseConfig, dataItem.Dataitem | undefined>;
 };
 
 export type cardEntitiesDataItemOptions = {
@@ -306,7 +298,7 @@ export type cardEntitiesDataItemOptions = {
 };
 export type cardEntitiesDataItems = {
     card: 'cardEntities';
-    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Dataitem | undefined>;
+    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
 };
 
 export type cardThermoDataItemOptions = {
@@ -315,7 +307,7 @@ export type cardThermoDataItemOptions = {
 };
 export type cardThermoDataItems = {
     card: 'cardThermo';
-    data: ChangeTypeOfKeys<PageThermoBaseConfig, Dataitem | undefined>;
+    data: ChangeTypeOfKeys<PageThermoBaseConfig, dataItem.Dataitem | undefined>;
 };
 
 export type cardMediaDataItemOptions = {
@@ -325,7 +317,7 @@ export type cardMediaDataItemOptions = {
 
 export type cardMediaDataItems = {
     card: 'cardMedia';
-    data: ChangeTypeOfKeys<PageMediaBaseConfig, Dataitem | undefined> & {
+    data: ChangeTypeOfKeys<PageMediaBaseConfig, dataItem.Dataitem | undefined> & {
         toolbox: (toolboxItemDataItem | undefined)[];
     } & { logo: toolboxItemDataItem | undefined };
 };
@@ -334,14 +326,14 @@ export type ChangeDeepPartial<Obj> = Obj extends
     | object
     | listItem
     | PageTypeCards
-    | IconBoolean
-    | TextEntryType
-    | ValueEntryType
-    | IconEntryType
-    | ScaledNumberType
+    | typePageItem.IconBoolean
+    | typePageItem.TextEntryType
+    | typePageItem.ValueEntryType
+    | typePageItem.IconEntryType
+    | typePageItem.ScaledNumberType
     | PageGridPowerConfigElement
-    | RGB
-    | ColorEntryType
+    | Color.RGB
+    | typePageItem.ColorEntryType
     | PageMediaBaseConfig
     | Types.SerialTypePageElements
     ? Obj extends Types.DataItemsOptions
@@ -355,17 +347,17 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | object
     | listItem
     | PageTypeCards
-    | IconBoolean
-    | TextEntryType
-    | ValueEntryType
-    | IconEntryType
-    | ScaledNumberType
+    | typePageItem.IconBoolean
+    | typePageItem.TextEntryType
+    | typePageItem.ValueEntryType
+    | typePageItem.IconEntryType
+    | typePageItem.ScaledNumberType
     | PageGridPowerConfigElement
-    | RGB
-    | ColorEntryType
+    | Color.RGB
+    | typePageItem.ColorEntryType
     | PageMediaBaseConfig
     | Types.SerialTypePageElements
-    ? Obj extends RGB | Types.IconScaleElement
+    ? Obj extends Color.RGB | Types.IconScaleElement
         ? N
         : {
               [K in keyof Obj]: ChangeTypeOfKeys<Obj[K], N>;
@@ -401,8 +393,8 @@ type PageMediaBaseConfig = {
     duration: string;
     elapsed: string;
     artist: listItem;
-    shuffle: ScaledNumberType;
-    volume: ScaledNumberType;
+    shuffle: typePageItem.ScaledNumberType;
+    volume: typePageItem.ScaledNumberType;
     icon: string;
     play: string;
     mediaState: string;
@@ -422,9 +414,9 @@ type PageEntitiesBaseConfig = {
 
 type PageGridPowerConfig = {
     headline: string;
-    homeValueTop: ValueEntryType;
-    homeIcon: IconEntryType;
-    homeValueBot: ValueEntryType;
+    homeValueTop: typePageItem.ValueEntryType;
+    homeIcon: typePageItem.IconEntryType;
+    homeValueBot: typePageItem.ValueEntryType;
     leftTop: PageGridPowerConfigElement;
     leftMiddle: PageGridPowerConfigElement;
     leftBottom: PageGridPowerConfigElement;
@@ -435,10 +427,10 @@ type PageGridPowerConfig = {
 
 export type PageGridPowerConfigElement =
     | {
-          icon?: IconEntryType;
-          value?: ValueEntryType;
-          speed?: ScaledNumberType;
-          text?: TextEntryType;
+          icon?: typePageItem.IconEntryType;
+          value?: typePageItem.ValueEntryType;
+          speed?: typePageItem.ScaledNumberType;
+          text?: typePageItem.TextEntryType;
       }
     | undefined;
 
@@ -472,7 +464,7 @@ type PageThermoBaseConfig = {
     icon?: string;
     color?: string;
 };
-export function isColorEntryType(F: object | ColorEntryType): F is ColorEntryType {
+export function isColorEntryType(F: object | typePageItem.ColorEntryType): F is typePageItem.ColorEntryType {
     if ('true' in F && 'false' in F && 'scale' in F) return true;
     return false;
 }
@@ -586,12 +578,14 @@ export type listItem =
     | {
           on: string;
           text: string;
-          color: ColorEntryType | string | undefined;
-          icon?: IconBoolean | string | undefined;
+          color: typePageItem.ColorEntryType | string | undefined;
+          icon?: typePageItem.IconBoolean | string | undefined;
           list?: string | undefined;
       }
     | undefined; // mean string start with getState(' and end with ').val
 export type toolboxItem = ChangeTypeOfKeys<listItem, Types.DataItemsOptions | undefined> & {
-    action: MediaToolBoxAction;
+    action: typePageItem_1.MediaToolBoxAction;
 };
-export type toolboxItemDataItem = ChangeTypeOfKeys<listItem, Dataitem | undefined> & { action: MediaToolBoxAction };
+export type toolboxItemDataItem = ChangeTypeOfKeys<listItem, dataItem.Dataitem | undefined> & {
+    action: typePageItem_1.MediaToolBoxAction;
+};

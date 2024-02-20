@@ -2,7 +2,6 @@ import * as Color from '../const/Color';
 import { BaseClass } from './library';
 import { BaseClassTriggerd, StatesControler } from '../controller/states-controller';
 import * as NSPanel from '../types/types';
-import { RGB } from '../types/Color';
 
 export class Dataitem extends BaseClass {
     options: NSPanel.DataItemsOptions;
@@ -154,7 +153,7 @@ export class Dataitem extends BaseClass {
         return null;
     }
 
-    async getRGBValue(): Promise<RGB | null> {
+    async getRGBValue(): Promise<Color.RGB | null> {
         const value = await this.getObject();
         if (value) {
             if (Color.isRGB(value)) return value;

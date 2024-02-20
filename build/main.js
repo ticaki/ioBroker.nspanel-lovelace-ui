@@ -48,15 +48,15 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.library = new import_library.Library(this);
     if (!this.config.Testconfig2) {
       this.log.warn("No configuration use dev test config!");
-      this.config.Testconfig2 = [import_config_custom.Testconfig];
+      this.config.Testconfig2 = import_config_custom.Testconfig;
     }
-    import_config_custom.Testconfig.pages[0].mode = this.config.scstype;
+    this.config.Testconfig2[0].pages[0].mode = this.config.scstype;
     this.config.Testconfig2[0].timeout = this.config.timeout;
     this.setTimeout(async () => {
-      if (!import_config_custom.Testconfig.pages)
+      if (!import_config_custom.Testconfig[0].pages)
         return;
       const names = [];
-      for (const p of import_config_custom.Testconfig.pages) {
+      for (const p of import_config_custom.Testconfig[0].pages) {
         if (p.card === "screensaver" || p.card === "screensaver2")
           continue;
         if (!("uniqueID" in p))
@@ -91,7 +91,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.controller = new import_controller.Controller(this, {
         mqttClient: this.mqttClient,
         name: "controller",
-        panels: JSON.parse(JSON.stringify(testconfig))
+        panels: testconfig
       });
       await this.controller.init();
       setInterval(() => {

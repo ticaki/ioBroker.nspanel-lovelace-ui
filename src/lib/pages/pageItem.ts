@@ -14,7 +14,7 @@ import * as tools from '../const/tools';
 import { PopupType } from '../types/types';
 import { Panel } from '../controller/panel';
 import { BaseClassTriggerd } from '../controller/states-controller';
-import { RGB } from '../types/Color';
+import { RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { Dataitem } from '../classes/data-item';
 
@@ -53,15 +53,15 @@ export class PageItem extends BaseClassTriggerd {
     async init(): Promise<void> {
         if (!this.config) return;
         const config = structuredClone(this.config);
-        // search states for mode auto
+        /*// search states for mode auto
         const dpInit = (this.parent && this.parent.dpInit ? this.parent.dpInit : this.config.dpInit) ?? '';
         const tempConfig: Partial<PageItemDataItemsOptions['data']> = dpInit
             ? await this.panel.statesControler.getDataItemsFromAuto(dpInit, config.data)
-            : config.data;
+            : config.data;*/
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
         const tempItem: PageItemDataItems['data'] = (await this.panel.statesControler.createDataItems(
-            tempConfig,
+            config.data,
             this,
         )) as PageItemDataItems['data'];
         this.dataItems = { ...config, data: tempItem } as PageItemDataItems;

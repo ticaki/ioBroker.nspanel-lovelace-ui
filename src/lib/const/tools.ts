@@ -9,7 +9,7 @@ import {
     ValueEntryType,
 } from '../types/type-pageItem';
 import { Library } from '../classes/library';
-import { RGB } from '../types/Color';
+import { RGB } from '../const/Color';
 import {
     HMIOff,
     HMIOn,
@@ -264,7 +264,7 @@ export async function getIconEntryColor(
         let cfrom = i.false && i.false.color && (await i.false.color.getRGBValue());
         const scale = i.scale && (await i.scale.getObject());
         if (cto && cfrom && scale) {
-            let rColor: RGB | null = null;
+            let rColor: RGB = cto;
             if (isIconScaleElement(scale)) {
                 let vMin = scale.val_min < value ? scale.val_min : value;
                 let vMax = scale.val_max > value ? scale.val_max : value;

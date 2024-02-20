@@ -201,7 +201,7 @@ const textTemplates = [
             constVal: Color.Red
           }
         },
-        scale: { type: "const", constVal: { val_min: 5, val_max: 30, log10: "min" } }
+        scale: { type: "const", constVal: { val_min: 10, val_max: 50, log10: "max" } }
       },
       entity1: {
         value: {

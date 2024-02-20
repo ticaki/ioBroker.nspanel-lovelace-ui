@@ -262,9 +262,9 @@ async function getIconEntryColor(i, value, def, defOff = null) {
     let cto = i.true && i.true.color && await i.true.color.getRGBValue();
     let cfrom = i.false && i.false.color && await i.false.color.getRGBValue();
     const scale2 = i.scale && await i.scale.getObject();
-    if (cto && cfrom) {
-      let rColor = null;
-      if (scale2 && (0, import_types.isIconScaleElement)(scale2)) {
+    if (cto && cfrom && scale2) {
+      let rColor = cto;
+      if ((0, import_types.isIconScaleElement)(scale2)) {
         let vMin = scale2.val_min < value ? scale2.val_min : value;
         let vMax = scale2.val_max > value ? scale2.val_max : value;
         if (vMax < vMin) {
@@ -293,6 +293,11 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           rColor = (0, import_Color2.mixColor)(cfrom, cto, factor);
         }
         return String((0, import_Color2.rgb_dec565)(rColor));
+      } else if ((0, import_types.isPartialIconScaleElement)(scale2)) {
+        if (scale2.val_min && scale2.val_min >= value || scale2.val_max && scale2.val_max <= value)
+          return String((0, import_Color2.rgb_dec565)(cto));
+        else
+          String((0, import_Color2.rgb_dec565)(cfrom));
       }
     }
     if (value) {

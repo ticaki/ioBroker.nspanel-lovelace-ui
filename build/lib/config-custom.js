@@ -1724,6 +1724,330 @@ const pageGridTest2 = {
     }
   ]
 };
+const pageGridTest5 = {
+  card: "cardGrid",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "grid5",
+  useColor: false,
+  config: {
+    card: "cardGrid",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "grid1"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "text.list",
+      type: "number",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: 23
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Number"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "rgb",
+      type: "shutter",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-shutter-open" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "window-shutter" },
+            color: { type: "const", constVal: Color.HMIOff }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0,
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 100 }
+        },
+        entity2: {
+          value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0,
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 100 }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "text"
+          },
+          false: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Shutter"
+        },
+        text1: {
+          true: {
+            type: "const",
+            constVal: "text1"
+          },
+          false: void 0
+        },
+        text2: {
+          true: {
+            type: "const",
+            constVal: "text2"
+          },
+          false: void 0
+        },
+        up: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.open.blind", "button.open"]
+        },
+        down: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.close.blind", "button.close"]
+        },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "rgb",
+      type: "light",
+      dpInit: "",
+      data: {
+        color: {
+          true: { type: "triggered", dp: "0_userdata.0.RGB" },
+          false: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.HMIOff }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        colorMode: { type: "const", constVal: true },
+        dimmer: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.dimmer"
+          }
+        },
+        entity1: {
+          value: { type: "triggered", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        entityInSel: void 0,
+        text1: {
+          true: {
+            type: "const",
+            constVal: "Licht"
+          },
+          false: void 0
+        },
+        text2: {
+          true: {
+            type: "const",
+            constVal: "Picker1"
+          },
+          false: void 0
+        },
+        text3: {
+          true: {
+            type: "const",
+            constVal: "Picker2"
+          },
+          false: void 0
+        },
+        ct: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.ct"
+          }
+        },
+        valueList: { type: "const", constVal: "home?butter" },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        headline: { type: "const", constVal: "insel" },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entityInSel: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        valueList: { type: "const", constVal: "home?butter" },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "music" },
+            color: { type: "const", constVal: Color.Gray }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: { type: "const", constVal: "Navbutton" },
+          false: void 0
+        },
+        setNavi: {
+          type: "const",
+          constVal: "3"
+        },
+        setValue1: void 0
+      }
+    },
+    {
+      role: "text.list",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            text: { type: "const", constVal: "22.2" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: { type: "const", constVal: "text" },
+          false: void 0
+        },
+        text1: {
+          true: { type: "const", constVal: "text1" },
+          false: void 0
+        }
+      }
+    }
+  ],
+  items: void 0
+};
 const pageGridTest4 = {
   card: "cardGrid",
   dpInit: "",
@@ -1828,7 +2152,7 @@ const pageGridTest4 = {
     }
   ]
 };
-const pageGrid2Test2 = {
+const pageGrid2Test3 = {
   card: "cardGrid2",
   dpInit: "",
   alwaysOn: "none",
@@ -3320,94 +3644,97 @@ const pageScreensaverTest = {
     ]
   }
 };
-const Testconfig = {
-  pages: [
-    pageGridTest4,
-    pageEntitiesTest1,
-    pagePowerTest1,
-    pageThermoTest,
-    pageGridTest1,
-    pageGrid2Test2,
-    pageGridTest2,
-    pageScreensaverTest,
-    pageMediaTest,
-    pageEntitiesTest2,
-    pageAbfall
-  ],
-  navigation: [
-    {
-      name: "main",
-      page: "entities1",
-      left: { single: "7" },
-      right: { single: "abfall1", double: "2" }
+const Testconfig = [
+  {
+    pages: [
+      pageGridTest4,
+      pageEntitiesTest1,
+      pagePowerTest1,
+      pageThermoTest,
+      pageGridTest1,
+      pageGrid2Test3,
+      pageGridTest2,
+      pageScreensaverTest,
+      pageMediaTest,
+      pageEntitiesTest2,
+      pageAbfall,
+      pageGridTest5
+    ],
+    navigation: [
+      {
+        name: "main",
+        page: "entities1",
+        left: { single: "7" },
+        right: { single: "abfall1", double: "2" }
+      },
+      {
+        name: "5",
+        page: "thermo1",
+        left: { single: "4" },
+        right: { single: "6", double: "main" }
+      },
+      {
+        name: "abfall1",
+        page: "abfall1",
+        left: { single: "main" },
+        right: { single: "entities2", double: "main" }
+      },
+      {
+        name: "entities2",
+        page: "entities2",
+        left: { single: "main" },
+        right: { single: "1", double: "main" }
+      },
+      {
+        name: "6",
+        page: "power1",
+        left: { single: "5" },
+        right: { single: "7", double: "main" }
+      },
+      {
+        name: "7",
+        page: "grid4",
+        left: { single: "6" },
+        right: { single: "main", double: "main" }
+      },
+      {
+        name: "1",
+        left: { single: "main" },
+        right: { single: "2" },
+        page: "grid1"
+      },
+      {
+        name: "2",
+        left: { single: "1" },
+        right: { single: "3" },
+        page: "grid2"
+      },
+      {
+        name: "3",
+        left: { single: "2" },
+        right: { single: "4", double: "main" },
+        page: "media1"
+      },
+      {
+        name: "4",
+        left: { single: "3", double: "1" },
+        right: { single: "5", double: "2" },
+        page: "grid3"
+      }
+    ],
+    topic: "nspanel/ns_panel2",
+    name: "Wohnzimmer",
+    config: {
+      momentLocale: "",
+      locale: "de-DE",
+      iconBig1: false,
+      iconBig2: false
     },
-    {
-      name: "5",
-      page: "thermo1",
-      left: { single: "4" },
-      right: { single: "6", double: "main" }
-    },
-    {
-      name: "abfall1",
-      page: "abfall1",
-      left: { single: "main" },
-      right: { single: "entities2", double: "main" }
-    },
-    {
-      name: "entities2",
-      page: "entities2",
-      left: { single: "main" },
-      right: { single: "1", double: "main" }
-    },
-    {
-      name: "6",
-      page: "power1",
-      left: { single: "5" },
-      right: { single: "7", double: "main" }
-    },
-    {
-      name: "7",
-      page: "grid4",
-      left: { single: "6" },
-      right: { single: "main", double: "main" }
-    },
-    {
-      name: "1",
-      left: { single: "main" },
-      right: { single: "2" },
-      page: "grid1"
-    },
-    {
-      name: "2",
-      left: { single: "1" },
-      right: { single: "3" },
-      page: "grid2"
-    },
-    {
-      name: "3",
-      left: { single: "2" },
-      right: { single: "4", double: "main" },
-      page: "media1"
-    },
-    {
-      name: "4",
-      left: { single: "3", double: "1" },
-      right: { single: "5", double: "2" },
-      page: "grid3"
-    }
-  ],
-  topic: "nspanel/ns_panel2",
-  name: "Wohnzimmer",
-  config: {
-    momentLocale: "",
-    locale: "de-DE",
-    iconBig1: false,
-    iconBig2: false
-  },
-  timeout: 30,
-  dimLow: 20,
-  dimHigh: 90
-};
+    timeout: 30,
+    dimLow: 20,
+    dimHigh: 90
+  }
+];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Testconfig,

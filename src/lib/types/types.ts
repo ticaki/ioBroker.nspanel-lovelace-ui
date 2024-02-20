@@ -1,7 +1,7 @@
-import { Dataitem } from '../classes/data-item';
-import { RGB } from './Color';
-import { IconEntryType, TextEntryType, ValueEntryType } from './type-pageItem';
-import { ChangeTypeOfKeys, StateRole } from './pages';
+import * as dataItem from '../classes/data-item';
+import * as Color from '../const/Color';
+import * as typePageItem from './type-pageItem';
+import * as pages from './pages';
 
 export type PageTemplateIdent = 'waste-calendar.entities';
 
@@ -86,6 +86,7 @@ export type EventMethod =
     | 'renderCurrentPage'
     | 'button1'
     | 'button2';
+
 export type panelRecvType = {
     event: 'event';
     method: EventMethod;
@@ -135,45 +136,6 @@ export type SerialTypePopup =
     | 'fan'
     | 'switch'
     | 'delete';
-
-export type roles =
-    | 'light'
-    | 'socket'
-    | 'dimmer'
-    | 'hue'
-    | 'rgb'
-    | 'rgbSingle'
-    | 'cd'
-    | 'blind'
-    | 'door'
-    | 'window'
-    | 'volumeGroup'
-    | 'volume'
-    | 'info'
-    | 'humidity'
-    | 'temperature'
-    | 'value.temperature'
-    | 'value.humidity'
-    | 'sensor.door'
-    | 'sensor.window'
-    | 'thermostat'
-    | 'warning'
-    | 'ct'
-    | 'cie'
-    | 'gate'
-    | 'motion'
-    | 'buttonSensor'
-    | 'button'
-    | 'value.time'
-    | 'level.timer'
-    | 'value.alarmtime'
-    | 'level.mode.fan'
-    | 'lock'
-    | 'slider'
-    | 'switch.mode.wlan'
-    | 'media'
-    | 'timeTable'
-    | 'airCondition';
 
 export type ButtonActionType =
     | 'bExit'
@@ -260,10 +222,10 @@ export type Config = {
         indicatorEntity: ScreenSaverElement[];
         mrIconEntity: [ScreenSaverElement, ScreenSaverElement];
     };
-    defaultColor: RGB;
-    defaultOnColor: RGB;
-    defaultOffColor: RGB;
-    defaultBackgroundColor: RGB;
+    defaultColor: Color.RGB;
+    defaultOnColor: Color.RGB;
+    defaultOffColor: Color.RGB;
+    defaultBackgroundColor: Color.RGB;
 };
 export type leftScreensaverEntityType =
     | [ScreenSaverElementWithUndefined, ScreenSaverElementWithUndefined, ScreenSaverElementWithUndefined]
@@ -278,33 +240,19 @@ export type indicatorScreensaverEntityType =
       ]
     | [];
 export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
-/*export type ScreenSaverElement = {
-    entity: string;
-    entityText: string;
-    entityFactor?: number | string;
-    entityDecimalPlaces?: number | string;
-    entityDateFormat?: Intl.DateTimeFormatOptions | string;
-    entityIconOn?: string | null;
-    entityIconOff?: string | null;
-    entityUnitText?: string;
-    entityIconColor?: RGB | IconScaleElement | string;
-    entityOnColor?: RGB | string;
-    entityOffColor?: RGB | string;
-    entityOnText?: string | null;
-    entityOffText?: string | null;
-};*/
+
 export type ScreenSaverDataItems = {
-    entityValue: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined>;
-    entityDateFormat: Dataitem | undefined;
-    entityIcon: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined>;
-    entityText: ChangeTypeOfKeys<TextEntryType, Dataitem | undefined>;
-    entityIconSelect: Dataitem | undefined;
+    entityValue: pages.ChangeTypeOfKeys<typePageItem.ValueEntryType, dataItem.Dataitem | undefined>;
+    entityDateFormat: dataItem.Dataitem | undefined;
+    entityIcon: pages.ChangeTypeOfKeys<typePageItem.IconEntryType, dataItem.Dataitem | undefined>;
+    entityText: pages.ChangeTypeOfKeys<typePageItem.TextEntryType, dataItem.Dataitem | undefined>;
+    entityIconSelect: dataItem.Dataitem | undefined;
 };
 export type ScreenSaverElement = {
-    entityValue: ChangeTypeOfKeys<ValueEntryType, DataItemsOptions | undefined>;
+    entityValue: pages.ChangeTypeOfKeys<typePageItem.ValueEntryType, DataItemsOptions | undefined>;
     entityDateFormat: ScreenSaverElementConfig;
-    entityIcon: ChangeTypeOfKeys<IconEntryType, DataItemsOptions | undefined>;
-    entityText: ChangeTypeOfKeys<TextEntryType, DataItemsOptions | undefined>;
+    entityIcon: pages.ChangeTypeOfKeys<typePageItem.IconEntryType, DataItemsOptions | undefined>;
+    entityText: pages.ChangeTypeOfKeys<typePageItem.TextEntryType, DataItemsOptions | undefined>;
     entityIconSelect: ScreenSaverElementConfig;
 };
 
@@ -324,16 +272,6 @@ export function isPartialIconScaleElement(F: any | IconScaleElement): F is IconS
     return F && ('val_min' in (F as IconScaleElement) || 'val_max' in (F as IconScaleElement));
 }
 
-export type mediaOptional =
-    | 'seek'
-    | 'crossfade'
-    | 'speakerlist'
-    | 'playlist'
-    | 'tracklist'
-    | 'equalizer'
-    | 'repeat'
-    | 'favorites';
-
 export type DataItemstype = DataItemsOptions['type'];
 export type DataItemsMode = 'custom' | 'auto';
 export type DataItemsOptionsIcon =
@@ -348,7 +286,7 @@ export type DataItemsOptions = {
 
 type DataItemsOptionsAuto = {
     mode: 'auto' | 'done'; // not set means custom
-    role: StateRole | StateRole[];
+    role: pages.StateRole | pages.StateRole[];
 };
 type DataItemsOptionsCustom = {
     mode?: 'custom'; // not set means custom
@@ -357,7 +295,7 @@ type DataItemsOptionsCustom = {
 
 type DataItemsOptionsConst = {
     type: 'const';
-    role?: StateRole;
+    role?: pages.StateRole;
     constVal: StateValue | AllIcons;
     state?: State | null; // use just inside of class
     forceType?: 'string' | 'number' | 'boolean'; // force a type
@@ -430,6 +368,9 @@ export type StateValue = ioBroker.StateValue | object;
 
 export type TasmotaIncomingTopics = 'stat/POWER2' | 'stat/POWER1' | 'stat/STATUS0';
 
+/**
+ * Json to Status0 from Tasmota
+ */
 export type STATUS0 = {
     Status: {
         Module: number;

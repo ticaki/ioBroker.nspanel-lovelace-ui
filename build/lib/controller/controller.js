@@ -41,6 +41,8 @@ class Controller extends Library.BaseClass {
     this.mqttClient = options.mqttClient;
     this.statesControler = new import_states_controller.StatesControler(this.adapter);
     for (const panelConfig of options.panels) {
+      if (panelConfig === void 0)
+        continue;
       panelConfig.controller = this;
       if (!Panel.isPanelConfig(panelConfig)) {
         this.log.warn(`Panelconfig for ${panelConfig.name} is invalid!`);

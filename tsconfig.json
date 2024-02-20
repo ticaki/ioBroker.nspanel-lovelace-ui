@@ -34,6 +34,6 @@
         "sourceMap": true,
         "inlineSourceMap": false
     },
-    "include": ["src/**/*.ts", ".dev-data/nspanel_config.ts"],
-    "exclude": ["build/**", "node_modules/**", "widgets/**", ".dev-Data/*"]
+    "include": ["src/**/*.ts"],
+    "exclude": ["build/**", "node_modules/**", "widgets/**", ".dev-Data/*", "script/*"]
 }

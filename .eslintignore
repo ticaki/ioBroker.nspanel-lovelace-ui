@@ -2,4 +2,5 @@ build/
 .prettierrc.js
 **/.eslintrc.js
 admin/words.js
-dev-data/
+.dev-data/
+script/

@@ -3,8 +3,11 @@ import namesPlugin from 'colord/plugins/names';
 import mixPlugin from 'colord/plugins/mix';
 
 extend([namesPlugin, mixPlugin]);
-
-import { RGB } from '../types/Color';
+export type RGB = {
+    r: number;
+    g: number;
+    b: number;
+};
 
 export const HMIOff: RGB = { r: 68, g: 115, b: 158 }; // Blue-Off - Original Entity Off
 export const HMIOn: RGB = { r: 3, g: 169, b: 244 }; // Blue-On

@@ -1,6 +1,6 @@
-import { Dataitem } from '../classes/data-item';
-import { RGB } from './Color';
-import { ChangeDeepPartial, ChangeTypeOfKeys, DeviceRole } from './pages';
+import * as dataItem from '../classes/data-item';
+import * as Color from '../const/Color';
+import * as pages from './pages';
 import * as Types from './types';
 
 export type PageLightItem = {
@@ -8,11 +8,11 @@ export type PageLightItem = {
     bri: PageItemMinMaxValue;
     ct: PageItemMinMaxValue;
     hue: PageItemMinMaxValue; //0-360
-    rgb: RGB;
+    rgb: Color.RGB;
 };
 
 type PageItemMinMaxValue = { min: number; max: number };
-export type PageItemColorSwitch = { on: RGB; off: RGB };
+export type PageItemColorSwitch = { on: Color.RGB; off: Color.RGB };
 
 export type IconBoolean = Record<Types.BooleanUnion, string | undefined>;
 export type ThisCardMessageTypes = 'input_sel' | 'button';
@@ -170,7 +170,7 @@ export type PageItemDataItemsOptions =
           dpInit: string;
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &
-              ChangeDeepPartial<
+              pages.ChangeDeepPartial<
                   | PageItemButtonDataItemsOptions
                   | PageItemShutterDataItemsOptions
                   | PageItemInputSelDataItemsOptions
@@ -185,7 +185,8 @@ export type PageItemDataItemsOptions =
 
 export type PageItemOptionsTemplate = {
     template: Types.TemplateIdent;
-    role: DeviceRole;
+    subTemplate?: Types.TemplateIdent;
+    role: pages.DeviceRole;
     adapter: string;
     //dpInit: string;
     type: Types.SerialTypePageElements;
@@ -204,11 +205,11 @@ export type PageItemOptionsTemplate = {
 export type PageItemTimer = Pick<PageItemBase, 'entity1' | 'text' | 'headline' | 'icon' | 'setValue1'>;
 export type PageItemTimerDataItemsOptions = {
     type: 'timer';
-    data: ChangeTypeOfKeys<PageItemTimer, Types.DataItemsOptions | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemTimer, Types.DataItemsOptions | undefined>;
 };
 export type PageItemTimerDataItems = {
     type: 'timer';
-    data: ChangeTypeOfKeys<PageItemTimer, Dataitem | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemTimer, dataItem.Dataitem | undefined>;
 };
 
 export type PageItemFan = Pick<
@@ -217,41 +218,41 @@ export type PageItemFan = Pick<
 >;
 export type PageItemFanDataItemsOptions = {
     type: 'fan';
-    data: ChangeTypeOfKeys<PageItemFan, Types.DataItemsOptions | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemFan, Types.DataItemsOptions | undefined>;
 };
 export type PageItemFanDataItems = {
     type: 'fan';
-    data: ChangeTypeOfKeys<PageItemFan, Dataitem | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemFan, dataItem.Dataitem | undefined>;
 };
 
 export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'entity2' | 'icon'>;
 export type PageItemTextDataItemsOptions = {
     type: 'text';
-    data: ChangeTypeOfKeys<PageItemText, Types.DataItemsOptions | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemText, Types.DataItemsOptions | undefined>;
 };
 export type PageItemTextDataItems = {
     type: 'text';
-    data: ChangeTypeOfKeys<PageItemText, Dataitem | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemText, dataItem.Dataitem | undefined>;
 };
 
 export type PageItemNumber = Pick<PageItemBase, 'entity1' | 'text' | 'icon'>;
 export type PageItemNumberDataItemsOptions = {
     type: 'number';
-    data: ChangeTypeOfKeys<PageItemNumber, Types.DataItemsOptions | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemNumber, Types.DataItemsOptions | undefined>;
 };
 export type PageItemNumberDataItems = {
     type: 'number';
-    data: ChangeTypeOfKeys<PageItemNumber, Dataitem | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemNumber, dataItem.Dataitem | undefined>;
 };
 
 export type PageItemButton = Pick<PageItemBase, 'setValue1' | 'text' | 'icon' | 'color' | 'entity1' | 'setNavi'>;
 export type PageItemButtonDataItemsOptions = {
     type: 'button';
-    data: ChangeTypeOfKeys<PageItemButton, Types.DataItemsOptions | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemButton, Types.DataItemsOptions | undefined>;
 };
 export type PageItemButtonDataItems = {
     type: 'button';
-    data: ChangeTypeOfKeys<PageItemButton, Dataitem | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemButton, dataItem.Dataitem | undefined>;
 };
 
 export type PageItemLight = Pick<
@@ -278,11 +279,11 @@ export type PageItemLight = Pick<
 >;
 export type PageItemLightDataItemsOptions = {
     type: 'light';
-    data: ChangeTypeOfKeys<PageItemLight, Types.DataItemsOptions | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemLight, Types.DataItemsOptions | undefined>;
 };
 export type PageItemLightDataItems = {
     type: 'light';
-    data: ChangeTypeOfKeys<PageItemLight, Dataitem | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemLight, dataItem.Dataitem | undefined>;
 };
 
 export type PageItemInputSel = Pick<
@@ -292,12 +293,12 @@ export type PageItemInputSel = Pick<
 
 export type PageItemInputSelDataItemsOptions = {
     type: 'input_sel';
-    data: ChangeTypeOfKeys<PageItemInputSel, Types.DataItemsOptions | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemInputSel, Types.DataItemsOptions | undefined>;
 };
 
 export type PageItemInputSelDataItems = {
     type: 'input_sel';
-    data: ChangeTypeOfKeys<PageItemInputSel, Dataitem | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemInputSel, dataItem.Dataitem | undefined>;
 };
 
 export type PageItemShutter = Pick<
@@ -321,11 +322,11 @@ export type PageItemShutter = Pick<
 >;
 export type PageItemShutterDataItemsOptions = {
     type: 'shutter';
-    data: ChangeTypeOfKeys<PageItemShutter, Types.DataItemsOptions | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemShutter, Types.DataItemsOptions | undefined>;
 };
 export type PageItemShutterDataItems = {
     type: 'shutter';
-    data: ChangeTypeOfKeys<PageItemShutter, Dataitem | undefined>;
+    data: pages.ChangeTypeOfKeys<PageItemShutter, dataItem.Dataitem | undefined>;
 };
 
 export type PageItemBase = {
@@ -371,12 +372,14 @@ export type PageItemBase = {
 };
 
 export type PageTypeUnionTemplate = {
-    role: Types.roles;
+    role: pages.DeviceRole;
     type: Types.SerialTypePageElements;
     data: {
         headline?: string | undefined;
-        color?: RGB | undefined;
-        icon?: { true: { value: string; color: RGB | null }; false: { value: string; color: RGB | null } } | undefined;
+        color?: Color.RGB | undefined;
+        icon?:
+            | { true: { value: string; color: Color.RGB | null }; false: { value: string; color: Color.RGB | null } }
+            | undefined;
         text?: { true: string; false: string } | undefined;
         entity1: true | undefined | 'invert' | '';
         entity2?: true | undefined | 'invert';
@@ -428,17 +431,17 @@ export type PageItemUnion = {
         | 'text.list'
         | 'arrow'
         | 'spotify-playlist'*/
-    DeviceRole;
+    pages.DeviceRole;
     template?: undefined;
     dpInit?: string;
     type: Types.SerialTypePageElements;
     data: PageItemBase;
 };
 
-export type ColorEntryType = Record<Types.BooleanUnion, RGB | undefined> & { scale?: Types.IconScaleElement };
+export type ColorEntryType = Record<Types.BooleanUnion, Color.RGB | undefined> & { scale?: Types.IconScaleElement };
 
 export type IconEntryType =
-    | (Partial<Record<Types.BooleanUnion, { value: string; color: RGB; text?: string }>> & {
+    | (Partial<Record<Types.BooleanUnion, { value: string; color: Color.RGB; text?: string }>> & {
           scale?: Types.IconScaleElement | undefined;
           maxBri?: string;
           minBri?: string;

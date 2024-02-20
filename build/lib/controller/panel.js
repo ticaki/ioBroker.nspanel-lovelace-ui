@@ -31,7 +31,7 @@ module.exports = __toCommonJS(panel_exports);
 var import_panel_message = require("./panel-message");
 var import_dayjs = __toESM(require("dayjs"));
 var import_screensaver = require("../pages/screensaver");
-var NSPanel = __toESM(require("../types/types"));
+var Types = __toESM(require("../types/types"));
 var pages = __toESM(require("../types/pages"));
 var import_library = require("../classes/library");
 var import_definition = require("../const/definition");
@@ -41,6 +41,7 @@ var import_pageGrid = require("../pages/pageGrid");
 var import_navigation = require("../classes/navigation");
 var import_pageThermo = require("../pages/pageThermo");
 var import_pagePower = require("../pages/pagePower");
+var import_pageEntities = require("../pages/pageEntities");
 function isPanelConfig(F) {
   if (F.controller === void 0)
     return false;
@@ -133,7 +134,7 @@ class Panel extends import_library.BaseClass {
             dpInit: pageConfig.dpInit
           };
           pageConfig = import_Page.Page.getPage(pageConfig, this);
-          this.pages[a] = new import_pageGrid.PageGrid(pmconfig, pageConfig);
+          this.pages[a] = new import_pageEntities.PageEntities(pmconfig, pageConfig);
           break;
         }
         case "cardGrid2":
@@ -560,9 +561,9 @@ class Panel extends import_library.BaseClass {
     if (msg === void 0)
       return null;
     const temp = msg.split(",");
-    if (!NSPanel.isEventType(temp[0]))
+    if (!Types.isEventType(temp[0]))
       return null;
-    if (!NSPanel.isEventMethod(temp[1]))
+    if (!Types.isEventMethod(temp[1]))
       return null;
     let popup = void 0;
     if (temp[1] === "pageOpenDetail")
