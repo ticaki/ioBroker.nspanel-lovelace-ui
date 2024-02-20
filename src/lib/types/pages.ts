@@ -232,7 +232,7 @@ export type PageBaseConfig = (
           //    type: PlayerType;
           card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
           uniqueID: string;
-          template?: Types.TemplateIdent;
+          template?: Types.PageTemplateIdent;
           dpInit: string; // '' and initMode 'auto' throw an error
           alwaysOn: 'none' | 'always' | 'action';
           useColor: boolean;
@@ -251,7 +251,7 @@ export type PageBaseConfig = (
     | ({
           card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
           uniqueID: string;
-          template: string;
+          template: Types.PageTemplateIdent;
           dpInit: string;
       } & Partial<Omit<PageBaseConfigTemplate, 'card' | 'template'>>)
 ) & {

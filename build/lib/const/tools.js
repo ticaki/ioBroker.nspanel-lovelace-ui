@@ -276,14 +276,21 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           cfrom = temp2;
         }
         const vBest = (_d = scale2.val_best) != null ? _d : void 0;
+        let factor = 1;
         if (vMin == vMax) {
           rColor = cto;
         } else if (vBest === void 0) {
-          rColor = (0, import_Color2.mixColor)(cfrom, cto, value / (vMax - vMin));
+          factor = (value - vMin) / (vMax - vMin);
+          factor = getLogFromIconScale(scale2, factor);
+          rColor = (0, import_Color2.mixColor)(cfrom, cto, factor);
         } else if (value >= vBest) {
-          rColor = (0, import_Color2.mixColor)(cfrom, cto, value / (vMax - vBest));
+          factor = (value - vBest) / (vMax - vBest);
+          factor = getLogFromIconScale(scale2, factor);
+          rColor = (0, import_Color2.mixColor)(cto, cfrom, factor);
         } else {
-          rColor = (0, import_Color2.mixColor)(cfrom, cto, value / (vBest - vMin));
+          factor = (value - vMin) / (vBest - vMin);
+          factor = getLogFromIconScale(scale2, factor);
+          rColor = (0, import_Color2.mixColor)(cfrom, cto, factor);
         }
         return String((0, import_Color2.rgb_dec565)(rColor));
       }
@@ -297,6 +304,21 @@ async function getIconEntryColor(i, value, def, defOff = null) {
       return String((0, import_Color2.rgb_dec565)(cto));
   }
   return String((0, import_Color2.rgb_dec565)(def));
+}
+function getLogFromIconScale(i, factor) {
+  if (i.log10 !== void 0) {
+    if (i.log10 === "max") {
+      factor = factor * (90 / 10) + 1;
+      factor = factor < 1 ? 1 : factor > 10 ? 10 : factor;
+      factor = Math.log10(factor);
+    } else {
+      factor = (1 - factor) * (90 / 10) + 1;
+      factor = factor < 1 ? 1 : factor > 10 ? 10 : factor;
+      factor = Math.log10(factor);
+      factor = 1 - factor;
+    }
+  }
+  return factor;
 }
 async function GetIconColor(item, value, min = null, max = null, offColor = null) {
   var _a, _b;

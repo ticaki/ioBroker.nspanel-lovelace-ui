@@ -85,6 +85,7 @@ class PageThermo extends import_Page.Page {
     if (tempItem)
       tempItem.card = this.config && this.config.card;
     this.items = tempItem;
+    await super.init();
   }
   async update() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;

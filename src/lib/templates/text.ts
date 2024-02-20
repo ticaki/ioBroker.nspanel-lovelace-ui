@@ -201,7 +201,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                         constVal: Color.Red,
                     },
                 },
-                scale: { type: 'const', constVal: { val_min: 0, val_max: 30 } },
+                scale: { type: 'const', constVal: { val_min: 5, val_max: 30, log10: 'min' } },
             },
             entity1: {
                 value: {

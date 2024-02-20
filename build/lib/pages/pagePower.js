@@ -93,6 +93,7 @@ class PagePower extends import_Page.Page {
     );
     this.items = tempItem;
     this.items.card = "cardPower";
+    await super.init();
   }
   async update() {
     var _a, _b, _c;

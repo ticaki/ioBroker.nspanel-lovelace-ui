@@ -89,6 +89,7 @@ class PageMedia extends import_Page2.Page {
     if (tempItem)
       tempItem.card = this.config && this.config.card;
     this.items = tempItem;
+    await super.init();
   }
   async onVisibilityChange(val) {
     await super.onVisibilityChange(val);

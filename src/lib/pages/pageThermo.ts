@@ -69,6 +69,7 @@ export class PageThermo extends Page {
         );
         if (tempItem) tempItem.card = this.config && this.config.card;
         this.items = tempItem as pages.cardThermoDataItems;
+        await super.init();
     }
 
     public async update(): Promise<void> {

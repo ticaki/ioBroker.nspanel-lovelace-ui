@@ -72,6 +72,7 @@ export class PageMedia extends Page {
         );
         if (tempItem) tempItem.card = this.config && this.config.card;
         this.items = tempItem as pages.PageBaseConfig['items'];
+        await super.init();
     }
     protected async onVisibilityChange(val: boolean): Promise<void> {
         await super.onVisibilityChange(val);

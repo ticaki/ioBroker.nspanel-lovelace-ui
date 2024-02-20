@@ -42,6 +42,7 @@ export class PageEntities extends Page {
         this.items = tempItem as pages.cardEntitiesDataItems;
         // set card because we lose it
         this.items.card = this.card as 'cardEntities';
+        await super.init();
     }
 
     public async update(): Promise<void> {

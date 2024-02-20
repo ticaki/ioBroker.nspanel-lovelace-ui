@@ -3,11 +3,12 @@ import { RGB } from './Color';
 import { IconEntryType, TextEntryType, ValueEntryType } from './type-pageItem';
 import { ChangeTypeOfKeys, StateRole } from './pages';
 
+export type PageTemplateIdent = 'waste-calendar.entities';
+
 export type TemplateIdent =
     | 'generic.shutter'
     | 'shutter.shelly.2PM'
     | 'light.shelly.rgbw2'
-    | 'waste-calendar.entities'
     | 'text.window.isClose'
     | 'text.window.isOpen'
     | 'text.battery'
@@ -313,10 +314,14 @@ export type IconScaleElement = {
     val_min: number;
     val_max: number;
     val_best?: number;
+    log10?: 'max' | 'min';
 };
 
 export function isIconScaleElement(F: any | IconScaleElement): F is IconScaleElement {
     return F && 'val_min' in (F as IconScaleElement) && 'val_max' in (F as IconScaleElement);
+}
+export function isPartialIconScaleElement(F: any | IconScaleElement): F is IconScaleElement {
+    return F && ('val_min' in (F as IconScaleElement) || 'val_max' in (F as IconScaleElement));
 }
 
 export type mediaOptional =

@@ -27,7 +27,7 @@ import {
 } from './Color';
 import { Icons } from './icon_mapping';
 import { ChangeTypeOfKeys } from '../types/pages';
-import { isIconScaleElement } from '../types/types';
+import { IconScaleElement, isIconScaleElement, isPartialIconScaleElement } from '../types/types';
 
 export const messageItemDefault: MessageItem = {
     type: 'input_sel',
@@ -263,9 +263,9 @@ export async function getIconEntryColor(
         let cto = i.true && i.true.color && (await i.true.color.getRGBValue());
         let cfrom = i.false && i.false.color && (await i.false.color.getRGBValue());
         const scale = i.scale && (await i.scale.getObject());
-        if (cto && cfrom) {
+        if (cto && cfrom && scale) {
             let rColor: RGB | null = null;
-            if (scale && isIconScaleElement(scale)) {
+            if (isIconScaleElement(scale)) {
                 let vMin = scale.val_min < value ? scale.val_min : value;
                 let vMax = scale.val_max > value ? scale.val_max : value;
                 if (vMax < vMin) {
@@ -277,16 +277,27 @@ export async function getIconEntryColor(
                     cfrom = temp2;
                 }
                 const vBest = scale.val_best ?? undefined;
+                let factor: number = 1;
                 if (vMin == vMax) {
                     rColor = cto;
                 } else if (vBest === undefined) {
-                    rColor = mixColor(cfrom, cto, value / (vMax - vMin));
+                    factor = (value - vMin) / (vMax - vMin);
+                    factor = getLogFromIconScale(scale, factor);
+                    rColor = mixColor(cfrom, cto, factor);
                 } else if (value >= vBest) {
-                    rColor = mixColor(cfrom, cto, value / (vMax - vBest));
+                    factor = (value - vBest) / (vMax - vBest);
+                    factor = getLogFromIconScale(scale, factor);
+                    rColor = mixColor(cto, cfrom, factor);
                 } else {
-                    rColor = mixColor(cfrom, cto, value / (vBest - vMin));
+                    factor = (value - vMin) / (vBest - vMin);
+                    factor = getLogFromIconScale(scale, factor);
+                    rColor = mixColor(cfrom, cto, factor);
                 }
                 return String(rgb_dec565(rColor));
+            } else if (isPartialIconScaleElement(scale)) {
+                if ((scale.val_min && scale.val_min >= value) || (scale.val_max && scale.val_max <= value))
+                    return String(rgb_dec565(cto));
+                else String(rgb_dec565(cfrom));
             }
         }
         if (value) {
@@ -295,6 +306,22 @@ export async function getIconEntryColor(
         else if (cto) return String(rgb_dec565(cto));
     }
     return String(rgb_dec565(def));
+}
+
+function getLogFromIconScale(i: IconScaleElement, factor: number): number {
+    if (i.log10 !== undefined) {
+        if (i.log10 === 'max') {
+            factor = factor * (90 / 10) + 1;
+            factor = factor < 1 ? 1 : factor > 10 ? 10 : factor;
+            factor = Math.log10(factor);
+        } else {
+            factor = (1 - factor) * (90 / 10) + 1;
+            factor = factor < 1 ? 1 : factor > 10 ? 10 : factor;
+            factor = Math.log10(factor);
+            factor = 1 - factor;
+        }
+    }
+    return factor;
 }
 export async function GetIconColor(
     item: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined> | undefined | RGB,

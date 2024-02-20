@@ -66,6 +66,7 @@ class PageAlarm extends import_Page.Page {
       void 0,
       import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
     );
+    await super.init();
   }
   async update() {
     var _a, _b, _c, _d, _e;

@@ -93,6 +93,7 @@ export class PagePower extends Page {
         this.items = tempItem as pages.cardPowerDataItems;
         // set card because we lose it
         this.items.card = 'cardPower';
+        await super.init();
     }
 
     public async update(): Promise<void> {

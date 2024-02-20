@@ -27,6 +27,9 @@ var import_types = require("../types/types");
 var import_pageItem = require("../pages/pageItem");
 var import_card = require("../templates/card");
 var import_tools = require("../const/tools");
+var import_light = require("../templates/light");
+var import_shutter = require("../templates/shutter");
+var import_text = require("../templates/text");
 class Page extends import_states_controller.BaseClassPage {
   card;
   id;
@@ -43,6 +46,46 @@ class Page extends import_states_controller.BaseClassPage {
     this.config = pageItemsConfig && pageItemsConfig.config;
   }
   async init() {
+    if (this.pageItemConfig) {
+      for (let a = 0; a < this.pageItemConfig.length; a++) {
+        const options2 = this.pageItemConfig[a];
+        if (options2 === void 0)
+          continue;
+        if ("template" in options2 && options2.template) {
+          let index = -1;
+          let template;
+          for (const i of [import_text.textTemplates, import_shutter.shutterTemplates, import_light.lightTemplates]) {
+            index = i.findIndex((a2) => a2.template === options2.template);
+            if (index !== -1) {
+              template = i[index];
+              break;
+            }
+          }
+          if (index === -1 || !template) {
+            this.log.error("Dont find template " + options2.template);
+            this.pageItemConfig[a] = void 0;
+            continue;
+          }
+          if (template.adapter && !options2.dpInit.startsWith(template.adapter) && !this.dpInit.startsWith(template.adapter)) {
+            this.log.error(
+              "Missing dbInit or dbInit not starts with" + template.adapter + " for template " + options2.template
+            );
+            this.pageItemConfig[a] = void 0;
+            continue;
+          }
+          const newTemplate = structuredClone(template);
+          delete newTemplate.adapter;
+          if (options2.type && options2.type !== template.type) {
+            this.log.error("Type: " + options2.type + "is not equal with " + template.type);
+            this.pageItemConfig[a] = void 0;
+            continue;
+          }
+          options2.type = template.type;
+          options2.role = template.role;
+          this.pageItemConfig[a] = (0, import_tools.deepAssign)(newTemplate, options2);
+        }
+      }
+    }
   }
   async onButtonEvent(event) {
     this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
@@ -50,40 +93,40 @@ class Page extends import_states_controller.BaseClassPage {
   sendType() {
     this.sendToPanel(`pageType~${this.card}`);
   }
-  static getPage(config, that) {
-    if ("template" in config && config.template) {
+  static getPage(config2, that) {
+    if ("template" in config2 && config2.template) {
       let index = -1;
       let template;
       for (const i of [import_card.cardTemplates]) {
-        index = i.findIndex((a) => a.template === config.template);
+        index = i.findIndex((a) => a.template === config2.template);
         if (index !== -1) {
           template = i[index];
           break;
         }
       }
       if (index === -1 || !template) {
-        that.log.error("dont find template " + config.template);
-        return config;
+        that.log.error("dont find template " + config2.template);
+        return config2;
       }
-      if (template.adapter && !config.dpInit.startsWith(template.adapter)) {
-        return config;
+      if (template.adapter && !config2.dpInit.startsWith(template.adapter)) {
+        return config2;
       }
       const newTemplate = structuredClone(template);
       delete newTemplate.adapter;
-      if (config.card && config.card !== template.card) {
-        that.log.error(config.card + "is not equal with " + template.card);
-        return config;
+      if (config2.card && config2.card !== template.card) {
+        that.log.error(config2.card + "is not equal with " + template.card);
+        return config2;
       }
-      config = (0, import_tools.deepAssign)(newTemplate, config);
+      config2 = (0, import_tools.deepAssign)(newTemplate, config2);
     }
-    return config;
+    return config2;
   }
   async onVisibilityChange(val) {
     if (val) {
       if (!this.pageItems && this.pageItemConfig) {
         this.pageItems = [];
         for (let a = 0; a < this.pageItemConfig.length; a++) {
-          const config = {
+          const config2 = {
             name: "PI",
             adapter: this.adapter,
             panel: this.panel,
@@ -92,7 +135,7 @@ class Page extends import_states_controller.BaseClassPage {
             id: `${this.id}?${a}`,
             parent: this
           };
-          this.pageItems[a] = import_pageItem.PageItem.getPageItem(config, this.pageItemConfig[a], this);
+          this.pageItems[a] = import_pageItem.PageItem.getPageItem(config2, this.pageItemConfig[a]);
           this.pageItems[a] && await this.pageItems[a].init();
         }
       }

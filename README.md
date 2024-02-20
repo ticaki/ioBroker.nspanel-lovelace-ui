@@ -17,6 +17,11 @@ NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in th
 
 Entwickleränderungen / Erklärung
 
+Merkhilfe:
+- Das icon.*.value anpassen an das val_min/max verhalten von ion.*.color
+
+Immer wenn ich Zeit und lust habe Dokumentiere ich hier Sachen.
+
 ## Eingebaut:
 - cardMedia 
 - cardGrid/2
@@ -29,6 +34,8 @@ Entwickleränderungen / Erklärung
 
 ## Erklärungen
 
+### Icons:
+#### Dateneingang:
 Zu Icon.x.color: (nix was mit Licht zu tun hat.)
 Eingabe geht über folgende common Eigenschaftenmöglichkeiten
 - type: number
@@ -38,6 +45,28 @@ Eingabe geht über folgende common Eigenschaftenmöglichkeiten
   - hexcolor - 7 Stellen beginned mit #
   - css color names (role: level.color.name) https://www.tutorialrepublic.com/css-reference/css-color-names.php
   - hsl: "hsl(0, 50%, 50%)" (role: level.color.name)
+
+#### Funktion
+##### IconEntryType
+Sollte alle Icons betreffen abgesehen vom Screensaver zum aktuellen Zeitpunkt.
+
+- true: ist der default wert sollte immer angegeben werden 
+- false: optional der Wert für boolean false
+- text: optional wird auf einer cardGrid/2 angezeigt anstelle des Icons
+- scale: siehe unten
+
+##### IconScaleElement
+scale bekommt eine eigenen Punkt: das object besteht aus folgenden typen: `{val_min: number, val_max: number, val_best?: number, log10?: 'max' | 'min';}` um es zu verwenden muß icon.true.color und icon.false.color definiert sein. Value bezeichnet einen Wert der häufig von entity1 kommt.
+- wenn nur val_min definiert ist bedeutet val_min >= Value das die Farbe bei true gewählt wird.
+- wenn nur val_max definiert ist bedeutet val_max <= Value das selbe wie bei val_min.
+- wenn val_max und val_min definiert sind, wird die Farbe von false (val_min) zu true (val_max) interpoliert
+- wenn zusätzlich val_best definiert ist, ist val_best die Farbe von true und wird jeweils in die Richtungen von val_min/max zu false interpoliert
+- wenn zusätzlich log10 definiert ist, wird bei `max` ein log10() 1 false, 10 true ausgeführt, bei `min` 10 false, 1 true,
+
+
+
+
+
 
 ## Changelog
 <!--

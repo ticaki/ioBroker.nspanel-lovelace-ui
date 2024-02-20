@@ -59,6 +59,7 @@ class PageGrid extends import_Page.Page {
     );
     this.items = tempItem;
     this.items.card = this.card;
+    await super.init();
   }
   async update() {
     var _a;

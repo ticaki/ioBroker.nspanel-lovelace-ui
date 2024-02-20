@@ -66,6 +66,7 @@ export class PageAlarm extends Page {
             undefined,
             genericStateObjects.panel.panels.alarm.cardAlarm._channel,
         );
+        await super.init();
     }
 
     public async update(): Promise<void> {

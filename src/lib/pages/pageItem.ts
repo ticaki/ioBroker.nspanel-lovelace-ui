@@ -9,7 +9,6 @@ import {
     islistCommandUnion,
     spotifyPlaylist,
     PageItemDataItemsOptionsWithOutTemplate,
-    PageItemOptionsTemplate,
 } from '../types/type-pageItem';
 import * as tools from '../const/tools';
 import { PopupType } from '../types/types';
@@ -18,11 +17,6 @@ import { BaseClassTriggerd } from '../controller/states-controller';
 import { RGB } from '../types/Color';
 import { Icons } from '../const/icon_mapping';
 import { Dataitem } from '../classes/data-item';
-
-import { textTemplates } from '../templates/text';
-import { shutterTemplates } from '../templates/shutter';
-import { BaseClass } from '../classes/library';
-import { lightTemplates } from '../templates/light';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseClassTriggerd {
@@ -51,43 +45,8 @@ export class PageItem extends BaseClassTriggerd {
     static getPageItem(
         config: Omit<PageItemInterface, 'pageItemsConfig'>,
         options: PageItemDataItemsOptions | undefined,
-        that: BaseClass,
     ): PageItem | undefined {
         if (options === undefined) return undefined;
-        if ('template' in options && options.template) {
-            let index = -1;
-            let template: PageItemOptionsTemplate | undefined;
-            for (const i of [textTemplates, shutterTemplates, lightTemplates]) {
-                index = i.findIndex((a) => a.template === options!.template);
-                if (index !== -1) {
-                    template = i[index];
-                    break;
-                }
-            }
-            if (index === -1 || !template) {
-                that.log.error('Dont find template ' + options.template);
-                return undefined;
-            }
-            if (
-                template.adapter &&
-                !options.dpInit.startsWith(template.adapter) &&
-                !(config.parent && config.parent.dpInit.startsWith(template.adapter))
-            ) {
-                that.log.error(
-                    'Missing dbInit or dbInit not starts with' + template.adapter + ' for template ' + options.template,
-                );
-                return undefined;
-            }
-            const newTemplate = structuredClone(template) as Partial<PageItemOptionsTemplate>;
-            delete newTemplate.adapter;
-            if (options.type && options.type !== template.type) {
-                that.log.error('Type: ' + options.type + 'is not equal with ' + template.type);
-                return undefined;
-            }
-            options.type = template.type;
-            options.role = template.role;
-            options = tools.deepAssign(newTemplate, options);
-        }
         if (config.panel.persistentPageItems[config.id]) return config.panel.persistentPageItems[config.id];
         return new PageItem(config, options as PageItemDataItemsOptionsWithOutTemplate);
     }

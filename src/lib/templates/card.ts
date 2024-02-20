@@ -2,6 +2,7 @@ import { PageBaseConfigTemplate } from '../types/pages';
 
 export const cardTemplates: PageBaseConfigTemplate[] = [
     {
+        // Abfallkalender
         template: 'waste-calendar.entities',
         adapter: '0_userdata.0',
         card: 'cardEntities',

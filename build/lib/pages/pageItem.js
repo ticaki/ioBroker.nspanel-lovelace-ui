@@ -32,9 +32,6 @@ var import_type_pageItem = require("../types/type-pageItem");
 var tools = __toESM(require("../const/tools"));
 var import_states_controller = require("../controller/states-controller");
 var import_icon_mapping = require("../const/icon_mapping");
-var import_text = require("../templates/text");
-var import_shutter = require("../templates/shutter");
-var import_light = require("../templates/light");
 class PageItem extends import_states_controller.BaseClassTriggerd {
   defaultOnColor = Color.White;
   defaultOffColor = Color.Blue;
@@ -54,39 +51,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.parent = config && config.parent;
     this.sleep = false;
   }
-  static getPageItem(config, options, that) {
+  static getPageItem(config, options) {
     if (options === void 0)
       return void 0;
-    if ("template" in options && options.template) {
-      let index = -1;
-      let template;
-      for (const i of [import_text.textTemplates, import_shutter.shutterTemplates, import_light.lightTemplates]) {
-        index = i.findIndex((a) => a.template === options.template);
-        if (index !== -1) {
-          template = i[index];
-          break;
-        }
-      }
-      if (index === -1 || !template) {
-        that.log.error("Dont find template " + options.template);
-        return void 0;
-      }
-      if (template.adapter && !options.dpInit.startsWith(template.adapter) && !(config.parent && config.parent.dpInit.startsWith(template.adapter))) {
-        that.log.error(
-          "Missing dbInit or dbInit not starts with" + template.adapter + " for template " + options.template
-        );
-        return void 0;
-      }
-      const newTemplate = structuredClone(template);
-      delete newTemplate.adapter;
-      if (options.type && options.type !== template.type) {
-        that.log.error("Type: " + options.type + "is not equal with " + template.type);
-        return void 0;
-      }
-      options.type = template.type;
-      options.role = template.role;
-      options = tools.deepAssign(newTemplate, options);
-    }
     if (config.panel.persistentPageItems[config.id])
       return config.panel.persistentPageItems[config.id];
     return new PageItem(config, options);

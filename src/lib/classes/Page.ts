@@ -7,6 +7,10 @@ import { PageItem } from '../pages/pageItem';
 import { BaseClass } from './library';
 import { cardTemplates } from '../templates/card';
 import { deepAssign } from '../const/tools';
+import { lightTemplates } from '../templates/light';
+import { shutterTemplates } from '../templates/shutter';
+import { textTemplates } from '../templates/text';
+import { PageItemOptionsTemplate } from '../types/type-pageItem';
 
 export interface PageConfigInterface {
     config: pages.PageBaseConfig;
@@ -44,7 +48,55 @@ export class Page extends BaseClassPage {
         this.dpInit = card.dpInit ?? '';
         this.config = pageItemsConfig && pageItemsConfig.config;
     }
-    async init(): Promise<void> {}
+
+    async init(): Promise<void> {
+        if (this.pageItemConfig) {
+            for (let a = 0; a < this.pageItemConfig.length; a++) {
+                const options = this.pageItemConfig[a];
+                if (options === undefined) continue;
+                if ('template' in options && options.template) {
+                    let index = -1;
+                    let template: PageItemOptionsTemplate | undefined;
+                    for (const i of [textTemplates, shutterTemplates, lightTemplates]) {
+                        index = i.findIndex((a) => a.template === options!.template);
+                        if (index !== -1) {
+                            template = i[index];
+                            break;
+                        }
+                    }
+                    if (index === -1 || !template) {
+                        this.log.error('Dont find template ' + options.template);
+                        this.pageItemConfig[a] = undefined;
+                        continue;
+                    }
+                    if (
+                        template.adapter &&
+                        !options.dpInit.startsWith(template.adapter) &&
+                        !this.dpInit.startsWith(template.adapter)
+                    ) {
+                        this.log.error(
+                            'Missing dbInit or dbInit not starts with' +
+                                template.adapter +
+                                ' for template ' +
+                                options.template,
+                        );
+                        this.pageItemConfig[a] = undefined;
+                        continue;
+                    }
+                    const newTemplate = structuredClone(template) as Partial<PageItemOptionsTemplate>;
+                    delete newTemplate.adapter;
+                    if (options.type && options.type !== template.type) {
+                        this.log.error('Type: ' + options.type + 'is not equal with ' + template.type);
+                        this.pageItemConfig[a] = undefined;
+                        continue;
+                    }
+                    options.type = template.type;
+                    options.role = template.role;
+                    this.pageItemConfig[a] = deepAssign(newTemplate, options);
+                }
+            }
+        }
+    }
 
     async onButtonEvent(event: IncomingEvent): Promise<void> {
         this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
@@ -96,7 +148,7 @@ export class Page extends BaseClassPage {
                         id: `${this.id}?${a}`,
                         parent: this,
                     };
-                    this.pageItems[a] = PageItem.getPageItem(config, this.pageItemConfig[a], this);
+                    this.pageItems[a] = PageItem.getPageItem(config, this.pageItemConfig[a]);
                     this.pageItems[a] && (await this.pageItems[a]!.init());
                 }
             }

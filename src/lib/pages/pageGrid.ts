@@ -48,6 +48,7 @@ export class PageGrid extends Page {
         this.items = tempItem as pages.cardGridDataItems;
         // set card because we lose it
         this.items.card = this.card as 'cardGrid' | 'cardGrid2';
+        await super.init();
     }
 
     public async update(): Promise<void> {
