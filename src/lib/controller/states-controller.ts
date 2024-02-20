@@ -548,7 +548,7 @@ export class StatesControler extends BaseClass {
                             obj.common.role === role
                         ) {
                             if (found) {
-                                this.log.warn(`Found more as 1 state for role ${role} in ${dpInit}`);
+                                this.log.warn(`Found more as 1 state for role ${role} in ${dpInit} with ${d.dp}`);
                                 break;
                             }
                             d.dp = id;
@@ -560,7 +560,7 @@ export class StatesControler extends BaseClass {
                 }
                 if (!found) {
                     data[i] = undefined;
-                    this.log.warn(`No state found for role ${JSON.stringify(d.role)} in ${dpInit}`);
+                    this.log.warn(`No state found for role ${JSON.stringify(d.role)} in ${dpInit} with ${d.dp}`);
                 }
             }
         }

@@ -320,7 +320,7 @@ class PageMedia extends import_Page2.Page {
         break;
       }
       case "media-shuffle": {
-        items.data.shuffle && (items.data.shuffle.set && await items.data.shuffle.set.setStateTrue() || items.data.shuffle.value && await items.data.shuffle.value.setStateTrue());
+        items.data.shuffle && (items.data.shuffle.set && await items.data.shuffle.set.setStateFlip() || items.data.shuffle.value && await items.data.shuffle.value.setStateFlip());
         break;
       }
       case "volumeSlider": {

@@ -264,7 +264,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           message.type = "input_sel";
           const value = (_x = await tools.getValueEntryNumber(item.entityInSel)) != null ? _x : await tools.getValueEntryBoolean(item.entityInSel);
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
-          message.iconColor = (_y = await tools.GetIconColor(item.icon, value != null ? value : true, 0, 100, Color.HMIOff)) != null ? _y : Color.HMIOn;
+          message.iconColor = (_y = await tools.getIconEntryColor(item.icon, value != null ? value : true, Color.HMIOff)) != null ? _y : Color.HMIOn;
           message.displayName = (_z = item.headline && await item.headline.getString()) != null ? _z : "";
           message.optionalValue = (_A = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _A : "PRESS";
           this.log.debug(JSON.stringify(message));

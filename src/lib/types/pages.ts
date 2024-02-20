@@ -78,7 +78,8 @@ export type StateRole =
     | 'sensor.window'
     | 'value.temperature'
     | 'value.battery'
-    | 'indicator.lowbat';
+    | 'indicator.lowbat'
+    | 'value';
 
 export type DeviceRole =
     | 'text'
@@ -201,7 +202,7 @@ export function isButtonActionType(F: string | Types.ButtonActionType): F is Typ
 
 export type PageBaseConfigTemplate = {
     card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
-    template: string;
+    template: Types.PageTemplateIdent;
     adapter: string;
     alwaysOn: 'none' | 'always' | 'action';
     useColor: boolean;

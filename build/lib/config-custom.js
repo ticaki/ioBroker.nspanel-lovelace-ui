@@ -25,6 +25,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var config_custom_exports = {};
 __export(config_custom_exports, {
   Testconfig: () => Testconfig,
+  pageMediaTest: () => pageMediaTest,
   pageMediaTest2: () => pageMediaTest2
 });
 module.exports = __toCommonJS(config_custom_exports);
@@ -1256,8 +1257,14 @@ const pageMediaTest2 = {
       }
     }
   ],
-  uniqueID: "media1",
+  uniqueID: "media2",
   useColor: false
+};
+const pageMediaTest3 = {
+  template: "media.spotify-premium",
+  dpInit: "0_userdata.0.spotify-premium.0",
+  uniqueID: "media3",
+  card: "cardMedia"
 };
 const pageGridTest1 = {
   card: "cardGrid",
@@ -3638,10 +3645,10 @@ const Testconfig = [
       pageGrid2Test3,
       pageGridTest2,
       pageScreensaverTest,
-      pageMediaTest,
       pageEntitiesTest2,
       pageAbfall,
-      pageGridTest5
+      pageGridTest5,
+      pageMediaTest3
     ],
     navigation: [
       {
@@ -3696,7 +3703,7 @@ const Testconfig = [
         name: "3",
         left: { single: "2" },
         right: { single: "4", double: "main" },
-        page: "media1"
+        page: "media3"
       },
       {
         name: "4",
@@ -3721,6 +3728,7 @@ const Testconfig = [
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Testconfig,
+  pageMediaTest,
   pageMediaTest2
 });
 //# sourceMappingURL=config-custom.js.map

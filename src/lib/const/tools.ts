@@ -210,7 +210,7 @@ export async function setScaledNumber(
         if (i.minScale !== undefined && i.maxScale !== undefined) {
             value = getScaledNumberRaw(value, await i.minScale.getNumber(), await i.maxScale.getNumber(), value);
         }
-        if (i.set && i.set.writeable) await i.value.setStateAsync(value);
+        if (i.set && i.set.writeable) await i.set.setStateAsync(value);
         else if (nval !== value) await i.value.setStateAsync(value);
     }
 }

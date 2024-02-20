@@ -280,7 +280,7 @@ class Dataitem extends import_library.BaseClass {
       this.options.constVal = val;
     } else {
       if (this.options.write)
-        new Function("val", "Color", `${this.options.write}`)(val, Color);
+        val = new Function("val", "Color", `${this.options.write}`)(val, Color);
       await this.stateDB.setStateAsync(this, val, this._writeable);
     }
   }

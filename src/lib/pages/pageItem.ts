@@ -317,7 +317,7 @@ export class PageItem extends BaseClassTriggerd {
                     message.icon = await tools.getIconEntryValue(item.icon, !!(value ?? true), 'gesture-tap-button');
 
                     message.iconColor =
-                        (await tools.GetIconColor(item.icon, value ?? true, 0, 100, Color.HMIOff)) ?? Color.HMIOn;
+                        (await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOff)) ?? Color.HMIOn;
                     message.displayName = (item.headline && (await item.headline.getString())) ?? '';
 
                     message.optionalValue = (await tools.getEntryTextOnOff(item.text, !!value)) ?? 'PRESS';
