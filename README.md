@@ -66,10 +66,17 @@ scale bekommt eine eigenen Punkt: das object besteht aus folgenden typen: `{val_
 
 ### ValueEntryType
 
-besteht aus diesen Typen: `{value: string | number |boolean; decimal?: number;factor?: number; unit?: string; minScale?: number; maxScale?: number; set?: string | number |boolean; } | undefined;` Wenn  
-- boolean verlangert wird, läd es Value und doppelt verneint es.
+besteht aus diesen Typen: `{value: string | number |boolean; decimal?: number;factor?: number; unit?: string; minScale?: number; maxScale?: number; set?: string | number |boolean; } | undefined;` 
+
+Wenn *** verlangert wird
+- boolean läd Value und doppelt verneint es.
 - number wird als nummer geladen oder konvertiert dann * `factor` und mit `minScale` und `maxScale` auf 0-100 skaliert.
-- string wird versucht als nummer zu laden und `dezimal` wird angewendet, wenn negativ dann als String in beiden fällen wird `unit` hinzugefügt.
+- string wird 
+  - mit `type==number` als nummer geladen und `decimal` angewendet 
+  - oder als String 
+  - `unit` wird in beiden Fällen hinzugefügt.
+
+
 Beim Schreiben:
 - erst wird `set`versucht, wenn negativ dann `value`
 
