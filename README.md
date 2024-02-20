@@ -64,6 +64,16 @@ scale bekommt eine eigenen Punkt: das object besteht aus folgenden typen: `{val_
 - wenn zusätzlich val_best definiert ist, ist val_best die Farbe von true und wird jeweils in die Richtungen von val_min/max zu false interpoliert
 - wenn zusätzlich log10 definiert ist, wird bei `max` ein log10() 1 false, 10 true ausgeführt, bei `min` (10-value) -> 10 false, 1 true. 
 
+### ValueEntryType
+
+besteht aus diesen Typen: `{value: string | number |boolean; decimal?: number;factor?: number; unit?: string; minScale?: number; maxScale?: number; set?: string | number |boolean; } | undefined;` Wenn  
+- boolean verlangert wird, läd es Value und doppelt verneint es.
+- number wird als nummer geladen oder konvertiert dann * `factor` und mit `minScale` und `maxScale` auf 0-100 skaliert.
+- string wird versucht als nummer zu laden und `dezimal` wird angewendet, wenn negativ dann als String in beiden fällen wird `unit` hinzugefügt.
+Beim Schreiben:
+- erst wird `set`versucht, wenn negativ dann `value`
+
+Sind natürlich alles Dataitems
 
 ### PageItems
 #### vormalig CreateEntity()
