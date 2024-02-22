@@ -35,11 +35,27 @@ class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
   panels = [];
+  minuteLoopTimeout;
+  dateUpdateTimeout;
   constructor(adapter, options) {
     super(adapter, options.name);
     this.adapter.controller = this;
     this.mqttClient = options.mqttClient;
     this.statesControler = new import_states_controller.StatesControler(this.adapter);
+    this.statesControler.setInternalState("///time", this.getCurrentTime, true, {
+      name: "",
+      type: "number",
+      role: "value.time",
+      read: true,
+      write: false
+    });
+    this.statesControler.setInternalState("///date", this.getCurrentTime, true, {
+      name: "",
+      type: "number",
+      role: "value.time",
+      read: true,
+      write: false
+    });
     for (const panelConfig of options.panels) {
       if (panelConfig === void 0)
         continue;
@@ -52,6 +68,26 @@ class Controller extends Library.BaseClass {
       this.panels.push(panel);
     }
   }
+  minuteLoop = () => {
+    if (this.unload)
+      return;
+    this.statesControler.setInternalState("///time", this.getCurrentTime, true);
+    const diff = 6e4 - Date.now() % 6e4 + 10;
+    this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
+  };
+  dateUpdateLoop = () => {
+    if (this.unload)
+      return;
+    this.statesControler.setInternalState("///date", this.getCurrentTime, true);
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(0, 0, 0);
+    const diff = d.getTime() - Date.now();
+    this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
+  };
+  getCurrentTime = () => {
+    return Date.now();
+  };
   async init() {
     const newPanels = [];
     this.library.writedp(`panel`, void 0, import_definition.genericStateObjects.panel._channel);
@@ -64,8 +100,13 @@ class Controller extends Library.BaseClass {
         this.log.error(`Panel ${panel.name} has a invalid configuration.`);
       }
     this.panels = newPanels;
+    this.minuteLoop();
   }
   async delete() {
+    if (this.minuteLoopTimeout)
+      this.adapter.clearTimeout(this.minuteLoopTimeout);
+    if (this.dateUpdateTimeout)
+      this.adapter.clearTimeout(this.dateUpdateTimeout);
     await super.delete();
     this.panels.forEach((a) => a.delete());
   }

@@ -8,6 +8,9 @@ export class Controller extends Library.BaseClass {
     mqttClient: MQTT.MQTTClientClass;
     statesControler: StatesControler;
     panels: Panel.Panel[] = [];
+    private minuteLoopTimeout: ioBroker.Timeout | undefined;
+    private dateUpdateTimeout: ioBroker.Timeout | undefined;
+
     constructor(
         adapter: Library.AdapterClassDefinition,
         options: { mqttClient: MQTT.MQTTClientClass; name: string; panels: Partial<Panel.panelConfigPartial>[] },
@@ -16,6 +19,20 @@ export class Controller extends Library.BaseClass {
         this.adapter.controller = this;
         this.mqttClient = options.mqttClient;
         this.statesControler = new StatesControler(this.adapter);
+        this.statesControler.setInternalState('///time', this.getCurrentTime, true, {
+            name: '',
+            type: 'number',
+            role: 'value.time',
+            read: true,
+            write: false,
+        });
+        this.statesControler.setInternalState('///date', this.getCurrentTime, true, {
+            name: '',
+            type: 'number',
+            role: 'value.time',
+            read: true,
+            write: false,
+        });
         for (const panelConfig of options.panels) {
             if (panelConfig === undefined) continue;
             panelConfig.controller = this;
@@ -27,6 +44,30 @@ export class Controller extends Library.BaseClass {
             this.panels.push(panel);
         }
     }
+
+    minuteLoop = (): void => {
+        if (this.unload) return;
+        this.statesControler.setInternalState('///time', this.getCurrentTime, true);
+        const diff = 60000 - (Date.now() % 60000) + 10;
+        this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
+    };
+
+    /**
+     * Update Date 2 times per day because of daylight saving.
+     * @returns
+     */
+    dateUpdateLoop = (): void => {
+        if (this.unload) return;
+        this.statesControler.setInternalState('///date', this.getCurrentTime, true);
+        const d: Date = new Date();
+        d.setDate(d.getDate() + 1);
+        d.setHours(0, 0, 0);
+        const diff = d.getTime() - Date.now();
+        this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
+    };
+    getCurrentTime = (): number => {
+        return Date.now();
+    };
 
     async init(): Promise<void> {
         const newPanels = [];
@@ -41,8 +82,11 @@ export class Controller extends Library.BaseClass {
                 this.log.error(`Panel ${panel.name} has a invalid configuration.`);
             }
         this.panels = newPanels;
+        this.minuteLoop();
     }
     async delete(): Promise<void> {
+        if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
+        if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
         await super.delete();
         this.panels.forEach((a) => a.delete());
     }

@@ -3838,6 +3838,24 @@ const pageScreensaverTest = {
           }
         }
       }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "time",
+      data: {
+        entity2: {
+          value: {
+            type: "internal",
+            dp: "///time"
+          },
+          dateFormat: {
+            type: "const",
+            constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+          }
+        }
+      }
     }
   ]
 };

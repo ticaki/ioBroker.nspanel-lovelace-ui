@@ -29,7 +29,6 @@ __export(panel_exports, {
 });
 module.exports = __toCommonJS(panel_exports);
 var import_panel_message = require("./panel-message");
-var import_dayjs = __toESM(require("dayjs"));
 var import_screensaver = require("../pages/screensaver");
 var Types = __toESM(require("../types/types"));
 var pages = __toESM(require("../types/pages"));
@@ -453,26 +452,13 @@ class Panel extends import_library.BaseClass {
     if (this.dateUpdateTimeout)
       this.adapter.clearTimeout(this.dateUpdateTimeout);
     this.minuteLoop();
-    this.dateUpdateLoop();
   }
   minuteLoop = () => {
     if (this.unload)
       return;
-    this.sendToPanel(`time~${new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`);
     this.pages = this.pages.filter((a) => a && !a.unload);
     const diff = 6e4 - Date.now() % 6e4 + 10;
     this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
-  };
-  dateUpdateLoop = () => {
-    if (this.unload)
-      return;
-    const val = this.CustomFormat != "" ? (0, import_dayjs.default)().format(this.CustomFormat) : new Date().toLocaleDateString(this.config.locale, this.format);
-    this.sendToPanel(`date~${val}`);
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    d.setHours(0, 0, 0);
-    const diff = d.getTime() - Date.now();
-    this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
   };
   async delete() {
     await super.delete();

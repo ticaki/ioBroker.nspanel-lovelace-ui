@@ -61,14 +61,10 @@ class Screensaver extends import_Page.Page {
   async init() {
     await super.init();
   }
-  async update() {
-    if (!this.visibility) {
-      this.log.error("get update command but not visible!");
-      return;
-    }
+  async getData(places) {
     const config = this.config;
     if (!config || config.card !== "screensaver" && config.card !== "screensaver2")
-      return;
+      return null;
     const message = {
       event: "weatherUpdate",
       options: {
@@ -93,11 +89,11 @@ class Screensaver extends import_Page.Page {
           const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
           if (max === 0)
             continue;
-          if (place === "time" || place === "date" || place === "mricon")
+          if (places.indexOf(place) === -1)
             continue;
-          const arr2 = options[place] || [];
-          arr2.push(await pageItems.getPageItemPayload());
-          options[place] = arr2;
+          const arr = options[place] || [];
+          arr.push(await pageItems.getPageItemPayload());
+          options[place] = arr;
         }
       }
       for (const x in message.options) {
@@ -112,30 +108,41 @@ class Screensaver extends import_Page.Page {
           }
           items = message.options[place];
           for (let i = 0; i < max; i++) {
-            const msg2 = items[i];
-            if (!msg2) {
+            const msg = items[i];
+            if (!msg) {
               items[i] = tools.getPayload("", "", "", "", "", "");
             } else {
-              const arr2 = items[i].split("~");
-              arr2[0] = "";
-              arr2[1] = "";
-              items[i] = tools.getPayloadArray(arr2);
+              const arr = items[i].split("~");
+              arr[0] = "";
+              arr[1] = "";
+              items[i] = tools.getPayloadArray(arr);
             }
           }
         }
       }
-      if (message.options.alternate.length > 0)
-        message.options.alternate.unshift(tools.getPayload("", "", "", "", "", ""));
-      const arr = message.options.favorit.concat(
-        message.options.left,
-        message.options.bottom,
-        message.options.alternate,
-        message.options.indicator
-      );
-      const msg = tools.getPayload(message.event, tools.getPayloadArray(arr));
-      this.sendToPanel(msg);
-      this.HandleScreensaverStatusIcons();
     }
+    return message;
+  }
+  async update() {
+    if (!this.visibility) {
+      this.log.error("get update command but not visible!");
+      return;
+    }
+    const message = await this.getData(["left", "bottom", "indicator", "alternate", "favorit"]);
+    if (message === null)
+      return;
+    if (message.options.alternate.length > 0)
+      message.options.alternate.unshift(tools.getPayload("", "", "", "", "", ""));
+    const arr = message.options.favorit.concat(
+      message.options.left,
+      message.options.bottom,
+      message.options.alternate,
+      message.options.indicator
+    );
+    const msg = tools.getPayload(message.event, tools.getPayloadArray(arr));
+    this.HandleTime();
+    this.sendToPanel(msg);
+    this.HandleScreensaverStatusIcons();
   }
   sendStatusUpdate(payload, layout) {
     switch (payload.eventType) {
@@ -189,6 +196,7 @@ class Screensaver extends import_Page.Page {
     }
   }
   async onVisibilityChange(v) {
+    await super.onVisibilityChange(v);
     this.step = -1;
     if (v) {
       this.rotationLoop();
@@ -196,15 +204,13 @@ class Screensaver extends import_Page.Page {
       if (this.timoutRotation)
         this.adapter.clearTimeout(this.timoutRotation);
     }
-    await super.onVisibilityChange(v);
   }
   rotationLoop = async () => {
     if (this.unload)
       return;
     if (!this.visibility)
       return;
-    if (this.step++ > 100)
-      this.step = 0;
+    this.step++ > 100;
     await this.update();
     if (this.rotationTime === 0)
       return;
@@ -237,6 +243,7 @@ class Screensaver extends import_Page.Page {
               break;
             }
             case "time": {
+              this.HandleTime();
               break;
             }
             case "date": {
@@ -247,82 +254,34 @@ class Screensaver extends import_Page.Page {
       }
     }
   };
+  async HandleTime() {
+    const message = await this.getData(["time"]);
+    if (message === null || !message.options.time[0])
+      return;
+    this.sendToPanel(`time~${message.options.time[0].split("~")[5]}`);
+  }
   async HandleScreensaverStatusIcons() {
-    var _a, _b, _c, _d, _e, _f, _g;
-    {
-      if (!this.visibility) {
-        this.log.error("get update command but not visible!");
-        return;
-      }
-      const config = this.config;
-      if (!config || config.card !== "screensaver" && config.card !== "screensaver2")
-        return;
-      const message = {
-        event: "weatherUpdate",
-        options: {
-          indicator: [],
-          left: [],
-          time: [],
-          date: [],
-          bottom: [],
-          mricon: [],
-          favorit: [],
-          alternate: []
-        }
-      };
-      if (this.pageItems) {
-        const model = config.model;
-        const layout = config.mode;
-        for (let a = 0; a < this.pageItems.length; a++) {
-          const pageItems = this.pageItems[a];
-          const options = message.options;
-          if (pageItems && pageItems.config && pageItems.config.modeScr) {
-            const place = pageItems.config.modeScr;
-            const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
-            if (max === 0)
-              continue;
-            if (place !== "mricon")
-              continue;
-            if (Definition.ScreenSaverConst[layout][place].maxEntries[model] > ((_a = options[place] && options[place].length) != null ? _a : 0)) {
-              const arr = options[place] || [];
-              arr.push(await pageItems.getPageItemPayload());
-              options[place] = arr;
-            }
-          }
-        }
-        for (const x in message.options) {
-          const place = x;
-          let items = message.options[place];
-          if (items) {
-            const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
-            if (items.length > Definition.ScreenSaverConst[layout][place].maxEntries[model]) {
-              let f = items.length / Definition.ScreenSaverConst[layout][place].maxEntries[model];
-              f = this.step % Math.ceil(f);
-              items = items.slice(max * f, max * (f + 1) - 1);
-            }
-            for (let i = 0; i < max; i++) {
-              const msg2 = items[i];
-              if (!msg2) {
-                items[i] = tools.getPayload("", "", "", "", "", "");
-              }
-            }
-          }
-        }
-        const mrIcon1 = message.options.mricon[0].split("~");
-        const mrIcon2 = message.options.mricon[1].split("~");
-        const msgArray = [
-          "statusUpdate",
-          (_b = mrIcon1[2]) != null ? _b : "",
-          (_c = mrIcon1[3]) != null ? _c : "",
-          (_d = mrIcon2[2]) != null ? _d : "",
-          (_e = mrIcon2[3]) != null ? _e : "",
-          (_f = mrIcon1[5]) != null ? _f : "",
-          (_g = mrIcon2[5]) != null ? _g : ""
-        ];
-        const msg = tools.getPayloadArray(msgArray);
-        this.sendToPanel(msg);
-      }
+    var _a, _b, _c, _d, _e, _f;
+    if (!this.visibility) {
+      this.log.error("get update command but not visible!");
+      return;
     }
+    const message = await this.getData(["mricon"]);
+    if (message === null)
+      return;
+    const mrIcon1 = message.options.mricon[0].split("~");
+    const mrIcon2 = message.options.mricon[1].split("~");
+    const msgArray = [
+      "statusUpdate",
+      (_a = mrIcon1[2]) != null ? _a : "",
+      (_b = mrIcon1[3]) != null ? _b : "",
+      (_c = mrIcon2[2]) != null ? _c : "",
+      (_d = mrIcon2[3]) != null ? _d : "",
+      (_e = mrIcon1[5]) != null ? _e : "",
+      (_f = mrIcon2[5]) != null ? _f : ""
+    ];
+    const msg = tools.getPayloadArray(msgArray);
+    this.sendToPanel(msg);
   }
   async delete() {
     await super.delete();

@@ -1,6 +1,5 @@
 import { PanelSend } from './panel-message';
 
-import dayjs from 'dayjs';
 import { Screensaver, ScreensaverConfigType } from '../pages/screensaver';
 import * as Types from '../types/types';
 import * as pages from '../types/pages';
@@ -462,7 +461,6 @@ export class Panel extends BaseClass {
         if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
         if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
         this.minuteLoop();
-        this.dateUpdateLoop();
     }
     /**
      * Do panel work always at full minute
@@ -470,32 +468,12 @@ export class Panel extends BaseClass {
      */
     minuteLoop = (): void => {
         if (this.unload) return;
-        this.sendToPanel(`time~${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`);
+        //this.sendToPanel(`time~${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`);
 
         this.pages = this.pages.filter((a) => a && !a.unload);
 
         const diff = 60000 - (Date.now() % 60000) + 10;
         this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
-    };
-
-    /**
-     * Update Date 2 times per day because of daylight saving.
-     * @returns
-     */
-    dateUpdateLoop = (): void => {
-        if (this.unload) return;
-        const val =
-            this.CustomFormat != ''
-                ? dayjs().format(this.CustomFormat)
-                : new Date().toLocaleDateString(this.config.locale, this.format);
-
-        this.sendToPanel(`date~${val}`);
-        const d: Date = new Date();
-        d.setDate(d.getDate() + 1);
-        // don't set ms, let them be random
-        d.setHours(0, 0, 0);
-        const diff = d.getTime() - Date.now();
-        this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
     };
 
     async delete(): Promise<void> {

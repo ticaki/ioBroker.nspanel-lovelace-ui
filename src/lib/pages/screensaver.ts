@@ -54,14 +54,9 @@ export class Screensaver extends Page {
         await super.init();
     }
 
-    async update(): Promise<void> {
-        if (!this.visibility) {
-            this.log.error('get update command but not visible!');
-            return;
-        }
-
+    async getData(places: Types.ScreenSaverPlaces[]): Promise<pages.screensaverMessage | null> {
         const config = this.config;
-        if (!config || (config.card !== 'screensaver' && config.card !== 'screensaver2')) return;
+        if (!config || (config.card !== 'screensaver' && config.card !== 'screensaver2')) return null;
         const message: pages.screensaverMessage = {
             event: 'weatherUpdate',
             options: {
@@ -86,7 +81,7 @@ export class Screensaver extends Page {
                     const place = pageItems.config.modeScr;
                     const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
                     if (max === 0) continue;
-                    if (place === 'time' || place === 'date' || place === 'mricon') continue;
+                    if (places.indexOf(place) === -1) continue;
 
                     const arr = options[place] || [];
                     arr.push(await pageItems.getPageItemPayload());
@@ -117,18 +112,29 @@ export class Screensaver extends Page {
                     }
                 }
             }
-            if (message.options.alternate.length > 0)
-                message.options.alternate.unshift(tools.getPayload('', '', '', '', '', ''));
-            const arr: string[] = message.options.favorit.concat(
-                message.options.left,
-                message.options.bottom,
-                message.options.alternate,
-                message.options.indicator,
-            );
-            const msg = tools.getPayload(message.event, tools.getPayloadArray(arr));
-            this.sendToPanel(msg);
-            this.HandleScreensaverStatusIcons();
         }
+        return message;
+    }
+    async update(): Promise<void> {
+        if (!this.visibility) {
+            this.log.error('get update command but not visible!');
+            return;
+        }
+
+        const message = await this.getData(['left', 'bottom', 'indicator', 'alternate', 'favorit']);
+        if (message === null) return;
+        if (message.options.alternate.length > 0)
+            message.options.alternate.unshift(tools.getPayload('', '', '', '', '', ''));
+        const arr: string[] = message.options.favorit.concat(
+            message.options.left,
+            message.options.bottom,
+            message.options.alternate,
+            message.options.indicator,
+        );
+        const msg = tools.getPayload(message.event, tools.getPayloadArray(arr));
+        this.HandleTime();
+        this.sendToPanel(msg);
+        this.HandleScreensaverStatusIcons();
     }
 
     sendStatusUpdate(
@@ -183,19 +189,19 @@ export class Screensaver extends Page {
         }
     }
     async onVisibilityChange(v: boolean): Promise<void> {
+        await super.onVisibilityChange(v);
         this.step = -1;
         if (v) {
             this.rotationLoop();
         } else {
             if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);
         }
-        await super.onVisibilityChange(v);
     }
     rotationLoop = async (): Promise<void> => {
         if (this.unload) return;
         // only use this if screensaver is activated
         if (!this.visibility) return;
-        if (this.step++ > 100) this.step = 0;
+        this.step++ > 100;
 
         await this.update();
 
@@ -229,6 +235,7 @@ export class Screensaver extends Page {
                             break;
                         }
                         case 'time': {
+                            this.HandleTime();
                             break;
                         }
                         case 'date': {
@@ -239,85 +246,34 @@ export class Screensaver extends Page {
             }
         }
     };
+    async HandleTime(): Promise<void> {
+        const message = await this.getData(['time']);
+        if (message === null || !message.options.time[0]) return;
+        this.sendToPanel(`time~${message.options.time[0].split('~')[5]}`);
+    }
 
     async HandleScreensaverStatusIcons(): Promise<void> {
-        {
-            if (!this.visibility) {
-                this.log.error('get update command but not visible!');
-                return;
-            }
-
-            const config = this.config;
-            if (!config || (config.card !== 'screensaver' && config.card !== 'screensaver2')) return;
-            const message: pages.screensaverMessage = {
-                event: 'weatherUpdate',
-                options: {
-                    indicator: [],
-                    left: [],
-                    time: [],
-                    date: [],
-                    bottom: [],
-                    mricon: [],
-                    favorit: [],
-                    alternate: [],
-                },
-            };
-
-            if (this.pageItems) {
-                const model = config.model;
-                const layout = config.mode;
-                for (let a = 0; a < this.pageItems.length; a++) {
-                    const pageItems: PageItem | undefined = this.pageItems[a];
-                    const options = message.options;
-                    if (pageItems && pageItems.config && pageItems.config.modeScr) {
-                        const place = pageItems.config.modeScr;
-                        const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
-                        if (max === 0) continue;
-                        if (place !== 'mricon') continue;
-                        if (
-                            Definition.ScreenSaverConst[layout][place].maxEntries[model] >
-                            ((options[place] && options[place]!.length) ?? 0)
-                        ) {
-                            const arr = options[place] || [];
-                            arr.push(await pageItems.getPageItemPayload());
-                            options[place] = arr;
-                        }
-                    }
-                }
-                for (const x in message.options) {
-                    const place = x as Types.ScreenSaverPlaces;
-                    let items = message.options[place];
-                    if (items) {
-                        const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
-                        if (items.length > Definition.ScreenSaverConst[layout][place].maxEntries[model]) {
-                            let f = items.length / Definition.ScreenSaverConst[layout][place].maxEntries[model];
-                            f = this.step % Math.ceil(f);
-                            items = items.slice(max * f, max * (f + 1) - 1);
-                        }
-                        for (let i = 0; i < max; i++) {
-                            const msg = items[i];
-                            if (!msg) {
-                                items[i] = tools.getPayload('', '', '', '', '', '');
-                            }
-                        }
-                    }
-                }
-                const mrIcon1 = message.options.mricon[0].split('~');
-                const mrIcon2 = message.options.mricon[1].split('~');
-                const msgArray: string[] = [
-                    'statusUpdate',
-                    mrIcon1[2] ?? '',
-                    mrIcon1[3] ?? '',
-                    mrIcon2[2] ?? '',
-                    mrIcon2[3] ?? '',
-                    mrIcon1[5] ?? '',
-                    mrIcon2[5] ?? '',
-                ];
-
-                const msg = tools.getPayloadArray(msgArray);
-                this.sendToPanel(msg);
-            }
+        if (!this.visibility) {
+            this.log.error('get update command but not visible!');
+            return;
         }
+
+        const message = await this.getData(['mricon']);
+        if (message === null) return;
+        const mrIcon1 = message.options.mricon[0].split('~');
+        const mrIcon2 = message.options.mricon[1].split('~');
+        const msgArray: string[] = [
+            'statusUpdate',
+            mrIcon1[2] ?? '',
+            mrIcon1[3] ?? '',
+            mrIcon2[2] ?? '',
+            mrIcon2[3] ?? '',
+            mrIcon1[5] ?? '',
+            mrIcon2[5] ?? '',
+        ];
+
+        const msg = tools.getPayloadArray(msgArray);
+        this.sendToPanel(msg);
     }
     /*
         const payload: Partial<sendTemplates['statusUpdate']> = { eventType: 'statusUpdate' };

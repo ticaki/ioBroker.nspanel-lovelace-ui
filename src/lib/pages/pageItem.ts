@@ -133,6 +133,12 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
         }
+        if (this.parent && (this.parent.card === 'screensaver' || this.parent.card === 'screensaver2')) {
+            if (!this.panel.persistentPageItems[this.id]) {
+                this.panel.persistentPageItems[this.id] = this;
+                await this.controller.statesControler.activateTrigger(this);
+            }
+        }
     }
 
     async getPageItemPayload(): Promise<string> {
