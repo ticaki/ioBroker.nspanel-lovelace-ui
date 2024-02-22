@@ -87,14 +87,10 @@ export class Screensaver extends Page {
                     const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
                     if (max === 0) continue;
                     if (place === 'time' || place === 'date' || place === 'mricon') continue;
-                    if (
-                        Definition.ScreenSaverConst[layout][place].maxEntries[model] >
-                        ((options[place] && options[place]!.length) ?? 0)
-                    ) {
-                        const arr = options[place] || [];
-                        arr.push(await pageItems.getPageItemPayload());
-                        options[place] = arr;
-                    }
+
+                    const arr = options[place] || [];
+                    arr.push(await pageItems.getPageItemPayload());
+                    options[place] = arr;
                 }
             }
             for (const x in message.options) {
@@ -105,8 +101,9 @@ export class Screensaver extends Page {
                     if (items.length > Definition.ScreenSaverConst[layout][place].maxEntries[model]) {
                         let f = items.length / Definition.ScreenSaverConst[layout][place].maxEntries[model];
                         f = this.step % Math.ceil(f);
-                        items = items.slice(max * f, max * (f + 1) - 1);
+                        message.options[place] = items.slice(max * f, max * (f + 1));
                     }
+                    items = message.options[place];
                     for (let i = 0; i < max; i++) {
                         const msg = items[i];
                         if (!msg) {
@@ -198,7 +195,7 @@ export class Screensaver extends Page {
         if (this.unload) return;
         // only use this if screensaver is activated
         if (!this.visibility) return;
-        if (this.step > 100) this.step = 0;
+        if (this.step++ > 100) this.step = 0;
 
         await this.update();
 

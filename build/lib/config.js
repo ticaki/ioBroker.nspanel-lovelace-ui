@@ -2901,7 +2901,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "left",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindSpeed"
@@ -2953,7 +2953,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "left",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindSpeed"
@@ -3005,7 +3005,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "left",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -3057,7 +3057,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "left",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindDirectionText"
@@ -3106,23 +3106,17 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "bottom",
       data: {
-        entity1: {
+        entity1: void 0,
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Daily.Day1.Sunrise",
-            forceType: "string"
+            read: "return new Date(val).getTime()",
+            forceType: "number"
           },
-          decimal: {
+          dateFormat: {
             type: "const",
-            constVal: 0
-          },
-          factor: {
-            type: "const",
-            constVal: 1
-          },
-          unit: {
-            type: "const",
-            constVal: "\xB0C"
+            constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
           }
         },
         icon: {
@@ -3150,7 +3144,7 @@ const pageScreensaverTest = {
         text: {
           true: {
             type: "const",
-            constVal: "TokenSun"
+            constVal: "Sun"
           },
           false: void 0
         }
@@ -3162,7 +3156,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "bottom",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindSpeed"
@@ -3214,7 +3208,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "bottom",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -3266,7 +3260,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "bottom",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindDirectionText"
@@ -3315,7 +3309,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "bottom",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.RelativeHumidity"
@@ -3364,7 +3358,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "bottom",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.DewPoint"
@@ -3469,7 +3463,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "indicator",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -3521,7 +3515,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "indicator",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindDirectionText"
@@ -3570,7 +3564,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "indicator",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindSpeed"
@@ -3622,7 +3616,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "indicator",
       data: {
-        entity1: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -3665,6 +3659,85 @@ const pageScreensaverTest = {
             constVal: "B\xF6en"
           },
           false: void 0
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "mricon",
+      data: {
+        entity1: {
+          value: {
+            type: "internal",
+            dp: "cmd/power1"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "lightbulb"
+            },
+            color: {
+              type: "const",
+              constVal: Color.Yellow
+            }
+          },
+          false: {
+            value: {
+              type: "const",
+              constVal: "lightbulb-outline"
+            },
+            color: {
+              type: "const",
+              constVal: Color.HMIOff
+            }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "mricon",
+      data: {
+        entity1: {
+          value: {
+            type: "internal",
+            dp: "cmd/power2"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "lightbulb"
+            },
+            color: {
+              type: "const",
+              constVal: Color.Yellow
+            }
+          },
+          false: {
+            value: {
+              type: "const",
+              constVal: "lightbulb-outline"
+            },
+            color: {
+              type: "const",
+              constVal: Color.HMIOff
+            }
+          }
         }
       }
     }

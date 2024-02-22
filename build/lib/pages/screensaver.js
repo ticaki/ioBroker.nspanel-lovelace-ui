@@ -62,7 +62,6 @@ class Screensaver extends import_Page.Page {
     await super.init();
   }
   async update() {
-    var _a;
     if (!this.visibility) {
       this.log.error("get update command but not visible!");
       return;
@@ -96,11 +95,9 @@ class Screensaver extends import_Page.Page {
             continue;
           if (place === "time" || place === "date" || place === "mricon")
             continue;
-          if (Definition.ScreenSaverConst[layout][place].maxEntries[model] > ((_a = options[place] && options[place].length) != null ? _a : 0)) {
-            const arr2 = options[place] || [];
-            arr2.push(await pageItems.getPageItemPayload());
-            options[place] = arr2;
-          }
+          const arr2 = options[place] || [];
+          arr2.push(await pageItems.getPageItemPayload());
+          options[place] = arr2;
         }
       }
       for (const x in message.options) {
@@ -111,8 +108,9 @@ class Screensaver extends import_Page.Page {
           if (items.length > Definition.ScreenSaverConst[layout][place].maxEntries[model]) {
             let f = items.length / Definition.ScreenSaverConst[layout][place].maxEntries[model];
             f = this.step % Math.ceil(f);
-            items = items.slice(max * f, max * (f + 1) - 1);
+            message.options[place] = items.slice(max * f, max * (f + 1));
           }
+          items = message.options[place];
           for (let i = 0; i < max; i++) {
             const msg2 = items[i];
             if (!msg2) {
@@ -205,7 +203,7 @@ class Screensaver extends import_Page.Page {
       return;
     if (!this.visibility)
       return;
-    if (this.step > 100)
+    if (this.step++ > 100)
       this.step = 0;
     await this.update();
     if (this.rotationTime === 0)
