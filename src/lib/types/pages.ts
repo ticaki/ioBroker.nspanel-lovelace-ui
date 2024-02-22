@@ -110,7 +110,8 @@ export type DeviceRole =
     | 'text.list'
     | 'rgb'
     | 'indicator'
-    | '2values'; // timer with internal counter
+    | '2values'
+    | 'combined'; // timer with internal counter
 
 export function isStateRole(F: string | StateRole): F is StateRole {
     switch (F as StateRole) {

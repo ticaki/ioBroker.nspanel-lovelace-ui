@@ -304,6 +304,16 @@ export class PageItem extends BaseClassTriggerd {
                                 null,
                                 (this.parent && this.parent.card !== 'cardEntities') ?? false,
                             )) ?? '';
+                        if (entry.role === 'combined') {
+                            message.icon =
+                                (await tools.getIconEntryValue(
+                                    item.icon,
+                                    !!value,
+                                    '',
+                                    null,
+                                    (this.parent && this.parent.card === 'cardEntities') ?? false,
+                                )) ?? '' + message.icon;
+                        }
                         message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
                         return tools.getPayload(
                             message.type,
