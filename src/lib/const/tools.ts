@@ -230,9 +230,9 @@ export async function getIconEntryValue(
     on = on ?? true;
     if (!i) return Icons.GetIcon(on ? def : defOff ?? def);
 
-    const text = getText ? (i.true && i.true.text && (await i.true.text.getString())) ?? null : null;
+    const text = getText ? (i.true && (await getValueEntryString(i.true))) ?? null : null;
     if (text !== null) {
-        const textFalse = (i.false && i.false.text && (await i.false.text.getString())) ?? null;
+        const textFalse = (i.false && (await getValueEntryString(i.false))) ?? null;
         if (typeof on === 'number' && textFalse !== null) {
             const scale = i.scale && (await i.scale.getObject());
             if (isPartialIconScaleElement(scale)) {
@@ -240,7 +240,7 @@ export async function getIconEntryValue(
                 else textFalse;
             }
         }
-        if (!on) return (i.false && i.false.text && (await i.false.text.getString())) ?? text;
+        if (!on) return (i.false && (await getValueEntryString(i.false))) ?? text;
         return text;
     }
     const icon = (i.true && i.true.value && (await i.true.value.getString())) ?? null;

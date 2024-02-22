@@ -204,7 +204,7 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
     ],
     items: undefined,
 };
-const pageEntitiesTest2: pages.PageBaseConfig = {
+/*const pageEntitiesTest2: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardEntities',
     dpInit: '',
@@ -261,18 +261,12 @@ const pageEntitiesTest2: pages.PageBaseConfig = {
             template: 'light.shelly.rgbw2',
         },
         {
-            /**
-             * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
-             */
             type: 'shutter',
             dpInit: '0_userdata.0.shelly.0.SHSW-25#C45BBE5FC53F#1',
             template: 'shutter.shelly.2PM',
         },
         {
-            /**
-             * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
-             */
-            type: 'text',
+        type: 'text',
             dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
             template: 'text.battery',
             data: {
@@ -285,6 +279,52 @@ const pageEntitiesTest2: pages.PageBaseConfig = {
                     },
                 },
             },
+        },
+    ],
+    items: undefined,
+};*/
+const pageEntitiesTest2: pages.PageBaseConfig = {
+    //type: 'sonstiges',
+    card: 'cardEntities',
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: 'entities2',
+    useColor: false,
+    config: {
+        card: 'cardEntities',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'entities2',
+            },
+        },
+    },
+    pageItems: [
+        {
+            role: 'text.list',
+            type: 'button',
+            template: 'button.iconLeftSize',
+            dpInit: '',
+        },
+        {
+            role: 'text.list',
+            type: 'button',
+            template: 'button.iconRightSize',
+            dpInit: '',
+        },
+        {
+            role: 'rgbSingle',
+            type: 'light',
+            dpInit: '0_userdata.0.shelly.0.SHRGBW2#258794#1',
+            template: 'light.shelly.rgbw2',
+        },
+        {
+            /**
+             * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
+             */
+            type: 'text',
+            dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
+            template: 'text.battery',
         },
     ],
     items: undefined,
@@ -1639,7 +1679,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'home' },
-                        text: { type: 'const', constVal: '22.2' },
+                        text: { value: { type: 'const', constVal: '22.2' } },
                         color: { type: 'const', constVal: Color.Green },
                     },
                     false: {
@@ -2139,7 +2179,7 @@ const pageGridTest5: pages.PageBaseConfig = {
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'home' },
-                        text: { type: 'const', constVal: '22.2' },
+                        text: { value: { type: 'const', constVal: '22.2' } },
                         color: { type: 'const', constVal: Color.Green },
                     },
                     false: {
@@ -2891,7 +2931,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
     useColor: false,
     config: {
         card: 'screensaver2',
-        mode: 'advanced',
+        mode: 'standard',
         rotationTime: 0,
         model: 'eu',
         data: undefined,
@@ -2905,7 +2945,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
             type: 'text',
             modeScr: 'favorit',
             data: {
-                entity1: {
+                entity2: {
                     value: { type: 'triggered', dp: 'accuweather.0.Current.Temperature' },
                     decimal: {
                         type: 'const',
@@ -3732,60 +3772,19 @@ const pageScreensaverTest: pages.PageBaseConfig = {
         },
 
         {
-            role: 'text',
-            dpInit: '',
             type: 'text',
+            dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
+            template: 'text.battery',
+
             modeScr: 'indicator',
             data: {
-                entity1: {
-                    value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Daily.Day1.Sunrise',
-                        forceType: 'string',
-                    },
-                    decimal: {
-                        type: 'const',
-                        constVal: 0,
-                    },
-                    factor: {
-                        type: 'const',
-                        constVal: 1,
-                    },
-                    unit: {
-                        type: 'const',
-                        constVal: '°C',
-                    },
-                },
-
                 icon: {
                     true: {
-                        value: {
-                            type: 'const',
-                            constVal: 'weather-sunset-up',
-                        },
-                        color: {
-                            type: 'const',
-                            constVal: Color.Yellow,
-                        },
+                        text: null,
                     },
                     false: {
-                        value: undefined,
-                        color: {
-                            type: 'const',
-                            constVal: Color.Blue,
-                        },
+                        text: null,
                     },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
-                },
-
-                text: {
-                    true: {
-                        type: 'const',
-                        constVal: 'Sonne',
-                    },
-                    false: undefined,
                 },
             },
         },

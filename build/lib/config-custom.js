@@ -1532,7 +1532,7 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            text: { type: "const", constVal: "22.2" },
+            text: { value: { type: "const", constVal: "22.2" } },
             color: { type: "const", constVal: Color.Green }
           },
           false: {
@@ -1985,7 +1985,7 @@ const pageGridTest5 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            text: { type: "const", constVal: "22.2" },
+            text: { value: { type: "const", constVal: "22.2" } },
             color: { type: "const", constVal: Color.Green }
           },
           false: {

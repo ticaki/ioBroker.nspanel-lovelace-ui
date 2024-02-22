@@ -420,7 +420,7 @@ export type PageItemUnion = {
 export type ColorEntryType = Record<Types.BooleanUnion, Color.RGB | undefined> & { scale?: Types.IconScaleElement };
 
 export type IconEntryType =
-    | (Partial<Record<Types.BooleanUnion, { value: string; color: Color.RGB; text?: string }>> & {
+    | (Partial<Record<Types.BooleanUnion, { value: string; color: Color.RGB; text?: ValueEntryType }>> & {
           scale?: Types.IconScaleElement | undefined;
           maxBri?: string;
           minBri?: string;

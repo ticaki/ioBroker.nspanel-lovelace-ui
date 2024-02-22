@@ -232,9 +232,9 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   on = on != null ? on : true;
   if (!i)
     return import_icon_mapping.Icons.GetIcon(on ? def : defOff != null ? defOff : def);
-  const text = getText ? (_a = i.true && i.true.text && await i.true.text.getString()) != null ? _a : null : null;
+  const text = getText ? (_a = i.true && await getValueEntryString(i.true)) != null ? _a : null : null;
   if (text !== null) {
-    const textFalse = (_b = i.false && i.false.text && await i.false.text.getString()) != null ? _b : null;
+    const textFalse = (_b = i.false && await getValueEntryString(i.false)) != null ? _b : null;
     if (typeof on === "number" && textFalse !== null) {
       const scale2 = i.scale && await i.scale.getObject();
       if ((0, import_types.isPartialIconScaleElement)(scale2)) {
@@ -245,7 +245,7 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
       }
     }
     if (!on)
-      return (_c = i.false && i.false.text && await i.false.text.getString()) != null ? _c : text;
+      return (_c = i.false && await getValueEntryString(i.false)) != null ? _c : text;
     return text;
   }
   const icon = (_d = i.true && i.true.value && await i.true.value.getString()) != null ? _d : null;

@@ -108,11 +108,13 @@ const textTemplates = [
         true: {
           value: { type: "const", constVal: "temperature-celsius" },
           text: {
-            type: "triggered",
-            mode: "auto",
-            role: "value.temperature",
-            dp: "",
-            read: "return Math.round(val*10)/10"
+            value: {
+              type: "triggered",
+              mode: "auto",
+              role: "value.temperature",
+              dp: "",
+              read: "return Math.round(val*10)/10"
+            }
           },
           color: { type: "const", constVal: Color.Red }
         },
@@ -178,10 +180,16 @@ const textTemplates = [
                                 return 'battery';}`
           },
           text: {
-            type: "triggered",
-            mode: "auto",
-            role: "value.battery",
-            dp: ""
+            value: {
+              type: "triggered",
+              mode: "auto",
+              role: "value.battery",
+              dp: ""
+            },
+            unit: {
+              type: "const",
+              constVal: "%"
+            }
           },
           color: {
             type: "const",

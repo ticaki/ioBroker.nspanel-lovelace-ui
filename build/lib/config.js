@@ -235,35 +235,16 @@ const pageEntitiesTest2 = {
   },
   pageItems: [
     {
-      role: "timer",
-      type: "timer",
-      dpInit: "",
-      data: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "timer" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          false: {
-            value: void 0,
-            color: { type: "const", constVal: Color.Green }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        headline: { type: "const", constVal: "Timer" },
-        setValue1: { type: "state", dp: "0_userdata.0.example_state" }
-      }
+      role: "text.list",
+      type: "button",
+      template: "button.iconLeftSize",
+      dpInit: ""
+    },
+    {
+      role: "text.list",
+      type: "button",
+      template: "button.iconRightSize",
+      dpInit: ""
     },
     {
       role: "rgbSingle",
@@ -272,24 +253,9 @@ const pageEntitiesTest2 = {
       template: "light.shelly.rgbw2"
     },
     {
-      type: "shutter",
-      dpInit: "0_userdata.0.shelly.0.SHSW-25#C45BBE5FC53F#1",
-      template: "shutter.shelly.2PM"
-    },
-    {
       type: "text",
       dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
-      template: "text.battery",
-      data: {
-        icon: {
-          true: {
-            value: {
-              type: "const",
-              constVal: "ds"
-            }
-          }
-        }
-      }
+      template: "text.battery"
     }
   ],
   items: void 0
@@ -1566,7 +1532,7 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            text: { type: "const", constVal: "22.2" },
+            text: { value: { type: "const", constVal: "22.2" } },
             color: { type: "const", constVal: Color.Green }
           },
           false: {
@@ -2019,7 +1985,7 @@ const pageGridTest5 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            text: { type: "const", constVal: "22.2" },
+            text: { value: { type: "const", constVal: "22.2" } },
             color: { type: "const", constVal: Color.Green }
           },
           false: {
@@ -2704,7 +2670,7 @@ const pageScreensaverTest = {
   useColor: false,
   config: {
     card: "screensaver2",
-    mode: "advanced",
+    mode: "standard",
     rotationTime: 0,
     model: "eu",
     data: void 0
@@ -2716,7 +2682,7 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "favorit",
       data: {
-        entity1: {
+        entity2: {
           value: { type: "triggered", dp: "accuweather.0.Current.Temperature" },
           decimal: {
             type: "const",
@@ -3500,58 +3466,18 @@ const pageScreensaverTest = {
       }
     },
     {
-      role: "text",
-      dpInit: "",
       type: "text",
+      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
+      template: "text.battery",
       modeScr: "indicator",
       data: {
-        entity1: {
-          value: {
-            type: "state",
-            dp: "accuweather.0.Daily.Day1.Sunrise",
-            forceType: "string"
-          },
-          decimal: {
-            type: "const",
-            constVal: 0
-          },
-          factor: {
-            type: "const",
-            constVal: 1
-          },
-          unit: {
-            type: "const",
-            constVal: "\xB0C"
-          }
-        },
         icon: {
           true: {
-            value: {
-              type: "const",
-              constVal: "weather-sunset-up"
-            },
-            color: {
-              type: "const",
-              constVal: Color.Yellow
-            }
+            text: null
           },
           false: {
-            value: void 0,
-            color: {
-              type: "const",
-              constVal: Color.Blue
-            }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "Sonne"
-          },
-          false: void 0
+            text: null
+          }
         }
       }
     },
