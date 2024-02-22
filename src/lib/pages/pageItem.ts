@@ -295,24 +295,20 @@ export class PageItem extends BaseClassTriggerd {
                                 );
                             }
                         }
-
-                        message.icon =
-                            (await tools.getIconEntryValue(
-                                item.icon,
-                                !!value,
-                                '',
-                                null,
-                                (this.parent && this.parent.card !== 'cardEntities') ?? false,
-                            )) ?? '';
-                        if (entry.role === 'combined') {
+                        if (entry.role === 'textNotIcon') {
+                            message.icon = (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
+                        } else if (entry.role !== 'combined') {
                             message.icon =
                                 (await tools.getIconEntryValue(
                                     item.icon,
                                     !!value,
                                     '',
                                     null,
-                                    (this.parent && this.parent.card === 'cardEntities') ?? false,
-                                )) ?? '' + message.icon;
+                                    (this.parent && this.parent.card !== 'cardEntities') ?? false,
+                                )) ?? '';
+                        } else {
+                            message.icon = (await tools.getIconEntryValue(item.icon, !!value, '', null, false)) ?? '';
+                            message.icon += (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
                         }
                         message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
                         return tools.getPayload(

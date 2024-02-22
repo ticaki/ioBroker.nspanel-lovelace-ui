@@ -111,7 +111,8 @@ export type DeviceRole =
     | 'rgb'
     | 'indicator'
     | '2values'
-    | 'combined'; // timer with internal counter
+    | 'combined'
+    | 'textNotIcon'; // timer with internal counter
 
 export function isStateRole(F: string | StateRole): F is StateRole {
     switch (F as StateRole) {
