@@ -57,7 +57,6 @@ export class Screensaver extends Page {
         const config = this.config;
         if (!config || (config.card !== 'screensaver' && config.card !== 'screensaver2')) return null;
         const message: pages.screensaverMessage = {
-            event: 'weatherUpdate',
             options: {
                 indicator: [],
                 left: [],
@@ -131,7 +130,7 @@ export class Screensaver extends Page {
             message.options.alternate,
             message.options.indicator,
         );
-        const msg = tools.getPayload(message.event, tools.getPayloadArray(arr));
+        const msg = tools.getPayload('weatherUpdate', tools.getPayloadArray(arr));
         this.HandleTime();
         this.HandleDate();
         this.sendToPanel(msg);

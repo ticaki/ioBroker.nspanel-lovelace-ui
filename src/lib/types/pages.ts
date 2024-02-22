@@ -589,7 +589,6 @@ export type PageGridMessage = {
 };
 
 export type screensaverMessage = {
-    event: 'weatherUpdate';
     options: Record<Types.ScreenSaverPlaces, string[]>;
 };
 

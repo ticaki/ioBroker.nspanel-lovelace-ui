@@ -8,6 +8,7 @@ import { AdapterClassDefinition, BaseClass } from './library';
 
 import Aedes, { Client } from 'aedes';
 import { Server, createServer } from 'net';
+import { randomUUID } from 'node:crypto';
 
 export type callbackMessageType = (topic: string, message: string) => void;
 
@@ -16,7 +17,7 @@ export class MQTTClientClass extends BaseClass {
     data: any = {};
     ready: boolean = false;
     public messageCallback: callbackMessageType;
-
+    clientId: string;
     private subscriptDB: { topic: string; callback: callbackMessageType }[] = [];
 
     constructor(
@@ -28,11 +29,12 @@ export class MQTTClientClass extends BaseClass {
         callback: callbackMessageType,
     ) {
         super(adapter, 'mqttClient');
+        this.clientId = `iobroker_${randomUUID()}`;
         this.messageCallback = callback;
         this.client = mqtt.connect(`mqtt://${ip}:${port}`, {
             username: username,
             password: password,
-            clientId: `iobroker_${this.adapter.namespace}`,
+            clientId: this.clientId,
         });
         this.client.on('connect', () => {
             this.log.info(`Connection is active.`);

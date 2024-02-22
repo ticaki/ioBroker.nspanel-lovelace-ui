@@ -34,19 +34,22 @@ var import_aedes_persistence_level = __toESM(require("aedes-persistence-level"))
 var import_library = require("./library");
 var import_aedes = __toESM(require("aedes"));
 var import_net = require("net");
+var import_node_crypto = require("node:crypto");
 class MQTTClientClass extends import_library.BaseClass {
   client;
   data = {};
   ready = false;
   messageCallback;
+  clientId;
   subscriptDB = [];
   constructor(adapter, ip, port, username, password, callback) {
     super(adapter, "mqttClient");
+    this.clientId = `iobroker_${(0, import_node_crypto.randomUUID)()}`;
     this.messageCallback = callback;
     this.client = import_mqtt.default.connect(`mqtt://${ip}:${port}`, {
       username,
       password,
-      clientId: `iobroker_${this.adapter.namespace}`
+      clientId: this.clientId
     });
     this.client.on("connect", () => {
       this.log.info(`Connection is active.`);

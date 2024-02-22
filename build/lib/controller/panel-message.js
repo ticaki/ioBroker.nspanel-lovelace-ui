@@ -49,7 +49,9 @@ class PanelSend extends import_library.BaseClass {
       if (msg.CustomSend === "Done") {
         if (this.messageTimeout)
           this.adapter.clearTimeout(this.messageTimeout);
-        this.log.debug(`Receive ack for ${JSON.stringify(this.messageDb.shift())}`);
+        const msg2 = this.messageDb.shift();
+        if (false)
+          this.log.debug(`Receive ack for ${JSON.stringify(msg2)}`);
         this.sendMessageLoop();
       }
     }
