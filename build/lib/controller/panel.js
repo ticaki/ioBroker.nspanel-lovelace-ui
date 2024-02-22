@@ -67,7 +67,6 @@ const DefaultOptions = {
 };
 class Panel extends import_library.BaseClass {
   minuteLoopTimeout;
-  dateUpdateTimeout;
   pages = [];
   _activePage = void 0;
   screenSaver;
@@ -449,8 +448,6 @@ class Panel extends import_library.BaseClass {
   restartLoops() {
     if (this.minuteLoopTimeout)
       this.adapter.clearTimeout(this.minuteLoopTimeout);
-    if (this.dateUpdateTimeout)
-      this.adapter.clearTimeout(this.dateUpdateTimeout);
     this.minuteLoop();
   }
   minuteLoop = () => {
@@ -466,8 +463,6 @@ class Panel extends import_library.BaseClass {
     this.persistentPageItems = {};
     if (this.minuteLoopTimeout)
       this.adapter.clearTimeout(this.minuteLoopTimeout);
-    if (this.dateUpdateTimeout)
-      this.adapter.clearTimeout(this.dateUpdateTimeout);
   }
   getPagebyUniqueID(uniqueID) {
     var _a;

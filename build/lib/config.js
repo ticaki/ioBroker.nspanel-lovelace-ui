@@ -2705,7 +2705,7 @@ const pageScreensaverTest = {
   config: {
     card: "screensaver2",
     mode: "advanced",
-    rotationTime: 10,
+    rotationTime: 0,
     model: "eu",
     data: void 0
   },
@@ -3405,6 +3405,104 @@ const pageScreensaverTest = {
       role: "text",
       dpInit: "",
       type: "text",
+      modeScr: "bottom",
+      data: {
+        entity2: {
+          value: {
+            type: "state",
+            dp: "accuweather.0.Current.DewPoint"
+          },
+          decimal: {
+            type: "const",
+            constVal: 1
+          },
+          factor: void 0,
+          unit: {
+            type: "const",
+            constVal: "\xB0C"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "thermometer-water"
+            },
+            color: {
+              type: "const",
+              constVal: "#7799FF"
+            }
+          },
+          false: {
+            value: void 0,
+            color: void 0
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Taup."
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity2: {
+          value: {
+            type: "state",
+            dp: "accuweather.0.Current.DewPoint"
+          },
+          decimal: {
+            type: "const",
+            constVal: 1
+          },
+          factor: void 0,
+          unit: {
+            type: "const",
+            constVal: "\xB0C"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "thermometer-water"
+            },
+            color: {
+              type: "const",
+              constVal: "#7799FF"
+            }
+          },
+          false: {
+            value: void 0,
+            color: void 0
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Taup."
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
       modeScr: "indicator",
       data: {
         entity1: {
@@ -3736,6 +3834,50 @@ const pageScreensaverTest = {
             color: {
               type: "const",
               constVal: Color.HMIOff
+            }
+          }
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "time",
+      data: {
+        entity2: {
+          value: {
+            type: "internal",
+            dp: "///time"
+          },
+          dateFormat: {
+            type: "const",
+            constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+          }
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "date",
+      data: {
+        entity2: {
+          value: {
+            type: "internal",
+            dp: "///date"
+          },
+          dateFormat: {
+            type: "const",
+            constVal: {
+              local: "de",
+              format: {
+                weekday: "long",
+                month: "short",
+                year: "numeric",
+                day: "numeric"
+              }
             }
           }
         }

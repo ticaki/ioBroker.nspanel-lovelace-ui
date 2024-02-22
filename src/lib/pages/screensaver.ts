@@ -4,7 +4,6 @@ import * as Types from '../types/types';
 //import dayjs from 'dayjs';
 //import moment from 'moment';
 //import parseFormat from 'moment-parseformat';
-import { sendTemplates, weatherUpdateTestArray } from '../types/msg-def';
 import { Page, PageInterface } from '../classes/Page';
 import * as pages from '../types/pages';
 import * as tools from '../const/tools';
@@ -90,6 +89,7 @@ export class Screensaver extends Page {
             }
             for (const x in message.options) {
                 const place = x as Types.ScreenSaverPlaces;
+                if (places.indexOf(place) === -1) continue;
                 let items = message.options[place];
                 if (items) {
                     const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
@@ -133,61 +133,11 @@ export class Screensaver extends Page {
         );
         const msg = tools.getPayload(message.event, tools.getPayloadArray(arr));
         this.HandleTime();
+        this.HandleDate();
         this.sendToPanel(msg);
         this.HandleScreensaverStatusIcons();
     }
 
-    sendStatusUpdate(
-        payload: sendTemplates['statusUpdate'] | sendTemplates['weatherUpdate'],
-        layout: Types.ScreensaverModeType,
-    ): void {
-        switch (payload.eventType) {
-            case 'statusUpdate':
-                this.sendToPanel(
-                    tools.getPayload(
-                        payload.eventType,
-                        payload.icon1,
-                        payload.icon1Color,
-                        payload.icon2,
-                        payload.icon2Color,
-                        payload.icon1Font,
-                        payload.icon2Font,
-                        '',
-                    ),
-                );
-                break;
-            case 'weatherUpdate': {
-                let value = payload.value[layout];
-                if (!value) return;
-                const result: string[] = [payload.eventType];
-                const check = weatherUpdateTestArray![layout];
-                value = value.filter((item, pos) => check[pos]);
-                value.forEach((item, pos) => {
-                    const test = check[pos];
-                    if (item.icon && !test.icon) item.icon = '';
-                    if (item.iconColor && !test.iconColor) item.iconColor = '';
-                    if (item.displayName && (!('displayName' in test) || !test.displayName)) item.displayName = '';
-                    if (item.optionalValue && !test.icon) item.icon = '';
-                });
-                value.forEach(
-                    (a) =>
-                        a &&
-                        result.push(
-                            tools.getPayload(
-                                '',
-                                '',
-                                a.icon,
-                                a.iconColor,
-                                'displayName' in a ? a.displayName : '',
-                                a.optionalValue,
-                            ),
-                        ),
-                );
-                this.sendToPanel(tools.getPayloadArray([...result, '']));
-                break;
-            }
-        }
-    }
     async onVisibilityChange(v: boolean): Promise<void> {
         await super.onVisibilityChange(v);
         this.step = -1;
@@ -250,6 +200,11 @@ export class Screensaver extends Page {
         const message = await this.getData(['time']);
         if (message === null || !message.options.time[0]) return;
         this.sendToPanel(`time~${message.options.time[0].split('~')[5]}`);
+    }
+    async HandleDate(): Promise<void> {
+        const message = await this.getData(['date']);
+        if (message === null || !message.options.date[0]) return;
+        this.sendToPanel(`date~${message.options.date[0].split('~')[5]}`);
     }
 
     async HandleScreensaverStatusIcons(): Promise<void> {

@@ -101,6 +101,7 @@ class Controller extends Library.BaseClass {
       }
     this.panels = newPanels;
     this.minuteLoop();
+    this.dateUpdateLoop();
   }
   async delete() {
     if (this.minuteLoopTimeout)

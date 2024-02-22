@@ -2892,7 +2892,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
     config: {
         card: 'screensaver2',
         mode: 'advanced',
-        rotationTime: 10,
+        rotationTime: 0,
         model: 'eu',
         data: undefined,
     },
@@ -3628,6 +3628,108 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'bottom',
+            data: {
+                entity2: {
+                    value: {
+                        type: 'state',
+                        dp: 'accuweather.0.Current.DewPoint',
+                    },
+                    decimal: {
+                        type: 'const',
+                        constVal: 1,
+                    },
+                    factor: undefined,
+                    unit: {
+                        type: 'const',
+                        constVal: '°C',
+                    },
+                },
+
+                icon: {
+                    true: {
+                        value: {
+                            type: 'const',
+                            constVal: 'thermometer-water',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: '#7799FF',
+                        },
+                    },
+                    false: {
+                        value: undefined,
+                        color: undefined,
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+
+                text: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Taup.',
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'bottom',
+            data: {
+                entity2: {
+                    value: {
+                        type: 'state',
+                        dp: 'accuweather.0.Current.DewPoint',
+                    },
+                    decimal: {
+                        type: 'const',
+                        constVal: 1,
+                    },
+                    factor: undefined,
+                    unit: {
+                        type: 'const',
+                        constVal: '°C',
+                    },
+                },
+
+                icon: {
+                    true: {
+                        value: {
+                            type: 'const',
+                            constVal: 'thermometer-water',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: '#7799FF',
+                        },
+                    },
+                    false: {
+                        value: undefined,
+                        color: undefined,
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+
+                text: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Taup.',
+                    },
+                    false: undefined,
+                },
+            },
+        },
 
         {
             role: 'text',
@@ -3986,6 +4088,50 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                         color: {
                             type: 'const',
                             constVal: Color.HMIOff,
+                        },
+                    },
+                },
+            },
+        },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'time',
+            data: {
+                entity2: {
+                    value: {
+                        type: 'internal',
+                        dp: '///time',
+                    },
+                    dateFormat: {
+                        type: 'const',
+                        constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                    },
+                },
+            },
+        },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'date',
+            data: {
+                entity2: {
+                    value: {
+                        type: 'internal',
+                        dp: '///date',
+                    },
+                    dateFormat: {
+                        type: 'const',
+                        constVal: {
+                            local: 'de',
+                            format: {
+                                weekday: 'long',
+                                month: 'short',
+                                year: 'numeric',
+                                day: 'numeric',
+                            },
                         },
                     },
                 },

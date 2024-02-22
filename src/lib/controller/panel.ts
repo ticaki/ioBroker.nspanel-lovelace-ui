@@ -68,7 +68,6 @@ type panelConfigTop = {
 
 export class Panel extends BaseClass {
     private minuteLoopTimeout: ioBroker.Timeout | undefined;
-    private dateUpdateTimeout: ioBroker.Timeout | undefined;
     private pages: (Page | undefined)[] = [];
     private _activePage: Page | undefined = undefined;
     private screenSaver: Screensaver | undefined;
@@ -459,7 +458,6 @@ export class Panel extends BaseClass {
     }
     restartLoops(): void {
         if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
-        if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
         this.minuteLoop();
     }
     /**
@@ -481,7 +479,6 @@ export class Panel extends BaseClass {
         this.isOnline = false;
         this.persistentPageItems = {};
         if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
-        if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
     }
 
     getPagebyUniqueID(uniqueID: string): Page | null {

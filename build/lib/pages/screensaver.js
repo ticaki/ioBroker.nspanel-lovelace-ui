@@ -28,7 +28,6 @@ __export(screensaver_exports, {
 });
 module.exports = __toCommonJS(screensaver_exports);
 var Definition = __toESM(require("../const/definition"));
-var import_msg_def = require("../types/msg-def");
 var import_Page = require("../classes/Page");
 var tools = __toESM(require("../const/tools"));
 var import_pageItem = require("./pageItem");
@@ -98,6 +97,8 @@ class Screensaver extends import_Page.Page {
       }
       for (const x in message.options) {
         const place = x;
+        if (places.indexOf(place) === -1)
+          continue;
         let items = message.options[place];
         if (items) {
           const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
@@ -141,59 +142,9 @@ class Screensaver extends import_Page.Page {
     );
     const msg = tools.getPayload(message.event, tools.getPayloadArray(arr));
     this.HandleTime();
+    this.HandleDate();
     this.sendToPanel(msg);
     this.HandleScreensaverStatusIcons();
-  }
-  sendStatusUpdate(payload, layout) {
-    switch (payload.eventType) {
-      case "statusUpdate":
-        this.sendToPanel(
-          tools.getPayload(
-            payload.eventType,
-            payload.icon1,
-            payload.icon1Color,
-            payload.icon2,
-            payload.icon2Color,
-            payload.icon1Font,
-            payload.icon2Font,
-            ""
-          )
-        );
-        break;
-      case "weatherUpdate": {
-        let value = payload.value[layout];
-        if (!value)
-          return;
-        const result = [payload.eventType];
-        const check = import_msg_def.weatherUpdateTestArray[layout];
-        value = value.filter((item, pos) => check[pos]);
-        value.forEach((item, pos) => {
-          const test = check[pos];
-          if (item.icon && !test.icon)
-            item.icon = "";
-          if (item.iconColor && !test.iconColor)
-            item.iconColor = "";
-          if (item.displayName && (!("displayName" in test) || !test.displayName))
-            item.displayName = "";
-          if (item.optionalValue && !test.icon)
-            item.icon = "";
-        });
-        value.forEach(
-          (a) => a && result.push(
-            tools.getPayload(
-              "",
-              "",
-              a.icon,
-              a.iconColor,
-              "displayName" in a ? a.displayName : "",
-              a.optionalValue
-            )
-          )
-        );
-        this.sendToPanel(tools.getPayloadArray([...result, ""]));
-        break;
-      }
-    }
   }
   async onVisibilityChange(v) {
     await super.onVisibilityChange(v);
@@ -259,6 +210,12 @@ class Screensaver extends import_Page.Page {
     if (message === null || !message.options.time[0])
       return;
     this.sendToPanel(`time~${message.options.time[0].split("~")[5]}`);
+  }
+  async HandleDate() {
+    const message = await this.getData(["date"]);
+    if (message === null || !message.options.date[0])
+      return;
+    this.sendToPanel(`date~${message.options.date[0].split("~")[5]}`);
   }
   async HandleScreensaverStatusIcons() {
     var _a, _b, _c, _d, _e, _f;

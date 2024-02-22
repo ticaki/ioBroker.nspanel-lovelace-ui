@@ -83,6 +83,7 @@ export class Controller extends Library.BaseClass {
             }
         this.panels = newPanels;
         this.minuteLoop();
+        this.dateUpdateLoop();
     }
     async delete(): Promise<void> {
         if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);

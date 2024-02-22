@@ -2705,7 +2705,7 @@ const pageScreensaverTest = {
   config: {
     card: "screensaver2",
     mode: "advanced",
-    rotationTime: 10,
+    rotationTime: 0,
     model: "eu",
     data: void 0
   },
@@ -3853,6 +3853,32 @@ const pageScreensaverTest = {
           dateFormat: {
             type: "const",
             constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+          }
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "date",
+      data: {
+        entity2: {
+          value: {
+            type: "internal",
+            dp: "///date"
+          },
+          dateFormat: {
+            type: "const",
+            constVal: {
+              local: "de",
+              format: {
+                weekday: "long",
+                month: "short",
+                year: "numeric",
+                day: "numeric"
+              }
+            }
           }
         }
       }
