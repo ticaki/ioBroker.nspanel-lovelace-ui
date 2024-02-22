@@ -68,7 +68,6 @@ class CustomLog {
 
 export class Library extends BaseClass {
     private stateDataBase: { [key: string]: LibraryStateVal } = {};
-    private language: ioBroker.Languages | 'uk' = 'en';
     private forbiddenDirs: string[] = [];
     private translation: { [key: string]: string } = {};
     defaults = {
@@ -530,7 +529,8 @@ export class Library extends BaseClass {
         if (this.adapter.language) return this.adapter.language;
         return 'en-En';
     }
-    getTranslation(key: string): string {
+    getTranslation(key: string | null | undefined): string {
+        if (!key) return '';
         if (this.translation[key] !== undefined) return this.translation[key];
         return key;
     }

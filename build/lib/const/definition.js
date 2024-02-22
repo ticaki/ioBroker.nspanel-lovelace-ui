@@ -26,9 +26,7 @@ __export(definition_exports, {
   NSPanel_Alarm_Path: () => NSPanel_Alarm_Path,
   NSPanel_Path: () => NSPanel_Path,
   ReiveTopicAppendix: () => ReiveTopicAppendix,
-  ScreenSaverAllPlaces: () => ScreenSaverAllPlaces,
   ScreenSaverConst: () => ScreenSaverConst,
-  ScreenSaverPlaces: () => ScreenSaverPlaces,
   SendTopicAppendix: () => SendTopicAppendix,
   autoCreateAlias: () => autoCreateAlias,
   berry_driver_version: () => berry_driver_version,
@@ -144,6 +142,170 @@ const genericStateObjects = {
             write: false
           },
           native: {}
+        },
+        displayVersion: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "genericStateObjects.displayVersion",
+            type: "string",
+            role: "text",
+            read: true,
+            write: false
+          },
+          native: {}
+        },
+        model: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "genericStateObjects.model",
+            type: "string",
+            role: "text",
+            read: true,
+            write: false
+          },
+          native: {}
+        },
+        uptime: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "genericStateObjects.uptime",
+            type: "string",
+            role: "text",
+            read: true,
+            write: false
+          },
+          native: {}
+        },
+        wifi: {
+          _channel: {
+            _id: "",
+            type: "channel",
+            common: {
+              name: "genericStateObjects.wifi"
+            },
+            native: {}
+          },
+          ssid: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.ssid",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
+          },
+          rssi: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.rssi",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
+          },
+          downtime: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.downtime",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
+          }
+        },
+        net: {
+          _channel: {
+            _id: "",
+            type: "channel",
+            common: {
+              name: "genericStateObjects.net"
+            },
+            native: {}
+          },
+          ip: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.ip",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
+          },
+          gateway: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.gateway",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
+          },
+          dnsserver: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.dnsserver",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
+          },
+          subnetmask: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.subnetmask",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
+          },
+          hostname: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.hostname",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
+          },
+          mac: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.mac",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
+          }
         }
       },
       alarm: {
@@ -205,18 +367,6 @@ const genericStateObjects = {
       }
     }
   },
-  presense: {
-    _id: "",
-    type: "state",
-    common: {
-      name: "genericStateObjects.presense",
-      type: "boolean",
-      role: "text",
-      read: true,
-      write: false
-    },
-    native: {}
-  },
   customString: {
     _id: "User_State",
     type: "state",
@@ -226,38 +376,6 @@ const genericStateObjects = {
       role: "text",
       read: true,
       write: false
-    },
-    native: {}
-  },
-  devices: {
-    _id: "",
-    type: "folder",
-    common: {
-      name: "devices.folder"
-    },
-    native: {}
-  },
-  rooms: {
-    _id: "",
-    type: "folder",
-    common: {
-      name: "rooms.folder"
-    },
-    native: {}
-  },
-  settings: {
-    _id: "",
-    type: "folder",
-    common: {
-      name: "settings.folder"
-    },
-    native: {}
-  },
-  global: {
-    _id: "",
-    type: "folder",
-    common: {
-      name: "settings.global"
     },
     native: {}
   }
@@ -298,74 +416,83 @@ const tft_version = "v4.3.3";
 const desired_display_firmware_version = 53;
 const berry_driver_version = 9;
 const tasmotaOtaUrl = "http://ota.tasmota.com/tasmota32/release/";
-const ScreenSaverPlaces = ["favoritEntity", "leftEntity", "bottomEntity", "alternateEntity", "indicatorEntity"];
-const ScreenSaverAllPlaces = [
-  "favoritEntity",
-  "leftEntity",
-  "bottomEntity",
-  "alternateEntity",
-  "indicatorEntity",
-  "mrIconEntity"
-];
 const ScreenSaverConst = {
   standard: {
-    leftEntity: {
-      maxEntries: 0
+    left: {
+      maxEntries: { eu: 0 }
     },
-    bottomEntity: {
-      maxEntries: 4
+    bottom: {
+      maxEntries: { eu: 4 }
     },
-    alternateEntity: {
-      maxEntries: 0
+    alternate: {
+      maxEntries: { eu: 0 }
     },
-    indicatorEntity: {
-      maxEntries: 0
+    indicator: {
+      maxEntries: { eu: 0 }
     },
-    mrIconEntity: {
-      maxEntries: 2
+    mricon: {
+      maxEntries: { eu: 2 }
     },
-    favoritEntity: {
-      maxEntries: 1
+    favorit: {
+      maxEntries: { eu: 1 }
+    },
+    time: {
+      maxEntries: { eu: 1 }
+    },
+    date: {
+      maxEntries: { eu: 1 }
     }
   },
   alternate: {
-    leftEntity: {
-      maxEntries: 0
+    left: {
+      maxEntries: { eu: 0 }
     },
-    bottomEntity: {
-      maxEntries: 3
+    bottom: {
+      maxEntries: { eu: 3 }
     },
-    alternateEntity: {
-      maxEntries: 1
+    alternate: {
+      maxEntries: { eu: 1 }
     },
-    indicatorEntity: {
-      maxEntries: 0
+    indicator: {
+      maxEntries: { eu: 0 }
     },
-    mrIconEntity: {
-      maxEntries: 2
+    mricon: {
+      maxEntries: { eu: 2 }
     },
-    favoritEntity: {
-      maxEntries: 1
+    favorit: {
+      maxEntries: { eu: 1 }
+    },
+    time: {
+      maxEntries: { eu: 1 }
+    },
+    date: {
+      maxEntries: { eu: 1 }
     }
   },
   advanced: {
-    leftEntity: {
-      maxEntries: 3
+    left: {
+      maxEntries: { eu: 3 }
     },
-    bottomEntity: {
-      maxEntries: 6
+    bottom: {
+      maxEntries: { eu: 6 }
     },
-    alternateEntity: {
-      maxEntries: 0
+    alternate: {
+      maxEntries: { eu: 0 }
     },
-    indicatorEntity: {
-      maxEntries: 5
+    indicator: {
+      maxEntries: { eu: 5 }
     },
-    mrIconEntity: {
-      maxEntries: 2
+    mricon: {
+      maxEntries: { eu: 2 }
     },
-    favoritEntity: {
-      maxEntries: 1
+    favorit: {
+      maxEntries: { eu: 1 }
+    },
+    time: {
+      maxEntries: { eu: 1 }
+    },
+    date: {
+      maxEntries: { eu: 1 }
     }
   }
 };
@@ -381,9 +508,7 @@ const SendTopicAppendix = "/cmnd/CustomSend";
   NSPanel_Alarm_Path,
   NSPanel_Path,
   ReiveTopicAppendix,
-  ScreenSaverAllPlaces,
   ScreenSaverConst,
-  ScreenSaverPlaces,
   SendTopicAppendix,
   autoCreateAlias,
   berry_driver_version,

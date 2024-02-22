@@ -87,7 +87,7 @@ class PageMedia extends import_Page2.Page {
       this
     );
     if (tempItem)
-      tempItem.card = this.config && this.config.card;
+      tempItem.card = "cardMedia";
     this.items = tempItem;
     await super.init();
   }
@@ -171,7 +171,7 @@ class PageMedia extends import_Page2.Page {
         case "string": {
           const v = await item.data.shuffle.value.getString();
           if (v !== null) {
-            value = ["OFF", "FALSE"].indexOf(v.toUpperCase()) !== -1;
+            value = ["OFF", "FALSE"].indexOf(v.toUpperCase()) === -1;
           }
           break;
         }

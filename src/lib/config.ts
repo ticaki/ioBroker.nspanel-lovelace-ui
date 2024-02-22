@@ -1,7 +1,6 @@
 import * as pages from './types/pages';
 import * as Color from './const/Color';
 import { panelConfigPartial } from './controller/panel';
-import { ScreensaverConfig } from './pages/screensaver';
 
 const pageEntitiesTest1: pages.PageBaseConfig = {
     //type: 'sonstiges',
@@ -255,6 +254,38 @@ const pageEntitiesTest2: pages.PageBaseConfig = {
                 setValue1: { type: 'state', dp: '0_userdata.0.example_state' },
             },
         },
+        {
+            role: 'rgbSingle',
+            type: 'light',
+            dpInit: '0_userdata.0.shelly.0.SHRGBW2#258794#1',
+            template: 'light.shelly.rgbw2',
+        },
+        {
+            /**
+             * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
+             */
+            type: 'shutter',
+            dpInit: '0_userdata.0.shelly.0.SHSW-25#C45BBE5FC53F#1',
+            template: 'shutter.shelly.2PM',
+        },
+        {
+            /**
+             * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
+             */
+            type: 'text',
+            dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
+            template: 'text.battery',
+            data: {
+                icon: {
+                    true: {
+                        value: {
+                            type: 'const',
+                            constVal: 'ds',
+                        },
+                    },
+                },
+            },
+        },
     ],
     items: undefined,
 };
@@ -381,7 +412,7 @@ const pagePowerTest1: pages.PageBaseConfig = {
     },
     items: undefined,
 };
-const pageMediaTest: pages.PageBaseConfig = {
+export const pageMediaTest: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardMedia',
     dpInit: 'alexa2.0.Echo-Devices.G091EV0704641J8R.Player',
@@ -673,7 +704,6 @@ const pageMediaTest: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
         {
@@ -716,7 +746,6 @@ const pageMediaTest: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
         {
@@ -759,7 +788,6 @@ const pageMediaTest: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
         {
@@ -802,7 +830,6 @@ const pageMediaTest: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
         {
@@ -845,7 +872,6 @@ const pageMediaTest: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
     ],
@@ -1106,7 +1132,6 @@ export const pageMediaTest2: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
         {
@@ -1149,7 +1174,6 @@ export const pageMediaTest2: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
         {
@@ -1192,7 +1216,6 @@ export const pageMediaTest2: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
         {
@@ -1235,7 +1258,6 @@ export const pageMediaTest2: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
         {
@@ -1278,12 +1300,19 @@ export const pageMediaTest2: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
     ],
-    uniqueID: 'media1',
+    uniqueID: 'media2',
     useColor: false,
+};
+
+const pageMediaTest3: pages.PageBaseConfig = {
+    //type: 'sonstiges',
+    template: 'media.spotify-premium',
+    dpInit: '0_userdata.0.spotify-premium.0',
+    uniqueID: 'media3',
+    card: 'cardMedia',
 };
 const pageGridTest1: pages.PageBaseConfig = {
     //type: 'sonstiges',
@@ -1599,7 +1628,6 @@ const pageGridTest1: pages.PageBaseConfig = {
                     type: 'const',
                     constVal: '3',
                 },
-                setValue1: undefined,
             },
         },
         {
@@ -1741,8 +1769,6 @@ const pageGridTest2: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-
-                setValue1: undefined,
             },
         },
         {
@@ -1778,7 +1804,373 @@ const pageGridTest2: pages.PageBaseConfig = {
                 setValue1: { type: 'state', dp: '0_userdata.0.example_state' },
             },
         },
+        {
+            /**
+             * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
+             */
+            type: 'text',
+            dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
+            template: 'text.temperature',
+        },
     ],
+};
+const pageGridTest5: pages.PageBaseConfig = {
+    //type: 'sonstiges',
+    card: 'cardGrid',
+    dpInit: '',
+
+    alwaysOn: 'none',
+    uniqueID: 'grid5',
+    useColor: false,
+    config: {
+        card: 'cardGrid',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'grid1',
+            },
+        },
+    },
+    pageItems: [
+        {
+            role: 'text.list',
+            type: 'number',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-up' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: 23,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Number',
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            /**
+             * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
+             */
+            role: 'rgb',
+            type: 'shutter',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'window-shutter-open' },
+                        color: { type: 'const', constVal: Color.Yellow },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'window-shutter' },
+                        color: { type: 'const', constVal: Color.HMIOff },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                // 1. slider
+                entity1: {
+                    // button
+                    value: { mode: 'auto', role: 'level.blind', type: 'triggered', dp: '' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 100 },
+                },
+                // 2. slider
+                entity2: {
+                    // button
+                    value: { mode: 'auto', role: 'level.tilt', type: 'triggered', dp: '' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 100 },
+                },
+                text: {
+                    true: {
+                        type: 'const',
+                        constVal: 'text',
+                    },
+                    false: undefined,
+                },
+                headline: {
+                    type: 'const',
+                    constVal: 'Shutter',
+                },
+                text1: {
+                    true: {
+                        type: 'const',
+                        constVal: 'text1',
+                    },
+                    false: undefined,
+                },
+                text2: {
+                    true: {
+                        type: 'const',
+                        constVal: 'text2',
+                    },
+                    false: undefined,
+                },
+                up: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.open.blind', 'button.open'],
+                },
+                down: {
+                    type: 'state',
+                    dp: '',
+                    mode: 'auto',
+                    role: ['button.close.blind', 'button.close'],
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                //valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+            },
+        },
+        {
+            role: 'rgb',
+            type: 'light',
+            dpInit: '',
+
+            data: {
+                color: {
+                    true: { type: 'triggered', dp: '0_userdata.0.RGB' },
+                    false: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'lightbulb' },
+                        color: { type: 'const', constVal: Color.Yellow },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'lightbulb-outline' },
+                        color: { type: 'const', constVal: Color.HMIOff },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                colorMode: { type: 'const', constVal: true },
+                dimmer: {
+                    value: {
+                        type: 'triggered',
+                        dp: '0_userdata.0.dimmer',
+                    },
+                },
+                entity1: {
+                    // button
+                    value: { type: 'triggered', dp: '0_userdata.0.example_state' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                entityInSel: undefined,
+                text1: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Licht',
+                    },
+                    false: undefined,
+                },
+                text2: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Picker1',
+                    },
+                    false: undefined,
+                },
+                text3: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Picker2',
+                    },
+                    false: undefined,
+                },
+                ct: {
+                    value: {
+                        type: 'triggered',
+                        dp: '0_userdata.0.ct',
+                    },
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'input_sel',
+            dpInit: '',
+
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                headline: { type: 'const', constVal: 'insel' },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'home' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entityInSel: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'music' },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Navbutton' },
+                    false: undefined,
+                },
+                setNavi: {
+                    type: 'const',
+                    constVal: '3',
+                },
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'text',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'home' },
+                        text: { type: 'const', constVal: '22.2' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: { type: 'const', constVal: 'text' },
+                    false: undefined,
+                },
+                text1: {
+                    true: { type: 'const', constVal: 'text1' },
+                    false: undefined,
+                },
+            },
+        },
+    ],
+    items: undefined,
 };
 const pageGridTest4: pages.PageBaseConfig = {
     //type: 'sonstiges',
@@ -1889,13 +2281,11 @@ const pageGridTest4: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-
-                setValue1: undefined,
             },
         },
     ],
 };
-const pageGrid2Test2: pages.PageBaseConfig = {
+const pageGrid2Test3: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardGrid2',
     dpInit: '',
@@ -2004,7 +2394,6 @@ const pageGrid2Test2: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
     ],
@@ -2016,6 +2405,48 @@ const pageThermoTest: pages.PageBaseConfig = {
     dpInit: '',
     alwaysOn: 'none',
     pageItems: [
+        {
+            role: 'indicator',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'arrow-right' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+            },
+        },
         {
             role: 'text.list',
             type: 'input_sel',
@@ -2047,6 +2478,93 @@ const pageThermoTest: pages.PageBaseConfig = {
         },
         {
             role: 'text.list',
+            type: 'input_sel',
+            dpInit: '',
+
+            data: {
+                entityInSel: {
+                    value: {
+                        type: 'triggered',
+                        dp: '0_userdata.0.statesTest',
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                headline: {
+                    type: 'const',
+                    constVal: 'Test',
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                //valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'input_sel',
+            dpInit: '',
+
+            data: {
+                entityInSel: {
+                    value: {
+                        type: 'triggered',
+                        dp: '0_userdata.0.statesTest',
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                headline: {
+                    type: 'const',
+                    constVal: 'Test',
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                //valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+            },
+        },
+        {
+            role: 'text.list',
+            type: 'input_sel',
+            dpInit: '',
+
+            data: {
+                entityInSel: {
+                    value: {
+                        type: 'triggered',
+                        dp: '0_userdata.0.statesTest',
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                headline: {
+                    type: 'const',
+                    constVal: 'Test',
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                //valueList: { type: 'const', constVal: 'home?butter' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+            },
+        },
+        {
+            role: 'button',
             type: 'button',
             dpInit: '',
 
@@ -2085,11 +2603,10 @@ const pageThermoTest: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: undefined,
             },
         },
         {
-            role: 'text.list',
+            role: 'indicator',
             type: 'button',
             dpInit: '',
 
@@ -2125,7 +2642,201 @@ const pageThermoTest: pages.PageBaseConfig = {
                     true: undefined,
                     false: undefined,
                 },
-                setValue1: { type: 'triggered', dp: '0_userdata.0.example_state' },
+            },
+        },
+        {
+            role: 'indicator',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: { type: 'state', dp: '0_userdata.0.example_state' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'indicator',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: { type: 'state', dp: '0_userdata.0.example_state' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'indicator',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: { type: 'state', dp: '0_userdata.0.example_state' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'indicator',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: { type: 'state', dp: '0_userdata.0.example_state' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'indicator',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                    scale: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'fan' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    scale: undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                entity1: {
+                    value: { type: 'state', dp: '0_userdata.0.example_state' },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                text: {
+                    true: undefined,
+                    false: undefined,
+                },
             },
         },
     ],
@@ -2171,18 +2882,30 @@ const pageThermoTest: pages.PageBaseConfig = {
     items: undefined,
     useColor: false,
 };
-const pageScreensaverTest: ScreensaverConfig = {
+const pageScreensaverTest: pages.PageBaseConfig = {
     card: 'screensaver',
     // mode of screensaver
-    mode: 'advanced',
-    // in 0 no rotation otherwise < 3 sec = 3 sec for testing -
-    rotationTime: 0,
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: 'scr',
+    useColor: false,
+    config: {
+        card: 'screensaver2',
+        mode: 'advanced',
+        rotationTime: 10,
+        model: 'eu',
+        data: undefined,
+    },
+
     // Config of Entitys
-    entitysConfig: {
-        favoritEntity: [
-            {
-                entityIconSelect: undefined,
-                entityValue: {
+    pageItems: [
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'favorit',
+            data: {
+                entity1: {
                     value: { type: 'triggered', dp: 'accuweather.0.Current.Temperature' },
                     decimal: {
                         type: 'const',
@@ -2194,12 +2917,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: '°C',
                     },
                 },
-                entityDateFormat: {
-                    type: 'const',
-                    constVal: null,
-                },
 
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'state',
@@ -2368,23 +3087,22 @@ const pageScreensaverTest: ScreensaverConfig = {
                     }`,
                         },
                     },
-
                     false: { value: undefined, color: undefined },
-
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
                 },
 
-                entityText: {
+                text: {
                     true: undefined,
                     false: undefined,
                 },
             },
-        ],
-        leftEntity: [
-            {
-                entityValue: {
+        },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'left',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.WindSpeed',
@@ -2402,9 +3120,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: 'm/s',
                     },
                 },
-                entityDateFormat: undefined,
 
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -2425,9 +3142,7 @@ const pageScreensaverTest: ScreensaverConfig = {
                     minBri: undefined,
                 },
 
-                entityIconSelect: undefined,
-
-                entityText: {
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Wind',
@@ -2435,8 +3150,69 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-            {
-                entityValue: {
+        },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'left',
+            data: {
+                entity2: {
+                    value: {
+                        type: 'state',
+                        dp: 'accuweather.0.Current.WindSpeed',
+                    },
+                    decimal: {
+                        type: 'const',
+                        constVal: 1,
+                    },
+                    factor: {
+                        type: 'const',
+                        constVal: 1000 / 3600,
+                    },
+                    unit: {
+                        type: 'const',
+                        constVal: 'm/s',
+                    },
+                },
+
+                icon: {
+                    true: {
+                        value: {
+                            type: 'const',
+                            constVal: 'weather-windy',
+                        },
+                        color: undefined,
+                    },
+                    false: {
+                        value: undefined,
+                        color: undefined,
+                    },
+
+                    scale: {
+                        type: 'const',
+                        constVal: { val_min: 0, val_max: 80 },
+                    },
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+
+                text: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Wind',
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'left',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.WindGust',
@@ -2454,8 +3230,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: 'm/s',
                     },
                 },
-                entityDateFormat: undefined,
-                entityIcon: {
+
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -2475,8 +3251,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entityIconSelect: undefined,
-                entityText: {
+
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Böen',
@@ -2484,8 +3260,14 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-            {
-                entityValue: {
+        },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'left',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.WindDirectionText',
@@ -2500,17 +3282,16 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: '°',
                     },
                 },
-                entityDateFormat: undefined,
 
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'const',
                             constVal: 'windsock',
                         },
                         color: {
-                            type: 'const',
-                            constVal: '#FF00FF',
+                            type: 'state',
+                            dp: '0_userdata.0.dimmer',
                         },
                     },
                     false: {
@@ -2521,9 +3302,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entityIconSelect: undefined,
 
-                entityText: {
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Windr.',
@@ -2531,35 +3311,28 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-        ],
-        bottomEntity: [
-            {
-                entityValue: {
+        },
+
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'bottom',
+            data: {
+                entity1: undefined,
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Daily.Day1.Sunrise',
-                        forceType: 'string',
+                        read: 'return new Date(val).getTime()',
+                        forceType: 'number',
                     },
-                    decimal: {
+                    dateFormat: {
                         type: 'const',
-                        constVal: 0,
-                    },
-                    factor: {
-                        type: 'const',
-                        constVal: 1,
-                    },
-                    unit: {
-                        type: 'const',
-                        constVal: '°C',
+                        constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
                     },
                 },
-
-                entityDateFormat: {
-                    type: 'const',
-                    constVal: JSON.stringify({ hour: '2-digit', minute: '2-digit' }),
-                },
-
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -2582,18 +3355,22 @@ const pageScreensaverTest: ScreensaverConfig = {
                     minBri: undefined,
                 },
 
-                entityIconSelect: undefined,
-
-                entityText: {
+                text: {
                     true: {
                         type: 'const',
-                        constVal: 'TokenSun',
+                        constVal: 'Sun',
                     },
                     false: undefined,
                 },
             },
-            {
-                entityValue: {
+        },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'bottom',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.WindSpeed',
@@ -2611,9 +3388,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: 'm/s',
                     },
                 },
-                entityDateFormat: undefined,
 
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -2634,9 +3410,7 @@ const pageScreensaverTest: ScreensaverConfig = {
                     minBri: undefined,
                 },
 
-                entityIconSelect: undefined,
-
-                entityText: {
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Wind',
@@ -2644,8 +3418,14 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-            {
-                entityValue: {
+        },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'bottom',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.WindGust',
@@ -2663,8 +3443,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: 'm/s',
                     },
                 },
-                entityDateFormat: undefined,
-                entityIcon: {
+
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -2684,8 +3464,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entityIconSelect: undefined,
-                entityText: {
+
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Böen',
@@ -2693,8 +3473,14 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-            {
-                entityValue: {
+        },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'bottom',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.WindDirectionText',
@@ -2709,9 +3495,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: '°',
                     },
                 },
-                entityDateFormat: undefined,
 
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -2730,9 +3515,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entityIconSelect: undefined,
 
-                entityText: {
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Windr.',
@@ -2740,8 +3524,14 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-            {
-                entityValue: {
+        },
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'bottom',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.RelativeHumidity',
@@ -2756,9 +3546,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: '%',
                     },
                 },
-                entityDateFormat: undefined,
 
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -2777,9 +3566,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entityIconSelect: undefined,
 
-                entityText: {
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Feuchte.',
@@ -2787,8 +3575,15 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-            {
-                entityValue: {
+        },
+
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'bottom',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.DewPoint',
@@ -2803,9 +3598,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: '°C',
                     },
                 },
-                entityDateFormat: undefined,
 
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -2824,9 +3618,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entityIconSelect: undefined,
 
-                entityText: {
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Taup.',
@@ -2834,11 +3627,15 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-        ],
-        alternateEntity: [],
-        indicatorEntity: [
-            {
-                entityValue: {
+        },
+
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'indicator',
+            data: {
+                entity1: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Daily.Day1.Sunrise',
@@ -2858,12 +3655,7 @@ const pageScreensaverTest: ScreensaverConfig = {
                     },
                 },
 
-                entityDateFormat: {
-                    type: 'const',
-                    constVal: JSON.stringify({ hour: '2-digit', minute: '2-digit' }),
-                },
-
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -2886,9 +3678,7 @@ const pageScreensaverTest: ScreensaverConfig = {
                     minBri: undefined,
                 },
 
-                entityIconSelect: undefined,
-
-                entityText: {
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Sonne',
@@ -2896,8 +3686,15 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-            {
-                entityValue: {
+        },
+
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'indicator',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.WindGust',
@@ -2915,8 +3712,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: 'm/s',
                     },
                 },
-                entityDateFormat: undefined,
-                entityIcon: {
+
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -2936,8 +3733,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entityIconSelect: undefined,
-                entityText: {
+
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Böen',
@@ -2945,8 +3742,15 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-            {
-                entityValue: {
+        },
+
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'indicator',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.WindDirectionText',
@@ -2961,9 +3765,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: '°',
                     },
                 },
-                entityDateFormat: undefined,
 
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -2982,9 +3785,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entityIconSelect: undefined,
 
-                entityText: {
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Windr.',
@@ -2992,8 +3794,15 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-            {
-                entityValue: {
+        },
+
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'indicator',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.WindSpeed',
@@ -3011,9 +3820,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: 'm/s',
                     },
                 },
-                entityDateFormat: undefined,
 
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -3034,9 +3842,7 @@ const pageScreensaverTest: ScreensaverConfig = {
                     minBri: undefined,
                 },
 
-                entityIconSelect: undefined,
-
-                entityText: {
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Wind',
@@ -3044,8 +3850,15 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-            {
-                entityValue: {
+        },
+
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'indicator',
+            data: {
+                entity2: {
                     value: {
                         type: 'state',
                         dp: 'accuweather.0.Current.WindGust',
@@ -3063,8 +3876,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                         constVal: 'm/s',
                     },
                 },
-                entityDateFormat: undefined,
-                entityIcon: {
+
+                icon: {
                     true: {
                         value: {
                             type: 'const',
@@ -3084,8 +3897,8 @@ const pageScreensaverTest: ScreensaverConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entityIconSelect: undefined,
-                entityText: {
+
+                text: {
                     true: {
                         type: 'const',
                         constVal: 'Böen',
@@ -3093,198 +3906,187 @@ const pageScreensaverTest: ScreensaverConfig = {
                     false: undefined,
                 },
             },
-        ],
-        mrIconEntity: [
-            {
-                entityValue: {
+        },
+
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'mricon',
+            data: {
+                entity1: {
                     value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Current.WindDirectionText',
-                    },
-                    decimal: {
-                        type: 'const',
-                        constVal: 0,
-                    },
-                    factor: undefined,
-                    unit: {
-                        type: 'const',
-                        constVal: '°',
+                        type: 'internal',
+                        dp: 'cmd/power1',
                     },
                 },
-                entityDateFormat: undefined,
 
-                entityIcon: {
+                icon: {
                     true: {
                         value: {
                             type: 'const',
-                            constVal: 'windsock',
+                            constVal: 'lightbulb',
                         },
                         color: {
                             type: 'const',
-                            constVal: Color.White,
+                            constVal: Color.Yellow,
                         },
                     },
                     false: {
-                        value: undefined,
-                        color: undefined,
-                    },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
-                },
-                entityIconSelect: undefined,
-
-                entityText: {
-                    true: {
-                        type: 'const',
-                        constVal: 'Windr.',
-                    },
-                    false: undefined,
-                },
-            },
-            {
-                entityValue: {
-                    value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Current.WindDirectionText',
-                    },
-                    decimal: {
-                        type: 'const',
-                        constVal: 0,
-                    },
-                    factor: undefined,
-                    unit: {
-                        type: 'const',
-                        constVal: '°',
-                    },
-                },
-                entityDateFormat: undefined,
-
-                entityIcon: {
-                    true: {
                         value: {
                             type: 'const',
-                            constVal: 'windsock',
+                            constVal: 'lightbulb-outline',
                         },
                         color: {
                             type: 'const',
-                            constVal: '#FF00FF',
-                        },
-                    },
-                    false: {
-                        value: undefined,
-                        color: {
-                            type: 'const',
-                            constVal: '#FF00FF',
+                            constVal: Color.HMIOff,
                         },
                     },
                     scale: undefined,
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                entityIconSelect: undefined,
 
-                entityText: {
-                    true: {
-                        type: 'const',
-                        constVal: 'Windr.',
-                    },
+                text: {
+                    true: undefined,
                     false: undefined,
                 },
             },
+        },
+
+        {
+            role: 'text',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'mricon',
+            data: {
+                entity1: {
+                    value: {
+                        type: 'internal',
+                        dp: 'cmd/power2',
+                    },
+                },
+
+                icon: {
+                    true: {
+                        value: {
+                            type: 'const',
+                            constVal: 'lightbulb',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.Yellow,
+                        },
+                    },
+                    false: {
+                        value: {
+                            type: 'const',
+                            constVal: 'lightbulb-outline',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.HMIOff,
+                        },
+                    },
+                },
+            },
+        },
+    ],
+};
+export const Testconfig: Partial<panelConfigPartial>[] = [
+    {
+        pages: [
+            pageGridTest4,
+            pageEntitiesTest1,
+            pagePowerTest1,
+            pageThermoTest,
+            pageGridTest1,
+            pageGrid2Test3,
+            pageGridTest2,
+            pageScreensaverTest,
+            //pageMediaTest,
+            pageEntitiesTest2,
+            pageAbfall,
+            pageGridTest5,
+            pageMediaTest3,
         ],
+        // override by password.ts
+        navigation: [
+            {
+                name: 'main', //main ist die erste Seite
+                page: 'entities1',
+                left: { single: '7' }, // Die 4 bezieht sich auf den name: 4
+                right: { single: 'abfall1', double: '2' },
+            },
+            {
+                name: '5', //main ist die erste Seite
+                page: 'thermo1',
+                left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
+                right: { single: '6', double: 'main' },
+            },
+            {
+                name: 'abfall1', //main ist die erste Seite
+                page: 'abfall1',
+                left: { single: 'main' }, // Die 4 bezieht sich auf den name: 4
+                right: { single: 'entities2', double: 'main' },
+            },
+            {
+                name: 'entities2', //main ist die erste Seite
+                page: 'entities2',
+                left: { single: 'main' }, // Die 4 bezieht sich auf den name: 4
+                right: { single: '1', double: 'main' },
+            },
+            {
+                name: '6',
+                page: 'power1',
+                left: { single: '5' }, // Die 4 bezieht sich auf den name: 4
+                right: { single: '7', double: 'main' },
+            },
+            {
+                name: '7', //main ist die erste Seite
+                page: 'grid4',
+                left: { single: '6' }, // Die 4 bezieht sich auf den name: 4
+                right: { single: 'main', double: 'main' },
+            },
+            {
+                name: '1',
+                left: { single: 'main' }, // Die 0 bezieht sich auf den name: 0
+                right: { single: '2' },
+                page: 'grid1', // das grid1 bezieht sich auf die uniqueID oben in pages
+            },
+            {
+                name: '2',
+                left: { single: '1' },
+                right: { single: '3' },
+                page: 'grid2',
+            },
+            {
+                name: '3',
+                left: { single: '2' },
+                right: { single: '4', double: 'main' },
+                page: 'media3',
+            },
+            {
+                name: '4',
+                left: { single: '3', double: '1' },
+                right: { single: '5', double: '2' },
+                page: 'grid3',
+            },
+        ],
+        topic: 'nspanel/ns_panel2',
+        name: 'Wohnzimmer',
+        config: {
+            // dat hier hat noch keine bedeutung glaube ich :)
+            momentLocale: '',
+            locale: 'de-DE',
+            iconBig1: false,
+            iconBig2: false,
+        },
+        timeout: 30, // dat kommt vom Admin
+        dimLow: 20,
+        dimHigh: 90,
     },
-};
-export const Testconfig: Partial<panelConfigPartial> = {
-    pages: [
-        pageGridTest4,
-        pageEntitiesTest1,
-        pagePowerTest1,
-        pageThermoTest,
-        pageGridTest1,
-        pageGrid2Test2,
-        pageGridTest2,
-        pageScreensaverTest,
-        pageMediaTest,
-        pageEntitiesTest2,
-        pageAbfall,
-    ],
-    // override by password.ts
-    navigation: [
-        {
-            name: 'main', //main ist die erste Seite
-            page: 'entities1',
-            left: { single: '7' }, // Die 4 bezieht sich auf den name: 4
-            right: { single: 'abfall1', double: '2' },
-        },
-        {
-            name: '5', //main ist die erste Seite
-            page: 'thermo1',
-            left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
-            right: { single: '6', double: 'main' },
-        },
-        {
-            name: 'abfall1', //main ist die erste Seite
-            page: 'abfall1',
-            left: { single: 'main' }, // Die 4 bezieht sich auf den name: 4
-            right: { single: 'entities2', double: 'main' },
-        },
-        {
-            name: 'entities2', //main ist die erste Seite
-            page: 'entities2',
-            left: { single: 'main' }, // Die 4 bezieht sich auf den name: 4
-            right: { single: '1', double: 'main' },
-        },
-        {
-            name: '6',
-            page: 'power1',
-            left: { single: '5' }, // Die 4 bezieht sich auf den name: 4
-            right: { single: '7', double: 'main' },
-        },
-        {
-            name: '7', //main ist die erste Seite
-            page: 'grid4',
-            left: { single: '6' }, // Die 4 bezieht sich auf den name: 4
-            right: { single: 'main', double: 'main' },
-        },
-        {
-            name: '1',
-            left: { single: 'main' }, // Die 0 bezieht sich auf den name: 0
-            right: { single: '2' },
-            page: 'grid1', // das grid1 bezieht sich auf die uniqueID oben in pages
-        },
-        {
-            name: '2',
-            left: { single: '1' },
-            right: { single: '3' },
-            page: 'grid2',
-        },
-        {
-            name: '3',
-            left: { single: '2' },
-            right: { single: '4', double: 'main' },
-            page: 'media1',
-        },
-        {
-            name: '4',
-            left: { single: '3', double: '1' },
-            right: { single: '5', double: '2' },
-            page: 'grid3',
-        },
-    ],
-    topic: 'nspanel/ns_panel2',
-    name: 'Wohnzimmer',
-    config: {
-        // dat hier hat noch keine bedeutung glaube ich :)
-        momentLocale: '',
-        locale: 'de-DE',
-        iconBig1: false,
-        iconBig2: false,
-    },
-    timeout: 30, // dat kommt vom Admin
-    dimLow: 20,
-    dimHigh: 90,
-};
+];
 
 /**
  * command for javascript adapter

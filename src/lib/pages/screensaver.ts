@@ -1,15 +1,15 @@
 import * as Definition from '../const/definition';
-import * as Color from '../const/Color';
 import * as Types from '../types/types';
 
 //import dayjs from 'dayjs';
-import moment from 'moment';
-import parseFormat from 'moment-parseformat';
+//import moment from 'moment';
+//import parseFormat from 'moment-parseformat';
 import { sendTemplates, weatherUpdateTestArray } from '../types/msg-def';
 import { Page, PageInterface } from '../classes/Page';
-import { Icons } from '../const/icon_mapping';
 import * as pages from '../types/pages';
 import * as tools from '../const/tools';
+import { PageItem } from './pageItem';
+import { BaseClassTriggerd } from '../controller/states-controller';
 
 export type ScreensaverConfigType = {
     momentLocale: string;
@@ -18,34 +18,18 @@ export type ScreensaverConfigType = {
     iconBig2: boolean;
 };
 
-export type ScreensaverConfig = {
-    card: Extract<pages.PageTypeCards, 'screensaver' | 'screensaver2'>;
-    mode: Types.ScreensaverModeType;
-    entitysConfig: Types.ScreensaverOptionsType;
-    rotationTime: number;
-};
-
 export class Screensaver extends Page {
-    private entitysConfig: Types.ScreensaverOptionsType;
-    readonly layout: Types.ScreensaverModeType = 'standard';
-    private config2: ScreensaverConfigType;
-    private items: Record<
-        keyof Omit<Types.ScreensaverOptionsType, 'mrIconEntity'>,
-        (Types.ScreenSaverDataItems | undefined)[]
-    > &
-        Record<keyof Pick<Types.ScreensaverOptionsType, 'mrIconEntity'>, (Types.ScreenSaverDataItems | undefined)[]> = {
-        favoritEntity: [],
-        leftEntity: [],
-        bottomEntity: [],
-        alternateEntity: [],
-        indicatorEntity: [],
-        mrIconEntity: [],
-    };
-    private rotationTime: number;
-    private timoutRotation: ioBroker.Timeout | undefined = undefined;
+    items: undefined;
     private step: number = 0;
-    constructor(config: PageInterface, options: ScreensaverConfig) {
-        switch (options.mode) {
+    private headlinePos: number = 0;
+    private titelPos: number = 0;
+    private nextArrow: boolean = false;
+    private rotationTime: number = 300000;
+    private timoutRotation: ioBroker.Timeout | undefined = undefined;
+    constructor(config: PageInterface, options: pages.PageBaseConfig) {
+        if (!options.config || (options.config.card !== 'screensaver' && options.config.card !== 'screensaver2'))
+            return;
+        switch (options.config.mode) {
             case 'standard':
             case 'alternate': {
                 config.card = 'screensaver';
@@ -57,39 +41,17 @@ export class Screensaver extends Page {
             }
         }
         config.alwaysOn = 'none';
-        super(config, undefined);
+        super(config, options);
 
-        this.entitysConfig = options.entitysConfig;
-        this.layout = options.mode;
-
-        this.config2 = this.panel.config;
-        moment.locale(this.config2.momentLocale);
-        this.rotationTime = options.rotationTime !== 0 && options.rotationTime < 3 ? 3000 : options.rotationTime * 1000;
+        //moment.locale(this.config2.momentLocale);
+        this.rotationTime =
+            options.config.rotationTime !== 0 && options.config.rotationTime < 3
+                ? 3000
+                : options.config.rotationTime * 1000;
     }
+
     async init(): Promise<void> {
-        const config = this.entitysConfig;
-        if (this.controller) {
-            for (const key of Definition.ScreenSaverAllPlaces) {
-                for (const entry of config[key]) {
-                    if (entry == null || entry === undefined) {
-                        this.items[key].push(undefined);
-                        continue;
-                    }
-                    const tempItem = await this.controller.statesControler.createDataItems(entry, this);
-                    switch (key) {
-                        case 'favoritEntity':
-                        case 'leftEntity':
-                        case 'bottomEntity':
-                        case 'indicatorEntity':
-                            this.items[key].push(tempItem);
-                            break;
-                        case 'mrIconEntity':
-                            this.items['mrIconEntity'].push(tempItem);
-                            break;
-                    }
-                }
-            }
-        }
+        await super.init();
     }
 
     async update(): Promise<void> {
@@ -98,121 +60,78 @@ export class Screensaver extends Page {
             return;
         }
 
-        const payload: sendTemplates['weatherUpdate'] = { eventType: 'weatherUpdate', value: {} };
-        payload.value[this.layout] = [];
-        const value = payload.value[this.layout];
-        if (value === undefined) return;
-        for (const place of Definition.ScreenSaverPlaces) {
-            // let bottom rotated
-            let maxItems = Definition.ScreenSaverConst[this.layout][place].maxEntries;
-            let i = 0;
-            if (place == 'bottomEntity') {
-                i = maxItems * this.step;
-                maxItems = maxItems * (this.step + 1);
+        const config = this.config;
+        if (!config || (config.card !== 'screensaver' && config.card !== 'screensaver2')) return;
+        const message: pages.screensaverMessage = {
+            event: 'weatherUpdate',
+            options: {
+                indicator: [],
+                left: [],
+                time: [],
+                date: [],
+                bottom: [],
+                mricon: [],
+                favorit: [],
+                alternate: [],
+            },
+        };
+
+        if (this.pageItems) {
+            const model = config.model;
+            const layout = config.mode;
+            for (let a = 0; a < this.pageItems.length; a++) {
+                const pageItems: PageItem | undefined = this.pageItems[a];
+                const options = message.options;
+                if (pageItems && pageItems.config && pageItems.config.modeScr) {
+                    const place = pageItems.config.modeScr;
+                    const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+                    if (max === 0) continue;
+                    if (place === 'time' || place === 'date' || place === 'mricon') continue;
+                    if (
+                        Definition.ScreenSaverConst[layout][place].maxEntries[model] >
+                        ((options[place] && options[place]!.length) ?? 0)
+                    ) {
+                        const arr = options[place] || [];
+                        arr.push(await pageItems.getPageItemPayload());
+                        options[place] = arr;
+                    }
+                }
             }
-            /*if (place == 'favoritEntity') {
-                this.log.debug('');
-            }*/
-            for (i; i < maxItems; i++) {
-                const item: Types.ScreenSaverDataItems | undefined = this.items[place][i];
-                if (
-                    item === null ||
-                    item === undefined ||
-                    item.entityValue === undefined ||
-                    item.entityValue.value === undefined
-                ) {
-                    value.push({ icon: '', iconColor: '', displayName: '', optionalValue: '' });
-                    continue;
-                }
-                //RegisterEntityWatcher(leftEntity.entity);
-
-                let iconColor = String(Color.rgb_dec565(Color.White));
-                let icon = '';
-                if (item.entityIcon && item.entityIcon.true && item.entityIcon.true.value) {
-                    const val = await item.entityIcon.true.value.getString();
-                    if (val !== null) icon = Icons.GetIcon(val);
-                }
-                let val: string | number | boolean | null = await item.entityValue.value.getNumber();
-                // if val not null its a number
-
-                if (item.entityValue.value.type == 'number' && val !== null) {
-                    if (item.entityValue.factor) {
-                        const v = await item.entityValue.factor.getNumber();
-                        if (v !== null) val *= v;
+            for (const x in message.options) {
+                const place = x as Types.ScreenSaverPlaces;
+                let items = message.options[place];
+                if (items) {
+                    const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+                    if (items.length > Definition.ScreenSaverConst[layout][place].maxEntries[model]) {
+                        let f = items.length / Definition.ScreenSaverConst[layout][place].maxEntries[model];
+                        f = this.step % Math.ceil(f);
+                        items = items.slice(max * f, max * (f + 1) - 1);
                     }
-                    if (item.entityValue.decimal) {
-                        const v = await item.entityValue.decimal.getNumber();
-                        if (v !== null) val = val.toFixed(v);
-                    }
-                    if (item.entityValue.unit) {
-                        const v = await item.entityValue.unit.getString();
-                        if (v !== null) val += v;
-                    }
-
-                    iconColor = await GetScreenSaverEntityColor(item);
-                } else if (item.entityValue.value.type == 'boolean') {
-                    val = await item.entityValue.value.getBoolean();
-                    iconColor = await GetScreenSaverEntityColor(item);
-                    if (!val && item.entityIcon && item.entityIcon.false && item.entityIcon.false.value) {
-                        const t = await item.entityIcon.false.value.getString();
-                        if (t !== null) icon = Icons.GetIcon(t);
-                    }
-                    const b = val ? 'true' : 'false';
-                    if (item.entityText != undefined) {
-                        const i = item.entityText[b];
-                        if (i !== undefined) {
-                            const t = await i.getString();
-                            if (t !== null) val = this.library.getTranslation(t);
+                    for (let i = 0; i < max; i++) {
+                        const msg = items[i];
+                        if (!msg) {
+                            items[i] = tools.getPayload('', '', '', '', '', '');
                         } else {
-                            const i = item.entityText.true;
-                            const t = i !== undefined ? await i.getString() : null;
-                            if (t !== null) val = this.library.getTranslation(t);
+                            const arr = items[i].split('~');
+                            arr[0] = '';
+                            arr[1] = '';
+                            items[i] = tools.getPayloadArray(arr);
                         }
                     }
-                } else if (
-                    item.entityValue.value.type == 'string' &&
-                    (val = await item.entityValue.value.getString()) !== null
-                ) {
-                    iconColor = await GetScreenSaverEntityColor(item);
-
-                    const pformat = parseFormat(val);
-
-                    this.log.debug(
-                        'moments.js --> Datum ' + val + ' valid?: ' + moment(val, pformat, true).isValid(),
-                        'info',
-                    );
-                    if (moment(val, pformat, true).isValid()) {
-                        const DatumZeit = moment(val, pformat).unix(); // Conversion to Unix time stamp
-                        const entityDateFormat = item.entityDateFormat ? await item.entityDateFormat.getObject() : null;
-                        val = new Date(DatumZeit * 1000).toLocaleString(
-                            this.config2.locale,
-                            entityDateFormat !== null ? entityDateFormat : undefined,
-                        );
-                    }
                 }
-
-                let temp: any =
-                    item.entityIcon && item.entityIcon.true && item.entityIcon.true.color
-                        ? await item.entityIcon.true.color.getRGBDec()
-                        : null;
-                iconColor = temp ? temp : iconColor;
-                temp = item.entityText && item.entityText.true ? await item.entityText.true.getString() : null;
-                const entityText = temp ? this.library.getTranslation(temp) : '';
-                value.push({ icon, iconColor, displayName: entityText, optionalValue: val ? String(val) : '' });
             }
+            if (message.options.alternate.length > 0)
+                message.options.alternate.unshift(tools.getPayload('', '', '', '', '', ''));
+            const arr: string[] = message.options.favorit.concat(
+                message.options.left,
+                message.options.bottom,
+                message.options.alternate,
+                message.options.indicator,
+            );
+            const msg = tools.getPayload(message.event, tools.getPayloadArray(arr));
+            this.sendToPanel(msg);
+            this.HandleScreensaverStatusIcons();
         }
-        if (this.layout === 'alternate') {
-            // hack: insert empty entry
-            const lastIndex = payload.value[this.layout]!.length - 1;
-            payload.value[this.layout]!.push(payload.value[this.layout]![lastIndex]);
-            payload.value[this.layout]![lastIndex] = { icon: '', iconColor: '', displayName: '', optionalValue: '' };
-        }
-
-        this.log.debug('HandleScreensaverUpdate payload: ' + JSON.stringify(payload.value[this.layout]));
-
-        this.sendStatusUpdate(payload, this.layout);
-
-        this.HandleScreensaverStatusIcons();
     }
 
     sendStatusUpdate(
@@ -269,34 +188,141 @@ export class Screensaver extends Page {
     async onVisibilityChange(v: boolean): Promise<void> {
         this.step = -1;
         if (v) {
-            this.sendType();
             this.rotationLoop();
         } else {
             if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);
         }
+        await super.onVisibilityChange(v);
     }
     rotationLoop = async (): Promise<void> => {
         if (this.unload) return;
         // only use this if screensaver is activated
         if (!this.visibility) return;
-        const l = this.entitysConfig.bottomEntity.length;
-        const m = Definition.ScreenSaverConst[this.layout].bottomEntity.maxEntries;
-        if (l <= m * ++this.step) this.step = 0;
+        if (this.step > 100) this.step = 0;
 
         await this.update();
 
-        if (l <= m || this.rotationTime === 0) return;
+        if (this.rotationTime === 0) return;
         this.timoutRotation = this.adapter.setTimeout(
             this.rotationLoop,
             this.rotationTime < 3000 ? 3000 : this.rotationTime,
         );
     };
 
-    onStateTrigger = async (): Promise<void> => {
-        this.update();
+    onStateTrigger = async (from: BaseClassTriggerd): Promise<void> => {
+        const config = this.config;
+        if (!config || (config.card !== 'screensaver' && config.card !== 'screensaver2')) return;
+        if (from instanceof PageItem && this.pageItems) {
+            const index = parseInt(from.id.split('?')[1]);
+            const item = this.pageItems[index];
+            if (item && item.config) {
+                const place = item.config.modeScr;
+                if (place !== undefined) {
+                    switch (place) {
+                        case 'left':
+                        case 'bottom':
+                        case 'indicator':
+                        case 'alternate':
+                        case 'favorit': {
+                            this.update();
+                            break;
+                        }
+                        case 'mricon': {
+                            this.HandleScreensaverStatusIcons();
+                            break;
+                        }
+                        case 'time': {
+                            break;
+                        }
+                        case 'date': {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     };
 
     async HandleScreensaverStatusIcons(): Promise<void> {
+        {
+            if (!this.visibility) {
+                this.log.error('get update command but not visible!');
+                return;
+            }
+
+            const config = this.config;
+            if (!config || (config.card !== 'screensaver' && config.card !== 'screensaver2')) return;
+            const message: pages.screensaverMessage = {
+                event: 'weatherUpdate',
+                options: {
+                    indicator: [],
+                    left: [],
+                    time: [],
+                    date: [],
+                    bottom: [],
+                    mricon: [],
+                    favorit: [],
+                    alternate: [],
+                },
+            };
+
+            if (this.pageItems) {
+                const model = config.model;
+                const layout = config.mode;
+                for (let a = 0; a < this.pageItems.length; a++) {
+                    const pageItems: PageItem | undefined = this.pageItems[a];
+                    const options = message.options;
+                    if (pageItems && pageItems.config && pageItems.config.modeScr) {
+                        const place = pageItems.config.modeScr;
+                        const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+                        if (max === 0) continue;
+                        if (place !== 'mricon') continue;
+                        if (
+                            Definition.ScreenSaverConst[layout][place].maxEntries[model] >
+                            ((options[place] && options[place]!.length) ?? 0)
+                        ) {
+                            const arr = options[place] || [];
+                            arr.push(await pageItems.getPageItemPayload());
+                            options[place] = arr;
+                        }
+                    }
+                }
+                for (const x in message.options) {
+                    const place = x as Types.ScreenSaverPlaces;
+                    let items = message.options[place];
+                    if (items) {
+                        const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
+                        if (items.length > Definition.ScreenSaverConst[layout][place].maxEntries[model]) {
+                            let f = items.length / Definition.ScreenSaverConst[layout][place].maxEntries[model];
+                            f = this.step % Math.ceil(f);
+                            items = items.slice(max * f, max * (f + 1) - 1);
+                        }
+                        for (let i = 0; i < max; i++) {
+                            const msg = items[i];
+                            if (!msg) {
+                                items[i] = tools.getPayload('', '', '', '', '', '');
+                            }
+                        }
+                    }
+                }
+                const mrIcon1 = message.options.mricon[0].split('~');
+                const mrIcon2 = message.options.mricon[1].split('~');
+                const msgArray: string[] = [
+                    'statusUpdate',
+                    mrIcon1[2] ?? '',
+                    mrIcon1[3] ?? '',
+                    mrIcon2[2] ?? '',
+                    mrIcon2[3] ?? '',
+                    mrIcon1[5] ?? '',
+                    mrIcon2[5] ?? '',
+                ];
+
+                const msg = tools.getPayloadArray(msgArray);
+                this.sendToPanel(msg);
+            }
+        }
+    }
+    /*
         const payload: Partial<sendTemplates['statusUpdate']> = { eventType: 'statusUpdate' };
         const maxItems = Definition.ScreenSaverConst[this.layout]['mrIconEntity'].maxEntries;
         for (let i = 0; i < maxItems; i++) {
@@ -403,105 +429,9 @@ export class Screensaver extends Page {
             payload[`icon${s}Font`] = this.config2[`iconBig${s}`] ? '1' : '';
         }
         this.sendStatusUpdate(payload as sendTemplates['statusUpdate'], this.layout);
-    }
+    }*/
     async delete(): Promise<void> {
         await super.delete();
         if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);
     }
-}
-
-async function GetScreenSaverEntityColor(item: Types.ScreenSaverDataItems | null): Promise<string> {
-    if (item && item.entityValue) {
-        let colorReturn: number | string;
-        const entityAsNumber = item.entityValue.value !== undefined ? await item.entityValue.value.getNumber() : null;
-        const entityFactor = item.entityValue.factor !== undefined ? await item.entityValue.factor.getNumber() : null;
-        const entityIconColorScale: Types.IconScaleElement | null =
-            item.entityIcon && 'scale' in item.entityIcon && item.entityIcon.scale !== undefined
-                ? await item.entityIcon.scale.getIconScale()
-                : null;
-        const entityOnColor =
-            item.entityIcon && item.entityIcon.true && item.entityIcon.true.color
-                ? await item.entityIcon.true.color.getRGBDec()
-                : null;
-        const entityOffColor =
-            item.entityIcon && item.entityIcon.false && item.entityIcon.false.color
-                ? await item.entityIcon.false.color.getRGBDec()
-                : null;
-        if (item.entityValue.value) {
-            if (entityIconColorScale !== null) {
-                if (item.entityValue.value.type == 'boolean') {
-                    const iconvalbest =
-                        entityIconColorScale && entityIconColorScale.val_best !== undefined
-                            ? !!entityIconColorScale.val_best
-                            : false;
-                    if (iconvalbest == (await item.entityValue.value.getBoolean())) {
-                        if (entityOnColor !== null) colorReturn = entityOnColor;
-                        else colorReturn = Color.rgb_dec565(Color.colorScale0);
-                    } else {
-                        if (entityOffColor !== null) colorReturn = entityOffColor;
-                        else colorReturn = Color.rgb_dec565(Color.colorScale10);
-                    }
-                } else if (entityIconColorScale !== null && entityAsNumber !== null) {
-                    const iconvalmin: number =
-                        entityIconColorScale.val_min != undefined ? entityIconColorScale.val_min : 0;
-                    const iconvalmax: number =
-                        entityIconColorScale.val_max != undefined ? entityIconColorScale.val_max : 100;
-                    const iconvalbest: number =
-                        entityIconColorScale.val_best != undefined ? entityIconColorScale.val_best : iconvalmin;
-                    let valueScale = entityAsNumber * (entityFactor !== null ? entityFactor : 1);
-
-                    if (iconvalmin == 0 && iconvalmax == 1) {
-                        if (await item.entityValue.value.getBoolean()) {
-                            if (entityOnColor !== null) colorReturn = entityOnColor;
-                            else colorReturn = Color.rgb_dec565(Color.colorScale0);
-                        } else {
-                            if (entityOffColor !== null) colorReturn = entityOffColor;
-                            else colorReturn = Color.rgb_dec565(Color.colorScale10);
-                        }
-                    } else {
-                        if (iconvalbest == iconvalmin) {
-                            valueScale = Color.scale(valueScale, iconvalmin, iconvalmax, 10, 0);
-                        } else {
-                            if (valueScale < iconvalbest) {
-                                valueScale = Color.scale(valueScale, iconvalmin, iconvalbest, 0, 10);
-                            } else if (valueScale > iconvalbest || iconvalbest != iconvalmin) {
-                                valueScale = Color.scale(valueScale, iconvalbest, iconvalmax, 10, 0);
-                            } else {
-                                valueScale = Color.scale(valueScale, iconvalmin, iconvalmax, 10, 0);
-                            }
-                        }
-                        //limit if valueScale is smaller/larger than 0-10
-                        if (valueScale > 10) valueScale = 10;
-                        if (valueScale < 0) valueScale = 0;
-
-                        const valueScaletemp = Math.round(valueScale).toFixed();
-                        colorReturn = Color.HandleColorScale(valueScaletemp);
-                    }
-                } else {
-                    colorReturn = Color.rgb_dec565(Color.White);
-                }
-            } else {
-                const entityAsBoolean =
-                    item.entityValue && item.entityValue.value ? await item.entityValue.value.getBoolean() : null;
-                if (item.entityValue.value.type == 'boolean' || item.entityValue.value.type == 'number') {
-                    if (entityAsBoolean !== null) {
-                        if (entityAsBoolean) {
-                            if (entityOnColor !== null) colorReturn = entityOnColor;
-                            else colorReturn = Color.rgb_dec565(Color.White);
-                        } else {
-                            if (entityOffColor !== null) colorReturn = entityOffColor;
-                            else colorReturn = Color.rgb_dec565(Color.White);
-                        }
-                    } else {
-                        if (entityOnColor !== null) colorReturn = entityOnColor;
-                        else colorReturn = Color.rgb_dec565(Color.White);
-                    }
-                } else {
-                    colorReturn = Color.rgb_dec565(Color.White);
-                }
-            }
-            return String(colorReturn);
-        }
-    }
-    return String(Color.rgb_dec565(Color.White));
 }

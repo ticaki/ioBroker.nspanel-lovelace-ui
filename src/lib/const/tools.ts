@@ -27,7 +27,7 @@ import {
 } from './Color';
 import { Icons } from './icon_mapping';
 import { ChangeTypeOfKeys } from '../types/pages';
-import { IconScaleElement, isIconScaleElement, isPartialIconScaleElement } from '../types/types';
+import { IconScaleElement, isIconScaleElement, isPartialIconScaleElement, isValueDateFormat } from '../types/types';
 
 export const messageItemDefault: MessageItem = {
     type: 'input_sel',
@@ -80,6 +80,10 @@ export async function getValueEntryNumber(
             if (min !== null && max !== null) {
                 res = scale(res, max, min, 0, 100);
             }
+        }
+        const d = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
+        if (d !== null && d !== false) {
+            res = Math.round(res * 10 ** d) / 10 ** d;
         }
         return res;
     }
@@ -217,7 +221,7 @@ export async function setScaledNumber(
 
 export async function getIconEntryValue(
     i: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined> | undefined,
-    on: boolean | null,
+    on: boolean | number | null,
     def: string,
     defOff: string | null = null,
     getText: boolean = false,
@@ -225,8 +229,17 @@ export async function getIconEntryValue(
     if (i === undefined) return '';
     on = on ?? true;
     if (!i) return Icons.GetIcon(on ? def : defOff ?? def);
+
     const text = getText ? (i.true && i.true.text && (await i.true.text.getString())) ?? null : null;
     if (text !== null) {
+        const textFalse = (i.false && i.false.text && (await i.false.text.getString())) ?? null;
+        if (typeof on === 'number' && textFalse !== null) {
+            const scale = i.scale && (await i.scale.getObject());
+            if (isPartialIconScaleElement(scale)) {
+                if ((scale.val_min && scale.val_min >= on) || (scale.val_max && scale.val_max <= on)) return text;
+                else textFalse;
+            }
+        }
         if (!on) return (i.false && i.false.text && (await i.false.text.getString())) ?? text;
         return text;
     }
@@ -234,6 +247,7 @@ export async function getIconEntryValue(
     if (!on) {
         return Icons.GetIcon((i.false && i.false.value && (await i.false.value.getString())) ?? defOff ?? icon ?? def);
     }
+
     return Icons.GetIcon(icon ?? def);
 }
 
@@ -431,12 +445,10 @@ export async function getValueEntryString(
     if (!i || !i.value) return null;
     const nval = v !== null ? v : await getValueEntryNumber(i);
     if (nval !== null && nval !== undefined) {
-        const d = (i.decimal && (await i.decimal.getNumber())) ?? null;
-        let result: string = String(nval);
-        if (d !== null) {
-            result = nval.toFixed(d);
-        }
-        return result + ((i.unit && (await i.unit.getString())) ?? '');
+        const format = ((i.dateFormat && (await i.dateFormat.getObject())) as any) ?? null;
+        let res = isValueDateFormat(format) ? new Date(nval).toLocaleString(format.local, format.format) : String(nval);
+        res = res + ((i.unit && (await i.unit.getString())) ?? '');
+        return res;
     }
     const res = await i.value.getString();
     if (res != null) res + ((i.unit && (await i.unit.getString())) ?? '');

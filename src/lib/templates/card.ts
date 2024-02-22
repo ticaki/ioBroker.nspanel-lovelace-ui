@@ -313,7 +313,12 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                     /**
                      * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                      */
-                    valueList: { type: 'state', mode: 'auto', role: 'value', dp: '.player.playlist.trackListArray' },
+                    valueList: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value',
+                        dp: '.player.playlist.trackListArray',
+                    },
                     /**
                      * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
                      */

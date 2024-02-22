@@ -25,7 +25,7 @@ const PageThermoMessageDefault: pages.PageThermoMessage = {
 };
 
 export class PageThermo extends Page {
-    config: pages.cardThermoDataItemOptions;
+    //config: pages.cardThermoDataItemOptions;
     items: pages.cardThermoDataItems | undefined;
     private step: number = 1;
     private headlinePos: number = 0;
@@ -33,11 +33,13 @@ export class PageThermo extends Page {
     private nextArrow: boolean = false;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        if (options && options.pageItems)
+        if (options.card === 'screensaver' || options.card === 'screensaver2') return;
+        if (options && options.pageItems) {
             options.pageItems.unshift({
                 type: 'button',
                 dpInit: '',
                 role: 'button',
+                modeScr: undefined,
                 data: {
                     icon: {
                         true: {
@@ -48,6 +50,7 @@ export class PageThermo extends Page {
                     entity1: { value: { type: 'const', constVal: true } },
                 },
             });
+        }
         super(config, options);
         if (options.config && options.config.card == 'cardThermo') this.config = options.config;
         else throw new Error('Missing config!');
@@ -67,7 +70,7 @@ export class PageThermo extends Page {
             tempConfig,
             this,
         );
-        if (tempItem) tempItem.card = this.config && this.config.card;
+        if (tempItem) tempItem.card = 'cardThermo';
         this.items = tempItem as pages.cardThermoDataItems;
         await super.init();
     }

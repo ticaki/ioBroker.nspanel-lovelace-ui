@@ -97,7 +97,6 @@ _adapter = new WeakMap();
 _prefix = new WeakMap();
 class Library extends BaseClass {
   stateDataBase = {};
-  language = "en";
   forbiddenDirs = [];
   translation = {};
   defaults = {
@@ -464,6 +463,8 @@ class Library extends BaseClass {
     return "en-En";
   }
   getTranslation(key) {
+    if (!key)
+      return "";
     if (this.translation[key] !== void 0)
       return this.translation[key];
     return key;

@@ -44,18 +44,20 @@ const PageThermoMessageDefault = {
   btDetail: 1
 };
 class PageThermo extends import_Page.Page {
-  config;
   items;
   step = 1;
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
   constructor(config, options) {
-    if (options && options.pageItems)
+    if (options.card === "screensaver" || options.card === "screensaver2")
+      return;
+    if (options && options.pageItems) {
       options.pageItems.unshift({
         type: "button",
         dpInit: "",
         role: "button",
+        modeScr: void 0,
         data: {
           icon: {
             true: {
@@ -66,6 +68,7 @@ class PageThermo extends import_Page.Page {
           entity1: { value: { type: "const", constVal: true } }
         }
       });
+    }
     super(config, options);
     if (options.config && options.config.card == "cardThermo")
       this.config = options.config;
@@ -83,7 +86,7 @@ class PageThermo extends import_Page.Page {
       this
     );
     if (tempItem)
-      tempItem.card = this.config && this.config.card;
+      tempItem.card = "cardThermo";
     this.items = tempItem;
     await super.init();
   }

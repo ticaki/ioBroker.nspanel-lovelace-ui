@@ -162,29 +162,6 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                     color: {
                         type: 'const',
                         constVal: Color.Green,
-
-                        /*
-                        type: 'triggered',
-                        mode: 'auto',
-                        role: 'value.battery',
-                        dp: '',
-                        read: `const v = Math.round(val / 10);
-                        switch (v) {
-                            case 0:
-                                case 1:
-                                return Color.Red;
-
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 5:
-                            case 6:
-                            case 7:
-                            case 8:
-                            case 9:
-                            case 10:
-                            default:
-                                return Color.Green; }`,*/
                     },
                 },
                 false: {

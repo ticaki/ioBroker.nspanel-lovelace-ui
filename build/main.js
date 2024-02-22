@@ -24,7 +24,6 @@ var MQTT = __toESM(require("./lib/classes/mqtt"));
 var import_config_custom = require("./lib/config-custom");
 var import_controller = require("./lib/controller/controller");
 var import_icon_mapping = require("./lib/const/icon_mapping");
-var import_definition = require("./lib/const/definition");
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -49,7 +48,6 @@ class NspanelLovelaceUi extends utils.Adapter {
     if (!this.config.Testconfig2) {
       this.log.warn("No configuration use dev test config!");
       this.log.warn("Adapter on hold, user restart needed!");
-      return;
       this.config.Testconfig2 = import_config_custom.Testconfig;
     }
     this.config.Testconfig2[0].pages[0].mode = this.config.scstype;
@@ -128,17 +126,6 @@ class NspanelLovelaceUi extends utils.Adapter {
       if (obj.command) {
         this.log.info(JSON.stringify(obj));
         if (obj.command === "scs-field") {
-          const result = [];
-          const data = import_definition.ScreenSaverConst[obj.message.type];
-          for (const key in data) {
-            const max = data[key].maxEntries;
-            for (let a = 0; a < max; a++) {
-              result.push({ label: `${a + 1} ${key}`, value: `${a + 1}#${key}` });
-            }
-          }
-          if (obj.callback)
-            this.sendTo(obj.from, obj.command, result, obj.callback);
-          return;
         } else if (obj.command === "reload" || obj.command === "setData") {
           const result = {};
           const keyToValue = obj.message.field;

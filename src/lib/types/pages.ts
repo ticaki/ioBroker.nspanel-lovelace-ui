@@ -1,8 +1,9 @@
-import * as Types from './types';
 import * as dataItem from '../classes/data-item';
 import * as Color from '../const/Color';
+import { MessageStatusUpdate } from './msg-def';
 import * as typePageItem from './type-pageItem';
 import * as typePageItem_1 from './type-pageItem';
+import * as Types from './types';
 
 export type PageTypeCards =
     | 'cardChart'
@@ -108,7 +109,8 @@ export type DeviceRole =
     | 'rgb.hex'
     | 'text.list'
     | 'rgb'
-    | 'indicator'; // timer with internal counter
+    | 'indicator'
+    | '2values'; // timer with internal counter
 
 export function isStateRole(F: string | StateRole): F is StateRole {
     switch (F as StateRole) {
@@ -200,33 +202,11 @@ export function isButtonActionType(F: string | Types.ButtonActionType): F is Typ
     }
 }
 
-export type PageBaseConfigTemplate = {
-    card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
-    template: Types.PageTemplateIdent;
-    adapter: string;
-    alwaysOn: 'none' | 'always' | 'action';
-    useColor: boolean;
-    pageItems: typePageItem.PageItemDataItemsOptions[];
-
-    //    mediaNamespace: string;
-    config:
-        | undefined
-        | cardPowerDataItemOptions
-        | cardMediaDataItemOptions
-        | cardGridDataItemOptions
-        | cardThermoDataItemOptions
-        | cardEntitiesDataItemOptions
-        | cardAlarmDataItemOptions;
-    items: undefined;
-};
-
-export type PageBaseConfig = (
+export type PageBaseConfigTemplate =
     | {
-          //    type: PlayerType;
           card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
-          uniqueID: string;
-          template?: Types.PageTemplateIdent;
-          dpInit: string; // '' and initMode 'auto' throw an error
+          template: Types.PageTemplateIdent;
+          adapter: string;
           alwaysOn: 'none' | 'always' | 'action';
           useColor: boolean;
           pageItems: typePageItem.PageItemDataItemsOptions[];
@@ -239,14 +219,67 @@ export type PageBaseConfig = (
               | cardGridDataItemOptions
               | cardThermoDataItemOptions
               | cardEntitiesDataItemOptions
-              | cardAlarmDataItemOptions;
+              | cardAlarmDataItemOptions
+              | screensaverDataItemOptions;
+          items: undefined;
       }
+    | {
+          card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
+          template: Types.PageTemplateIdent;
+          adapter: string;
+          alwaysOn: 'none' | 'always' | 'action';
+          useColor: boolean;
+          pageItems: typePageItem.PageItemDataItemsOptions[];
+
+          //    mediaNamespace: string;
+          config: undefined | screensaverDataItemOptions;
+          items: undefined;
+      };
+
+export type PageBaseConfig = (
+    | (
+          | {
+                //    type: PlayerType;
+                card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
+                uniqueID: string;
+                template?: Types.PageTemplateIdent;
+                dpInit: string; // '' and initMode 'auto' throw an error
+                alwaysOn: 'none' | 'always' | 'action';
+                useColor: boolean;
+                pageItems: typePageItem.PageItemDataItemsOptions[];
+
+                //    mediaNamespace: string;
+                config:
+                    | undefined
+                    | cardPowerDataItemOptions
+                    | cardMediaDataItemOptions
+                    | cardGridDataItemOptions
+                    | cardThermoDataItemOptions
+                    | cardEntitiesDataItemOptions
+                    | cardAlarmDataItemOptions;
+            }
+          | {
+                //    type: PlayerType;
+                card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
+                uniqueID: string;
+                template?: Types.PageTemplateIdent;
+                dpInit: string; // '' and initMode 'auto' throw an error
+                alwaysOn: 'none' | 'always' | 'action';
+                useColor: boolean;
+                pageItems: typePageItem.PageItemDataItemsOptions[];
+                /*&
+                    Required<Pick<typePageItem.PageItemDataItemsOptions, 'modeScr'>>*/
+
+                //    mediaNamespace: string;
+                config: undefined | screensaverDataItemOptions;
+            }
+      )
     | ({
-          card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
+          card: PageTypeCards;
           uniqueID: string;
           template: Types.PageTemplateIdent;
           dpInit: string;
-      } & Partial<Omit<PageBaseConfigTemplate, 'card' | 'template'>>)
+      } & Partial<Omit<PageBaseConfigTemplate, 'template'>>)
 ) & {
     items?:
         | undefined
@@ -321,6 +354,14 @@ export type cardMediaDataItems = {
     data: ChangeTypeOfKeys<PageMediaBaseConfig, dataItem.Dataitem | undefined> & {
         toolbox: (toolboxItemDataItem | undefined)[];
     } & { logo: toolboxItemDataItem | undefined };
+};
+
+export type screensaverDataItemOptions = {
+    card: 'screensaver' | 'screensaver2';
+    mode: Types.ScreensaverModeType;
+    rotationTime: number;
+    model: Types.NSpanelModel;
+    data: undefined;
 };
 
 export type ChangeDeepPartial<Obj> = Obj extends
@@ -546,6 +587,15 @@ export type PageGridMessage = {
     navigation: string;
     options: [string?, string?, string?, string?, string?, string?, string?, string?];
 };
+
+export type screensaverMessage = {
+    event: 'weatherUpdate';
+    options: Record<Types.ScreenSaverPlaces, string[]>;
+};
+
+export type screensaverMrIconMessage = {
+    event: 'statusUpdate';
+} & Record<MessageStatusUpdate, string>;
 
 export type PageEntitiesMessage = {
     event: 'entityUpd';

@@ -25,6 +25,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var config_exports = {};
 __export(config_exports, {
   Testconfig: () => Testconfig,
+  pageMediaTest: () => pageMediaTest,
   pageMediaTest2: () => pageMediaTest2
 });
 module.exports = __toCommonJS(config_exports);
@@ -262,6 +263,32 @@ const pageEntitiesTest2 = {
         },
         headline: { type: "const", constVal: "Timer" },
         setValue1: { type: "state", dp: "0_userdata.0.example_state" }
+      }
+    },
+    {
+      role: "rgbSingle",
+      type: "light",
+      dpInit: "0_userdata.0.shelly.0.SHRGBW2#258794#1",
+      template: "light.shelly.rgbw2"
+    },
+    {
+      type: "shutter",
+      dpInit: "0_userdata.0.shelly.0.SHSW-25#C45BBE5FC53F#1",
+      template: "shutter.shelly.2PM"
+    },
+    {
+      type: "text",
+      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
+      template: "text.battery",
+      data: {
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "ds"
+            }
+          }
+        }
       }
     }
   ],
@@ -661,8 +688,7 @@ const pageMediaTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -703,8 +729,7 @@ const pageMediaTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -745,8 +770,7 @@ const pageMediaTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -787,8 +811,7 @@ const pageMediaTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -829,8 +852,7 @@ const pageMediaTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     }
   ],
@@ -1077,8 +1099,7 @@ const pageMediaTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -1119,8 +1140,7 @@ const pageMediaTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -1161,8 +1181,7 @@ const pageMediaTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -1203,8 +1222,7 @@ const pageMediaTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -1245,13 +1263,18 @@ const pageMediaTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     }
   ],
-  uniqueID: "media1",
+  uniqueID: "media2",
   useColor: false
+};
+const pageMediaTest3 = {
+  template: "media.spotify-premium",
+  dpInit: "0_userdata.0.spotify-premium.0",
+  uniqueID: "media3",
+  card: "cardMedia"
 };
 const pageGridTest1 = {
   card: "cardGrid",
@@ -1532,8 +1555,7 @@ const pageGridTest1 = {
         setNavi: {
           type: "const",
           constVal: "3"
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -1666,8 +1688,7 @@ const pageGridTest2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
@@ -1700,8 +1721,336 @@ const pageGridTest2 = {
         headline: { type: "const", constVal: "Timer" },
         setValue1: { type: "state", dp: "0_userdata.0.example_state" }
       }
+    },
+    {
+      type: "text",
+      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
+      template: "text.temperature"
     }
   ]
+};
+const pageGridTest5 = {
+  card: "cardGrid",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "grid5",
+  useColor: false,
+  config: {
+    card: "cardGrid",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "grid1"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "text.list",
+      type: "number",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: 23
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Number"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "rgb",
+      type: "shutter",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-shutter-open" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "window-shutter" },
+            color: { type: "const", constVal: Color.HMIOff }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0,
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 100 }
+        },
+        entity2: {
+          value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0,
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 100 }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "text"
+          },
+          false: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Shutter"
+        },
+        text1: {
+          true: {
+            type: "const",
+            constVal: "text1"
+          },
+          false: void 0
+        },
+        text2: {
+          true: {
+            type: "const",
+            constVal: "text2"
+          },
+          false: void 0
+        },
+        up: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.open.blind", "button.open"]
+        },
+        down: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.close.blind", "button.close"]
+        },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "rgb",
+      type: "light",
+      dpInit: "",
+      data: {
+        color: {
+          true: { type: "triggered", dp: "0_userdata.0.RGB" },
+          false: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.HMIOff }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        colorMode: { type: "const", constVal: true },
+        dimmer: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.dimmer"
+          }
+        },
+        entity1: {
+          value: { type: "triggered", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        entityInSel: void 0,
+        text1: {
+          true: {
+            type: "const",
+            constVal: "Licht"
+          },
+          false: void 0
+        },
+        text2: {
+          true: {
+            type: "const",
+            constVal: "Picker1"
+          },
+          false: void 0
+        },
+        text3: {
+          true: {
+            type: "const",
+            constVal: "Picker2"
+          },
+          false: void 0
+        },
+        ct: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.ct"
+          }
+        },
+        valueList: { type: "const", constVal: "home?butter" },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        headline: { type: "const", constVal: "insel" },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entityInSel: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        valueList: { type: "const", constVal: "home?butter" },
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "music" },
+            color: { type: "const", constVal: Color.Gray }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: { type: "const", constVal: "Navbutton" },
+          false: void 0
+        },
+        setNavi: {
+          type: "const",
+          constVal: "3"
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            text: { type: "const", constVal: "22.2" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: { type: "const", constVal: "text" },
+          false: void 0
+        },
+        text1: {
+          true: { type: "const", constVal: "text1" },
+          false: void 0
+        }
+      }
+    }
+  ],
+  items: void 0
 };
 const pageGridTest4 = {
   card: "cardGrid",
@@ -1801,13 +2150,12 @@ const pageGridTest4 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     }
   ]
 };
-const pageGrid2Test2 = {
+const pageGrid2Test3 = {
   card: "cardGrid2",
   dpInit: "",
   alwaysOn: "none",
@@ -1905,8 +2253,7 @@ const pageGrid2Test2 = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     }
   ]
@@ -1917,6 +2264,47 @@ const pageThermoTest = {
   dpInit: "",
   alwaysOn: "none",
   pageItems: [
+    {
+      role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-right" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
     {
       role: "text.list",
       type: "input_sel",
@@ -1939,6 +2327,66 @@ const pageThermoTest = {
     },
     {
       role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        entityInSel: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.statesTest"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Test"
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        entityInSel: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.statesTest"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Test"
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        entityInSel: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.statesTest"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Test"
+        }
+      }
+    },
+    {
+      role: "button",
       type: "button",
       dpInit: "",
       data: {
@@ -1975,12 +2423,11 @@ const pageThermoTest = {
         text: {
           true: void 0,
           false: void 0
-        },
-        setValue1: void 0
+        }
       }
     },
     {
-      role: "text.list",
+      role: "indicator",
       type: "button",
       dpInit: "",
       data: {
@@ -2014,8 +2461,197 @@ const pageThermoTest = {
         text: {
           true: void 0,
           false: void 0
+        }
+      }
+    },
+    {
+      role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
         },
-        setValue1: { type: "triggered", dp: "0_userdata.0.example_state" }
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "state", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "state", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "state", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "state", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "indicator",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: { type: "state", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
       }
     }
   ],
@@ -2062,13 +2698,25 @@ const pageThermoTest = {
 };
 const pageScreensaverTest = {
   card: "screensaver",
-  mode: "advanced",
-  rotationTime: 0,
-  entitysConfig: {
-    favoritEntity: [
-      {
-        entityIconSelect: void 0,
-        entityValue: {
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "scr",
+  useColor: false,
+  config: {
+    card: "screensaver2",
+    mode: "advanced",
+    rotationTime: 10,
+    model: "eu",
+    data: void 0
+  },
+  pageItems: [
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "favorit",
+      data: {
+        entity1: {
           value: { type: "triggered", dp: "accuweather.0.Current.Temperature" },
           decimal: {
             type: "const",
@@ -2080,11 +2728,7 @@ const pageScreensaverTest = {
             constVal: "\xB0C"
           }
         },
-        entityDateFormat: {
-          type: "const",
-          constVal: null
-        },
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "state",
@@ -2243,20 +2887,21 @@ const pageScreensaverTest = {
                     }`
             }
           },
-          false: { value: void 0, color: void 0 },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          false: { value: void 0, color: void 0 }
         },
-        entityText: {
+        text: {
           true: void 0,
           false: void 0
         }
       }
-    ],
-    leftEntity: [
-      {
-        entityValue: {
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "left",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindSpeed"
@@ -2274,8 +2919,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2294,17 +2938,74 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Wind"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "left",
+      data: {
+        entity1: {
+          value: {
+            type: "state",
+            dp: "accuweather.0.Current.WindSpeed"
+          },
+          decimal: {
+            type: "const",
+            constVal: 1
+          },
+          factor: {
+            type: "const",
+            constVal: 1e3 / 3600
+          },
+          unit: {
+            type: "const",
+            constVal: "m/s"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "weather-windy"
+            },
+            color: void 0
+          },
+          false: {
+            value: void 0,
+            color: void 0
+          },
+          scale: {
+            type: "const",
+            constVal: { val_min: 0, val_max: 80 }
+          },
+          maxBri: void 0,
+          minBri: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Wind"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "left",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -2322,8 +3023,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2342,17 +3042,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "B\xF6en"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "left",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindDirectionText"
@@ -2367,16 +3072,15 @@ const pageScreensaverTest = {
             constVal: "\xB0"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
               constVal: "windsock"
             },
             color: {
-              type: "const",
-              constVal: "#FF00FF"
+              type: "state",
+              dp: "0_userdata.0.dimmer"
             }
           },
           false: {
@@ -2387,8 +3091,7 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Windr."
@@ -2396,10 +3099,14 @@ const pageScreensaverTest = {
           false: void 0
         }
       }
-    ],
-    bottomEntity: [
-      {
-        entityValue: {
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Daily.Day1.Sunrise",
@@ -2418,11 +3125,7 @@ const pageScreensaverTest = {
             constVal: "\xB0C"
           }
         },
-        entityDateFormat: {
-          type: "const",
-          constVal: JSON.stringify({ hour: "2-digit", minute: "2-digit" })
-        },
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2444,17 +3147,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "TokenSun"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindSpeed"
@@ -2472,8 +3180,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2492,17 +3199,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Wind"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -2520,8 +3232,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2540,17 +3251,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "B\xF6en"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindDirectionText"
@@ -2565,8 +3281,7 @@ const pageScreensaverTest = {
             constVal: "\xB0"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2585,17 +3300,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Windr."
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.RelativeHumidity"
@@ -2610,8 +3330,7 @@ const pageScreensaverTest = {
             constVal: "%"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2630,17 +3349,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Feuchte."
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.DewPoint"
@@ -2655,8 +3379,7 @@ const pageScreensaverTest = {
             constVal: "\xB0C"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2675,8 +3398,7 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Taup."
@@ -2684,11 +3406,14 @@ const pageScreensaverTest = {
           false: void 0
         }
       }
-    ],
-    alternateEntity: [],
-    indicatorEntity: [
-      {
-        entityValue: {
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Daily.Day1.Sunrise",
@@ -2707,11 +3432,7 @@ const pageScreensaverTest = {
             constVal: "\xB0C"
           }
         },
-        entityDateFormat: {
-          type: "const",
-          constVal: JSON.stringify({ hour: "2-digit", minute: "2-digit" })
-        },
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2733,17 +3454,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Sonne"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -2761,8 +3487,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2781,17 +3506,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "B\xF6en"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindDirectionText"
@@ -2806,8 +3536,7 @@ const pageScreensaverTest = {
             constVal: "\xB0"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2826,17 +3555,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Windr."
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindSpeed"
@@ -2854,8 +3588,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2874,17 +3607,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Wind"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -2902,8 +3640,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2922,8 +3659,7 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "B\xF6en"
@@ -2931,195 +3667,104 @@ const pageScreensaverTest = {
           false: void 0
         }
       }
+    }
+  ]
+};
+const Testconfig = [
+  {
+    pages: [
+      pageGridTest4,
+      pageEntitiesTest1,
+      pagePowerTest1,
+      pageThermoTest,
+      pageGridTest1,
+      pageGrid2Test3,
+      pageGridTest2,
+      pageScreensaverTest,
+      pageEntitiesTest2,
+      pageAbfall,
+      pageGridTest5,
+      pageMediaTest3
     ],
-    mrIconEntity: [
+    navigation: [
       {
-        entityValue: {
-          value: {
-            type: "state",
-            dp: "accuweather.0.Current.WindDirectionText"
-          },
-          decimal: {
-            type: "const",
-            constVal: 0
-          },
-          factor: void 0,
-          unit: {
-            type: "const",
-            constVal: "\xB0"
-          }
-        },
-        entityDateFormat: void 0,
-        entityIcon: {
-          true: {
-            value: {
-              type: "const",
-              constVal: "windsock"
-            },
-            color: {
-              type: "const",
-              constVal: Color.White
-            }
-          },
-          false: {
-            value: void 0,
-            color: void 0
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entityIconSelect: void 0,
-        entityText: {
-          true: {
-            type: "const",
-            constVal: "Windr."
-          },
-          false: void 0
-        }
+        name: "main",
+        page: "entities1",
+        left: { single: "7" },
+        right: { single: "abfall1", double: "2" }
       },
       {
-        entityValue: {
-          value: {
-            type: "state",
-            dp: "accuweather.0.Current.WindDirectionText"
-          },
-          decimal: {
-            type: "const",
-            constVal: 0
-          },
-          factor: void 0,
-          unit: {
-            type: "const",
-            constVal: "\xB0"
-          }
-        },
-        entityDateFormat: void 0,
-        entityIcon: {
-          true: {
-            value: {
-              type: "const",
-              constVal: "windsock"
-            },
-            color: {
-              type: "const",
-              constVal: "#FF00FF"
-            }
-          },
-          false: {
-            value: void 0,
-            color: {
-              type: "const",
-              constVal: "#FF00FF"
-            }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entityIconSelect: void 0,
-        entityText: {
-          true: {
-            type: "const",
-            constVal: "Windr."
-          },
-          false: void 0
-        }
+        name: "5",
+        page: "thermo1",
+        left: { single: "4" },
+        right: { single: "6", double: "main" }
+      },
+      {
+        name: "abfall1",
+        page: "abfall1",
+        left: { single: "main" },
+        right: { single: "entities2", double: "main" }
+      },
+      {
+        name: "entities2",
+        page: "entities2",
+        left: { single: "main" },
+        right: { single: "1", double: "main" }
+      },
+      {
+        name: "6",
+        page: "power1",
+        left: { single: "5" },
+        right: { single: "7", double: "main" }
+      },
+      {
+        name: "7",
+        page: "grid4",
+        left: { single: "6" },
+        right: { single: "main", double: "main" }
+      },
+      {
+        name: "1",
+        left: { single: "main" },
+        right: { single: "2" },
+        page: "grid1"
+      },
+      {
+        name: "2",
+        left: { single: "1" },
+        right: { single: "3" },
+        page: "grid2"
+      },
+      {
+        name: "3",
+        left: { single: "2" },
+        right: { single: "4", double: "main" },
+        page: "media3"
+      },
+      {
+        name: "4",
+        left: { single: "3", double: "1" },
+        right: { single: "5", double: "2" },
+        page: "grid3"
       }
-    ]
+    ],
+    topic: "nspanel/ns_panel2",
+    name: "Wohnzimmer",
+    config: {
+      momentLocale: "",
+      locale: "de-DE",
+      iconBig1: false,
+      iconBig2: false
+    },
+    timeout: 30,
+    dimLow: 20,
+    dimHigh: 90
   }
-};
-const Testconfig = {
-  pages: [
-    pageGridTest4,
-    pageEntitiesTest1,
-    pagePowerTest1,
-    pageThermoTest,
-    pageGridTest1,
-    pageGrid2Test2,
-    pageGridTest2,
-    pageScreensaverTest,
-    pageMediaTest,
-    pageEntitiesTest2,
-    pageAbfall
-  ],
-  navigation: [
-    {
-      name: "main",
-      page: "entities1",
-      left: { single: "7" },
-      right: { single: "abfall1", double: "2" }
-    },
-    {
-      name: "5",
-      page: "thermo1",
-      left: { single: "4" },
-      right: { single: "6", double: "main" }
-    },
-    {
-      name: "abfall1",
-      page: "abfall1",
-      left: { single: "main" },
-      right: { single: "entities2", double: "main" }
-    },
-    {
-      name: "entities2",
-      page: "entities2",
-      left: { single: "main" },
-      right: { single: "1", double: "main" }
-    },
-    {
-      name: "6",
-      page: "power1",
-      left: { single: "5" },
-      right: { single: "7", double: "main" }
-    },
-    {
-      name: "7",
-      page: "grid4",
-      left: { single: "6" },
-      right: { single: "main", double: "main" }
-    },
-    {
-      name: "1",
-      left: { single: "main" },
-      right: { single: "2" },
-      page: "grid1"
-    },
-    {
-      name: "2",
-      left: { single: "1" },
-      right: { single: "3" },
-      page: "grid2"
-    },
-    {
-      name: "3",
-      left: { single: "2" },
-      right: { single: "4", double: "main" },
-      page: "media1"
-    },
-    {
-      name: "4",
-      left: { single: "3", double: "1" },
-      right: { single: "5", double: "2" },
-      page: "grid3"
-    }
-  ],
-  topic: "nspanel/ns_panel2",
-  name: "Wohnzimmer",
-  config: {
-    momentLocale: "",
-    locale: "de-DE",
-    iconBig1: false,
-    iconBig2: false
-  },
-  timeout: 30,
-  dimLow: 20,
-  dimHigh: 90
-};
+];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Testconfig,
+  pageMediaTest,
   pageMediaTest2
 });
 //# sourceMappingURL=config.js.map

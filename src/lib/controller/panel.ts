@@ -18,6 +18,7 @@ import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
 import { PageItem } from '../pages/pageItem';
 import { PageEntities } from '../pages/pageEntities';
+import { Black, rgb_dec565 } from '../const/Color';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -87,6 +88,7 @@ export class Panel extends BaseClass {
     readonly CustomFormat: string;
     readonly sendToTasmota: (topic: string, payload: string, opt?: IClientPublishOptions) => void = () => {};
     public persistentPageItems: Record<string, PageItem> = {};
+    info: Types.PanelInfo = {};
     friendlyName: string = '';
 
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
@@ -230,6 +232,7 @@ export class Panel extends BaseClass {
                         dpInit: '',
                     };
                     this.screenSaver = new Screensaver(ssconfig, pageConfig);
+                    this.pages[a] = this.screenSaver;
                     break;
                 }
             }
@@ -404,6 +407,26 @@ export class Panel extends BaseClass {
                             message,
                             genericStateObjects.panel.panels.info.status,
                         );
+                        this.info.net = {
+                            ip: data.StatusNET.IPAddress,
+                            gateway: data.StatusNET.Gateway,
+                            dnsserver: data.StatusNET.DNSServer1,
+                            subnetmask: data.StatusNET.Subnetmask,
+                            hostname: data.StatusNET.Hostname,
+                            mac: data.StatusNET.Mac,
+                        };
+                        this.info.uptime = data.StatusSTS.Uptime;
+                        this.info.wifi = {
+                            ssid: data.StatusSTS.Wifi.SSId,
+                            rssi: data.StatusSTS.Wifi.RSSI,
+                            downtime: data.StatusSTS.Wifi.Downtime,
+                        };
+                        await this.library.writeFromJson(
+                            `panel.${this.name}.info`,
+                            'panel.panels.info',
+                            genericStateObjects,
+                            this.info,
+                        );
                     }
                 }
             }
@@ -498,11 +521,12 @@ export class Panel extends BaseClass {
         switch (event.method) {
             case 'startup': {
                 this.isOnline = true;
-                if (this.screenSaver) await this.screenSaver.init();
-                else return;
-                this.restartLoops();
 
-                this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~6371`);
+                this.info.displayVersion = parseInt(event.action);
+                this.info.model = event.id;
+
+                this.restartLoops();
+                this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(rgb_dec565(Black)));
 
                 this.navigation.resetPosition();
                 const page = this.navigation.getCurrentPage();

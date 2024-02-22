@@ -1,5 +1,5 @@
 import { Off, On, HMIDark } from './Color';
-import { ScreensaverModeType, ScreensaverOptionsType } from '../types/types';
+import { NSpanelModel, PanelInfo, ScreenSaverPlaces, ScreensaverModeType } from '../types/types';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object
     ? {
@@ -10,7 +10,9 @@ export type ChangeToChannel<Obj, T> = Obj extends object
     ? { [K in keyof Obj]-?: customChannelType & T }
     : ioBroker.StateObject;
 */
-
+export type ChangeTypeOfKeysForState<Obj, N> = Obj extends object
+    ? customChannelType & { [K in keyof Obj]: ChangeTypeOfKeysForState<Obj[K], N> }
+    : N;
 export type customChannelType = {
     _channel: ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.FolderObject;
 };
@@ -27,11 +29,6 @@ export const defaultChannel: ioBroker.ChannelObject = {
 export const genericStateObjects: {
     default: ioBroker.StateObject;
     customString: ioBroker.StateObject;
-    devices: ioBroker.FolderObject;
-    rooms: ioBroker.FolderObject;
-    settings: ioBroker.FolderObject;
-    global: ioBroker.FolderObject;
-    presense: ioBroker.StateObject;
     panel: customChannelType & {
         panels: customChannelType & {
             cmd: customChannelType & {
@@ -40,7 +37,7 @@ export const genericStateObjects: {
             };
             info: customChannelType & {
                 status: ioBroker.StateObject;
-            };
+            } & ChangeTypeOfKeysForState<Required<PanelInfo>, ioBroker.StateObject>;
             alarm: customChannelType & {
                 cardAlarm: customChannelType & {
                     status: ioBroker.StateObject;
@@ -136,6 +133,170 @@ export const genericStateObjects: {
                     },
                     native: {},
                 },
+                displayVersion: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'genericStateObjects.displayVersion',
+                        type: 'string',
+                        role: 'text',
+                        read: true,
+                        write: false,
+                    },
+                    native: {},
+                },
+                model: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'genericStateObjects.model',
+                        type: 'string',
+                        role: 'text',
+                        read: true,
+                        write: false,
+                    },
+                    native: {},
+                },
+                uptime: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'genericStateObjects.uptime',
+                        type: 'string',
+                        role: 'text',
+                        read: true,
+                        write: false,
+                    },
+                    native: {},
+                },
+                wifi: {
+                    _channel: {
+                        _id: '',
+                        type: 'channel',
+                        common: {
+                            name: 'genericStateObjects.wifi',
+                        },
+                        native: {},
+                    },
+                    ssid: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'genericStateObjects.ssid',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    rssi: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'genericStateObjects.rssi',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    downtime: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'genericStateObjects.downtime',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                },
+                net: {
+                    _channel: {
+                        _id: '',
+                        type: 'channel',
+                        common: {
+                            name: 'genericStateObjects.net',
+                        },
+                        native: {},
+                    },
+                    ip: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'genericStateObjects.ip',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    gateway: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'genericStateObjects.gateway',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    dnsserver: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'genericStateObjects.dnsserver',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    subnetmask: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'genericStateObjects.subnetmask',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    hostname: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'genericStateObjects.hostname',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    mac: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'genericStateObjects.mac',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                },
             },
             alarm: {
                 _channel: {
@@ -196,18 +357,7 @@ export const genericStateObjects: {
             },
         },
     },
-    presense: {
-        _id: '',
-        type: 'state',
-        common: {
-            name: 'genericStateObjects.presense',
-            type: 'boolean',
-            role: 'text',
-            read: true,
-            write: false,
-        },
-        native: {},
-    },
+
     customString: {
         _id: 'User_State',
         type: 'state',
@@ -217,38 +367,6 @@ export const genericStateObjects: {
             role: 'text',
             read: true,
             write: false,
-        },
-        native: {},
-    },
-    devices: {
-        _id: '',
-        type: 'folder',
-        common: {
-            name: 'devices.folder',
-        },
-        native: {},
-    },
-    rooms: {
-        _id: '',
-        type: 'folder',
-        common: {
-            name: 'rooms.folder',
-        },
-        native: {},
-    },
-    settings: {
-        _id: '',
-        type: 'folder',
-        common: {
-            name: 'settings.folder',
-        },
-        native: {},
-    },
-    global: {
-        _id: '',
-        type: 'folder',
-        common: {
-            name: 'settings.global',
         },
         native: {},
     },
@@ -391,122 +509,123 @@ export const berry_driver_version = 9;
 
 export const tasmotaOtaUrl: string = 'http://ota.tasmota.com/tasmota32/release/';
 
-export const ScreenSaverPlaces: [
-    keyof Pick<ScreensaverOptionsType, 'favoritEntity'>,
-    keyof Pick<ScreensaverOptionsType, 'leftEntity'>,
-    keyof Pick<ScreensaverOptionsType, 'bottomEntity'>,
-    keyof Pick<ScreensaverOptionsType, 'alternateEntity'>,
-    keyof Pick<ScreensaverOptionsType, 'indicatorEntity'>,
-] = ['favoritEntity', 'leftEntity', 'bottomEntity', 'alternateEntity', 'indicatorEntity'];
-
-export const ScreenSaverAllPlaces: (keyof ScreensaverOptionsType)[] = [
-    'favoritEntity',
-    'leftEntity',
-    'bottomEntity',
-    'alternateEntity',
-    'indicatorEntity',
-    'mrIconEntity',
-];
-
 export const ScreenSaverConst: Record<
     ScreensaverModeType,
-    Record<keyof ScreensaverOptionsType, { maxEntries: number }>
+    Record<ScreenSaverPlaces, { maxEntries: Record<NSpanelModel, number> }>
 > = {
     standard: {
-        leftEntity: {
-            maxEntries: 0,
+        left: {
+            maxEntries: { eu: 0 },
         },
-        bottomEntity: {
-            maxEntries: 4,
+        bottom: {
+            maxEntries: { eu: 4 },
         },
-        alternateEntity: {
-            maxEntries: 0,
+        alternate: {
+            maxEntries: { eu: 0 },
         },
-        indicatorEntity: {
-            maxEntries: 0,
+        indicator: {
+            maxEntries: { eu: 0 },
         },
-        mrIconEntity: {
-            maxEntries: 2,
+        mricon: {
+            maxEntries: { eu: 2 },
         },
-        favoritEntity: {
-            maxEntries: 1,
+        favorit: {
+            maxEntries: { eu: 1 },
+        },
+        time: {
+            maxEntries: { eu: 1 },
+        },
+        date: {
+            maxEntries: { eu: 1 },
         },
     },
     alternate: {
-        leftEntity: {
-            maxEntries: 0,
+        left: {
+            maxEntries: { eu: 0 },
         },
-        bottomEntity: {
-            maxEntries: 3,
+        bottom: {
+            maxEntries: { eu: 3 },
         },
-        alternateEntity: {
-            maxEntries: 1,
+        alternate: {
+            maxEntries: { eu: 1 },
         },
-        indicatorEntity: {
-            maxEntries: 0,
+        indicator: {
+            maxEntries: { eu: 0 },
         },
-        mrIconEntity: {
-            maxEntries: 2,
+        mricon: {
+            maxEntries: { eu: 2 },
         },
-        favoritEntity: {
-            maxEntries: 1,
+        favorit: {
+            maxEntries: { eu: 1 },
+        },
+        time: {
+            maxEntries: { eu: 1 },
+        },
+        date: {
+            maxEntries: { eu: 1 },
         },
     },
     advanced: {
-        leftEntity: {
-            maxEntries: 3,
+        left: {
+            maxEntries: { eu: 3 },
         },
-        bottomEntity: {
-            maxEntries: 6,
+        bottom: {
+            maxEntries: { eu: 6 },
         },
-        alternateEntity: {
-            maxEntries: 0,
+        alternate: {
+            maxEntries: { eu: 0 },
         },
-        indicatorEntity: {
-            maxEntries: 5,
+        indicator: {
+            maxEntries: { eu: 5 },
         },
-        mrIconEntity: {
-            maxEntries: 2,
+        mricon: {
+            maxEntries: { eu: 2 },
         },
-        favoritEntity: {
-            maxEntries: 1,
+        favorit: {
+            maxEntries: { eu: 1 },
+        },
+        time: {
+            maxEntries: { eu: 1 },
+        },
+        date: {
+            maxEntries: { eu: 1 },
         },
     },
 };
 
 /*export const PageTypeDefinition: Record<PageTypeCards, { maxEntries: number }> = {
     cardAlarm: {
-        maxEntries: 1,
+        maxEntries: { eu: 1 },
     },
     cardChart: {
-        maxEntries: 1,
+        maxEntries: { eu: 1 },
     },
     cardEntities: {
-        maxEntries: 5,
+        maxEntries: { eu: 5 },
     },
     cardGrid: {
-        maxEntries: 6,
+        maxEntries: { eu: 6 },
     },
     cardGrid2: {
-        maxEntries: 8,
+        maxEntries: { eu: 8 },
     },
     cardLChart: {
-        maxEntries: 1,
+        maxEntries: { eu: 1 },
     },
     cardMedia: {
-        maxEntries: 1,
+        maxEntries: { eu: 1 },
     },
     cardPower: {
-        maxEntries: 1,
+        maxEntries: { eu: 1 },
     },
     cardQR: {
-        maxEntries: 1,
+        maxEntries: { eu: 1 },
     },
     cardThermo: {
-        maxEntries: 1,
+        maxEntries: { eu: 1 },
     },
     cardUnlock: {
-        maxEntries: 1,
+        maxEntries: { eu: 1 },
     },
 };*/
 

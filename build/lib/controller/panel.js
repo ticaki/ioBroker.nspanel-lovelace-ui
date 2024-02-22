@@ -42,6 +42,7 @@ var import_navigation = require("../classes/navigation");
 var import_pageThermo = require("../pages/pageThermo");
 var import_pagePower = require("../pages/pagePower");
 var import_pageEntities = require("../pages/pageEntities");
+var import_Color = require("../const/Color");
 function isPanelConfig(F) {
   if (F.controller === void 0)
     return false;
@@ -87,6 +88,7 @@ class Panel extends import_library.BaseClass {
   sendToTasmota = () => {
   };
   persistentPageItems = {};
+  info = {};
   friendlyName = "";
   constructor(adapter, options) {
     var _a, _b, _c;
@@ -226,6 +228,7 @@ class Panel extends import_library.BaseClass {
             dpInit: ""
           };
           this.screenSaver = new import_screensaver.Screensaver(ssconfig, pageConfig);
+          this.pages[a] = this.screenSaver;
           break;
         }
       }
@@ -398,6 +401,26 @@ class Panel extends import_library.BaseClass {
               message,
               import_definition.genericStateObjects.panel.panels.info.status
             );
+            this.info.net = {
+              ip: data.StatusNET.IPAddress,
+              gateway: data.StatusNET.Gateway,
+              dnsserver: data.StatusNET.DNSServer1,
+              subnetmask: data.StatusNET.Subnetmask,
+              hostname: data.StatusNET.Hostname,
+              mac: data.StatusNET.Mac
+            };
+            this.info.uptime = data.StatusSTS.Uptime;
+            this.info.wifi = {
+              ssid: data.StatusSTS.Wifi.SSId,
+              rssi: data.StatusSTS.Wifi.RSSI,
+              downtime: data.StatusSTS.Wifi.Downtime
+            };
+            await this.library.writeFromJson(
+              `panel.${this.name}.info`,
+              "panel.panels.info",
+              import_definition.genericStateObjects,
+              this.info
+            );
           }
         }
       }
@@ -479,12 +502,10 @@ class Panel extends import_library.BaseClass {
     switch (event.method) {
       case "startup": {
         this.isOnline = true;
-        if (this.screenSaver)
-          await this.screenSaver.init();
-        else
-          return;
+        this.info.displayVersion = parseInt(event.action);
+        this.info.model = event.id;
         this.restartLoops();
-        this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~6371`);
+        this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String((0, import_Color.rgb_dec565)(import_Color.Black)));
         this.navigation.resetPosition();
         const page = this.navigation.getCurrentPage();
         const test = false;

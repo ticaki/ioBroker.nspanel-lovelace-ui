@@ -1,15 +1,15 @@
 // BaseClass extends
 
 import { IClientPublishOptions } from 'mqtt';
+import { PageInterface } from '../classes/Page';
 import { Dataitem } from '../classes/data-item';
 import { AdapterClassDefinition, BaseClass } from '../classes/library';
+import { PageItem } from '../pages/pageItem';
+import { PageItemDataItemsOptions } from '../types/type-pageItem';
 import { DataItemsOptions } from '../types/types';
 import { Controller } from './controller';
-import { PanelSend } from './panel-message';
 import { Panel } from './panel';
-import { PageItemDataItemsOptions } from '../types/type-pageItem';
-import { PageItem } from '../pages/pageItem';
-import { PageInterface } from '../classes/Page';
+import { PanelSend } from './panel-message';
 
 export interface BaseClassTriggerdInterface {
     name: string;
@@ -66,7 +66,7 @@ export class BaseClassTriggerd extends BaseClass {
         this.panel = card.panel;
         if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
     }
-    readonly onStateTriggerSuperDoNotOverride = async (): Promise<boolean> => {
+    readonly onStateTriggerSuperDoNotOverride = async (from: BaseClassTriggerd): Promise<boolean> => {
         if (!this.visibility || this.unload) return false;
         if (this.sleep) return false;
         if (this.waitForTimeout) return false;
@@ -76,7 +76,7 @@ export class BaseClassTriggerd extends BaseClass {
         } else {
             this.waitForTimeout = this.adapter.setTimeout(() => {
                 this.waitForTimeout = undefined;
-                this.onStateTrigger();
+                this.onStateTrigger(from);
                 if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
                 if (this.alwaysOn === 'action') {
                     this.alwaysOnState = this.adapter.setTimeout(
@@ -92,13 +92,13 @@ export class BaseClassTriggerd extends BaseClass {
                 this.updateTimeout = undefined;
                 if (this.doUpdate) {
                     this.doUpdate = false;
-                    await this.onStateTrigger();
+                    await this.onStateTrigger(from);
                 }
             }, this.minUpdateInterval);
             return true;
         }
     };
-    protected async onStateTrigger(): Promise<void> {
+    protected async onStateTrigger(_from: BaseClassTriggerd): Promise<void> {
         this.adapter.log.warn(
             `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`,
         );
@@ -173,7 +173,8 @@ export class BaseClassPage extends BaseClassTriggerd {
         this.pageItemConfig = pageItemsConfig;
     }
 }
-
+type getInternalFunctionType = (id: string) => ioBroker.StateValue;
+type MyState = Omit<ioBroker.State, 'val'> & { val: getInternalFunctionType | ioBroker.State['val'] };
 /**
  * Verwendet um Lesezugriffe auf die States umzusetzten, die im NSPanel ververwendet werden.
  * Adapter eigenen States sind verboten
@@ -182,7 +183,7 @@ export class BaseClassPage extends BaseClassTriggerd {
 export class StatesControler extends BaseClass {
     private triggerDB: {
         [key: string]: {
-            state: ioBroker.State;
+            state: MyState;
             to: BaseClassTriggerd[];
             ts: number;
             subscribed: boolean[];
@@ -336,7 +337,17 @@ export class StatesControler extends BaseClass {
             this.triggerDB[id] !== undefined &&
             (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some((a) => a))
         ) {
-            return this.triggerDB[id].state;
+            let state: ioBroker.State | null = null;
+            const val = this.triggerDB[id].state.val;
+            if (val && typeof val === 'function') {
+                state = {
+                    ...this.triggerDB[id].state,
+                    val: val(id),
+                };
+            } else {
+                state = this.triggerDB[id].state as ioBroker.State;
+            }
+            return state;
         } else if (this.stateDB[id] && timespan) {
             if (Date.now() - timespan - this.stateDB[id].ts < 0) {
                 return this.stateDB[id].state;
@@ -390,9 +401,9 @@ export class StatesControler extends BaseClass {
                             this.triggerDB[dp].to.forEach((c) => {
                                 if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
                                     c.parent.onStateTriggerSuperDoNotOverride &&
-                                        c.parent.onStateTriggerSuperDoNotOverride();
+                                        c.parent.onStateTriggerSuperDoNotOverride(c);
                                 } else if (!c.unload) {
-                                    c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride();
+                                    c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride(c);
                                 }
                             });
                         }
@@ -439,22 +450,27 @@ export class StatesControler extends BaseClass {
             }
         }
     }
-    public setInternalState(
+    public async setInternalState(
         id: string,
-        val: ioBroker.StateValue,
+        val: ioBroker.StateValue | getInternalFunctionType,
         ack: boolean = false,
         common: ioBroker.StateCommon | undefined = undefined,
-    ): boolean {
+    ): Promise<boolean> {
         if (this.triggerDB[id] !== undefined) {
-            const state = {
+            if (ack)
+                await this.onStateChange(id, {
+                    ...this.triggerDB[id].state,
+                    val: typeof val === 'function' ? val(id) : val,
+                    ack: ack,
+                    ts: Date.now(),
+                });
+            this.triggerDB[id].state = {
                 ...this.triggerDB[id].state,
                 val,
                 ack: ack,
                 ts: Date.now(),
             };
-
-            if (ack) this.onStateChange(id, state);
-            else this.triggerDB[id].state = state;
+            return true;
         } else if (common) {
             this.triggerDB[id] = {
                 state: { ts: Date.now(), val: null, ack: ack, from: '', lc: Date.now() },

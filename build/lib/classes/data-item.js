@@ -125,7 +125,6 @@ class Dataitem extends import_library.BaseClass {
             state.val = new Function("val", "Color", `${this.options.read}`)(state.val, Color);
           else
             state.val = this.options.read(state.val);
-          this.log.debug(JSON.stringify(state.val));
         } catch (e) {
           this.log.error(
             `Read for dp: ${this.options.dp} is invalid! read: ${this.options.read} Error: ${e}`

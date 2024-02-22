@@ -163,7 +163,6 @@ export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data'
         | PageItemFanDataItemsOptions
         | PageItemTimerDataItemsOptions
     );
-
 export type PageItemDataItemsOptions =
     | ({
           template: Types.TemplateIdent;
@@ -190,7 +189,7 @@ export type PageItemOptionsTemplate = {
     adapter: string;
     //dpInit: string;
     type: Types.SerialTypePageElements;
-} & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit'> &
+} & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit' | 'modeScr'> &
     (
         | PageItemButtonDataItemsOptions
         | PageItemShutterDataItemsOptions
@@ -338,7 +337,7 @@ export type PageItemBase = {
     icon?: IconEntryType;
     text?: TextEntryType;
     entityInSel: ValueEntryType;
-    entity1: ValueEntryType; // Readonly Werte die angezeigt werden soll. wird immer für insel verwendet
+    entity1?: ValueEntryType; // Readonly Werte die angezeigt werden soll. wird immer für insel verwendet
     entity2?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     entity3?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     text1?: TextEntryType;
@@ -410,33 +409,10 @@ export type PageTypeUnionTemplate = {
 //XOR<XOR<A, B>, C>
 
 export type PageItemUnion = {
-    role: /*| 'socket'
-        | 'value.time'
-        | 'level.timer'
-        | 'level.mode.fan'
-        | 'value.alarmtime'
-        | 'light'
-        | 'dimmer'
-        | 'hue'
-        | 'ct'
-        | 'cie'
-        | 'rgbSingle'
-        | 'rgb'
-        | 'ct'
-        | 'blind'
-        | 'door'
-        | 'window'
-        | 'gate'
-        | 'motion'
-        | 'buttonSensor'
-        | 'button'
-        | 'media.repeat'
-        | 'text.list'
-        | 'arrow'
-        | 'spotify-playlist'*/
-    pages.DeviceRole;
+    role: pages.DeviceRole;
     template?: undefined;
     dpInit?: string;
+    modeScr?: Types.ScreenSaverPlaces | undefined;
     type: Types.SerialTypePageElements;
     data: PageItemBase;
 };
@@ -462,6 +438,7 @@ export type ValueEntryType =
           minScale?: number;
           maxScale?: number;
           set?: number;
+          dateFormat?: string;
       }
     | undefined;
 export type ScaledNumberType =

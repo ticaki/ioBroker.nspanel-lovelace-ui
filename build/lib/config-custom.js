@@ -279,7 +279,17 @@ const pageEntitiesTest2 = {
     {
       type: "text",
       dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
-      template: "text.battery"
+      template: "text.battery",
+      data: {
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "ds"
+            }
+          }
+        }
+      }
     }
   ],
   items: void 0
@@ -2688,13 +2698,25 @@ const pageThermoTest = {
 };
 const pageScreensaverTest = {
   card: "screensaver",
-  mode: "advanced",
-  rotationTime: 0,
-  entitysConfig: {
-    favoritEntity: [
-      {
-        entityIconSelect: void 0,
-        entityValue: {
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "scr",
+  useColor: false,
+  config: {
+    card: "screensaver2",
+    mode: "advanced",
+    rotationTime: 10,
+    model: "eu",
+    data: void 0
+  },
+  pageItems: [
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "favorit",
+      data: {
+        entity1: {
           value: { type: "triggered", dp: "accuweather.0.Current.Temperature" },
           decimal: {
             type: "const",
@@ -2706,11 +2728,7 @@ const pageScreensaverTest = {
             constVal: "\xB0C"
           }
         },
-        entityDateFormat: {
-          type: "const",
-          constVal: null
-        },
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "state",
@@ -2871,15 +2889,19 @@ const pageScreensaverTest = {
           },
           false: { value: void 0, color: void 0 }
         },
-        entityText: {
+        text: {
           true: void 0,
           false: void 0
         }
       }
-    ],
-    leftEntity: [
-      {
-        entityValue: {
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "left",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindSpeed"
@@ -2897,8 +2919,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2917,17 +2938,74 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Wind"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "left",
+      data: {
+        entity2: {
+          value: {
+            type: "state",
+            dp: "accuweather.0.Current.WindSpeed"
+          },
+          decimal: {
+            type: "const",
+            constVal: 1
+          },
+          factor: {
+            type: "const",
+            constVal: 1e3 / 3600
+          },
+          unit: {
+            type: "const",
+            constVal: "m/s"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "weather-windy"
+            },
+            color: void 0
+          },
+          false: {
+            value: void 0,
+            color: void 0
+          },
+          scale: {
+            type: "const",
+            constVal: { val_min: 0, val_max: 80 }
+          },
+          maxBri: void 0,
+          minBri: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Wind"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "left",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -2945,8 +3023,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -2965,17 +3042,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "B\xF6en"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "left",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindDirectionText"
@@ -2990,8 +3072,7 @@ const pageScreensaverTest = {
             constVal: "\xB0"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3010,8 +3091,7 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Windr."
@@ -3019,33 +3099,27 @@ const pageScreensaverTest = {
           false: void 0
         }
       }
-    ],
-    bottomEntity: [
-      {
-        entityValue: {
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity1: void 0,
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Daily.Day1.Sunrise",
-            forceType: "string"
+            read: "return new Date(val).getTime()",
+            forceType: "number"
           },
-          decimal: {
+          dateFormat: {
             type: "const",
-            constVal: 0
-          },
-          factor: {
-            type: "const",
-            constVal: 1
-          },
-          unit: {
-            type: "const",
-            constVal: "\xB0C"
+            constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
           }
         },
-        entityDateFormat: {
-          type: "const",
-          constVal: JSON.stringify({ hour: "2-digit", minute: "2-digit" })
-        },
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3067,17 +3141,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
-            constVal: "TokenSun"
+            constVal: "Sun"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindSpeed"
@@ -3095,8 +3174,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3115,17 +3193,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Wind"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -3143,8 +3226,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3163,17 +3245,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "B\xF6en"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindDirectionText"
@@ -3188,8 +3275,7 @@ const pageScreensaverTest = {
             constVal: "\xB0"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3208,17 +3294,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Windr."
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.RelativeHumidity"
@@ -3233,8 +3324,7 @@ const pageScreensaverTest = {
             constVal: "%"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3253,17 +3343,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Feuchte."
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.DewPoint"
@@ -3278,8 +3373,7 @@ const pageScreensaverTest = {
             constVal: "\xB0C"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3298,8 +3392,7 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Taup."
@@ -3307,11 +3400,14 @@ const pageScreensaverTest = {
           false: void 0
         }
       }
-    ],
-    alternateEntity: [],
-    indicatorEntity: [
-      {
-        entityValue: {
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity1: {
           value: {
             type: "state",
             dp: "accuweather.0.Daily.Day1.Sunrise",
@@ -3330,11 +3426,7 @@ const pageScreensaverTest = {
             constVal: "\xB0C"
           }
         },
-        entityDateFormat: {
-          type: "const",
-          constVal: JSON.stringify({ hour: "2-digit", minute: "2-digit" })
-        },
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3356,17 +3448,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Sonne"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -3384,8 +3481,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3404,17 +3500,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "B\xF6en"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindDirectionText"
@@ -3429,8 +3530,7 @@ const pageScreensaverTest = {
             constVal: "\xB0"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3449,17 +3549,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Windr."
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindSpeed"
@@ -3477,8 +3582,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3497,17 +3601,22 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "Wind"
           },
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity2: {
           value: {
             type: "state",
             dp: "accuweather.0.Current.WindGust"
@@ -3525,8 +3634,7 @@ const pageScreensaverTest = {
             constVal: "m/s"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3545,8 +3653,7 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: {
             type: "const",
             constVal: "B\xF6en"
@@ -3554,17 +3661,20 @@ const pageScreensaverTest = {
           false: void 0
         }
       }
-    ],
-    mrIconEntity: [
-      {
-        entityValue: {
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "mricon",
+      data: {
+        entity1: {
           value: {
             type: "internal",
             dp: "cmd/power1"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3589,21 +3699,25 @@ const pageScreensaverTest = {
           maxBri: void 0,
           minBri: void 0
         },
-        entityIconSelect: void 0,
-        entityText: {
+        text: {
           true: void 0,
           false: void 0
         }
-      },
-      {
-        entityValue: {
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "mricon",
+      data: {
+        entity1: {
           value: {
             type: "internal",
             dp: "cmd/power2"
           }
         },
-        entityDateFormat: void 0,
-        entityIcon: {
+        icon: {
           true: {
             value: {
               type: "const",
@@ -3624,15 +3738,10 @@ const pageScreensaverTest = {
               constVal: Color.HMIOff
             }
           }
-        },
-        entityIconSelect: void 0,
-        entityText: {
-          true: void 0,
-          false: void 0
         }
       }
-    ]
-  }
+    }
+  ]
 };
 const Testconfig = [
   {

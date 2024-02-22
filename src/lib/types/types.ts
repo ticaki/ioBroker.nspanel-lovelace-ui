@@ -206,6 +206,14 @@ export type DimMode = {
     timeNight: string | undefined;
 };
 
+export type ValueDateFormat = { local: string; format: any };
+
+export function isValueDateFormat(F: any | ValueDateFormat): F is ValueDateFormat {
+    return F && typeof F === 'object' && F.local !== undefined && F.format !== undefined;
+}
+
+export type ScreenSaverPlaces = 'left' | 'bottom' | 'indicator' | 'alternate' | 'favorit' | 'mricon' | 'time' | 'date';
+export type NSpanelModel = 'eu';
 export type Config = {
     leftEntity: boolean;
     indicatorEntity: any;
@@ -353,14 +361,6 @@ export function isEventType(F: string | EventType): F is EventType {
 }
 export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced';
 
-export type ScreensaverOptionsType = {
-    favoritEntity: Config['screensaver']['favoritEntity'];
-    leftEntity: Config['screensaver']['leftEntity'];
-    bottomEntity: Config['screensaver']['bottomEntity'];
-    alternateEntity: Config['screensaver']['alternateEntity'];
-    indicatorEntity: Config['screensaver']['indicatorEntity'];
-    mrIconEntity: Config['screensaver']['mrIconEntity'];
-};
 export interface State extends Omit<ioBroker.State, 'val'> {
     val: StateValue;
 }
@@ -527,3 +527,18 @@ export type STATUS0 = {
         };
     };
 };
+
+export type PanelInfo = Partial<{
+    displayVersion: number;
+    model: string;
+    net: {
+        ip: string;
+        gateway: string;
+        dnsserver: string;
+        subnetmask: string;
+        hostname: string;
+        mac: string;
+    };
+    uptime: string;
+    wifi: { ssid: string; rssi: number; downtime: string };
+}>;

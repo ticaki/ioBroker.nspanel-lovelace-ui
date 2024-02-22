@@ -70,7 +70,7 @@ export class PageMedia extends Page {
             tempConfig,
             this,
         );
-        if (tempItem) tempItem.card = this.config && this.config.card;
+        if (tempItem) tempItem.card = 'cardMedia';
         this.items = tempItem as pages.PageBaseConfig['items'];
         await super.init();
     }
@@ -163,7 +163,7 @@ export class PageMedia extends Page {
                 case 'string': {
                     const v = await item.data.shuffle.value.getString();
                     if (v !== null) {
-                        value = ['OFF', 'FALSE'].indexOf(v.toUpperCase()) !== -1;
+                        value = ['OFF', 'FALSE'].indexOf(v.toUpperCase()) === -1;
                     }
                     break;
                 }

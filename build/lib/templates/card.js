@@ -331,7 +331,12 @@ const cardTemplates = [
             true: void 0,
             false: void 0
           },
-          valueList: { type: "state", mode: "auto", role: "value", dp: ".player.playlist.trackListArray" }
+          valueList: {
+            type: "triggered",
+            mode: "auto",
+            role: "value",
+            dp: ".player.playlist.trackListArray"
+          }
         }
       },
       {

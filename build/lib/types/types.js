@@ -23,7 +23,8 @@ __export(types_exports, {
   isEventType: () => isEventType,
   isIconScaleElement: () => isIconScaleElement,
   isPartialIconScaleElement: () => isPartialIconScaleElement,
-  isPopupType: () => isPopupType
+  isPopupType: () => isPopupType,
+  isValueDateFormat: () => isValueDateFormat
 });
 module.exports = __toCommonJS(types_exports);
 function isEventMethod(F) {
@@ -69,6 +70,9 @@ const SerialTypeArray = [
   "timer",
   "fan"
 ];
+function isValueDateFormat(F) {
+  return F && typeof F === "object" && F.local !== void 0 && F.format !== void 0;
+}
 function isIconScaleElement(F) {
   return F && "val_min" in F && "val_max" in F;
 }
@@ -85,6 +89,7 @@ function isEventType(F) {
   isEventType,
   isIconScaleElement,
   isPartialIconScaleElement,
-  isPopupType
+  isPopupType,
+  isValueDateFormat
 });
 //# sourceMappingURL=types.js.map

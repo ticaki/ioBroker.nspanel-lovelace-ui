@@ -54,6 +54,7 @@ export class PageGrid extends Page {
     public async update(): Promise<void> {
         const message: Partial<pages.PageGridMessage> = {};
         message.options = [];
+        if (!this.items || (this.items.card !== 'cardGrid' && this.items.card !== 'cardGrid2')) return;
         if (this.pageItems) {
             const maxItems = this.card === 'cardGrid' ? 6 : 8;
             for (let a = 0; a < maxItems; a++) {

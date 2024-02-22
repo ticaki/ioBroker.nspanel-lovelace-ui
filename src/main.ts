@@ -13,7 +13,6 @@ import * as MQTT from './lib/classes/mqtt';
 import { Testconfig } from './lib/config-custom';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
-import { ScreenSaverConst } from './lib/const/definition';
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -45,7 +44,6 @@ class NspanelLovelaceUi extends utils.Adapter {
         if (!this.config.Testconfig2) {
             this.log.warn('No configuration use dev test config!');
             this.log.warn('Adapter on hold, user restart needed!');
-            return;
             this.config.Testconfig2 = Testconfig;
         }
 
@@ -165,16 +163,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                 // e.g. send email or pushover or whatever
                 this.log.info(JSON.stringify(obj));
                 if (obj.command === 'scs-field') {
-                    const result: { label: string; value: string }[] = [];
-                    const data = ScreenSaverConst[obj.message.type as keyof typeof ScreenSaverConst];
-                    for (const key in data) {
-                        const max = data[key as keyof typeof data].maxEntries;
-                        for (let a = 0; a < max; a++) {
-                            result.push({ label: `${a + 1} ${key}`, value: `${a + 1}#${key}` });
-                        }
-                    }
-                    if (obj.callback) this.sendTo(obj.from, obj.command, result, obj.callback);
-                    return;
                 } else if (obj.command === 'reload' || obj.command === 'setData') {
                     const result: any = {};
                     const keyToValue:

@@ -66,7 +66,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
     if (typeof this.panelSend.addMessage === "function")
       this.sendToPanelClass = card.panelSend.addMessage;
   }
-  onStateTriggerSuperDoNotOverride = async () => {
+  onStateTriggerSuperDoNotOverride = async (from) => {
     if (!this.visibility || this.unload)
       return false;
     if (this.sleep)
@@ -79,7 +79,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
     } else {
       this.waitForTimeout = this.adapter.setTimeout(() => {
         this.waitForTimeout = void 0;
-        this.onStateTrigger();
+        this.onStateTrigger(from);
         if (this.alwaysOnState)
           this.adapter.clearTimeout(this.alwaysOnState);
         if (this.alwaysOn === "action") {
@@ -97,13 +97,13 @@ class BaseClassTriggerd extends import_library.BaseClass {
         this.updateTimeout = void 0;
         if (this.doUpdate) {
           this.doUpdate = false;
-          await this.onStateTrigger();
+          await this.onStateTrigger(from);
         }
       }, this.minUpdateInterval);
       return true;
     }
   };
-  async onStateTrigger() {
+  async onStateTrigger(_from) {
     this.adapter.log.warn(
       `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`
     );
@@ -308,7 +308,17 @@ class StatesControler extends import_library.BaseClass {
     else
       timespan = 1e3;
     if (this.triggerDB[id] !== void 0 && (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some((a) => a))) {
-      return this.triggerDB[id].state;
+      let state = null;
+      const val = this.triggerDB[id].state.val;
+      if (val && typeof val === "function") {
+        state = {
+          ...this.triggerDB[id].state,
+          val: val(id)
+        };
+      } else {
+        state = this.triggerDB[id].state;
+      }
+      return state;
     } else if (this.stateDB[id] && timespan) {
       if (Date.now() - timespan - this.stateDB[id].ts < 0) {
         return this.stateDB[id].state;
@@ -364,9 +374,9 @@ class StatesControler extends import_library.BaseClass {
             if (state.ack || dp.startsWith("0_userdata.0")) {
               this.triggerDB[dp].to.forEach((c) => {
                 if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
-                  c.parent.onStateTriggerSuperDoNotOverride && c.parent.onStateTriggerSuperDoNotOverride();
+                  c.parent.onStateTriggerSuperDoNotOverride && c.parent.onStateTriggerSuperDoNotOverride(c);
                 } else if (!c.unload) {
-                  c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride();
+                  c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride(c);
                 }
               });
             }
@@ -411,18 +421,22 @@ class StatesControler extends import_library.BaseClass {
       }
     }
   }
-  setInternalState(id, val, ack = false, common = void 0) {
+  async setInternalState(id, val, ack = false, common = void 0) {
     if (this.triggerDB[id] !== void 0) {
-      const state = {
+      if (ack)
+        await this.onStateChange(id, {
+          ...this.triggerDB[id].state,
+          val: typeof val === "function" ? val(id) : val,
+          ack,
+          ts: Date.now()
+        });
+      this.triggerDB[id].state = {
         ...this.triggerDB[id].state,
         val,
         ack,
         ts: Date.now()
       };
-      if (ack)
-        this.onStateChange(id, state);
-      else
-        this.triggerDB[id].state = state;
+      return true;
     } else if (common) {
       this.triggerDB[id] = {
         state: { ts: Date.now(), val: null, ack, from: "", lc: Date.now() },

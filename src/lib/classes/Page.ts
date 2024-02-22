@@ -2,7 +2,6 @@ import { Panel } from '../controller/panel';
 import { BaseClassPage, BaseClassTriggerdInterface } from '../controller/states-controller';
 import * as pages from '../types/pages';
 import { ButtonActionType, IncomingEvent, PopupType, isPopupType } from '../types/types';
-import { ScreensaverConfig } from '../pages/screensaver';
 import { PageItem } from '../pages/pageItem';
 import { BaseClass } from './library';
 import { cardTemplates } from '../templates/card';
@@ -31,7 +30,7 @@ export type PageInterface = BaseClassTriggerdInterface & {
 };
 
 //interface Page extends BaseClass | PageConfig
-export type PageConfigAll = ScreensaverConfig | pages.PageBaseConfig;
+export type PageConfigAll = pages.PageBaseConfig;
 
 export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;

@@ -178,7 +178,9 @@ export class PageItem extends BaseClassTriggerd {
                     } else {
                         message.optionalValue = '0';
                     }
-                    message.displayName = (await tools.getEntryTextOnOff(item.headline, v)) ?? message.displayName;
+                    message.displayName = this.library.getTranslation(
+                        (await tools.getEntryTextOnOff(item.headline, v)) ?? message.displayName ?? '',
+                    );
                     return tools.getItemMesssage(message);
                     break;
                 }
@@ -217,8 +219,9 @@ export class PageItem extends BaseClassTriggerd {
                     optionalValueC[3] = value === 0 ? 'disable' : optionalValueC[3];
                     optionalValueC[5] = value === 100 ? 'disable' : optionalValueC[5];
                     message.optionalValue = optionalValueC.join('|');
-                    message.displayName = (item.headline && (await item.headline.getString())) ?? '';
-                    message.displayName = this.library.getTranslation(message.displayName);
+                    message.displayName = this.library.getTranslation(
+                        (await tools.getEntryTextOnOff(item.headline, !!value)) ?? message.displayName ?? '',
+                    );
                     return tools.getItemMesssage(message);
                     break;
                 }
@@ -228,7 +231,9 @@ export class PageItem extends BaseClassTriggerd {
                         const item = entry.data;
                         message.type = 'number';
                         const number = (await tools.getValueEntryNumber(item.entity1, false)) ?? 0;
-                        message.displayName = (await tools.getEntryTextOnOff(item.text, true)) ?? '';
+                        message.displayName = this.library.getTranslation(
+                            (await tools.getEntryTextOnOff(item.text, true)) ?? '',
+                        );
                         message.icon = (await tools.getIconEntryValue(item.icon, true, '')) ?? '';
                         message.iconColor = (await tools.getIconEntryColor(item.icon, true, Color.HMIOn)) ?? '';
                         const min =
@@ -253,16 +258,38 @@ export class PageItem extends BaseClassTriggerd {
                         let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1, false);
                         if (value === null) value = await tools.getValueEntryBoolean(item.entity1);
                         if (value === null) value = true;
-                        const val = typeof value === 'number' ? value >= 10 : value;
-                        message.displayName = (await tools.getEntryTextOnOff(item.text, val)) ?? '';
-                        message.optionalValue =
-                            (await tools.getValueEntryString(item.entity2)) ??
-                            (await tools.getEntryTextOnOff(item.text1, val)) ??
-                            '';
+                        message.displayName = this.library.getTranslation(
+                            (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
+                        );
+                        switch (entry.role) {
+                            case '2values': {
+                                message.optionalValue = ``;
+                                const val1 = await tools.getValueEntryNumber(item.entity1);
+                                const val2 = await tools.getValueEntryNumber(item.entity2);
+                                const unit1 =
+                                    item.entity1 && item.entity1.unit && (await item.entity1.unit.getString());
+                                const unit2 =
+                                    item.entity2 && item.entity2.unit && (await item.entity2.unit.getString());
+                                if (val1 !== null && val2 !== null) {
+                                    message.optionalValue = String(val1) + unit1 ?? '' + String(val2) + unit2 ?? '';
+                                    if (typeof value === 'number') value = (val1 + val2 / 2) as number;
+                                }
+
+                                break;
+                            }
+                            default: {
+                                message.optionalValue = this.library.getTranslation(
+                                    (await tools.getValueEntryString(item.entity2)) ??
+                                        (await tools.getEntryTextOnOff(item.text1, !!value)) ??
+                                        '',
+                                );
+                            }
+                        }
+
                         message.icon =
                             (await tools.getIconEntryValue(
                                 item.icon,
-                                val,
+                                !!value,
                                 '',
                                 null,
                                 (this.parent && this.parent.card !== 'cardEntities') ?? false,
@@ -286,8 +313,9 @@ export class PageItem extends BaseClassTriggerd {
                     const item = entry.data;
 
                     message.optionalValue = (await tools.getValueEntryBoolean(item.entity1)) ?? true ? '0' : '1';
-                    message.displayName =
-                        (await tools.getEntryTextOnOff(item.text, message.optionalValue === '1')) ?? 'test1';
+                    message.displayName = this.library.getTranslation(
+                        (await tools.getEntryTextOnOff(item.text, message.optionalValue === '1')) ?? '',
+                    );
 
                     message.icon = await tools.getIconEntryValue(
                         item.icon,
@@ -318,9 +346,12 @@ export class PageItem extends BaseClassTriggerd {
 
                     message.iconColor =
                         (await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOff)) ?? Color.HMIOn;
-                    message.displayName = (item.headline && (await item.headline.getString())) ?? '';
-
-                    message.optionalValue = (await tools.getEntryTextOnOff(item.text, !!value)) ?? 'PRESS';
+                    message.displayName = this.library.getTranslation(
+                        (await tools.getEntryTextOnOff(item.headline, true)) ?? message.displayName ?? '',
+                    );
+                    message.optionalValue = this.library.getTranslation(
+                        (await tools.getEntryTextOnOff(item.text, !!value)) ?? 'PRESS',
+                    );
                     this.log.debug(JSON.stringify(message));
                     return tools.getItemMesssage(message);
 
@@ -332,7 +363,9 @@ export class PageItem extends BaseClassTriggerd {
                         message.type = 'fan';
                         //const speed = (await tools.getValueEntryNumber(item.speed, true)) ?? null;
                         const value = (await tools.getValueEntryBoolean(item.entity1)) ?? null;
-                        message.displayName = (item.headline && (await item.headline.getString())) ?? '';
+                        message.displayName = this.library.getTranslation(
+                            (await tools.getEntryTextOnOff(item.headline, true)) ?? message.displayName ?? '',
+                        );
                         message.icon = (await tools.getIconEntryValue(item.icon, value, '')) ?? '';
                         message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
                         /*const min =
@@ -368,9 +401,13 @@ export class PageItem extends BaseClassTriggerd {
                             }
                             message.iconColor = await tools.getIconEntryColor(item.icon, value, Color.White);
                             message.icon = await tools.getIconEntryValue(item.icon, true, 'gesture-tap-button');
-                            message.optionalValue = (await tools.getEntryTextOnOff(item.text, value !== 0)) ?? opt;
+                            message.optionalValue = this.library.getTranslation(
+                                (await tools.getEntryTextOnOff(item.text, value !== 0)) ?? opt,
+                            );
 
-                            message.displayName = (item.headline && (await item.headline.getString())) ?? '';
+                            message.displayName = this.library.getTranslation(
+                                (await tools.getEntryTextOnOff(item.headline, true)) ?? message.displayName ?? '',
+                            );
                             return tools.getPayload(
                                 message.type,
                                 message.intNameEntity,
@@ -810,8 +847,12 @@ export class PageItem extends BaseClassTriggerd {
                     );
 
                     message.buttonstate = value ? '1' : '0';
-                    message.speedText = (await tools.getEntryTextOnOff(item.text, value)) ?? '';
-                    message.mode = (await tools.getValueEntryString(item.entityInSel)) ?? '';
+                    message.speedText = this.library.getTranslation(
+                        (await tools.getEntryTextOnOff(item.text, value)) ?? '',
+                    );
+                    message.mode = this.library.getTranslation(
+                        (await tools.getValueEntryString(item.entityInSel)) ?? '',
+                    );
                     let list =
                         (item.valueList && (await item.valueList.getObject())) ??
                         (item.valueList && (await item.valueList.getString())) ??
@@ -882,7 +923,7 @@ export class PageItem extends BaseClassTriggerd {
                             message = { ...message, type: 'popupThermo' };
                             if (message.type === 'popupThermo') {
                                 message.headline = this.library.getTranslation(
-                                    (item.headline && (await item.headline.getString())) ?? '',
+                                    (await tools.getEntryTextOnOff(item.headline, true)) ?? message.headline ?? '',
                                 );
                             }
                             break;
@@ -918,7 +959,7 @@ export class PageItem extends BaseClassTriggerd {
                 message = { ...message, type: 'popupThermo' };
                 if (message.type === 'popupThermo') {
                     message.headline = this.library.getTranslation(
-                        (item.headline && (await item.headline.getString())) ?? '',
+                        (await tools.getEntryTextOnOff(item.headline, true)) ?? message.headline ?? '',
                     );
                 }
 
@@ -1369,7 +1410,7 @@ export class PageItem extends BaseClassTriggerd {
                         } else if (this.tempData.value > 0) {
                             if (this.visibility) this.onStateTrigger();
                             else if (this.parent && !this.parent.sleep && this.parent.getVisibility())
-                                this.parent.onStateTriggerSuperDoNotOverride();
+                                this.parent.onStateTriggerSuperDoNotOverride(this);
                         }
                     }, 1000);
                 }
@@ -1486,7 +1527,7 @@ export class PageItem extends BaseClassTriggerd {
                         if (val) {
                             states = {};
                             for (const a in val) {
-                                states[a] = a;
+                                states[a] = val[a].id;
                             }
                         }
                     }
