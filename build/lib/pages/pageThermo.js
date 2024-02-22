@@ -230,7 +230,6 @@ class PageThermo extends import_Page.Page {
         if (temp[a] === void 0)
           temp[a] = "~~~";
       }
-      this.log.debug(`Trigger from popupThermo 3 `);
       msg = (0, import_tools.getPayload)("entityUpdateDetail", id2, icon, color, temp[0], temp[1], temp[2], "");
     } else if (action && action.startsWith("mode") && value !== void 0) {
       const tempid = parseInt(action.split("?")[1]);
@@ -240,7 +239,6 @@ class PageThermo extends import_Page.Page {
       item.onCommand("mode-insel", value);
     }
     if (msg !== null) {
-      this.log.debug(`Trigger from popupThermo 4 `);
       this.sendToPanel(msg);
     }
   }

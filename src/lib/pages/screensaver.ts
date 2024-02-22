@@ -25,6 +25,7 @@ export class Screensaver extends Page {
     private nextArrow: boolean = false;
     private rotationTime: number = 300000;
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
+    private firstRun: boolean = true;
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         if (!options.config || (options.config.card !== 'screensaver' && options.config.card !== 'screensaver2'))
             return;
@@ -115,6 +116,11 @@ export class Screensaver extends Page {
         return message;
     }
     async update(): Promise<void> {
+        if (this.firstRun) {
+            this.HandleTime();
+            this.HandleDate();
+            this.firstRun = false;
+        }
         if (!this.visibility) {
             this.log.error('get update command but not visible!');
             return;
@@ -131,8 +137,7 @@ export class Screensaver extends Page {
             message.options.indicator,
         );
         const msg = tools.getPayload('weatherUpdate', tools.getPayloadArray(arr));
-        this.HandleTime();
-        this.HandleDate();
+
         this.sendToPanel(msg);
         this.HandleScreensaverStatusIcons();
     }
@@ -222,10 +227,9 @@ export class Screensaver extends Page {
             mrIcon1[3] ?? '',
             mrIcon2[2] ?? '',
             mrIcon2[3] ?? '',
-            mrIcon1[5] ?? '',
-            mrIcon2[5] ?? '',
+            this.panel.info.nspanel.bigIconLeft ? '1' : '',
+            this.panel.info.nspanel.bigIconRight ? '1' : '',
         ];
-
         const msg = tools.getPayloadArray(msgArray);
         this.sendToPanel(msg);
     }

@@ -246,7 +246,7 @@ export type PageItemNumberDataItems = {
 
 export type PageItemButton = Pick<
     PageItemBase,
-    'setValue1' | 'setValue2' | 'text' | 'icon' | 'color' | 'entity1' | 'setNavi'
+    'setValue1' | 'setValue2' | 'text' | 'text1' | 'icon' | 'color' | 'entity1' | 'setNavi'
 >;
 export type PageItemButtonDataItemsOptions = {
     type: 'button';

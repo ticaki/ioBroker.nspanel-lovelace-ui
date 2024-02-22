@@ -39,6 +39,7 @@ class Screensaver extends import_Page.Page {
   nextArrow = false;
   rotationTime = 3e5;
   timoutRotation = void 0;
+  firstRun = true;
   constructor(config, options) {
     if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2")
       return;
@@ -124,6 +125,11 @@ class Screensaver extends import_Page.Page {
     return message;
   }
   async update() {
+    if (this.firstRun) {
+      this.HandleTime();
+      this.HandleDate();
+      this.firstRun = false;
+    }
     if (!this.visibility) {
       this.log.error("get update command but not visible!");
       return;
@@ -140,8 +146,6 @@ class Screensaver extends import_Page.Page {
       message.options.indicator
     );
     const msg = tools.getPayload("weatherUpdate", tools.getPayloadArray(arr));
-    this.HandleTime();
-    this.HandleDate();
     this.sendToPanel(msg);
     this.HandleScreensaverStatusIcons();
   }
@@ -217,7 +221,7 @@ class Screensaver extends import_Page.Page {
     this.sendToPanel(`date~${message.options.date[0].split("~")[5]}`);
   }
   async HandleScreensaverStatusIcons() {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d;
     if (!this.visibility) {
       this.log.error("get update command but not visible!");
       return;
@@ -233,8 +237,8 @@ class Screensaver extends import_Page.Page {
       (_b = mrIcon1[3]) != null ? _b : "",
       (_c = mrIcon2[2]) != null ? _c : "",
       (_d = mrIcon2[3]) != null ? _d : "",
-      (_e = mrIcon1[5]) != null ? _e : "",
-      (_f = mrIcon2[5]) != null ? _f : ""
+      this.panel.info.nspanel.bigIconLeft ? "1" : "",
+      this.panel.info.nspanel.bigIconRight ? "1" : ""
     ];
     const msg = tools.getPayloadArray(msgArray);
     this.sendToPanel(msg);

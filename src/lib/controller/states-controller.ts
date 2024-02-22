@@ -58,7 +58,7 @@ export class BaseClassTriggerd extends BaseClass {
 
     constructor(card: BaseClassTriggerdInterface) {
         super(card.adapter, card.name);
-        this.minUpdateInterval = 1000;
+        this.minUpdateInterval = 500;
         if (!this.adapter.controller) throw new Error('No controller! bye bye');
         this.controller = this.adapter.controller;
         this.panelSend = card.panelSend;
@@ -173,8 +173,7 @@ export class BaseClassPage extends BaseClassTriggerd {
         this.pageItemConfig = pageItemsConfig;
     }
 }
-type getInternalFunctionType = (id: string) => ioBroker.StateValue;
-type MyState = Omit<ioBroker.State, 'val'> & { val: getInternalFunctionType | ioBroker.State['val'] };
+type getInternalFunctionType = (id: string, state: ioBroker.State | undefined) => ioBroker.StateValue;
 /**
  * Verwendet um Lesezugriffe auf die States umzusetzten, die im NSPanel ververwendet werden.
  * Adapter eigenen States sind verboten
@@ -183,12 +182,13 @@ type MyState = Omit<ioBroker.State, 'val'> & { val: getInternalFunctionType | io
 export class StatesControler extends BaseClass {
     private triggerDB: {
         [key: string]: {
-            state: MyState;
+            state: ioBroker.State;
             to: BaseClassTriggerd[];
             ts: number;
             subscribed: boolean[];
             common: ioBroker.StateCommon;
             internal?: boolean;
+            f?: getInternalFunctionType;
         };
     } = {};
     private deletePageInterval: ioBroker.Interval | undefined;
@@ -289,6 +289,7 @@ export class StatesControler extends BaseClass {
         if (!to) return;
         for (const id in this.triggerDB) {
             const entry = this.triggerDB[id];
+            if (entry.internal) continue;
             const index = entry.to.indexOf(to);
             if (index === -1) continue;
             if (entry.subscribed[index]) continue;
@@ -310,6 +311,7 @@ export class StatesControler extends BaseClass {
     async deactivateTrigger(to: BaseClassTriggerd): Promise<void> {
         for (const id in this.triggerDB) {
             const entry = this.triggerDB[id];
+            if (entry.internal) continue;
             const index = entry.to.indexOf(to);
             if (index === -1) continue;
             if (!entry.subscribed[index]) continue;
@@ -338,14 +340,14 @@ export class StatesControler extends BaseClass {
             (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some((a) => a))
         ) {
             let state: ioBroker.State | null = null;
-            const val = this.triggerDB[id].state.val;
-            if (val && typeof val === 'function') {
+            const f = this.triggerDB[id].f;
+            if (f) {
                 state = {
                     ...this.triggerDB[id].state,
-                    val: val(id),
+                    val: f(id, undefined),
                 };
             } else {
-                state = this.triggerDB[id].state as ioBroker.State;
+                state = this.triggerDB[id].state;
             }
             return state;
         } else if (this.stateDB[id] && timespan) {
@@ -446,30 +448,42 @@ export class StatesControler extends BaseClass {
             }
         } else if (item.options.type === 'internal') {
             if (this.triggerDB[item.options.dp]) {
-                this.setInternalState(item.options.dp, val);
+                this.setInternalState(item.options.dp, val, false);
             }
         }
     }
     public async setInternalState(
         id: string,
-        val: ioBroker.StateValue | getInternalFunctionType,
+        val: ioBroker.StateValue,
         ack: boolean = false,
         common: ioBroker.StateCommon | undefined = undefined,
+        func: getInternalFunctionType | undefined = undefined,
     ): Promise<boolean> {
         if (this.triggerDB[id] !== undefined) {
-            if (ack)
+            const f = this.triggerDB[id].f;
+            if (ack) {
                 await this.onStateChange(id, {
                     ...this.triggerDB[id].state,
-                    val: typeof val === 'function' ? val(id) : val,
+                    val: f ? f(id, undefined) : val,
                     ack: ack,
                     ts: Date.now(),
                 });
-            this.triggerDB[id].state = {
-                ...this.triggerDB[id].state,
-                val,
-                ack: ack,
-                ts: Date.now(),
-            };
+            } else {
+                if (f)
+                    f(id, {
+                        ...this.triggerDB[id].state,
+                        val: val,
+                        ack: ack,
+                        ts: Date.now(),
+                    });
+
+                this.triggerDB[id].state = {
+                    ...this.triggerDB[id].state,
+                    val,
+                    ack: ack,
+                    ts: Date.now(),
+                };
+            }
             return true;
         } else if (common) {
             this.triggerDB[id] = {
@@ -479,6 +493,7 @@ export class StatesControler extends BaseClass {
                 subscribed: [],
                 common: common,
                 internal: true,
+                f: func,
             };
         }
         return false;

@@ -42,20 +42,32 @@ class Controller extends Library.BaseClass {
     this.adapter.controller = this;
     this.mqttClient = options.mqttClient;
     this.statesControler = new import_states_controller.StatesControler(this.adapter);
-    this.statesControler.setInternalState("///time", this.getCurrentTime, true, {
-      name: "",
-      type: "number",
-      role: "value.time",
-      read: true,
-      write: false
-    });
-    this.statesControler.setInternalState("///date", this.getCurrentTime, true, {
-      name: "",
-      type: "number",
-      role: "value.time",
-      read: true,
-      write: false
-    });
+    this.statesControler.setInternalState(
+      "///time",
+      this.getCurrentTime(),
+      true,
+      {
+        name: "",
+        type: "number",
+        role: "value.time",
+        read: true,
+        write: false
+      },
+      this.getCurrentTime
+    );
+    this.statesControler.setInternalState(
+      "///date",
+      this.getCurrentTime(),
+      true,
+      {
+        name: "",
+        type: "number",
+        role: "value.time",
+        read: true,
+        write: false
+      },
+      this.getCurrentTime
+    );
     for (const panelConfig of options.panels) {
       if (panelConfig === void 0)
         continue;
@@ -71,14 +83,14 @@ class Controller extends Library.BaseClass {
   minuteLoop = () => {
     if (this.unload)
       return;
-    this.statesControler.setInternalState("///time", this.getCurrentTime, true);
+    this.statesControler.setInternalState("///time", this.getCurrentTime(), true);
     const diff = 6e4 - Date.now() % 6e4 + 10;
     this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
   };
   dateUpdateLoop = () => {
     if (this.unload)
       return;
-    this.statesControler.setInternalState("///date", this.getCurrentTime, true);
+    this.statesControler.setInternalState("///date", this.getCurrentTime(), true);
     const d = new Date();
     d.setDate(d.getDate() + 1);
     d.setHours(0, 0, 0);

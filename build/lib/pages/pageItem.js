@@ -125,7 +125,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     }
   }
   async getPageItemPayload() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -271,16 +271,13 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         }
         case "button": {
           const item = entry.data;
-          message.optionalValue = ((_x = await tools.getValueEntryBoolean(item.entity1)) != null ? _x : true) ? "0" : "1";
+          message.optionalValue = ((_x = await tools.getValueEntryBoolean(item.entity1)) != null ? _x : true) ? "1" : "0";
+          if (this.parent && this.parent.card === "cardEntities")
+            message.optionalValue = (_y = await tools.getEntryTextOnOff(item.text1, message.optionalValue == "1")) != null ? _y : message.optionalValue;
           message.displayName = this.library.getTranslation(
-            (_y = await tools.getEntryTextOnOff(item.text, message.optionalValue === "1")) != null ? _y : ""
+            (_z = await tools.getEntryTextOnOff(item.text, message.optionalValue === "1")) != null ? _z : ""
           );
-          message.icon = await tools.getIconEntryValue(
-            item.icon,
-            message.optionalValue === "1",
-            "home",
-            "account"
-          );
+          message.icon = await tools.getIconEntryValue(item.icon, message.optionalValue === "1", "home");
           message.iconColor = await tools.GetIconColor(item.icon, message.optionalValue === "1");
           return tools.getPayload(
             "button",
@@ -295,14 +292,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         case "input_sel": {
           const item = entry.data;
           message.type = "input_sel";
-          const value = (_z = await tools.getValueEntryNumber(item.entityInSel)) != null ? _z : await tools.getValueEntryBoolean(item.entityInSel);
+          const value = (_A = await tools.getValueEntryNumber(item.entityInSel)) != null ? _A : await tools.getValueEntryBoolean(item.entityInSel);
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
-          message.iconColor = (_A = await tools.getIconEntryColor(item.icon, value != null ? value : true, Color.HMIOff)) != null ? _A : Color.HMIOn;
+          message.iconColor = (_B = await tools.getIconEntryColor(item.icon, value != null ? value : true, Color.HMIOff)) != null ? _B : Color.HMIOn;
           message.displayName = this.library.getTranslation(
-            (_C = (_B = await tools.getEntryTextOnOff(item.headline, true)) != null ? _B : message.displayName) != null ? _C : ""
+            (_D = (_C = await tools.getEntryTextOnOff(item.headline, true)) != null ? _C : message.displayName) != null ? _D : ""
           );
           message.optionalValue = this.library.getTranslation(
-            (_D = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _D : "PRESS"
+            (_E = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _E : "PRESS"
           );
           this.log.debug(JSON.stringify(message));
           return tools.getItemMesssage(message);
@@ -312,12 +309,12 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           if (entry.type === "fan") {
             const item = entry.data;
             message.type = "fan";
-            const value = (_E = await tools.getValueEntryBoolean(item.entity1)) != null ? _E : null;
+            const value = (_F = await tools.getValueEntryBoolean(item.entity1)) != null ? _F : null;
             message.displayName = this.library.getTranslation(
-              (_G = (_F = await tools.getEntryTextOnOff(item.headline, true)) != null ? _F : message.displayName) != null ? _G : ""
+              (_H = (_G = await tools.getEntryTextOnOff(item.headline, true)) != null ? _G : message.displayName) != null ? _H : ""
             );
-            message.icon = (_H = await tools.getIconEntryValue(item.icon, value, "")) != null ? _H : "";
-            message.iconColor = (_I = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _I : "";
+            message.icon = (_I = await tools.getIconEntryValue(item.icon, value, "")) != null ? _I : "";
+            message.iconColor = (_J = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _J : "";
             return tools.getPayload(
               message.type,
               message.intNameEntity,
@@ -332,7 +329,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           if (entry.type === "timer") {
             const item = entry.data;
             message.type = "timer";
-            const value = !item.setValue1 ? (_J = item.entity1 && await tools.getValueEntryNumber(item.entity1)) != null ? _J : null : (_K = this.tempData && this.tempData.time) != null ? _K : 0;
+            const value = !item.setValue1 ? (_K = item.entity1 && await tools.getValueEntryNumber(item.entity1)) != null ? _K : null : (_L = this.tempData && this.tempData.time) != null ? _L : 0;
             if (value !== null) {
               let opt = "";
               if (this.tempData) {
@@ -344,10 +341,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               message.iconColor = await tools.getIconEntryColor(item.icon, value, Color.White);
               message.icon = await tools.getIconEntryValue(item.icon, true, "gesture-tap-button");
               message.optionalValue = this.library.getTranslation(
-                (_L = await tools.getEntryTextOnOff(item.text, value !== 0)) != null ? _L : opt
+                (_M = await tools.getEntryTextOnOff(item.text, value !== 0)) != null ? _M : opt
               );
               message.displayName = this.library.getTranslation(
-                (_N = (_M = await tools.getEntryTextOnOff(item.headline, true)) != null ? _M : message.displayName) != null ? _N : ""
+                (_O = (_N = await tools.getEntryTextOnOff(item.headline, true)) != null ? _N : message.displayName) != null ? _O : ""
               );
               return tools.getPayload(
                 message.type,
@@ -1243,7 +1240,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   async onStateTrigger() {
     if (this.lastPopupType) {
       if (this.lastPopupType === "popupThermo") {
-        this.log.debug(`Trigger from popupThermo `);
         this.parent && this.parent.onPopupRequest(this.id, "popupThermo", "", "", null);
         return;
       } else {

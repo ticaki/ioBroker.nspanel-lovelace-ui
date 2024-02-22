@@ -86,7 +86,26 @@ export class Panel extends BaseClass {
     readonly CustomFormat: string;
     readonly sendToTasmota: (topic: string, payload: string, opt?: IClientPublishOptions) => void = () => {};
     public persistentPageItems: Record<string, PageItem> = {};
-    info: Types.PanelInfo = {};
+    info: Types.PanelInfo = {
+        nspanel: {
+            displayVersion: 0,
+            model: '',
+            bigIconLeft: false,
+            bigIconRight: false,
+        },
+        tasmota: {
+            net: {
+                ip: '',
+                gateway: '',
+                dnsserver: '',
+                subnetmask: '',
+                hostname: '',
+                mac: '',
+            },
+            uptime: '',
+            wifi: { ssid: '', rssi: 0, downtime: '' },
+        },
+    };
     friendlyName: string = '';
 
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
@@ -272,6 +291,38 @@ export class Panel extends BaseClass {
             if (page) this.log.debug('init page ' + page.uniqueID);
             if (page) await page.init();
         }
+        let state = this.library.readdb(`panel.${this.name}.info.nspanel.bigIconLeft`);
+        this.info.nspanel.bigIconLeft = state ? !!state.val : false;
+        state = this.library.readdb(`panel.${this.name}.info.nspanel.bigIconRight`);
+        this.info.nspanel.bigIconRight = state ? !!state.val : false;
+
+        //done with states
+        this.statesControler.setInternalState(
+            `${this.name}/cmd/bigIconLeft`,
+            true,
+            true,
+            {
+                name: '',
+                type: 'boolean',
+                role: 'indicator',
+                read: true,
+                write: true,
+            },
+            this.onInternalCommand,
+        );
+        this.statesControler.setInternalState(
+            `${this.name}/cmd/bigIconRight`,
+            true,
+            true,
+            {
+                name: '',
+                type: 'boolean',
+                role: 'indicator',
+                read: true,
+                write: true,
+            },
+            this.onInternalCommand,
+        );
         this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
             name: 'power1',
             type: 'boolean',
@@ -405,7 +456,7 @@ export class Panel extends BaseClass {
                             message,
                             genericStateObjects.panel.panels.info.status,
                         );
-                        this.info.net = {
+                        this.info.tasmota.net = {
                             ip: data.StatusNET.IPAddress,
                             gateway: data.StatusNET.Gateway,
                             dnsserver: data.StatusNET.DNSServer1,
@@ -413,8 +464,8 @@ export class Panel extends BaseClass {
                             hostname: data.StatusNET.Hostname,
                             mac: data.StatusNET.Mac,
                         };
-                        this.info.uptime = data.StatusSTS.Uptime;
-                        this.info.wifi = {
+                        this.info.tasmota.uptime = data.StatusSTS.Uptime;
+                        this.info.tasmota.wifi = {
                             ssid: data.StatusSTS.Wifi.SSId,
                             rssi: data.StatusSTS.Wifi.RSSI,
                             downtime: data.StatusSTS.Wifi.Downtime,
@@ -497,24 +548,16 @@ export class Panel extends BaseClass {
             case 'startup': {
                 this.isOnline = true;
 
-                this.info.displayVersion = parseInt(event.action);
-                this.info.model = event.id;
+                this.info.nspanel.displayVersion = parseInt(event.action);
+                this.info.nspanel.model = event.id;
 
                 this.restartLoops();
                 this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(rgb_dec565(Black)));
 
                 this.navigation.resetPosition();
                 const page = this.navigation.getCurrentPage();
-                const test = false;
-                if (test) {
-                    this.sendToPanel('pageType~cardGrid');
-                    this.sendToPanel(
-                        'entityUpd~Menü~button~bPrev~~65535~~~button~bNext~~65535~~~button~navigate.SensorGrid~21.1~26095~Obergeschoss~PRESS~button~navigate.ObergeschossWindow~~64332~Obergeschoss~Obergeschoss~button~navigate.ogLightsGrid~~65363~Obergeschoss ACTUAL~PRESS~button~navigate.Alexa~~65222~test~PRESS',
-                    );
-                } else {
-                    await this.setActivePage(page);
-                }
-                // sendPage
+                await this.setActivePage(page);
+
                 break;
             }
             case 'sleepReached': {
@@ -574,6 +617,49 @@ export class Panel extends BaseClass {
             }
         }
     }
+
+    onInternalCommand = (id: string, state: ioBroker.State | undefined): ioBroker.StateValue => {
+        const token = id.split('/').pop();
+        if (state && !state.ack) {
+            switch (token) {
+                case 'bigIconLeft': {
+                    this.info.nspanel.bigIconLeft = !!state.val;
+                    this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
+                    this.statesControler.setInternalState(`${this.name}/cmd/bigIconLeft`, !!state.val, true);
+                    this.library.writeFromJson(
+                        `panel.${this.name}.info`,
+                        'panel.panels.info',
+                        genericStateObjects,
+                        this.info,
+                    );
+                    break;
+                }
+                case 'bigIconRight': {
+                    this.info.nspanel.bigIconRight = !!state.val;
+                    this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
+                    this.statesControler.setInternalState(`${this.name}/cmd/bigIconRight`, !!state.val, true);
+                    this.library.writeFromJson(
+                        `panel.${this.name}.info`,
+                        'panel.panels.info',
+                        genericStateObjects,
+                        this.info,
+                    );
+                    break;
+                }
+            }
+        } else if (!state) {
+            switch (token) {
+                case 'bigIconLeft': {
+                    return this.info.nspanel.bigIconLeft;
+                }
+                case 'bigIconRight': {
+                    return this.info.nspanel.bigIconRight;
+                }
+            }
+        }
+        return null;
+    };
+
     private convertToEvent(msg: string): Types.IncomingEvent | null {
         try {
             msg = (JSON.parse(msg) || {}).CustomRecv;

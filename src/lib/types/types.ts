@@ -14,8 +14,8 @@ export type TemplateIdent =
     | 'text.battery'
     | 'text.temperature'
     | 'text.battery.low'
-    | ''
-    | ''
+    | 'button.iconRightSize'
+    | 'button.iconLeftSize'
     | ''
     | ''
     | ''
@@ -528,17 +528,23 @@ export type STATUS0 = {
     };
 };
 
-export type PanelInfo = Partial<{
-    displayVersion: number;
-    model: string;
-    net: {
-        ip: string;
-        gateway: string;
-        dnsserver: string;
-        subnetmask: string;
-        hostname: string;
-        mac: string;
+export type PanelInfo = {
+    nspanel: {
+        displayVersion: number;
+        model: string;
+        bigIconLeft: boolean;
+        bigIconRight: boolean;
     };
-    uptime: string;
-    wifi: { ssid: string; rssi: number; downtime: string };
-}>;
+    tasmota: {
+        net: {
+            ip: string;
+            gateway: string;
+            dnsserver: string;
+            subnetmask: string;
+            hostname: string;
+            mac: string;
+        };
+        uptime: string;
+        wifi: { ssid: string; rssi: number; downtime: string };
+    };
+};

@@ -60,7 +60,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         /*const d = await this.getEnumsAsync('rooms.Haus');
         if (d) this.log.debug(JSON.stringify(d));
         return;*/
-        this.config.Testconfig2[0].timeout = 3; // this.config.timeout;
+        this.config.Testconfig2[0].timeout = this.config.timeout;
         //this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
         this.setTimeout(async () => {
             //check config

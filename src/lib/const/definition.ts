@@ -133,56 +133,20 @@ export const genericStateObjects: {
                     },
                     native: {},
                 },
-                displayVersion: {
-                    _id: '',
-                    type: 'state',
-                    common: {
-                        name: 'genericStateObjects.displayVersion',
-                        type: 'string',
-                        role: 'text',
-                        read: true,
-                        write: false,
-                    },
-                    native: {},
-                },
-                model: {
-                    _id: '',
-                    type: 'state',
-                    common: {
-                        name: 'genericStateObjects.model',
-                        type: 'string',
-                        role: 'text',
-                        read: true,
-                        write: false,
-                    },
-                    native: {},
-                },
-                uptime: {
-                    _id: '',
-                    type: 'state',
-                    common: {
-                        name: 'genericStateObjects.uptime',
-                        type: 'string',
-                        role: 'text',
-                        read: true,
-                        write: false,
-                    },
-                    native: {},
-                },
-                wifi: {
+                nspanel: {
                     _channel: {
                         _id: '',
                         type: 'channel',
                         common: {
-                            name: 'genericStateObjects.wifi',
+                            name: 'genericStateObjects.nspanel',
                         },
                         native: {},
                     },
-                    ssid: {
+                    displayVersion: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.ssid',
+                            name: 'genericStateObjects.displayVersion',
                             type: 'string',
                             role: 'text',
                             read: true,
@@ -190,11 +154,11 @@ export const genericStateObjects: {
                         },
                         native: {},
                     },
-                    rssi: {
+                    model: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.rssi',
+                            name: 'genericStateObjects.model',
                             type: 'string',
                             role: 'text',
                             read: true,
@@ -202,33 +166,46 @@ export const genericStateObjects: {
                         },
                         native: {},
                     },
-                    downtime: {
+                    bigIconLeft: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.downtime',
-                            type: 'string',
-                            role: 'text',
+                            name: 'genericStateObjects.bigIconLeft',
+                            type: 'boolean',
+                            role: 'indicator',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    bigIconRight: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'genericStateObjects.bigIconRight',
+                            type: 'boolean',
+                            role: 'indicator',
                             read: true,
                             write: false,
                         },
                         native: {},
                     },
                 },
-                net: {
+                tasmota: {
                     _channel: {
                         _id: '',
                         type: 'channel',
                         common: {
-                            name: 'genericStateObjects.net',
+                            name: 'Tasmota',
                         },
                         native: {},
                     },
-                    ip: {
+
+                    uptime: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.ip',
+                            name: 'genericStateObjects.uptime',
                             type: 'string',
                             role: 'text',
                             read: true,
@@ -236,65 +213,133 @@ export const genericStateObjects: {
                         },
                         native: {},
                     },
-                    gateway: {
-                        _id: '',
-                        type: 'state',
-                        common: {
-                            name: 'genericStateObjects.gateway',
-                            type: 'string',
-                            role: 'text',
-                            read: true,
-                            write: false,
+                    wifi: {
+                        _channel: {
+                            _id: '',
+                            type: 'channel',
+                            common: {
+                                name: 'genericStateObjects.wifi',
+                            },
+                            native: {},
                         },
-                        native: {},
+                        ssid: {
+                            _id: '',
+                            type: 'state',
+                            common: {
+                                name: 'genericStateObjects.ssid',
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {},
+                        },
+                        rssi: {
+                            _id: '',
+                            type: 'state',
+                            common: {
+                                name: 'genericStateObjects.rssi',
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {},
+                        },
+                        downtime: {
+                            _id: '',
+                            type: 'state',
+                            common: {
+                                name: 'genericStateObjects.downtime',
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {},
+                        },
                     },
-                    dnsserver: {
-                        _id: '',
-                        type: 'state',
-                        common: {
-                            name: 'genericStateObjects.dnsserver',
-                            type: 'string',
-                            role: 'text',
-                            read: true,
-                            write: false,
+                    net: {
+                        _channel: {
+                            _id: '',
+                            type: 'channel',
+                            common: {
+                                name: 'genericStateObjects.net',
+                            },
+                            native: {},
                         },
-                        native: {},
-                    },
-                    subnetmask: {
-                        _id: '',
-                        type: 'state',
-                        common: {
-                            name: 'genericStateObjects.subnetmask',
-                            type: 'string',
-                            role: 'text',
-                            read: true,
-                            write: false,
+                        ip: {
+                            _id: '',
+                            type: 'state',
+                            common: {
+                                name: 'genericStateObjects.ip',
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {},
                         },
-                        native: {},
-                    },
-                    hostname: {
-                        _id: '',
-                        type: 'state',
-                        common: {
-                            name: 'genericStateObjects.hostname',
-                            type: 'string',
-                            role: 'text',
-                            read: true,
-                            write: false,
+                        gateway: {
+                            _id: '',
+                            type: 'state',
+                            common: {
+                                name: 'genericStateObjects.gateway',
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {},
                         },
-                        native: {},
-                    },
-                    mac: {
-                        _id: '',
-                        type: 'state',
-                        common: {
-                            name: 'genericStateObjects.mac',
-                            type: 'string',
-                            role: 'text',
-                            read: true,
-                            write: false,
+                        dnsserver: {
+                            _id: '',
+                            type: 'state',
+                            common: {
+                                name: 'genericStateObjects.dnsserver',
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {},
                         },
-                        native: {},
+                        subnetmask: {
+                            _id: '',
+                            type: 'state',
+                            common: {
+                                name: 'genericStateObjects.subnetmask',
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {},
+                        },
+                        hostname: {
+                            _id: '',
+                            type: 'state',
+                            common: {
+                                name: 'genericStateObjects.hostname',
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {},
+                        },
+                        mac: {
+                            _id: '',
+                            type: 'state',
+                            common: {
+                                name: 'genericStateObjects.mac',
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {},
+                        },
                     },
                 },
             },

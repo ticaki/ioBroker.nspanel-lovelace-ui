@@ -6,10 +6,8 @@ import { PageItem } from '../pages/pageItem';
 import { BaseClass } from './library';
 import { cardTemplates } from '../templates/card';
 import { deepAssign } from '../const/tools';
-import { lightTemplates } from '../templates/light';
-import { shutterTemplates } from '../templates/shutter';
-import { textTemplates } from '../templates/text';
 import { PageItemDataItemsOptions, PageItemOptionsTemplate } from '../types/type-pageItem';
+import { pageItemTemplates } from '../templates/templateArray';
 
 export interface PageConfigInterface {
     config: pages.PageBaseConfig;
@@ -78,13 +76,9 @@ export class Page extends BaseClassPage {
             let template: PageItemOptionsTemplate | undefined;
             const n = loop === 0 ? options.template : subTemplate;
             if (!n) return undefined;
-            for (const i of [textTemplates, shutterTemplates, lightTemplates]) {
-                index = i.findIndex((a) => a.template === n);
-                if (index !== -1) {
-                    template = i[index];
-                    break;
-                }
-            }
+            index = pageItemTemplates.findIndex((a) => a.template === n);
+            if (index !== -1) template = pageItemTemplates[index];
+
             if (index === -1 || !template) {
                 this.log.error('Dont find template ' + options.template);
                 return undefined;
@@ -207,7 +201,6 @@ export class Page extends BaseClassPage {
         _event: IncomingEvent | null = null,
     ): Promise<void> {
         if (!this.pageItems) return;
-        this.log.debug(`Trigger from popupThermo 1 `);
         const i = typeof id === 'number' ? id : parseInt(id);
         const item = this.pageItems[i];
         if (!item) return;

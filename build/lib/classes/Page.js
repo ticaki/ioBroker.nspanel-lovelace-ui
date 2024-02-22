@@ -27,9 +27,7 @@ var import_types = require("../types/types");
 var import_pageItem = require("../pages/pageItem");
 var import_card = require("../templates/card");
 var import_tools = require("../const/tools");
-var import_light = require("../templates/light");
-var import_shutter = require("../templates/shutter");
-var import_text = require("../templates/text");
+var import_templateArray = require("../templates/templateArray");
 class Page extends import_states_controller.BaseClassPage {
   card;
   id;
@@ -68,13 +66,9 @@ class Page extends import_states_controller.BaseClassPage {
       const n = loop === 0 ? options.template : subTemplate;
       if (!n)
         return void 0;
-      for (const i of [import_text.textTemplates, import_shutter.shutterTemplates, import_light.lightTemplates]) {
-        index = i.findIndex((a) => a.template === n);
-        if (index !== -1) {
-          template = i[index];
-          break;
-        }
-      }
+      index = import_templateArray.pageItemTemplates.findIndex((a) => a.template === n);
+      if (index !== -1)
+        template = import_templateArray.pageItemTemplates[index];
       if (index === -1 || !template) {
         this.log.error("Dont find template " + options.template);
         return void 0;
@@ -183,7 +177,6 @@ class Page extends import_states_controller.BaseClassPage {
   async onPopupRequest(id, popup, action, value, _event = null) {
     if (!this.pageItems)
       return;
-    this.log.debug(`Trigger from popupThermo 1 `);
     const i = typeof id === "number" ? id : parseInt(id);
     const item = this.pageItems[i];
     if (!item)

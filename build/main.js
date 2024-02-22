@@ -54,7 +54,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       return;
     }
     this.config.Testconfig2[0].pages[0].mode = this.config.scstype;
-    this.config.Testconfig2[0].timeout = 3;
+    this.config.Testconfig2[0].timeout = this.config.timeout;
     this.setTimeout(async () => {
       if (!import_config_custom.Testconfig[0].pages)
         return;

@@ -257,6 +257,10 @@ export class PageItem extends BaseClassTriggerd {
                     }
                     break;
                 }
+                /**
+                 * entity1 is value to calculate color
+                 * entity2 is display value
+                 */
                 case 'text': {
                     if (entry.type === 'text') {
                         const item = entry.data;
@@ -318,17 +322,16 @@ export class PageItem extends BaseClassTriggerd {
                      */
                     const item = entry.data;
 
-                    message.optionalValue = (await tools.getValueEntryBoolean(item.entity1)) ?? true ? '0' : '1';
+                    message.optionalValue = (await tools.getValueEntryBoolean(item.entity1)) ?? true ? '1' : '0';
+                    if (this.parent && this.parent.card === 'cardEntities')
+                        message.optionalValue =
+                            (await tools.getEntryTextOnOff(item.text1, message.optionalValue == '1')) ??
+                            message.optionalValue;
                     message.displayName = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.text, message.optionalValue === '1')) ?? '',
                     );
 
-                    message.icon = await tools.getIconEntryValue(
-                        item.icon,
-                        message.optionalValue === '1',
-                        'home',
-                        'account',
-                    );
+                    message.icon = await tools.getIconEntryValue(item.icon, message.optionalValue === '1', 'home');
                     message.iconColor = await tools.GetIconColor(item.icon, message.optionalValue === '1');
                     return tools.getPayload(
                         'button',
@@ -425,108 +428,7 @@ export class PageItem extends BaseClassTriggerd {
                         }
                     }
                     break;
-                } /*
-            case 'value.alarmtime': {
-                const value = (item.data.setValue1 && (await item.data.setValue1.getNumber())) ?? null;
-                if (value !== null) {
-                    message.type = 'timer';
-
-                    // das ist im Grunde wie vorher nur das die Farbe in aus der Konfiguration benutzt wird, wenn vorhanden
-                    message.iconColor =
-                        ((await tools.getValueEntryString(item.data.entity2)) ?? '') == 'paused'
-                            ? await tools.getIconEntryColor(
-                                  item.data.icon,
-                                  true,
-                                  String(Color.rgb_dec565(Color.colorScale10)),
-                              )
-                            : await tools.getIconEntryColor(
-                                  item.data.icon,
-                                  false,
-                                  String(Color.rgb_dec565(Color.colorScale0)),
-                              );
-                    message.displayName = new Date(
-                        ((await tools.getValueEntryNumber(item.data.entity1)) || 0) * 1000,
-                    ).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    message.icon = await tools.getIconEntryValue(item.data.icon, true, 'timer-outline');
-                    message.optionalValue = (await tools.getEntryTextOnOff(item.data.text, true)) ?? 'PRESS';
-                    return this.getItemMesssage(message);
-                } else {
-                    this.log.error(`Missing set value for ${this.name}-${id} role:${item.role}`);
                 }
-                break;
-            }
-
-            case 'level.mode.fan': {
-                message.type = 'fan';
-                const value = (await tools.getValueEntryBoolean(item.data.entity1)) ?? false;
-                message.iconColor = await tools.GetIconColor(item.data.icon, value);
-                message.icon = await tools.getIconEntryValue(item.data.icon, value, 'fan');
-                message.optionalValue = value ? '1' : '0';
-                return this.getItemMesssage(message);
-                break;
-            }
-            case 'media.repeat': {
-                message.type = 'button';
-                const value: number | boolean | null =
-                    item.data.entity1 && item.data.entity1.value && item.data.entity1.value.type === 'number'
-                        ? await tools.getValueEntryNumber(item.data.entity1)
-                        : await tools.getValueEntryBoolean(item.data.entity1);
-                if (value !== null) {
-                    message.iconColor = await tools.GetIconColor(item.data.icon, !!value);
-                    if (value === 2) {
-                        message.icon = 'repeat-once';
-                    } else {
-                        message.icon = await tools.getIconEntryValue(
-                            item.data.icon,
-                            !!value,
-                            'repeat-variant',
-                            'repeat-off',
-                        );
-
-                        message.optionalValue = !!value ? '1' : '0';
-                        return this.getItemMesssage(message);
-                    }
-                }
-                break;
-            }
-            case 'text.list': {
-                message.type = 'input_sel';
-                const value: boolean | null =
-                    (item.data.entity1 &&
-                        item.data.entity1.value &&
-                        (await tools.getValueEntryBoolean(item.data.entity1))) ??
-                    null;
-                message.iconColor = await tools.getIconEntryColor(item.data.icon, value, Color.HMIOn, Color.HMIOff);
-                message.icon = await tools.getIconEntryValue(
-                    item.data.icon,
-                    value,
-                    'clipboard-list',
-                    'clipboard-list-outline',
-                );
-                message.displayName = (await tools.getEntryTextOnOff(item.data.text, value)) ?? '';
-                message.optionalValue = !!value ? '1' : '0';
-                return this.getItemMesssage(message);
-
-                break;
-            }
-            /*case 'lock': {
-                break;
-            }
-            case 'slider': {
-                break;
-            }
-            case 'switch.mode.wlan': {
-                break;
-            }
-            case 'media': {
-                break;
-            }
-            case 'timeTable': {
-                break;
-            }
-            case 'airCondition': {
-                break;
-            }*/
             }
         }
         this.log.warn(`Something went wrong on ${this.id} type: ${this.config && this.config.type}!`);
@@ -1483,7 +1385,6 @@ export class PageItem extends BaseClassTriggerd {
     protected async onStateTrigger(): Promise<void> {
         if (this.lastPopupType) {
             if (this.lastPopupType === 'popupThermo') {
-                this.log.debug(`Trigger from popupThermo `);
                 this.parent && this.parent.onPopupRequest(this.id, 'popupThermo', '', '', null);
                 return;
             } else {

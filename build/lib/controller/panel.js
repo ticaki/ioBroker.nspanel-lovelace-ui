@@ -86,7 +86,26 @@ class Panel extends import_library.BaseClass {
   sendToTasmota = () => {
   };
   persistentPageItems = {};
-  info = {};
+  info = {
+    nspanel: {
+      displayVersion: 0,
+      model: "",
+      bigIconLeft: false,
+      bigIconRight: false
+    },
+    tasmota: {
+      net: {
+        ip: "",
+        gateway: "",
+        dnsserver: "",
+        subnetmask: "",
+        hostname: "",
+        mac: ""
+      },
+      uptime: "",
+      wifi: { ssid: "", rssi: 0, downtime: "" }
+    }
+  };
   friendlyName = "";
   constructor(adapter, options) {
     var _a, _b, _c;
@@ -269,6 +288,36 @@ class Panel extends import_library.BaseClass {
       if (page)
         await page.init();
     }
+    let state = this.library.readdb(`panel.${this.name}.info.nspanel.bigIconLeft`);
+    this.info.nspanel.bigIconLeft = state ? !!state.val : false;
+    state = this.library.readdb(`panel.${this.name}.info.nspanel.bigIconRight`);
+    this.info.nspanel.bigIconRight = state ? !!state.val : false;
+    this.statesControler.setInternalState(
+      `${this.name}/cmd/bigIconLeft`,
+      true,
+      true,
+      {
+        name: "",
+        type: "boolean",
+        role: "indicator",
+        read: true,
+        write: true
+      },
+      this.onInternalCommand
+    );
+    this.statesControler.setInternalState(
+      `${this.name}/cmd/bigIconRight`,
+      true,
+      true,
+      {
+        name: "",
+        type: "boolean",
+        role: "indicator",
+        read: true,
+        write: true
+      },
+      this.onInternalCommand
+    );
     this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
       name: "power1",
       type: "boolean",
@@ -399,7 +448,7 @@ class Panel extends import_library.BaseClass {
               message,
               import_definition.genericStateObjects.panel.panels.info.status
             );
-            this.info.net = {
+            this.info.tasmota.net = {
               ip: data.StatusNET.IPAddress,
               gateway: data.StatusNET.Gateway,
               dnsserver: data.StatusNET.DNSServer1,
@@ -407,8 +456,8 @@ class Panel extends import_library.BaseClass {
               hostname: data.StatusNET.Hostname,
               mac: data.StatusNET.Mac
             };
-            this.info.uptime = data.StatusSTS.Uptime;
-            this.info.wifi = {
+            this.info.tasmota.uptime = data.StatusSTS.Uptime;
+            this.info.tasmota.wifi = {
               ssid: data.StatusSTS.Wifi.SSId,
               rssi: data.StatusSTS.Wifi.RSSI,
               downtime: data.StatusSTS.Wifi.Downtime
@@ -483,21 +532,13 @@ class Panel extends import_library.BaseClass {
     switch (event.method) {
       case "startup": {
         this.isOnline = true;
-        this.info.displayVersion = parseInt(event.action);
-        this.info.model = event.id;
+        this.info.nspanel.displayVersion = parseInt(event.action);
+        this.info.nspanel.model = event.id;
         this.restartLoops();
         this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String((0, import_Color.rgb_dec565)(import_Color.Black)));
         this.navigation.resetPosition();
         const page = this.navigation.getCurrentPage();
-        const test = false;
-        if (test) {
-          this.sendToPanel("pageType~cardGrid");
-          this.sendToPanel(
-            "entityUpd~Men\xFC~button~bPrev~\uE730~65535~~~button~bNext~\uE733~65535~~~button~navigate.SensorGrid~21.1~26095~Obergeschoss~PRESS~button~navigate.ObergeschossWindow~\uF1DB~64332~Obergeschoss~Obergeschoss~button~navigate.ogLightsGrid~\uE334~65363~Obergeschoss ACTUAL~PRESS~button~navigate.Alexa~\uF2A7~65222~test~PRESS"
-          );
-        } else {
-          await this.setActivePage(page);
-        }
+        await this.setActivePage(page);
         break;
       }
       case "sleepReached": {
@@ -553,6 +594,47 @@ class Panel extends import_library.BaseClass {
       }
     }
   }
+  onInternalCommand = (id, state) => {
+    const token = id.split("/").pop();
+    if (state && !state.ack) {
+      switch (token) {
+        case "bigIconLeft": {
+          this.info.nspanel.bigIconLeft = !!state.val;
+          this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
+          this.statesControler.setInternalState(`${this.name}/cmd/bigIconLeft`, !!state.val, true);
+          this.library.writeFromJson(
+            `panel.${this.name}.info`,
+            "panel.panels.info",
+            import_definition.genericStateObjects,
+            this.info
+          );
+          break;
+        }
+        case "bigIconRight": {
+          this.info.nspanel.bigIconRight = !!state.val;
+          this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
+          this.statesControler.setInternalState(`${this.name}/cmd/bigIconRight`, !!state.val, true);
+          this.library.writeFromJson(
+            `panel.${this.name}.info`,
+            "panel.panels.info",
+            import_definition.genericStateObjects,
+            this.info
+          );
+          break;
+        }
+      }
+    } else if (!state) {
+      switch (token) {
+        case "bigIconLeft": {
+          return this.info.nspanel.bigIconLeft;
+        }
+        case "bigIconRight": {
+          return this.info.nspanel.bigIconRight;
+        }
+      }
+    }
+    return null;
+  };
   convertToEvent(msg) {
     var _a, _b, _c, _d;
     try {

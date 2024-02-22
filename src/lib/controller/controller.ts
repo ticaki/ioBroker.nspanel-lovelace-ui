@@ -19,20 +19,32 @@ export class Controller extends Library.BaseClass {
         this.adapter.controller = this;
         this.mqttClient = options.mqttClient;
         this.statesControler = new StatesControler(this.adapter);
-        this.statesControler.setInternalState('///time', this.getCurrentTime, true, {
-            name: '',
-            type: 'number',
-            role: 'value.time',
-            read: true,
-            write: false,
-        });
-        this.statesControler.setInternalState('///date', this.getCurrentTime, true, {
-            name: '',
-            type: 'number',
-            role: 'value.time',
-            read: true,
-            write: false,
-        });
+        this.statesControler.setInternalState(
+            '///time',
+            this.getCurrentTime(),
+            true,
+            {
+                name: '',
+                type: 'number',
+                role: 'value.time',
+                read: true,
+                write: false,
+            },
+            this.getCurrentTime,
+        );
+        this.statesControler.setInternalState(
+            '///date',
+            this.getCurrentTime(),
+            true,
+            {
+                name: '',
+                type: 'number',
+                role: 'value.time',
+                read: true,
+                write: false,
+            },
+            this.getCurrentTime,
+        );
         for (const panelConfig of options.panels) {
             if (panelConfig === undefined) continue;
             panelConfig.controller = this;
@@ -47,7 +59,7 @@ export class Controller extends Library.BaseClass {
 
     minuteLoop = (): void => {
         if (this.unload) return;
-        this.statesControler.setInternalState('///time', this.getCurrentTime, true);
+        this.statesControler.setInternalState('///time', this.getCurrentTime(), true);
         const diff = 60000 - (Date.now() % 60000) + 10;
         this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
     };
@@ -58,7 +70,7 @@ export class Controller extends Library.BaseClass {
      */
     dateUpdateLoop = (): void => {
         if (this.unload) return;
-        this.statesControler.setInternalState('///date', this.getCurrentTime, true);
+        this.statesControler.setInternalState('///date', this.getCurrentTime(), true);
         const d: Date = new Date();
         d.setDate(d.getDate() + 1);
         d.setHours(0, 0, 0);

@@ -85,7 +85,7 @@ class Dataitem extends import_library.BaseClass {
           this.options.dp,
           this.options.type == "triggered" || this.options.type == "internal" ? "medium" : this.options.response
         );
-        return !!value;
+        return value !== null && value !== void 0;
     }
     return false;
   }
@@ -208,7 +208,7 @@ class Dataitem extends import_library.BaseClass {
     if (result && !isNaN(parseInt(String(result.val)))) {
       let val = parseFloat(String(result.val));
       if (this.options.scale !== void 0) {
-        val = Math.trunc(Color.scale(val, this.options.scale.min, this.options.scale.max, 0, 100));
+        val = Math.trunc(Color.scale(val, this.options.scale.max, this.options.scale.min, 0, 100));
       }
       return val;
     }

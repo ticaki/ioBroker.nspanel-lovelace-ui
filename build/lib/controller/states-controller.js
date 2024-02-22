@@ -56,7 +56,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   constructor(card) {
     var _a;
     super(card.adapter, card.name);
-    this.minUpdateInterval = 1e3;
+    this.minUpdateInterval = 500;
     if (!this.adapter.controller)
       throw new Error("No controller! bye bye");
     this.controller = this.adapter.controller;
@@ -270,6 +270,8 @@ class StatesControler extends import_library.BaseClass {
       return;
     for (const id in this.triggerDB) {
       const entry = this.triggerDB[id];
+      if (entry.internal)
+        continue;
       const index = entry.to.indexOf(to);
       if (index === -1)
         continue;
@@ -288,6 +290,8 @@ class StatesControler extends import_library.BaseClass {
   async deactivateTrigger(to) {
     for (const id in this.triggerDB) {
       const entry = this.triggerDB[id];
+      if (entry.internal)
+        continue;
       const index = entry.to.indexOf(to);
       if (index === -1)
         continue;
@@ -309,11 +313,11 @@ class StatesControler extends import_library.BaseClass {
       timespan = 1e3;
     if (this.triggerDB[id] !== void 0 && (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some((a) => a))) {
       let state = null;
-      const val = this.triggerDB[id].state.val;
-      if (val && typeof val === "function") {
+      const f = this.triggerDB[id].f;
+      if (f) {
         state = {
           ...this.triggerDB[id].state,
-          val: val(id)
+          val: f(id, void 0)
         };
       } else {
         state = this.triggerDB[id].state;
@@ -417,25 +421,35 @@ class StatesControler extends import_library.BaseClass {
       }
     } else if (item.options.type === "internal") {
       if (this.triggerDB[item.options.dp]) {
-        this.setInternalState(item.options.dp, val);
+        this.setInternalState(item.options.dp, val, false);
       }
     }
   }
-  async setInternalState(id, val, ack = false, common = void 0) {
+  async setInternalState(id, val, ack = false, common = void 0, func = void 0) {
     if (this.triggerDB[id] !== void 0) {
-      if (ack)
+      const f = this.triggerDB[id].f;
+      if (ack) {
         await this.onStateChange(id, {
           ...this.triggerDB[id].state,
-          val: typeof val === "function" ? val(id) : val,
+          val: f ? f(id, void 0) : val,
           ack,
           ts: Date.now()
         });
-      this.triggerDB[id].state = {
-        ...this.triggerDB[id].state,
-        val,
-        ack,
-        ts: Date.now()
-      };
+      } else {
+        if (f)
+          f(id, {
+            ...this.triggerDB[id].state,
+            val,
+            ack,
+            ts: Date.now()
+          });
+        this.triggerDB[id].state = {
+          ...this.triggerDB[id].state,
+          val,
+          ack,
+          ts: Date.now()
+        };
+      }
       return true;
     } else if (common) {
       this.triggerDB[id] = {
@@ -444,7 +458,8 @@ class StatesControler extends import_library.BaseClass {
         ts: Date.now(),
         subscribed: [],
         common,
-        internal: true
+        internal: true,
+        f: func
       };
     }
     return false;
