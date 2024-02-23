@@ -247,15 +247,23 @@ const pageEntitiesTest2 = {
       dpInit: ""
     },
     {
-      role: "rgbSingle",
-      type: "light",
-      dpInit: "0_userdata.0.shelly.0.SHRGBW2#258794#1",
-      template: "light.shelly.rgbw2"
-    },
-    {
-      type: "text",
-      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
-      template: "text.battery"
+      role: "",
+      type: "number",
+      data: {
+        entity1: {
+          value: { type: "internal", dp: "cmd/screensaverTimeout" },
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 90 }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "clock-time-twelve-outline" },
+            color: { type: "const", constVal: Color.White }
+          },
+          false: void 0
+        },
+        text: { true: { type: "const", constVal: "screensaverTimeout" }, false: void 0 }
+      }
     }
   ],
   items: void 0

@@ -238,7 +238,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 const unit1 = item.entity1 && item.entity1.unit && await item.entity1.unit.getString();
                 const unit2 = item.entity2 && item.entity2.unit && await item.entity2.unit.getString();
                 if (val1 !== null && val2 !== null) {
-                  message.optionalValue = String(val1) + unit1;
+                  message.optionalValue = String(val1) + (unit1 != null ? unit1 : "") + String(val2) + (unit2 != null ? unit2 : "");
                   if (typeof value === "number")
                     value = val1 + val2 / 2;
                 }

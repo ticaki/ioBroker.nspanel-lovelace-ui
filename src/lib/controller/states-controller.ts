@@ -10,6 +10,7 @@ import { DataItemsOptions } from '../types/types';
 import { Controller } from './controller';
 import { Panel } from './panel';
 import { PanelSend } from './panel-message';
+import { genericStateObjects } from '../const/definition';
 
 export interface BaseClassTriggerdInterface {
     name: string;
@@ -142,6 +143,13 @@ export class BaseClassTriggerd extends BaseClass {
                 this.log.debug(`Switch page to visible${force ? ' (forced)' : ''}!`);
                 this.resetLastMessage();
                 this.controller && (await this.controller.statesControler.activateTrigger(this));
+
+                this.panel.info.nspanel.currentPage = this.name;
+                this.library.writedp(
+                    `panels.${this.panel.name}.info.nspanel.currentPage`,
+                    this.name,
+                    genericStateObjects.panel.panels.info.nspanel.currentPage,
+                );
             } else {
                 if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
                 await this.panel.sendScreeensaverTimeout(this.panel.timeout);

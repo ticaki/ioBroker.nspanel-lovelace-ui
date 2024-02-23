@@ -91,7 +91,8 @@ class Panel extends import_library.BaseClass {
       model: "",
       bigIconLeft: false,
       bigIconRight: false,
-      isOnline: false
+      isOnline: false,
+      currentPage: ""
     },
     tasmota: {
       net: {
@@ -260,6 +261,19 @@ class Panel extends import_library.BaseClass {
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
     this.info.nspanel.bigIconRight = state ? !!state.val : false;
+    this.statesControler.setInternalState(
+      `${this.name}/cmd/screensaverTimeout`,
+      this.timeout,
+      true,
+      {
+        name: "",
+        type: "number",
+        role: "value",
+        read: true,
+        write: true
+      },
+      this.onInternalCommand
+    );
     this.statesControler.setInternalState(
       `${this.name}/cmd/bigIconLeft`,
       true,
@@ -594,8 +608,10 @@ class Panel extends import_library.BaseClass {
     }
   }
   onInternalCommand = (id, state) => {
+    if (!id.startsWith(this.name))
+      return null;
     const token = id.split("/").pop();
-    if (state && !state.ack) {
+    if (state && !state.ack && state.val !== null) {
       switch (token) {
         case "bigIconLeft": {
           this.info.nspanel.bigIconLeft = !!state.val;
@@ -621,6 +637,13 @@ class Panel extends import_library.BaseClass {
           );
           break;
         }
+        case "screensaverTimeout": {
+          if (typeof state.val !== "boolean") {
+            const val = parseInt(String(state.val));
+            this.timeout = val;
+            this.statesControler.setInternalState(`${this.name}/cmd/screensaverTimeout`, val, true);
+          }
+        }
       }
     } else if (!state) {
       switch (token) {
@@ -629,6 +652,9 @@ class Panel extends import_library.BaseClass {
         }
         case "bigIconRight": {
           return this.info.nspanel.bigIconRight;
+        }
+        case "screensaverTimeout": {
+          return this.timeout;
         }
       }
     }

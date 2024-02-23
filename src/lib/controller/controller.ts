@@ -83,6 +83,7 @@ export class Controller extends Library.BaseClass {
 
     async init(): Promise<void> {
         const newPanels = [];
+        // erzeuge übergeordneten channel
         this.library.writedp(`panels`, undefined, genericStateObjects.panel._channel);
 
         for (const panel of this.panels)

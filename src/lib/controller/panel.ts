@@ -81,7 +81,7 @@ export class Panel extends BaseClass {
     readonly panelSend: PanelSend;
     readonly statesControler: StatesControler;
     readonly config: ScreensaverConfigType;
-    readonly timeout: number;
+    timeout: number;
     readonly CustomFormat: string;
     readonly sendToTasmota: (topic: string, payload: string, opt?: IClientPublishOptions) => void = () => {};
     public persistentPageItems: Record<string, PageItem> = {};
@@ -92,6 +92,7 @@ export class Panel extends BaseClass {
             bigIconLeft: false,
             bigIconRight: false,
             isOnline: false,
+            currentPage: '',
         },
         tasmota: {
             net: {
@@ -268,6 +269,19 @@ export class Panel extends BaseClass {
         this.info.nspanel.bigIconRight = state ? !!state.val : false;
 
         //done with states
+        this.statesControler.setInternalState(
+            `${this.name}/cmd/screensaverTimeout`,
+            this.timeout,
+            true,
+            {
+                name: '',
+                type: 'number',
+                role: 'value',
+                read: true,
+                write: true,
+            },
+            this.onInternalCommand,
+        );
         this.statesControler.setInternalState(
             `${this.name}/cmd/bigIconLeft`,
             true,
@@ -620,8 +634,9 @@ export class Panel extends BaseClass {
     }
 
     onInternalCommand = (id: string, state: ioBroker.State | undefined): ioBroker.StateValue => {
+        if (!id.startsWith(this.name)) return null;
         const token = id.split('/').pop();
-        if (state && !state.ack) {
+        if (state && !state.ack && state.val !== null) {
             switch (token) {
                 case 'bigIconLeft': {
                     this.info.nspanel.bigIconLeft = !!state.val;
@@ -647,6 +662,13 @@ export class Panel extends BaseClass {
                     );
                     break;
                 }
+                case 'screensaverTimeout': {
+                    if (typeof state.val !== 'boolean') {
+                        const val = parseInt(String(state.val));
+                        this.timeout = val;
+                        this.statesControler.setInternalState(`${this.name}/cmd/screensaverTimeout`, val, true);
+                    }
+                }
             }
         } else if (!state) {
             switch (token) {
@@ -655,6 +677,9 @@ export class Panel extends BaseClass {
                 }
                 case 'bigIconRight': {
                     return this.info.nspanel.bigIconRight;
+                }
+                case 'screensaverTimeout': {
+                    return this.timeout;
                 }
             }
         }

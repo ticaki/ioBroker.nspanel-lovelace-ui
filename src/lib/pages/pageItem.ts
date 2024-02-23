@@ -281,7 +281,7 @@ export class PageItem extends BaseClassTriggerd {
                                 const unit2 =
                                     item.entity2 && item.entity2.unit && (await item.entity2.unit.getString());
                                 if (val1 !== null && val2 !== null) {
-                                    message.optionalValue = String(val1) + unit1 ?? '' + String(val2) + unit2 ?? '';
+                                    message.optionalValue = String(val1) + (unit1 ?? '') + String(val2) + (unit2 ?? '');
                                     if (typeof value === 'number') value = (val1 + val2 / 2) as number;
                                 }
 

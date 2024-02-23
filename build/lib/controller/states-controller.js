@@ -25,6 +25,7 @@ __export(states_controller_exports, {
 module.exports = __toCommonJS(states_controller_exports);
 var import_data_item = require("../classes/data-item");
 var import_library = require("../classes/library");
+var import_definition = require("../const/definition");
 class BaseClassTriggerd extends import_library.BaseClass {
   updateTimeout;
   waitForTimeout;
@@ -149,6 +150,12 @@ class BaseClassTriggerd extends import_library.BaseClass {
         this.log.debug(`Switch page to visible${force ? " (forced)" : ""}!`);
         this.resetLastMessage();
         this.controller && await this.controller.statesControler.activateTrigger(this);
+        this.panel.info.nspanel.currentPage = this.name;
+        this.library.writedp(
+          `panels.${this.panel.name}.info.nspanel.currentPage`,
+          this.name,
+          import_definition.genericStateObjects.panel.panels.info.nspanel.currentPage
+        );
       } else {
         if (this.alwaysOnState)
           this.adapter.clearTimeout(this.alwaysOnState);

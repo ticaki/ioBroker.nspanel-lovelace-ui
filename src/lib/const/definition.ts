@@ -142,6 +142,18 @@ export const genericStateObjects: {
                         },
                         native: {},
                     },
+                    currentPage: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'genericStateObjects.currentPage',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
                     displayVersion: {
                         _id: '',
                         type: 'state',
