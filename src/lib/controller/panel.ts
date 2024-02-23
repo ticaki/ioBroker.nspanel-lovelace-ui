@@ -115,7 +115,7 @@ export class Panel extends BaseClass {
             mqttClient: options.controller.mqttClient,
             topic: options.topic,
         });
-        this.timeout = 5; // options.timeout || 15;
+        this.timeout = options.timeout || 15;
 
         this.CustomFormat = options.CustomFormat ?? '';
         this.config = options.config;

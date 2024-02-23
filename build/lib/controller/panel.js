@@ -115,7 +115,7 @@ class Panel extends import_library.BaseClass {
       mqttClient: options.controller.mqttClient,
       topic: options.topic
     });
-    this.timeout = 5;
+    this.timeout = options.timeout || 15;
     this.CustomFormat = (_a = options.CustomFormat) != null ? _a : "";
     this.config = options.config;
     this.format = Object.assign(DefaultOptions.format, options.format);
