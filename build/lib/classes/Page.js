@@ -190,6 +190,10 @@ class Page extends import_states_controller.BaseClassPage {
       this.sendToPanel(msg);
     }
   }
+  async delete() {
+    await super.delete();
+    this.pageItems = void 0;
+  }
 }
 function isMediaButtonActionType(F) {
   switch (F) {

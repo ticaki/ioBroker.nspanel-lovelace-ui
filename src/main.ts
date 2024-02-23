@@ -116,7 +116,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
      */
-    private onUnload(callback: () => void): void {
+    private async onUnload(callback: () => void): Promise<void> {
         try {
             this.unload = true;
             // Here you must clear all timeouts or intervals that may still be active
@@ -124,7 +124,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             // clearTimeout(timeout2);
             // ...
             // clearInterval(interval1);
-            if (this.controller) this.controller.delete;
+            if (this.controller) await this.controller.delete;
             callback();
         } catch (e) {
             callback();

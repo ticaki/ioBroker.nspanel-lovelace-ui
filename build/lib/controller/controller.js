@@ -102,13 +102,13 @@ class Controller extends Library.BaseClass {
   };
   async init() {
     const newPanels = [];
-    this.library.writedp(`panel`, void 0, import_definition.genericStateObjects.panel._channel);
+    this.library.writedp(`panels`, void 0, import_definition.genericStateObjects.panel._channel);
     for (const panel of this.panels)
       if (await panel.isValid()) {
         newPanels.push(panel);
         await panel.init();
       } else {
-        panel.delete();
+        await panel.delete();
         this.log.error(`Panel ${panel.name} has a invalid configuration.`);
       }
     this.panels = newPanels;
@@ -121,7 +121,8 @@ class Controller extends Library.BaseClass {
     if (this.dateUpdateTimeout)
       this.adapter.clearTimeout(this.dateUpdateTimeout);
     await super.delete();
-    this.panels.forEach((a) => a.delete());
+    for (const a of this.panels)
+      await a.delete();
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

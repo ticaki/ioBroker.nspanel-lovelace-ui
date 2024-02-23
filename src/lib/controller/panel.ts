@@ -91,6 +91,7 @@ export class Panel extends BaseClass {
             model: '',
             bigIconLeft: false,
             bigIconRight: false,
+            isOnline: false,
         },
         tasmota: {
             net: {
@@ -225,6 +226,7 @@ export class Panel extends BaseClass {
         this.controller.mqttClient.subscript(this.topic + '/tele/#', this.onMessage);
         this.controller.mqttClient.subscript(this.topic + '/stat/#', this.onMessage);
         this.sendToTasmota(this.topic + '/cmnd/STATUS0', '');
+        this.isOnline = false;
     };
     start = async (): Promise<void> => {
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
@@ -357,6 +359,19 @@ export class Panel extends BaseClass {
         return this._isOnline;
     }
     set isOnline(s: boolean) {
+        this.info.nspanel.isOnline = s;
+        if (s !== this._isOnline) {
+            this.library.writedp(
+                `panels.${this.name}.info.nspanel.isOnline`,
+                s,
+                genericStateObjects.panel.panels.info.nspanel.isOnline,
+            );
+            if (s) {
+                this.log.info('is online!');
+            } else {
+                this.log.warn('is offline!');
+            }
+        }
         this._isOnline = s;
     }
     async isValid(): Promise<true> {
@@ -439,10 +454,10 @@ export class Panel extends BaseClass {
                             downtime: data.StatusSTS.Wifi.Downtime,
                         };
                         await this.library.writeFromJson(
-                            `panels.${this.name}.info`,
-                            'panel.panels.info',
+                            `panels.${this.name}.info.tasmota`,
+                            'panel.panels.info.tasmota',
                             genericStateObjects,
-                            this.info,
+                            this.info.tasmota,
                         );
                     }
                 }
@@ -500,6 +515,12 @@ export class Panel extends BaseClass {
 
     async delete(): Promise<void> {
         await super.delete();
+        await this.library.writedp(
+            `panels.${this.name}.info.nspanel.isOnline`,
+            false,
+            genericStateObjects.panel.panels.info.nspanel.isOnline,
+        );
+        for (const a of this.pages) if (a) await a.delete();
         this.isOnline = false;
         this.persistentPageItems = {};
         if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
@@ -521,8 +542,15 @@ export class Panel extends BaseClass {
             case 'startup': {
                 this.isOnline = true;
 
-                this.info.nspanel.displayVersion = parseInt(event.action);
-                this.info.nspanel.model = event.id;
+                this.info.nspanel.displayVersion = parseInt(event.id);
+                this.info.nspanel.model = event.action;
+
+                await this.library.writeFromJson(
+                    `panels.${this.name}.info`,
+                    'panel.panels.info',
+                    genericStateObjects,
+                    this.info,
+                );
 
                 this.restartLoops();
                 this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(rgb_dec565(Black)));

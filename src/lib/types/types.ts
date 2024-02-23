@@ -534,6 +534,7 @@ export type PanelInfo = {
         model: string;
         bigIconLeft: boolean;
         bigIconRight: boolean;
+        isOnline: boolean;
     };
     tasmota: {
         net: {

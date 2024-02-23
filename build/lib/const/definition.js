@@ -199,6 +199,18 @@ const genericStateObjects = {
               write: false
             },
             native: {}
+          },
+          isOnline: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "genericStateObjects.isOnline",
+              type: "boolean",
+              role: "indicator.reachable",
+              read: true,
+              write: false
+            },
+            native: {}
           }
         },
         tasmota: {

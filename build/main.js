@@ -105,11 +105,11 @@ class NspanelLovelaceUi extends utils.Adapter {
       }, 6e4);
     }, 1500);
   }
-  onUnload(callback) {
+  async onUnload(callback) {
     try {
       this.unload = true;
       if (this.controller)
-        this.controller.delete;
+        await this.controller.delete;
       callback();
     } catch (e) {
       callback();

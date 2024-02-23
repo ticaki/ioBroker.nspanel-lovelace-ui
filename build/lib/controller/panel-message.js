@@ -30,6 +30,7 @@ class PanelSend extends import_library.BaseClass {
   messageTimeoutTasmota;
   mqttClient;
   topic = "";
+  losingMessageCount = 0;
   _panel = void 0;
   constructor(adapter, config) {
     super(adapter, config.name);
@@ -49,6 +50,7 @@ class PanelSend extends import_library.BaseClass {
       if (msg.CustomSend === "Done") {
         if (this.messageTimeout)
           this.adapter.clearTimeout(this.messageTimeout);
+        this.losingMessageCount = 0;
         const msg2 = this.messageDb.shift();
         if (false)
           this.log.debug(`Receive ack for ${JSON.stringify(msg2)}`);
@@ -73,6 +75,12 @@ class PanelSend extends import_library.BaseClass {
       this.messageTimeout = void 0;
       return;
     }
+    if (this.losingMessageCount++ > 5) {
+      if (this._panel)
+        this._panel.isOnline = false;
+    }
+    if (this._panel && !this._panel.isOnline)
+      this.messageDb = [];
     this.addMessageTasmota(this.topic, msg.payload, msg.opt);
     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 1e3);
   };

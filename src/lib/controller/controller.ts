@@ -83,14 +83,14 @@ export class Controller extends Library.BaseClass {
 
     async init(): Promise<void> {
         const newPanels = [];
-        this.library.writedp(`panel`, undefined, genericStateObjects.panel._channel);
+        this.library.writedp(`panels`, undefined, genericStateObjects.panel._channel);
 
         for (const panel of this.panels)
             if (await panel.isValid()) {
                 newPanels.push(panel);
                 await panel.init();
             } else {
-                panel.delete();
+                await panel.delete();
                 this.log.error(`Panel ${panel.name} has a invalid configuration.`);
             }
         this.panels = newPanels;
@@ -101,6 +101,6 @@ export class Controller extends Library.BaseClass {
         if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
         if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
         await super.delete();
-        this.panels.forEach((a) => a.delete());
+        for (const a of this.panels) await a.delete();
     }
 }

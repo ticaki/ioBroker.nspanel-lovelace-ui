@@ -212,6 +212,10 @@ export class Page extends BaseClassPage {
             this.sendToPanel(msg);
         }
     }
+    async delete(): Promise<void> {
+        await super.delete();
+        this.pageItems = undefined;
+    }
 }
 
 export function isMediaButtonActionType(F: MediaButtonActionType | string): F is MediaButtonActionType {
@@ -256,59 +260,3 @@ type MediaButtonActionType = Extract<
     | 'media-OnOff'
     | 'button'
 >;
-
-/*export type ButtonActionType =
-    | 'bExit'
-    | 'bUp'
-    | 'bNext'
-    | 'bSubNext'
-    | 'bPrev'
-    | 'bSubPrev'
-    | 'bHome'
-    | 'notifyAction'
-    | 'OnOff'
-    | 'button'
-    | 'up'
-    | 'stop'
-    | 'down'
-    | 'positionSlider'
-    | 'tiltOpen'
-    | 'tiltStop'
-    | 'tiltSlider'
-    | 'tiltClose'
-    | 'brightnessSlider'
-    | 'colorTempSlider'
-    | 'colorWheel'
-    | 'tempUpd'
-    | 'tempUpdHighLow'
-    | 'media-back'
-    | 'media-pause'
-    | 'media-next'
-    | 'media-shuffle'
-    | 'volumeSlider'
-    | 'mode-speakerlist'
-    | 'mode-playlist'
-    | 'mode-tracklist'
-    | 'mode-repeat'
-    | 'mode-equalizer'
-    | 'mode-seek'
-    | 'mode-crossfade'
-    | 'mode-favorites'
-    | 'mode-insel'
-    | 'media-OnOff'
-    | 'timer-start'
-    | 'timer-pause'
-    | 'timer-cancle'
-    | 'timer-finish'
-    | 'hvac_action'
-    | 'mode-modus1'
-    | 'mode-modus2'
-    | 'mode-modus3'
-    | 'number-set'
-    | 'mode-preset_modes'
-    | 'A1'
-    | 'A2'
-    | 'A3'
-    | 'A4'
-    | 'D1'
-    | 'U1';*/

@@ -90,7 +90,8 @@ class Panel extends import_library.BaseClass {
       displayVersion: 0,
       model: "",
       bigIconLeft: false,
-      bigIconRight: false
+      bigIconRight: false,
+      isOnline: false
     },
     tasmota: {
       net: {
@@ -220,6 +221,7 @@ class Panel extends import_library.BaseClass {
     this.controller.mqttClient.subscript(this.topic + "/tele/#", this.onMessage);
     this.controller.mqttClient.subscript(this.topic + "/stat/#", this.onMessage);
     this.sendToTasmota(this.topic + "/cmnd/STATUS0", "");
+    this.isOnline = false;
   };
   start = async () => {
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
@@ -349,6 +351,19 @@ class Panel extends import_library.BaseClass {
     return this._isOnline;
   }
   set isOnline(s) {
+    this.info.nspanel.isOnline = s;
+    if (s !== this._isOnline) {
+      this.library.writedp(
+        `panels.${this.name}.info.nspanel.isOnline`,
+        s,
+        import_definition.genericStateObjects.panel.panels.info.nspanel.isOnline
+      );
+      if (s) {
+        this.log.info("is online!");
+      } else {
+        this.log.warn("is offline!");
+      }
+    }
     this._isOnline = s;
   }
   async isValid() {
@@ -428,10 +443,10 @@ class Panel extends import_library.BaseClass {
               downtime: data.StatusSTS.Wifi.Downtime
             };
             await this.library.writeFromJson(
-              `panels.${this.name}.info`,
-              "panel.panels.info",
+              `panels.${this.name}.info.tasmota`,
+              "panel.panels.info.tasmota",
               import_definition.genericStateObjects,
-              this.info
+              this.info.tasmota
             );
           }
         }
@@ -478,6 +493,14 @@ class Panel extends import_library.BaseClass {
   };
   async delete() {
     await super.delete();
+    await this.library.writedp(
+      `panels.${this.name}.info.nspanel.isOnline`,
+      false,
+      import_definition.genericStateObjects.panel.panels.info.nspanel.isOnline
+    );
+    for (const a of this.pages)
+      if (a)
+        await a.delete();
     this.isOnline = false;
     this.persistentPageItems = {};
     if (this.minuteLoopTimeout)
@@ -502,8 +525,14 @@ class Panel extends import_library.BaseClass {
     switch (event.method) {
       case "startup": {
         this.isOnline = true;
-        this.info.nspanel.displayVersion = parseInt(event.action);
-        this.info.nspanel.model = event.id;
+        this.info.nspanel.displayVersion = parseInt(event.id);
+        this.info.nspanel.model = event.action;
+        await this.library.writeFromJson(
+          `panels.${this.name}.info`,
+          "panel.panels.info",
+          import_definition.genericStateObjects,
+          this.info
+        );
         this.restartLoops();
         this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String((0, import_Color.rgb_dec565)(import_Color.Black)));
         this.navigation.resetPosition();

@@ -16,6 +16,7 @@ export class PanelSend extends BaseClass {
     private messageTimeoutTasmota: ioBroker.Timeout | undefined;
     private mqttClient: MQTTClientClass;
     private topic: string = '';
+    private losingMessageCount = 0;
 
     _panel: Panel | undefined = undefined;
 
@@ -38,6 +39,7 @@ export class PanelSend extends BaseClass {
         if (msg) {
             if (msg.CustomSend === 'Done') {
                 if (this.messageTimeout) this.adapter.clearTimeout(this.messageTimeout);
+                this.losingMessageCount = 0;
                 const msg = this.messageDb.shift();
                 if (false && msg) this.log.debug(`Receive ack for ${JSON.stringify(msg)}`);
                 this.sendMessageLoop();
@@ -62,6 +64,10 @@ export class PanelSend extends BaseClass {
             this.messageTimeout = undefined;
             return;
         }
+        if (this.losingMessageCount++ > 5) {
+            if (this._panel) this._panel.isOnline = false;
+        }
+        if (this._panel && !this._panel.isOnline) this.messageDb = [];
         this.addMessageTasmota(this.topic, msg.payload, msg.opt);
         this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 1000);
     };
