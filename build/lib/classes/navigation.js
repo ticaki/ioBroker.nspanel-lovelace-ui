@@ -30,6 +30,7 @@ class Navigation extends import_library.BaseClass {
   database = [];
   navigationConfig;
   doubleClickDelay = 400;
+  mainPage = "main";
   doubleClickTimeout;
   currentItem = 0;
   constructor(config) {
@@ -79,6 +80,22 @@ class Navigation extends import_library.BaseClass {
     } else {
       this.log.warn(`Dont find navigation target for ${n}`);
     }
+  }
+  setMainPageByName(n) {
+    const index = this.navigationConfig.findIndex((a) => a && a.name === n);
+    if (index !== -1 && this.database[index]) {
+      this.mainPage = this.navigationConfig[index].name;
+    } else {
+      this.log.warn(`Dont find navigation main page for ${n}`);
+    }
+  }
+  buildCommonStates() {
+    const result = {};
+    for (const n of this.navigationConfig) {
+      if (n)
+        result[n.name] = n.name;
+    }
+    return result;
   }
   goLeft() {
     this.go("left");
@@ -169,14 +186,21 @@ class Navigation extends import_library.BaseClass {
     return (0, import_tools.getPayload)(navigationString, navigationString2);
   }
   resetPosition() {
-    const index = this.navigationConfig.findIndex((a) => a && a.name === "main");
+    const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
     if (index !== -1 && this.database[index]) {
       this.currentItem = index;
     }
   }
+  getCurrentMainPoint() {
+    const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
+    if (index === -1)
+      return "main";
+    const item = this.navigationConfig[index];
+    return item ? item.name : "main";
+  }
   getCurrentPage() {
     const page = this.database[this.currentItem];
-    if (page === null) {
+    if (page === null || page === void 0) {
       const index = this.database.findIndex((a) => a && a.page !== null);
       return this.database[index].page;
     }

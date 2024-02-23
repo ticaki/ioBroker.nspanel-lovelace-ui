@@ -299,18 +299,21 @@ export class PageItem extends BaseClassTriggerd {
                             message.icon = (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
                         } else if (entry.role === 'iconNotText') {
                             message.icon = (await tools.getIconEntryValue(item.icon, !!value, '', null, false)) ?? '';
-                        } else if (entry.role !== 'combined') {
+                        } else if (entry.role === 'combined') {
+                            message.icon = (await tools.getIconEntryValue(item.icon, !!value, '', null, false)) ?? '';
+                            message.icon += (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
+                        } else {
                             message.icon =
                                 (await tools.getIconEntryValue(
                                     item.icon,
                                     !!value,
                                     '',
                                     null,
-                                    (this.parent && this.parent.card !== 'cardEntities') ?? false,
+                                    (this.parent &&
+                                        this.parent.card !== 'cardEntities' &&
+                                        !this.parent.card.startsWith('screens')) ??
+                                        false,
                                 )) ?? '';
-                        } else {
-                            message.icon = (await tools.getIconEntryValue(item.icon, !!value, '', null, false)) ?? '';
-                            message.icon += (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
                         }
                         message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
                         return tools.getPayload(

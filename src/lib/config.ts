@@ -4227,7 +4227,7 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             iconBig1: false,
             iconBig2: false,
         },
-        timeout: 30, // dat kommt vom Admin
+        timeout: 10, // dat kommt vom Admin
         dimLow: 20,
         dimHigh: 90,
     },

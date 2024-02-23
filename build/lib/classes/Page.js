@@ -31,7 +31,6 @@ var import_templateArray = require("../templates/templateArray");
 class Page extends import_states_controller.BaseClassPage {
   card;
   id;
-  uniqueID;
   config;
   dpInit = "";
   constructor(card, pageItemsConfig) {
@@ -39,7 +38,6 @@ class Page extends import_states_controller.BaseClassPage {
     super(card, pageItemsConfig && pageItemsConfig.pageItems);
     this.card = card.card;
     this.id = card.id;
-    this.uniqueID = card.uniqueID;
     this.dpInit = (_a = card.dpInit) != null ? _a : "";
     this.config = pageItemsConfig && pageItemsConfig.config;
   }

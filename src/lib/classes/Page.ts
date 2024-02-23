@@ -24,7 +24,6 @@ export type PageInterface = BaseClassTriggerdInterface & {
     card: pages.PageTypeCards;
     panel: Panel;
     id: string;
-    uniqueID: string;
 };
 
 //interface Page extends BaseClass | PageConfig
@@ -33,7 +32,6 @@ export type PageConfigAll = pages.PageBaseConfig;
 export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
     readonly id: string;
-    readonly uniqueID: string;
     config: pages.PageBaseConfig['config'];
     dpInit: string = '';
     //config: Card['config'];
@@ -41,7 +39,6 @@ export class Page extends BaseClassPage {
         super(card, pageItemsConfig && pageItemsConfig.pageItems);
         this.card = card.card;
         this.id = card.id;
-        this.uniqueID = card.uniqueID;
         this.dpInit = card.dpInit ?? '';
         this.config = pageItemsConfig && pageItemsConfig.config;
     }

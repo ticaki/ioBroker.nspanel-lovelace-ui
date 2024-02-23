@@ -229,15 +229,31 @@ class Library extends BaseClass {
       obj._id = `${this.adapter.name}.${this.adapter.instance}.${dp}`;
       if (typeof obj.common.name == "string")
         obj.common.name = await this.getTranslationObj(obj.common.name);
-      if (!del)
+      if (!del) {
+        if (obj.common.states) {
+          const temp = await this.adapter.getObjectAsync(dp);
+          if (temp) {
+            temp.common.states = obj.common.states;
+            await this.adapter.setObjectAsync(dp, temp);
+          }
+        }
         await this.adapter.extendObjectAsync(dp, obj);
+      }
       const stateType = obj && obj.common && obj.common.type;
       node = this.setdb(dp, obj.type, void 0, stateType, true, Date.now(), obj);
     } else if (node.init && obj) {
       if (typeof obj.common.name == "string")
         obj.common.name = await this.getTranslationObj(obj.common.name);
-      if (!del)
+      if (!del) {
+        if (obj.common.states) {
+          const temp = await this.adapter.getObjectAsync(dp);
+          if (temp) {
+            temp.common.states = obj.common.states;
+            await this.adapter.setObjectAsync(dp, temp);
+          }
+        }
         await this.adapter.extendObjectAsync(dp, obj);
+      }
     }
     if (obj && obj.type !== "state")
       return;

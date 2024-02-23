@@ -73,7 +73,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 names.push(p.uniqueID);
             }
 
-            this.library.init();
+            await this.library.init();
+            await this.library.initStates(await this.getStatesAsync('*'));
             this.log.debug('Check configuration!');
             if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
                 this.log.error('Invalid admin configuration for mqtt!');

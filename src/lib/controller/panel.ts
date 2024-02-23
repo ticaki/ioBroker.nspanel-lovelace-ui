@@ -54,7 +54,6 @@ const DefaultOptions = {
     },
     CustomFormat: '',
     locale: 'de-DE',
-    timeout: 30,
     pages: [],
 };
 
@@ -116,7 +115,7 @@ export class Panel extends BaseClass {
             mqttClient: options.controller.mqttClient,
             topic: options.topic,
         });
-        this.timeout = options.timeout || 15;
+        this.timeout = 5; // options.timeout || 15;
 
         this.CustomFormat = options.CustomFormat ?? '';
         this.config = options.config;
@@ -135,6 +134,16 @@ export class Panel extends BaseClass {
             let pageConfig = options.pages[a];
 
             if (!pageConfig) continue;
+            const pmconfig = {
+                card: pageConfig.card,
+                panel: this,
+                id: String(a),
+                name: pageConfig.uniqueID,
+                alwaysOn: pageConfig.alwaysOn,
+                adapter: this.adapter,
+                panelSend: this.panelSend,
+                dpInit: pageConfig.dpInit,
+            };
             switch (pageConfig.card) {
                 case 'cardChart': {
                     break;
@@ -143,67 +152,23 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cardEntities': {
-                    const pmconfig = {
-                        card: pageConfig.card,
-                        panel: this,
-                        id: String(a),
-                        name: 'PG',
-                        alwaysOn: pageConfig.alwaysOn,
-                        adapter: this.adapter,
-                        panelSend: this.panelSend,
-                        uniqueID: pageConfig.uniqueID,
-                        dpInit: pageConfig.dpInit,
-                    };
                     pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageEntities(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardGrid2':
                 case 'cardGrid': {
-                    const pmconfig = {
-                        card: pageConfig.card,
-                        panel: this,
-                        id: String(a),
-                        name: 'PG',
-                        alwaysOn: pageConfig.alwaysOn,
-                        adapter: this.adapter,
-                        panelSend: this.panelSend,
-                        uniqueID: pageConfig.uniqueID,
-                        dpInit: pageConfig.dpInit,
-                    };
                     pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageGrid(pmconfig, pageConfig);
                     break;
                 }
 
                 case 'cardThermo': {
-                    const pmconfig = {
-                        card: pageConfig.card,
-                        panel: this,
-                        id: String(a),
-                        name: 'PM',
-                        alwaysOn: pageConfig.alwaysOn,
-                        adapter: this.adapter,
-                        panelSend: this.panelSend,
-                        uniqueID: pageConfig.uniqueID,
-                        dpInit: pageConfig.dpInit,
-                    };
                     pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageThermo(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardMedia': {
-                    const pmconfig = {
-                        card: pageConfig.card,
-                        panel: this,
-                        id: String(a),
-                        name: 'PM',
-                        alwaysOn: pageConfig.alwaysOn,
-                        adapter: this.adapter,
-                        panelSend: this.panelSend,
-                        uniqueID: pageConfig.uniqueID,
-                        dpInit: pageConfig.dpInit,
-                    };
                     pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageMedia(pmconfig, pageConfig);
                     break;
@@ -218,17 +183,6 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cardPower': {
-                    const pmconfig = {
-                        card: pageConfig.card,
-                        panel: this,
-                        id: String(a),
-                        name: 'PM',
-                        alwaysOn: pageConfig.alwaysOn,
-                        adapter: this.adapter,
-                        panelSend: this.panelSend,
-                        uniqueID: pageConfig.uniqueID,
-                        dpInit: pageConfig.dpInit,
-                    };
                     pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PagePower(pmconfig, pageConfig);
                     break;
@@ -245,7 +199,6 @@ export class Panel extends BaseClass {
                         name: 'SrS',
                         adapter: this.adapter,
                         panelSend: this.panelSend,
-                        uniqueID: '',
                         dpInit: '',
                     };
                     this.screenSaver = new Screensaver(ssconfig, pageConfig);
@@ -274,26 +227,42 @@ export class Panel extends BaseClass {
         this.sendToTasmota(this.topic + '/cmnd/STATUS0', '');
     };
     start = async (): Promise<void> => {
-        this.adapter.subscribeStates(`panel.${this.name}.cmd.*`);
+        this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
         genericStateObjects.panel.panels._channel.common.name = this.friendlyName;
-        await this.library.writedp(`panel.${this.name}`, undefined, genericStateObjects.panel.panels._channel);
+        await this.library.writedp(`panels.${this.name}`, undefined, genericStateObjects.panel.panels._channel);
         await this.library.writedp(
-            `panel.${this.name}.cmd`,
+            `panels.${this.name}.cmd`,
             undefined === 'ON',
             genericStateObjects.panel.panels.cmd._channel,
         );
         await this.library.writedp(
-            `panel.${this.name}.alarm`,
+            `panels.${this.name}.alarm`,
             undefined === 'ON',
             genericStateObjects.panel.panels.alarm._channel,
         );
         for (const page of this.pages) {
-            if (page) this.log.debug('init page ' + page.uniqueID);
-            if (page) await page.init();
+            if (page) {
+                this.log.debug('init page ' + page.name);
+                await page.init();
+            }
         }
-        let state = this.library.readdb(`panel.${this.name}.info.nspanel.bigIconLeft`);
+        this.navigation.init();
+        const currentPage = this.library.readdb(`panels.${this.name}.cmd.mainPage`);
+        if (currentPage && currentPage.val) {
+            this.navigation.setMainPageByName(String(currentPage.val));
+        }
+        const states = this.navigation.buildCommonStates();
+        const page = this.navigation.getCurrentMainPoint();
+        this.library.writedp(`panels.${this.name}.cmd.mainPage`, page, {
+            _id: '',
+            type: 'state',
+            common: { name: '', type: 'string', role: 'value.text', read: true, write: true, states: states },
+            native: {},
+        });
+
+        let state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
-        state = this.library.readdb(`panel.${this.name}.info.nspanel.bigIconRight`);
+        state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
         this.info.nspanel.bigIconRight = state ? !!state.val : false;
 
         //done with states
@@ -339,7 +308,6 @@ export class Panel extends BaseClass {
         });
         this.sendToTasmota(this.topic + '/cmnd/POWER1', '');
         this.sendToTasmota(this.topic + '/cmnd/POWER2', '');
-        this.navigation.init();
         this.sendToPanel('pageType~pageStartup', { retain: true });
     };
 
@@ -418,7 +386,7 @@ export class Panel extends BaseClass {
                 switch (command) {
                     case 'stat/POWER2': {
                         this.library.writedp(
-                            `panel.${this.name}.cmd.power2`,
+                            `panels.${this.name}.cmd.power2`,
                             message === 'ON',
                             genericStateObjects.panel.panels.cmd.power2,
                         );
@@ -427,7 +395,7 @@ export class Panel extends BaseClass {
                     }
                     case 'stat/POWER1': {
                         this.library.writedp(
-                            `panel.${this.name}.cmd.power1`,
+                            `panels.${this.name}.cmd.power1`,
                             message === 'ON',
                             genericStateObjects.panel.panels.cmd.power1,
                         );
@@ -447,12 +415,12 @@ export class Panel extends BaseClass {
                             await this.start();
                         }
                         this.library.writedp(
-                            `panel.${this.name}.info`,
+                            `panels.${this.name}.info`,
                             undefined,
                             genericStateObjects.panel.panels.info._channel,
                         );
                         this.library.writedp(
-                            `panel.${this.name}.info.status`,
+                            `panels.${this.name}.info.status`,
                             message,
                             genericStateObjects.panel.panels.info.status,
                         );
@@ -471,7 +439,7 @@ export class Panel extends BaseClass {
                             downtime: data.StatusSTS.Wifi.Downtime,
                         };
                         await this.library.writeFromJson(
-                            `panel.${this.name}.info`,
+                            `panels.${this.name}.info`,
                             'panel.panels.info',
                             genericStateObjects,
                             this.info,
@@ -485,7 +453,7 @@ export class Panel extends BaseClass {
     async onStateChange(id: string, state: ioBroker.State): Promise<void> {
         if (state.ack) return;
         if (id.split('.')[1] === this.name) {
-            const cmd = id.replace(`panel.${this.name}.cmd.`, '');
+            const cmd = id.replace(`panels.${this.name}.cmd.`, '');
             switch (cmd) {
                 case 'power1': {
                     this.sendToTasmota(this.topic + '/cmnd/POWER1', state.val ? 'ON' : 'OFF');
@@ -493,6 +461,11 @@ export class Panel extends BaseClass {
                 }
                 case 'power2': {
                     this.sendToTasmota(this.topic + '/cmnd/POWER2', state.val ? 'ON' : 'OFF');
+                    break;
+                }
+                case 'mainPage': {
+                    this.navigation.setMainPageByName(state.val ? String(state.val) : 'main');
+                    this.library.writedp(`panels.${this.name}.cmd.mainPage`, state.val ? String(state.val) : 'main');
                     break;
                 }
             }
@@ -534,7 +507,7 @@ export class Panel extends BaseClass {
 
     getPagebyUniqueID(uniqueID: string): Page | null {
         if (!uniqueID) return null;
-        const index = this.pages.findIndex((a) => a && a.uniqueID && a.uniqueID === uniqueID);
+        const index = this.pages.findIndex((a) => a && a.name && a.name === uniqueID);
         return this.pages[index] ?? null;
     }
     async HandleIncomingMessage(event: Types.IncomingEvent): Promise<void> {
@@ -627,7 +600,7 @@ export class Panel extends BaseClass {
                     this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
                     this.statesControler.setInternalState(`${this.name}/cmd/bigIconLeft`, !!state.val, true);
                     this.library.writeFromJson(
-                        `panel.${this.name}.info`,
+                        `panels.${this.name}.info`,
                         'panel.panels.info',
                         genericStateObjects,
                         this.info,
@@ -639,7 +612,7 @@ export class Panel extends BaseClass {
                     this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
                     this.statesControler.setInternalState(`${this.name}/cmd/bigIconRight`, !!state.val, true);
                     this.library.writeFromJson(
-                        `panel.${this.name}.info`,
+                        `panels.${this.name}.info`,
                         'panel.panels.info',
                         genericStateObjects,
                         this.info,

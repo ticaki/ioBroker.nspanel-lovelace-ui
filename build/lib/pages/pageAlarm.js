@@ -62,7 +62,7 @@ class PageAlarm extends import_Page.Page {
     this.items = tempItem;
     this.items.card = "cardAlarm";
     this.library.writedp(
-      `panel.${this.name}.alarm.${this.uniqueID}`,
+      `panels.${this.name}.alarm.${this.name}`,
       void 0,
       import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
     );
@@ -84,7 +84,7 @@ class PageAlarm extends import_Page.Page {
     message.icon = await (0, import_tools.getIconEntryValue)(data.icon, true, "");
     message.iconColor = await (0, import_tools.getIconEntryColor)(data.icon, true, "");
     this.library.writedp(
-      `panel.${this.name}.alarm.${this.uniqueID}.status`,
+      `panels.${this.name}.alarm.${this.name}.status`,
       ["disarmed", "armed", "arming", "pending", "triggered"].indexOf(this.status),
       import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.status
     );

@@ -62,7 +62,7 @@ export class PageAlarm extends Page {
         // set card because we lose it
         this.items.card = 'cardAlarm';
         this.library.writedp(
-            `panel.${this.name}.alarm.${this.uniqueID}`,
+            `panels.${this.name}.alarm.${this.name}`,
             undefined,
             genericStateObjects.panel.panels.alarm.cardAlarm._channel,
         );
@@ -87,7 +87,7 @@ export class PageAlarm extends Page {
         message.iconColor = await getIconEntryColor(data.icon, true, '');
 
         this.library.writedp(
-            `panel.${this.name}.alarm.${this.uniqueID}.status`,
+            `panels.${this.name}.alarm.${this.name}.status`,
             ['disarmed', 'armed', 'arming', 'pending', 'triggered'].indexOf(this.status),
             genericStateObjects.panel.panels.alarm.cardAlarm.status,
         );

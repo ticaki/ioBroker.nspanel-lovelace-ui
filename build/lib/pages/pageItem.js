@@ -254,17 +254,17 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               message.icon = (_u = await tools.getIconEntryValue(item.icon, !!value, "", null, true)) != null ? _u : "";
             } else if (entry.role === "iconNotText") {
               message.icon = (_v = await tools.getIconEntryValue(item.icon, !!value, "", null, false)) != null ? _v : "";
-            } else if (entry.role !== "combined") {
-              message.icon = (_x = await tools.getIconEntryValue(
+            } else if (entry.role === "combined") {
+              message.icon = (_w = await tools.getIconEntryValue(item.icon, !!value, "", null, false)) != null ? _w : "";
+              message.icon += (_x = await tools.getIconEntryValue(item.icon, !!value, "", null, true)) != null ? _x : "";
+            } else {
+              message.icon = (_z = await tools.getIconEntryValue(
                 item.icon,
                 !!value,
                 "",
                 null,
-                (_w = this.parent && this.parent.card !== "cardEntities") != null ? _w : false
-              )) != null ? _x : "";
-            } else {
-              message.icon = (_y = await tools.getIconEntryValue(item.icon, !!value, "", null, false)) != null ? _y : "";
-              message.icon += (_z = await tools.getIconEntryValue(item.icon, !!value, "", null, true)) != null ? _z : "";
+                (_y = this.parent && this.parent.card !== "cardEntities" && !this.parent.card.startsWith("screens")) != null ? _y : false
+              )) != null ? _z : "";
             }
             message.iconColor = (_A = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _A : "";
             return tools.getPayload(

@@ -41,6 +41,7 @@ export class Navigation extends BaseClass {
     private database: NavigationItem[] = [];
     private navigationConfig: NavigationItemConfig[];
     doubleClickDelay: number = 400;
+    private mainPage = 'main';
     private doubleClickTimeout: ioBroker.Timeout | undefined;
     private currentItem: number = 0;
     constructor(config: NavigationConfig) {
@@ -88,6 +89,22 @@ export class Navigation extends BaseClass {
         } else {
             this.log.warn(`Dont find navigation target for ${n}`);
         }
+    }
+    setMainPageByName(n: string): void {
+        const index = this.navigationConfig.findIndex((a) => a && a.name === n);
+        if (index !== -1 && this.database[index]) {
+            this.mainPage = this.navigationConfig[index]!.name;
+        } else {
+            this.log.warn(`Dont find navigation main page for ${n}`);
+        }
+    }
+
+    buildCommonStates(): Record<string, string> {
+        const result: Record<string, string> = {};
+        for (const n of this.navigationConfig) {
+            if (n) result[n.name] = n.name;
+        }
+        return result;
     }
     goLeft(): void {
         this.go('left');
@@ -191,14 +208,20 @@ export class Navigation extends BaseClass {
         return getPayload(navigationString, navigationString2);
     }
     resetPosition(): void {
-        const index = this.navigationConfig.findIndex((a) => a && a.name === 'main');
+        const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
         if (index !== -1 && this.database[index]) {
             this.currentItem = index;
         }
     }
+    getCurrentMainPoint(): string {
+        const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
+        if (index === -1) return 'main';
+        const item = this.navigationConfig[index];
+        return item ? item.name : 'main';
+    }
     getCurrentPage(): Page {
         const page = this.database[this.currentItem];
-        if (page === null) {
+        if (page === null || page === undefined) {
             const index = this.database.findIndex((a) => a && a.page !== null);
             return this.database[index]!.page;
         }

@@ -3897,7 +3897,7 @@ const Testconfig = [
       iconBig1: false,
       iconBig2: false
     },
-    timeout: 30,
+    timeout: 10,
     dimLow: 20,
     dimHigh: 90
   }

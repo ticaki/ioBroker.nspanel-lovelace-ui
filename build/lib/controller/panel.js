@@ -62,7 +62,6 @@ const DefaultOptions = {
   },
   CustomFormat: "",
   locale: "de-DE",
-  timeout: 30,
   pages: []
 };
 class Panel extends import_library.BaseClass {
@@ -116,7 +115,7 @@ class Panel extends import_library.BaseClass {
       mqttClient: options.controller.mqttClient,
       topic: options.topic
     });
-    this.timeout = options.timeout || 15;
+    this.timeout = 5;
     this.CustomFormat = (_a = options.CustomFormat) != null ? _a : "";
     this.config = options.config;
     this.format = Object.assign(DefaultOptions.format, options.format);
@@ -133,6 +132,16 @@ class Panel extends import_library.BaseClass {
       let pageConfig = options.pages[a];
       if (!pageConfig)
         continue;
+      const pmconfig = {
+        card: pageConfig.card,
+        panel: this,
+        id: String(a),
+        name: pageConfig.uniqueID,
+        alwaysOn: pageConfig.alwaysOn,
+        adapter: this.adapter,
+        panelSend: this.panelSend,
+        dpInit: pageConfig.dpInit
+      };
       switch (pageConfig.card) {
         case "cardChart": {
           break;
@@ -141,66 +150,22 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cardEntities": {
-          const pmconfig = {
-            card: pageConfig.card,
-            panel: this,
-            id: String(a),
-            name: "PG",
-            alwaysOn: pageConfig.alwaysOn,
-            adapter: this.adapter,
-            panelSend: this.panelSend,
-            uniqueID: pageConfig.uniqueID,
-            dpInit: pageConfig.dpInit
-          };
           pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pageEntities.PageEntities(pmconfig, pageConfig);
           break;
         }
         case "cardGrid2":
         case "cardGrid": {
-          const pmconfig = {
-            card: pageConfig.card,
-            panel: this,
-            id: String(a),
-            name: "PG",
-            alwaysOn: pageConfig.alwaysOn,
-            adapter: this.adapter,
-            panelSend: this.panelSend,
-            uniqueID: pageConfig.uniqueID,
-            dpInit: pageConfig.dpInit
-          };
           pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pageGrid.PageGrid(pmconfig, pageConfig);
           break;
         }
         case "cardThermo": {
-          const pmconfig = {
-            card: pageConfig.card,
-            panel: this,
-            id: String(a),
-            name: "PM",
-            alwaysOn: pageConfig.alwaysOn,
-            adapter: this.adapter,
-            panelSend: this.panelSend,
-            uniqueID: pageConfig.uniqueID,
-            dpInit: pageConfig.dpInit
-          };
           pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pageThermo.PageThermo(pmconfig, pageConfig);
           break;
         }
         case "cardMedia": {
-          const pmconfig = {
-            card: pageConfig.card,
-            panel: this,
-            id: String(a),
-            name: "PM",
-            alwaysOn: pageConfig.alwaysOn,
-            adapter: this.adapter,
-            panelSend: this.panelSend,
-            uniqueID: pageConfig.uniqueID,
-            dpInit: pageConfig.dpInit
-          };
           pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pageMedia.PageMedia(pmconfig, pageConfig);
           break;
@@ -215,17 +180,6 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cardPower": {
-          const pmconfig = {
-            card: pageConfig.card,
-            panel: this,
-            id: String(a),
-            name: "PM",
-            alwaysOn: pageConfig.alwaysOn,
-            adapter: this.adapter,
-            panelSend: this.panelSend,
-            uniqueID: pageConfig.uniqueID,
-            dpInit: pageConfig.dpInit
-          };
           pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pagePower.PagePower(pmconfig, pageConfig);
           break;
@@ -241,7 +195,6 @@ class Panel extends import_library.BaseClass {
             name: "SrS",
             adapter: this.adapter,
             panelSend: this.panelSend,
-            uniqueID: "",
             dpInit: ""
           };
           this.screenSaver = new import_screensaver.Screensaver(ssconfig, pageConfig);
@@ -269,28 +222,41 @@ class Panel extends import_library.BaseClass {
     this.sendToTasmota(this.topic + "/cmnd/STATUS0", "");
   };
   start = async () => {
-    this.adapter.subscribeStates(`panel.${this.name}.cmd.*`);
+    this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
     import_definition.genericStateObjects.panel.panels._channel.common.name = this.friendlyName;
-    await this.library.writedp(`panel.${this.name}`, void 0, import_definition.genericStateObjects.panel.panels._channel);
+    await this.library.writedp(`panels.${this.name}`, void 0, import_definition.genericStateObjects.panel.panels._channel);
     await this.library.writedp(
-      `panel.${this.name}.cmd`,
+      `panels.${this.name}.cmd`,
       void 0 === "ON",
       import_definition.genericStateObjects.panel.panels.cmd._channel
     );
     await this.library.writedp(
-      `panel.${this.name}.alarm`,
+      `panels.${this.name}.alarm`,
       void 0 === "ON",
       import_definition.genericStateObjects.panel.panels.alarm._channel
     );
-    for (const page of this.pages) {
-      if (page)
-        this.log.debug("init page " + page.uniqueID);
-      if (page)
-        await page.init();
+    for (const page2 of this.pages) {
+      if (page2) {
+        this.log.debug("init page " + page2.name);
+        await page2.init();
+      }
     }
-    let state = this.library.readdb(`panel.${this.name}.info.nspanel.bigIconLeft`);
+    this.navigation.init();
+    const currentPage = this.library.readdb(`panels.${this.name}.cmd.mainPage`);
+    if (currentPage && currentPage.val) {
+      this.navigation.setMainPageByName(String(currentPage.val));
+    }
+    const states = this.navigation.buildCommonStates();
+    const page = this.navigation.getCurrentMainPoint();
+    this.library.writedp(`panels.${this.name}.cmd.mainPage`, page, {
+      _id: "",
+      type: "state",
+      common: { name: "", type: "string", role: "value.text", read: true, write: true, states },
+      native: {}
+    });
+    let state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
-    state = this.library.readdb(`panel.${this.name}.info.nspanel.bigIconRight`);
+    state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
     this.info.nspanel.bigIconRight = state ? !!state.val : false;
     this.statesControler.setInternalState(
       `${this.name}/cmd/bigIconLeft`,
@@ -334,7 +300,6 @@ class Panel extends import_library.BaseClass {
     });
     this.sendToTasmota(this.topic + "/cmnd/POWER1", "");
     this.sendToTasmota(this.topic + "/cmnd/POWER2", "");
-    this.navigation.init();
     this.sendToPanel("pageType~pageStartup", { retain: true });
   };
   sendToPanelClass = () => {
@@ -410,7 +375,7 @@ class Panel extends import_library.BaseClass {
         switch (command) {
           case "stat/POWER2": {
             this.library.writedp(
-              `panel.${this.name}.cmd.power2`,
+              `panels.${this.name}.cmd.power2`,
               message === "ON",
               import_definition.genericStateObjects.panel.panels.cmd.power2
             );
@@ -419,7 +384,7 @@ class Panel extends import_library.BaseClass {
           }
           case "stat/POWER1": {
             this.library.writedp(
-              `panel.${this.name}.cmd.power1`,
+              `panels.${this.name}.cmd.power1`,
               message === "ON",
               import_definition.genericStateObjects.panel.panels.cmd.power1
             );
@@ -439,12 +404,12 @@ class Panel extends import_library.BaseClass {
               await this.start();
             }
             this.library.writedp(
-              `panel.${this.name}.info`,
+              `panels.${this.name}.info`,
               void 0,
               import_definition.genericStateObjects.panel.panels.info._channel
             );
             this.library.writedp(
-              `panel.${this.name}.info.status`,
+              `panels.${this.name}.info.status`,
               message,
               import_definition.genericStateObjects.panel.panels.info.status
             );
@@ -463,7 +428,7 @@ class Panel extends import_library.BaseClass {
               downtime: data.StatusSTS.Wifi.Downtime
             };
             await this.library.writeFromJson(
-              `panel.${this.name}.info`,
+              `panels.${this.name}.info`,
               "panel.panels.info",
               import_definition.genericStateObjects,
               this.info
@@ -477,7 +442,7 @@ class Panel extends import_library.BaseClass {
     if (state.ack)
       return;
     if (id.split(".")[1] === this.name) {
-      const cmd = id.replace(`panel.${this.name}.cmd.`, "");
+      const cmd = id.replace(`panels.${this.name}.cmd.`, "");
       switch (cmd) {
         case "power1": {
           this.sendToTasmota(this.topic + "/cmnd/POWER1", state.val ? "ON" : "OFF");
@@ -485,6 +450,11 @@ class Panel extends import_library.BaseClass {
         }
         case "power2": {
           this.sendToTasmota(this.topic + "/cmnd/POWER2", state.val ? "ON" : "OFF");
+          break;
+        }
+        case "mainPage": {
+          this.navigation.setMainPageByName(state.val ? String(state.val) : "main");
+          this.library.writedp(`panels.${this.name}.cmd.mainPage`, state.val ? String(state.val) : "main");
           break;
         }
       }
@@ -517,7 +487,7 @@ class Panel extends import_library.BaseClass {
     var _a;
     if (!uniqueID)
       return null;
-    const index = this.pages.findIndex((a) => a && a.uniqueID && a.uniqueID === uniqueID);
+    const index = this.pages.findIndex((a) => a && a.name && a.name === uniqueID);
     return (_a = this.pages[index]) != null ? _a : null;
   }
   async HandleIncomingMessage(event) {
@@ -603,7 +573,7 @@ class Panel extends import_library.BaseClass {
           this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
           this.statesControler.setInternalState(`${this.name}/cmd/bigIconLeft`, !!state.val, true);
           this.library.writeFromJson(
-            `panel.${this.name}.info`,
+            `panels.${this.name}.info`,
             "panel.panels.info",
             import_definition.genericStateObjects,
             this.info
@@ -615,7 +585,7 @@ class Panel extends import_library.BaseClass {
           this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
           this.statesControler.setInternalState(`${this.name}/cmd/bigIconRight`, !!state.val, true);
           this.library.writeFromJson(
-            `panel.${this.name}.info`,
+            `panels.${this.name}.info`,
             "panel.panels.info",
             import_definition.genericStateObjects,
             this.info
