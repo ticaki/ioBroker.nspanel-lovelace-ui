@@ -2671,14 +2671,14 @@ const pageThermoTest = {
   useColor: false
 };
 const pageScreensaverTest = {
-  card: "screensaver",
+  card: "screensaver2",
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "scr",
   useColor: false,
   config: {
     card: "screensaver2",
-    mode: "standard",
+    mode: "advanced",
     rotationTime: 0,
     model: "eu",
     data: void 0
@@ -3691,6 +3691,62 @@ const pageScreensaverTest = {
             constVal: "B\xF6en"
           },
           false: void 0
+        }
+      }
+    },
+    {
+      role: "combined",
+      dpInit: "",
+      type: "text",
+      modeScr: "mricon",
+      data: {
+        entity1: {
+          value: {
+            type: "const",
+            constVal: "12"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "heat-wave"
+            },
+            color: {
+              type: "const",
+              constVal: Color.MSRed
+            },
+            text: {
+              value: {
+                type: "const",
+                constVal: "deconz.0.Sensors.5.temperature"
+              },
+              unit: {
+                type: "const",
+                constVal: "\xB0C"
+              }
+            }
+          },
+          false: {
+            value: {
+              type: "const",
+              constVal: "heat-wave"
+            },
+            color: {
+              type: "const",
+              constVal: Color.MSYellow
+            },
+            text: {
+              value: {
+                type: "const",
+                constVal: "deconz.0.Sensors.5.temperature"
+              },
+              unit: {
+                type: "const",
+                constVal: "\xB0C"
+              }
+            }
+          }
         }
       }
     },
