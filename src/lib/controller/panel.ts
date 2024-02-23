@@ -17,7 +17,6 @@ import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
 import { PageItem } from '../pages/pageItem';
 import { PageEntities } from '../pages/pageEntities';
-import { Black, rgb_dec565 } from '../const/Color';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -249,6 +248,16 @@ export class Panel extends BaseClass {
                 await page.init();
             }
         }
+        let state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
+        if (state) {
+            this.timeout = parseInt(String(state.val));
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screensaverTimeout`,
+            this.timeout,
+            genericStateObjects.panel.panels.cmd.screensaverTimeout,
+        );
+
         this.navigation.init();
         const currentPage = this.library.readdb(`panels.${this.name}.cmd.mainPage`);
         if (currentPage && currentPage.val) {
@@ -263,7 +272,7 @@ export class Panel extends BaseClass {
             native: {},
         });
 
-        let state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
+        state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
         this.info.nspanel.bigIconRight = state ? !!state.val : false;
@@ -497,6 +506,10 @@ export class Panel extends BaseClass {
                     this.library.writedp(`panels.${this.name}.cmd.mainPage`, state.val ? String(state.val) : 'main');
                     break;
                 }
+                case 'screensaverTimeout': {
+                    this.timeout = parseInt(String(state.val));
+                    this.library.writedp(`panels.${this.name}.cmd.screensaverTimeout`, this.timeout);
+                }
             }
         }
     }
@@ -567,7 +580,7 @@ export class Panel extends BaseClass {
                 );
 
                 this.restartLoops();
-                this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(rgb_dec565(Black)));
+                this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(1));
 
                 this.navigation.resetPosition();
                 const page = this.navigation.getCurrentPage();
@@ -666,7 +679,9 @@ export class Panel extends BaseClass {
                     if (typeof state.val !== 'boolean') {
                         const val = parseInt(String(state.val));
                         this.timeout = val;
+                        this.sendScreeensaverTimeout(this.timeout);
                         this.statesControler.setInternalState(`${this.name}/cmd/screensaverTimeout`, val, true);
+                        this.library.writedp(`panels.${this.name}.cmd.screensaverTimeout`, this.timeout);
                     }
                 }
             }

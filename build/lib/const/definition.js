@@ -120,6 +120,18 @@ const genericStateObjects = {
             write: true
           },
           native: {}
+        },
+        screensaverTimeout: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "genericStateObjects.screensaverTimeout",
+            type: "number",
+            role: "value",
+            read: true,
+            write: true
+          },
+          native: {}
         }
       },
       info: {

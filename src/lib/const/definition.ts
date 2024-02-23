@@ -34,6 +34,7 @@ export const genericStateObjects: {
             cmd: customChannelType & {
                 power1: ioBroker.StateObject;
                 power2: ioBroker.StateObject;
+                screensaverTimeout: ioBroker.StateObject;
             };
             info: customChannelType & {
                 status: ioBroker.StateObject;
@@ -106,6 +107,18 @@ export const genericStateObjects: {
                         name: 'genericStateObjects.power2',
                         type: 'boolean',
                         role: 'switch',
+                        read: true,
+                        write: true,
+                    },
+                    native: {},
+                },
+                screensaverTimeout: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'genericStateObjects.screensaverTimeout',
+                        type: 'number',
+                        role: 'value',
                         read: true,
                         write: true,
                     },
