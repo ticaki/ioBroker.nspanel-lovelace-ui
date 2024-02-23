@@ -80,7 +80,8 @@ export type StateRole =
     | 'value.temperature'
     | 'value.battery'
     | 'indicator.lowbat'
-    | 'value';
+    | 'value'
+    | '';
 
 export type DeviceRole =
     | 'text'
@@ -104,7 +105,6 @@ export type DeviceRole =
     | 'text.list'
     | 'arrow'
     | 'spotify-playlist'
-    | 'spotify-playlist'
     | 'timer'
     | 'rgb.hex'
     | 'text.list'
@@ -112,7 +112,8 @@ export type DeviceRole =
     | 'indicator'
     | '2values'
     | 'combined'
-    | 'textNotIcon'; // timer with internal counter
+    | 'textNotIcon'
+    | 'iconNotText'; // timer with internal counter
 
 export function isStateRole(F: string | StateRole): F is StateRole {
     switch (F as StateRole) {

@@ -512,6 +512,10 @@ class StatesControler extends import_library.BaseClass {
         let found = false;
         if (d.type !== "triggered" && d.type !== "state" || !d.mode || d.mode !== "auto")
           continue;
+        let endsWith = "";
+        if (d.dp && d.dp.endsWith("$")) {
+          endsWith = d.dp.substring(0, d.dp.length - 1);
+        }
         for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
           if (false) {
           }
@@ -529,7 +533,7 @@ class StatesControler extends import_library.BaseClass {
             if (!id.startsWith(dpInit))
               continue;
             const obj = tempObjectDB.data[id];
-            if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp)) && obj.common.role === role) {
+            if (obj && obj.common && obj.type === "state" && (d.dp === "" || (endsWith ? id.endsWith(endsWith) : id.includes(d.dp))) && (role === "" || obj.common.role === role)) {
               if (found) {
                 this.log.warn(`Found more as 1 state for role ${role} in ${dpInit} with ${d.dp}`);
                 break;

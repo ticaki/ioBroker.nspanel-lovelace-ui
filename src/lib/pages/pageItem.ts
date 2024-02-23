@@ -297,6 +297,8 @@ export class PageItem extends BaseClassTriggerd {
                         }
                         if (entry.role === 'textNotIcon') {
                             message.icon = (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
+                        } else if (entry.role === 'iconNotText') {
+                            message.icon = (await tools.getIconEntryValue(item.icon, !!value, '', null, false)) ?? '';
                         } else if (entry.role !== 'combined') {
                             message.icon =
                                 (await tools.getIconEntryValue(

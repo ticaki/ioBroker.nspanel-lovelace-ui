@@ -125,7 +125,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
     },
     {
         template: 'text.battery',
-        role: 'text',
+        role: 'iconNotText',
         adapter: '',
         type: 'text',
 

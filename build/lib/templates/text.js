@@ -150,7 +150,7 @@ const textTemplates = [
   },
   {
     template: "text.battery",
-    role: "text",
+    role: "iconNotText",
     adapter: "",
     type: "text",
     data: {

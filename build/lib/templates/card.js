@@ -52,7 +52,7 @@ const cardTemplates = [
           icon: {
             true: {
               value: { type: "const", constVal: "trash-can" },
-              color: { type: "state", dp: ".1.color", mode: "auto", role: "state" }
+              color: { type: "state", dp: ".1.color$", mode: "auto", role: "state" }
             }
           },
           entity1: {
@@ -75,7 +75,7 @@ const cardTemplates = [
           icon: {
             true: {
               value: { type: "const", constVal: "trash-can" },
-              color: { type: "state", dp: ".2.color", mode: "auto", role: "state" }
+              color: { type: "state", dp: ".2.color$", mode: "auto", role: "state" }
             }
           },
           entity1: {
@@ -98,7 +98,7 @@ const cardTemplates = [
           icon: {
             true: {
               value: { type: "const", constVal: "trash-can" },
-              color: { type: "state", dp: ".3.color", mode: "auto", role: "state" }
+              color: { type: "state", dp: ".3.color$", mode: "auto", role: "state" }
             }
           },
           entity1: {
@@ -121,7 +121,7 @@ const cardTemplates = [
           icon: {
             true: {
               value: { type: "const", constVal: "trash-can" },
-              color: { type: "state", dp: ".4.color", mode: "auto", role: "state" }
+              color: { type: "state", dp: ".4.color$", mode: "auto", role: "state" }
             }
           },
           entity1: {
@@ -160,7 +160,7 @@ const cardTemplates = [
           mode: "auto",
           role: "value",
           type: "triggered",
-          dp: ".player.album"
+          dp: ".player.album$"
         },
         titel: {
           on: {

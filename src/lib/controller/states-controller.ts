@@ -553,6 +553,12 @@ export class StatesControler extends BaseClass {
                 const d = t as DataItemsOptions;
                 let found = false;
                 if ((d.type !== 'triggered' && d.type !== 'state') || !d.mode || d.mode !== 'auto') continue;
+                let endsWith = '';
+                // $ means must at the end of id
+                if (d.dp && d.dp.endsWith('$')) {
+                    endsWith = d.dp.substring(0, d.dp.length - 1);
+                }
+
                 for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
                     if (false) {
                         //throw new Error(`${d.dp} has a unkowned role ${d.role}`);
@@ -575,8 +581,8 @@ export class StatesControler extends BaseClass {
                             obj &&
                             obj.common &&
                             obj.type === 'state' &&
-                            (d.dp === '' || id.includes(d.dp)) &&
-                            obj.common.role === role
+                            (d.dp === '' || (endsWith ? id.endsWith(endsWith) : id.includes(d.dp))) &&
+                            (role === '' || obj.common.role === role)
                         ) {
                             if (found) {
                                 this.log.warn(`Found more as 1 state for role ${role} in ${dpInit} with ${d.dp}`);
