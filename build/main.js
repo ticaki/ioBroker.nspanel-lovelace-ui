@@ -24,6 +24,7 @@ var MQTT = __toESM(require("./lib/classes/mqtt"));
 var import_config_custom = require("./lib/config-custom");
 var import_controller = require("./lib/controller/controller");
 var import_icon_mapping = require("./lib/const/icon_mapping");
+var import_definition = require("./lib/const/definition");
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -69,7 +70,12 @@ class NspanelLovelaceUi extends utils.Adapter {
         names.push(p.uniqueID);
       }
       await this.library.init();
-      await this.library.initStates(await this.getStatesAsync("*"));
+      const states = await this.getStatesAsync("*");
+      await this.library.initStates(states);
+      for (const id in states) {
+        if (id.endsWith(".info.nspanel.isOnline"))
+          await this.library.writedp(id, false, import_definition.genericStateObjects.panel.panels.info.nspanel.isOnline);
+      }
       this.log.debug("Check configuration!");
       if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
         this.log.error("Invalid admin configuration for mqtt!");

@@ -13,6 +13,7 @@ import * as MQTT from './lib/classes/mqtt';
 import { Testconfig } from './lib/config-custom';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
+import { genericStateObjects } from './lib/const/definition';
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -74,7 +75,14 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
 
             await this.library.init();
-            await this.library.initStates(await this.getStatesAsync('*'));
+            const states = await this.getStatesAsync('*');
+            await this.library.initStates(states);
+
+            // set all .info.nspanel.isOnline to false
+            for (const id in states) {
+                if (id.endsWith('.info.nspanel.isOnline'))
+                    await this.library.writedp(id, false, genericStateObjects.panel.panels.info.nspanel.isOnline);
+            }
             this.log.debug('Check configuration!');
             if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
                 this.log.error('Invalid admin configuration for mqtt!');
