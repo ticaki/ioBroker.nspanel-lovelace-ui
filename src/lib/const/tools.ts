@@ -10,21 +10,7 @@ import {
 } from '../types/type-pageItem';
 import { Library } from '../classes/library';
 import { RGB } from '../const/Color';
-import {
-    HMIOff,
-    HMIOn,
-    Interpolate,
-    White,
-    darken,
-    decToRgb,
-    getHue,
-    hsv2rgb,
-    isRGB,
-    kelvinToRGB,
-    mixColor,
-    rgb_dec565,
-    scale,
-} from './Color';
+import * as Color from './Color';
 import { Icons } from './icon_mapping';
 import { ChangeTypeOfKeys } from '../types/pages';
 import { IconScaleElement, isIconScaleElement, isPartialIconScaleElement, isValueDateFormat } from '../types/types';
@@ -59,7 +45,7 @@ export async function setValueEntry(
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
             if (min !== null && max !== null) {
-                res = Math.round(scale(res, 100, 0, min, max));
+                res = Math.round(Color.scale(res, 100, 0, min, max));
             }
         }
     }
@@ -78,7 +64,7 @@ export async function getValueEntryNumber(
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
             if (min !== null && max !== null) {
-                res = scale(res, max, min, 0, 100);
+                res = Color.scale(res, max, min, 0, 100);
             }
         }
         const d = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
@@ -97,9 +83,9 @@ function getScaledNumberRaw(
 ): number {
     if (min !== null && max !== null) {
         if (oldValue === null) {
-            n = Math.round(scale(n, max, min, 0, 100));
+            n = Math.round(Color.scale(n, max, min, 0, 100));
         } else {
-            n = scale(n, 100, 0, min, max);
+            n = Color.scale(n, 100, 0, min, max);
             if (oldValue !== false) {
                 if (oldValue >= n) n = Math.floor(n);
                 else n = Math.ceil(n);
@@ -148,9 +134,9 @@ export async function getTemperaturColorFromValue(
         }
         kelvin = kelvin > 7000 ? 7000 : kelvin < 1800 ? 1800 : kelvin;
 
-        let r = kelvinToRGB[Math.trunc(kelvin / 100) * 100];
-        r = darken(r, scale(dimmer, 100, 0, 0, 1));
-        return r ? String(rgb_dec565(r)) : null;
+        let r = Color.kelvinToRGB[Math.trunc(kelvin / 100) * 100];
+        r = Color.darken(r, Color.scale(dimmer, 100, 0, 0, 1));
+        return r ? String(Color.rgb_dec565(r)) : null;
     }
     return null;
 }
@@ -166,7 +152,7 @@ export async function getSliderCTFromValue(
         if (i.minScale !== undefined && i.maxScale !== undefined) {
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
-            if (min !== null && max !== null) nval = Math.round(scale(nval, max, min, 1800, 7000));
+            if (min !== null && max !== null) nval = Math.round(Color.scale(nval, max, min, 1800, 7000));
         }
         if (mode === 'mired') {
             r = 10 ** 6 / nval;
@@ -197,7 +183,7 @@ export async function setSliderCTFromValue(
         if (i.minScale !== undefined && i.maxScale !== undefined) {
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
-            if (min !== null && max !== null) r = Math.round(scale(nval, 7000, 1800, min, max));
+            if (min !== null && max !== null) r = Math.round(Color.scale(nval, 7000, 1800, min, max));
         }
         if (i.set && i.set.writeable) await i.value.setStateAsync(r);
         else if (nval !== value) await i.value.setStateAsync(r);
@@ -240,7 +226,7 @@ export async function getIconEntryValue(
                 else textFalse;
             }
         }
-        if (!on) return (i.false && (await getValueEntryString(i.false))) ?? text;
+        if (!on) return textFalse ?? text;
         return text;
     }
     const icon = (i.true && i.true.value && (await i.true.value.getString())) ?? null;
@@ -258,25 +244,25 @@ export async function getIconEntryColor(
     defOff: string | RGB | null = null,
 ): Promise<string> {
     value = value ?? true;
-    if (typeof def === 'number') def = decToRgb(def);
-    else if (typeof def === 'string') def = decToRgb(parseInt(def));
+    if (typeof def === 'number') def = Color.decToRgb(def);
+    else if (typeof def === 'string') def = Color.decToRgb(parseInt(def));
 
-    if (typeof defOff === 'number') defOff = decToRgb(defOff);
+    if (typeof defOff === 'number') defOff = Color.decToRgb(defOff);
     else if (defOff === null) defOff = null;
-    else if (typeof defOff === 'string') defOff = decToRgb(parseInt(defOff));
+    else if (typeof defOff === 'string') defOff = Color.decToRgb(parseInt(defOff));
 
-    if (!i) return String(rgb_dec565(def));
+    if (!i) return String(Color.rgb_dec565(def));
     if (typeof value === 'boolean') {
         const color = i.true && i.true.color && (await i.true.color.getRGBDec());
         if (!value) {
             return (
                 (i.false && i.false.color && (await i.false.color.getRGBDec())) ??
-                (defOff && String(rgb_dec565(defOff))) ??
+                (defOff && String(Color.rgb_dec565(defOff))) ??
                 color ??
-                String(rgb_dec565(def))
+                String(Color.rgb_dec565(def))
             );
         }
-        return color ?? String(rgb_dec565(def));
+        return color ?? String(Color.rgb_dec565(def));
     } else if (typeof value === 'number') {
         let cto = i.true && i.true.color && (await i.true.color.getRGBValue());
         let cfrom = i.false && i.false.color && (await i.false.color.getRGBValue());
@@ -301,29 +287,29 @@ export async function getIconEntryColor(
                 } else if (vBest === undefined) {
                     factor = (value - vMin) / (vMax - vMin);
                     factor = getLogFromIconScale(scale, factor);
-                    rColor = mixColor(cfrom, cto, factor);
+                    rColor = Color.mixColor(cfrom, cto, factor);
                 } else if (value >= vBest) {
                     factor = (value - vBest) / (vMax - vBest);
                     factor = getLogFromIconScale(scale, factor);
-                    rColor = mixColor(cto, cfrom, factor);
+                    rColor = Color.mixColor(cto, cfrom, factor);
                 } else {
                     factor = (value - vMin) / (vBest - vMin);
                     factor = getLogFromIconScale(scale, factor);
-                    rColor = mixColor(cfrom, cto, factor);
+                    rColor = Color.mixColor(cfrom, cto, factor);
                 }
-                return String(rgb_dec565(rColor));
+                return String(Color.rgb_dec565(rColor));
             } else if (isPartialIconScaleElement(scale)) {
                 if ((scale.val_min && scale.val_min >= value) || (scale.val_max && scale.val_max <= value))
-                    return String(rgb_dec565(cto));
-                else String(rgb_dec565(cfrom));
+                    return String(Color.rgb_dec565(cto));
+                else String(Color.rgb_dec565(cfrom));
             }
         }
         if (value) {
-            if (cto) return String(rgb_dec565(cto));
-        } else if (cfrom) return String(rgb_dec565(cfrom));
-        else if (cto) return String(rgb_dec565(cto));
+            if (cto) return String(Color.rgb_dec565(cto));
+        } else if (cfrom) return String(Color.rgb_dec565(cfrom));
+        else if (cto) return String(Color.rgb_dec565(cto));
     }
-    return String(rgb_dec565(def));
+    return String(Color.rgb_dec565(def));
 }
 
 function getLogFromIconScale(i: IconScaleElement, factor: number): number {
@@ -350,7 +336,7 @@ export async function GetIconColor(
 ): Promise<string> {
     // dimmer
     if (item === undefined) return '';
-    if (isRGB(item)) {
+    if (Color.isRGB(item)) {
         const onColor = item;
         if (typeof value === 'number') {
             let val: number = typeof value === 'number' ? value : 0;
@@ -359,17 +345,21 @@ export async function GetIconColor(
             val = val > maxValue ? maxValue : val;
             val = val < minValue ? minValue : val;
             return String(
-                rgb_dec565(
+                Color.rgb_dec565(
                     !offColor
-                        ? darken(onColor ? onColor : HMIOn, scale(val, maxValue, minValue, 0, 1))
-                        : Interpolate(offColor, onColor ? onColor : HMIOn, scale(val, maxValue, minValue, 0, 1)),
+                        ? Color.darken(onColor ? onColor : Color.HMIOn, Color.scale(val, maxValue, minValue, 0, 1))
+                        : Color.Interpolate(
+                              offColor,
+                              onColor ? onColor : Color.HMIOn,
+                              Color.scale(val, maxValue, minValue, 0, 1),
+                          ),
                 ),
             );
         }
         if (value) {
-            return String(rgb_dec565(onColor ? onColor : HMIOn));
+            return String(Color.rgb_dec565(onColor ? onColor : Color.HMIOn));
         }
-        return String(rgb_dec565(offColor ? offColor : HMIOff));
+        return String(Color.rgb_dec565(offColor ? offColor : Color.HMIOff));
     } else {
         const onColor = item.true && item.true.color && (await item.true.color.getRGBValue());
         const offColor = item.false && item.false.color && (await item.false.color.getRGBValue());
@@ -380,18 +370,22 @@ export async function GetIconColor(
             val = val > maxValue ? maxValue : val;
             val = val < minValue ? minValue : val;
             return String(
-                rgb_dec565(
+                Color.rgb_dec565(
                     !offColor
-                        ? darken(onColor ? onColor : HMIOn, scale(val, maxValue, minValue, 0, 1))
-                        : Interpolate(offColor, onColor ? onColor : HMIOn, scale(val, maxValue, minValue, 0, 1)),
+                        ? Color.darken(onColor ? onColor : Color.HMIOn, Color.scale(val, maxValue, minValue, 0, 1))
+                        : Color.Interpolate(
+                              offColor,
+                              onColor ? onColor : Color.HMIOn,
+                              Color.scale(val, maxValue, minValue, 0, 1),
+                          ),
                 ),
             );
         }
 
         if (value) {
-            return String(rgb_dec565(onColor ? onColor : HMIOn));
+            return String(Color.rgb_dec565(onColor ? onColor : Color.HMIOn));
         }
-        return String(rgb_dec565(offColor ? offColor : HMIOff));
+        return String(Color.rgb_dec565(offColor ? offColor : Color.HMIOff));
     }
 }
 
@@ -402,7 +396,7 @@ export async function getEntryColor(
 ): Promise<string> {
     if (i === undefined) return '';
     if (typeof def === 'number') def = String(def);
-    else if (typeof def !== 'string') def = String(rgb_dec565(def));
+    else if (typeof def !== 'string') def = String(Color.rgb_dec565(def));
     if (!i) return def;
     const color = i.true && (await i.true.getRGBDec());
     if (!value) {
@@ -465,7 +459,7 @@ export function getTranslation(library: Library, key1: any | string, key2?: stri
 }
 
 export const getRGBfromRGBThree = async (item: PageItemLightDataItems['data']): Promise<RGB | null> => {
-    if (!item) return White;
+    if (!item) return Color.White;
     const red = (item.Red && (await item.Red.getNumber())) ?? -1;
     const green = (item.Green && (await item.Green.getNumber())) ?? -1;
     const blue = (item.Blue && (await item.Blue.getNumber())) ?? -1;
@@ -475,7 +469,7 @@ export const getRGBfromRGBThree = async (item: PageItemLightDataItems['data']): 
 export const getDecfromRGBThree = async (item: PageItemLightDataItems['data']): Promise<string | null> => {
     const rgb = await getRGBfromRGBThree(item);
     if (!rgb) return null;
-    return String(rgb_dec565(rgb));
+    return String(Color.rgb_dec565(rgb));
 };
 export const setRGBThreefromRGB = async (item: PageItemLightDataItems['data'], c: RGB): Promise<void> => {
     if (!item || !item.Red || !item.Green || !item.Blue) return;
@@ -490,18 +484,18 @@ export const getDecfromHue = async (item: PageItemLightDataItems['data']): Promi
     let saturation = Math.abs((item.saturation && (await item.saturation.getNumber())) ?? 1);
     if (saturation > 1) saturation = 1;
     if (hue === null) return null;
-    const arr = hsv2rgb(hue, saturation, 1);
-    return String(rgb_dec565({ r: arr[0], g: arr[1], b: arr[2] }));
+    const arr = Color.hsv2rgb(hue, saturation, 1);
+    return String(Color.rgb_dec565({ r: arr[0], g: arr[1], b: arr[2] }));
 };
 
 export const setHuefromRGB = async (item: PageItemLightDataItems['data'], c: RGB): Promise<void> => {
-    if (!item || !item.hue || !isRGB(c)) return;
+    if (!item || !item.hue || !Color.isRGB(c)) return;
     if (!item.hue.writeable) {
         return;
     }
     //let saturation = Math.abs((item.saturation && (await item.saturation.getNumber())) ?? 1);
     //if (saturation > 1) saturation = 1;
-    const hue = getHue(c.r, c.g, c.b);
+    const hue = Color.getHue(c.r, c.g, c.b);
     await item.hue.setStateAsync(hue);
 };
 

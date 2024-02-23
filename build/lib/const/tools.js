@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,10 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var tools_exports = {};
 __export(tools_exports, {
@@ -48,7 +54,7 @@ __export(tools_exports, {
 });
 module.exports = __toCommonJS(tools_exports);
 var import_data_item = require("../classes/data-item");
-var import_Color2 = require("./Color");
+var Color = __toESM(require("./Color"));
 var import_icon_mapping = require("./icon_mapping");
 var import_types = require("../types/types");
 const messageItemDefault = {
@@ -75,7 +81,7 @@ async function setValueEntry(i, value, sca = true) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
       if (min !== null && max !== null) {
-        res = Math.round((0, import_Color2.scale)(res, 100, 0, min, max));
+        res = Math.round(Color.scale(res, 100, 0, min, max));
       }
     }
   }
@@ -95,7 +101,7 @@ async function getValueEntryNumber(i, s = true) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
       if (min !== null && max !== null) {
-        res = (0, import_Color2.scale)(res, max, min, 0, 100);
+        res = Color.scale(res, max, min, 0, 100);
       }
     }
     const d = (_b = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _b : null;
@@ -109,9 +115,9 @@ async function getValueEntryNumber(i, s = true) {
 function getScaledNumberRaw(n, min, max, oldValue = null) {
   if (min !== null && max !== null) {
     if (oldValue === null) {
-      n = Math.round((0, import_Color2.scale)(n, max, min, 0, 100));
+      n = Math.round(Color.scale(n, max, min, 0, 100));
     } else {
-      n = (0, import_Color2.scale)(n, 100, 0, min, max);
+      n = Color.scale(n, 100, 0, min, max);
       if (oldValue !== false) {
         if (oldValue >= n)
           n = Math.floor(n);
@@ -156,9 +162,9 @@ async function getTemperaturColorFromValue(i, dimmer = 100) {
       kelvin = nval;
     }
     kelvin = kelvin > 7e3 ? 7e3 : kelvin < 1800 ? 1800 : kelvin;
-    let r = import_Color2.kelvinToRGB[Math.trunc(kelvin / 100) * 100];
-    r = (0, import_Color2.darken)(r, (0, import_Color2.scale)(dimmer, 100, 0, 0, 1));
-    return r ? String((0, import_Color2.rgb_dec565)(r)) : null;
+    let r = Color.kelvinToRGB[Math.trunc(kelvin / 100) * 100];
+    r = Color.darken(r, Color.scale(dimmer, 100, 0, 0, 1));
+    return r ? String(Color.rgb_dec565(r)) : null;
   }
   return null;
 }
@@ -173,7 +179,7 @@ async function getSliderCTFromValue(i) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
       if (min !== null && max !== null)
-        nval = Math.round((0, import_Color2.scale)(nval, max, min, 1800, 7e3));
+        nval = Math.round(Color.scale(nval, max, min, 1800, 7e3));
     }
     if (mode === "mired") {
       r = 10 ** 6 / nval;
@@ -202,7 +208,7 @@ async function setSliderCTFromValue(i, value) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
       if (min !== null && max !== null)
-        r = Math.round((0, import_Color2.scale)(nval, 7e3, 1800, min, max));
+        r = Math.round(Color.scale(nval, 7e3, 1800, min, max));
     }
     if (i.set && i.set.writeable)
       await i.value.setStateAsync(r);
@@ -226,7 +232,7 @@ async function setScaledNumber(i, value) {
   }
 }
 async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
-  var _a, _b, _c, _d, _e, _f, _g;
+  var _a, _b, _c, _d, _e, _f;
   if (i === void 0)
     return "";
   on = on != null ? on : true;
@@ -236,21 +242,21 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   if (text !== null) {
     const textFalse = (_b = i.false && i.false.text && await getValueEntryString(i.false.text)) != null ? _b : null;
     if (typeof on === "number" && textFalse !== null) {
-      const scale2 = i.scale && await i.scale.getObject();
-      if ((0, import_types.isPartialIconScaleElement)(scale2)) {
-        if (scale2.val_min && scale2.val_min >= on || scale2.val_max && scale2.val_max <= on)
+      const scale = i.scale && await i.scale.getObject();
+      if ((0, import_types.isPartialIconScaleElement)(scale)) {
+        if (scale.val_min && scale.val_min >= on || scale.val_max && scale.val_max <= on)
           return text;
         else
           textFalse;
       }
     }
     if (!on)
-      return (_c = i.false && await getValueEntryString(i.false)) != null ? _c : text;
+      return textFalse != null ? textFalse : text;
     return text;
   }
-  const icon = (_d = i.true && i.true.value && await i.true.value.getString()) != null ? _d : null;
+  const icon = (_c = i.true && i.true.value && await i.true.value.getString()) != null ? _c : null;
   if (!on) {
-    return import_icon_mapping.Icons.GetIcon((_g = (_f = (_e = i.false && i.false.value && await i.false.value.getString()) != null ? _e : defOff) != null ? _f : icon) != null ? _g : def);
+    return import_icon_mapping.Icons.GetIcon((_f = (_e = (_d = i.false && i.false.value && await i.false.value.getString()) != null ? _d : defOff) != null ? _e : icon) != null ? _f : def);
   }
   return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def);
 }
@@ -258,32 +264,32 @@ async function getIconEntryColor(i, value, def, defOff = null) {
   var _a, _b, _c, _d;
   value = value != null ? value : true;
   if (typeof def === "number")
-    def = (0, import_Color2.decToRgb)(def);
+    def = Color.decToRgb(def);
   else if (typeof def === "string")
-    def = (0, import_Color2.decToRgb)(parseInt(def));
+    def = Color.decToRgb(parseInt(def));
   if (typeof defOff === "number")
-    defOff = (0, import_Color2.decToRgb)(defOff);
+    defOff = Color.decToRgb(defOff);
   else if (defOff === null)
     defOff = null;
   else if (typeof defOff === "string")
-    defOff = (0, import_Color2.decToRgb)(parseInt(defOff));
+    defOff = Color.decToRgb(parseInt(defOff));
   if (!i)
-    return String((0, import_Color2.rgb_dec565)(def));
+    return String(Color.rgb_dec565(def));
   if (typeof value === "boolean") {
     const color = i.true && i.true.color && await i.true.color.getRGBDec();
     if (!value) {
-      return (_c = (_b = (_a = i.false && i.false.color && await i.false.color.getRGBDec()) != null ? _a : defOff && String((0, import_Color2.rgb_dec565)(defOff))) != null ? _b : color) != null ? _c : String((0, import_Color2.rgb_dec565)(def));
+      return (_c = (_b = (_a = i.false && i.false.color && await i.false.color.getRGBDec()) != null ? _a : defOff && String(Color.rgb_dec565(defOff))) != null ? _b : color) != null ? _c : String(Color.rgb_dec565(def));
     }
-    return color != null ? color : String((0, import_Color2.rgb_dec565)(def));
+    return color != null ? color : String(Color.rgb_dec565(def));
   } else if (typeof value === "number") {
     let cto = i.true && i.true.color && await i.true.color.getRGBValue();
     let cfrom = i.false && i.false.color && await i.false.color.getRGBValue();
-    const scale2 = i.scale && await i.scale.getObject();
-    if (cto && cfrom && scale2) {
+    const scale = i.scale && await i.scale.getObject();
+    if (cto && cfrom && scale) {
       let rColor = cto;
-      if ((0, import_types.isIconScaleElement)(scale2)) {
-        let vMin = scale2.val_min < value ? scale2.val_min : value;
-        let vMax = scale2.val_max > value ? scale2.val_max : value;
+      if ((0, import_types.isIconScaleElement)(scale)) {
+        let vMin = scale.val_min < value ? scale.val_min : value;
+        let vMax = scale.val_max > value ? scale.val_max : value;
         if (vMax < vMin) {
           const temp = vMax;
           vMax = vMin;
@@ -292,40 +298,40 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           cto = cfrom;
           cfrom = temp2;
         }
-        const vBest = (_d = scale2.val_best) != null ? _d : void 0;
+        const vBest = (_d = scale.val_best) != null ? _d : void 0;
         let factor = 1;
         if (vMin == vMax) {
           rColor = cto;
         } else if (vBest === void 0) {
           factor = (value - vMin) / (vMax - vMin);
-          factor = getLogFromIconScale(scale2, factor);
-          rColor = (0, import_Color2.mixColor)(cfrom, cto, factor);
+          factor = getLogFromIconScale(scale, factor);
+          rColor = Color.mixColor(cfrom, cto, factor);
         } else if (value >= vBest) {
           factor = (value - vBest) / (vMax - vBest);
-          factor = getLogFromIconScale(scale2, factor);
-          rColor = (0, import_Color2.mixColor)(cto, cfrom, factor);
+          factor = getLogFromIconScale(scale, factor);
+          rColor = Color.mixColor(cto, cfrom, factor);
         } else {
           factor = (value - vMin) / (vBest - vMin);
-          factor = getLogFromIconScale(scale2, factor);
-          rColor = (0, import_Color2.mixColor)(cfrom, cto, factor);
+          factor = getLogFromIconScale(scale, factor);
+          rColor = Color.mixColor(cfrom, cto, factor);
         }
-        return String((0, import_Color2.rgb_dec565)(rColor));
-      } else if ((0, import_types.isPartialIconScaleElement)(scale2)) {
-        if (scale2.val_min && scale2.val_min >= value || scale2.val_max && scale2.val_max <= value)
-          return String((0, import_Color2.rgb_dec565)(cto));
+        return String(Color.rgb_dec565(rColor));
+      } else if ((0, import_types.isPartialIconScaleElement)(scale)) {
+        if (scale.val_min && scale.val_min >= value || scale.val_max && scale.val_max <= value)
+          return String(Color.rgb_dec565(cto));
         else
-          String((0, import_Color2.rgb_dec565)(cfrom));
+          String(Color.rgb_dec565(cfrom));
       }
     }
     if (value) {
       if (cto)
-        return String((0, import_Color2.rgb_dec565)(cto));
+        return String(Color.rgb_dec565(cto));
     } else if (cfrom)
-      return String((0, import_Color2.rgb_dec565)(cfrom));
+      return String(Color.rgb_dec565(cfrom));
     else if (cto)
-      return String((0, import_Color2.rgb_dec565)(cto));
+      return String(Color.rgb_dec565(cto));
   }
-  return String((0, import_Color2.rgb_dec565)(def));
+  return String(Color.rgb_dec565(def));
 }
 function getLogFromIconScale(i, factor) {
   if (i.log10 !== void 0) {
@@ -346,7 +352,7 @@ async function GetIconColor(item, value, min = null, max = null, offColor = null
   var _a, _b;
   if (item === void 0)
     return "";
-  if ((0, import_Color2.isRGB)(item)) {
+  if (Color.isRGB(item)) {
     const onColor = item;
     if (typeof value === "number") {
       let val = typeof value === "number" ? value : 0;
@@ -355,15 +361,19 @@ async function GetIconColor(item, value, min = null, max = null, offColor = null
       val = val > maxValue ? maxValue : val;
       val = val < minValue ? minValue : val;
       return String(
-        (0, import_Color2.rgb_dec565)(
-          !offColor ? (0, import_Color2.darken)(onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(val, maxValue, minValue, 0, 1)) : (0, import_Color2.Interpolate)(offColor, onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(val, maxValue, minValue, 0, 1))
+        Color.rgb_dec565(
+          !offColor ? Color.darken(onColor ? onColor : Color.HMIOn, Color.scale(val, maxValue, minValue, 0, 1)) : Color.Interpolate(
+            offColor,
+            onColor ? onColor : Color.HMIOn,
+            Color.scale(val, maxValue, minValue, 0, 1)
+          )
         )
       );
     }
     if (value) {
-      return String((0, import_Color2.rgb_dec565)(onColor ? onColor : import_Color2.HMIOn));
+      return String(Color.rgb_dec565(onColor ? onColor : Color.HMIOn));
     }
-    return String((0, import_Color2.rgb_dec565)(offColor ? offColor : import_Color2.HMIOff));
+    return String(Color.rgb_dec565(offColor ? offColor : Color.HMIOff));
   } else {
     const onColor = item.true && item.true.color && await item.true.color.getRGBValue();
     const offColor2 = item.false && item.false.color && await item.false.color.getRGBValue();
@@ -374,15 +384,19 @@ async function GetIconColor(item, value, min = null, max = null, offColor = null
       val = val > maxValue ? maxValue : val;
       val = val < minValue ? minValue : val;
       return String(
-        (0, import_Color2.rgb_dec565)(
-          !offColor2 ? (0, import_Color2.darken)(onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(val, maxValue, minValue, 0, 1)) : (0, import_Color2.Interpolate)(offColor2, onColor ? onColor : import_Color2.HMIOn, (0, import_Color2.scale)(val, maxValue, minValue, 0, 1))
+        Color.rgb_dec565(
+          !offColor2 ? Color.darken(onColor ? onColor : Color.HMIOn, Color.scale(val, maxValue, minValue, 0, 1)) : Color.Interpolate(
+            offColor2,
+            onColor ? onColor : Color.HMIOn,
+            Color.scale(val, maxValue, minValue, 0, 1)
+          )
         )
       );
     }
     if (value) {
-      return String((0, import_Color2.rgb_dec565)(onColor ? onColor : import_Color2.HMIOn));
+      return String(Color.rgb_dec565(onColor ? onColor : Color.HMIOn));
     }
-    return String((0, import_Color2.rgb_dec565)(offColor2 ? offColor2 : import_Color2.HMIOff));
+    return String(Color.rgb_dec565(offColor2 ? offColor2 : Color.HMIOff));
   }
 }
 async function getEntryColor(i, value, def) {
@@ -392,7 +406,7 @@ async function getEntryColor(i, value, def) {
   if (typeof def === "number")
     def = String(def);
   else if (typeof def !== "string")
-    def = String((0, import_Color2.rgb_dec565)(def));
+    def = String(Color.rgb_dec565(def));
   if (!i)
     return def;
   const color = i.true && await i.true.getRGBDec();
@@ -451,7 +465,7 @@ function getTranslation(library, key1, key2) {
 const getRGBfromRGBThree = async (item) => {
   var _a, _b, _c;
   if (!item)
-    return import_Color2.White;
+    return Color.White;
   const red = (_a = item.Red && await item.Red.getNumber()) != null ? _a : -1;
   const green = (_b = item.Green && await item.Green.getNumber()) != null ? _b : -1;
   const blue = (_c = item.Blue && await item.Blue.getNumber()) != null ? _c : -1;
@@ -463,7 +477,7 @@ const getDecfromRGBThree = async (item) => {
   const rgb = await getRGBfromRGBThree(item);
   if (!rgb)
     return null;
-  return String((0, import_Color2.rgb_dec565)(rgb));
+  return String(Color.rgb_dec565(rgb));
 };
 const setRGBThreefromRGB = async (item, c) => {
   if (!item || !item.Red || !item.Green || !item.Blue)
@@ -482,16 +496,16 @@ const getDecfromHue = async (item) => {
     saturation = 1;
   if (hue === null)
     return null;
-  const arr = (0, import_Color2.hsv2rgb)(hue, saturation, 1);
-  return String((0, import_Color2.rgb_dec565)({ r: arr[0], g: arr[1], b: arr[2] }));
+  const arr = Color.hsv2rgb(hue, saturation, 1);
+  return String(Color.rgb_dec565({ r: arr[0], g: arr[1], b: arr[2] }));
 };
 const setHuefromRGB = async (item, c) => {
-  if (!item || !item.hue || !(0, import_Color2.isRGB)(c))
+  if (!item || !item.hue || !Color.isRGB(c))
     return;
   if (!item.hue.writeable) {
     return;
   }
-  const hue = (0, import_Color2.getHue)(c.r, c.g, c.b);
+  const hue = Color.getHue(c.r, c.g, c.b);
   await item.hue.setStateAsync(hue);
 };
 function formatInSelText(Text) {

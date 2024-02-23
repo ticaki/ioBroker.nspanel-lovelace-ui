@@ -3702,8 +3702,8 @@ const pageScreensaverTest = {
       data: {
         entity1: {
           value: {
-            type: "const",
-            constVal: "12"
+            type: "state",
+            dp: "0_userdata.0.number1"
           }
         },
         icon: {
@@ -3718,8 +3718,64 @@ const pageScreensaverTest = {
             },
             text: {
               value: {
+                type: "state",
+                dp: "0_userdata.0.number1"
+              },
+              unit: {
+                type: "const",
+                constVal: "\xB0C"
+              }
+            }
+          },
+          false: {
+            value: {
+              type: "const",
+              constVal: "heat-wave"
+            },
+            color: {
+              type: "const",
+              constVal: Color.MSYellow
+            },
+            text: {
+              value: {
                 type: "const",
                 constVal: "deconz.0.Sensors.5.temperature"
+              },
+              unit: {
+                type: "const",
+                constVal: "\xB0C"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      role: "combined",
+      dpInit: "",
+      type: "text",
+      modeScr: "mricon",
+      data: {
+        entity1: {
+          value: {
+            type: "state",
+            dp: "0_userdata.0.number1"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "heat-wave"
+            },
+            color: {
+              type: "const",
+              constVal: Color.MSRed
+            },
+            text: {
+              value: {
+                type: "state",
+                dp: "0_userdata.0.number1"
               },
               unit: {
                 type: "const",
