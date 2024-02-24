@@ -201,6 +201,7 @@ class Screensaver extends import_Page.Page {
               break;
             }
             case "date": {
+              this.HandleDate();
               break;
             }
           }

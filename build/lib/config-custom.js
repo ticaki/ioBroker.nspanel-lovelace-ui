@@ -3758,8 +3758,8 @@ const pageScreensaverTest = {
       data: {
         entity1: {
           value: {
-            type: "state",
-            dp: "0_userdata.0.number1"
+            type: "const",
+            constVal: false
           }
         },
         icon: {

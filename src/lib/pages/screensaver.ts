@@ -193,6 +193,7 @@ export class Screensaver extends Page {
                             break;
                         }
                         case 'date': {
+                            this.HandleDate();
                             break;
                         }
                     }

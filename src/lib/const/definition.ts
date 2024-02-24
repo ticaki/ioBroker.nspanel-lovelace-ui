@@ -35,6 +35,8 @@ export const genericStateObjects: {
                 power1: ioBroker.StateObject;
                 power2: ioBroker.StateObject;
                 screensaverTimeout: ioBroker.StateObject;
+                dimActive: ioBroker.StateObject;
+                dimStandby: ioBroker.StateObject;
             };
             info: customChannelType & {
                 status: ioBroker.StateObject;
@@ -53,7 +55,7 @@ export const genericStateObjects: {
         _id: 'No_definition',
         type: 'state',
         common: {
-            name: 'genericStateObjects.state',
+            name: 'StateObjects.state',
             type: 'string',
             role: 'text',
             read: true,
@@ -66,7 +68,7 @@ export const genericStateObjects: {
             _id: '',
             type: 'folder',
             common: {
-                name: 'genericStateObjects.panel',
+                name: 'StateObjects.panel',
             },
             native: {},
         },
@@ -75,7 +77,7 @@ export const genericStateObjects: {
                 _id: '',
                 type: 'device',
                 common: {
-                    name: 'genericStateObjects.panels',
+                    name: 'StateObjects.panels',
                 },
                 native: {},
             },
@@ -84,7 +86,7 @@ export const genericStateObjects: {
                     _id: '',
                     type: 'channel',
                     common: {
-                        name: 'genericStateObjects.cmd',
+                        name: 'StateObjects.cmd',
                     },
                     native: {},
                 },
@@ -92,7 +94,7 @@ export const genericStateObjects: {
                     _id: '',
                     type: 'state',
                     common: {
-                        name: 'genericStateObjects.power1',
+                        name: 'StateObjects.power1',
                         type: 'boolean',
                         role: 'switch',
                         read: true,
@@ -104,7 +106,7 @@ export const genericStateObjects: {
                     _id: '',
                     type: 'state',
                     common: {
-                        name: 'genericStateObjects.power2',
+                        name: 'StateObjects.power2',
                         type: 'boolean',
                         role: 'switch',
                         read: true,
@@ -116,9 +118,36 @@ export const genericStateObjects: {
                     _id: '',
                     type: 'state',
                     common: {
-                        name: 'genericStateObjects.screensaverTimeout',
+                        name: 'StateObjects.screensaverTimeout',
                         type: 'number',
                         role: 'value',
+                        unit: 's',
+                        read: true,
+                        write: true,
+                    },
+                    native: {},
+                },
+                dimStandby: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.dimStandby',
+                        type: 'number',
+                        role: 'value',
+                        unit: '%',
+                        read: true,
+                        write: true,
+                    },
+                    native: {},
+                },
+                dimActive: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.dimActive',
+                        type: 'number',
+                        role: 'value',
+                        unit: '%',
                         read: true,
                         write: true,
                     },
@@ -130,7 +159,7 @@ export const genericStateObjects: {
                     _id: '',
                     type: 'channel',
                     common: {
-                        name: 'genericStateObjects.info',
+                        name: 'StateObjects.info',
                     },
                     native: {},
                 },
@@ -138,7 +167,7 @@ export const genericStateObjects: {
                     _id: '',
                     type: 'state',
                     common: {
-                        name: 'genericStateObjects.status',
+                        name: 'StateObjects.status',
                         type: 'string',
                         role: 'json',
                         read: true,
@@ -151,7 +180,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'channel',
                         common: {
-                            name: 'genericStateObjects.nspanel',
+                            name: 'StateObjects.nspanel',
                         },
                         native: {},
                     },
@@ -159,7 +188,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.currentPage',
+                            name: 'StateObjects.currentPage',
                             type: 'string',
                             role: 'text',
                             read: true,
@@ -171,7 +200,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.displayVersion',
+                            name: 'StateObjects.displayVersion',
                             type: 'string',
                             role: 'text',
                             read: true,
@@ -183,7 +212,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.model',
+                            name: 'StateObjects.model',
                             type: 'string',
                             role: 'text',
                             read: true,
@@ -195,7 +224,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.bigIconLeft',
+                            name: 'StateObjects.bigIconLeft',
                             type: 'boolean',
                             role: 'indicator',
                             read: true,
@@ -207,7 +236,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.bigIconRight',
+                            name: 'StateObjects.bigIconRight',
                             type: 'boolean',
                             role: 'indicator',
                             read: true,
@@ -219,7 +248,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.isOnline',
+                            name: 'StateObjects.isOnline',
                             type: 'boolean',
                             role: 'indicator.reachable',
                             read: true,
@@ -242,7 +271,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.uptime',
+                            name: 'StateObjects.uptime',
                             type: 'string',
                             role: 'text',
                             read: true,
@@ -255,7 +284,7 @@ export const genericStateObjects: {
                             _id: '',
                             type: 'channel',
                             common: {
-                                name: 'genericStateObjects.wifi',
+                                name: 'StateObjects.wifi',
                             },
                             native: {},
                         },
@@ -263,7 +292,7 @@ export const genericStateObjects: {
                             _id: '',
                             type: 'state',
                             common: {
-                                name: 'genericStateObjects.ssid',
+                                name: 'StateObjects.ssid',
                                 type: 'string',
                                 role: 'text',
                                 read: true,
@@ -275,7 +304,7 @@ export const genericStateObjects: {
                             _id: '',
                             type: 'state',
                             common: {
-                                name: 'genericStateObjects.rssi',
+                                name: 'StateObjects.rssi',
                                 type: 'string',
                                 role: 'text',
                                 read: true,
@@ -287,7 +316,7 @@ export const genericStateObjects: {
                             _id: '',
                             type: 'state',
                             common: {
-                                name: 'genericStateObjects.downtime',
+                                name: 'StateObjects.downtime',
                                 type: 'string',
                                 role: 'text',
                                 read: true,
@@ -301,7 +330,7 @@ export const genericStateObjects: {
                             _id: '',
                             type: 'channel',
                             common: {
-                                name: 'genericStateObjects.net',
+                                name: 'StateObjects.net',
                             },
                             native: {},
                         },
@@ -309,7 +338,7 @@ export const genericStateObjects: {
                             _id: '',
                             type: 'state',
                             common: {
-                                name: 'genericStateObjects.ip',
+                                name: 'StateObjects.ip',
                                 type: 'string',
                                 role: 'text',
                                 read: true,
@@ -321,7 +350,7 @@ export const genericStateObjects: {
                             _id: '',
                             type: 'state',
                             common: {
-                                name: 'genericStateObjects.gateway',
+                                name: 'StateObjects.gateway',
                                 type: 'string',
                                 role: 'text',
                                 read: true,
@@ -333,7 +362,7 @@ export const genericStateObjects: {
                             _id: '',
                             type: 'state',
                             common: {
-                                name: 'genericStateObjects.dnsserver',
+                                name: 'StateObjects.dnsserver',
                                 type: 'string',
                                 role: 'text',
                                 read: true,
@@ -345,7 +374,7 @@ export const genericStateObjects: {
                             _id: '',
                             type: 'state',
                             common: {
-                                name: 'genericStateObjects.subnetmask',
+                                name: 'StateObjects.subnetmask',
                                 type: 'string',
                                 role: 'text',
                                 read: true,
@@ -357,7 +386,7 @@ export const genericStateObjects: {
                             _id: '',
                             type: 'state',
                             common: {
-                                name: 'genericStateObjects.hostname',
+                                name: 'StateObjects.hostname',
                                 type: 'string',
                                 role: 'text',
                                 read: true,
@@ -369,7 +398,7 @@ export const genericStateObjects: {
                             _id: '',
                             type: 'state',
                             common: {
-                                name: 'genericStateObjects.mac',
+                                name: 'StateObjects.mac',
                                 type: 'string',
                                 role: 'text',
                                 read: true,
@@ -385,7 +414,7 @@ export const genericStateObjects: {
                     _id: '',
                     type: 'channel',
                     common: {
-                        name: 'genericStateObjects.alarm',
+                        name: 'StateObjects.alarm',
                     },
                     native: {},
                 },
@@ -394,7 +423,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'channel',
                         common: {
-                            name: 'genericStateObjects.cardAlarm',
+                            name: 'StateObjects.cardAlarm',
                         },
                         native: {},
                     },
@@ -402,7 +431,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.power2',
+                            name: 'StateObjects.power2',
                             type: 'number',
                             role: 'value',
                             states: ['disarmed', 'armed', 'arming', 'pending', 'triggered'],
@@ -415,7 +444,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.power2',
+                            name: 'StateObjects.power2',
                             type: 'boolean',
                             role: 'button',
                             read: false,
@@ -427,7 +456,7 @@ export const genericStateObjects: {
                         _id: '',
                         type: 'state',
                         common: {
-                            name: 'genericStateObjects.power2',
+                            name: 'StateObjects.power2',
                             type: 'boolean',
                             role: 'button',
                             read: false,
@@ -444,7 +473,7 @@ export const genericStateObjects: {
         _id: 'User_State',
         type: 'state',
         common: {
-            name: 'genericStateObjects.customString',
+            name: 'StateObjects.customString',
             type: 'string',
             role: 'text',
             read: true,

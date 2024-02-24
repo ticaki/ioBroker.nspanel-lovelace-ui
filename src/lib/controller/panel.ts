@@ -17,6 +17,7 @@ import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
 import { PageItem } from '../pages/pageItem';
 import { PageEntities } from '../pages/pageEntities';
+import { getInternalDefaults } from '../const/tools';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -84,6 +85,7 @@ export class Panel extends BaseClass {
     readonly CustomFormat: string;
     readonly sendToTasmota: (topic: string, payload: string, opt?: IClientPublishOptions) => void = () => {};
     public persistentPageItems: Record<string, PageItem> = {};
+
     info: Types.PanelInfo = {
         nspanel: {
             displayVersion: 0,
@@ -242,13 +244,30 @@ export class Panel extends BaseClass {
             undefined === 'ON',
             genericStateObjects.panel.panels.alarm._channel,
         );
+
+        let state = this.library.readdb(`panels.${this.name}.cmd.dimStandby`);
+        if (state && state.val) this.dimMode.low = state.val as number;
+        state = this.library.readdb(`panels.${this.name}.cmd.dimActive`);
+        if (state && state.val) this.dimMode.high = state.val as number;
+        await this.library.writedp(
+            `panels.${this.name}.cmd.dimStandby`,
+            this.dimMode.low,
+            genericStateObjects.panel.panels.cmd.dimStandby,
+        );
+        await this.library.writedp(
+            `panels.${this.name}.cmd.dimActive`,
+            this.dimMode.high,
+            genericStateObjects.panel.panels.cmd.dimActive,
+        );
+
         for (const page of this.pages) {
             if (page) {
                 this.log.debug('init page ' + page.name);
                 await page.init();
             }
         }
-        let state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
+
+        state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
         if (state) {
             this.timeout = parseInt(String(state.val));
         }
@@ -268,7 +287,14 @@ export class Panel extends BaseClass {
         this.library.writedp(`panels.${this.name}.cmd.mainPage`, page, {
             _id: '',
             type: 'state',
-            common: { name: '', type: 'string', role: 'value.text', read: true, write: true, states: states },
+            common: {
+                name: 'StateObjects.mainPage',
+                type: 'string',
+                role: 'value.text',
+                read: true,
+                write: true,
+                states: states,
+            },
             native: {},
         });
 
@@ -282,39 +308,36 @@ export class Panel extends BaseClass {
             `${this.name}/cmd/screensaverTimeout`,
             this.timeout,
             true,
-            {
-                name: '',
-                type: 'number',
-                role: 'value',
-                read: true,
-                write: true,
-            },
+            getInternalDefaults('number', 'value'),
+            this.onInternalCommand,
+        );
+        this.statesControler.setInternalState(
+            `${this.name}/cmd/dimStandby`,
+            this.timeout,
+            true,
+            getInternalDefaults('number', 'value'),
+            this.onInternalCommand,
+        );
+
+        this.statesControler.setInternalState(
+            `${this.name}/cmd/dimActive`,
+            this.timeout,
+            true,
+            getInternalDefaults('number', 'value'),
             this.onInternalCommand,
         );
         this.statesControler.setInternalState(
             `${this.name}/cmd/bigIconLeft`,
             true,
             true,
-            {
-                name: '',
-                type: 'boolean',
-                role: 'indicator',
-                read: true,
-                write: true,
-            },
+            getInternalDefaults('boolean', 'indicator'),
             this.onInternalCommand,
         );
         this.statesControler.setInternalState(
             `${this.name}/cmd/bigIconRight`,
             true,
             true,
-            {
-                name: '',
-                type: 'boolean',
-                role: 'indicator',
-                read: true,
-                write: true,
-            },
+            getInternalDefaults('boolean', 'indicator'),
             this.onInternalCommand,
         );
         this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
@@ -507,8 +530,28 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'screensaverTimeout': {
-                    this.timeout = parseInt(String(state.val));
-                    this.library.writedp(`panels.${this.name}.cmd.screensaverTimeout`, this.timeout);
+                    this.statesControler.setInternalState(
+                        `${this.name}/cmd/screensaverTimeout`,
+                        parseInt(String(state.val)),
+                        false,
+                    );
+                    break;
+                }
+                case 'dimStandby': {
+                    this.statesControler.setInternalState(
+                        `${this.name}/cmd/dimStandby`,
+                        parseInt(String(state.val)),
+                        false,
+                    );
+                    break;
+                }
+                case 'dimActive': {
+                    this.statesControler.setInternalState(
+                        `${this.name}/cmd/dimActive`,
+                        parseInt(String(state.val)),
+                        false,
+                    );
+                    break;
                 }
             }
         }
@@ -522,6 +565,11 @@ export class Panel extends BaseClass {
         this.log.debug(`Set screeensaver timeout to ${sec}s.`);
         this.sendToPanel(`timeout~${sec}`);
     }
+
+    sendDimmode(): void {
+        this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(1));
+    }
+
     restartLoops(): void {
         if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
         this.minuteLoop();
@@ -651,6 +699,14 @@ export class Panel extends BaseClass {
         const token = id.split('/').pop();
         if (state && !state.ack && state.val !== null) {
             switch (token) {
+                case 'power1': {
+                    this.sendToTasmota(this.topic + '/cmnd/POWER1', state.val ? 'ON' : 'OFF');
+                    break;
+                }
+                case 'power2': {
+                    this.sendToTasmota(this.topic + '/cmnd/POWER2', state.val ? 'ON' : 'OFF');
+                    break;
+                }
                 case 'bigIconLeft': {
                     this.info.nspanel.bigIconLeft = !!state.val;
                     this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
@@ -684,7 +740,22 @@ export class Panel extends BaseClass {
                         this.library.writedp(`panels.${this.name}.cmd.screensaverTimeout`, this.timeout);
                     }
                 }
+                case 'dimStandby': {
+                    const val = parseInt(String(state.val));
+                    this.dimMode.low = val;
+                    this.sendDimmode();
+                    this.library.writedp(`panels.${this.name}.cmd.dimStandby`, this.dimMode.low);
+                    break;
+                }
+                case 'dimActive': {
+                    const val = parseInt(String(state.val));
+                    this.dimMode.high = val;
+                    this.sendDimmode();
+                    this.library.writedp(`panels.${this.name}.cmd.dimActive`, this.dimMode.high);
+                    break;
+                }
             }
+            this.statesControler.setInternalState(id, state.val, true);
         } else if (!state) {
             switch (token) {
                 case 'bigIconLeft': {
@@ -695,6 +766,12 @@ export class Panel extends BaseClass {
                 }
                 case 'screensaverTimeout': {
                     return this.timeout;
+                }
+                case 'dimStandby': {
+                    return this.dimMode.low;
+                }
+                case 'dimActive': {
+                    return this.dimMode.high;
                 }
             }
         }

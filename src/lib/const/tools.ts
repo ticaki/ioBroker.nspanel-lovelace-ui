@@ -594,3 +594,16 @@ export function deepAssign(def: Record<any, any>, source: Record<any, any>, leve
     }
     return Object.assign(def, source);
 }
+
+export function getInternalDefaults(
+    type: ioBroker.StateCommon['type'],
+    role: ioBroker.StateCommon['role'],
+): ioBroker.StateCommon {
+    return {
+        name: '',
+        type: type,
+        role: role,
+        read: true,
+        write: true,
+    };
+}

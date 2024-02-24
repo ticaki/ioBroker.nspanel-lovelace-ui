@@ -33,6 +33,7 @@ __export(tools_exports, {
   getEntryTextOnOff: () => getEntryTextOnOff,
   getIconEntryColor: () => getIconEntryColor,
   getIconEntryValue: () => getIconEntryValue,
+  getInternalDefaults: () => getInternalDefaults,
   getItemMesssage: () => getItemMesssage,
   getPayload: () => getPayload,
   getPayloadArray: () => getPayloadArray,
@@ -593,6 +594,15 @@ function deepAssign(def, source, level = 0) {
   }
   return Object.assign(def, source);
 }
+function getInternalDefaults(type, role) {
+  return {
+    name: "",
+    type,
+    role,
+    read: true,
+    write: true
+  };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
@@ -604,6 +614,7 @@ function deepAssign(def, source, level = 0) {
   getEntryTextOnOff,
   getIconEntryColor,
   getIconEntryValue,
+  getInternalDefaults,
   getItemMesssage,
   getPayload,
   getPayloadArray,

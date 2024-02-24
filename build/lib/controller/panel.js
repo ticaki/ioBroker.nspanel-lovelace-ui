@@ -41,6 +41,7 @@ var import_navigation = require("../classes/navigation");
 var import_pageThermo = require("../pages/pageThermo");
 var import_pagePower = require("../pages/pagePower");
 var import_pageEntities = require("../pages/pageEntities");
+var import_tools = require("../const/tools");
 function isPanelConfig(F) {
   if (F.controller === void 0)
     return false;
@@ -237,13 +238,29 @@ class Panel extends import_library.BaseClass {
       void 0 === "ON",
       import_definition.genericStateObjects.panel.panels.alarm._channel
     );
+    let state = this.library.readdb(`panels.${this.name}.cmd.dimStandby`);
+    if (state && state.val)
+      this.dimMode.low = state.val;
+    state = this.library.readdb(`panels.${this.name}.cmd.dimActive`);
+    if (state && state.val)
+      this.dimMode.high = state.val;
+    await this.library.writedp(
+      `panels.${this.name}.cmd.dimStandby`,
+      this.dimMode.low,
+      import_definition.genericStateObjects.panel.panels.cmd.dimStandby
+    );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.dimActive`,
+      this.dimMode.high,
+      import_definition.genericStateObjects.panel.panels.cmd.dimActive
+    );
     for (const page2 of this.pages) {
       if (page2) {
         this.log.debug("init page " + page2.name);
         await page2.init();
       }
     }
-    let state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
+    state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
     if (state) {
       this.timeout = parseInt(String(state.val));
     }
@@ -262,7 +279,14 @@ class Panel extends import_library.BaseClass {
     this.library.writedp(`panels.${this.name}.cmd.mainPage`, page, {
       _id: "",
       type: "state",
-      common: { name: "", type: "string", role: "value.text", read: true, write: true, states },
+      common: {
+        name: "StateObjects.mainPage",
+        type: "string",
+        role: "value.text",
+        read: true,
+        write: true,
+        states
+      },
       native: {}
     });
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
@@ -273,39 +297,35 @@ class Panel extends import_library.BaseClass {
       `${this.name}/cmd/screensaverTimeout`,
       this.timeout,
       true,
-      {
-        name: "",
-        type: "number",
-        role: "value",
-        read: true,
-        write: true
-      },
+      (0, import_tools.getInternalDefaults)("number", "value"),
+      this.onInternalCommand
+    );
+    this.statesControler.setInternalState(
+      `${this.name}/cmd/dimStandby`,
+      this.timeout,
+      true,
+      (0, import_tools.getInternalDefaults)("number", "value"),
+      this.onInternalCommand
+    );
+    this.statesControler.setInternalState(
+      `${this.name}/cmd/dimActive`,
+      this.timeout,
+      true,
+      (0, import_tools.getInternalDefaults)("number", "value"),
       this.onInternalCommand
     );
     this.statesControler.setInternalState(
       `${this.name}/cmd/bigIconLeft`,
       true,
       true,
-      {
-        name: "",
-        type: "boolean",
-        role: "indicator",
-        read: true,
-        write: true
-      },
+      (0, import_tools.getInternalDefaults)("boolean", "indicator"),
       this.onInternalCommand
     );
     this.statesControler.setInternalState(
       `${this.name}/cmd/bigIconRight`,
       true,
       true,
-      {
-        name: "",
-        type: "boolean",
-        role: "indicator",
-        read: true,
-        write: true
-      },
+      (0, import_tools.getInternalDefaults)("boolean", "indicator"),
       this.onInternalCommand
     );
     this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
@@ -495,8 +515,28 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "screensaverTimeout": {
-          this.timeout = parseInt(String(state.val));
-          this.library.writedp(`panels.${this.name}.cmd.screensaverTimeout`, this.timeout);
+          this.statesControler.setInternalState(
+            `${this.name}/cmd/screensaverTimeout`,
+            parseInt(String(state.val)),
+            false
+          );
+          break;
+        }
+        case "dimStandby": {
+          this.statesControler.setInternalState(
+            `${this.name}/cmd/dimStandby`,
+            parseInt(String(state.val)),
+            false
+          );
+          break;
+        }
+        case "dimActive": {
+          this.statesControler.setInternalState(
+            `${this.name}/cmd/dimActive`,
+            parseInt(String(state.val)),
+            false
+          );
+          break;
         }
       }
     }
@@ -504,6 +544,9 @@ class Panel extends import_library.BaseClass {
   sendScreeensaverTimeout(sec) {
     this.log.debug(`Set screeensaver timeout to ${sec}s.`);
     this.sendToPanel(`timeout~${sec}`);
+  }
+  sendDimmode() {
+    this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(1));
   }
   restartLoops() {
     if (this.minuteLoopTimeout)
@@ -625,6 +668,14 @@ class Panel extends import_library.BaseClass {
     const token = id.split("/").pop();
     if (state && !state.ack && state.val !== null) {
       switch (token) {
+        case "power1": {
+          this.sendToTasmota(this.topic + "/cmnd/POWER1", state.val ? "ON" : "OFF");
+          break;
+        }
+        case "power2": {
+          this.sendToTasmota(this.topic + "/cmnd/POWER2", state.val ? "ON" : "OFF");
+          break;
+        }
         case "bigIconLeft": {
           this.info.nspanel.bigIconLeft = !!state.val;
           this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
@@ -658,7 +709,22 @@ class Panel extends import_library.BaseClass {
             this.library.writedp(`panels.${this.name}.cmd.screensaverTimeout`, this.timeout);
           }
         }
+        case "dimStandby": {
+          const val = parseInt(String(state.val));
+          this.dimMode.low = val;
+          this.sendDimmode();
+          this.library.writedp(`panels.${this.name}.cmd.dimStandby`, this.dimMode.low);
+          break;
+        }
+        case "dimActive": {
+          const val = parseInt(String(state.val));
+          this.dimMode.high = val;
+          this.sendDimmode();
+          this.library.writedp(`panels.${this.name}.cmd.dimActive`, this.dimMode.high);
+          break;
+        }
       }
+      this.statesControler.setInternalState(id, state.val, true);
     } else if (!state) {
       switch (token) {
         case "bigIconLeft": {
@@ -669,6 +735,12 @@ class Panel extends import_library.BaseClass {
         }
         case "screensaverTimeout": {
           return this.timeout;
+        }
+        case "dimStandby": {
+          return this.dimMode.low;
+        }
+        case "dimActive": {
+          return this.dimMode.high;
         }
       }
     }
