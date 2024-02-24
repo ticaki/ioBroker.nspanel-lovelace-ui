@@ -218,6 +218,31 @@ const pageEntitiesTest1 = {
   ],
   items: void 0
 };
+const popupTest = {
+  card: "popupNotify",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "popup1",
+  useColor: false,
+  config: {
+    card: "popupNotify",
+    data: {
+      entity1: { value: { type: "triggered", dp: "0_userdata.0.example_state" } },
+      headline: { type: "const", constVal: "headline" },
+      colorHeadline: { true: { color: { type: "const", constVal: Color.White } } },
+      buttonLeft: { type: "const", constVal: "l" },
+      colorButtonLeft: { true: { color: { type: "const", constVal: Color.White } } },
+      buttonRight: { type: "const", constVal: "r" },
+      colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
+      text: { type: "const", constVal: "Text" },
+      colorText: { true: { color: { type: "const", constVal: Color.White } } },
+      timeout: { type: "const", constVal: 0 },
+      setValue1: { type: "const", constVal: true }
+    }
+  },
+  pageItems: [],
+  items: void 0
+};
 const pageEntitiesTest2 = {
   card: "cardEntities",
   dpInit: "",
@@ -3997,7 +4022,8 @@ const Testconfig = [
       pageEntitiesTest2,
       pageAbfall,
       pageGridTest5,
-      pageMediaTest3
+      pageMediaTest3,
+      popupTest
     ],
     navigation: [
       {

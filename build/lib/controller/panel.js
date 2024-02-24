@@ -42,6 +42,7 @@ var import_pageThermo = require("../pages/pageThermo");
 var import_pagePower = require("../pages/pagePower");
 var import_pageEntities = require("../pages/pageEntities");
 var import_tools = require("../const/tools");
+var import_pageNotification = require("../pages/pageNotification");
 function isPanelConfig(F) {
   if (F.controller === void 0)
     return false;
@@ -184,6 +185,15 @@ class Panel extends import_library.BaseClass {
         case "cardPower": {
           pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pagePower.PagePower(pmconfig, pageConfig);
+          break;
+        }
+        case "cardBurnRec":
+        case "cardItemSpecial":
+          break;
+        case "popupNotify2":
+        case "popupNotify": {
+          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          this.pages[a] = new import_pageNotification.PageNotify(pmconfig, pageConfig);
           break;
         }
         case "screensaver":
@@ -352,6 +362,7 @@ class Panel extends import_library.BaseClass {
     this.sendToPanelClass(payload, opt);
   };
   async setActivePage(_page, _notSleep) {
+    var _a, _b, _c;
     if (_page === void 0)
       return;
     let page = this._activePage;
@@ -365,6 +376,7 @@ class Panel extends import_library.BaseClass {
     if (!this._activePage) {
       if (page === void 0)
         return;
+      page.setLastPage((_a = this._activePage) != null ? _a : void 0);
       await page.setVisibility(true);
       this._activePage = page;
     } else if (sleep !== this._activePage.sleep || page !== this._activePage) {
@@ -372,12 +384,14 @@ class Panel extends import_library.BaseClass {
         if (this._activePage)
           await this._activePage.setVisibility(false);
         if (page) {
+          page.setLastPage((_b = this._activePage) != null ? _b : void 0);
           if (!sleep)
             await page.setVisibility(true);
           page.sleep = sleep;
           this._activePage = page;
         }
       } else if (sleep !== this._activePage.sleep) {
+        page.setLastPage((_c = this._activePage) != null ? _c : void 0);
         if (!sleep)
           await this._activePage.setVisibility(true, true);
         this._activePage.sleep = sleep;

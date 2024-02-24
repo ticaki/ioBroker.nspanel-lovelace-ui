@@ -1,6 +1,7 @@
 import { Dataitem, isDataItem } from '../classes/data-item';
 import {
     ColorEntryType,
+    ColorEntryTypeNew,
     IconEntryType,
     MessageItem,
     PageItemLightDataItems,
@@ -238,7 +239,7 @@ export async function getIconEntryValue(
 }
 
 export async function getIconEntryColor(
-    i: ChangeTypeOfKeys<IconEntryType, Dataitem | undefined> | undefined,
+    i: ChangeTypeOfKeys<ColorEntryTypeNew, Dataitem | undefined> | undefined,
     value: boolean | number | null,
     def: string | RGB | number,
     defOff: string | RGB | null = null,
@@ -606,4 +607,22 @@ export function getInternalDefaults(
         read: true,
         write: true,
     };
+}
+
+export function setTriggeredToState(theObject: any, exclude: string[]): void {
+    if (theObject instanceof Array) {
+        for (let i = 0; i < theObject.length; i++) {
+            setTriggeredToState(theObject[i], exclude);
+        }
+    } else {
+        for (const prop in theObject) {
+            if (exclude.indexOf(prop) !== -1) continue;
+            if (prop == 'type') {
+                if (theObject[prop] === 'triggered') theObject[prop] = 'state';
+            }
+            if (theObject[prop] instanceof Object || theObject[prop] instanceof Array) {
+                setTriggeredToState(theObject[prop], exclude);
+            }
+        }
+    }
 }

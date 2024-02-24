@@ -20,7 +20,9 @@ export type PageTypeCards =
     | 'screensaver'
     | 'screensaver2'
     | 'cardBurnRec'
-    | 'cardItemSpecial'; // besonders, interne Card zum verwalten von pageItems
+    | 'cardItemSpecial'
+    | 'popupNotify'
+    | 'popupNotify2'; // besonders, interne Card zum verwalten von pageItems
 
 /*export type PageType =
     | Types.PageChart
@@ -225,7 +227,9 @@ export type PageBaseConfigTemplate =
               | cardThermoDataItemOptions
               | cardEntitiesDataItemOptions
               | cardAlarmDataItemOptions
-              | screensaverDataItemOptions;
+              | screensaverDataItemOptions
+              | cardNotifyDataItemOptions
+              | cardNotify2DataItemOptions;
           items: undefined;
       }
     | {
@@ -261,7 +265,9 @@ export type PageBaseConfig = (
                     | cardGridDataItemOptions
                     | cardThermoDataItemOptions
                     | cardEntitiesDataItemOptions
-                    | cardAlarmDataItemOptions;
+                    | cardAlarmDataItemOptions
+                    | cardNotifyDataItemOptions
+                    | cardNotify2DataItemOptions;
             }
           | {
                 //    type: PlayerType;
@@ -293,8 +299,47 @@ export type PageBaseConfig = (
         | cardMediaDataItems
         | cardGridDataItems
         | cardThermoDataItems
-        | cardAlarmDataItems;
+        | cardAlarmDataItems
+        | cardNotifyDataItems
+        | cardNotify2DataItems;
 };
+type PageNotifyConfig = {
+    headline: string;
+    entity1?: typePageItem.ValueEntryType;
+    colorHeadline: typePageItem.ColorEntryTypeNew;
+    buttonLeft: string;
+    colorButtonLeft: typePageItem.ColorEntryTypeNew;
+    buttonRight: string;
+    colorButtonRight: typePageItem.ColorEntryTypeNew;
+    text: string;
+    colorText: typePageItem.ColorEntryTypeNew;
+    timeout: number;
+    setValue1: string;
+    setValue2?: string;
+};
+export type cardNotifyDataItemOptions = {
+    card: 'popupNotify';
+    data: ChangeTypeOfKeys<PageNotifyConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardNotifyDataItems = {
+    card: 'popupNotify';
+    data: ChangeTypeOfKeys<PageNotifyConfig, dataItem.Dataitem | undefined>;
+};
+
+type PageNotify2Config = {
+    textSize: string;
+    icon: typePageItem.IconEntryType;
+} & PageNotifyConfig;
+
+export type cardNotify2DataItemOptions = {
+    card: 'popupNotify2';
+    data: ChangeTypeOfKeys<PageNotify2Config, Types.DataItemsOptions | undefined>;
+};
+export type cardNotify2DataItems = {
+    card: 'popupNotify2';
+    data: ChangeTypeOfKeys<PageNotify2Config, dataItem.Dataitem | undefined>;
+};
+
 type PageAlarmPowerConfig = {
     headline: string;
     entity1: typePageItem.ValueEntryType;
@@ -593,6 +638,31 @@ export type PageGridMessage = {
     options: [string?, string?, string?, string?, string?, string?, string?, string?];
 };
 
+export type PageNotifyMessage = {
+    event: 'entityUpd';
+    headline: string;
+    hColor: string;
+    blText: string;
+    blColor: string;
+    brText: string;
+    brColor: string;
+    text: string;
+    textColor: string;
+    timeout: number;
+    fontSet: string;
+    icon: string;
+    iconColor: string;
+};
+/*+ getState(popupNotifyInternalName).val + '~'
+                + heading + '~'
+                + v_popupNotifyHeadingColor + '~'
+                + getState(popupNotifyButton1Text).val + '~'
+                + v_popupNotifyButton1TextColor + '~'
+                + getState(popupNotifyButton2Text).val + '~'
+                + v_popupNotifyButton2TextColor + '~'
+                + text + '~'
+                + v_popupNotifyTextColor + '~'
+                + getState(popupNotifySleepTimeout).val;*/
 export type screensaverMessage = {
     options: Record<Types.ScreenSaverPlaces, string[]>;
 };

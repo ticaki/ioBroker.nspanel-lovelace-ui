@@ -20,6 +20,7 @@ export type ScreensaverConfigType = {
 export class Screensaver extends Page {
     items: undefined;
     private step: number = 0;
+    private blockButtons: ioBroker.Timeout | undefined;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
@@ -106,7 +107,7 @@ export class Screensaver extends Page {
                         } else {
                             const arr = items[i].split('~');
                             arr[0] = '';
-                            arr[1] = '';
+                            if (place !== 'indicator') arr[1] = '';
                             items[i] = tools.getPayloadArray(arr);
                         }
                     }
@@ -234,6 +235,16 @@ export class Screensaver extends Page {
         const msg = tools.getPayloadArray(msgArray);
         this.sendToPanel(msg);
     }
+
+    async onButtonEvent(event: Types.IncomingEvent): Promise<void> {
+        if (event.page && event.id && this.pageItems && this.pageItems[event.id as any]) {
+            if (this.blockButtons) return;
+            this.pageItems[event.id as any]!.onCommand(event.action, event.opt);
+            this.blockButtons = this.adapter.setTimeout(() => {
+                this.blockButtons = undefined;
+            }, 500);
+        }
+    }
     /*
         const payload: Partial<sendTemplates['statusUpdate']> = { eventType: 'statusUpdate' };
         const maxItems = Definition.ScreenSaverConst[this.layout]['mrIconEntity'].maxEntries;
@@ -345,5 +356,6 @@ export class Screensaver extends Page {
     async delete(): Promise<void> {
         await super.delete();
         if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);
+        if (this.blockButtons) this.adapter.clearTimeout(this.blockButtons);
     }
 }

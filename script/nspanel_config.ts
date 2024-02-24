@@ -115,6 +115,7 @@ namespace Color {
 /***************************************************************************************************************/
 /***************************************************************************************************************/
 
+
 const pageEntitiesTest1: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardEntities',
@@ -317,6 +318,32 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
     ],
     items: undefined,
 };
+
+const popupTest: pages.PageBaseConfig = {
+    card: 'popupNotify',
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: 'popup1',
+    useColor: false,
+    config: {
+        card: 'popupNotify',
+        data: {
+            entity1: { value: { type: 'triggered', dp: '0_userdata.0.example_state' } },
+            headline: { type: 'const', constVal: 'headline' },
+            colorHeadline: { true: { color: { type: 'const', constVal: Color.White } } },
+            buttonLeft: { type: 'const', constVal: 'l' },
+            colorButtonLeft: { true: { color: { type: 'const', constVal: Color.White } } },
+            buttonRight: { type: 'const', constVal: 'r' },
+            colorButtonRight: { true: { color: { type: 'const', constVal: Color.White } } },
+            text: { type: 'const', constVal: 'Text' },
+            colorText: { true: { color: { type: 'const', constVal: Color.White } } },
+            timeout: { type: 'const', constVal: 0 },
+            setValue1: { type: 'const', constVal: true },
+        },
+    },
+    pageItems: [],
+    items: undefined,
+};
 /*const pageEntitiesTest2: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardEntities',
@@ -426,18 +453,23 @@ const pageEntitiesTest2: pages.PageBaseConfig = {
             dpInit: '',
         },
         {
-            role: 'rgbSingle',
-            type: 'light',
-            dpInit: '0_userdata.0.shelly.0.SHRGBW2#258794#1',
-            template: 'light.shelly.rgbw2',
-        },
-        {
-            /**
-             * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
-             */
-            type: 'text',
-            dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
-            template: 'text.battery',
+            role: '',
+            type: 'number',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/screensaverTimeout' },
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 90 },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'screensaverTimeout' }, false: undefined },
+            },
         },
     ],
     items: undefined,
@@ -3036,7 +3068,7 @@ const pageThermoTest: pages.PageBaseConfig = {
     useColor: false,
 };
 const pageScreensaverTest: pages.PageBaseConfig = {
-    card: 'screensaver',
+    card: 'screensaver2',
     // mode of screensaver
     dpInit: '',
     alwaysOn: 'none',
@@ -3044,7 +3076,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
     useColor: false,
     config: {
         card: 'screensaver2',
-        mode: 'standard',
+        mode: 'advanced',
         rotationTime: 0,
         model: 'eu',
         data: undefined,
@@ -3883,7 +3915,68 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
+        {
+            role: 'test',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'indicator',
+            data: {
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: '850',
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                /*entity2: {
+                    value: {
+                        type: 'const',
+                        constVal: 500,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },*/
+                icon: {
+                    true: {
+                        value: {
+                            type: 'const',
+                            constVal: 'waves-arrow-up',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSGreen,
+                        },
+                    },
+                    false: {
+                        value: {
+                            type: 'const',
+                            constVal: 'waves-arrow-up',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
+                    },
+                    scale: {
+                        type: 'const',
+                        constVal: { val_min: 0, val_max: 1000, val_best: 500, log10: 'max' },
+                    },
 
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                text: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Wasserstand',
+                    },
+                    false: undefined,
+                },
+            },
+        },
         {
             type: 'text',
             dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
@@ -4121,7 +4214,118 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
-
+        {
+            role: 'combined',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'mricon',
+            data: {
+                entity1: {
+                    value: {
+                        type: 'state',
+                        dp: '0_userdata.0.number1',
+                    },
+                },
+                icon: {
+                    true: {
+                        value: {
+                            type: 'const',
+                            constVal: 'heat-wave',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
+                        text: {
+                            value: {
+                                type: 'state',
+                                dp: '0_userdata.0.number1',
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: '°C',
+                            },
+                        },
+                    },
+                    false: {
+                        value: {
+                            type: 'const',
+                            constVal: 'heat-wave',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSYellow,
+                        },
+                        text: {
+                            value: {
+                                type: 'const',
+                                constVal: 'deconz.0.Sensors.5.temperature',
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: '°C',
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        {
+            role: 'combined',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'mricon',
+            data: {
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: false,
+                    },
+                },
+                icon: {
+                    true: {
+                        value: {
+                            type: 'const',
+                            constVal: 'heat-wave',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
+                        text: {
+                            value: {
+                                type: 'state',
+                                dp: '0_userdata.0.number1',
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: '°C',
+                            },
+                        },
+                    },
+                    false: {
+                        value: {
+                            type: 'const',
+                            constVal: 'heat-wave',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSYellow,
+                        },
+                        text: {
+                            value: {
+                                type: 'const',
+                                constVal: 'deconz.0.Sensors.5.temperature',
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: '°C',
+                            },
+                        },
+                    },
+                },
+            },
+        },
         {
             role: 'text',
             dpInit: '',
@@ -4267,6 +4471,7 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             pageAbfall,
             pageGridTest5,
             pageMediaTest3,
+            popupTest,
         ],
         // override by password.ts
         navigation: [
@@ -4340,11 +4545,33 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             iconBig1: false,
             iconBig2: false,
         },
-        timeout: 30, // dat kommt vom Admin
+        timeout: 5, // dat kommt vom Admin
         dimLow: 20,
         dimHigh: 90,
     },
 ];
+
+/**
+ * command for javascript adapter
+ * sendTo('nspanel-lovelace-ui.0', 'config', Testconfig)
+ */
+
+/*
+// pageType~popupNotify
+export const welcomePopupPayload =
+    'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
+    '  Einen schönen Tag           ' +
+    '     wünschen dir               ' +
+    ' Armilar, TT-Tom, ticaki      ' +
+    '   & Kuckuckmann~2000~3~1~~2000';
+
+/*
+   SendToPanel({ payload:'pageType~popupNotify'});
+                    SendToPanel({ payload:'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
+                        '  Einen schönen Tag           '+
+                        '     wünschen dir               ' +
+                        ' Armilar, TT-Tom, ticaki      ' +
+                        '   & Kuckuckmann~2000~3~1~~2000'});*/
 
 
 sendTo('nspanel-lovelace-ui.0', 'config', Testconfig);
@@ -4381,8 +4608,10 @@ namespace pages {
         | 'screensaver'
         | 'screensaver2'
         | 'cardBurnRec'
-        | 'cardItemSpecial'; // besonders, interne Card zum verwalten von pageItems
-
+        | 'cardItemSpecial'
+        | 'popupNotify'
+        | 'popupNotify2'; // besonders, interne Card zum verwalten von pageItems
+    
     /*export type PageType =
         | Types.PageChart
         | Types.PageEntities
@@ -4395,7 +4624,7 @@ namespace pages {
         | Types.PageAlarm
         | Types.PagePower;
     */
-        export type StateRole =
+    export type StateRole =
         | 'button.play'
         | 'button.pause'
         | 'button.next'
@@ -4475,9 +4704,10 @@ namespace pages {
         | 'combined'
         | 'textNotIcon'
         | 'iconNotText'
+        | 'test'
         | ''; // timer with internal counter
     
-    export function isStateRole (F: string | StateRole): F is StateRole {
+    export function isStateRole(F: string | StateRole): F is StateRole {
         switch (F as StateRole) {
             case 'button.play':
             case 'button.pause':
@@ -4504,7 +4734,7 @@ namespace pages {
                 return true;
         }
     }
-    export function isButtonActionType (F: string | Types.ButtonActionType): F is Types.ButtonActionType {
+    export function isButtonActionType(F: string | Types.ButtonActionType): F is Types.ButtonActionType {
         switch (F) {
             case 'bExit':
             case 'bUp':
@@ -4566,95 +4796,138 @@ namespace pages {
                 return false;
         }
     }
-
+    
     export type PageBaseConfigTemplate =
         | {
-            card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
-            template: Types.PageTemplateIdent;
-            adapter: string;
-            alwaysOn: 'none' | 'always' | 'action';
-            useColor: boolean;
-            pageItems: typePageItem.PageItemDataItemsOptions[];
-
-            //    mediaNamespace: string;
-            config:
-            | undefined
-            | cardPowerDataItemOptions
-            | cardMediaDataItemOptions
-            | cardGridDataItemOptions
-            | cardThermoDataItemOptions
-            | cardEntitiesDataItemOptions
-            | cardAlarmDataItemOptions
-            | screensaverDataItemOptions;
-            items: undefined;
-        }
+              card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
+              template: Types.PageTemplateIdent;
+              adapter: string;
+              alwaysOn: 'none' | 'always' | 'action';
+              useColor: boolean;
+              pageItems: typePageItem.PageItemDataItemsOptions[];
+    
+              //    mediaNamespace: string;
+              config:
+                  | undefined
+                  | cardPowerDataItemOptions
+                  | cardMediaDataItemOptions
+                  | cardGridDataItemOptions
+                  | cardThermoDataItemOptions
+                  | cardEntitiesDataItemOptions
+                  | cardAlarmDataItemOptions
+                  | screensaverDataItemOptions
+                  | cardNotifyDataItemOptions
+                  | cardNotify2DataItemOptions;
+              items: undefined;
+          }
         | {
-            card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
-            template: Types.PageTemplateIdent;
-            adapter: string;
-            alwaysOn: 'none' | 'always' | 'action';
-            useColor: boolean;
-            pageItems: typePageItem.PageItemDataItemsOptions[];
-
-            //    mediaNamespace: string;
-            config: undefined | screensaverDataItemOptions;
-            items: undefined;
-        };
-
+              card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
+              template: Types.PageTemplateIdent;
+              adapter: string;
+              alwaysOn: 'none' | 'always' | 'action';
+              useColor: boolean;
+              pageItems: typePageItem.PageItemDataItemsOptions[];
+    
+              //    mediaNamespace: string;
+              config: undefined | screensaverDataItemOptions;
+              items: undefined;
+          };
+    
     export type PageBaseConfig = (
         | (
-            | {
-                //    type: PlayerType;
-                card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
-                uniqueID: string;
-                template?: Types.PageTemplateIdent;
-                dpInit: string; // '' and initMode 'auto' throw an error
-                alwaysOn: 'none' | 'always' | 'action';
-                useColor: boolean;
-                pageItems: typePageItem.PageItemDataItemsOptions[];
-
-                //    mediaNamespace: string;
-                config:
-                | undefined
-                | cardPowerDataItemOptions
-                | cardMediaDataItemOptions
-                | cardGridDataItemOptions
-                | cardThermoDataItemOptions
-                | cardEntitiesDataItemOptions
-                | cardAlarmDataItemOptions;
-            }
-            | {
-                //    type: PlayerType;
-                card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
-                uniqueID: string;
-                template?: Types.PageTemplateIdent;
-                dpInit: string; // '' and initMode 'auto' throw an error
-                alwaysOn: 'none' | 'always' | 'action';
-                useColor: boolean;
-                pageItems: typePageItem.PageItemDataItemsOptions[];
-                /*&
-                    Required<Pick<typePageItem.PageItemDataItemsOptions, 'modeScr'>>*/
-
-                //    mediaNamespace: string;
-                config: undefined | screensaverDataItemOptions;
-            }
-        )
+              | {
+                    //    type: PlayerType;
+                    card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
+                    uniqueID: string;
+                    template?: Types.PageTemplateIdent;
+                    dpInit: string; // '' and initMode 'auto' throw an error
+                    alwaysOn: 'none' | 'always' | 'action';
+                    useColor: boolean;
+                    pageItems: typePageItem.PageItemDataItemsOptions[];
+    
+                    //    mediaNamespace: string;
+                    config:
+                        | undefined
+                        | cardPowerDataItemOptions
+                        | cardMediaDataItemOptions
+                        | cardGridDataItemOptions
+                        | cardThermoDataItemOptions
+                        | cardEntitiesDataItemOptions
+                        | cardAlarmDataItemOptions
+                        | cardNotifyDataItemOptions
+                        | cardNotify2DataItemOptions;
+                }
+              | {
+                    //    type: PlayerType;
+                    card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
+                    uniqueID: string;
+                    template?: Types.PageTemplateIdent;
+                    dpInit: string; // '' and initMode 'auto' throw an error
+                    alwaysOn: 'none' | 'always' | 'action';
+                    useColor: boolean;
+                    pageItems: typePageItem.PageItemDataItemsOptions[];
+                    /*&
+                        Required<Pick<typePageItem.PageItemDataItemsOptions, 'modeScr'>>*/
+    
+                    //    mediaNamespace: string;
+                    config: undefined | screensaverDataItemOptions;
+                }
+          )
         | ({
-            card: PageTypeCards;
-            uniqueID: string;
-            template: Types.PageTemplateIdent;
-            dpInit: string;
-        } & Partial<Omit<PageBaseConfigTemplate, 'template'>>)
+              card: PageTypeCards;
+              uniqueID: string;
+              template: Types.PageTemplateIdent;
+              dpInit: string;
+          } & Partial<Omit<PageBaseConfigTemplate, 'template'>>)
     ) & {
         items?:
-        | undefined
-        | cardEntitiesDataItems
-        | cardPowerDataItems
-        | cardMediaDataItems
-        | cardGridDataItems
-        | cardThermoDataItems
-        | cardAlarmDataItems;
+            | undefined
+            | cardEntitiesDataItems
+            | cardPowerDataItems
+            | cardMediaDataItems
+            | cardGridDataItems
+            | cardThermoDataItems
+            | cardAlarmDataItems
+            | cardNotifyDataItems
+            | cardNotify2DataItems;
     };
+    type PageNotifyConfig = {
+        headline: string;
+        entity1?: typePageItem.ValueEntryType;
+        colorHeadline: typePageItem.ColorEntryTypeNew;
+        buttonLeft: string;
+        colorButtonLeft: typePageItem.ColorEntryTypeNew;
+        buttonRight: string;
+        colorButtonRight: typePageItem.ColorEntryTypeNew;
+        text: string;
+        colorText: typePageItem.ColorEntryTypeNew;
+        timeout: number;
+        setValue1: string;
+        setValue2?: string;
+    };
+    export type cardNotifyDataItemOptions = {
+        card: 'popupNotify';
+        data: ChangeTypeOfKeys<PageNotifyConfig, Types.DataItemsOptions | undefined>;
+    };
+    export type cardNotifyDataItems = {
+        card: 'popupNotify';
+        data: ChangeTypeOfKeys<PageNotifyConfig, dataItem.Dataitem | undefined>;
+    };
+    
+    type PageNotify2Config = {
+        textSize: string;
+        icon: typePageItem.IconEntryType;
+    } & PageNotifyConfig;
+    
+    export type cardNotify2DataItemOptions = {
+        card: 'popupNotify2';
+        data: ChangeTypeOfKeys<PageNotify2Config, Types.DataItemsOptions | undefined>;
+    };
+    export type cardNotify2DataItems = {
+        card: 'popupNotify2';
+        data: ChangeTypeOfKeys<PageNotify2Config, dataItem.Dataitem | undefined>;
+    };
+    
     type PageAlarmPowerConfig = {
         headline: string;
         entity1: typePageItem.ValueEntryType;
@@ -4672,7 +4945,7 @@ namespace pages {
         card: 'cardAlarm';
         data: ChangeTypeOfKeys<PageAlarmPowerConfig, dataItem.Dataitem | undefined>;
     };
-
+    
     export type cardPowerDataItemOptions = {
         card: 'cardPower';
         data: ChangeTypeOfKeys<PageGridPowerConfig, Types.DataItemsOptions | undefined>;
@@ -4681,7 +4954,7 @@ namespace pages {
         card: 'cardPower';
         data: ChangeTypeOfKeys<PageGridPowerConfig, dataItem.Dataitem | undefined>;
     };
-
+    
     export type cardGridDataItemOptions = {
         card: 'cardGrid' | 'cardGrid2';
         data: ChangeTypeOfKeys<PageGridBaseConfig, Types.DataItemsOptions | undefined>;
@@ -4690,7 +4963,7 @@ namespace pages {
         card: 'cardGrid' | 'cardGrid2';
         data: ChangeTypeOfKeys<PageGridBaseConfig, dataItem.Dataitem | undefined>;
     };
-
+    
     export type cardEntitiesDataItemOptions = {
         card: 'cardEntities';
         data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
@@ -4699,7 +4972,7 @@ namespace pages {
         card: 'cardEntities';
         data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
     };
-
+    
     export type cardThermoDataItemOptions = {
         card: 'cardThermo';
         data: ChangeTypeOfKeys<PageThermoBaseConfig, Types.DataItemsOptions | undefined>;
@@ -4708,19 +4981,19 @@ namespace pages {
         card: 'cardThermo';
         data: ChangeTypeOfKeys<PageThermoBaseConfig, dataItem.Dataitem | undefined>;
     };
-
+    
     export type cardMediaDataItemOptions = {
         card: 'cardMedia';
-        data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & {logo: toolboxItem | undefined};
+        data: ChangeTypeOfKeys<PageMediaBaseConfig, Types.DataItemsOptions | undefined> & { logo: toolboxItem | undefined };
     };
-
+    
     export type cardMediaDataItems = {
         card: 'cardMedia';
         data: ChangeTypeOfKeys<PageMediaBaseConfig, dataItem.Dataitem | undefined> & {
             toolbox: (toolboxItemDataItem | undefined)[];
-        } & {logo: toolboxItemDataItem | undefined};
+        } & { logo: toolboxItemDataItem | undefined };
     };
-
+    
     export type screensaverDataItemOptions = {
         card: 'screensaver' | 'screensaver2';
         mode: Types.ScreensaverModeType;
@@ -4728,7 +5001,7 @@ namespace pages {
         model: Types.NSpanelModel;
         data: undefined;
     };
-
+    
     export type ChangeDeepPartial<Obj> = Obj extends
         | object
         | listItem
@@ -4744,12 +5017,12 @@ namespace pages {
         | PageMediaBaseConfig
         | Types.SerialTypePageElements
         ? Obj extends Types.DataItemsOptions
-        ? Types.DataItemsOptions | null
-        : {
-            [K in keyof Obj]?: ChangeDeepPartial<Obj[K]> | null;
-        }
+            ? Types.DataItemsOptions | null
+            : {
+                  [K in keyof Obj]?: ChangeDeepPartial<Obj[K]> | null;
+              }
         : Types.DataItemsOptions | null;
-
+    
     export type ChangeTypeOfKeys<Obj, N> = Obj extends
         | object
         | listItem
@@ -4765,12 +5038,12 @@ namespace pages {
         | PageMediaBaseConfig
         | Types.SerialTypePageElements
         ? Obj extends Color.RGB | Types.IconScaleElement
-        ? N
-        : {
-            [K in keyof Obj]: ChangeTypeOfKeys<Obj[K], N>;
-        }
+            ? N
+            : {
+                  [K in keyof Obj]: ChangeTypeOfKeys<Obj[K], N>;
+              }
         : N;
-
+    
     /*export type DeepPartial<Obj, N> = Obj extends
         | object
         | listItem
@@ -4791,7 +5064,7 @@ namespace pages {
                   [K in keyof Obj]+?: ChangeTypeOfKeys<Obj[K], N>;
               }
         : Dataitem;*/
-
+    
     type PageMediaBaseConfig = {
         headline: string;
         alwaysOnDisplay: boolean;
@@ -4810,15 +5083,15 @@ namespace pages {
         forward: string;
         backward: string;
     };
-
+    
     type PageGridBaseConfig = {
         headline: string;
     };
-
+    
     type PageEntitiesBaseConfig = {
         headline: string;
     };
-
+    
     type PageGridPowerConfig = {
         headline: string;
         homeValueTop: typePageItem.ValueEntryType;
@@ -4831,16 +5104,16 @@ namespace pages {
         rightMiddle: PageGridPowerConfigElement;
         rightBottom: PageGridPowerConfigElement;
     };
-
+    
     export type PageGridPowerConfigElement =
         | {
-            icon?: typePageItem.IconEntryType;
-            value?: typePageItem.ValueEntryType;
-            speed?: typePageItem.ScaledNumberType;
-            text?: typePageItem.TextEntryType;
-        }
+              icon?: typePageItem.IconEntryType;
+              value?: typePageItem.ValueEntryType;
+              speed?: typePageItem.ScaledNumberType;
+              text?: typePageItem.TextEntryType;
+          }
         | undefined;
-
+    
     type PageThermoBaseConfig = {
         current: number;
         auto?: boolean;
@@ -4871,7 +5144,7 @@ namespace pages {
         icon?: string;
         color?: string;
     };
-    export function isColorEntryType (F: object | typePageItem.ColorEntryType): F is typePageItem.ColorEntryType {
+    export function isColorEntryType(F: object | typePageItem.ColorEntryType): F is typePageItem.ColorEntryType {
         if ('true' in F && 'false' in F && 'scale' in F) return true;
         return false;
     }
@@ -4905,7 +5178,7 @@ namespace pages {
         logo: string;
         options: [string?, string?, string?, string?, string?];
     };
-
+    
     export type PagePowerMessage = {
         event: 'entityUpd';
         headline: string;
@@ -4922,7 +5195,7 @@ namespace pages {
         rightMiddle: PagePowerMessageItem;
         rightBottom: PagePowerMessageItem;
     };
-
+    
     export type PageAlarmMessage = {
         event: 'entityUpd';
         intNameEntity: string;
@@ -4937,7 +5210,7 @@ namespace pages {
         numpad: 'enable' | 'disable';
         flashing: 'enable' | 'disable';
     };
-
+    
     export type PagePowerMessageItem = {
         icon: string;
         iconColor: string;
@@ -4945,21 +5218,50 @@ namespace pages {
         value: string;
         speed: number;
     };
-
+    
     export type PageGridMessage = {
         event: 'entityUpd';
         headline: string;
         navigation: string;
         options: [string?, string?, string?, string?, string?, string?, string?, string?];
     };
-
+    
+    export type PageNotifyMessage = {
+        event: 'entityUpd';
+        headline: string;
+        hColor: string;
+        blText: string;
+        blColor: string;
+        brText: string;
+        brColor: string;
+        text: string;
+        textColor: string;
+        timeout: number;
+        fontSet: string;
+        icon: string;
+        iconColor: string;
+    };
+    /*+ getState(popupNotifyInternalName).val + '~'
+                    + heading + '~'
+                    + v_popupNotifyHeadingColor + '~'
+                    + getState(popupNotifyButton1Text).val + '~'
+                    + v_popupNotifyButton1TextColor + '~'
+                    + getState(popupNotifyButton2Text).val + '~'
+                    + v_popupNotifyButton2TextColor + '~'
+                    + text + '~'
+                    + v_popupNotifyTextColor + '~'
+                    + getState(popupNotifySleepTimeout).val;*/
     export type screensaverMessage = {
-        event: 'weatherUpdate';
         options: Record<Types.ScreenSaverPlaces, string[]>;
     };
-
-
-
+    
+    export type PageEntitiesMessage = {
+        event: 'entityUpd';
+        headline: string;
+        navigation: string;
+        options: [string?, string?, string?, string?, string?, string?, string?, string?];
+    };
+    
     export type PageThermoMessage = {
         event: 'entityUpd';
         headline: string;
@@ -4979,16 +5281,16 @@ namespace pages {
         temp2: number | string; // *10
         btDetail: '' | 1;
     };
-
-    type writeItem = {dp: string} | undefined;
+    
+    type writeItem = { dp: string } | undefined;
     export type listItem =
         | {
-            on: string;
-            text: string;
-            color: typePageItem.ColorEntryType | string | undefined;
-            icon?: typePageItem.IconBoolean | string | undefined;
-            list?: string | undefined;
-        }
+              on: string;
+              text: string;
+              color: typePageItem.ColorEntryType | string | undefined;
+              icon?: typePageItem.IconBoolean | string | undefined;
+              list?: string | undefined;
+          }
         | undefined; // mean string start with getState(' and end with ').val
     export type toolboxItem = ChangeTypeOfKeys<listItem, Types.DataItemsOptions | undefined> & {
         action: typePageItem.MediaToolBoxAction;
@@ -4996,7 +5298,7 @@ namespace pages {
     export type toolboxItemDataItem = ChangeTypeOfKeys<listItem, dataItem.Dataitem | undefined> & {
         action: typePageItem.MediaToolBoxAction;
     };
-}
+    }
 namespace typePageItem {
     export type PageLightItem = {
         type: 'light' | 'dimmer' | 'brightnessSlider' | 'hue' | 'rgb';
@@ -5005,117 +5307,117 @@ namespace typePageItem {
         hue: PageItemMinMaxValue; //0-360
         rgb: Color.RGB;
     };
-
-    type PageItemMinMaxValue = {min: number; max: number};
-    export type PageItemColorSwitch = {on: Color.RGB; off: Color.RGB};
-
+    
+    type PageItemMinMaxValue = { min: number; max: number };
+    export type PageItemColorSwitch = { on: Color.RGB; off: Color.RGB };
+    
     export type IconBoolean = Record<Types.BooleanUnion, string | undefined>;
     export type ThisCardMessageTypes = 'input_sel' | 'button';
-
+    
     export interface MessageItem extends MessageItemInterface {
         mainId?: string;
         subId?: string;
     }
     export type entityUpdateDetailMessage =
         | {
-            type: '2Sliders';
-            entityName: string;
-            icon?: string;
-            slidersColor: string | 'disable';
-            buttonState: boolean | 'disable';
-            slider1Pos: number | 'disable';
-            slider2Pos: number | 'disable';
-            hueMode: boolean;
-            hue_translation: string | '';
-            slider2Translation: string | '';
-            slider1Translation: string | '';
-            popup: boolean;
-        }
+              type: '2Sliders';
+              entityName: string;
+              icon?: string;
+              slidersColor: string | 'disable';
+              buttonState: boolean | 'disable';
+              slider1Pos: number | 'disable';
+              slider2Pos: number | 'disable';
+              hueMode: boolean;
+              hue_translation: string | '';
+              slider2Translation: string | '';
+              slider1Translation: string | '';
+              popup: boolean;
+          }
         | {
-            type: 'insel';
-            entityName: string;
-            textColor: string;
-            currentState: string;
-            list: string;
-        }
+              type: 'insel';
+              entityName: string;
+              textColor: string;
+              currentState: string;
+              list: string;
+          }
         | {
-            type: 'popupThermo';
-            headline: string;
-            entityName: string;
-            currentState: string;
-            list: string;
-        }
+              type: 'popupThermo';
+              headline: string;
+              entityName: string;
+              currentState: string;
+              list: string;
+          }
         | ({
-            type: 'popupLight';
-        } & Record<
-            | 'entityName'
-            | 'icon'
-            | 'iconColor'
-            | 'power'
-            | 'sliderBriPos'
-            | 'sliderCtPos'
-            | 'colorMode'
-            | 'colorIdentifier'
-            | 'ctIdentifier'
-            | 'briIdentifier'
-            | 'effect_supported',
-            string
-        >)
-        | ({type: 'popupShutter'} & Record<
-            | 'entityName'
-            | 'pos1'
-            | 'text2'
-            | 'pos1text'
-            | 'icon'
-            | 'iconL1'
-            | 'iconM1'
-            | 'iconR1'
-            | 'statusL1'
-            | 'statusM1'
-            | 'statusR1'
-            | 'pos2text'
-            | 'iconL2'
-            | 'iconM2'
-            | 'iconR2'
-            | 'statusL2'
-            | 'statusM2'
-            | 'statusR2'
-            | 'pos2',
-            string
-        >)
+              type: 'popupLight';
+          } & Record<
+              | 'entityName'
+              | 'icon'
+              | 'iconColor'
+              | 'power'
+              | 'sliderBriPos'
+              | 'sliderCtPos'
+              | 'colorMode'
+              | 'colorIdentifier'
+              | 'ctIdentifier'
+              | 'briIdentifier'
+              | 'effect_supported',
+              string
+          >)
+        | ({ type: 'popupShutter' } & Record<
+              | 'entityName'
+              | 'pos1'
+              | 'text2'
+              | 'pos1text'
+              | 'icon'
+              | 'iconL1'
+              | 'iconM1'
+              | 'iconR1'
+              | 'statusL1'
+              | 'statusM1'
+              | 'statusR1'
+              | 'pos2text'
+              | 'iconL2'
+              | 'iconM2'
+              | 'iconR2'
+              | 'statusL2'
+              | 'statusM2'
+              | 'statusR2'
+              | 'pos2',
+              string
+          >)
         | ({
-            type: 'popupFan';
-        } & Record<
-            | 'entityName'
-            | 'icon'
-            | 'iconColor'
-            | 'buttonstate'
-            | 'slider1'
-            | 'slider1Max'
-            | 'speedText'
-            | 'mode'
-            | 'modeList',
-            string
-        >)
+              type: 'popupFan';
+          } & Record<
+              | 'entityName'
+              | 'icon'
+              | 'iconColor'
+              | 'buttonstate'
+              | 'slider1'
+              | 'slider1Max'
+              | 'speedText'
+              | 'mode'
+              | 'modeList',
+              string
+          >)
         | ({
-            type: 'popupTimer';
-        } & Record<
-            | 'entityName'
-            | 'iconColor'
-            | 'minutes'
-            | 'seconds'
-            | 'editable'
-            | 'action1'
-            | 'action2'
-            | 'action3'
-            | 'text1'
-            | 'text2'
-            | 'text3',
-            string
-        >);
-
+              type: 'popupTimer';
+          } & Record<
+              | 'entityName'
+              | 'iconColor'
+              | 'minutes'
+              | 'seconds'
+              | 'editable'
+              | 'action1'
+              | 'action2'
+              | 'action3'
+              | 'text1'
+              | 'text2'
+              | 'text3',
+              string
+          >);
+    
     //export type entityUpdateDetailMessageType = '2Sliders' | 'insel';
-
+    
     export interface MessageItemInterface {
         type: Types.SerialTypePopup;
         intNameEntity: string;
@@ -5146,7 +5448,7 @@ namespace typePageItem {
             | PageItemFanDataItems
             | PageItemTimerDataItems
         );
-
+    
     export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data' | 'type'> &
         (
             | PageItemButtonDataItemsOptions
@@ -5160,23 +5462,23 @@ namespace typePageItem {
         );
     export type PageItemDataItemsOptions =
         | ({
-            template: Types.TemplateIdent;
-            dpInit: string;
-        } & Partial<
-            Omit<PageItemUnion, 'template' | 'data' | 'type'> &
-            pages.ChangeDeepPartial<
-                | PageItemButtonDataItemsOptions
-                | PageItemShutterDataItemsOptions
-                | PageItemInputSelDataItemsOptions
-                | PageItemLightDataItemsOptions
-                | PageItemNumberDataItemsOptions
-                | PageItemTextDataItemsOptions
-                | PageItemFanDataItemsOptions
-                | PageItemTimerDataItemsOptions
-            >
-        >)
+              template: Types.TemplateIdent;
+              dpInit: string;
+          } & Partial<
+              Omit<PageItemUnion, 'template' | 'data' | 'type'> &
+                  pages.ChangeDeepPartial<
+                      | PageItemButtonDataItemsOptions
+                      | PageItemShutterDataItemsOptions
+                      | PageItemInputSelDataItemsOptions
+                      | PageItemLightDataItemsOptions
+                      | PageItemNumberDataItemsOptions
+                      | PageItemTextDataItemsOptions
+                      | PageItemFanDataItemsOptions
+                      | PageItemTimerDataItemsOptions
+                  >
+          >)
         | PageItemDataItemsOptionsWithOutTemplate;
-
+    
     export type PageItemOptionsTemplate = {
         template: Types.TemplateIdent;
         subTemplate?: Types.TemplateIdent;
@@ -5195,7 +5497,7 @@ namespace typePageItem {
             | PageItemFanDataItemsOptions
             | PageItemTimerDataItemsOptions
         );
-
+    
     export type PageItemTimer = Pick<PageItemBase, 'entity1' | 'text' | 'headline' | 'icon' | 'setValue1'>;
     export type PageItemTimerDataItemsOptions = {
         type: 'timer';
@@ -5205,7 +5507,7 @@ namespace typePageItem {
         type: 'timer';
         data: pages.ChangeTypeOfKeys<PageItemTimer, dataItem.Dataitem | undefined>;
     };
-
+    
     export type PageItemFan = Pick<
         PageItemBase,
         'entity1' | 'speed' | 'text' | 'headline' | 'icon' | 'entityInSel' | 'valueList' | 'setList'
@@ -5218,7 +5520,7 @@ namespace typePageItem {
         type: 'fan';
         data: pages.ChangeTypeOfKeys<PageItemFan, dataItem.Dataitem | undefined>;
     };
-
+    
     export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'entity2' | 'icon'>;
     export type PageItemTextDataItemsOptions = {
         type: 'text';
@@ -5228,7 +5530,7 @@ namespace typePageItem {
         type: 'text';
         data: pages.ChangeTypeOfKeys<PageItemText, dataItem.Dataitem | undefined>;
     };
-
+    
     export type PageItemNumber = Pick<PageItemBase, 'entity1' | 'text' | 'icon'>;
     export type PageItemNumberDataItemsOptions = {
         type: 'number';
@@ -5238,10 +5540,10 @@ namespace typePageItem {
         type: 'number';
         data: pages.ChangeTypeOfKeys<PageItemNumber, dataItem.Dataitem | undefined>;
     };
-
+    
     export type PageItemButton = Pick<
         PageItemBase,
-        'setValue1' | 'setValue2' | 'text' | 'icon' | 'color' | 'entity1' | 'setNavi'
+        'setValue1' | 'setValue2' | 'text' | 'text1' | 'icon' | 'color' | 'entity1' | 'setNavi'
     >;
     export type PageItemButtonDataItemsOptions = {
         type: 'button';
@@ -5251,7 +5553,7 @@ namespace typePageItem {
         type: 'button';
         data: pages.ChangeTypeOfKeys<PageItemButton, dataItem.Dataitem | undefined>;
     };
-
+    
     export type PageItemLight = Pick<
         PageItemBase,
         | 'valueList'
@@ -5282,22 +5584,22 @@ namespace typePageItem {
         type: 'light';
         data: pages.ChangeTypeOfKeys<PageItemLight, dataItem.Dataitem | undefined>;
     };
-
+    
     export type PageItemInputSel = Pick<
         PageItemBase,
         'entityInSel' | 'text' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
     >;
-
+    
     export type PageItemInputSelDataItemsOptions = {
         type: 'input_sel';
         data: pages.ChangeTypeOfKeys<PageItemInputSel, Types.DataItemsOptions | undefined>;
     };
-
+    
     export type PageItemInputSelDataItems = {
         type: 'input_sel';
         data: pages.ChangeTypeOfKeys<PageItemInputSel, dataItem.Dataitem | undefined>;
     };
-
+    
     export type PageItemShutter = Pick<
         PageItemBase,
         | 'up'
@@ -5325,7 +5627,7 @@ namespace typePageItem {
         type: 'shutter';
         data: pages.ChangeTypeOfKeys<PageItemShutter, dataItem.Dataitem | undefined>;
     };
-
+    
     export type PageItemBase = {
         headline?: string;
         color?: ColorEntryType;
@@ -5367,7 +5669,7 @@ namespace typePageItem {
         stop2?: number;
         down2?: number;
     };
-
+    
     export type PageTypeUnionTemplate = {
         role: pages.DeviceRole;
         type: Types.SerialTypePageElements;
@@ -5375,15 +5677,15 @@ namespace typePageItem {
             headline?: string | undefined;
             color?: Color.RGB | undefined;
             icon?:
-            | {true: {value: string; color: Color.RGB | null}; false: {value: string; color: Color.RGB | null}}
-            | undefined;
-            text?: {true: string; false: string} | undefined;
+                | { true: { value: string; color: Color.RGB | null }; false: { value: string; color: Color.RGB | null } }
+                | undefined;
+            text?: { true: string; false: string } | undefined;
             entity1: true | undefined | 'invert' | '';
             entity2?: true | undefined | 'invert';
             entity3?: true | undefined | 'invert';
-            text1?: {true: string; false: string} | undefined;
-            text2?: {true: string; false: string} | undefined;
-            text3?: {true: string; false: string} | undefined;
+            text1?: { true: string; false: string } | undefined;
+            text2?: { true: string; false: string } | undefined;
+            text3?: { true: string; false: string } | undefined;
             setValue1?: true | undefined;
             setValue2?: true | undefined;
             setValue3?: true | undefined;
@@ -5402,7 +5704,7 @@ namespace typePageItem {
         };
     };
     //XOR<XOR<A, B>, C>
-
+    
     export type PageItemUnion = {
         role: pages.DeviceRole;
         template?: undefined;
@@ -5411,44 +5713,47 @@ namespace typePageItem {
         type: Types.SerialTypePageElements;
         data: PageItemBase;
     };
-
-    export type ColorEntryType = Record<Types.BooleanUnion, Color.RGB | undefined> & {scale?: Types.IconScaleElement};
-
-    export type IconEntryType =
-        | (Partial<Record<Types.BooleanUnion, {value: string; color: Color.RGB; text?: ValueEntryType}>> & {
-            scale?: Types.IconScaleElement | undefined;
-            maxBri?: string;
-            minBri?: string;
-        })
+    
+    export type ColorEntryType = Record<Types.BooleanUnion, Color.RGB | undefined> & { scale?: Types.IconScaleElement };
+    
+    export type ColorEntryTypeNew =
+        | (Partial<Record<Types.BooleanUnion, { color: Color.RGB }>> & {
+              scale?: Types.IconScaleElement | undefined;
+              maxBri?: string;
+              minBri?: string;
+          })
         | undefined;
-
+    export type IconEntryType =
+        | (Partial<Record<Types.BooleanUnion, { value: string; text?: ValueEntryType }>> & ColorEntryTypeNew)
+        | undefined;
+    
     export type TextEntryType = Record<Types.BooleanUnion, string>;
-
+    
     export type ValueEntryType =
         | {
-            value: number;
-            decimal?: number;
-            factor?: number;
-            unit?: string;
-            minScale?: number;
-            maxScale?: number;
-            set?: number;
-            dateFormat?: string;
-        }
+              value: number;
+              decimal?: number;
+              factor?: number;
+              unit?: string;
+              minScale?: number;
+              maxScale?: number;
+              set?: number;
+              dateFormat?: string;
+          }
         | undefined;
     export type ScaledNumberType =
         | {
-            value: number;
-            minScale?: number;
-            maxScale?: number;
-            factor?: number;
-            set?: number;
-            mode?: string; // atm 'kelvin' | 'mired'
-        }
+              value: number;
+              minScale?: number;
+              maxScale?: number;
+              factor?: number;
+              set?: number;
+              mode?: string; // atm 'kelvin' | 'mired'
+          }
         | undefined;
-    export type listCommand = {id: string; value: string; command?: listCommandUnion};
+    export type listCommand = { id: string; value: string; command?: listCommandUnion };
     type listCommandUnion = 'flip';
-    export function islistCommandUnion (F: any | listCommandUnion): F is listCommandUnion {
+    export function islistCommandUnion(F: any | listCommandUnion): F is listCommandUnion {
         switch (F as listCommandUnion) {
             case 'flip': {
                 return true;
@@ -5456,7 +5761,7 @@ namespace typePageItem {
         }
         return false;
     }
-
+    
     export type spotifyPlaylist = Array<{
         id: string;
         title: string;
@@ -5478,7 +5783,7 @@ namespace typePageItem {
         explicit: boolean;
         popularity: number;
     }>;
-}
+    }
 
 namespace Types {
     export type PageTemplateIdent = 'waste-calendar.entities' | 'media.spotify-premium';

@@ -51,6 +51,7 @@ __export(tools_exports, {
   setRGBThreefromRGB: () => setRGBThreefromRGB,
   setScaledNumber: () => setScaledNumber,
   setSliderCTFromValue: () => setSliderCTFromValue,
+  setTriggeredToState: () => setTriggeredToState,
   setValueEntry: () => setValueEntry
 });
 module.exports = __toCommonJS(tools_exports);
@@ -603,6 +604,25 @@ function getInternalDefaults(type, role) {
     write: true
   };
 }
+function setTriggeredToState(theObject, exclude) {
+  if (theObject instanceof Array) {
+    for (let i = 0; i < theObject.length; i++) {
+      setTriggeredToState(theObject[i], exclude);
+    }
+  } else {
+    for (const prop in theObject) {
+      if (exclude.indexOf(prop) !== -1)
+        continue;
+      if (prop == "type") {
+        if (theObject[prop] === "triggered")
+          theObject[prop] = "state";
+      }
+      if (theObject[prop] instanceof Object || theObject[prop] instanceof Array) {
+        setTriggeredToState(theObject[prop], exclude);
+      }
+    }
+  }
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
@@ -632,6 +652,7 @@ function getInternalDefaults(type, role) {
   setRGBThreefromRGB,
   setScaledNumber,
   setSliderCTFromValue,
+  setTriggeredToState,
   setValueEntry
 });
 //# sourceMappingURL=tools.js.map

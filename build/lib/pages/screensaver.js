@@ -34,6 +34,7 @@ var import_pageItem = require("./pageItem");
 class Screensaver extends import_Page.Page {
   items;
   step = 0;
+  blockButtons;
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
@@ -115,7 +116,8 @@ class Screensaver extends import_Page.Page {
             } else {
               const arr = items[i].split("~");
               arr[0] = "";
-              arr[1] = "";
+              if (place !== "indicator")
+                arr[1] = "";
               items[i] = tools.getPayloadArray(arr);
             }
           }
@@ -244,10 +246,22 @@ class Screensaver extends import_Page.Page {
     const msg = tools.getPayloadArray(msgArray);
     this.sendToPanel(msg);
   }
+  async onButtonEvent(event) {
+    if (event.page && event.id && this.pageItems && this.pageItems[event.id]) {
+      if (this.blockButtons)
+        return;
+      this.pageItems[event.id].onCommand(event.action, event.opt);
+      this.blockButtons = this.adapter.setTimeout(() => {
+        this.blockButtons = void 0;
+      }, 500);
+    }
+  }
   async delete() {
     await super.delete();
     if (this.timoutRotation)
       this.adapter.clearTimeout(this.timoutRotation);
+    if (this.blockButtons)
+      this.adapter.clearTimeout(this.blockButtons);
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

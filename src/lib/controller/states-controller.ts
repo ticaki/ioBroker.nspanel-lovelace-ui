@@ -39,6 +39,7 @@ export class BaseClassTriggerd extends BaseClass {
     private lastMessage: string = '';
     public panel: Panel;
     private responseTime: number = 10000000000;
+    neverDeactivateTrigger: boolean = false;
     sleep: boolean = true;
     parent: BaseClassTriggerd | undefined = undefined;
     triggerParent: boolean = false;
@@ -65,11 +66,12 @@ export class BaseClassTriggerd extends BaseClass {
         this.panelSend = card.panelSend;
         this.alwaysOn = card.alwaysOn ?? 'none';
         this.panel = card.panel;
+
         if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
     }
     readonly onStateTriggerSuperDoNotOverride = async (from: BaseClassTriggerd): Promise<boolean> => {
-        if (!this.visibility || this.unload) return false;
-        if (this.sleep) return false;
+        if ((!this.visibility && !this.neverDeactivateTrigger) || this.unload) return false;
+        if (this.sleep && !this.neverDeactivateTrigger) return false;
         if (this.waitForTimeout) return false;
         if (this.updateTimeout) {
             this.doUpdate = true;
@@ -154,8 +156,10 @@ export class BaseClassTriggerd extends BaseClass {
                 if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
                 await this.panel.sendScreeensaverTimeout(this.panel.timeout);
                 this.log.debug(`Switch page to invisible${force ? ' (forced)' : ''}!`);
-                this.stopTriggerTimeout();
-                this.controller && (await this.controller.statesControler.deactivateTrigger(this));
+                if (!this.neverDeactivateTrigger) {
+                    this.stopTriggerTimeout();
+                    this.controller && (await this.controller.statesControler.deactivateTrigger(this));
+                }
             }
             await this.onVisibilityChange(v);
         } else this.visibility = v;

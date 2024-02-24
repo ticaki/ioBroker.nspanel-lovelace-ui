@@ -39,6 +39,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   lastMessage = "";
   panel;
   responseTime = 1e10;
+  neverDeactivateTrigger = false;
   sleep = true;
   parent = void 0;
   triggerParent = false;
@@ -68,9 +69,9 @@ class BaseClassTriggerd extends import_library.BaseClass {
       this.sendToPanelClass = card.panelSend.addMessage;
   }
   onStateTriggerSuperDoNotOverride = async (from) => {
-    if (!this.visibility || this.unload)
+    if (!this.visibility && !this.neverDeactivateTrigger || this.unload)
       return false;
-    if (this.sleep)
+    if (this.sleep && !this.neverDeactivateTrigger)
       return false;
     if (this.waitForTimeout)
       return false;
@@ -161,8 +162,10 @@ class BaseClassTriggerd extends import_library.BaseClass {
           this.adapter.clearTimeout(this.alwaysOnState);
         await this.panel.sendScreeensaverTimeout(this.panel.timeout);
         this.log.debug(`Switch page to invisible${force ? " (forced)" : ""}!`);
-        this.stopTriggerTimeout();
-        this.controller && await this.controller.statesControler.deactivateTrigger(this);
+        if (!this.neverDeactivateTrigger) {
+          this.stopTriggerTimeout();
+          this.controller && await this.controller.statesControler.deactivateTrigger(this);
+        }
       }
       await this.onVisibilityChange(v);
     } else

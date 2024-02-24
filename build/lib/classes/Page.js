@@ -164,6 +164,8 @@ class Page extends import_states_controller.BaseClassPage {
       }
     }
   }
+  setLastPage(_p) {
+  }
   getNavigation() {
     return this.panel.navigation.buildNavigationString();
   }

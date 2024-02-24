@@ -18,6 +18,7 @@ import { PagePower } from '../pages/pagePower';
 import { PageItem } from '../pages/pageItem';
 import { PageEntities } from '../pages/pageEntities';
 import { getInternalDefaults } from '../const/tools';
+import { PageNotify } from '../pages/pageNotification';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -188,6 +189,15 @@ export class Panel extends BaseClass {
                 case 'cardPower': {
                     pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PagePower(pmconfig, pageConfig);
+                    break;
+                }
+                case 'cardBurnRec':
+                case 'cardItemSpecial':
+                    break;
+                case 'popupNotify2':
+                case 'popupNotify': {
+                    pageConfig = Page.getPage(pageConfig, this);
+                    this.pages[a] = new PageNotify(pmconfig, pageConfig);
                     break;
                 }
                 case 'screensaver':
@@ -380,6 +390,7 @@ export class Panel extends BaseClass {
         }
         if (!this._activePage) {
             if (page === undefined) return;
+            page.setLastPage(this._activePage ?? undefined);
             await page.setVisibility(true);
 
             this._activePage = page;
@@ -387,11 +398,13 @@ export class Panel extends BaseClass {
             if (page != this._activePage) {
                 if (this._activePage) await this._activePage.setVisibility(false);
                 if (page) {
+                    page.setLastPage(this._activePage ?? undefined);
                     if (!sleep) await page.setVisibility(true);
                     page.sleep = sleep;
                     this._activePage = page;
                 }
             } else if (sleep !== this._activePage.sleep) {
+                page.setLastPage(this._activePage ?? undefined);
                 if (!sleep) await this._activePage.setVisibility(true, true);
                 this._activePage.sleep = sleep;
             }
@@ -629,7 +642,6 @@ export class Panel extends BaseClass {
 
                 this.restartLoops();
                 this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(1));
-
                 this.navigation.resetPosition();
                 const page = this.navigation.getCurrentPage();
                 await this.setActivePage(page);

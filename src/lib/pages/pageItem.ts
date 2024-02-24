@@ -1032,7 +1032,7 @@ export class PageItem extends BaseClassTriggerd {
                         await item.setValue1.setStateFlip();
                     }
                     if (item.setValue2) {
-                        await item.setValue2.setStateFalse();
+                        await item.setValue2.setStateTrue();
                     }
                 } else if (entry.type === 'light') {
                     const item = entry.data;

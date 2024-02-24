@@ -180,6 +180,8 @@ export class Page extends BaseClassPage {
         }
     }
 
+    setLastPage(_p: Page | undefined): void {}
+
     protected getNavigation(): string {
         return this.panel.navigation.buildNavigationString();
     }
