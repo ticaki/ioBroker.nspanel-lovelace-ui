@@ -181,6 +181,63 @@ const shutterTemplates = [
         role: ["button"]
       }
     }
+  },
+  {
+    role: "rgb",
+    type: "shutter",
+    template: "shutter.deconz.light",
+    adapter: "deconz",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "window-shutter-open" },
+          color: { type: "const", constVal: Color.Green }
+        },
+        false: {
+          value: { type: "const", constVal: "window-shutter" },
+          color: { type: "const", constVal: Color.HMIOff }
+        },
+        scale: void 0,
+        maxBri: void 0,
+        minBri: void 0
+      },
+      entity1: {
+        value: { mode: "auto", role: "level.value", type: "triggered", dp: ".lift" },
+        decimal: void 0,
+        factor: void 0,
+        unit: void 0,
+        minScale: { type: "const", constVal: 1 },
+        maxScale: { type: "const", constVal: 78 }
+      },
+      entity2: void 0,
+      text: {
+        true: {
+          type: "const",
+          constVal: "text"
+        },
+        false: void 0
+      },
+      headline: {
+        type: "const",
+        constVal: "zigbeeGed\xF6ns"
+      },
+      text1: {
+        true: {
+          type: "const",
+          constVal: "Shutter position"
+        },
+        false: void 0
+      },
+      text2: void 0,
+      up: { mode: "auto", role: "level.value", type: "state", dp: ".lift", write: "return 1" },
+      down: { mode: "auto", role: "level.value", type: "state", dp: ".lift", write: "return 78" },
+      stop: {
+        type: "state",
+        dp: ".stop",
+        mode: "auto",
+        role: ["button"]
+      }
+    }
   }
 ];
 // Annotate the CommonJS export names for ESM import in node:

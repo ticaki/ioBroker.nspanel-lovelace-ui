@@ -45,6 +45,15 @@
                     "type": "text",
                     "label": "mediaid",
                     "newLine": false
+                },
+                "onlyStartFromSystemConfig": {
+                    "type": "checkbox",
+                    "label": "onlyStartFromSystemConfig",
+                    "newLine": true
+                },
+                "Testconfig2": {
+                    "type": "jsonEditor",
+                    "label": "Testconfig2",
                 }
             }
         }/*,

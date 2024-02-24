@@ -16,7 +16,7 @@ export type TemplateIdent =
     | 'text.battery.low'
     | 'button.iconRightSize'
     | 'button.iconLeftSize'
-    | ''
+    | 'shutter.deconz.light'
     | ''
     | ''
     | ''

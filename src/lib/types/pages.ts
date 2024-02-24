@@ -83,7 +83,8 @@ export type StateRole =
     | 'value.battery'
     | 'indicator.lowbat'
     | 'value'
-    | '';
+    | ''
+    | 'level.value';
 
 export type DeviceRole =
     | 'text'

@@ -174,4 +174,66 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
+    {
+        role: 'rgb',
+        type: 'shutter',
+        template: 'shutter.deconz.light',
+        adapter: 'deconz',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'window-shutter-open' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'window-shutter' },
+                    color: { type: 'const', constVal: Color.HMIOff },
+                },
+                scale: undefined,
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            // 1. slider
+            entity1: {
+                // button
+                value: { mode: 'auto', role: 'level.value', type: 'triggered', dp: '.lift' },
+                decimal: undefined,
+                factor: undefined,
+                unit: undefined,
+                minScale: { type: 'const', constVal: 1 },
+                maxScale: { type: 'const', constVal: 78 },
+            },
+            // 2. slider
+            entity2: undefined,
+            text: {
+                true: {
+                    type: 'const',
+                    constVal: 'text',
+                },
+                false: undefined,
+            },
+            headline: {
+                type: 'const',
+                constVal: 'zigbeeGedöns',
+            },
+            text1: {
+                true: {
+                    type: 'const',
+                    constVal: 'Shutter position',
+                },
+                false: undefined,
+            },
+            text2: undefined,
+            up: { mode: 'auto', role: 'level.value', type: 'state', dp: '.lift', write: 'return 1' },
+
+            down: { mode: 'auto', role: 'level.value', type: 'state', dp: '.lift', write: 'return 78' },
+            stop: {
+                type: 'state',
+                dp: '.stop',
+                mode: 'auto',
+                role: ['button'],
+            },
+        },
+    },
 ];

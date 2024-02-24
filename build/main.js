@@ -47,6 +47,10 @@ class NspanelLovelaceUi extends utils.Adapter {
     import_icon_mapping.Icons.adapter = this;
     this.library = new import_library.Library(this);
     if (!this.config.Testconfig2) {
+      if (this.config.onlyStartFromSystemConfig) {
+        this.log.warn("No configuration stopped!");
+        return;
+      }
       this.log.warn("No configuration use dev test config!");
       this.config.Testconfig2 = import_config_custom.Testconfig;
     }
@@ -54,8 +58,13 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.log.warn("Adapter on hold, user restart needed!");
       return;
     }
-    this.config.Testconfig2[0].pages[0].mode = this.config.scstype;
-    this.config.Testconfig2[0].timeout = this.config.timeout;
+    try {
+      this.config.Testconfig2[0].pages[0] = this.config.Testconfig2[0].pages[0];
+      this.config.Testconfig2[0].timeout = this.config.timeout;
+    } catch (e) {
+      this.log.warn("Invalid configuration stopped!");
+      return;
+    }
     this.setTimeout(async () => {
       if (!import_config_custom.Testconfig[0].pages)
         return;

@@ -43,6 +43,10 @@ class NspanelLovelaceUi extends utils.Adapter {
         Icons.adapter = this;
         this.library = new Library(this);
         if (!this.config.Testconfig2) {
+            if (this.config.onlyStartFromSystemConfig) {
+                this.log.warn('No configuration stopped!');
+                return;
+            }
             this.log.warn('No configuration use dev test config!');
             this.config.Testconfig2 = Testconfig;
         }
@@ -55,13 +59,19 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.warn('Adapter on hold, user restart needed!');
             return;
         }
-        this.config.Testconfig2[0].pages![0].mode = this.config.scstype as any;
+        try {
+            this.config.Testconfig2[0].pages![0] = this.config.Testconfig2[0].pages![0];
+            this.config.Testconfig2[0].timeout = this.config.timeout;
+        } catch (e) {
+            this.log.warn('Invalid configuration stopped!');
+            return;
+        }
         //this.log.debug(JSON.stringify(this.config.Testconfig2[0].dpInit))
 
         /*const d = await this.getEnumsAsync('rooms.Haus');
         if (d) this.log.debug(JSON.stringify(d));
         return;*/
-        this.config.Testconfig2[0].timeout = this.config.timeout;
+
         //this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
         this.setTimeout(async () => {
             //check config

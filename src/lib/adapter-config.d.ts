@@ -24,6 +24,7 @@ declare global {
             pw8: string;
             pw9: string;
             pw0: string;
+            onlyStartFromSystemConfig: boolean;
         }
     }
 }
