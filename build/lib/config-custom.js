@@ -3474,6 +3474,58 @@ const pageScreensaverTest = {
       }
     },
     {
+      role: "test",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity1: {
+          value: {
+            type: "const",
+            constVal: "850"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "waves-arrow-up"
+            },
+            color: {
+              type: "const",
+              constVal: Color.MSGreen
+            }
+          },
+          false: {
+            value: {
+              type: "const",
+              constVal: "waves-arrow-up"
+            },
+            color: {
+              type: "const",
+              constVal: Color.MSRed
+            }
+          },
+          scale: {
+            type: "const",
+            constVal: { val_min: 0, val_max: 1e3, val_best: 500, log10: "max" }
+          },
+          maxBri: void 0,
+          minBri: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Wasserstand"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
       type: "text",
       dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
       template: "text.battery",

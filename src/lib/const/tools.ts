@@ -294,7 +294,7 @@ export async function getIconEntryColor(
                     rColor = Color.mixColor(cto, cfrom, factor);
                 } else {
                     factor = (value - vMin) / (vBest - vMin);
-                    factor = getLogFromIconScale(scale, factor);
+                    factor = 1 - getLogFromIconScale(scale, 1 - factor);
                     rColor = Color.mixColor(cfrom, cto, factor);
                 }
                 return String(Color.rgb_dec565(rColor));

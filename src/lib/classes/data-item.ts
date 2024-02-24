@@ -195,7 +195,7 @@ export class Dataitem extends BaseClass {
 
     async getNumber(): Promise<number | null> {
         const result = await this.getState();
-        if (result && !isNaN(parseInt(String(result.val)))) {
+        if (result && !isNaN(parseFloat(String(result.val)))) {
             let val = parseFloat(String(result.val));
             if (this.options.scale !== undefined) {
                 val = Math.trunc(Color.scale(val, this.options.scale.max, this.options.scale.min, 0, 100));
