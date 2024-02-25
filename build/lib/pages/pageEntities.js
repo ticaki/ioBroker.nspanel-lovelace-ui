@@ -67,7 +67,9 @@ class PageEntities extends import_Page.Page {
           message.options[a] = await temp.getPageItemPayload();
       }
     }
-    message.headline = (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : "";
+    message.headline = this.library.getTranslation(
+      (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
+    );
     message.navigation = this.getNavigation();
     const msg = Object.assign(PageEntitiesMessageDefault, message);
     this.sendToPanel(this.getMessage(msg));

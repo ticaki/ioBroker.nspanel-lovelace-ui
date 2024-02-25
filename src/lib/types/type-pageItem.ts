@@ -183,23 +183,37 @@ export type PageItemDataItemsOptions =
     | PageItemDataItemsOptionsWithOutTemplate;
 
 export type PageItemOptionsTemplate = {
-    template: Types.TemplateIdent;
-    subTemplate?: Types.TemplateIdent;
+    name: Types.TemplateIdent;
+    template?: Types.TemplateIdent;
     role: pages.DeviceRole;
     adapter: string;
     //dpInit: string;
     type: Types.SerialTypePageElements;
-} & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit' | 'modeScr'> &
-    (
-        | PageItemButtonDataItemsOptions
-        | PageItemShutterDataItemsOptions
-        | PageItemInputSelDataItemsOptions
-        | PageItemLightDataItemsOptions
-        | PageItemNumberDataItemsOptions
-        | PageItemTextDataItemsOptions
-        | PageItemFanDataItemsOptions
-        | PageItemTimerDataItemsOptions
-    );
+} & (
+    | ({ template?: undefined } & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit' | 'modeScr'> &
+          (
+              | PageItemButtonDataItemsOptions
+              | PageItemShutterDataItemsOptions
+              | PageItemInputSelDataItemsOptions
+              | PageItemLightDataItemsOptions
+              | PageItemNumberDataItemsOptions
+              | PageItemTextDataItemsOptions
+              | PageItemFanDataItemsOptions
+              | PageItemTimerDataItemsOptions
+          ))
+    | ({ template: Types.TemplateIdent } & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit' | 'modeScr'> &
+          pages.ChangeTypeOfKeys<
+              | PageItemButtonDataItemsOptions
+              | PageItemShutterDataItemsOptions
+              | PageItemInputSelDataItemsOptions
+              | PageItemLightDataItemsOptions
+              | PageItemNumberDataItemsOptions
+              | PageItemTextDataItemsOptions
+              | PageItemFanDataItemsOptions
+              | PageItemTimerDataItemsOptions,
+              Types.DataItemsOptions | undefined | null
+          >)
+);
 
 export type PageItemTimer = Pick<PageItemBase, 'entity1' | 'text' | 'headline' | 'icon' | 'setValue1'>;
 export type PageItemTimerDataItemsOptions = {
@@ -427,11 +441,11 @@ export type ColorEntryTypeNew =
       })
     | undefined;
 export type IconEntryType =
-    | (Partial<Record<Types.BooleanUnion, { value: string; text?: ValueEntryType }>> & ColorEntryTypeNew)
+    | (Partial<Record<Types.BooleanUnion, { value: string; text?: TextSizeEntryType }>> & ColorEntryTypeNew)
     | undefined;
 
 export type TextEntryType = Record<Types.BooleanUnion, string>;
-
+export type TextSizeEntryType = ValueEntryType & { textSize?: number };
 export type ValueEntryType =
     | {
           value: number;

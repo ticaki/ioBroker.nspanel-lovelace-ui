@@ -73,7 +73,7 @@ export class Page extends BaseClassPage {
             let template: PageItemOptionsTemplate | undefined;
             const n = loop === 0 ? options.template : subTemplate;
             if (!n) return undefined;
-            index = pageItemTemplates.findIndex((a) => a.template === n);
+            index = pageItemTemplates.findIndex((a) => a.name === n);
             if (index !== -1) template = pageItemTemplates[index];
 
             if (index === -1 || !template) {
@@ -100,15 +100,15 @@ export class Page extends BaseClassPage {
             options.type = template.type;
             options.role = template.role;
             options = deepAssign(newTemplate, options);
-            if (template.subTemplate !== undefined) {
+            if (template.template !== undefined) {
                 if (loop > 10) {
                     throw new Error(
-                        `Endless loop in getItemFromTemplate() detected! From ${template.subTemplate} for ${template.template}. Bye Bye`,
+                        `Endless loop in getItemFromTemplate() detected! From ${template.template} for ${template.name}. Bye Bye`,
                     );
                 }
-                const o = await this.getItemFromTemplate(options, template.subTemplate, ++loop);
+                const o = await this.getItemFromTemplate(options, template.template, ++loop);
                 if (o !== undefined) options = o;
-                else this.log.warn(`Dont get a template from ${template.subTemplate} for ${template.template}`);
+                else this.log.warn(`Dont get a template from ${template.template} for ${template.name}`);
             }
         }
         return options;

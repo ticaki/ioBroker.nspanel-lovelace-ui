@@ -40,7 +40,7 @@ const cardTemplates = [
       data: {
         headline: {
           type: "const",
-          constVal: "Abfalltermine"
+          constVal: "Waste dates"
         }
       }
     },
@@ -150,7 +150,7 @@ const cardTemplates = [
       data: {
         headline: {
           type: "const",
-          constVal: "home"
+          constVal: "Spotify-Premium"
         },
         alwaysOnDisplay: {
           type: "const",

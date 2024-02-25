@@ -6,8 +6,8 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
         /**
          * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
          */
-        template: 'generic.shutter',
-        role: 'rgb',
+        name: 'generic.shutter',
+        role: '',
         type: 'shutter',
         adapter: '',
         data: {
@@ -104,25 +104,13 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
         },
     },
     {
-        role: 'rgb',
+        role: '',
         type: 'shutter',
-        template: 'shutter.shelly.2PM',
+        name: 'shutter.shelly.2PM',
+        template: 'shutter.basic.onlyV',
         adapter: '0_userdata.0',
 
         data: {
-            icon: {
-                true: {
-                    value: { type: 'const', constVal: 'window-shutter-open' },
-                    color: { type: 'const', constVal: Color.Green },
-                },
-                false: {
-                    value: { type: 'const', constVal: 'window-shutter' },
-                    color: { type: 'const', constVal: Color.HMIOff },
-                },
-                scale: undefined,
-                maxBri: undefined,
-                minBri: undefined,
-            },
             // 1. slider
             entity1: {
                 // button
@@ -135,25 +123,10 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
             },
             // 2. slider
             entity2: undefined,
-            text: {
-                true: {
-                    type: 'const',
-                    constVal: 'text',
-                },
-                false: undefined,
-            },
             headline: {
                 type: 'const',
                 constVal: 'SHSW-25',
             },
-            text1: {
-                true: {
-                    type: 'const',
-                    constVal: 'Shutter position',
-                },
-                false: undefined,
-            },
-            text2: undefined,
             up: {
                 type: 'state',
                 dp: '.Shutter.Open',
@@ -175,12 +148,15 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
         },
     },
     {
-        role: 'rgb',
+        role: '',
         type: 'shutter',
-        template: 'shutter.deconz.light',
-        adapter: 'deconz',
+        name: 'shutter.basic',
+        adapter: '',
 
         data: {
+            up: undefined,
+            down: undefined,
+            stop: undefined,
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'window-shutter-open' },
@@ -190,10 +166,54 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
                     value: { type: 'const', constVal: 'window-shutter' },
                     color: { type: 'const', constVal: Color.HMIOff },
                 },
-                scale: undefined,
-                maxBri: undefined,
-                minBri: undefined,
             },
+            text: {
+                true: {
+                    type: 'const',
+                    constVal: 'Shutter control',
+                },
+                false: undefined,
+            },
+            text1: {
+                true: {
+                    type: 'const',
+                    constVal: 'up/down',
+                },
+                false: undefined,
+            },
+            text2: {
+                true: {
+                    type: 'const',
+                    constVal: 'tilt',
+                },
+                false: undefined,
+            },
+        },
+    },
+    {
+        role: '',
+        type: 'shutter',
+        name: 'shutter.basic.onlyV',
+        template: 'shutter.basic',
+        adapter: '',
+
+        data: {
+            up: undefined,
+            down: undefined,
+            text2: {
+                true: null,
+                false: null,
+            },
+        },
+    },
+    {
+        role: '',
+        type: 'shutter',
+        name: 'shutter.deconz.ikea.fyrtur',
+        template: 'shutter.basic.onlyV',
+        adapter: 'deconz',
+
+        data: {
             // 1. slider
             entity1: {
                 // button
@@ -204,27 +224,6 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
                 minScale: { type: 'const', constVal: 1 },
                 maxScale: { type: 'const', constVal: 78 },
             },
-            // 2. slider
-            entity2: undefined,
-            text: {
-                true: {
-                    type: 'const',
-                    constVal: 'text',
-                },
-                false: undefined,
-            },
-            headline: {
-                type: 'const',
-                constVal: 'zigbeeGedöns',
-            },
-            text1: {
-                true: {
-                    type: 'const',
-                    constVal: 'Shutter position',
-                },
-                false: undefined,
-            },
-            text2: undefined,
             up: { mode: 'auto', role: 'level.value', type: 'state', dp: '.lift', write: 'return 1' },
 
             down: { mode: 'auto', role: 'level.value', type: 'state', dp: '.lift', write: 'return 78' },

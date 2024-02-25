@@ -64,7 +64,7 @@ class Page extends import_states_controller.BaseClassPage {
       const n = loop === 0 ? options.template : subTemplate;
       if (!n)
         return void 0;
-      index = import_templateArray.pageItemTemplates.findIndex((a) => a.template === n);
+      index = import_templateArray.pageItemTemplates.findIndex((a) => a.name === n);
       if (index !== -1)
         template = import_templateArray.pageItemTemplates[index];
       if (index === -1 || !template) {
@@ -86,17 +86,17 @@ class Page extends import_states_controller.BaseClassPage {
       options.type = template.type;
       options.role = template.role;
       options = (0, import_tools.deepAssign)(newTemplate, options);
-      if (template.subTemplate !== void 0) {
+      if (template.template !== void 0) {
         if (loop > 10) {
           throw new Error(
-            `Endless loop in getItemFromTemplate() detected! From ${template.subTemplate} for ${template.template}. Bye Bye`
+            `Endless loop in getItemFromTemplate() detected! From ${template.template} for ${template.name}. Bye Bye`
           );
         }
-        const o = await this.getItemFromTemplate(options, template.subTemplate, ++loop);
+        const o = await this.getItemFromTemplate(options, template.template, ++loop);
         if (o !== void 0)
           options = o;
         else
-          this.log.warn(`Dont get a template from ${template.subTemplate} for ${template.template}`);
+          this.log.warn(`Dont get a template from ${template.template} for ${template.name}`);
       }
     }
     return options;

@@ -102,7 +102,9 @@ class PagePower extends import_Page.Page {
     if (!items || items.card !== "cardPower")
       return;
     const data = items.data;
-    message.headline = (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : "";
+    message.headline = this.library.getTranslation(
+      (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
+    );
     message.navigation = this.getNavigation();
     message.homeIcon = await (0, import_tools.getIconEntryValue)(data.homeIcon, true, "");
     message.homeColor = await (0, import_tools.getIconEntryColor)(data.homeIcon, true, import_Color.White);

@@ -64,7 +64,7 @@ export class PageNotify extends Page {
             value = await getValueEntryNumber(data.entity1);
             if (value === null) value = (await getValueEntryBoolean(data.entity1)) ?? true;
 
-            message.headline = (data.headline && (await data.headline.getString())) ?? '';
+            message.headline = this.library.getTranslation((data.headline && (await data.headline.getString())) ?? '');
             message.hColor = await getIconEntryColor(data.colorHeadline, value, White);
 
             message.blText = (data.buttonLeft && (await data.buttonLeft.getString())) ?? '';

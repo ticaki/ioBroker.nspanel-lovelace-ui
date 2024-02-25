@@ -69,7 +69,7 @@ class PageNotify extends import_Page.Page {
       value = await (0, import_tools.getValueEntryNumber)(data.entity1);
       if (value === null)
         value = (_a = await (0, import_tools.getValueEntryBoolean)(data.entity1)) != null ? _a : true;
-      message.headline = (_b = data.headline && await data.headline.getString()) != null ? _b : "";
+      message.headline = this.library.getTranslation((_b = data.headline && await data.headline.getString()) != null ? _b : "");
       message.hColor = await (0, import_tools.getIconEntryColor)(data.colorHeadline, value, import_Color.White);
       message.blText = (_c = data.buttonLeft && await data.buttonLeft.getString()) != null ? _c : "";
       message.blColor = await (0, import_tools.getIconEntryColor)(data.colorButtonLeft, value, import_Color.White);

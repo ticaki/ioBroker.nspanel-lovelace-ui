@@ -243,6 +243,72 @@ const popupTest = {
   pageItems: [],
   items: void 0
 };
+const pageEntitiesTest3 = {
+  card: "cardEntities",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "entities3",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "entities2"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "timer",
+      type: "timer",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "timer" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: void 0,
+            color: { type: "const", constVal: Color.Green }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        headline: { type: "const", constVal: "Timer" },
+        setValue1: { type: "state", dp: "0_userdata.0.example_state" }
+      }
+    },
+    {
+      role: "rgbSingle",
+      type: "light",
+      dpInit: "0_userdata.0.shelly.0.SHRGBW2#258794#1",
+      template: "light.shelly.rgbw2"
+    },
+    {
+      type: "shutter",
+      dpInit: "0_userdata.0.shelly.0.SHSW-25#C45BBE5FC53F#1",
+      template: "shutter.shelly.2PM"
+    },
+    {
+      type: "text",
+      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
+      template: "text.battery"
+    }
+  ],
+  items: void 0
+};
 const pageEntitiesTest2 = {
   card: "cardEntities",
   dpInit: "",
@@ -1565,7 +1631,7 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            text: { value: { type: "const", constVal: "22.2" } },
+            text: { value: { type: "const", constVal: "22.2" }, textSize: { type: "const", constVal: 3 } },
             color: { type: "const", constVal: Color.Green }
           },
           false: {
@@ -4023,7 +4089,8 @@ const Testconfig = [
       pageAbfall,
       pageGridTest5,
       pageMediaTest3,
-      popupTest
+      popupTest,
+      pageEntitiesTest3
     ],
     navigation: [
       {
@@ -4042,7 +4109,13 @@ const Testconfig = [
         name: "abfall1",
         page: "abfall1",
         left: { single: "main" },
-        right: { single: "entities2", double: "main" }
+        right: { single: "entities3", double: "main" }
+      },
+      {
+        name: "entities3",
+        page: "entities3",
+        left: { double: "abfall1" },
+        right: { double: "entities2" }
       },
       {
         name: "entities2",

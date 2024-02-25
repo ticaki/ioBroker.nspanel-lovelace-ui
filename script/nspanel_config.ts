@@ -344,12 +344,12 @@ const popupTest: pages.PageBaseConfig = {
     pageItems: [],
     items: undefined,
 };
-/*const pageEntitiesTest2: pages.PageBaseConfig = {
+const pageEntitiesTest3: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardEntities',
     dpInit: '',
     alwaysOn: 'none',
-    uniqueID: 'entities2',
+    uniqueID: 'entities3',
     useColor: false,
     config: {
         card: 'cardEntities',
@@ -406,23 +406,13 @@ const popupTest: pages.PageBaseConfig = {
             template: 'shutter.shelly.2PM',
         },
         {
-        type: 'text',
+            type: 'text',
             dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
             template: 'text.battery',
-            data: {
-                icon: {
-                    true: {
-                        value: {
-                            type: 'const',
-                            constVal: 'ds',
-                        },
-                    },
-                },
-            },
         },
     ],
     items: undefined,
-};*/
+};
 const pageEntitiesTest2: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardEntities',
@@ -1824,7 +1814,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'home' },
-                        text: { value: { type: 'const', constVal: '22.2' } },
+                        text: { value: { type: 'const', constVal: '22.2' }, textSize: { type: 'const', constVal: 3 } },
                         color: { type: 'const', constVal: Color.Green },
                     },
                     false: {
@@ -4472,6 +4462,7 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             pageGridTest5,
             pageMediaTest3,
             popupTest,
+            pageEntitiesTest3,
         ],
         // override by password.ts
         navigation: [
@@ -4491,7 +4482,13 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
                 name: 'abfall1', //main ist die erste Seite
                 page: 'abfall1',
                 left: { single: 'main' }, // Die 4 bezieht sich auf den name: 4
-                right: { single: 'entities2', double: 'main' },
+                right: { single: 'entities3', double: 'main' },
+            },
+            {
+                name: 'entities3', //main ist die erste Seite
+                page: 'entities3',
+                left: { double: 'abfall1' }, // Die 4 bezieht sich auf den name: 4
+                right: { double: 'entities2' },
             },
             {
                 name: 'entities2', //main ist die erste Seite
@@ -4572,7 +4569,6 @@ export const welcomePopupPayload =
                         '     wünschen dir               ' +
                         ' Armilar, TT-Tom, ticaki      ' +
                         '   & Kuckuckmann~2000~3~1~~2000'});*/
-
 
 sendTo('nspanel-lovelace-ui.0', 'config', Testconfig);
 
@@ -5480,23 +5476,37 @@ namespace typePageItem {
         | PageItemDataItemsOptionsWithOutTemplate;
     
     export type PageItemOptionsTemplate = {
-        template: Types.TemplateIdent;
-        subTemplate?: Types.TemplateIdent;
+        name: Types.TemplateIdent;
+        template?: Types.TemplateIdent;
         role: pages.DeviceRole;
         adapter: string;
         //dpInit: string;
         type: Types.SerialTypePageElements;
-    } & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit' | 'modeScr'> &
-        (
-            | PageItemButtonDataItemsOptions
-            | PageItemShutterDataItemsOptions
-            | PageItemInputSelDataItemsOptions
-            | PageItemLightDataItemsOptions
-            | PageItemNumberDataItemsOptions
-            | PageItemTextDataItemsOptions
-            | PageItemFanDataItemsOptions
-            | PageItemTimerDataItemsOptions
-        );
+    } & (
+        | ({ template?: undefined } & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit' | 'modeScr'> &
+              (
+                  | PageItemButtonDataItemsOptions
+                  | PageItemShutterDataItemsOptions
+                  | PageItemInputSelDataItemsOptions
+                  | PageItemLightDataItemsOptions
+                  | PageItemNumberDataItemsOptions
+                  | PageItemTextDataItemsOptions
+                  | PageItemFanDataItemsOptions
+                  | PageItemTimerDataItemsOptions
+              ))
+        | ({ template: Types.TemplateIdent } & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit' | 'modeScr'> &
+              pages.ChangeTypeOfKeys<
+                  | PageItemButtonDataItemsOptions
+                  | PageItemShutterDataItemsOptions
+                  | PageItemInputSelDataItemsOptions
+                  | PageItemLightDataItemsOptions
+                  | PageItemNumberDataItemsOptions
+                  | PageItemTextDataItemsOptions
+                  | PageItemFanDataItemsOptions
+                  | PageItemTimerDataItemsOptions,
+                  Types.DataItemsOptions | undefined | null
+              >)
+    );
     
     export type PageItemTimer = Pick<PageItemBase, 'entity1' | 'text' | 'headline' | 'icon' | 'setValue1'>;
     export type PageItemTimerDataItemsOptions = {
@@ -5724,11 +5734,11 @@ namespace typePageItem {
           })
         | undefined;
     export type IconEntryType =
-        | (Partial<Record<Types.BooleanUnion, { value: string; text?: ValueEntryType }>> & ColorEntryTypeNew)
+        | (Partial<Record<Types.BooleanUnion, { value: string; text?: TextSizeEntryType }>> & ColorEntryTypeNew)
         | undefined;
     
     export type TextEntryType = Record<Types.BooleanUnion, string>;
-    
+    export type TextSizeEntryType = ValueEntryType & { textSize?: number };
     export type ValueEntryType =
         | {
               value: number;

@@ -30,8 +30,8 @@ module.exports = __toCommonJS(shutter_exports);
 var Color = __toESM(require("../const/Color"));
 const shutterTemplates = [
   {
-    template: "generic.shutter",
-    role: "rgb",
+    name: "generic.shutter",
+    role: "",
     type: "shutter",
     adapter: "",
     data: {
@@ -116,24 +116,12 @@ const shutterTemplates = [
     }
   },
   {
-    role: "rgb",
+    role: "",
     type: "shutter",
-    template: "shutter.shelly.2PM",
+    name: "shutter.shelly.2PM",
+    template: "shutter.basic.onlyV",
     adapter: "0_userdata.0",
     data: {
-      icon: {
-        true: {
-          value: { type: "const", constVal: "window-shutter-open" },
-          color: { type: "const", constVal: Color.Green }
-        },
-        false: {
-          value: { type: "const", constVal: "window-shutter" },
-          color: { type: "const", constVal: Color.HMIOff }
-        },
-        scale: void 0,
-        maxBri: void 0,
-        minBri: void 0
-      },
       entity1: {
         value: { mode: "auto", role: "level.blind", type: "triggered", dp: ".Shutter.Position" },
         decimal: void 0,
@@ -143,25 +131,10 @@ const shutterTemplates = [
         maxScale: { type: "const", constVal: 100 }
       },
       entity2: void 0,
-      text: {
-        true: {
-          type: "const",
-          constVal: "text"
-        },
-        false: void 0
-      },
       headline: {
         type: "const",
         constVal: "SHSW-25"
       },
-      text1: {
-        true: {
-          type: "const",
-          constVal: "Shutter position"
-        },
-        false: void 0
-      },
-      text2: void 0,
       up: {
         type: "state",
         dp: ".Shutter.Open",
@@ -183,11 +156,14 @@ const shutterTemplates = [
     }
   },
   {
-    role: "rgb",
+    role: "",
     type: "shutter",
-    template: "shutter.deconz.light",
-    adapter: "deconz",
+    name: "shutter.basic",
+    adapter: "",
     data: {
+      up: void 0,
+      down: void 0,
+      stop: void 0,
       icon: {
         true: {
           value: { type: "const", constVal: "window-shutter-open" },
@@ -196,11 +172,53 @@ const shutterTemplates = [
         false: {
           value: { type: "const", constVal: "window-shutter" },
           color: { type: "const", constVal: Color.HMIOff }
-        },
-        scale: void 0,
-        maxBri: void 0,
-        minBri: void 0
+        }
       },
+      text: {
+        true: {
+          type: "const",
+          constVal: "Shutter control"
+        },
+        false: void 0
+      },
+      text1: {
+        true: {
+          type: "const",
+          constVal: "up/down"
+        },
+        false: void 0
+      },
+      text2: {
+        true: {
+          type: "const",
+          constVal: "tilt"
+        },
+        false: void 0
+      }
+    }
+  },
+  {
+    role: "",
+    type: "shutter",
+    name: "shutter.basic.onlyV",
+    template: "shutter.basic",
+    adapter: "",
+    data: {
+      up: void 0,
+      down: void 0,
+      text2: {
+        true: null,
+        false: null
+      }
+    }
+  },
+  {
+    role: "",
+    type: "shutter",
+    name: "shutter.deconz.ikea.fyrtur",
+    template: "shutter.basic.onlyV",
+    adapter: "deconz",
+    data: {
       entity1: {
         value: { mode: "auto", role: "level.value", type: "triggered", dp: ".lift" },
         decimal: void 0,
@@ -209,26 +227,6 @@ const shutterTemplates = [
         minScale: { type: "const", constVal: 1 },
         maxScale: { type: "const", constVal: 78 }
       },
-      entity2: void 0,
-      text: {
-        true: {
-          type: "const",
-          constVal: "text"
-        },
-        false: void 0
-      },
-      headline: {
-        type: "const",
-        constVal: "zigbeeGed\xF6ns"
-      },
-      text1: {
-        true: {
-          type: "const",
-          constVal: "Shutter position"
-        },
-        false: void 0
-      },
-      text2: void 0,
       up: { mode: "auto", role: "level.value", type: "state", dp: ".lift", write: "return 1" },
       down: { mode: "auto", role: "level.value", type: "state", dp: ".lift", write: "return 78" },
       stop: {

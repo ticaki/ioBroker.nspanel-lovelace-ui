@@ -150,6 +150,15 @@ export class Navigation extends BaseClass {
                 }
                 this.log.debug(`Navigation single click with target ${i[d].single} not work.`);
                 return;
+            } else if (i && i[d] && i[d].double !== undefined) {
+                const index = i[d].double;
+                if (index !== undefined && this.database[index]) {
+                    this.currentItem = index;
+                    this.panel.setActivePage(this.database[index]!.page);
+                    return;
+                }
+                this.log.debug(`Navigation single click (use double target) with target ${i[d].double} not work.`);
+                return;
             }
             this.log.debug('Navigation single click not work.');
         }

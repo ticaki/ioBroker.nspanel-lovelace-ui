@@ -5,7 +5,7 @@ export const buttonTemplates: PageItemOptionsTemplate[] = [
     {
         role: 'text.list',
         type: 'button',
-        template: 'button.iconLeftSize',
+        name: 'button.iconLeftSize',
         adapter: '',
 
         data: {
@@ -42,7 +42,7 @@ export const buttonTemplates: PageItemOptionsTemplate[] = [
     {
         role: 'text.list',
         type: 'button',
-        template: 'button.iconRightSize',
+        name: 'button.iconRightSize',
         adapter: '',
 
         data: {

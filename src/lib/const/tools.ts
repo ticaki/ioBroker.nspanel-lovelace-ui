@@ -7,6 +7,7 @@ import {
     PageItemLightDataItems,
     ScaledNumberType,
     TextEntryType,
+    TextSizeEntryType,
     ValueEntryType,
 } from '../types/type-pageItem';
 import { Library } from '../classes/library';
@@ -432,7 +433,9 @@ export async function getValueEntryBoolean(
     }
     return null;
 }
-
+function isTextSizeEntryType(F: any): F is ChangeTypeOfKeys<TextSizeEntryType, Dataitem | undefined> {
+    return 'textSize' in (F as TextSizeEntryType);
+}
 export async function getValueEntryString(
     i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
     v: number | null = null,
@@ -443,10 +446,17 @@ export async function getValueEntryString(
         const format = ((i.dateFormat && (await i.dateFormat.getObject())) as any) ?? null;
         let res = isValueDateFormat(format) ? new Date(nval).toLocaleString(format.local, format.format) : String(nval);
         res = res + ((i.unit && (await i.unit.getString())) ?? '');
-        return res;
+        let opt = '';
+        if (isTextSizeEntryType(i)) opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
+        return res + (opt ? '¬' + opt : '');
     }
-    const res = await i.value.getString();
-    if (res != null) res + ((i.unit && (await i.unit.getString())) ?? '');
+    let res = await i.value.getString();
+    let opt = '';
+    if (res != null) {
+        res += (i.unit && (await i.unit.getString())) ?? '';
+        if (isTextSizeEntryType(i)) opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
+        res += opt ? '¬' + opt : '';
+    }
     return res;
 }
 

@@ -14,7 +14,7 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
             data: {
                 headline: {
                     type: 'const',
-                    constVal: 'Abfalltermine',
+                    constVal: 'Waste dates',
                 },
             },
         },
@@ -128,7 +128,7 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
             data: {
                 headline: {
                     type: 'const',
-                    constVal: 'home',
+                    constVal: 'Spotify-Premium',
                 },
                 alwaysOnDisplay: {
                     type: 'const',

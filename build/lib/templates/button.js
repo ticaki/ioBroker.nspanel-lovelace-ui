@@ -32,7 +32,7 @@ const buttonTemplates = [
   {
     role: "text.list",
     type: "button",
-    template: "button.iconLeftSize",
+    name: "button.iconLeftSize",
     adapter: "",
     data: {
       icon: {
@@ -68,7 +68,7 @@ const buttonTemplates = [
   {
     role: "text.list",
     type: "button",
-    template: "button.iconRightSize",
+    name: "button.iconRightSize",
     adapter: "",
     data: {
       icon: {

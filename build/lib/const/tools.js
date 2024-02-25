@@ -440,8 +440,11 @@ async function getValueEntryBoolean(i) {
   }
   return null;
 }
+function isTextSizeEntryType(F) {
+  return "textSize" in F;
+}
 async function getValueEntryString(i, v = null) {
-  var _a, _b, _c;
+  var _a, _b, _c, _d, _e;
   if (!i || !i.value)
     return null;
   const nval = v !== null ? v : await getValueEntryNumber(i);
@@ -449,11 +452,19 @@ async function getValueEntryString(i, v = null) {
     const format = (_a = i.dateFormat && await i.dateFormat.getObject()) != null ? _a : null;
     let res2 = (0, import_types.isValueDateFormat)(format) ? new Date(nval).toLocaleString(format.local, format.format) : String(nval);
     res2 = res2 + ((_b = i.unit && await i.unit.getString()) != null ? _b : "");
-    return res2;
+    let opt2 = "";
+    if (isTextSizeEntryType(i))
+      opt2 = String((_c = i.textSize && await i.textSize.getNumber()) != null ? _c : "");
+    return res2 + (opt2 ? "\xAC" + opt2 : "");
   }
-  const res = await i.value.getString();
-  if (res != null)
-    res + ((_c = i.unit && await i.unit.getString()) != null ? _c : "");
+  let res = await i.value.getString();
+  let opt = "";
+  if (res != null) {
+    res += (_d = i.unit && await i.unit.getString()) != null ? _d : "";
+    if (isTextSizeEntryType(i))
+      opt = String((_e = i.textSize && await i.textSize.getNumber()) != null ? _e : "");
+    res += opt ? "\xAC" + opt : "";
+  }
   return res;
 }
 function getTranslation(library, key1, key2) {

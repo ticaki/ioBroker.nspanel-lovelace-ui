@@ -62,8 +62,9 @@ export class PageGrid extends Page {
                 if (temp) message.options[a] = await temp.getPageItemPayload();
             }
         }
-        message.headline =
-            (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '';
+        message.headline = this.library.getTranslation(
+            (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
+        );
         message.navigation = this.getNavigation();
         const msg: pages.PageGridMessage = Object.assign(
             this.card === 'cardGrid' ? PageGridMessageDefault : PageGrid2MessageDefault,

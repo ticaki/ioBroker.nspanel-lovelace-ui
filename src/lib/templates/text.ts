@@ -3,7 +3,7 @@ import * as Color from '../const/Color';
 
 export const textTemplates: PageItemOptionsTemplate[] = [
     {
-        template: 'text.window.isOpen',
+        name: 'text.window.isOpen',
         role: 'text',
         adapter: '',
         type: 'text',
@@ -27,7 +27,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                 },
             },
             text: {
-                true: { type: 'const', constVal: 'text' },
+                true: { type: 'const', constVal: 'window' },
                 false: undefined,
             },
             text1: {
@@ -37,7 +37,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
         },
     },
     {
-        template: 'text.window.isClose',
+        name: 'text.window.isClose',
         role: 'text',
         adapter: '',
         type: 'text',
@@ -63,7 +63,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                 },
             },
             text: {
-                true: { type: 'const', constVal: 'text' },
+                true: { type: 'const', constVal: 'window' },
                 false: undefined,
             },
             text1: {
@@ -73,7 +73,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
         },
     },
     {
-        template: 'text.temperature',
+        name: 'text.temperature',
         role: 'text',
         adapter: '',
         type: 'text',
@@ -124,7 +124,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
         },
     },
     {
-        template: 'text.battery',
+        name: 'text.battery',
         role: 'iconNotText',
         adapter: '',
         type: 'text',
@@ -166,6 +166,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                             type: 'const',
                             constVal: '%',
                         },
+                        textSize: { type: 'const', constVal: 2 },
                     },
                     color: {
                         type: 'const',
@@ -205,7 +206,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
         },
     },
     {
-        template: 'text.battery.low',
+        name: 'text.battery.low',
         role: 'text',
         adapter: '',
         type: 'text',

@@ -450,7 +450,7 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | typePageItem.ColorEntryType
     | PageMediaBaseConfig
     | Types.SerialTypePageElements
-    ? Obj extends Color.RGB | Types.IconScaleElement
+    ? Obj extends Color.RGB | Types.IconScaleElement | Types.DataItemsOptions
         ? N
         : {
               [K in keyof Obj]: ChangeTypeOfKeys<Obj[K], N>;

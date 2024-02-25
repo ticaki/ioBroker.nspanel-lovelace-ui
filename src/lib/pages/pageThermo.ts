@@ -114,7 +114,9 @@ export class PageThermo extends Page {
                 }*/
             }
             message.intNameEntity = this.id;
-            message.headline = (item.data.headline && (await item.data.headline.getString())) ?? '';
+            message.headline = this.library.getTranslation(
+                (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
+            );
             message.navigation = this.getNavigation();
             let v: any = (item.data.current && (await item.data.current.getNumber())) ?? null;
             if (v !== null) {

@@ -1,15 +1,6 @@
 import * as Color from '../const/Color';
 import { Page, PageItemInterface } from '../classes/Page';
-import {
-    PageItemDataItems,
-    MessageItem,
-    entityUpdateDetailMessage,
-    PageItemDataItemsOptions,
-    listCommand,
-    islistCommandUnion,
-    spotifyPlaylist,
-    PageItemDataItemsOptionsWithOutTemplate,
-} from '../types/type-pageItem';
+import * as typePageItem from '../types/type-pageItem';
 import * as tools from '../const/tools';
 import { PopupType } from '../types/types';
 import { Panel } from '../controller/panel';
@@ -22,8 +13,8 @@ import { Dataitem } from '../classes/data-item';
 export class PageItem extends BaseClassTriggerd {
     defaultOnColor = Color.White;
     defaultOffColor = Color.Blue;
-    config: PageItemDataItemsOptionsWithOutTemplate | undefined;
-    dataItems: PageItemDataItems | undefined;
+    config: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined;
+    dataItems: typePageItem.PageItemDataItems | undefined;
     panel: Panel;
     id: string;
     lastPopupType: PopupType | undefined = undefined;
@@ -32,7 +23,7 @@ export class PageItem extends BaseClassTriggerd {
     tempInterval: ioBroker.Interval | undefined;
     constructor(
         config: Omit<PageItemInterface, 'pageItemsConfig'>,
-        options: PageItemDataItemsOptionsWithOutTemplate | undefined,
+        options: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined,
     ) {
         super({ ...config });
         this.panel = config.panel;
@@ -44,11 +35,11 @@ export class PageItem extends BaseClassTriggerd {
 
     static getPageItem(
         config: Omit<PageItemInterface, 'pageItemsConfig'>,
-        options: PageItemDataItemsOptions | undefined,
+        options: typePageItem.PageItemDataItemsOptions | undefined,
     ): PageItem | undefined {
         if (options === undefined) return undefined;
         if (config.panel.persistentPageItems[config.id]) return config.panel.persistentPageItems[config.id];
-        return new PageItem(config, options as PageItemDataItemsOptionsWithOutTemplate);
+        return new PageItem(config, options as typePageItem.PageItemDataItemsOptionsWithOutTemplate);
     }
     async init(): Promise<void> {
         if (!this.config) return;
@@ -60,11 +51,11 @@ export class PageItem extends BaseClassTriggerd {
             : config.data;*/
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: PageItemDataItems['data'] = (await this.panel.statesControler.createDataItems(
+        const tempItem: typePageItem.PageItemDataItems['data'] = (await this.panel.statesControler.createDataItems(
             config.data,
             this,
-        )) as PageItemDataItems['data'];
-        this.dataItems = { ...config, data: tempItem } as PageItemDataItems;
+        )) as typePageItem.PageItemDataItems['data'];
+        this.dataItems = { ...config, data: tempItem } as typePageItem.PageItemDataItems;
 
         switch (this.dataItems.type) {
             case 'number':
@@ -148,7 +139,7 @@ export class PageItem extends BaseClassTriggerd {
             this.visibility = false;
             this.triggerParent = true;
             const entry = this.dataItems;
-            const message: Partial<MessageItem> = {};
+            const message: Partial<typePageItem.MessageItem> = {};
             message.intNameEntity = this.id;
             switch (entry.type) {
                 case 'light': {
@@ -446,12 +437,12 @@ export class PageItem extends BaseClassTriggerd {
         return '~~~~~';
     }
 
-    getDetailPayload(message: Partial<entityUpdateDetailMessage>): string {
+    getDetailPayload(message: Partial<typePageItem.entityUpdateDetailMessage>): string {
         this.triggerParent = false;
         if (!message.type) return '';
         switch (message.type) {
             case '2Sliders': {
-                let result: entityUpdateDetailMessage = {
+                let result: typePageItem.entityUpdateDetailMessage = {
                     type: '2Sliders',
                     icon: '',
                     entityName: 'test',
@@ -483,7 +474,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'insel': {
-                let result: entityUpdateDetailMessage = {
+                let result: typePageItem.entityUpdateDetailMessage = {
                     type: 'insel',
                     entityName: '',
                     textColor: String(Color.rgb_dec565(Color.White)),
@@ -503,7 +494,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'popupThermo': {
-                let result: entityUpdateDetailMessage = {
+                let result: typePageItem.entityUpdateDetailMessage = {
                     type: 'popupThermo',
                     entityName: '',
                     headline: '',
@@ -515,7 +506,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'popupFan': {
-                let result: entityUpdateDetailMessage = {
+                let result: typePageItem.entityUpdateDetailMessage = {
                     type: 'popupFan',
                     entityName: '',
                     icon: '',
@@ -543,7 +534,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'popupTimer': {
-                let result: entityUpdateDetailMessage = {
+                let result: typePageItem.entityUpdateDetailMessage = {
                     type: 'popupTimer',
                     entityName: '',
                     iconColor: '',
@@ -577,7 +568,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'popupShutter': {
-                let result: entityUpdateDetailMessage = {
+                let result: typePageItem.entityUpdateDetailMessage = {
                     type: 'popupShutter',
                     entityName: '',
                     pos1: '',
@@ -630,7 +621,7 @@ export class PageItem extends BaseClassTriggerd {
     async GeneratePopup(mode: PopupType): Promise<string | null> {
         if (!this.config || !this.dataItems) return null;
         const entry = this.dataItems;
-        let message: Partial<entityUpdateDetailMessage> = {};
+        let message: Partial<typePageItem.entityUpdateDetailMessage> = {};
         //const template = templatePageItems[mode][this.config.role];
         message.entityName = this.id;
         this.visibility = true;
@@ -812,7 +803,7 @@ export class PageItem extends BaseClassTriggerd {
                     switch (entry.role) {
                         case 'spotify-playlist': {
                             if (item.valueList) {
-                                const val = (await item.valueList.getObject()) as spotifyPlaylist | null;
+                                const val = (await item.valueList.getObject()) as typePageItem.spotifyPlaylist | null;
                                 if (val) {
                                     states = {};
                                     for (const a in val) {
@@ -1404,15 +1395,17 @@ export class PageItem extends BaseClassTriggerd {
             }
         }
     }
-    async getListCommands(setList: Dataitem | undefined): Promise<listCommand[] | null> {
+    async getListCommands(setList: Dataitem | undefined): Promise<typePageItem.listCommand[] | null> {
         if (!setList) return null;
-        let list: listCommand[] | null = (await setList.getObject()) as listCommand[] | null;
+        let list: typePageItem.listCommand[] | null = (await setList.getObject()) as typePageItem.listCommand[] | null;
         if (list === null) {
             const temp = await setList.getString();
             if (temp === null) return null;
-            list = temp.split('|').map((a: string): listCommand => {
+            list = temp.split('|').map((a: string): typePageItem.listCommand => {
                 const t = a.split('?');
-                return islistCommandUnion(t[2]) ? { id: t[0], value: t[1], command: t[2] } : { id: t[0], value: t[1] };
+                return typePageItem.islistCommandUnion(t[2])
+                    ? { id: t[0], value: t[1], command: t[2] }
+                    : { id: t[0], value: t[1] };
             });
         }
         return list;
@@ -1426,7 +1419,7 @@ export class PageItem extends BaseClassTriggerd {
      * 'flip': Liest den State mit ID ein, negiert den Wert und schreibt ihn wieder zurück. string, number, boolean möglich.
      */
 
-    async setListCommand(entry: PageItemDataItems, value: string): Promise<boolean> {
+    async setListCommand(entry: typePageItem.PageItemDataItems, value: string): Promise<boolean> {
         //if (entry.type !== 'input_sel') return false;
         const item = entry.data;
         if (!('entityInSel' in item)) return false;
@@ -1441,7 +1434,7 @@ export class PageItem extends BaseClassTriggerd {
             switch (entry.role) {
                 case 'spotify-playlist': {
                     if (item.valueList) {
-                        const val = (await item.valueList.getObject()) as spotifyPlaylist | null;
+                        const val = (await item.valueList.getObject()) as typePageItem.spotifyPlaylist | null;
                         if (val) {
                             states = {};
                             for (const a in val) {

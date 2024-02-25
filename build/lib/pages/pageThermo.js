@@ -123,7 +123,9 @@ class PageThermo extends import_Page.Page {
         }
       }
       message.intNameEntity = this.id;
-      message.headline = (_a = item.data.headline && await item.data.headline.getString()) != null ? _a : "";
+      message.headline = this.library.getTranslation(
+        (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
+      );
       message.navigation = this.getNavigation();
       let v = (_b = item.data.current && await item.data.current.getNumber()) != null ? _b : null;
       if (v !== null) {

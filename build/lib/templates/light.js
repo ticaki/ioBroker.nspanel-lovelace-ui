@@ -26,7 +26,7 @@ const lightTemplates = [
   {
     role: "rgbSingle",
     type: "light",
-    template: "light.shelly.rgbw2",
+    name: "light.shelly.rgbw2",
     adapter: "0_userdata.0",
     data: {
       icon: import_forTemplates.lightIcon,

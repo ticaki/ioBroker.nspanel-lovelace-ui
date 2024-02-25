@@ -101,8 +101,9 @@ export class PagePower extends Page {
         const items = this.items;
         if (!items || items.card !== 'cardPower') return;
         const data = items.data;
-        message.headline =
-            (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '';
+        message.headline = this.library.getTranslation(
+            (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
+        );
         message.navigation = this.getNavigation();
 
         message.homeIcon = await getIconEntryValue(data.homeIcon, true, '');

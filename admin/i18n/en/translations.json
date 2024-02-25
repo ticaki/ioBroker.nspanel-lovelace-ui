@@ -1,5 +1,23 @@
 {
     "nspanel-lovelace-ui adapter settings": "Adapter settings for nspanel-lovelace-ui",
     "Sun": "Sun",
-    "STOP": "Stop"
+    "STOP": "Stop",
+    "big": "big",
+    "medium": "medium",
+    "Waste dates": "Waste dates",
+    "Colour brightness": "Colour brightness",
+    "White brightness": "White brightness",
+    "Color": "Color",
+    "Shutter position": "Shutter control",
+    "open": "open",
+    "close": "close",
+    "window": "window",
+    "Temperature": "Temperature",
+    "Battery": "Battery",
+    "low": "low",
+    "ok" : "ok",
+    "vertical": "vertical",
+    "horizontal": "horizontal",
+    "up/down": "up/down",
+    "tilt": "tilt"
 }

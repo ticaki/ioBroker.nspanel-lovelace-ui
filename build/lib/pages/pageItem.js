@@ -28,7 +28,7 @@ __export(pageItem_exports, {
 });
 module.exports = __toCommonJS(pageItem_exports);
 var Color = __toESM(require("../const/Color"));
-var import_type_pageItem = require("../types/type-pageItem");
+var typePageItem = __toESM(require("../types/type-pageItem"));
 var tools = __toESM(require("../const/tools"));
 var import_states_controller = require("../controller/states-controller");
 var import_icon_mapping = require("../const/icon_mapping");
@@ -1268,7 +1268,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         return null;
       list = temp.split("|").map((a) => {
         const t = a.split("?");
-        return (0, import_type_pageItem.islistCommandUnion)(t[2]) ? { id: t[0], value: t[1], command: t[2] } : { id: t[0], value: t[1] };
+        return typePageItem.islistCommandUnion(t[2]) ? { id: t[0], value: t[1], command: t[2] } : { id: t[0], value: t[1] };
       });
     }
     return list;

@@ -30,7 +30,7 @@ module.exports = __toCommonJS(text_exports);
 var Color = __toESM(require("../const/Color"));
 const textTemplates = [
   {
-    template: "text.window.isOpen",
+    name: "text.window.isOpen",
     role: "text",
     adapter: "",
     type: "text",
@@ -54,7 +54,7 @@ const textTemplates = [
         }
       },
       text: {
-        true: { type: "const", constVal: "text" },
+        true: { type: "const", constVal: "window" },
         false: void 0
       },
       text1: {
@@ -64,7 +64,7 @@ const textTemplates = [
     }
   },
   {
-    template: "text.window.isClose",
+    name: "text.window.isClose",
     role: "text",
     adapter: "",
     type: "text",
@@ -89,7 +89,7 @@ const textTemplates = [
         }
       },
       text: {
-        true: { type: "const", constVal: "text" },
+        true: { type: "const", constVal: "window" },
         false: void 0
       },
       text1: {
@@ -99,7 +99,7 @@ const textTemplates = [
     }
   },
   {
-    template: "text.temperature",
+    name: "text.temperature",
     role: "text",
     adapter: "",
     type: "text",
@@ -149,7 +149,7 @@ const textTemplates = [
     }
   },
   {
-    template: "text.battery",
+    name: "text.battery",
     role: "iconNotText",
     adapter: "",
     type: "text",
@@ -189,7 +189,8 @@ const textTemplates = [
             unit: {
               type: "const",
               constVal: "%"
-            }
+            },
+            textSize: { type: "const", constVal: 2 }
           },
           color: {
             type: "const",
@@ -229,7 +230,7 @@ const textTemplates = [
     }
   },
   {
-    template: "text.battery.low",
+    name: "text.battery.low",
     role: "text",
     adapter: "",
     type: "text",
