@@ -796,9 +796,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           "arrow-up",
           "stop",
           "arrow-down",
-          "arrow-up",
+          "arrow-top-right",
           "stop",
-          "arrow-down"
+          "arrow-bottom-left"
         ];
         const arr = [pos1, pos2];
         for (let index = 0; index < arr.length; index++) {

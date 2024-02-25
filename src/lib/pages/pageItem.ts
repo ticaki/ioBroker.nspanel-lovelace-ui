@@ -897,9 +897,9 @@ export class PageItem extends BaseClassTriggerd {
                           'arrow-up', //up
                           'stop', //stop
                           'arrow-down', //down
-                          'arrow-up', //up
-                          'stop', //stop
-                          'arrow-down', //down
+                          'arrow-top-right', //t-up
+                          'stop', //t-stop
+                          'arrow-bottom-left', //t-down
                       ];
                 const arr = [pos1, pos2];
                 for (let index = 0; index < arr.length; index++) {

@@ -4667,7 +4667,8 @@ namespace pages {
         | 'value.battery'
         | 'indicator.lowbat'
         | 'value'
-        | '';
+        | ''
+        | 'level.value';
     
     export type DeviceRole =
         | 'text'
