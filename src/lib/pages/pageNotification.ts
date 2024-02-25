@@ -37,7 +37,7 @@ export class PageNotify extends Page {
         const tempConfig: Partial<pages.cardNotifyDataItemOptions> = this.dpInit
             ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)
             : config;
-        setTriggeredToState(tempConfig, ['entity1']);
+        setTriggeredToState(tempConfig, ['entity1', 'optinalValue']);
         // create Dataitems
 
         const tempItem: Partial<pages.cardNotifyDataItems> = await this.panel.statesControler.createDataItems(

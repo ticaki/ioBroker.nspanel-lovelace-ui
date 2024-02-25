@@ -51,7 +51,7 @@ class PageNotify extends import_Page.Page {
   async init() {
     const config = structuredClone(this.config);
     const tempConfig = this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : config;
-    (0, import_tools.setTriggeredToState)(tempConfig, ["entity1"]);
+    (0, import_tools.setTriggeredToState)(tempConfig, ["entity1", "optinalValue"]);
     const tempItem = await this.panel.statesControler.createDataItems(
       tempConfig,
       this
