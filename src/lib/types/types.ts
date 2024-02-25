@@ -304,7 +304,7 @@ type DataItemsOptionsCustom = {
 type DataItemsOptionsConst = {
     type: 'const';
     role?: pages.StateRole;
-    constVal: StateValue | AllIcons;
+    constVal: StateValue | AllIcons | Color.RGB | pages.placeholderType | IconScaleElement;
     state?: State | null; // use just inside of class
     forceType?: 'string' | 'number' | 'boolean'; // force a type
 };

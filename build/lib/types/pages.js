@@ -20,6 +20,7 @@ var pages_exports = {};
 __export(pages_exports, {
   isButtonActionType: () => isButtonActionType,
   isColorEntryType: () => isColorEntryType,
+  isPlaceholderType: () => isPlaceholderType,
   isStateRole: () => isStateRole
 });
 module.exports = __toCommonJS(pages_exports);
@@ -117,10 +118,19 @@ function isColorEntryType(F) {
     return true;
   return false;
 }
+function isPlaceholderType(F) {
+  let count = 0;
+  for (const a in F) {
+    if (["text", "dp"].indexOf(a) !== -1 && F[a] !== void 0)
+      count++;
+  }
+  return count === 1;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   isButtonActionType,
   isColorEntryType,
+  isPlaceholderType,
   isStateRole
 });
 //# sourceMappingURL=pages.js.map

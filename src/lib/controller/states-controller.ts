@@ -333,6 +333,14 @@ export class StatesControler extends BaseClass {
             }
         }
     }
+
+    async getStateVal(id: string): Promise<ioBroker.StateValue | null> {
+        const state = await this.getState(id, 'now');
+        if (state) {
+            return state.val ?? null;
+        }
+        return null;
+    }
     /**
      * Read a state from DB or js-controller
      * @param id state id with namespace
@@ -367,6 +375,7 @@ export class StatesControler extends BaseClass {
                 return this.stateDB[id].state;
             }
         }
+        if (id.includes('/')) internal = true;
         if (!internal) {
             const state = await this.adapter.getForeignStateAsync(id);
             if (state) {

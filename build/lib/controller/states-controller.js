@@ -313,6 +313,14 @@ class StatesControler extends import_library.BaseClass {
       }
     }
   }
+  async getStateVal(id) {
+    var _a;
+    const state = await this.getState(id, "now");
+    if (state) {
+      return (_a = state.val) != null ? _a : null;
+    }
+    return null;
+  }
   async getState(id, response = "medium", internal = false) {
     let timespan = this.timespan;
     if (response === "slow")
@@ -338,6 +346,8 @@ class StatesControler extends import_library.BaseClass {
         return this.stateDB[id].state;
       }
     }
+    if (id.includes("/"))
+      internal = true;
     if (!internal) {
       const state = await this.adapter.getForeignStateAsync(id);
       if (state) {

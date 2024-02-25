@@ -1,8 +1,6 @@
 import * as dataItem from '../classes/data-item';
 import * as Color from '../const/Color';
-import { MessageStatusUpdate } from './msg-def';
 import * as typePageItem from './type-pageItem';
-import * as typePageItem_1 from './type-pageItem';
 import * as Types from './types';
 
 export type PageTypeCards =
@@ -315,6 +313,7 @@ type PageNotifyConfig = {
     text: string;
     colorText: typePageItem.ColorEntryTypeNew;
     timeout: number;
+    optinalValue?: string;
     setValue1: string;
     setValue2?: string;
 };
@@ -653,6 +652,7 @@ export type PageNotifyMessage = {
     fontSet: string;
     icon: string;
     iconColor: string;
+    placeholder: string;
 };
 /*+ getState(popupNotifyInternalName).val + '~'
                 + heading + '~'
@@ -667,10 +667,6 @@ export type PageNotifyMessage = {
 export type screensaverMessage = {
     options: Record<Types.ScreenSaverPlaces, string[]>;
 };
-
-export type screensaverMrIconMessage = {
-    event: 'statusUpdate';
-} & Record<MessageStatusUpdate, string>;
 
 export type PageEntitiesMessage = {
     event: 'entityUpd';
@@ -710,8 +706,24 @@ export type listItem =
       }
     | undefined; // mean string start with getState(' and end with ').val
 export type toolboxItem = ChangeTypeOfKeys<listItem, Types.DataItemsOptions | undefined> & {
-    action: typePageItem_1.MediaToolBoxAction;
+    action: typePageItem.MediaToolBoxAction;
 };
 export type toolboxItemDataItem = ChangeTypeOfKeys<listItem, dataItem.Dataitem | undefined> & {
-    action: typePageItem_1.MediaToolBoxAction;
+    action: typePageItem.MediaToolBoxAction;
 };
+
+export type placeholderType = Record<
+    string,
+    {
+        text?: string;
+        dp?: string;
+    }
+>;
+
+export function isPlaceholderType(F: any): F is placeholderType {
+    let count = 0;
+    for (const a in F) {
+        if (['text', 'dp'].indexOf(a) !== -1 && F[a] !== undefined) count++;
+    }
+    return count === 1;
+}

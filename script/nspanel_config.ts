@@ -115,7 +115,6 @@ namespace Color {
 /***************************************************************************************************************/
 /***************************************************************************************************************/
 
-
 const pageEntitiesTest1: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardEntities',
@@ -338,6 +337,7 @@ const popupTest: pages.PageBaseConfig = {
             text: { type: 'const', constVal: 'Text' },
             colorText: { true: { color: { type: 'const', constVal: Color.White } } },
             timeout: { type: 'const', constVal: 0 },
+            optinalValue: { type: 'const', constVal: {} },
             setValue1: { type: 'const', constVal: true },
         },
     },
@@ -4899,6 +4899,7 @@ namespace pages {
         text: string;
         colorText: typePageItem.ColorEntryTypeNew;
         timeout: number;
+        optinalValue?: string;
         setValue1: string;
         setValue2?: string;
     };
@@ -5034,7 +5035,7 @@ namespace pages {
         | typePageItem.ColorEntryType
         | PageMediaBaseConfig
         | Types.SerialTypePageElements
-        ? Obj extends Color.RGB | Types.IconScaleElement
+        ? Obj extends Color.RGB | Types.IconScaleElement | Types.DataItemsOptions
             ? N
             : {
                   [K in keyof Obj]: ChangeTypeOfKeys<Obj[K], N>;
@@ -5237,6 +5238,7 @@ namespace pages {
         fontSet: string;
         icon: string;
         iconColor: string;
+        placeholder: string;
     };
     /*+ getState(popupNotifyInternalName).val + '~'
                     + heading + '~'
@@ -5295,6 +5297,22 @@ namespace pages {
     export type toolboxItemDataItem = ChangeTypeOfKeys<listItem, dataItem.Dataitem | undefined> & {
         action: typePageItem.MediaToolBoxAction;
     };
+    
+    export type placeholderType = Record<
+        string,
+        {
+            text?: string;
+            dp?: string;
+        }
+    >;
+    
+    export function isPlaceholderType(F: any): F is placeholderType {
+        let count = 0;
+        for (const a in F) {
+            if (['text', 'dp'].indexOf(a) !== -1 && F[a] !== undefined) count++;
+        }
+        return count === 1;
+    }
     }
 namespace typePageItem {
     export type PageLightItem = {

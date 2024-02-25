@@ -237,6 +237,7 @@ const popupTest = {
       text: { type: "const", constVal: "Text" },
       colorText: { true: { color: { type: "const", constVal: Color.White } } },
       timeout: { type: "const", constVal: 0 },
+      optinalValue: { type: "const", constVal: {} },
       setValue1: { type: "const", constVal: true }
     }
   },

@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,10 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageNotification_exports = {};
 __export(pageNotification_exports, {
@@ -24,6 +30,7 @@ module.exports = __toCommonJS(pageNotification_exports);
 var import_Page = require("../classes/Page");
 var import_Color = require("../const/Color");
 var import_tools = require("../const/tools");
+var pages = __toESM(require("../types/pages"));
 class PageNotify extends import_Page.Page {
   config;
   items;
@@ -58,7 +65,7 @@ class PageNotify extends import_Page.Page {
       this.lastpage = p;
   }
   async update() {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     const message = {};
     const items = this.items;
     if (!items)
@@ -77,14 +84,24 @@ class PageNotify extends import_Page.Page {
       message.brColor = await (0, import_tools.getIconEntryColor)(data.colorButtonRight, value, import_Color.White);
       message.text = (_e = data.text && await data.text.getString()) != null ? _e : "";
       message.textColor = await (0, import_tools.getIconEntryColor)(data.colorText, value, import_Color.White);
-      message.timeout = (_f = data.timeout && await data.timeout.getNumber()) != null ? _f : 0;
+      const placeholder = (_f = data.optinalValue && await data.optinalValue.getObject()) != null ? _f : null;
+      if (placeholder && pages.isPlaceholderType(placeholder)) {
+        for (const key in placeholder) {
+          const target = placeholder[key];
+          let val = (_g = target.dp && await this.panel.statesControler.getStateVal(target.dp)) != null ? _g : "";
+          if (val !== "")
+            val = (_h = target.text) != null ? _h : "";
+          message.text.replaceAll("${" + key + "}", val);
+        }
+      }
+      message.timeout = (_i = data.timeout && await data.timeout.getNumber()) != null ? _i : 0;
     }
     if (items.card === "popupNotify") {
       this.sendToPanel(this.getMessage(message));
       return;
     } else if (items.card === "popupNotify2") {
       const data = items.data;
-      message.fontSet = (_g = data.textSize && await data.textSize.getString()) != null ? _g : "";
+      message.fontSet = (_j = data.textSize && await data.textSize.getString()) != null ? _j : "";
       message.icon = await (0, import_tools.getIconEntryValue)(data.icon, value, "");
       message.iconColor = await (0, import_tools.getIconEntryColor)(data.icon, value, import_Color.White);
       this.sendToPanel(this.getMessage2(message));
