@@ -471,8 +471,8 @@ class Panel extends import_library.BaseClass {
                 "ON CustomSend DO RuleTimer1 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON"
               );
               this.sendToTasmota(this.topic + "/cmnd/Rule3", "ON");
-              this.InitDone = true;
               await this.start();
+              this.InitDone = true;
             }
             this.library.writedp(
               `panels.${this.name}.info`,
@@ -597,6 +597,8 @@ class Panel extends import_library.BaseClass {
     return (_a = this.pages[index]) != null ? _a : null;
   }
   async HandleIncomingMessage(event) {
+    if (!this.InitDone)
+      return;
     this.log.debug("Receive message:" + JSON.stringify(event));
     const index = this.pages.findIndex((a) => {
       if (a && a.card !== "screensaver" && a.card !== "screensaver2")
