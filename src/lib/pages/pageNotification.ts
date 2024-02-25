@@ -75,13 +75,14 @@ export class PageNotify extends Page {
 
             message.text = (data.text && (await data.text.getString())) ?? '';
             message.textColor = await getIconEntryColor(data.colorText, value, White);
+            if (message.text) message.text = this.library.getTranslation(message.text);
             const placeholder = (data.optinalValue && (await data.optinalValue.getObject())) ?? null;
             if (placeholder && pages.isPlaceholderType(placeholder)) {
                 for (const key in placeholder) {
                     const target = placeholder[key];
                     let val = (target.dp && (await this.panel.statesControler.getStateVal(target.dp))) ?? '';
-                    if (val !== '') val = target.text ?? '';
-                    message.text.replaceAll('${' + key + '}', val);
+                    if (val === '') val = target.text ?? '';
+                    message.text = message.text.replaceAll('${' + key + '}', val as string);
                 }
             }
 

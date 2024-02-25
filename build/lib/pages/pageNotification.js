@@ -84,14 +84,16 @@ class PageNotify extends import_Page.Page {
       message.brColor = await (0, import_tools.getIconEntryColor)(data.colorButtonRight, value, import_Color.White);
       message.text = (_e = data.text && await data.text.getString()) != null ? _e : "";
       message.textColor = await (0, import_tools.getIconEntryColor)(data.colorText, value, import_Color.White);
+      if (message.text)
+        message.text = this.library.getTranslation(message.text);
       const placeholder = (_f = data.optinalValue && await data.optinalValue.getObject()) != null ? _f : null;
       if (placeholder && pages.isPlaceholderType(placeholder)) {
         for (const key in placeholder) {
           const target = placeholder[key];
           let val = (_g = target.dp && await this.panel.statesControler.getStateVal(target.dp)) != null ? _g : "";
-          if (val !== "")
+          if (val === "")
             val = (_h = target.text) != null ? _h : "";
-          message.text.replaceAll("${" + key + "}", val);
+          message.text = message.text.replaceAll("${" + key + "}", val);
         }
       }
       message.timeout = (_i = data.timeout && await data.timeout.getNumber()) != null ? _i : 0;

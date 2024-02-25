@@ -721,9 +721,14 @@ export type placeholderType = Record<
 >;
 
 export function isPlaceholderType(F: any): F is placeholderType {
-    let count = 0;
+    if (!F || typeof F !== 'object') return false;
     for (const a in F) {
-        if (['text', 'dp'].indexOf(a) !== -1 && F[a] !== undefined) count++;
+        let count = 0;
+        if (!F[a]) return false;
+        for (const b in F[a]) {
+            if (['text', 'dp'].indexOf(b) !== -1 && F[a][b] !== undefined) count++;
+        }
+        if (count !== 1) return false;
     }
-    return count === 1;
+    return true;
 }

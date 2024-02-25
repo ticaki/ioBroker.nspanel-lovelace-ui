@@ -627,6 +627,7 @@ export class PageItem extends BaseClassTriggerd {
         this.visibility = true;
         this.lastPopupType = mode;
         switch (mode) {
+            case 'popupLightNew':
             case 'popupLight': {
                 switch (this.config.role) {
                     case 'light':
@@ -659,6 +660,9 @@ export class PageItem extends BaseClassTriggerd {
                                 message.slider1Pos = dimmer;
                             }
                         }
+                        if (message.buttonState !== 'disable')
+                            message.icon = await tools.getIconEntryValue(item.icon, message.buttonState, '', '');
+
                         message.slidersColor =
                             (await tools.getIconEntryColor(item.icon, false, Color.White)) ?? 'disable';
                         let rgb = null;
@@ -875,8 +879,8 @@ export class PageItem extends BaseClassTriggerd {
 
                 break;
             }
-            case 'popupLightNew':
             case 'popupNotify':
+                break;
             case 'popupShutter': {
                 //entityUpdateDetail~entityName~*sliderPos*~2ndrow~textPosition~icon1~iconUp~iconStop~iconDown~iconUpStatus~iconStopStatus~iconDownStatus
                 //~textTilt~iconTiltLeft~iconTiltStop~iconTiltRight~iconTiltLeftStatus~iconTiltStopStatus~iconTiltLeftStatus~tiltPos

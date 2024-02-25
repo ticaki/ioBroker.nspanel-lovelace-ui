@@ -227,17 +227,17 @@ const popupTest = {
   config: {
     card: "popupNotify",
     data: {
-      entity1: { value: { type: "triggered", dp: "0_userdata.0.example_state" } },
+      entity1: { value: { type: "state", dp: "0_userdata.0.example_state" } },
       headline: { type: "const", constVal: "headline" },
       colorHeadline: { true: { color: { type: "const", constVal: Color.White } } },
       buttonLeft: { type: "const", constVal: "l" },
       colorButtonLeft: { true: { color: { type: "const", constVal: Color.White } } },
       buttonRight: { type: "const", constVal: "r" },
       colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
-      text: { type: "const", constVal: "Text" },
+      text: { type: "const", constVal: "Text Test ${pl}" },
       colorText: { true: { color: { type: "const", constVal: Color.White } } },
       timeout: { type: "const", constVal: 0 },
-      optinalValue: { type: "const", constVal: {} },
+      optinalValue: { type: "const", constVal: { pl: { text: "das ist ein placeholder" } } },
       setValue1: { type: "const", constVal: true }
     }
   },

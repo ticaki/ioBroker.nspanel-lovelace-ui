@@ -119,12 +119,20 @@ function isColorEntryType(F) {
   return false;
 }
 function isPlaceholderType(F) {
-  let count = 0;
+  if (!F || typeof F !== "object")
+    return false;
   for (const a in F) {
-    if (["text", "dp"].indexOf(a) !== -1 && F[a] !== void 0)
-      count++;
+    let count = 0;
+    if (!F[a])
+      return false;
+    for (const b in F[a]) {
+      if (["text", "dp"].indexOf(b) !== -1 && F[a][b] !== void 0)
+        count++;
+    }
+    if (count !== 1)
+      return false;
   }
-  return count === 1;
+  return true;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

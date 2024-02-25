@@ -667,7 +667,7 @@ export class Panel extends BaseClass {
             case 'buttonPress2': {
                 if (event.id == 'screensaver') {
                     await this.setActivePage(this.navigation.getCurrentPage());
-                } else if (event.action === 'bExit') {
+                } else if (event.action === 'bExit' && event.id !== 'popupNotify') {
                     await this.setActivePage(true);
                 } else {
                     if (
