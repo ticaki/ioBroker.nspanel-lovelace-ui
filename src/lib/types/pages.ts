@@ -313,7 +313,7 @@ type PageNotifyConfig = {
     text: string;
     colorText: typePageItem.ColorEntryTypeNew;
     timeout: number;
-    optinalValue?: string;
+    optionalValue?: string;
     setValue1: string;
     setValue2?: string;
 };

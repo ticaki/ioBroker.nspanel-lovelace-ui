@@ -337,7 +337,7 @@ const popupTest: pages.PageBaseConfig = {
             text: { type: 'const', constVal: 'Text' },
             colorText: { true: { color: { type: 'const', constVal: Color.White } } },
             timeout: { type: 'const', constVal: 0 },
-            optinalValue: { type: 'const', constVal: {} },
+            optionalValue: { type: 'const', constVal: {} },
             setValue1: { type: 'const', constVal: true },
         },
     },
@@ -4899,7 +4899,7 @@ namespace pages {
         text: string;
         colorText: typePageItem.ColorEntryTypeNew;
         timeout: number;
-        optinalValue?: string;
+        optionalValue?: string;
         setValue1: string;
         setValue2?: string;
     };

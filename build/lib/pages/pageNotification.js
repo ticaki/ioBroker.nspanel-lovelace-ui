@@ -86,7 +86,7 @@ class PageNotify extends import_Page.Page {
       message.textColor = await (0, import_tools.getIconEntryColor)(data.colorText, value, import_Color.White);
       if (message.text)
         message.text = this.library.getTranslation(message.text);
-      const placeholder = (_f = data.optinalValue && await data.optinalValue.getObject()) != null ? _f : null;
+      const placeholder = (_f = data.optionalValue && await data.optionalValue.getObject()) != null ? _f : null;
       if (placeholder && pages.isPlaceholderType(placeholder)) {
         for (const key in placeholder) {
           const target = placeholder[key];

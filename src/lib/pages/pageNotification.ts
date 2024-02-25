@@ -76,7 +76,7 @@ export class PageNotify extends Page {
             message.text = (data.text && (await data.text.getString())) ?? '';
             message.textColor = await getIconEntryColor(data.colorText, value, White);
             if (message.text) message.text = this.library.getTranslation(message.text);
-            const placeholder = (data.optinalValue && (await data.optinalValue.getObject())) ?? null;
+            const placeholder = (data.optionalValue && (await data.optionalValue.getObject())) ?? null;
             if (placeholder && pages.isPlaceholderType(placeholder)) {
                 for (const key in placeholder) {
                     const target = placeholder[key];

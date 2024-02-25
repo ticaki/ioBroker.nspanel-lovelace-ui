@@ -237,7 +237,7 @@ const popupTest = {
       text: { type: "const", constVal: "Text Test ${pl}" },
       colorText: { true: { color: { type: "const", constVal: Color.White } } },
       timeout: { type: "const", constVal: 0 },
-      optinalValue: { type: "const", constVal: { pl: { text: "das ist ein placeholder" } } },
+      optionalValue: { type: "const", constVal: { pl: { text: "das ist ein placeholder" } } },
       setValue1: { type: "const", constVal: true }
     }
   },
