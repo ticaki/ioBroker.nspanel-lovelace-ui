@@ -20,5 +20,7 @@
     "vertical": "Vertikale",
     "horizontal": "horizontal",
     "up/down": "oben/unten",
-    "tilt": "Neigung"
+    "tilt": "Neigung",
+    "welcomeTToken": "  Einen schönen Tag,\r\n    wünschen dir\r\n Armilar, TT-Tom, ticaki\r\n   & Kuckuckmann",
+    "welcomeHToken": "Willkommen zum NSPanel"
 }

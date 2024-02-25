@@ -34,7 +34,7 @@ var pages = __toESM(require("../types/pages"));
 class PageNotify extends import_Page.Page {
   config;
   items;
-  lastpage;
+  lastpage = [];
   step = 1;
   headlinePos = 0;
   titelPos = 0;
@@ -61,8 +61,16 @@ class PageNotify extends import_Page.Page {
     await super.init();
   }
   setLastPage(p) {
-    if (p !== this)
-      this.lastpage = p;
+    if (p !== this) {
+      if (p !== void 0)
+        this.lastpage.push(p);
+      else
+        this.lastpage = [];
+    }
+  }
+  removeLastPage(_p) {
+    this.lastpage = this.lastpage.filter((a) => a !== _p);
+    this.lastpage.forEach((a) => a.removeLastPage(_p));
   }
   async update() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
@@ -162,8 +170,14 @@ class PageNotify extends import_Page.Page {
           data.setValue1 && await data.setValue1.setStateAsync(_event.opt === "yes");
       }
     }
-    if (this.lastpage)
-      this.panel.setActivePage(this.lastpage);
+    const p = this.lastpage.pop();
+    if (p) {
+      p.removeLastPage(this);
+      this.panel.setActivePage(p);
+    } else {
+      const page = this.panel.navigation.getCurrentPage();
+      this.panel.setActivePage(page);
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

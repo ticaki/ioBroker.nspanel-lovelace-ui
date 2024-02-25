@@ -43,6 +43,7 @@ var import_pagePower = require("../pages/pagePower");
 var import_pageEntities = require("../pages/pageEntities");
 var import_tools = require("../const/tools");
 var import_pageNotification = require("../pages/pageNotification");
+var import_notifications = require("../const/notifications");
 function isPanelConfig(F) {
   if (F.controller === void 0)
     return false;
@@ -130,6 +131,7 @@ class Panel extends import_library.BaseClass {
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     this.statesControler = options.controller.statesControler;
     this.dimMode = { low: (_b = options.dimLow) != null ? _b : 70, high: (_c = options.dimHigh) != null ? _c : 90 };
+    options.pages = options.pages.concat(import_notifications.systemNotifications);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
       let pageConfig = options.pages[a];
@@ -254,12 +256,12 @@ class Panel extends import_library.BaseClass {
     state = this.library.readdb(`panels.${this.name}.cmd.dimActive`);
     if (state && state.val)
       this.dimMode.high = state.val;
-    await this.library.writedp(
+    this.library.writedp(
       `panels.${this.name}.cmd.dimStandby`,
       this.dimMode.low,
       import_definition.genericStateObjects.panel.panels.cmd.dimStandby
     );
-    await this.library.writedp(
+    this.library.writedp(
       `panels.${this.name}.cmd.dimActive`,
       this.dimMode.high,
       import_definition.genericStateObjects.panel.panels.cmd.dimActive
@@ -274,7 +276,7 @@ class Panel extends import_library.BaseClass {
     if (state) {
       this.timeout = parseInt(String(state.val));
     }
-    await this.library.writedp(
+    this.library.writedp(
       `panels.${this.name}.cmd.screensaverTimeout`,
       this.timeout,
       import_definition.genericStateObjects.panel.panels.cmd.screensaverTimeout
@@ -303,49 +305,49 @@ class Panel extends import_library.BaseClass {
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
     this.info.nspanel.bigIconRight = state ? !!state.val : false;
-    this.statesControler.setInternalState(
+    await this.statesControler.setInternalState(
       `${this.name}/cmd/screensaverTimeout`,
       this.timeout,
       true,
       (0, import_tools.getInternalDefaults)("number", "value"),
       this.onInternalCommand
     );
-    this.statesControler.setInternalState(
+    await this.statesControler.setInternalState(
       `${this.name}/cmd/dimStandby`,
       this.timeout,
       true,
       (0, import_tools.getInternalDefaults)("number", "value"),
       this.onInternalCommand
     );
-    this.statesControler.setInternalState(
+    await this.statesControler.setInternalState(
       `${this.name}/cmd/dimActive`,
       this.timeout,
       true,
       (0, import_tools.getInternalDefaults)("number", "value"),
       this.onInternalCommand
     );
-    this.statesControler.setInternalState(
+    await this.statesControler.setInternalState(
       `${this.name}/cmd/bigIconLeft`,
       true,
       true,
       (0, import_tools.getInternalDefaults)("boolean", "indicator"),
       this.onInternalCommand
     );
-    this.statesControler.setInternalState(
+    await this.statesControler.setInternalState(
       `${this.name}/cmd/bigIconRight`,
       true,
       true,
       (0, import_tools.getInternalDefaults)("boolean", "indicator"),
       this.onInternalCommand
     );
-    this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
+    await this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
       name: "power1",
       type: "boolean",
       write: false,
       read: true,
       role: "value"
     });
-    this.statesControler.setInternalState(`${this.name}/cmd/power2`, false, true, {
+    await this.statesControler.setInternalState(`${this.name}/cmd/power2`, false, true, {
       name: "power1",
       type: "boolean",
       write: false,
@@ -621,8 +623,10 @@ class Panel extends import_library.BaseClass {
         this.restartLoops();
         this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(1));
         this.navigation.resetPosition();
-        const page = this.navigation.getCurrentPage();
-        await this.setActivePage(page);
+        const i = this.pages.findIndex((a) => a && a.name === "///WelcomePopup");
+        const popup = i !== -1 ? this.pages[i] : void 0;
+        if (popup)
+          await this.setActivePage(popup);
         break;
       }
       case "sleepReached": {

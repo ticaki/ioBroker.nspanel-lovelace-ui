@@ -21,5 +21,8 @@
     "vertical": "verticaal",
     "horizontal": "horizontaal",
     "up/down": "op neer",
-    "tilt": "kantelen"
+    "tilt": "kantelen",
+    "Color brightness": "Kleur helderheid",
+    "welcomeTToken": "Prettige dag,\r\n wens jou\r\n Armilar, TT-Tom, ticaki\r\n   & Kuuckmann",
+    "welcomeHToken": "Welkom bij het NSPanel"
 }

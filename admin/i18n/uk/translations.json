@@ -21,5 +21,8 @@
     "vertical": "вертикальний",
     "horizontal": "горизонтальний",
     "up/down": "вверх вниз",
-    "tilt": "нахил"
+    "tilt": "нахил",
+    "Color brightness": "Яскравість кольору",
+    "welcomeTToken": "Гарного дня,\r\n бажаю вам\r\n Армілар, ТТ-Том, тікакі\r\n   & Kuckuckmann",
+    "welcomeHToken": "Ласкаво просимо до NSPanel"
 }

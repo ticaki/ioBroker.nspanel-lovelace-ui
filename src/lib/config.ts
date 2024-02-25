@@ -4242,10 +4242,10 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
 // pageType~popupNotify
 export const welcomePopupPayload =
     'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
-    '  Einen schönen Tag           ' +
-    '     wünschen dir               ' +
-    ' Armilar, TT-Tom, ticaki      ' +
-    '   & Kuckuckmann~2000~3~1~~2000';
+    '  Einen schönen Tag\r\n         ' +
+    '     wünschen dir\r\n               ' +
+    ' Armilar, TT-Tom, ticaki\r\n      ' +
+    '   & Kuckuckmann~2000~3~1~~2000\r\n';
 
 /*
    SendToPanel({ payload:'pageType~popupNotify'});

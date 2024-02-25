@@ -15,7 +15,7 @@ import { PageItem } from './pageItem';
 export class PageNotify extends Page {
     config: pages.PageBaseConfig['config'];
     items: pages.PageBaseConfig['items'];
-    private lastpage: Page | undefined;
+    private lastpage: Page[] = [];
     private step: number = 1;
     private headlinePos: number = 0;
     private titelPos: number = 0;
@@ -51,7 +51,14 @@ export class PageNotify extends Page {
     }
 
     setLastPage(p: Page | undefined): void {
-        if (p !== this) this.lastpage = p;
+        if (p !== this) {
+            if (p !== undefined) this.lastpage.push(p);
+            else this.lastpage = [];
+        }
+    }
+    removeLastPage(_p: Page | undefined): void {
+        this.lastpage = this.lastpage.filter((a) => a !== _p);
+        this.lastpage.forEach((a) => a.removeLastPage(_p));
     }
 
     public async update(): Promise<void> {
@@ -147,6 +154,13 @@ export class PageNotify extends Page {
                 } else data.setValue1 && (await data.setValue1.setStateAsync(_event.opt === 'yes'));
             }
         }
-        if (this.lastpage) this.panel.setActivePage(this.lastpage);
+        const p = this.lastpage.pop();
+        if (p) {
+            p.removeLastPage(this);
+            this.panel.setActivePage(p);
+        } else {
+            const page = this.panel.navigation.getCurrentPage();
+            this.panel.setActivePage(page);
+        }
     }
 }

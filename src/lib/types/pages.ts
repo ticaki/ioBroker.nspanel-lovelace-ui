@@ -314,7 +314,7 @@ type PageNotifyConfig = {
     colorText: typePageItem.ColorEntryTypeNew;
     timeout: number;
     optionalValue?: string;
-    setValue1: string;
+    setValue1?: string;
     setValue2?: string;
 };
 export type cardNotifyDataItemOptions = {
