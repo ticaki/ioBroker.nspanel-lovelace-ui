@@ -600,7 +600,20 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                         },
                     },
                     entity1: {
-                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.0.DepartureDelaye' },
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.0.DepartureDelayed' },
+                    },
+                    entity2: {
+                        value: {
+                            role: '',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.0.Departure',
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
                     },
                     text: {
                         true: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Direction' },
@@ -631,6 +644,19 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                     entity1: {
                         value: { role: 'value', mode: 'auto', type: 'state', dp: '.1.DepartureDelaye' },
                     },
+                    entity2: {
+                        value: {
+                            role: '',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.1.Departure',
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
                     text: {
                         true: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Direction' },
                         false: undefined,
@@ -660,6 +686,19 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                     entity1: {
                         value: { role: 'value', mode: 'auto', type: 'state', dp: '.2.DepartureDelaye' },
                     },
+                    entity2: {
+                        value: {
+                            role: '',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.2.Departure',
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
                     text: {
                         true: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Direction' },
                         false: undefined,
@@ -688,6 +727,19 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                     },
                     entity1: {
                         value: { role: 'value', mode: 'auto', type: 'state', dp: '.3.DepartureDelaye' },
+                    },
+                    entity2: {
+                        value: {
+                            role: '',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.0.Departure',
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
                     },
                     text: {
                         true: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Direction' },
