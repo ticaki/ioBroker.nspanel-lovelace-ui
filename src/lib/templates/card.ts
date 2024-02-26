@@ -589,25 +589,25 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                 data: {
                     icon: {
                         true: {
-                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Mode' },
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Mode$' },
                             //value: { type:'const', constVal: ' bus'},
                             color: { type: 'const', constVal: Color.Red },
                         },
                         false: {
-                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Mode' },
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Mode$' },
                             //value: { type:'const', constVal: ' bus'},
                             color: { type: 'const', constVal: Color.Green },
                         },
                     },
                     entity1: {
-                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.0.DepartureDelayed' },
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.0.DepartureDelayed$' },
                     },
                     entity2: {
                         value: {
                             role: '',
                             mode: 'auto',
                             type: 'state',
-                            dp: '.0.Departure',
+                            dp: '.0.Departure$',
                             read: 'return val === 0 ? null : val',
                         },
                         dateFormat: {
@@ -616,11 +616,11 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                         },
                     },
                     text: {
-                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Direction' },
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Direction$' },
                         false: undefined,
                     },
                     text1: {
-                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.0.Departure' },
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.0.DeparturePlanned$' },
                         false: undefined,
                     },
                 },
@@ -631,25 +631,25 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                 data: {
                     icon: {
                         true: {
-                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Mode' },
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Mode$' },
                             //value: { type:'const', constVal: ' bus'},
                             color: { type: 'const', constVal: Color.Red },
                         },
                         false: {
-                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Mode' },
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Mode$' },
                             //value: { type:'const', constVal: ' bus'},
                             color: { type: 'const', constVal: Color.Green },
                         },
                     },
                     entity1: {
-                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.1.DepartureDelaye' },
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.1.DepartureDelayed$' },
                     },
                     entity2: {
                         value: {
                             role: '',
                             mode: 'auto',
                             type: 'state',
-                            dp: '.1.Departure',
+                            dp: '.1.Departure$',
                             read: 'return val === 0 ? null : val',
                         },
                         dateFormat: {
@@ -658,11 +658,11 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                         },
                     },
                     text: {
-                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Direction' },
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Direction$' },
                         false: undefined,
                     },
                     text1: {
-                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.1.Departure' },
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.1.DeparturePlanned$' },
                         false: undefined,
                     },
                 },
@@ -673,25 +673,25 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                 data: {
                     icon: {
                         true: {
-                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Mode' },
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Mode$' },
                             //value: { type:'const', constVal: ' bus'},
                             color: { type: 'const', constVal: Color.Red },
                         },
                         false: {
-                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Mode' },
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Mode$' },
                             //value: { type:'const', constVal: ' bus'},
                             color: { type: 'const', constVal: Color.Green },
                         },
                     },
                     entity1: {
-                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.2.DepartureDelaye' },
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.2.DepartureDelayed$' },
                     },
                     entity2: {
                         value: {
                             role: '',
                             mode: 'auto',
                             type: 'state',
-                            dp: '.2.Departure',
+                            dp: '.2.Departure$',
                             read: 'return val === 0 ? null : val',
                         },
                         dateFormat: {
@@ -700,11 +700,11 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                         },
                     },
                     text: {
-                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Direction' },
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Direction$' },
                         false: undefined,
                     },
                     text1: {
-                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.2.Departure' },
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.2.DeparturePlanned$' },
                         false: undefined,
                     },
                 },
@@ -715,25 +715,25 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                 data: {
                     icon: {
                         true: {
-                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Mode' },
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Mode$' },
                             //value: { type:'const', constVal: ' bus'},
                             color: { type: 'const', constVal: Color.Red },
                         },
                         false: {
-                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Mode' },
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Mode$' },
                             //value: { type:'const', constVal: ' bus'},
                             color: { type: 'const', constVal: Color.Green },
                         },
                     },
                     entity1: {
-                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.3.DepartureDelaye' },
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.3.DepartureDelayed$' },
                     },
                     entity2: {
                         value: {
                             role: '',
                             mode: 'auto',
                             type: 'state',
-                            dp: '.0.Departure',
+                            dp: '.3.Departure$',
                             read: 'return val === 0 ? null : val',
                         },
                         dateFormat: {
@@ -742,11 +742,11 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                         },
                     },
                     text: {
-                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Direction' },
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Direction$' },
                         false: undefined,
                     },
                     text1: {
-                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.3.Departure' },
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.3.DeparturePlanned$' },
                         false: undefined,
                     },
                 },
