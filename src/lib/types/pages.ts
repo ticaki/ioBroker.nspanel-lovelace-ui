@@ -82,7 +82,8 @@ export type StateRole =
     | 'indicator.lowbat'
     | 'value'
     | ''
-    | 'level.value';
+    | 'level.value'
+    | 'date';
 
 export type DeviceRole =
     | 'text'

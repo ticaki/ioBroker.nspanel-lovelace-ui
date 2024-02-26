@@ -20,9 +20,6 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
         },
         pageItems: [
             {
-                /**
-                 * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
-                 */
                 role: 'text.list',
                 type: 'text',
 
@@ -568,5 +565,141 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
             },
         ],
         useColor: false,
+    },
+    {
+        //Anzeigetafel Fahrplan
+        template: 'DepartureTimetable.entities',
+        adapter: 'fahrplan.0',
+        card: 'cardEntities',
+        alwaysOn: 'none',
+        useColor: false,
+        config: {
+            card: 'cardEntities',
+            data: {
+                headline: {
+                    type: 'const',
+                    constVal: 'Departure',
+                },
+            },
+        },
+        pageItems: [
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Mode' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Mode' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.0.DepartureDelaye' },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Direction' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.0.Departure' },
+                        false: undefined,
+                    },
+                },
+            },
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Mode' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Mode' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.1.DepartureDelaye' },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Direction' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.1.Departure' },
+                        false: undefined,
+                    },
+                },
+            },
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Mode' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Mode' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.2.DepartureDelaye' },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Direction' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.2.Departure' },
+                        false: undefined,
+                    },
+                },
+            },
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Mode' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Mode' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.3.DepartureDelaye' },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Direction' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.3.Departure' },
+                        false: undefined,
+                    },
+                },
+            },
+        ],
+        items: undefined,
     },
 ];
