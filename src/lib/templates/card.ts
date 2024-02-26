@@ -578,7 +578,7 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
             data: {
                 headline: {
                     type: 'const',
-                    constVal: 'Departure',
+                    constVal: 'departure',
                 },
             },
         },

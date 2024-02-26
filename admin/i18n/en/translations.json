@@ -22,6 +22,7 @@
     "up/down": "up/down",
     "tilt": "tilt",
     "welcomeTToken":"  Have a nice day,\r\n wish you\r\n Armilar, TT-Tom, ticaki\r\n   & Kuckuckmann",
-    "welcomeHToken":"Welcome to the NSPanel"
+    "welcomeHToken":"Welcome to the NSPanel",
+    "departure":"Departure"
 
 }
