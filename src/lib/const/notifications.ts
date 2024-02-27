@@ -19,7 +19,7 @@ const popupTest: PageBaseConfig = {
             colorButtonRight: { true: { color: { type: 'const', constVal: Color.White } } },
             text: { type: 'const', constVal: 'welcomeTToken' }, // text: { type: 'const', constVal: 'Text Test ${pl}' },
             colorText: { true: { color: { type: 'const', constVal: Color.White } } },
-            timeout: { type: 'const', constVal: 5 },
+            timeout: { type: 'const', constVal: 3 },
             // {placeholder: {text: '' oder dp: ''}}
             // optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
             //setValue1: { type: 'const', constVal: true },

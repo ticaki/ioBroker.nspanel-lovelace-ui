@@ -574,13 +574,6 @@ class StatesControler extends import_library.BaseClass {
     }
     return data;
   }
-  async existsState(id) {
-    if (id.startsWith(this.adapter.namespace)) {
-      return this.adapter.library.readdb(id.replace(this.adapter.namespace, "")) !== void 0;
-    } else {
-      return await this.adapter.getForeignStateAsync(id) !== void 0;
-    }
-  }
   async getObjectAsync(id) {
     if (this.objectDatabase[id] !== void 0)
       return this.objectDatabase[id];

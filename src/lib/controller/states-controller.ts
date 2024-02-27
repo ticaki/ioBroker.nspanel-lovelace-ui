@@ -625,19 +625,6 @@ export class StatesControler extends BaseClass {
         return data;
     }
 
-    /**
-     * what the name says
-     * @param id
-     * @returns
-     */
-    async existsState(id: string): Promise<boolean> {
-        if (id.startsWith(this.adapter.namespace)) {
-            return this.adapter.library.readdb(id.replace(this.adapter.namespace, '')) !== undefined;
-        } else {
-            return (await this.adapter.getForeignStateAsync(id)) !== undefined;
-        }
-    }
-
     async getObjectAsync(id: string): Promise<ioBroker.Object | null> {
         if (this.objectDatabase[id] !== undefined) return this.objectDatabase[id];
         else if (this.triggerDB[id] !== undefined && this.triggerDB[id].internal) {

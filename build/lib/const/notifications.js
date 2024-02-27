@@ -46,7 +46,7 @@ const popupTest = {
       colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
       text: { type: "const", constVal: "welcomeTToken" },
       colorText: { true: { color: { type: "const", constVal: Color.White } } },
-      timeout: { type: "const", constVal: 5 }
+      timeout: { type: "const", constVal: 3 }
     }
   },
   pageItems: [],

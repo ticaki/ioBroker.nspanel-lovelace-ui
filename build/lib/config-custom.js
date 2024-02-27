@@ -1783,6 +1783,10 @@ const pageGridTest2 = {
       type: "text",
       dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
       template: "text.temperature"
+    },
+    {
+      dpInit: "bydhvs",
+      template: "text.battery.bydhvs"
     }
   ]
 };
