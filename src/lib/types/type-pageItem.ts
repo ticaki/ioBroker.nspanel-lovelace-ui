@@ -185,7 +185,7 @@ export type PageItemDataItemsOptions =
 export type PageItemOptionsTemplate = {
     name: Types.TemplateIdent;
     template?: Types.TemplateIdent;
-    role: pages.DeviceRole;
+    role?: pages.DeviceRole;
     adapter: string;
     //dpInit: string;
     type: Types.SerialTypePageElements;
@@ -238,7 +238,7 @@ export type PageItemFanDataItems = {
     data: pages.ChangeTypeOfKeys<PageItemFan, dataItem.Dataitem | undefined>;
 };
 
-export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'entity2' | 'icon'>;
+export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'icon'>;
 export type PageItemTextDataItemsOptions = {
     type: 'text';
     data: pages.ChangeTypeOfKeys<PageItemText, Types.DataItemsOptions | undefined>;
@@ -423,7 +423,7 @@ export type PageTypeUnionTemplate = {
 //XOR<XOR<A, B>, C>
 
 export type PageItemUnion = {
-    role: pages.DeviceRole;
+    role?: pages.DeviceRole;
     template?: undefined;
     dpInit?: string;
     modeScr?: Types.ScreenSaverPlaces | undefined;

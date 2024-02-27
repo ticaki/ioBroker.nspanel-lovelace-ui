@@ -74,7 +74,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
     },
     {
         name: 'text.temperature',
-        role: 'text',
+        role: '',
         adapter: '',
         type: 'text',
 
@@ -125,7 +125,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
     },
     {
         name: 'text.battery',
-        role: 'iconNotText',
+        role: 'battery',
         adapter: '',
         type: 'text',
 
@@ -137,10 +137,10 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                         mode: 'auto',
                         role: 'value.battery',
                         dp: '',
-                        read: `const v = Math.round(val / 10);
+                        read: `const v = Math.round(val / 10)
                         switch (v) {
                             case 0:
-                                return 'battery-outline';
+                                return 'battery-charging-outline';
                             case 1:
                             case 2:
                             case 3:
@@ -150,10 +150,10 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                             case 7:
                             case 8:
                             case 9:
-                                return 'battery-' + v + '0';
+                                return 'battery-charging-' + v + '0';
                             case 10:
                             default:
-                                return 'battery';}`,
+                                return 'battery-charging';}`,
                     },
                     text: {
                         value: {
@@ -174,7 +174,29 @@ export const textTemplates: PageItemOptionsTemplate[] = [
                     },
                 },
                 false: {
-                    value: undefined,
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.battery',
+                        dp: '',
+                        read: `const v = Math.round(val / 10)
+                            switch (v) {
+                                case 0:
+                                    return 'battery-outline';
+                                case 1:
+                                case 2:
+                                case 3:
+                                case 4:
+                                case 5:
+                                case 6:
+                                case 7:
+                                case 8:
+                                case 9:
+                                    return 'battery-' + v + '0';
+                                case 10:
+                                default:
+                                    return 'battery';}`,
+                    },
                     color: {
                         type: 'const',
                         constVal: Color.Red,

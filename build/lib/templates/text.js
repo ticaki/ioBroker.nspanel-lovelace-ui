@@ -100,7 +100,7 @@ const textTemplates = [
   },
   {
     name: "text.temperature",
-    role: "text",
+    role: "",
     adapter: "",
     type: "text",
     data: {
@@ -150,7 +150,7 @@ const textTemplates = [
   },
   {
     name: "text.battery",
-    role: "iconNotText",
+    role: "battery",
     adapter: "",
     type: "text",
     data: {
@@ -161,10 +161,10 @@ const textTemplates = [
             mode: "auto",
             role: "value.battery",
             dp: "",
-            read: `const v = Math.round(val / 10);
+            read: `const v = Math.round(val / 10)
                         switch (v) {
                             case 0:
-                                return 'battery-outline';
+                                return 'battery-charging-outline';
                             case 1:
                             case 2:
                             case 3:
@@ -174,10 +174,10 @@ const textTemplates = [
                             case 7:
                             case 8:
                             case 9:
-                                return 'battery-' + v + '0';
+                                return 'battery-charging-' + v + '0';
                             case 10:
                             default:
-                                return 'battery';}`
+                                return 'battery-charging';}`
           },
           text: {
             value: {
@@ -198,7 +198,29 @@ const textTemplates = [
           }
         },
         false: {
-          value: void 0,
+          value: {
+            type: "triggered",
+            mode: "auto",
+            role: "value.battery",
+            dp: "",
+            read: `const v = Math.round(val / 10)
+                            switch (v) {
+                                case 0:
+                                    return 'battery-outline';
+                                case 1:
+                                case 2:
+                                case 3:
+                                case 4:
+                                case 5:
+                                case 6:
+                                case 7:
+                                case 8:
+                                case 9:
+                                    return 'battery-' + v + '0';
+                                case 10:
+                                default:
+                                    return 'battery';}`
+          },
           color: {
             type: "const",
             constVal: Color.Red

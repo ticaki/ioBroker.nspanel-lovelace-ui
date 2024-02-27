@@ -287,26 +287,45 @@ export class PageItem extends BaseClassTriggerd {
                                 );
                             }
                         }
-                        if (entry.role === 'textNotIcon') {
-                            message.icon = (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
-                        } else if (entry.role === 'iconNotText') {
-                            message.icon = (await tools.getIconEntryValue(item.icon, !!value, '', null, false)) ?? '';
-                        } else if (entry.role === 'combined') {
-                            message.icon = (await tools.getIconEntryValue(item.icon, !!value, '', null, false)) ?? '';
-                            message.icon += (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
-                        } else {
-                            message.icon =
-                                (await tools.getIconEntryValue(
-                                    item.icon,
-                                    !!value,
-                                    '',
-                                    null,
-                                    (this.parent &&
-                                        this.parent.card !== 'cardEntities' &&
-                                        !this.parent.card.startsWith('screens')) ??
-                                        false,
-                                )) ?? '';
+                        switch (entry.role) {
+                            case 'textNotIcon': {
+                                message.icon =
+                                    (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
+                                break;
+                            }
+                            case 'iconNotText': {
+                                message.icon =
+                                    (await tools.getIconEntryValue(item.icon, !!value, '', null, false)) ?? '';
+                                break;
+                            }
+                            case 'battery': {
+                                const val = (await tools.getValueEntryBoolean(item.entity3)) ?? false;
+                                message.icon = (await tools.getIconEntryValue(item.icon, val, '', '', false)) ?? '';
+
+                                break;
+                            }
+                            case 'combined': {
+                                message.icon =
+                                    (await tools.getIconEntryValue(item.icon, !!value, '', null, false)) ?? '';
+                                message.icon +=
+                                    (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
+                                break;
+                            }
+                            default: {
+                                message.icon =
+                                    (await tools.getIconEntryValue(
+                                        item.icon,
+                                        !!value,
+                                        '',
+                                        null,
+                                        (this.parent &&
+                                            this.parent.card !== 'cardEntities' &&
+                                            !this.parent.card.startsWith('screens')) ??
+                                            false,
+                                    )) ?? '';
+                            }
                         }
+
                         message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
                         return tools.getPayload(
                             message.type,
@@ -876,9 +895,9 @@ export class PageItem extends BaseClassTriggerd {
                     if (typeof list === 'string') list = list.split('?');
                 } else list = [];
                 message.list = Array.isArray(list) ? list.map((a: string) => tools.formatInSelText(a)).join('?') : '';
-                if (message.list && message.list.length > 955) {
-                    message.list = message.list.slice(0, 955);
-                    this.log.warn('Value list has more as 955 chars!');
+                if (message.list && message.list.length > 940) {
+                    message.list = message.list.slice(0, 940);
+                    this.log.warn('Value list has more as 940 chars!');
                 }
                 if (mode !== 'popupThermo') break;
                 message = { ...message, type: 'popupThermo' };
