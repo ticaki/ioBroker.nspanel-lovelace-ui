@@ -444,7 +444,15 @@ export async function getValueEntryString(
     const nval = v !== null ? v : await getValueEntryNumber(i);
     if (nval !== null && nval !== undefined) {
         const format = ((i.dateFormat && (await i.dateFormat.getObject())) as any) ?? null;
-        let res = isValueDateFormat(format) ? new Date(nval).toLocaleString(format.local, format.format) : String(nval);
+        let res = '';
+        if (isValueDateFormat(format)) {
+            res = new Date(nval).toLocaleString(format.local, format.format);
+        } else {
+            const d = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
+            if (d !== null && d !== false) {
+                res = nval.toFixed(d);
+            } else res = String(nval);
+        }
         res = res + ((i.unit && (await i.unit.getString())) ?? '');
         let opt = '';
         if (isTextSizeEntryType(i)) opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');

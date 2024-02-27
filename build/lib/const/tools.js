@@ -444,25 +444,34 @@ function isTextSizeEntryType(F) {
   return "textSize" in F;
 }
 async function getValueEntryString(i, v = null) {
-  var _a, _b, _c, _d, _e;
+  var _a, _b, _c, _d, _e, _f;
   if (!i || !i.value)
     return null;
   const nval = v !== null ? v : await getValueEntryNumber(i);
   if (nval !== null && nval !== void 0) {
     const format = (_a = i.dateFormat && await i.dateFormat.getObject()) != null ? _a : null;
-    let res2 = (0, import_types.isValueDateFormat)(format) ? new Date(nval).toLocaleString(format.local, format.format) : String(nval);
-    res2 = res2 + ((_b = i.unit && await i.unit.getString()) != null ? _b : "");
+    let res2 = "";
+    if ((0, import_types.isValueDateFormat)(format)) {
+      res2 = new Date(nval).toLocaleString(format.local, format.format);
+    } else {
+      const d = (_b = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _b : null;
+      if (d !== null && d !== false) {
+        res2 = nval.toFixed(d);
+      } else
+        res2 = String(nval);
+    }
+    res2 = res2 + ((_c = i.unit && await i.unit.getString()) != null ? _c : "");
     let opt2 = "";
     if (isTextSizeEntryType(i))
-      opt2 = String((_c = i.textSize && await i.textSize.getNumber()) != null ? _c : "");
+      opt2 = String((_d = i.textSize && await i.textSize.getNumber()) != null ? _d : "");
     return res2 + (opt2 ? "\xAC" + opt2 : "");
   }
   let res = await i.value.getString();
   let opt = "";
   if (res != null) {
-    res += (_d = i.unit && await i.unit.getString()) != null ? _d : "";
+    res += (_e = i.unit && await i.unit.getString()) != null ? _e : "";
     if (isTextSizeEntryType(i))
-      opt = String((_e = i.textSize && await i.textSize.getNumber()) != null ? _e : "");
+      opt = String((_f = i.textSize && await i.textSize.getNumber()) != null ? _f : "");
     res += opt ? "\xAC" + opt : "";
   }
   return res;
