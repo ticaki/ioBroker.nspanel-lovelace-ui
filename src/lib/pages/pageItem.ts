@@ -30,6 +30,7 @@ export class PageItem extends BaseClassTriggerd {
         this.id = config.id;
         this.config = options;
         this.parent = config && config.parent;
+        this.name = this.parent ? this.parent.name + '.' + this.id : this.id;
         this.sleep = false;
     }
 
@@ -875,6 +876,10 @@ export class PageItem extends BaseClassTriggerd {
                     if (typeof list === 'string') list = list.split('?');
                 } else list = [];
                 message.list = Array.isArray(list) ? list.map((a: string) => tools.formatInSelText(a)).join('?') : '';
+                if (message.list && message.list.length > 955) {
+                    message.list = message.list.slice(0, 955);
+                    this.log.warn('Value list has more as 955 chars!');
+                }
                 if (mode !== 'popupThermo') break;
                 message = { ...message, type: 'popupThermo' };
                 if (message.type === 'popupThermo') {
@@ -998,6 +1003,9 @@ export class PageItem extends BaseClassTriggerd {
         return null;
     }
 
+    getLogname(): string {
+        return this.parent ? this.parent.name + '.' + this.id : this.id;
+    }
     async delete(): Promise<void> {
         this.visibility = false;
         await this.controller.statesControler.deactivateTrigger(this);

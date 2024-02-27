@@ -23,6 +23,9 @@
     "tilt": "tilt",
     "welcomeTToken":"  Have a nice day,\r\n wish you\r\n Armilar, TT-Tom, ticaki\r\n   & Kuckuckmann",
     "welcomeHToken":"Welcome to the NSPanel",
-    "departure":"Departure"
+    "departure":"Departure",
+    "HORIZONTAL": "horizontal",
+    "VERTICAL": "vertical",
+    "VERTICAL_AND_HORIZONTAL":"vertical and horizontal"
 
 }

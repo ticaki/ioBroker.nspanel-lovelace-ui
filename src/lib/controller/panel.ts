@@ -710,7 +710,7 @@ export class Panel extends BaseClass {
         }
     }
 
-    onInternalCommand = (id: string, state: ioBroker.State | undefined): ioBroker.StateValue => {
+    onInternalCommand = async (id: string, state: ioBroker.State | undefined): Promise<ioBroker.StateValue> => {
         if (!id.startsWith(this.name)) return null;
         const token = id.split('/').pop();
         if (state && !state.ack && state.val !== null) {

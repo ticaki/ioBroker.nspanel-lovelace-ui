@@ -49,6 +49,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.id = config.id;
     this.config = options;
     this.parent = config && config.parent;
+    this.name = this.parent ? this.parent.name + "." + this.id : this.id;
     this.sleep = false;
   }
   static getPageItem(config, options) {
@@ -772,6 +773,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         } else
           list = [];
         message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
+        if (message.list && message.list.length > 955) {
+          message.list = message.list.slice(0, 955);
+          this.log.warn("Value list has more as 955 chars!");
+        }
         if (mode !== "popupThermo")
           break;
         message = { ...message, type: "popupThermo" };
@@ -881,6 +886,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     }
     return this.getDetailPayload(message);
     return null;
+  }
+  getLogname() {
+    return this.parent ? this.parent.name + "." + this.id : this.id;
   }
   async delete() {
     this.visibility = false;

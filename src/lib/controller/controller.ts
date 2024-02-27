@@ -19,32 +19,7 @@ export class Controller extends Library.BaseClass {
         this.adapter.controller = this;
         this.mqttClient = options.mqttClient;
         this.statesControler = new StatesControler(this.adapter);
-        this.statesControler.setInternalState(
-            '///time',
-            this.getCurrentTime(),
-            true,
-            {
-                name: '',
-                type: 'number',
-                role: 'value.time',
-                read: true,
-                write: false,
-            },
-            this.getCurrentTime,
-        );
-        this.statesControler.setInternalState(
-            '///date',
-            this.getCurrentTime(),
-            true,
-            {
-                name: '',
-                type: 'number',
-                role: 'value.time',
-                read: true,
-                write: false,
-            },
-            this.getCurrentTime,
-        );
+
         for (const panelConfig of options.panels) {
             if (panelConfig === undefined) continue;
             panelConfig.controller = this;
@@ -57,9 +32,9 @@ export class Controller extends Library.BaseClass {
         }
     }
 
-    minuteLoop = (): void => {
+    minuteLoop = async (): Promise<void> => {
         if (this.unload) return;
-        this.statesControler.setInternalState('///time', this.getCurrentTime(), true);
+        this.statesControler.setInternalState('///time', await this.getCurrentTime(), true);
         const diff = 60000 - (Date.now() % 60000) + 10;
         this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
     };
@@ -68,20 +43,46 @@ export class Controller extends Library.BaseClass {
      * Update Date 2 times per day because of daylight saving.
      * @returns
      */
-    dateUpdateLoop = (): void => {
+    dateUpdateLoop = async (): Promise<void> => {
         if (this.unload) return;
-        this.statesControler.setInternalState('///date', this.getCurrentTime(), true);
+        this.statesControler.setInternalState('///date', await this.getCurrentTime(), true);
         const d: Date = new Date();
         d.setDate(d.getDate() + 1);
         d.setHours(0, 0, 0);
         const diff = d.getTime() - Date.now();
         this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
     };
-    getCurrentTime = (): number => {
+    getCurrentTime = async (): Promise<number> => {
         return Date.now();
     };
 
     async init(): Promise<void> {
+        this.statesControler.setInternalState(
+            '///time',
+            await this.getCurrentTime(),
+            true,
+            {
+                name: '',
+                type: 'number',
+                role: 'value.time',
+                read: true,
+                write: false,
+            },
+            this.getCurrentTime,
+        );
+        this.statesControler.setInternalState(
+            '///date',
+            await this.getCurrentTime(),
+            true,
+            {
+                name: '',
+                type: 'number',
+                role: 'value.time',
+                read: true,
+                write: false,
+            },
+            this.getCurrentTime,
+        );
         const newPanels = [];
         // erzeuge übergeordneten channel
         this.library.writedp(`panels`, undefined, genericStateObjects.panel._channel);

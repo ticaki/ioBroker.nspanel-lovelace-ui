@@ -335,7 +335,7 @@ class StatesControler extends import_library.BaseClass {
       if (f) {
         state = {
           ...this.triggerDB[id].state,
-          val: f(id, void 0)
+          val: await f(id, void 0)
         };
       } else {
         state = this.triggerDB[id].state;
@@ -451,7 +451,7 @@ class StatesControler extends import_library.BaseClass {
       if (ack) {
         await this.onStateChange(id, {
           ...this.triggerDB[id].state,
-          val: f ? f(id, void 0) : val,
+          val: f ? await f(id, void 0) : val,
           ack,
           ts: Date.now()
         });

@@ -375,7 +375,8 @@ const pagePowerTest1 = {
         value: { type: "const", constVal: "top" }
       },
       homeValueBot: {
-        value: { type: "const", constVal: "bot" }
+        value: { type: "internal", dp: "///power1/powerSum" },
+        math: { type: "const", constVal: "return r1+r2+r3+l1+l2+l3 -999" }
       },
       leftTop: {
         icon: {
@@ -389,7 +390,7 @@ const pagePowerTest1 = {
           }
         },
         value: {
-          value: { type: "const", constVal: 1 }
+          value: { type: "const", constVal: 1e3 }
         }
       },
       leftMiddle: {
@@ -467,16 +468,7 @@ const pagePowerTest1 = {
           value: { type: "const", constVal: 6 }
         }
       },
-      homeIcon: {
-        true: {
-          value: { type: "const", constVal: "home" },
-          color: void 0
-        },
-        false: {
-          value: void 0,
-          color: void 0
-        }
-      }
+      homeIcon: void 0
     }
   },
   items: void 0
@@ -4170,7 +4162,7 @@ const Testconfig = [
       iconBig1: false,
       iconBig2: false
     },
-    timeout: 5,
+    timeout: 15,
     dimLow: 20,
     dimHigh: 90
   }

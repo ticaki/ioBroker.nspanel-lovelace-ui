@@ -456,6 +456,7 @@ export type ValueEntryType =
           maxScale?: number;
           set?: number;
           dateFormat?: string;
+          math?: string;
       }
     | undefined;
 export type ScaledNumberType =

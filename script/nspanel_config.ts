@@ -482,7 +482,8 @@ const pagePowerTest1: pages.PageBaseConfig = {
                 value: { type: 'const', constVal: 'top' },
             },
             homeValueBot: {
-                value: { type: 'const', constVal: 'bot' },
+                value: { type: 'internal', dp: '///power1/powerSum' },
+                math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
             },
             leftTop: {
                 icon: {
@@ -496,7 +497,7 @@ const pagePowerTest1: pages.PageBaseConfig = {
                     },
                 },
                 value: {
-                    value: { type: 'const', constVal: 1 },
+                    value: { type: 'const', constVal: 1000 },
                 },
             },
             leftMiddle: {
@@ -574,7 +575,7 @@ const pagePowerTest1: pages.PageBaseConfig = {
                     value: { type: 'const', constVal: 6 },
                 },
             },
-            homeIcon: {
+            homeIcon: undefined /*{
                 true: {
                     value: { type: 'const', constVal: 'home' },
                     color: undefined,
@@ -583,7 +584,7 @@ const pagePowerTest1: pages.PageBaseConfig = {
                     value: undefined,
                     color: undefined,
                 },
-            },
+            },*/,
         },
     },
     items: undefined,
@@ -1060,7 +1061,7 @@ const pageAbfall: pages.PageBaseConfig = {
     card: 'cardEntities',
     dpInit: '0_userdata.0.Abfallkalender',
     uniqueID: 'abfall1',
-    template: 'waste-calendar.entities',
+    template: 'entities.waste-calendar',
 };
 
 export const pageMediaTest2: pages.PageBaseConfig = {
@@ -4543,33 +4544,11 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             iconBig1: false,
             iconBig2: false,
         },
-        timeout: 5, // dat kommt vom Admin
+        timeout: 15, // dat kommt vom Admin
         dimLow: 20,
         dimHigh: 90,
     },
 ];
-
-/**
- * command for javascript adapter
- * sendTo('nspanel-lovelace-ui.0', 'config', Testconfig)
- */
-
-/*
-// pageType~popupNotify
-export const welcomePopupPayload =
-    'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
-    '  Einen schönen Tag           ' +
-    '     wünschen dir               ' +
-    ' Armilar, TT-Tom, ticaki      ' +
-    '   & Kuckuckmann~2000~3~1~~2000';
-
-/*
-   SendToPanel({ payload:'pageType~popupNotify'});
-                    SendToPanel({ payload:'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
-                        '  Einen schönen Tag           '+
-                        '     wünschen dir               ' +
-                        ' Armilar, TT-Tom, ticaki      ' +
-                        '   & Kuckuckmann~2000~3~1~~2000'});*/
 
 /**
  * command for javascript adapter
@@ -5798,6 +5777,7 @@ namespace typePageItem {
               maxScale?: number;
               set?: number;
               dateFormat?: string;
+              math?: string;
           }
         | undefined;
     export type ScaledNumberType =
@@ -5845,7 +5825,7 @@ namespace typePageItem {
     }
 
 namespace Types {
-    export type PageTemplateIdent = 'waste-calendar.entities' | 'media.spotify-premium';
+    export type PageTemplateIdent = 'entities.waste-calendar' | 'media.spotify-premium' | 'entities.departure-timetable';
 
     export type TemplateIdent =
         | 'generic.shutter'

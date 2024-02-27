@@ -23,5 +23,8 @@
     "tilt": "Neigung",
     "welcomeTToken": "  Einen schönen Tag,\r\n    wünschen dir\r\n Armilar, TT-Tom, ticaki\r\n   & Kuckuckmann",
     "welcomeHToken": "Willkommen zum NSPanel",
-    "departure": "Abfahrt"
+    "departure": "Abfahrt",
+    "HORIZONTAL": "waagerecht",
+    "VERTICAL": "senkrecht",
+    "VERTICAL_AND_HORIZONTAL":"senkrecht und waagerecht"
 }

@@ -79,6 +79,13 @@ export class PagePower extends Page {
     }
 
     async init(): Promise<void> {
+        await this.panel.statesControler.setInternalState(
+            `///${this.name}/powerSum`,
+            0,
+            true,
+            { name: '', type: 'string', role: '', read: true, write: false },
+            this.onInternalCommand,
+        );
         const config = structuredClone(this.config);
         // search states for mode auto
         const tempConfig: Partial<pages.cardPowerDataItemOptions> = this.dpInit
@@ -96,6 +103,28 @@ export class PagePower extends Page {
         await super.init();
     }
 
+    onInternalCommand = async (id: string, _state: ioBroker.State | undefined): Promise<ioBroker.StateValue> => {
+        if (!id.startsWith('///' + this.name)) return null;
+        const token = id.split('/').pop();
+        if (token === 'powerSum') {
+            const items = this.items;
+            if (!items || items.card !== 'cardPower') return null;
+            const data = items.data;
+            const l1 = await this.getElementSum(data.leftTop, 0);
+            const l2 = await this.getElementSum(data.leftMiddle, 0);
+            const l3 = await this.getElementSum(data.leftBottom, 0);
+            const r1 = await this.getElementSum(data.rightTop, 0);
+            const r2 = await this.getElementSum(data.rightMiddle, 0);
+            const r3 = await this.getElementSum(data.rightBottom, 0);
+            let sum = l1 + l2 + l3 + r1 + r2 + r3;
+            if (items.data.homeValueBot && items.data.homeValueBot.math) {
+                const f = await items.data.homeValueBot.math.getString();
+                if (f) sum = new Function('l1', 'l2', 'l3', 'r1', 'r2', 'r3', 'Math', f)(l1, l2, l3, r1, r2, r3, Math);
+            }
+            return String(sum);
+        }
+        return null;
+    };
     public async update(): Promise<void> {
         const message: Partial<pages.PagePowerMessage> = {};
         const items = this.items;
@@ -120,6 +149,12 @@ export class PagePower extends Page {
         message.rightBottom = (await this.getElementUpdate(data.rightBottom)) as pages.PagePowerMessageItem;
 
         this.sendToPanel(this.getMessage(message));
+    }
+
+    private async getElementSum(item: pages.cardPowerDataItems['data']['leftBottom'], num: number): Promise<number> {
+        if (item === undefined) return num;
+        const value = await getValueEntryNumber(item.value);
+        return value !== null ? value + num : num;
     }
 
     private async getElementUpdate(

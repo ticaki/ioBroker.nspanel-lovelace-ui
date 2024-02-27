@@ -42,32 +42,6 @@ class Controller extends Library.BaseClass {
     this.adapter.controller = this;
     this.mqttClient = options.mqttClient;
     this.statesControler = new import_states_controller.StatesControler(this.adapter);
-    this.statesControler.setInternalState(
-      "///time",
-      this.getCurrentTime(),
-      true,
-      {
-        name: "",
-        type: "number",
-        role: "value.time",
-        read: true,
-        write: false
-      },
-      this.getCurrentTime
-    );
-    this.statesControler.setInternalState(
-      "///date",
-      this.getCurrentTime(),
-      true,
-      {
-        name: "",
-        type: "number",
-        role: "value.time",
-        read: true,
-        write: false
-      },
-      this.getCurrentTime
-    );
     for (const panelConfig of options.panels) {
       if (panelConfig === void 0)
         continue;
@@ -80,27 +54,53 @@ class Controller extends Library.BaseClass {
       this.panels.push(panel);
     }
   }
-  minuteLoop = () => {
+  minuteLoop = async () => {
     if (this.unload)
       return;
-    this.statesControler.setInternalState("///time", this.getCurrentTime(), true);
+    this.statesControler.setInternalState("///time", await this.getCurrentTime(), true);
     const diff = 6e4 - Date.now() % 6e4 + 10;
     this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
   };
-  dateUpdateLoop = () => {
+  dateUpdateLoop = async () => {
     if (this.unload)
       return;
-    this.statesControler.setInternalState("///date", this.getCurrentTime(), true);
+    this.statesControler.setInternalState("///date", await this.getCurrentTime(), true);
     const d = new Date();
     d.setDate(d.getDate() + 1);
     d.setHours(0, 0, 0);
     const diff = d.getTime() - Date.now();
     this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
   };
-  getCurrentTime = () => {
+  getCurrentTime = async () => {
     return Date.now();
   };
   async init() {
+    this.statesControler.setInternalState(
+      "///time",
+      await this.getCurrentTime(),
+      true,
+      {
+        name: "",
+        type: "number",
+        role: "value.time",
+        read: true,
+        write: false
+      },
+      this.getCurrentTime
+    );
+    this.statesControler.setInternalState(
+      "///date",
+      await this.getCurrentTime(),
+      true,
+      {
+        name: "",
+        type: "number",
+        role: "value.time",
+        read: true,
+        write: false
+      },
+      this.getCurrentTime
+    );
     const newPanels = [];
     this.library.writedp(`panels`, void 0, import_definition.genericStateObjects.panel._channel);
     for (const panel of this.panels)

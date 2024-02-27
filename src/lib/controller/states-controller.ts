@@ -185,7 +185,7 @@ export class BaseClassPage extends BaseClassTriggerd {
         this.pageItemConfig = pageItemsConfig;
     }
 }
-type getInternalFunctionType = (id: string, state: ioBroker.State | undefined) => ioBroker.StateValue;
+type getInternalFunctionType = (id: string, state: ioBroker.State | undefined) => Promise<ioBroker.StateValue>;
 /**
  * Verwendet um Lesezugriffe auf die States umzusetzten, die im NSPanel ververwendet werden.
  * Adapter eigenen States sind verboten
@@ -364,7 +364,7 @@ export class StatesControler extends BaseClass {
             if (f) {
                 state = {
                     ...this.triggerDB[id].state,
-                    val: f(id, undefined),
+                    val: await f(id, undefined),
                 };
             } else {
                 state = this.triggerDB[id].state;
@@ -485,7 +485,7 @@ export class StatesControler extends BaseClass {
             if (ack) {
                 await this.onStateChange(id, {
                     ...this.triggerDB[id].state,
-                    val: f ? f(id, undefined) : val,
+                    val: f ? await f(id, undefined) : val,
                     ack: ack,
                     ts: Date.now(),
                 });

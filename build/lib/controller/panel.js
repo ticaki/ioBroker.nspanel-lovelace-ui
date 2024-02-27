@@ -682,7 +682,7 @@ class Panel extends import_library.BaseClass {
       }
     }
   }
-  onInternalCommand = (id, state) => {
+  onInternalCommand = async (id, state) => {
     if (!id.startsWith(this.name))
       return null;
     const token = id.split("/").pop();

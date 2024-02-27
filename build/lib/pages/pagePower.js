@@ -85,6 +85,13 @@ class PagePower extends import_Page.Page {
     this.minUpdateInterval = 2e3;
   }
   async init() {
+    await this.panel.statesControler.setInternalState(
+      `///${this.name}/powerSum`,
+      0,
+      true,
+      { name: "", type: "string", role: "", read: true, write: false },
+      this.onInternalCommand
+    );
     const config = structuredClone(this.config);
     const tempConfig = this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config) : config;
     const tempItem = await this.panel.statesControler.createDataItems(
@@ -95,6 +102,31 @@ class PagePower extends import_Page.Page {
     this.items.card = "cardPower";
     await super.init();
   }
+  onInternalCommand = async (id, _state) => {
+    if (!id.startsWith("///" + this.name))
+      return null;
+    const token = id.split("/").pop();
+    if (token === "powerSum") {
+      const items = this.items;
+      if (!items || items.card !== "cardPower")
+        return null;
+      const data = items.data;
+      const l1 = await this.getElementSum(data.leftTop, 0);
+      const l2 = await this.getElementSum(data.leftMiddle, 0);
+      const l3 = await this.getElementSum(data.leftBottom, 0);
+      const r1 = await this.getElementSum(data.rightTop, 0);
+      const r2 = await this.getElementSum(data.rightMiddle, 0);
+      const r3 = await this.getElementSum(data.rightBottom, 0);
+      let sum = l1 + l2 + l3 + r1 + r2 + r3;
+      if (items.data.homeValueBot && items.data.homeValueBot.math) {
+        const f = await items.data.homeValueBot.math.getString();
+        if (f)
+          sum = new Function("l1", "l2", "l3", "r1", "r2", "r3", "Math", f)(l1, l2, l3, r1, r2, r3, Math);
+      }
+      return String(sum);
+    }
+    return null;
+  };
   async update() {
     var _a, _b, _c;
     const message = {};
@@ -117,6 +149,12 @@ class PagePower extends import_Page.Page {
     message.rightMiddle = await this.getElementUpdate(data.rightMiddle);
     message.rightBottom = await this.getElementUpdate(data.rightBottom);
     this.sendToPanel(this.getMessage(message));
+  }
+  async getElementSum(item, num) {
+    if (item === void 0)
+      return num;
+    const value = await (0, import_tools.getValueEntryNumber)(item.value);
+    return value !== null ? value + num : num;
   }
   async getElementUpdate(item) {
     var _a, _b, _c, _d, _e;
