@@ -20,9 +20,6 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
         },
         pageItems: [
             {
-                /**
-                 * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
-                 */
                 role: 'text.list',
                 type: 'text',
 
@@ -568,5 +565,193 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
             },
         ],
         useColor: false,
+    },
+    {
+        //Anzeigetafel Fahrplan
+        template: 'DepartureTimetable.entities',
+        adapter: 'fahrplan.0',
+        card: 'cardEntities',
+        alwaysOn: 'none',
+        useColor: false,
+        config: {
+            card: 'cardEntities',
+            data: {
+                headline: {
+                    type: 'const',
+                    constVal: 'departure',
+                },
+            },
+        },
+        pageItems: [
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Mode$' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Mode$' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.0.DepartureDelayed$' },
+                    },
+                    entity2: {
+                        value: {
+                            role: '',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.0.Departure$',
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.0.Direction$' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.0.DeparturePlanned$' },
+                        false: undefined,
+                    },
+                },
+            },
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Mode$' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Mode$' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.1.DepartureDelayed$' },
+                    },
+                    entity2: {
+                        value: {
+                            role: '',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.1.Departure$',
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.1.Direction$' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.1.DeparturePlanned$' },
+                        false: undefined,
+                    },
+                },
+            },
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Mode$' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Mode$' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.2.DepartureDelayed$' },
+                    },
+                    entity2: {
+                        value: {
+                            role: '',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.2.Departure$',
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.2.Direction$' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.2.DeparturePlanned$' },
+                        false: undefined,
+                    },
+                },
+            },
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Mode$' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Mode$' },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.3.DepartureDelayed$' },
+                    },
+                    entity2: {
+                        value: {
+                            role: '',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.3.Departure$',
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '.3.Direction$' },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.3.DeparturePlanned$' },
+                        false: undefined,
+                    },
+                },
+            },
+        ],
+        items: undefined,
     },
 ];
