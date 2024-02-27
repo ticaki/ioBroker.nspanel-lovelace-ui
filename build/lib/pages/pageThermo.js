@@ -178,7 +178,7 @@ class PageThermo extends import_Page.Page {
           message.status = this.library.getTranslation(v);
         }
       }
-      message.btDetail = !this.pageItems || !this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === "input_sel") ? "0" : "1";
+      message.btDetail = this.pageItems && this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === "input_sel") ? "0" : "1";
     }
     const msg = Object.assign(PageThermoMessageDefault, message);
     this.sendToPanel(this.getMessage(msg));
@@ -219,13 +219,14 @@ class PageThermo extends import_Page.Page {
     const items = this.pageItems;
     let msg = null;
     if (popup === "popupThermo") {
+      const items2 = this.pageItems.filter((a) => a && a.dataItems && a.dataItems.type === "input_sel");
       const temp = [];
       const id2 = this.id;
       const icon = import_icon_mapping.Icons.GetIcon(
         (_a = this.items && this.items.data.icon && await this.items.data.icon.getString()) != null ? _a : "fan"
       );
       const color = (_b = this.items && this.items.data.icon && await this.items.data.icon.getRGBDec()) != null ? _b : "11487";
-      for (const i of items) {
+      for (const i of items2) {
         i && temp.push((0, import_tools.getPayload)((_c = await i.GeneratePopup(popup)) != null ? _c : "~~~"));
       }
       for (let a = 0; a < 3; a++) {

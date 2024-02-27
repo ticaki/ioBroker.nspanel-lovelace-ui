@@ -170,9 +170,8 @@ export class PageThermo extends Page {
                 }
             }
 
-            
             message.btDetail =
-                !this.pageItems || !this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === 'input_sel')
+                this.pageItems && this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === 'input_sel')
                     ? '0'
                     : '1';
             //this.pageItems && this.pageItems.some((a) => a.dataItems && a.dataItems.type === 'input_sel') ? '' : 1;
@@ -221,6 +220,8 @@ export class PageThermo extends Page {
         const items = this.pageItems; //.filter((a) => a.dataItems && a.dataItems.type === 'input_sel');
         let msg: string | null = null;
         if (popup === 'popupThermo') {
+            const items = this.pageItems.filter((a) => a && a.dataItems && a.dataItems.type === 'input_sel');
+
             const temp = [];
             const id = this.id;
             const icon = Icons.GetIcon(
