@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../../src/lib/templates/templateArray.ts"],
-  "sourcesContent": ["import { buttonTemplates } from './button';\nimport { lightTemplates } from './light';\nimport { shutterTemplates } from './shutter';\nimport { textTemplates } from './text';\n\nexport const pageItemTemplates = textTemplates.concat(shutterTemplates, lightTemplates, buttonTemplates);\n"],
-  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,oBAAgC;AAChC,mBAA+B;AAC/B,qBAAiC;AACjC,kBAA8B;AAEvB,MAAM,oBAAoB,0BAAc,OAAO,iCAAkB,6BAAgB,6BAAe;",
+  "sourcesContent": ["import { buttonTemplates } from './button';\nimport { lightTemplates } from './light';\nimport { shutterTemplates } from './shutter';\nimport { textTemplates } from './text';\n\nexport const pageItemTemplates = Object.assign(textTemplates, shutterTemplates, lightTemplates, buttonTemplates);\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,oBAAgC;AAChC,mBAA+B;AAC/B,qBAAiC;AACjC,kBAA8B;AAEvB,MAAM,oBAAoB,OAAO,OAAO,2BAAe,iCAAkB,6BAAgB,6BAAe;",
   "names": []
 }

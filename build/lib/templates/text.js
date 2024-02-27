@@ -28,9 +28,8 @@ __export(text_exports, {
 });
 module.exports = __toCommonJS(text_exports);
 var Color = __toESM(require("../const/Color"));
-const textTemplates = [
-  {
-    name: "text.window.isOpen",
+const textTemplates = {
+  "text.window.isOpen": {
     role: "text",
     adapter: "",
     type: "text",
@@ -63,8 +62,7 @@ const textTemplates = [
       }
     }
   },
-  {
-    name: "text.window.isClose",
+  "text.window.isClose": {
     role: "text",
     adapter: "",
     type: "text",
@@ -98,8 +96,7 @@ const textTemplates = [
       }
     }
   },
-  {
-    name: "text.temperature",
+  "text.temperature": {
     role: "",
     adapter: "",
     type: "text",
@@ -148,8 +145,7 @@ const textTemplates = [
       }
     }
   },
-  {
-    name: "text.battery",
+  "text.battery": {
     role: "battery",
     adapter: "",
     type: "text",
@@ -251,8 +247,113 @@ const textTemplates = [
       }
     }
   },
-  {
-    name: "text.battery.low",
+  "text.battery.bydhvs": {
+    template: "text.battery",
+    role: "battery",
+    adapter: "bydhvs",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: {
+            type: "triggered",
+            mode: "auto",
+            role: "value.battery",
+            dp: ".State.SOC$",
+            read: `const v = Math.round(val / 10)
+                        switch (v) {
+                            case 0:
+                                return 'battery-charging-outline';
+                            case 1:
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 5:
+                            case 6:
+                            case 7:
+                            case 8:
+                            case 9:
+                                return 'battery-charging-' + v + '0';
+                            case 10:
+                            default:
+                                return 'battery-charging';}`
+          },
+          text: {
+            value: {
+              type: "triggered",
+              mode: "auto",
+              role: "value.battery",
+              dp: ".State.SOC$"
+            },
+            unit: {
+              type: "const",
+              constVal: "%"
+            },
+            textSize: { type: "const", constVal: 2 }
+          },
+          color: void 0
+        },
+        false: {
+          value: {
+            type: "triggered",
+            mode: "auto",
+            role: "value.battery",
+            dp: ".State.SOC$",
+            read: `const v = Math.round(val / 10)
+                            switch (v) {
+                                case 0:
+                                    return 'battery-outline';
+                                case 1:
+                                case 2:
+                                case 3:
+                                case 4:
+                                case 5:
+                                case 6:
+                                case 7:
+                                case 8:
+                                case 9:
+                                    return 'battery-' + v + '0';
+                                case 10:
+                                default:
+                                    return 'battery';}`
+          },
+          color: void 0
+        },
+        scale: { type: "const", constVal: { val_min: 10, val_max: 50, log10: "max" } }
+      },
+      entity1: {
+        value: {
+          type: "state",
+          mode: "auto",
+          role: "value.battery",
+          dp: ".State.SOC$"
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "Battery" },
+        false: void 0
+      },
+      entity2: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "value.battery",
+          dp: ".State.SOC$"
+        },
+        unit: { type: "const", constVal: "%" }
+      },
+      entity3: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "value.power",
+          dp: ".State.Power$",
+          read: "return val <= 0"
+        }
+      }
+    }
+  },
+  "text.battery.low": {
     role: "text",
     adapter: "",
     type: "text",
@@ -285,7 +386,7 @@ const textTemplates = [
       }
     }
   }
-];
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   textTemplates

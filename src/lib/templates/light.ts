@@ -1,12 +1,12 @@
 //import * as Color from '../const/Color';
 import { lightIcon } from '../const/forTemplates';
 import { PageItemOptionsTemplate } from '../types/type-pageItem';
+import { TemplateIdent } from '../types/types';
 
-export const lightTemplates: PageItemOptionsTemplate[] = [
-    {
+export const lightTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplate>> = {
+    'light.shelly.rgbw2': {
         role: 'rgbSingle',
         type: 'light',
-        name: 'light.shelly.rgbw2',
         adapter: '0_userdata.0',
         data: {
             icon: lightIcon,
@@ -101,4 +101,4 @@ export const lightTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-];
+};

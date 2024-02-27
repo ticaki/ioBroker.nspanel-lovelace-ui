@@ -1,11 +1,11 @@
 import * as Color from '../const/Color';
 import { PageItemOptionsTemplate } from '../types/type-pageItem';
+import { TemplateIdent } from '../types/types';
 
-export const buttonTemplates: PageItemOptionsTemplate[] = [
-    {
+export const buttonTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplate>> = {
+    'button.iconLeftSize': {
         role: 'text.list',
         type: 'button',
-        name: 'button.iconLeftSize',
         adapter: '',
 
         data: {
@@ -39,10 +39,9 @@ export const buttonTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-    {
+    'button.iconRightSize': {
         role: 'text.list',
         type: 'button',
-        name: 'button.iconRightSize',
         adapter: '',
 
         data: {
@@ -76,4 +75,4 @@ export const buttonTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-];
+};

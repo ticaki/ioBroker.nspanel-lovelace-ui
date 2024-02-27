@@ -1,10 +1,10 @@
 import * as Color from '../const/Color';
 import { PageBaseConfigTemplate } from '../types/pages';
+import { PageTemplateIdent } from '../types/types';
 
-export const cardTemplates: PageBaseConfigTemplate[] = [
-    {
+export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = {
+    'entities.waste-calendar': {
         // Abfallkalender
-        template: 'entities.waste-calendar',
         adapter: '0_userdata.0',
         card: 'cardEntities',
         alwaysOn: 'none',
@@ -115,11 +115,10 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
         ],
         items: undefined,
     },
-    {
+    'media.spotify-premium': {
         //cardMedia
         card: 'cardMedia',
         adapter: '',
-        template: 'media.spotify-premium',
         alwaysOn: 'none',
         config: {
             card: 'cardMedia',
@@ -567,9 +566,8 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
         ],
         useColor: false,
     },
-    {
+    'entities.departure-timetable': {
         //Anzeigetafel Fahrplan
-        template: 'entities.departure-timetable',
         adapter: 'fahrplan.0',
         card: 'cardEntities',
         alwaysOn: 'none',
@@ -779,4 +777,4 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
         ],
         items: undefined,
     },
-];
+};

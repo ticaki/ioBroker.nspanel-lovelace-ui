@@ -19,7 +19,7 @@ export type TemplateIdent =
     | 'shutter.deconz.ikea.fyrtur'
     | 'shutter.basic'
     | 'shutter.basic.onlyV'
-    | ''
+    | 'text.battery.bydhvs'
     | ''
     | ''
     | ''

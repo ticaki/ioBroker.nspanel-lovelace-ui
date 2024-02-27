@@ -255,7 +255,7 @@ const pageEntitiesTest3 = {
     data: {
       headline: {
         type: "const",
-        constVal: "entities2"
+        constVal: "entities3"
       }
     }
   },
@@ -303,9 +303,8 @@ const pageEntitiesTest3 = {
       template: "shutter.shelly.2PM"
     },
     {
-      type: "text",
-      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
-      template: "text.battery"
+      dpInit: "bydhvs",
+      template: "text.battery.bydhvs"
     }
   ],
   items: void 0

@@ -35,6 +35,7 @@ export type PageTypeCards =
     | Types.PagePower;
 */
 export type StateRole =
+    | 'value.power'
     | 'button.play'
     | 'button.pause'
     | 'button.next'
@@ -213,7 +214,6 @@ export function isButtonActionType(F: string | Types.ButtonActionType): F is Typ
 export type PageBaseConfigTemplate =
     | {
           card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
-          template: Types.PageTemplateIdent;
           adapter: string;
           alwaysOn: 'none' | 'always' | 'action';
           useColor: boolean;

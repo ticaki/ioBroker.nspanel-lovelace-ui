@@ -1,12 +1,12 @@
 import * as Color from '../const/Color';
 import { PageItemOptionsTemplate } from '../types/type-pageItem';
+import { TemplateIdent } from '../types/types';
 
-export const shutterTemplates: PageItemOptionsTemplate[] = [
-    {
+export const shutterTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplate>> = {
+    'generic.shutter': {
         /**
          * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
          */
-        name: 'generic.shutter',
         role: '',
         type: 'shutter',
         adapter: '',
@@ -103,10 +103,10 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
             //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
         },
     },
-    {
+    'shutter.shelly.2PM': {
         role: '',
         type: 'shutter',
-        name: 'shutter.shelly.2PM',
+
         template: 'shutter.basic.onlyV',
         adapter: '0_userdata.0',
 
@@ -147,10 +147,9 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-    {
+    'shutter.basic': {
         role: '',
         type: 'shutter',
-        name: 'shutter.basic',
         adapter: '',
 
         data: {
@@ -190,10 +189,9 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-    {
+    'shutter.basic.onlyV': {
         role: '',
         type: 'shutter',
-        name: 'shutter.basic.onlyV',
         template: 'shutter.basic',
         adapter: '',
 
@@ -206,10 +204,9 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-    {
+    'shutter.deconz.ikea.fyrtur': {
         role: '',
         type: 'shutter',
-        name: 'shutter.deconz.ikea.fyrtur',
         template: 'shutter.basic.onlyV',
         adapter: 'deconz',
 
@@ -235,4 +232,4 @@ export const shutterTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-];
+};

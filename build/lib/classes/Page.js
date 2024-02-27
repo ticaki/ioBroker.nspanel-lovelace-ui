@@ -57,17 +57,11 @@ class Page extends import_states_controller.BaseClassPage {
       }
     }
   }
-  async getItemFromTemplate(options, subTemplate = "", loop = 0) {
+  async getItemFromTemplate(options, subtemplate = "", loop = 0) {
     if ("template" in options && options.template) {
-      let index = -1;
-      let template;
-      const n = loop === 0 ? options.template : subTemplate;
-      if (!n)
-        return void 0;
-      index = import_templateArray.pageItemTemplates.findIndex((a) => a.name === n);
-      if (index !== -1)
-        template = import_templateArray.pageItemTemplates[index];
-      if (index === -1 || !template) {
+      const template = subtemplate ? import_templateArray.pageItemTemplates[subtemplate] : import_templateArray.pageItemTemplates[options.template];
+      const name = options.template;
+      if (!template) {
         this.log.error("Dont find template " + options.template);
         return void 0;
       }
@@ -89,14 +83,14 @@ class Page extends import_states_controller.BaseClassPage {
       if (template.template !== void 0) {
         if (loop > 10) {
           throw new Error(
-            `Endless loop in getItemFromTemplate() detected! From ${template.template} for ${template.name}. Bye Bye`
+            `Endless loop in getItemFromTemplate() detected! From ${template.template} for ${name}. Bye Bye`
           );
         }
         const o = await this.getItemFromTemplate(options, template.template, ++loop);
         if (o !== void 0)
           options = o;
         else
-          this.log.warn(`Dont get a template from ${template.template} for ${template.name}`);
+          this.log.warn(`Dont get a template from ${template.template} for ${name}`);
       }
     }
     return options;
@@ -109,16 +103,8 @@ class Page extends import_states_controller.BaseClassPage {
   }
   static getPage(config, that) {
     if ("template" in config && config.template) {
-      let index = -1;
-      let template;
-      for (const i of [import_card.cardTemplates]) {
-        index = i.findIndex((a) => a.template === config.template);
-        if (index !== -1) {
-          template = i[index];
-          break;
-        }
-      }
-      if (index === -1 || !template) {
+      const template = import_card.cardTemplates[config.template];
+      if (!template) {
         that.log.error("dont find template " + config.template);
         return config;
       }

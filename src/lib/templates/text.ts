@@ -1,9 +1,9 @@
 import { PageItemOptionsTemplate } from '../types/type-pageItem';
 import * as Color from '../const/Color';
+import { TemplateIdent } from '../types/types';
 
-export const textTemplates: PageItemOptionsTemplate[] = [
-    {
-        name: 'text.window.isOpen',
+export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplate>> = {
+    'text.window.isOpen': {
         role: 'text',
         adapter: '',
         type: 'text',
@@ -36,8 +36,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-    {
-        name: 'text.window.isClose',
+    'text.window.isClose': {
         role: 'text',
         adapter: '',
         type: 'text',
@@ -72,8 +71,7 @@ export const textTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-    {
-        name: 'text.temperature',
+    'text.temperature': {
         role: '',
         adapter: '',
         type: 'text',
@@ -123,8 +121,12 @@ export const textTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-    {
-        name: 'text.battery',
+    'text.battery': {
+        /**
+         * entity1 enthält den Füllstand
+         * entity2 ebenfalls
+         * entity3 ist true für laden und false für entladen. default ist false entity3 wird nicht automatisch gefunden
+         */
         role: 'battery',
         adapter: '',
         type: 'text',
@@ -227,8 +229,119 @@ export const textTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-    {
-        name: 'text.battery.low',
+    'text.battery.bydhvs': {
+        /**
+         * entity1 enthält den Füllstand
+         * entity2 ebenfalls
+         * entity3 ist true für laden und false für entladen. default ist false entity3 wird nicht automatisch gefunden
+         */
+        template: 'text.battery',
+        role: 'battery',
+        adapter: 'bydhvs',
+        type: 'text',
+
+        data: {
+            icon: {
+                true: {
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.battery',
+                        dp: '.State.SOC$',
+                        read: `const v = Math.round(val / 10)
+                        switch (v) {
+                            case 0:
+                                return 'battery-charging-outline';
+                            case 1:
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 5:
+                            case 6:
+                            case 7:
+                            case 8:
+                            case 9:
+                                return 'battery-charging-' + v + '0';
+                            case 10:
+                            default:
+                                return 'battery-charging';}`,
+                    },
+                    text: {
+                        value: {
+                            type: 'triggered',
+                            mode: 'auto',
+                            role: 'value.battery',
+                            dp: '.State.SOC$',
+                        },
+                        unit: {
+                            type: 'const',
+                            constVal: '%',
+                        },
+                        textSize: { type: 'const', constVal: 2 },
+                    },
+                    color: undefined,
+                },
+                false: {
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.battery',
+                        dp: '.State.SOC$',
+                        read: `const v = Math.round(val / 10)
+                            switch (v) {
+                                case 0:
+                                    return 'battery-outline';
+                                case 1:
+                                case 2:
+                                case 3:
+                                case 4:
+                                case 5:
+                                case 6:
+                                case 7:
+                                case 8:
+                                case 9:
+                                    return 'battery-' + v + '0';
+                                case 10:
+                                default:
+                                    return 'battery';}`,
+                    },
+                    color: undefined,
+                },
+                scale: { type: 'const', constVal: { val_min: 10, val_max: 50, log10: 'max' } },
+            },
+            entity1: {
+                value: {
+                    type: 'state',
+                    mode: 'auto',
+                    role: 'value.battery',
+                    dp: '.State.SOC$',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Battery' },
+                false: undefined,
+            },
+            entity2: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.battery',
+                    dp: '.State.SOC$',
+                },
+                unit: { type: 'const', constVal: '%' },
+            },
+            entity3: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.power',
+                    dp: '.State.Power$',
+                    read: 'return val <= 0',
+                },
+            },
+        },
+    },
+    'text.battery.low': {
         role: 'text',
         adapter: '',
         type: 'text',
@@ -262,4 +375,4 @@ export const textTemplates: PageItemOptionsTemplate[] = [
             },
         },
     },
-];
+};

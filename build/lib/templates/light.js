@@ -22,11 +22,10 @@ __export(light_exports, {
 });
 module.exports = __toCommonJS(light_exports);
 var import_forTemplates = require("../const/forTemplates");
-const lightTemplates = [
-  {
+const lightTemplates = {
+  "light.shelly.rgbw2": {
     role: "rgbSingle",
     type: "light",
-    name: "light.shelly.rgbw2",
     adapter: "0_userdata.0",
     data: {
       icon: import_forTemplates.lightIcon,
@@ -119,7 +118,7 @@ const lightTemplates = [
       }
     }
   }
-];
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   lightTemplates

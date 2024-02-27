@@ -28,11 +28,10 @@ __export(button_exports, {
 });
 module.exports = __toCommonJS(button_exports);
 var Color = __toESM(require("../const/Color"));
-const buttonTemplates = [
-  {
+const buttonTemplates = {
+  "button.iconLeftSize": {
     role: "text.list",
     type: "button",
-    name: "button.iconLeftSize",
     adapter: "",
     data: {
       icon: {
@@ -65,10 +64,9 @@ const buttonTemplates = [
       }
     }
   },
-  {
+  "button.iconRightSize": {
     role: "text.list",
     type: "button",
-    name: "button.iconRightSize",
     adapter: "",
     data: {
       icon: {
@@ -101,7 +99,7 @@ const buttonTemplates = [
       }
     }
   }
-];
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   buttonTemplates

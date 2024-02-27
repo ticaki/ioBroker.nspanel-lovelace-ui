@@ -28,9 +28,8 @@ __export(shutter_exports, {
 });
 module.exports = __toCommonJS(shutter_exports);
 var Color = __toESM(require("../const/Color"));
-const shutterTemplates = [
-  {
-    name: "generic.shutter",
+const shutterTemplates = {
+  "generic.shutter": {
     role: "",
     type: "shutter",
     adapter: "",
@@ -115,10 +114,9 @@ const shutterTemplates = [
       }
     }
   },
-  {
+  "shutter.shelly.2PM": {
     role: "",
     type: "shutter",
-    name: "shutter.shelly.2PM",
     template: "shutter.basic.onlyV",
     adapter: "0_userdata.0",
     data: {
@@ -155,10 +153,9 @@ const shutterTemplates = [
       }
     }
   },
-  {
+  "shutter.basic": {
     role: "",
     type: "shutter",
-    name: "shutter.basic",
     adapter: "",
     data: {
       up: void 0,
@@ -197,10 +194,9 @@ const shutterTemplates = [
       }
     }
   },
-  {
+  "shutter.basic.onlyV": {
     role: "",
     type: "shutter",
-    name: "shutter.basic.onlyV",
     template: "shutter.basic",
     adapter: "",
     data: {
@@ -212,10 +208,9 @@ const shutterTemplates = [
       }
     }
   },
-  {
+  "shutter.deconz.ikea.fyrtur": {
     role: "",
     type: "shutter",
-    name: "shutter.deconz.ikea.fyrtur",
     template: "shutter.basic.onlyV",
     adapter: "deconz",
     data: {
@@ -237,7 +232,7 @@ const shutterTemplates = [
       }
     }
   }
-];
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   shutterTemplates

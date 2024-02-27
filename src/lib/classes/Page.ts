@@ -1,7 +1,7 @@
 import { Panel } from '../controller/panel';
 import { BaseClassPage, BaseClassTriggerdInterface } from '../controller/states-controller';
 import * as pages from '../types/pages';
-import { ButtonActionType, IncomingEvent, PopupType, isPopupType } from '../types/types';
+import { ButtonActionType, IncomingEvent, PopupType, TemplateIdent, isPopupType } from '../types/types';
 import { PageItem } from '../pages/pageItem';
 import { BaseClass } from './library';
 import { cardTemplates } from '../templates/card';
@@ -65,18 +65,15 @@ export class Page extends BaseClassPage {
 
     async getItemFromTemplate(
         options: PageItemDataItemsOptions,
-        subTemplate: string = '',
+        subtemplate: TemplateIdent = '',
         loop: number = 0,
     ): Promise<PageItemDataItemsOptions | undefined> {
         if ('template' in options && options.template) {
-            let index = -1;
-            let template: PageItemOptionsTemplate | undefined;
-            const n = loop === 0 ? options.template : subTemplate;
-            if (!n) return undefined;
-            index = pageItemTemplates.findIndex((a) => a.name === n);
-            if (index !== -1) template = pageItemTemplates[index];
-
-            if (index === -1 || !template) {
+            const template: PageItemOptionsTemplate | undefined = subtemplate
+                ? pageItemTemplates[subtemplate]
+                : pageItemTemplates[options.template];
+            const name = options.template;
+            if (!template) {
                 this.log.error('Dont find template ' + options.template);
                 return undefined;
             }
@@ -103,12 +100,12 @@ export class Page extends BaseClassPage {
             if (template.template !== undefined) {
                 if (loop > 10) {
                     throw new Error(
-                        `Endless loop in getItemFromTemplate() detected! From ${template.template} for ${template.name}. Bye Bye`,
+                        `Endless loop in getItemFromTemplate() detected! From ${template.template} for ${name}. Bye Bye`,
                     );
                 }
                 const o = await this.getItemFromTemplate(options, template.template, ++loop);
                 if (o !== undefined) options = o;
-                else this.log.warn(`Dont get a template from ${template.template} for ${template.name}`);
+                else this.log.warn(`Dont get a template from ${template.template} for ${name}`);
             }
         }
         return options;
@@ -123,16 +120,8 @@ export class Page extends BaseClassPage {
 
     static getPage(config: pages.PageBaseConfig, that: BaseClass): pages.PageBaseConfig {
         if ('template' in config && config.template) {
-            let index = -1;
-            let template: pages.PageBaseConfigTemplate | undefined;
-            for (const i of [cardTemplates]) {
-                index = i.findIndex((a) => a.template === config.template);
-                if (index !== -1) {
-                    template = i[index];
-                    break;
-                }
-            }
-            if (index === -1 || !template) {
+            const template = cardTemplates[config.template];
+            if (!template) {
                 that.log.error('dont find template ' + config.template);
                 return config;
             }

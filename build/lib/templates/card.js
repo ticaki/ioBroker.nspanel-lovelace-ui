@@ -28,9 +28,8 @@ __export(card_exports, {
 });
 module.exports = __toCommonJS(card_exports);
 var Color = __toESM(require("../const/Color"));
-const cardTemplates = [
-  {
-    template: "entities.waste-calendar",
+const cardTemplates = {
+  "entities.waste-calendar": {
     adapter: "0_userdata.0",
     card: "cardEntities",
     alwaysOn: "none",
@@ -140,10 +139,9 @@ const cardTemplates = [
     ],
     items: void 0
   },
-  {
+  "media.spotify-premium": {
     card: "cardMedia",
     adapter: "",
-    template: "media.spotify-premium",
     alwaysOn: "none",
     config: {
       card: "cardMedia",
@@ -571,8 +569,7 @@ const cardTemplates = [
     ],
     useColor: false
   },
-  {
-    template: "entities.departure-timetable",
+  "entities.departure-timetable": {
     adapter: "fahrplan.0",
     card: "cardEntities",
     alwaysOn: "none",
@@ -622,7 +619,13 @@ const cardTemplates = [
             false: void 0
           },
           text1: {
-            true: { role: "date", mode: "auto", type: "state", dp: ".0.DeparturePlanned$" },
+            true: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: ".0.DeparturePlanned$",
+              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+            },
             false: void 0
           }
         }
@@ -662,7 +665,13 @@ const cardTemplates = [
             false: void 0
           },
           text1: {
-            true: { role: "date", mode: "auto", type: "state", dp: ".1.DeparturePlanned$" },
+            true: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: ".1.DeparturePlanned$",
+              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+            },
             false: void 0
           }
         }
@@ -702,7 +711,13 @@ const cardTemplates = [
             false: void 0
           },
           text1: {
-            true: { role: "date", mode: "auto", type: "state", dp: ".2.DeparturePlanned$" },
+            true: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: ".2.DeparturePlanned$",
+              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+            },
             false: void 0
           }
         }
@@ -742,7 +757,13 @@ const cardTemplates = [
             false: void 0
           },
           text1: {
-            true: { role: "date", mode: "auto", type: "state", dp: ".3.DeparturePlanned$" },
+            true: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: ".3.DeparturePlanned$",
+              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+            },
             false: void 0
           }
         }
@@ -750,7 +771,7 @@ const cardTemplates = [
     ],
     items: void 0
   }
-];
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   cardTemplates
