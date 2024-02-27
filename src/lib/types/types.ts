@@ -3,7 +3,7 @@ import * as Color from '../const/Color';
 import * as typePageItem from './type-pageItem';
 import * as pages from './pages';
 
-export type PageTemplateIdent = 'waste-calendar.entities' | 'media.spotify-premium' | 'DepartureTimetable.entities';
+export type PageTemplateIdent = 'entities.waste-calendar' | 'media.spotify-premium' | 'entities.departure-timetable';
 
 export type TemplateIdent =
     | 'generic.shutter'

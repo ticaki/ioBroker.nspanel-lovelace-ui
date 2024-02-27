@@ -929,7 +929,7 @@ const pageAbfall = {
   card: "cardEntities",
   dpInit: "0_userdata.0.Abfallkalender",
   uniqueID: "abfall1",
-  template: "waste-calendar.entities"
+  template: "entities.waste-calendar"
 };
 const pageMediaTest2 = {
   card: "cardMedia",

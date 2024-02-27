@@ -4,7 +4,7 @@ import { PageBaseConfigTemplate } from '../types/pages';
 export const cardTemplates: PageBaseConfigTemplate[] = [
     {
         // Abfallkalender
-        template: 'waste-calendar.entities',
+        template: 'entities.waste-calendar',
         adapter: '0_userdata.0',
         card: 'cardEntities',
         alwaysOn: 'none',
@@ -568,7 +568,7 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
     },
     {
         //Anzeigetafel Fahrplan
-        template: 'DepartureTimetable.entities',
+        template: 'entities.departure-timetable',
         adapter: 'fahrplan.0',
         card: 'cardEntities',
         alwaysOn: 'none',

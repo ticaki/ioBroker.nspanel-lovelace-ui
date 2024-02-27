@@ -947,7 +947,7 @@ const pageAbfall: pages.PageBaseConfig = {
     card: 'cardEntities',
     dpInit: '0_userdata.0.Abfallkalender',
     uniqueID: 'abfall1',
-    template: 'waste-calendar.entities',
+    template: 'entities.waste-calendar',
 };
 
 export const pageMediaTest2: pages.PageBaseConfig = {

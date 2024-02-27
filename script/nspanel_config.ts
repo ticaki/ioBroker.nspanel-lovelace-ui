@@ -327,17 +327,18 @@ const popupTest: pages.PageBaseConfig = {
     config: {
         card: 'popupNotify',
         data: {
-            entity1: { value: { type: 'triggered', dp: '0_userdata.0.example_state' } },
-            headline: { type: 'const', constVal: 'headline' },
+            entity1: { value: { type: 'state', dp: '0_userdata.0.example_state' } },
+            headline: { type: 'const', constVal: 'welcomeHToken' },
             colorHeadline: { true: { color: { type: 'const', constVal: Color.White } } },
-            buttonLeft: { type: 'const', constVal: 'l' },
+            buttonLeft: { type: 'const', constVal: '' },
             colorButtonLeft: { true: { color: { type: 'const', constVal: Color.White } } },
-            buttonRight: { type: 'const', constVal: 'r' },
+            buttonRight: { type: 'const', constVal: '' },
             colorButtonRight: { true: { color: { type: 'const', constVal: Color.White } } },
-            text: { type: 'const', constVal: 'Text' },
+            text: { type: 'const', constVal: 'Text Test ${pl}' },
             colorText: { true: { color: { type: 'const', constVal: Color.White } } },
             timeout: { type: 'const', constVal: 0 },
-            optionalValue: { type: 'const', constVal: {} },
+            // {placeholder: {text: '' oder dp: ''}}
+            optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
             setValue1: { type: 'const', constVal: true },
         },
     },
@@ -3022,7 +3023,7 @@ const pageThermoTest: pages.PageBaseConfig = {
                 type: 'const',
                 constVal: 'headline',
             },
-            current: {
+            text2: {
                 type: 'const',
                 constVal: '20',
             },
@@ -3034,7 +3035,7 @@ const pageThermoTest: pages.PageBaseConfig = {
                 type: 'const',
                 constVal: 'text1',
             },
-            text2: {
+            text3: {
                 type: 'const',
                 constVal: 'text2',
             },
@@ -3051,7 +3052,7 @@ const pageThermoTest: pages.PageBaseConfig = {
                 constVal: '5',
             },
             set1: { type: 'state', dp: '0_userdata.0.number1' },
-            //set2: { type: 'state', dp: '0_userdata.0.number2' },
+            text4: undefined,
         },
     },
     items: undefined,
@@ -4570,6 +4571,28 @@ export const welcomePopupPayload =
                         ' Armilar, TT-Tom, ticaki      ' +
                         '   & Kuckuckmann~2000~3~1~~2000'});*/
 
+/**
+ * command for javascript adapter
+ * sendTo('nspanel-lovelace-ui.0', 'config', Testconfig)
+ */
+
+/*
+// pageType~popupNotify
+export const welcomePopupPayload =
+    'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
+    '  Einen schönen Tag           ' +
+    '     wünschen dir               ' +
+    ' Armilar, TT-Tom, ticaki      ' +
+    '   & Kuckuckmann~2000~3~1~~2000';
+
+/*
+   SendToPanel({ payload:'pageType~popupNotify'});
+                    SendToPanel({ payload:'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
+                        '  Einen schönen Tag           '+
+                        '     wünschen dir               ' +
+                        ' Armilar, TT-Tom, ticaki      ' +
+                        '   & Kuckuckmann~2000~3~1~~2000'});*/
+
 sendTo('nspanel-lovelace-ui.0', 'config', Testconfig);
 
 /***************************************************************************************************************/
@@ -4668,7 +4691,8 @@ namespace pages {
         | 'indicator.lowbat'
         | 'value'
         | ''
-        | 'level.value';
+        | 'level.value'
+        | 'date';
     
     export type DeviceRole =
         | 'text'
@@ -4900,7 +4924,7 @@ namespace pages {
         colorText: typePageItem.ColorEntryTypeNew;
         timeout: number;
         optionalValue?: string;
-        setValue1: string;
+        setValue1?: string;
         setValue2?: string;
     };
     export type cardNotifyDataItemOptions = {
@@ -5113,13 +5137,12 @@ namespace pages {
         | undefined;
     
     type PageThermoBaseConfig = {
-        current: number;
         auto?: boolean;
         boost?: boolean;
         error?: boolean;
         humidity?: number;
         manual?: boolean;
-        mode?: string;
+        //mode?: string;
         party?: boolean;
         unreach?: boolean;
         windowopen?: boolean;
@@ -5136,6 +5159,8 @@ namespace pages {
         headline: string;
         text1: string;
         text2: string;
+        text3: string;
+        text4: string;
         minTemp: number; // *10
         maxTemp: number; // *10
         tempStep: number; // *10
@@ -5278,7 +5303,7 @@ namespace pages {
         tALbl: ''; // ignored
         tCF: string;
         temp2: number | string; // *10
-        btDetail: '' | 1;
+        btDetail: '0' | '1'; // 1 ist aus
     };
     
     type writeItem = { dp: string } | undefined;
@@ -5307,11 +5332,16 @@ namespace pages {
     >;
     
     export function isPlaceholderType(F: any): F is placeholderType {
-        let count = 0;
+        if (!F || typeof F !== 'object') return false;
         for (const a in F) {
-            if (['text', 'dp'].indexOf(a) !== -1 && F[a] !== undefined) count++;
+            let count = 0;
+            if (!F[a]) return false;
+            for (const b in F[a]) {
+                if (['text', 'dp'].indexOf(b) !== -1 && F[a][b] !== undefined) count++;
+            }
+            if (count !== 1) return false;
         }
-        return count === 1;
+        return true;
     }
     }
 namespace typePageItem {

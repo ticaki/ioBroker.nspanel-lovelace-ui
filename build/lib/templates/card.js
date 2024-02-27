@@ -30,7 +30,7 @@ module.exports = __toCommonJS(card_exports);
 var Color = __toESM(require("../const/Color"));
 const cardTemplates = [
   {
-    template: "waste-calendar.entities",
+    template: "entities.waste-calendar",
     adapter: "0_userdata.0",
     card: "cardEntities",
     alwaysOn: "none",
@@ -570,6 +570,185 @@ const cardTemplates = [
       }
     ],
     useColor: false
+  },
+  {
+    template: "entities.departure-timetable",
+    adapter: "fahrplan.0",
+    card: "cardEntities",
+    alwaysOn: "none",
+    useColor: false,
+    config: {
+      card: "cardEntities",
+      data: {
+        headline: {
+          type: "const",
+          constVal: "departure"
+        }
+      }
+    },
+    pageItems: [
+      {
+        role: "text.list",
+        type: "text",
+        data: {
+          icon: {
+            true: {
+              value: { role: "state", mode: "auto", type: "state", dp: ".0.Mode$" },
+              color: { type: "const", constVal: Color.Red }
+            },
+            false: {
+              value: { role: "state", mode: "auto", type: "state", dp: ".0.Mode$" },
+              color: { type: "const", constVal: Color.Green }
+            }
+          },
+          entity1: {
+            value: { role: "value", mode: "auto", type: "state", dp: ".0.DepartureDelayed$" }
+          },
+          entity2: {
+            value: {
+              role: "",
+              mode: "auto",
+              type: "state",
+              dp: ".0.Departure$",
+              read: "return val === 0 ? null : val"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          },
+          text: {
+            true: { role: "state", mode: "auto", type: "state", dp: ".0.Direction$" },
+            false: void 0
+          },
+          text1: {
+            true: { role: "date", mode: "auto", type: "state", dp: ".0.DeparturePlanned$" },
+            false: void 0
+          }
+        }
+      },
+      {
+        role: "text.list",
+        type: "text",
+        data: {
+          icon: {
+            true: {
+              value: { role: "state", mode: "auto", type: "state", dp: ".1.Mode$" },
+              color: { type: "const", constVal: Color.Red }
+            },
+            false: {
+              value: { role: "state", mode: "auto", type: "state", dp: ".1.Mode$" },
+              color: { type: "const", constVal: Color.Green }
+            }
+          },
+          entity1: {
+            value: { role: "value", mode: "auto", type: "state", dp: ".1.DepartureDelayed$" }
+          },
+          entity2: {
+            value: {
+              role: "",
+              mode: "auto",
+              type: "state",
+              dp: ".1.Departure$",
+              read: "return val === 0 ? null : val"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          },
+          text: {
+            true: { role: "state", mode: "auto", type: "state", dp: ".1.Direction$" },
+            false: void 0
+          },
+          text1: {
+            true: { role: "date", mode: "auto", type: "state", dp: ".1.DeparturePlanned$" },
+            false: void 0
+          }
+        }
+      },
+      {
+        role: "text.list",
+        type: "text",
+        data: {
+          icon: {
+            true: {
+              value: { role: "state", mode: "auto", type: "state", dp: ".2.Mode$" },
+              color: { type: "const", constVal: Color.Red }
+            },
+            false: {
+              value: { role: "state", mode: "auto", type: "state", dp: ".2.Mode$" },
+              color: { type: "const", constVal: Color.Green }
+            }
+          },
+          entity1: {
+            value: { role: "value", mode: "auto", type: "state", dp: ".2.DepartureDelayed$" }
+          },
+          entity2: {
+            value: {
+              role: "",
+              mode: "auto",
+              type: "state",
+              dp: ".2.Departure$",
+              read: "return val === 0 ? null : val"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          },
+          text: {
+            true: { role: "state", mode: "auto", type: "state", dp: ".2.Direction$" },
+            false: void 0
+          },
+          text1: {
+            true: { role: "date", mode: "auto", type: "state", dp: ".2.DeparturePlanned$" },
+            false: void 0
+          }
+        }
+      },
+      {
+        role: "text.list",
+        type: "text",
+        data: {
+          icon: {
+            true: {
+              value: { role: "state", mode: "auto", type: "state", dp: ".3.Mode$" },
+              color: { type: "const", constVal: Color.Red }
+            },
+            false: {
+              value: { role: "state", mode: "auto", type: "state", dp: ".3.Mode$" },
+              color: { type: "const", constVal: Color.Green }
+            }
+          },
+          entity1: {
+            value: { role: "value", mode: "auto", type: "state", dp: ".3.DepartureDelayed$" }
+          },
+          entity2: {
+            value: {
+              role: "",
+              mode: "auto",
+              type: "state",
+              dp: ".3.Departure$",
+              read: "return val === 0 ? null : val"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          },
+          text: {
+            true: { role: "state", mode: "auto", type: "state", dp: ".3.Direction$" },
+            false: void 0
+          },
+          text1: {
+            true: { role: "date", mode: "auto", type: "state", dp: ".3.DeparturePlanned$" },
+            false: void 0
+          }
+        }
+      }
+    ],
+    items: void 0
   }
 ];
 // Annotate the CommonJS export names for ESM import in node:

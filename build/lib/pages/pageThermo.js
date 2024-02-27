@@ -178,7 +178,7 @@ class PageThermo extends import_Page.Page {
           message.status = this.library.getTranslation(v);
         }
       }
-      message.btDetail = "1";
+      message.btDetail = !this.pageItems || !this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === "input_sel") ? "0" : "1";
     }
     const msg = Object.assign(PageThermoMessageDefault, message);
     this.sendToPanel(this.getMessage(msg));

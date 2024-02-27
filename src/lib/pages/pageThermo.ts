@@ -170,8 +170,11 @@ export class PageThermo extends Page {
                 }
             }
 
-            //TODO
-            message.btDetail = '1';
+            
+            message.btDetail =
+                !this.pageItems || !this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === 'input_sel')
+                    ? '0'
+                    : '1';
             //this.pageItems && this.pageItems.some((a) => a.dataItems && a.dataItems.type === 'input_sel') ? '' : 1;
         }
         const msg: pages.PageThermoMessage = Object.assign(PageThermoMessageDefault, message);
