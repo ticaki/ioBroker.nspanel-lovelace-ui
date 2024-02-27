@@ -116,6 +116,7 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
         items: undefined,
     },
     {
+        //cardMedia
         card: 'cardMedia',
         adapter: '',
         template: 'media.spotify-premium',
@@ -620,7 +621,13 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                         false: undefined,
                     },
                     text1: {
-                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.0.DeparturePlanned$' },
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.0.DeparturePlanned$',
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
                         false: undefined,
                     },
                 },
@@ -662,7 +669,13 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                         false: undefined,
                     },
                     text1: {
-                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.1.DeparturePlanned$' },
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.1.DeparturePlanned$',
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
                         false: undefined,
                     },
                 },
@@ -704,7 +717,13 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                         false: undefined,
                     },
                     text1: {
-                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.2.DeparturePlanned$' },
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.2.DeparturePlanned$',
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
                         false: undefined,
                     },
                 },
@@ -746,7 +765,13 @@ export const cardTemplates: PageBaseConfigTemplate[] = [
                         false: undefined,
                     },
                     text1: {
-                        true: { role: 'date', mode: 'auto', type: 'state', dp: '.3.DeparturePlanned$' },
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '.3.DeparturePlanned$',
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
                         false: undefined,
                     },
                 },
