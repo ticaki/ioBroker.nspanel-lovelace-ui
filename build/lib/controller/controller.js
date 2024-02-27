@@ -75,7 +75,7 @@ class Controller extends Library.BaseClass {
     return Date.now();
   };
   async init() {
-    this.statesControler.setInternalState(
+    await this.statesControler.setInternalState(
       "///time",
       await this.getCurrentTime(),
       true,
@@ -88,7 +88,7 @@ class Controller extends Library.BaseClass {
       },
       this.getCurrentTime
     );
-    this.statesControler.setInternalState(
+    await this.statesControler.setInternalState(
       "///date",
       await this.getCurrentTime(),
       true,

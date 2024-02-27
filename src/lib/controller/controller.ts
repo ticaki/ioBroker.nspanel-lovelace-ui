@@ -57,7 +57,7 @@ export class Controller extends Library.BaseClass {
     };
 
     async init(): Promise<void> {
-        this.statesControler.setInternalState(
+        await this.statesControler.setInternalState(
             '///time',
             await this.getCurrentTime(),
             true,
@@ -70,7 +70,7 @@ export class Controller extends Library.BaseClass {
             },
             this.getCurrentTime,
         );
-        this.statesControler.setInternalState(
+        await this.statesControler.setInternalState(
             '///date',
             await this.getCurrentTime(),
             true,
