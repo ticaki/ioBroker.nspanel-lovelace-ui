@@ -527,13 +527,12 @@ export type PageGridPowerConfigElement =
     | undefined;
 
 type PageThermoBaseConfig = {
-    current: number;
     auto?: boolean;
     boost?: boolean;
     error?: boolean;
     humidity?: number;
     manual?: boolean;
-    mode?: string;
+    //mode?: string;
     party?: boolean;
     unreach?: boolean;
     windowopen?: boolean;
@@ -550,6 +549,8 @@ type PageThermoBaseConfig = {
     headline: string;
     text1: string;
     text2: string;
+    text3: string;
+    text4: string;
     minTemp: number; // *10
     maxTemp: number; // *10
     tempStep: number; // *10
@@ -692,7 +693,7 @@ export type PageThermoMessage = {
     tALbl: ''; // ignored
     tCF: string;
     temp2: number | string; // *10
-    btDetail: '' | 1;
+    btDetail: '0' | '1'; // 1 ist aus
 };
 
 type writeItem = { dp: string } | undefined;

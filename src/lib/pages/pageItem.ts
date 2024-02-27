@@ -664,7 +664,13 @@ export class PageItem extends BaseClassTriggerd {
                             message.icon = await tools.getIconEntryValue(item.icon, message.buttonState, '', '');
 
                         message.slidersColor =
-                            (await tools.getIconEntryColor(item.icon, false, Color.White)) ?? 'disable';
+                            (await tools.getIconEntryColor(
+                                item.icon,
+                                message.slider1Pos === undefined || message.slider1Pos === 'disable'
+                                    ? null
+                                    : message.slider1Pos ?? message.buttonState === true,
+                                Color.White,
+                            )) ?? 'disable';
                         let rgb = null;
                         switch (this.config.role) {
                             case 'socket':

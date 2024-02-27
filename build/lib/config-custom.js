@@ -2728,7 +2728,7 @@ const pageThermoTest = {
         type: "const",
         constVal: "headline"
       },
-      current: {
+      text2: {
         type: "const",
         constVal: "20"
       },
@@ -2740,7 +2740,7 @@ const pageThermoTest = {
         type: "const",
         constVal: "text1"
       },
-      text2: {
+      text3: {
         type: "const",
         constVal: "text2"
       },
@@ -2756,7 +2756,8 @@ const pageThermoTest = {
         type: "const",
         constVal: "5"
       },
-      set1: { type: "state", dp: "0_userdata.0.number1" }
+      set1: { type: "state", dp: "0_userdata.0.number1" },
+      text4: void 0
     }
   },
   items: void 0,

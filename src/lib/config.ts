@@ -204,12 +204,40 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
     ],
     items: undefined,
 };
-/*const pageEntitiesTest2: pages.PageBaseConfig = {
+
+const popupTest: pages.PageBaseConfig = {
+    card: 'popupNotify',
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: 'popup1',
+    useColor: false,
+    config: {
+        card: 'popupNotify',
+        data: {
+            entity1: { value: { type: 'state', dp: '0_userdata.0.example_state' } },
+            headline: { type: 'const', constVal: 'welcomeHToken' },
+            colorHeadline: { true: { color: { type: 'const', constVal: Color.White } } },
+            buttonLeft: { type: 'const', constVal: '' },
+            colorButtonLeft: { true: { color: { type: 'const', constVal: Color.White } } },
+            buttonRight: { type: 'const', constVal: '' },
+            colorButtonRight: { true: { color: { type: 'const', constVal: Color.White } } },
+            text: { type: 'const', constVal: 'Text Test ${pl}' },
+            colorText: { true: { color: { type: 'const', constVal: Color.White } } },
+            timeout: { type: 'const', constVal: 0 },
+            // {placeholder: {text: '' oder dp: ''}}
+            optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
+            setValue1: { type: 'const', constVal: true },
+        },
+    },
+    pageItems: [],
+    items: undefined,
+};
+const pageEntitiesTest3: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardEntities',
     dpInit: '',
     alwaysOn: 'none',
-    uniqueID: 'entities2',
+    uniqueID: 'entities3',
     useColor: false,
     config: {
         card: 'cardEntities',
@@ -266,23 +294,13 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
             template: 'shutter.shelly.2PM',
         },
         {
-        type: 'text',
+            type: 'text',
             dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
             template: 'text.battery',
-            data: {
-                icon: {
-                    true: {
-                        value: {
-                            type: 'const',
-                            constVal: 'ds',
-                        },
-                    },
-                },
-            },
         },
     ],
     items: undefined,
-};*/
+};
 const pageEntitiesTest2: pages.PageBaseConfig = {
     //type: 'sonstiges',
     card: 'cardEntities',
@@ -313,18 +331,23 @@ const pageEntitiesTest2: pages.PageBaseConfig = {
             dpInit: '',
         },
         {
-            role: 'rgbSingle',
-            type: 'light',
-            dpInit: '0_userdata.0.shelly.0.SHRGBW2#258794#1',
-            template: 'light.shelly.rgbw2',
-        },
-        {
-            /**
-             * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
-             */
-            type: 'text',
-            dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
-            template: 'text.battery',
+            role: '',
+            type: 'number',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/screensaverTimeout' },
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 90 },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'screensaverTimeout' }, false: undefined },
+            },
         },
     ],
     items: undefined,
@@ -1679,7 +1702,7 @@ const pageGridTest1: pages.PageBaseConfig = {
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'home' },
-                        text: { value: { type: 'const', constVal: '22.2' } },
+                        text: { value: { type: 'const', constVal: '22.2' }, textSize: { type: 'const', constVal: 3 } },
                         color: { type: 'const', constVal: Color.Green },
                     },
                     false: {
@@ -2887,7 +2910,7 @@ const pageThermoTest: pages.PageBaseConfig = {
                 type: 'const',
                 constVal: 'headline',
             },
-            current: {
+            text2: {
                 type: 'const',
                 constVal: '20',
             },
@@ -2899,7 +2922,7 @@ const pageThermoTest: pages.PageBaseConfig = {
                 type: 'const',
                 constVal: 'text1',
             },
-            text2: {
+            text3: {
                 type: 'const',
                 constVal: 'text2',
             },
@@ -2916,14 +2939,14 @@ const pageThermoTest: pages.PageBaseConfig = {
                 constVal: '5',
             },
             set1: { type: 'state', dp: '0_userdata.0.number1' },
-            //set2: { type: 'state', dp: '0_userdata.0.number2' },
+            text4: undefined,
         },
     },
     items: undefined,
     useColor: false,
 };
 const pageScreensaverTest: pages.PageBaseConfig = {
-    card: 'screensaver',
+    card: 'screensaver2',
     // mode of screensaver
     dpInit: '',
     alwaysOn: 'none',
@@ -2931,7 +2954,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
     useColor: false,
     config: {
         card: 'screensaver2',
-        mode: 'standard',
+        mode: 'advanced',
         rotationTime: 0,
         model: 'eu',
         data: undefined,
@@ -3770,7 +3793,68 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
+        {
+            role: 'test',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'indicator',
+            data: {
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: '850',
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
+                /*entity2: {
+                    value: {
+                        type: 'const',
+                        constVal: 500,
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },*/
+                icon: {
+                    true: {
+                        value: {
+                            type: 'const',
+                            constVal: 'waves-arrow-up',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSGreen,
+                        },
+                    },
+                    false: {
+                        value: {
+                            type: 'const',
+                            constVal: 'waves-arrow-up',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
+                    },
+                    scale: {
+                        type: 'const',
+                        constVal: { val_min: 0, val_max: 1000, val_best: 500, log10: 'max' },
+                    },
 
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                text: {
+                    true: {
+                        type: 'const',
+                        constVal: 'Wasserstand',
+                    },
+                    false: undefined,
+                },
+            },
+        },
         {
             type: 'text',
             dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
@@ -4008,7 +4092,118 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
-
+        {
+            role: 'combined',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'mricon',
+            data: {
+                entity1: {
+                    value: {
+                        type: 'state',
+                        dp: '0_userdata.0.number1',
+                    },
+                },
+                icon: {
+                    true: {
+                        value: {
+                            type: 'const',
+                            constVal: 'heat-wave',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
+                        text: {
+                            value: {
+                                type: 'state',
+                                dp: '0_userdata.0.number1',
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: '°C',
+                            },
+                        },
+                    },
+                    false: {
+                        value: {
+                            type: 'const',
+                            constVal: 'heat-wave',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSYellow,
+                        },
+                        text: {
+                            value: {
+                                type: 'const',
+                                constVal: 'deconz.0.Sensors.5.temperature',
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: '°C',
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        {
+            role: 'combined',
+            dpInit: '',
+            type: 'text',
+            modeScr: 'mricon',
+            data: {
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: false,
+                    },
+                },
+                icon: {
+                    true: {
+                        value: {
+                            type: 'const',
+                            constVal: 'heat-wave',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
+                        text: {
+                            value: {
+                                type: 'state',
+                                dp: '0_userdata.0.number1',
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: '°C',
+                            },
+                        },
+                    },
+                    false: {
+                        value: {
+                            type: 'const',
+                            constVal: 'heat-wave',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSYellow,
+                        },
+                        text: {
+                            value: {
+                                type: 'const',
+                                constVal: 'deconz.0.Sensors.5.temperature',
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: '°C',
+                            },
+                        },
+                    },
+                },
+            },
+        },
         {
             role: 'text',
             dpInit: '',
@@ -4154,6 +4349,8 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             pageAbfall,
             pageGridTest5,
             pageMediaTest3,
+            popupTest,
+            pageEntitiesTest3,
         ],
         // override by password.ts
         navigation: [
@@ -4173,7 +4370,13 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
                 name: 'abfall1', //main ist die erste Seite
                 page: 'abfall1',
                 left: { single: 'main' }, // Die 4 bezieht sich auf den name: 4
-                right: { single: 'entities2', double: 'main' },
+                right: { single: 'entities3', double: 'main' },
+            },
+            {
+                name: 'entities3', //main ist die erste Seite
+                page: 'entities3',
+                left: { double: 'abfall1' }, // Die 4 bezieht sich auf den name: 4
+                right: { double: 'entities2' },
             },
             {
                 name: 'entities2', //main ist die erste Seite
@@ -4227,7 +4430,7 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             iconBig1: false,
             iconBig2: false,
         },
-        timeout: 10, // dat kommt vom Admin
+        timeout: 5, // dat kommt vom Admin
         dimLow: 20,
         dimHigh: 90,
     },
@@ -4242,10 +4445,10 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
 // pageType~popupNotify
 export const welcomePopupPayload =
     'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
-    '  Einen schönen Tag\r\n         ' +
-    '     wünschen dir\r\n               ' +
-    ' Armilar, TT-Tom, ticaki\r\n      ' +
-    '   & Kuckuckmann~2000~3~1~~2000\r\n';
+    '  Einen schönen Tag           ' +
+    '     wünschen dir               ' +
+    ' Armilar, TT-Tom, ticaki      ' +
+    '   & Kuckuckmann~2000~3~1~~2000';
 
 /*
    SendToPanel({ payload:'pageType~popupNotify'});

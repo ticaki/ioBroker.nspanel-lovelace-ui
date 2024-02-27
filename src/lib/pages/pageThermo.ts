@@ -21,7 +21,7 @@ const PageThermoMessageDefault: pages.PageThermoMessage = {
     tALbl: '',
     tCF: '',
     temp2: '',
-    btDetail: 1,
+    btDetail: '1',
 };
 
 export class PageThermo extends Page {
@@ -118,11 +118,11 @@ export class PageThermo extends Page {
                 (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
             );
             message.navigation = this.getNavigation();
-            let v: any = (item.data.current && (await item.data.current.getNumber())) ?? null;
+            let v: any = (item.data.text2 && (await item.data.text2.getNumber())) ?? null;
             if (v !== null) {
                 message.currentTemp = (v as number).toFixed(1);
             } else {
-                v = (item.data.current && (await item.data.current.getString())) ?? null;
+                v = (item.data.text2 && (await item.data.text2.getString())) ?? null;
                 if (v !== null) {
                     message.currentTemp = this.library.getTranslation(v);
                 }
@@ -152,7 +152,7 @@ export class PageThermo extends Page {
             if (v !== null) {
                 message.tCurTempLbl = this.library.getTranslation(v);
             }
-            v = (item.data.text2 && (await item.data.text2.getString())) ?? null;
+            v = (item.data.text3 && (await item.data.text3.getString())) ?? null;
             if (v !== null) {
                 message.tStateLbl = this.library.getTranslation(v);
             }
@@ -160,17 +160,18 @@ export class PageThermo extends Page {
             if (v !== null) {
                 message.tempStep = v;
             }
-            v = (item.data.mode && (await item.data.mode.getNumber())) ?? null;
+            v = (item.data.text4 && (await item.data.text4.getNumber())) ?? null;
             if (v !== null) {
                 message.status = v;
             } else {
-                v = (item.data.mode && (await item.data.mode.getString())) ?? null;
+                v = (item.data.text4 && (await item.data.text4.getString())) ?? null;
                 if (v !== null) {
                     message.status = this.library.getTranslation(v);
                 }
             }
 
-            message.btDetail = '';
+            //TODO
+            message.btDetail = '1';
             //this.pageItems && this.pageItems.some((a) => a.dataItems && a.dataItems.type === 'input_sel') ? '' : 1;
         }
         const msg: pages.PageThermoMessage = Object.assign(PageThermoMessageDefault, message);
