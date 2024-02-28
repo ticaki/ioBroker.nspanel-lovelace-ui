@@ -228,8 +228,8 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                 play: {
                     mode: 'auto',
                     type: 'state',
-                    role: 'value',
-                    dp: '.player.play',
+                    role: 'button',
+                    dp: '.player.play$',
                 },
                 mediaState: {
                     mode: 'auto',
@@ -241,7 +241,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     mode: 'auto',
                     type: 'state',
                     role: 'button',
-                    dp: '.player.play',
+                    dp: '.player.pause',
                 },
                 pause: {
                     mode: 'auto',

@@ -251,8 +251,8 @@ const cardTemplates = {
         play: {
           mode: "auto",
           type: "state",
-          role: "value",
-          dp: ".player.play"
+          role: "button",
+          dp: ".player.play$"
         },
         mediaState: {
           mode: "auto",
@@ -264,7 +264,7 @@ const cardTemplates = {
           mode: "auto",
           type: "state",
           role: "button",
-          dp: ".player.play"
+          dp: ".player.pause"
         },
         pause: {
           mode: "auto",
