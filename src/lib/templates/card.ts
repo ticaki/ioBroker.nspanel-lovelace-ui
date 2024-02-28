@@ -343,7 +343,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     },
                     icon: {
                         true: {
-                            value: { type: 'const', constVal: 'playlist-music' },
+                            value: { type: 'const', constVal: 'playlist-play' },
                             color: { type: 'const', constVal: Color.Green },
                         },
                     },
