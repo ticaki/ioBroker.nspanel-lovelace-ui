@@ -98,8 +98,8 @@ export class Dataitem extends BaseClass {
         return 'dp' in this.options ? this.stateDB.getType(this.options.dp) ?? this.type : this.type;
     }
 
-    async getCommonStates(): Promise<Record<string, string> | undefined> {
-        return 'dp' in this.options ? this.stateDB.getCommonStates(this.options.dp) : undefined;
+    async getCommonStates(force: boolean = false): Promise<Record<string, string> | undefined> {
+        return 'dp' in this.options ? this.stateDB.getCommonStates(this.options.dp, force) : undefined;
     }
 
     async getState(): Promise<NSPanel.State | null | undefined> {

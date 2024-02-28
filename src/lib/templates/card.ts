@@ -329,6 +329,61 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                 },
             },
             {
+                role: '2values',
+                type: 'input_sel',
+                dpInit: '',
+
+                data: {
+                    color: {
+                        true: {
+                            type: 'const',
+                            constVal: Color.HMIOn,
+                        },
+                        false: undefined,
+                    },
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'playlist-music' },
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entityInSel: {
+                        value: {
+                            mode: 'auto',
+                            role: 'value',
+                            type: 'triggered',
+                            dp: '.playlists.playlistList$',
+                        },
+                    },
+                    text: {
+                        true: undefined,
+                        false: undefined,
+                    },
+                    /**
+                     * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                     */
+                    valueList: {
+                        mode: 'auto',
+                        role: 'value',
+                        type: 'triggered',
+                        dp: '.playlists.playlistListIds$',
+                        read: 'return val ? val.split(";") : []',
+                    },
+                    valueList2: {
+                        mode: 'auto',
+                        role: 'value',
+                        type: 'triggered',
+                        dp: '.playlists.playlistListString$',
+                        read: 'return val ? val.split(";") : []',
+                    },
+                    setValue1: undefined,
+                    /**
+                     * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                     */
+                    //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
+                },
+            },
+            {
                 role: 'text.list',
                 type: 'input_sel',
                 dpInit: '',
