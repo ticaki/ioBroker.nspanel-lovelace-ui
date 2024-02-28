@@ -514,6 +514,7 @@ export class PageItem extends BaseClassTriggerd {
                 let result: typePageItem.entityUpdateDetailMessage = {
                     type: 'insel',
                     entityName: '',
+                    headline: '',
                     textColor: String(Color.rgb_dec565(Color.White)),
                     currentState: '',
                     list: '',
@@ -524,7 +525,7 @@ export class PageItem extends BaseClassTriggerd {
                     result.entityName,
                     '',
                     result.textColor,
-                    result.type,
+                    result.headline,
                     result.currentState,
                     result.list,
                 );
@@ -833,11 +834,19 @@ export class PageItem extends BaseClassTriggerd {
                 if (!(message.type === 'insel')) return null;
 
                 const value = (await tools.getValueEntryBoolean(item.entityInSel)) ?? true;
-                if (message.type === 'insel')
-                    message.textColor = await tools.getEntryColor(item.color, value, Color.White);
-                message.currentState = this.library.getTranslation(
+
+                message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+
+                message.currentState =
+                    mode === 'popupThermo'
+                        ? this.library.getTranslation((item.headline && (await item.headline.getString())) ?? '')
+                        : 'entity2' in item
+                          ? (await tools.getValueEntryString(item.entity2)) ?? ''
+                          : '';
+                message.headline = this.library.getTranslation(
                     (item.headline && (await item.headline.getString())) ?? '',
                 );
+
                 const sList =
                     item.entityInSel &&
                     (await this.getListFromStates(

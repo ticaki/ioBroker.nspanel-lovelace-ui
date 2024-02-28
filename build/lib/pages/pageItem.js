@@ -443,6 +443,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         let result = {
           type: "insel",
           entityName: "",
+          headline: "",
           textColor: String(Color.rgb_dec565(Color.White)),
           currentState: "",
           list: ""
@@ -453,7 +454,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           result.entityName,
           "",
           result.textColor,
-          result.type,
+          result.headline,
           result.currentState,
           result.list
         );
@@ -584,7 +585,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     return "";
   }
   async GeneratePopup(mode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L;
     if (!this.config || !this.dataItems)
       return null;
     const entry = this.dataItems;
@@ -734,10 +735,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         if (!(message.type === "insel"))
           return null;
         const value = (_v = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _v : true;
-        if (message.type === "insel")
-          message.textColor = await tools.getEntryColor(item.color, value, Color.White);
-        message.currentState = this.library.getTranslation(
-          (_w = item.headline && await item.headline.getString()) != null ? _w : ""
+        message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+        message.currentState = mode === "popupThermo" ? this.library.getTranslation((_w = item.headline && await item.headline.getString()) != null ? _w : "") : "entity2" in item ? (_x = await tools.getValueEntryString(item.entity2)) != null ? _x : "" : "";
+        message.headline = this.library.getTranslation(
+          (_y = item.headline && await item.headline.getString()) != null ? _y : ""
         );
         const sList = item.entityInSel && await this.getListFromStates(
           item.entityInSel,
@@ -756,13 +757,13 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message = { ...message, type: "popupThermo" };
             if (message.type === "popupThermo") {
               message.headline = this.library.getTranslation(
-                (_y = (_x = await tools.getEntryTextOnOff(item.headline, true)) != null ? _x : message.headline) != null ? _y : ""
+                (_A = (_z = await tools.getEntryTextOnOff(item.headline, true)) != null ? _z : message.headline) != null ? _A : ""
               );
             }
             break;
           }
         }
-        let list = (_A = (_z = item.valueList && await item.valueList.getObject()) != null ? _z : item.valueList && await item.valueList.getString()) != null ? _A : [
+        let list = (_C = (_B = item.valueList && await item.valueList.getObject()) != null ? _B : item.valueList && await item.valueList.getString()) != null ? _C : [
           "1",
           "2",
           "3",
@@ -794,7 +795,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message = { ...message, type: "popupThermo" };
         if (message.type === "popupThermo") {
           message.headline = this.library.getTranslation(
-            (_C = (_B = await tools.getEntryTextOnOff(item.headline, true)) != null ? _B : message.headline) != null ? _C : ""
+            (_E = (_D = await tools.getEntryTextOnOff(item.headline, true)) != null ? _D : message.headline) != null ? _E : ""
           );
         }
         break;
@@ -808,14 +809,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message.type = "popupShutter";
         if (!(message.type === "popupShutter"))
           break;
-        message.text2 = (_D = item.text && item.text.true && await item.text.true.getString()) != null ? _D : "";
+        message.text2 = (_F = item.text && item.text.true && await item.text.true.getString()) != null ? _F : "";
         message.text2 = this.library.getTranslation(message.text2);
-        const pos1 = (_E = await tools.getValueEntryNumber(item.entity1)) != null ? _E : "disable";
-        const pos2 = (_F = await tools.getValueEntryNumber(item.entity2)) != null ? _F : "disable";
+        const pos1 = (_G = await tools.getValueEntryNumber(item.entity1)) != null ? _G : "disable";
+        const pos2 = (_H = await tools.getValueEntryNumber(item.entity2)) != null ? _H : "disable";
         if (pos1 !== "disable")
-          message.icon = (_G = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _G : "";
+          message.icon = (_I = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _I : "";
         else if (pos2 !== "disable")
-          message.icon = (_H = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _H : "";
+          message.icon = (_J = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _J : "";
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
           "arrow-up",
           "stop",
@@ -842,7 +843,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           });
           if (index === 0) {
             message.pos1 = String(pos);
-            message.pos1text = (_I = await tools.getEntryTextOnOff(item.text1, true)) != null ? _I : "";
+            message.pos1text = (_K = await tools.getEntryTextOnOff(item.text1, true)) != null ? _K : "";
             message.pos1text = this.library.getTranslation(message.pos1text);
             message.iconL1 = optionalValueC[0];
             message.iconM1 = optionalValueC[1];
@@ -852,7 +853,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.statusR1 = pos === 100 ? "disable" : optionalValueC[5];
           } else {
             message.pos2 = String(pos);
-            message.pos2text = (_J = await tools.getEntryTextOnOff(item.text2, true)) != null ? _J : "";
+            message.pos2text = (_L = await tools.getEntryTextOnOff(item.text2, true)) != null ? _L : "";
             message.pos2text = this.library.getTranslation(message.pos2text);
             message.iconL2 = optionalValueC[0];
             message.iconM2 = optionalValueC[1];

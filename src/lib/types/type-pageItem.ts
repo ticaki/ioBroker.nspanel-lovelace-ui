@@ -42,6 +42,7 @@ export type entityUpdateDetailMessage =
           textColor: string;
           currentState: string;
           list: string;
+          headline: string;
       }
     | {
           type: 'popupThermo';
@@ -303,7 +304,16 @@ export type PageItemLightDataItems = {
 
 export type PageItemInputSel = Pick<
     PageItemBase,
-    'entityInSel' | 'text' | 'icon' | 'color' | 'headline' | 'valueList' | 'valueList2' | 'setList' | 'setValue1'
+    | 'entityInSel'
+    | 'text'
+    | 'entity2'
+    | 'icon'
+    | 'color'
+    | 'headline'
+    | 'valueList'
+    | 'valueList2'
+    | 'setList'
+    | 'setValue1'
 >;
 
 export type PageItemInputSelDataItemsOptions = {
