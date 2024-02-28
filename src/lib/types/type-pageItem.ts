@@ -303,7 +303,7 @@ export type PageItemLightDataItems = {
 
 export type PageItemInputSel = Pick<
     PageItemBase,
-    'entityInSel' | 'text' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
+    'entityInSel' | 'text' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList' | 'setValue1'
 >;
 
 export type PageItemInputSelDataItemsOptions = {

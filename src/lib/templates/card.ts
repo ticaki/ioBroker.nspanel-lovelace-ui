@@ -300,7 +300,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                             mode: 'auto',
                             role: 'value',
                             type: 'triggered',
-                            dp: '.player.playlist.trackNo$',
+                            dp: '.player.trackName$',
                         },
                     },
                     text: {
@@ -315,6 +315,12 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                         mode: 'auto',
                         role: 'value',
                         dp: '.player.playlist.trackListArray',
+                    },
+                    setValue1: {
+                        role: '',
+                        mode: 'auto',
+                        type: 'state',
+                        dp: '.player.playlist.trackNo$',
                     },
                     /**
                      * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}

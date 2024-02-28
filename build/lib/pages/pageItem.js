@@ -1299,9 +1299,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     if (!("entityInSel" in item))
       return false;
     const sList = item.entityInSel && await this.getListFromStates(item.entityInSel, item.valueList, entry.role);
-    if (sList && sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.value) {
-      await item.entityInSel.value.setStateAsync(sList.states[parseInt(value)]);
-      return true;
+    if (sList) {
+      if (entry.role === "spotify-playlist" && sList.list !== void 0 && "setValue1" in item && sList.list[parseInt(value)] !== void 0 && item.setValue1) {
+        await item.setValue1.setStateAsync(parseInt(value) + 1);
+        return true;
+      } else if (sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.value) {
+        await item.entityInSel.value.setStateAsync(sList.states[parseInt(value)]);
+        return true;
+      }
     }
     if (!item.setList)
       return false;
@@ -1409,6 +1414,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               for (const a in val) {
                 states[parseInt(a) + 1] = val[a].title;
               }
+              list.value = value != null ? value : void 0;
             }
           }
           break;
@@ -1417,14 +1423,15 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           states = await entityInSel.value.getCommonStates();
         }
       }
-      if (value !== null && states && states[value] !== void 0) {
+      if (value !== null && states) {
         list.list = [];
         list.states = [];
         for (const a in states) {
           list.list.push(this.library.getTranslation(String(states[a])));
           list.states.push(a);
         }
-        list.value = states[value];
+        if (!list.value)
+          list.value = states[value];
       }
     }
     return list;

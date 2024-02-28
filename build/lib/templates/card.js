@@ -322,7 +322,7 @@ const cardTemplates = {
               mode: "auto",
               role: "value",
               type: "triggered",
-              dp: ".player.playlist.trackNo$"
+              dp: ".player.trackName$"
             }
           },
           text: {
@@ -334,6 +334,12 @@ const cardTemplates = {
             mode: "auto",
             role: "value",
             dp: ".player.playlist.trackListArray"
+          },
+          setValue1: {
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".player.playlist.trackNo$"
           }
         }
       },
