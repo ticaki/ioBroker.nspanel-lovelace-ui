@@ -650,6 +650,10 @@ export class Panel extends BaseClass {
                 const i = this.pages.findIndex((a) => a && a.name === '///WelcomePopup');
                 const popup = i !== -1 ? this.pages[i] : undefined;
                 if (popup) await this.setActivePage(popup);
+                if (this.screenSaver) {
+                    this.screenSaver.HandleDate();
+                    this.screenSaver.HandleTime();
+                }
                 break;
             }
             case 'sleepReached': {

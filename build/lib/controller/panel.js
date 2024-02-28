@@ -627,6 +627,10 @@ class Panel extends import_library.BaseClass {
         const popup = i !== -1 ? this.pages[i] : void 0;
         if (popup)
           await this.setActivePage(popup);
+        if (this.screenSaver) {
+          this.screenSaver.HandleDate();
+          this.screenSaver.HandleTime();
+        }
         break;
       }
       case "sleepReached": {
