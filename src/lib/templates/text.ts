@@ -379,6 +379,7 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
         role: '2values',
         type: 'text',
         modeScr: 'bottom',
+        adapter: 'accuweather',
         data: {
             entity1: {
                 value: { mode: 'auto', role: '', type: 'triggered', dp: '.Summary.TempMin_' },

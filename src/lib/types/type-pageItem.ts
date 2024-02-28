@@ -188,6 +188,7 @@ export type PageItemOptionsTemplate = {
     template?: Types.TemplateIdent;
     role?: pages.DeviceRole;
     adapter: string;
+    modeScr?: string;
     //dpInit: string;
     type: Types.SerialTypePageElements;
 } & (
