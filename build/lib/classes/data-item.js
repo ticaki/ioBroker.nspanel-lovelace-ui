@@ -205,7 +205,7 @@ class Dataitem extends import_library.BaseClass {
   }
   async getNumber() {
     const result = await this.getState();
-    if (result && (typeof result.val === "number" || !isNaN(Number(result.val)))) {
+    if (result && (typeof result.val === "number" || typeof result.val === "string" && result.val && !isNaN(parseInt(result.val)))) {
       let val = parseFloat(String(result.val));
       if (this.options.scale !== void 0) {
         val = Math.trunc(Color.scale(val, this.options.scale.max, this.options.scale.min, 0, 100));
