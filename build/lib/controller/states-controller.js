@@ -228,7 +228,8 @@ class StatesControler extends import_library.BaseClass {
         removeId.push(id);
     }
     for (const id of removeId) {
-      delete this.triggerDB[id];
+      if (!this.triggerDB[id].internal)
+        delete this.triggerDB[id];
     }
   };
   async delete() {

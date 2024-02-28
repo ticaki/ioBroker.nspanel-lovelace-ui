@@ -241,7 +241,7 @@ export class StatesControler extends BaseClass {
         }
 
         for (const id of removeId) {
-            delete this.triggerDB[id];
+            if (!this.triggerDB[id].internal) delete this.triggerDB[id];
         }
     };
 
