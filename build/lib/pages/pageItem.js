@@ -120,6 +120,21 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     }
     if (this.parent && (this.parent.card === "screensaver" || this.parent.card === "screensaver2")) {
       if (!this.panel.persistentPageItems[this.id]) {
+        if (this.config.modeScr) {
+          switch (this.config.modeScr) {
+            case "left":
+            case "bottom":
+            case "indicator":
+            case "alternate":
+            case "favorit":
+            case "mricon":
+              break;
+            case "time":
+            case "date":
+              this.neverDeactivateTrigger = true;
+              break;
+          }
+        }
         this.panel.persistentPageItems[this.id] = this;
         await this.controller.statesControler.activateTrigger(this);
       }
@@ -877,7 +892,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       }
     }
     return this.getDetailPayload(message);
-    return null;
   }
   getLogname() {
     return this.parent ? this.parent.name + "." + this.id : this.id;

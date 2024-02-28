@@ -301,6 +301,8 @@ class StatesControler extends import_library.BaseClass {
   }
   async deactivateTrigger(to) {
     for (const id in this.triggerDB) {
+      if (to.neverDeactivateTrigger)
+        continue;
       const entry = this.triggerDB[id];
       if (entry.internal)
         continue;

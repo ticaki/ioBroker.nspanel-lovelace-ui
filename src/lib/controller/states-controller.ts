@@ -325,6 +325,7 @@ export class StatesControler extends BaseClass {
      */
     async deactivateTrigger(to: BaseClassTriggerd): Promise<void> {
         for (const id in this.triggerDB) {
+            if (to.neverDeactivateTrigger) continue;
             const entry = this.triggerDB[id];
             if (entry.internal) continue;
             const index = entry.to.indexOf(to);

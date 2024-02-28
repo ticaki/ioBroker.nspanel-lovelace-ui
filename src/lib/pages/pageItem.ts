@@ -128,6 +128,22 @@ export class PageItem extends BaseClassTriggerd {
         }
         if (this.parent && (this.parent.card === 'screensaver' || this.parent.card === 'screensaver2')) {
             if (!this.panel.persistentPageItems[this.id]) {
+                if (this.config.modeScr) {
+                    switch (this.config.modeScr) {
+                        case 'left':
+                        case 'bottom':
+                        case 'indicator':
+                        case 'alternate':
+                        case 'favorit':
+                        case 'mricon':
+                            break;
+                        case 'time':
+                        case 'date':
+                            this.neverDeactivateTrigger = true;
+                            break;
+                    }
+                }
+
                 this.panel.persistentPageItems[this.id] = this;
                 await this.controller.statesControler.activateTrigger(this);
             }
@@ -993,8 +1009,6 @@ export class PageItem extends BaseClassTriggerd {
         //    throw new Error(`Template ${template.type} is not ${message.type} for role: ${this.config.role}`);
         //}
         return this.getDetailPayload(message);
-
-        return null;
     }
 
     getLogname(): string {
