@@ -839,7 +839,13 @@ export class PageItem extends BaseClassTriggerd {
                     (item.headline && (await item.headline.getString())) ?? '',
                 );
                 const sList =
-                    item.entityInSel && (await this.getListFromStates(item.entityInSel, item.valueList, entry.role));
+                    item.entityInSel &&
+                    (await this.getListFromStates(
+                        item.entityInSel,
+                        item.valueList,
+                        entry.role,
+                        'valueList2' in item ? item.valueList2 : undefined,
+                    ));
                 if (sList !== undefined && sList.list !== undefined && sList.value !== undefined) {
                     message.textColor = await tools.getEntryColor(item.color, !!value, Color.White);
                     if (sList.list.length > 0) {
@@ -1450,7 +1456,14 @@ export class PageItem extends BaseClassTriggerd {
         const item = entry.data;
         if (!('entityInSel' in item)) return false;
 
-        const sList = item.entityInSel && (await this.getListFromStates(item.entityInSel, item.valueList, entry.role));
+        const sList =
+            item.entityInSel &&
+            (await this.getListFromStates(
+                item.entityInSel,
+                item.valueList,
+                entry.role,
+                'valueList2' in item ? item.valueList2 : undefined,
+            ));
         if (sList) {
             if (
                 entry.role === 'spotify-playlist' &&
@@ -1570,6 +1583,7 @@ export class PageItem extends BaseClassTriggerd {
         entityInSel: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined> | undefined,
         valueList: Dataitem | undefined,
         role: DeviceRole | undefined,
+        valueList2: Dataitem | undefined = undefined,
     ): Promise<{ value?: string | undefined; list?: string[] | undefined; states?: string[] }> {
         const list: { value?: string | undefined; list?: string[] | undefined; states?: string[] } = {};
         if (
@@ -1591,6 +1605,23 @@ export class PageItem extends BaseClassTriggerd {
                             }
                             list.value = value ?? undefined;
                         }
+                    }
+                    break;
+                }
+                case '2values': {
+                    if (!valueList || !valueList2) {
+                        this.log.error('2values without valueList or valueList2!');
+                        return {};
+                    }
+                    const val1: string[] = (await valueList.getObject()) as string[]; //key
+                    const val2: string[] = (await valueList2.getObject()) as string[]; //value
+                    if (!Array.isArray(val1) || !Array.isArray(val2)) {
+                        this.log.error('2values valueList or valueList2 is not a array!');
+                        return {};
+                    }
+                    states = {};
+                    for (const a in val1) {
+                        states[val1[a]] = val2[a];
                     }
                     break;
                 }

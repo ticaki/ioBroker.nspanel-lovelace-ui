@@ -402,9 +402,12 @@ export class StatesControler extends BaseClass {
         return undefined;
     }
 
-    async getCommonStates(id: string): Promise<Record<string, string> | undefined> {
+    async getCommonStates(id: string, force: boolean = false): Promise<Record<string, string> | undefined> {
         let j: string | string[] | Record<string, string> | undefined = undefined;
-        if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) j = this.triggerDB[id].common.states;
+        if (force) {
+            const obj = await this.adapter.getObjectAsync(id);
+            if (obj && obj.common && obj.common.states) j = obj.common.state;
+        } else if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) j = this.triggerDB[id].common.states;
         else if (this.stateDB[id] !== undefined && this.stateDB[id].common) j = this.stateDB[id].common.states;
 
         if (!j || typeof j === 'string') return undefined;

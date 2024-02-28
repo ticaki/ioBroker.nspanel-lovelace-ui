@@ -739,7 +739,12 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message.currentState = this.library.getTranslation(
           (_w = item.headline && await item.headline.getString()) != null ? _w : ""
         );
-        const sList = item.entityInSel && await this.getListFromStates(item.entityInSel, item.valueList, entry.role);
+        const sList = item.entityInSel && await this.getListFromStates(
+          item.entityInSel,
+          item.valueList,
+          entry.role,
+          "valueList2" in item ? item.valueList2 : void 0
+        );
         if (sList !== void 0 && sList.list !== void 0 && sList.value !== void 0) {
           message.textColor = await tools.getEntryColor(item.color, !!value, Color.White);
           if (sList.list.length > 0) {
@@ -1298,7 +1303,12 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     const item = entry.data;
     if (!("entityInSel" in item))
       return false;
-    const sList = item.entityInSel && await this.getListFromStates(item.entityInSel, item.valueList, entry.role);
+    const sList = item.entityInSel && await this.getListFromStates(
+      item.entityInSel,
+      item.valueList,
+      entry.role,
+      "valueList2" in item ? item.valueList2 : void 0
+    );
     if (sList) {
       if (entry.role === "spotify-playlist" && sList.list !== void 0 && "setValue1" in item && sList.list[parseInt(value)] !== void 0 && item.setValue1) {
         await item.setValue1.setStateAsync(parseInt(value) + 1);
@@ -1399,7 +1409,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     }
     return false;
   }
-  async getListFromStates(entityInSel, valueList, role) {
+  async getListFromStates(entityInSel, valueList, role, valueList2 = void 0) {
     var _a;
     const list = {};
     if (entityInSel && entityInSel.value && ["string", "number"].indexOf((_a = entityInSel.value.type) != null ? _a : "") !== -1 && (role == "spotify-playlist" || await entityInSel.value.getCommonStates())) {
@@ -1416,6 +1426,23 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               }
               list.value = value != null ? value : void 0;
             }
+          }
+          break;
+        }
+        case "2values": {
+          if (!valueList || !valueList2) {
+            this.log.error("2values without valueList or valueList2!");
+            return {};
+          }
+          const val1 = await valueList.getObject();
+          const val2 = await valueList2.getObject();
+          if (!Array.isArray(val1) || !Array.isArray(val2)) {
+            this.log.error("2values valueList or valueList2 is not a array!");
+            return {};
+          }
+          states = {};
+          for (const a in val1) {
+            states[val1[a]] = val2[a];
           }
           break;
         }

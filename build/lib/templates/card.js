@@ -344,6 +344,53 @@ const cardTemplates = {
         }
       },
       {
+        role: "2values",
+        type: "input_sel",
+        dpInit: "",
+        data: {
+          color: {
+            true: {
+              type: "const",
+              constVal: Color.HMIOn
+            },
+            false: void 0
+          },
+          icon: {
+            true: {
+              value: { type: "const", constVal: "playlist-music" },
+              color: { type: "const", constVal: Color.Green }
+            }
+          },
+          entityInSel: {
+            value: {
+              mode: "auto",
+              role: "value",
+              type: "triggered",
+              dp: ".playlists.playlistList$"
+            }
+          },
+          text: {
+            true: void 0,
+            false: void 0
+          },
+          valueList: {
+            mode: "auto",
+            role: "value",
+            type: "triggered",
+            dp: ".playlists.playlistListIds$",
+            read: 'return val ? val.split(";") : []'
+          },
+          valueList2: {
+            mode: "auto",
+            role: "value",
+            type: "triggered",
+            dp: ".playlists.playlistListString$",
+            read: 'return val ? val.split(";") : []'
+          },
+          setValue1: void 0
+        }
+      },
+      {
         role: "text.list",
         type: "input_sel",
         dpInit: "",
