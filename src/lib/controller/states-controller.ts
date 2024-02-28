@@ -211,7 +211,7 @@ export class StatesControler extends BaseClass {
     timespan: number;
 
     constructor(adapter: AdapterClassDefinition, name: string = '', timespan: number = 15000) {
-        super(adapter, name || 'StatesDBReadOnly');
+        super(adapter, name || 'StatesDB');
         this.timespan = timespan;
         this.deletePageInterval = this.adapter.setInterval(this.deletePageLoop, 60000);
         this.intervalObjectDatabase = this.adapter.setInterval(() => {
@@ -226,7 +226,10 @@ export class StatesControler extends BaseClass {
             const entry = this.triggerDB[id];
             const removeIndex = [];
             for (const i in entry.to) {
-                if (entry.to[i].unload) removeIndex.push(Number(i));
+                if (entry.to[i].unload) {
+                    this.log.info('Element is unload ' + entry.to[i].name);
+                    removeIndex.push(Number(i));
+                }
             }
             for (const i of removeIndex) {
                 for (const key in entry) {
@@ -237,11 +240,11 @@ export class StatesControler extends BaseClass {
                     }
                 }
             }
-            if (entry.to.length === 0) removeId.push(id);
+            if (entry.to.length === 0 && !entry.internal) removeId.push(id);
         }
 
         for (const id of removeId) {
-            if (!this.triggerDB[id].internal) delete this.triggerDB[id];
+            delete this.triggerDB[id];
         }
     };
 
