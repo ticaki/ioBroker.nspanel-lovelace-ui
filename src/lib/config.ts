@@ -498,7 +498,7 @@ export const pageMediaTest: pages.PageBaseConfig = {
                 role: 'media.album',
                 dp: '',
             },
-            titel: {
+            title: {
                 on: {
                     type: 'const',
                     constVal: true,
@@ -973,7 +973,7 @@ export const pageMediaTest2: pages.PageBaseConfig = {
                 role: 'media.album',
                 dp: '',
             },
-            titel: {
+            title: {
                 on: {
                     type: 'const',
                     constVal: true,

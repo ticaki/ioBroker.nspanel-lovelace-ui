@@ -137,7 +137,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     type: 'triggered',
                     dp: '.player.album$',
                 },
-                titel: {
+                title: {
                     on: {
                         type: 'const',
                         constVal: true,
@@ -300,7 +300,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                             mode: 'auto',
                             role: 'value',
                             type: 'triggered',
-                            dp: 'player.playlist.trackNo',
+                            dp: '.player.trackId$',
                         },
                     },
                     text: {

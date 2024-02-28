@@ -8,6 +8,7 @@ import { BaseClassTriggerd } from '../controller/states-controller';
 import { RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { Dataitem } from '../classes/data-item';
+import { ChangeTypeOfKeys, DeviceRole } from '../types/pages';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseClassTriggerd {
@@ -821,53 +822,25 @@ export class PageItem extends BaseClassTriggerd {
                 message.currentState = this.library.getTranslation(
                     (item.headline && (await item.headline.getString())) ?? '',
                 );
+                const sList =
+                    item.entityInSel && (await this.getListFromStates(item.entityInSel, item.valueList, entry.role));
+                if (sList !== undefined && sList.list !== undefined && sList.value !== undefined) {
+                    message.textColor = await tools.getEntryColor(item.color, !!value, Color.White);
+                    if (sList.list.length > 0) {
+                        sList.list.splice(48);
+                        message.list = Array.isArray(sList.list)
+                            ? sList.list.map((a: string) => tools.formatInSelText(a)).join('?')
+                            : '';
 
-                if (
-                    item.entityInSel &&
-                    item.entityInSel.value &&
-                    ['string', 'number'].indexOf(item.entityInSel.value.type ?? '') &&
-                    (item.entityInSel.value.getCommonStates() || entry.role == 'spotify-playlist')
-                ) {
-                    let states: Record<string | number, string> | undefined = undefined;
-                    const value = await tools.getValueEntryString(item.entityInSel);
-                    switch (entry.role) {
-                        case 'spotify-playlist': {
-                            if (item.valueList) {
-                                const val = (await item.valueList.getObject()) as typePageItem.spotifyPlaylist | null;
-                                if (val) {
-                                    states = {};
-                                    for (const a in val) {
-                                        states[a] = val[a].title;
-                                    }
-                                }
-                            }
-                            break;
+                        message.currentState = tools.formatInSelText(this.library.getTranslation(sList.value));
+                        if (mode !== 'popupThermo') break;
+                        message = { ...message, type: 'popupThermo' };
+                        if (message.type === 'popupThermo') {
+                            message.headline = this.library.getTranslation(
+                                (await tools.getEntryTextOnOff(item.headline, true)) ?? message.headline ?? '',
+                            );
                         }
-                        default: {
-                            states = item.entityInSel.value.getCommonStates();
-                        }
-                    }
-                    if (value !== null && states && states[value] !== undefined) {
-                        message.textColor = await tools.getEntryColor(item.color, !!value, Color.White);
-                        const list: string[] = [];
-                        for (const a in states) {
-                            list.push(this.library.getTranslation(String(states[a])));
-                        }
-                        if (list.length > 0) {
-                            message.list = Array.isArray(list)
-                                ? list.map((a: string) => tools.formatInSelText(a)).join('?')
-                                : '';
-
-                            message.currentState = tools.formatInSelText(this.library.getTranslation(states[value]));
-                            if (mode !== 'popupThermo') break;
-                            message = { ...message, type: 'popupThermo' };
-                            if (message.type === 'popupThermo') {
-                                message.headline = this.library.getTranslation(
-                                    (await tools.getEntryTextOnOff(item.headline, true)) ?? message.headline ?? '',
-                                );
-                            }
-                            break;
-                        }
+                        break;
                     }
                 }
 
@@ -893,7 +866,9 @@ export class PageItem extends BaseClassTriggerd {
                  */
                 if (list !== null) {
                     if (typeof list === 'string') list = list.split('?');
+                    if (Array.isArray(list)) list.splice(48);
                 } else list = [];
+
                 message.list = Array.isArray(list) ? list.map((a: string) => tools.formatInSelText(a)).join('?') : '';
                 if (message.list && message.list.length > 940) {
                     message.list = message.list.slice(0, 940);
@@ -1460,43 +1435,18 @@ export class PageItem extends BaseClassTriggerd {
         //if (entry.type !== 'input_sel') return false;
         const item = entry.data;
         if (!('entityInSel' in item)) return false;
-        if (
-            item.entityInSel &&
-            item.entityInSel.value &&
-            ['string', 'number'].indexOf(item.entityInSel.value.type ?? '') &&
-            (item.entityInSel.value.getCommonStates() || entry.role == 'spotify-playlist') &&
-            !item.setList
-        ) {
-            let states: Record<string | number, string> | undefined = undefined;
-            switch (entry.role) {
-                case 'spotify-playlist': {
-                    if (item.valueList) {
-                        const val = (await item.valueList.getObject()) as typePageItem.spotifyPlaylist | null;
-                        if (val) {
-                            states = {};
-                            for (const a in val) {
-                                states[a] = val[a].id;
-                            }
-                        }
-                    }
-                    break;
-                }
-                default: {
-                    states = item.entityInSel.value.getCommonStates();
-                }
-            }
-            if (value !== null && states !== undefined) {
-                const list: string[] = [];
-                for (const a in states) {
-                    list.push(String(a));
-                }
-                if (list[parseInt(value)] !== undefined) {
-                    await item.entityInSel.value.setStateAsync(list[parseInt(value)]);
-                    return true;
-                }
-            }
-        }
 
+        const sList = item.entityInSel && (await this.getListFromStates(item.entityInSel, item.valueList, entry.role));
+        if (
+            sList &&
+            sList.states !== undefined &&
+            sList.states[parseInt(value)] !== undefined &&
+            item.entityInSel &&
+            item.entityInSel.value
+        ) {
+            await item.entityInSel.value.setStateAsync(sList.states[parseInt(value)]);
+            return true;
+        }
         if (!item.setList) return false;
         const list = await this.getListCommands(item.setList);
         const v = value as keyof typeof list;
@@ -1590,5 +1540,48 @@ export class PageItem extends BaseClassTriggerd {
             }
         }
         return false;
+    }
+    async getListFromStates(
+        entityInSel: ChangeTypeOfKeys<typePageItem.ValueEntryType, Dataitem | undefined> | undefined,
+        valueList: Dataitem | undefined,
+        role: DeviceRole | undefined,
+    ): Promise<{ value?: string | undefined; list?: string[] | undefined; states?: string[] }> {
+        const list: { value?: string | undefined; list?: string[] | undefined; states?: string[] } = {};
+        if (
+            entityInSel &&
+            entityInSel.value &&
+            ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
+            (entityInSel.value.getCommonStates() || role == 'spotify-playlist')
+        ) {
+            let states: Record<string | number, string> | undefined = undefined;
+            const value = await tools.getValueEntryString(entityInSel);
+            switch (role) {
+                case 'spotify-playlist': {
+                    if (valueList) {
+                        const val = (await valueList.getObject()) as typePageItem.spotifyPlaylist | null;
+                        if (val) {
+                            states = {};
+                            for (const a in val) {
+                                states[val[a].id] = val[a].title;
+                            }
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    states = entityInSel.value.getCommonStates();
+                }
+            }
+            if (value !== null && states && states[value] !== undefined) {
+                list.list = [];
+                list.states = [];
+                for (const a in states) {
+                    list.list.push(this.library.getTranslation(String(states[a])));
+                    list.states.push(a);
+                }
+                list.value = states[value];
+            }
+        }
+        return list;
     }
 }

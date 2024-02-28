@@ -160,7 +160,7 @@ const cardTemplates = {
           type: "triggered",
           dp: ".player.album$"
         },
-        titel: {
+        title: {
           on: {
             type: "const",
             constVal: true
@@ -322,7 +322,7 @@ const cardTemplates = {
               mode: "auto",
               role: "value",
               type: "triggered",
-              dp: "player.playlist.trackNo"
+              dp: ".player.trackId$"
             }
           },
           text: {

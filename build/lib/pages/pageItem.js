@@ -569,7 +569,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     return "";
   }
   async GeneratePopup(mode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J;
     if (!this.config || !this.dataItems)
       return null;
     const entry = this.dataItems;
@@ -724,48 +724,25 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message.currentState = this.library.getTranslation(
           (_w = item.headline && await item.headline.getString()) != null ? _w : ""
         );
-        if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_x = item.entityInSel.value.type) != null ? _x : "") && (item.entityInSel.value.getCommonStates() || entry.role == "spotify-playlist")) {
-          let states = void 0;
-          const value2 = await tools.getValueEntryString(item.entityInSel);
-          switch (entry.role) {
-            case "spotify-playlist": {
-              if (item.valueList) {
-                const val = await item.valueList.getObject();
-                if (val) {
-                  states = {};
-                  for (const a in val) {
-                    states[a] = val[a].title;
-                  }
-                }
-              }
+        const sList = item.entityInSel && await this.getListFromStates(item.entityInSel, item.valueList, entry.role);
+        if (sList !== void 0 && sList.list !== void 0 && sList.value !== void 0) {
+          message.textColor = await tools.getEntryColor(item.color, !!value, Color.White);
+          if (sList.list.length > 0) {
+            sList.list.splice(48);
+            message.list = Array.isArray(sList.list) ? sList.list.map((a) => tools.formatInSelText(a)).join("?") : "";
+            message.currentState = tools.formatInSelText(this.library.getTranslation(sList.value));
+            if (mode !== "popupThermo")
               break;
+            message = { ...message, type: "popupThermo" };
+            if (message.type === "popupThermo") {
+              message.headline = this.library.getTranslation(
+                (_y = (_x = await tools.getEntryTextOnOff(item.headline, true)) != null ? _x : message.headline) != null ? _y : ""
+              );
             }
-            default: {
-              states = item.entityInSel.value.getCommonStates();
-            }
-          }
-          if (value2 !== null && states && states[value2] !== void 0) {
-            message.textColor = await tools.getEntryColor(item.color, !!value2, Color.White);
-            const list2 = [];
-            for (const a in states) {
-              list2.push(this.library.getTranslation(String(states[a])));
-            }
-            if (list2.length > 0) {
-              message.list = Array.isArray(list2) ? list2.map((a) => tools.formatInSelText(a)).join("?") : "";
-              message.currentState = tools.formatInSelText(this.library.getTranslation(states[value2]));
-              if (mode !== "popupThermo")
-                break;
-              message = { ...message, type: "popupThermo" };
-              if (message.type === "popupThermo") {
-                message.headline = this.library.getTranslation(
-                  (_z = (_y = await tools.getEntryTextOnOff(item.headline, true)) != null ? _y : message.headline) != null ? _z : ""
-                );
-              }
-              break;
-            }
+            break;
           }
         }
-        let list = (_B = (_A = item.valueList && await item.valueList.getObject()) != null ? _A : item.valueList && await item.valueList.getString()) != null ? _B : [
+        let list = (_A = (_z = item.valueList && await item.valueList.getObject()) != null ? _z : item.valueList && await item.valueList.getString()) != null ? _A : [
           "1",
           "2",
           "3",
@@ -783,6 +760,8 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         if (list !== null) {
           if (typeof list === "string")
             list = list.split("?");
+          if (Array.isArray(list))
+            list.splice(48);
         } else
           list = [];
         message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
@@ -795,7 +774,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message = { ...message, type: "popupThermo" };
         if (message.type === "popupThermo") {
           message.headline = this.library.getTranslation(
-            (_D = (_C = await tools.getEntryTextOnOff(item.headline, true)) != null ? _C : message.headline) != null ? _D : ""
+            (_C = (_B = await tools.getEntryTextOnOff(item.headline, true)) != null ? _B : message.headline) != null ? _C : ""
           );
         }
         break;
@@ -809,14 +788,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message.type = "popupShutter";
         if (!(message.type === "popupShutter"))
           break;
-        message.text2 = (_E = item.text && item.text.true && await item.text.true.getString()) != null ? _E : "";
+        message.text2 = (_D = item.text && item.text.true && await item.text.true.getString()) != null ? _D : "";
         message.text2 = this.library.getTranslation(message.text2);
-        const pos1 = (_F = await tools.getValueEntryNumber(item.entity1)) != null ? _F : "disable";
-        const pos2 = (_G = await tools.getValueEntryNumber(item.entity2)) != null ? _G : "disable";
+        const pos1 = (_E = await tools.getValueEntryNumber(item.entity1)) != null ? _E : "disable";
+        const pos2 = (_F = await tools.getValueEntryNumber(item.entity2)) != null ? _F : "disable";
         if (pos1 !== "disable")
-          message.icon = (_H = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _H : "";
+          message.icon = (_G = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _G : "";
         else if (pos2 !== "disable")
-          message.icon = (_I = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _I : "";
+          message.icon = (_H = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _H : "";
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
           "arrow-up",
           "stop",
@@ -843,7 +822,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           });
           if (index === 0) {
             message.pos1 = String(pos);
-            message.pos1text = (_J = await tools.getEntryTextOnOff(item.text1, true)) != null ? _J : "";
+            message.pos1text = (_I = await tools.getEntryTextOnOff(item.text1, true)) != null ? _I : "";
             message.pos1text = this.library.getTranslation(message.pos1text);
             message.iconL1 = optionalValueC[0];
             message.iconM1 = optionalValueC[1];
@@ -853,7 +832,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.statusR1 = pos === 100 ? "disable" : optionalValueC[5];
           } else {
             message.pos2 = String(pos);
-            message.pos2text = (_K = await tools.getEntryTextOnOff(item.text2, true)) != null ? _K : "";
+            message.pos2text = (_J = await tools.getEntryTextOnOff(item.text2, true)) != null ? _J : "";
             message.pos2text = this.library.getTranslation(message.pos2text);
             message.iconL2 = optionalValueC[0];
             message.iconM2 = optionalValueC[1];
@@ -1302,39 +1281,13 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     return list;
   }
   async setListCommand(entry, value) {
-    var _a;
     const item = entry.data;
     if (!("entityInSel" in item))
       return false;
-    if (item.entityInSel && item.entityInSel.value && ["string", "number"].indexOf((_a = item.entityInSel.value.type) != null ? _a : "") && (item.entityInSel.value.getCommonStates() || entry.role == "spotify-playlist") && !item.setList) {
-      let states = void 0;
-      switch (entry.role) {
-        case "spotify-playlist": {
-          if (item.valueList) {
-            const val = await item.valueList.getObject();
-            if (val) {
-              states = {};
-              for (const a in val) {
-                states[a] = val[a].id;
-              }
-            }
-          }
-          break;
-        }
-        default: {
-          states = item.entityInSel.value.getCommonStates();
-        }
-      }
-      if (value !== null && states !== void 0) {
-        const list2 = [];
-        for (const a in states) {
-          list2.push(String(a));
-        }
-        if (list2[parseInt(value)] !== void 0) {
-          await item.entityInSel.value.setStateAsync(list2[parseInt(value)]);
-          return true;
-        }
-      }
+    const sList = item.entityInSel && await this.getListFromStates(item.entityInSel, item.valueList, entry.role);
+    if (sList && sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.value) {
+      await item.entityInSel.value.setStateAsync(sList.states[parseInt(value)]);
+      return true;
     }
     if (!item.setList)
       return false;
@@ -1426,6 +1379,41 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       }
     }
     return false;
+  }
+  async getListFromStates(entityInSel, valueList, role) {
+    var _a;
+    const list = {};
+    if (entityInSel && entityInSel.value && ["string", "number"].indexOf((_a = entityInSel.value.type) != null ? _a : "") !== -1 && (entityInSel.value.getCommonStates() || role == "spotify-playlist")) {
+      let states = void 0;
+      const value = await tools.getValueEntryString(entityInSel);
+      switch (role) {
+        case "spotify-playlist": {
+          if (valueList) {
+            const val = await valueList.getObject();
+            if (val) {
+              states = {};
+              for (const a in val) {
+                states[val[a].id] = val[a].title;
+              }
+            }
+          }
+          break;
+        }
+        default: {
+          states = entityInSel.value.getCommonStates();
+        }
+      }
+      if (value !== null && states && states[value] !== void 0) {
+        list.list = [];
+        list.states = [];
+        for (const a in states) {
+          list.list.push(this.library.getTranslation(String(states[a])));
+          list.states.push(a);
+        }
+        list.value = states[value];
+      }
+    }
+    return list;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

@@ -94,8 +94,8 @@ export class PageMedia extends Page {
                 elapsed = '0:00',
                 title = 'unknown';
 
-            if (item.data.titel && item.data.titel.text) {
-                const v = await item.data.titel.text.getString();
+            if (item.data.title && item.data.title.text) {
+                const v = await item.data.title.text.getString();
                 if (v !== null) {
                     title = v;
                 }
@@ -203,8 +203,8 @@ export class PageMedia extends Page {
             }
         }
 
-        if (item.data.titel && item.data.titel.color) {
-            const v = await getValueFromBoolean(item.data.titel.color, 'color');
+        if (item.data.title && item.data.title.color) {
+            const v = await getValueFromBoolean(item.data.title.color, 'color');
             if (v !== null) message.titelColor = v;
         }
 

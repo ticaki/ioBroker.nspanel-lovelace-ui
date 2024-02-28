@@ -521,7 +521,8 @@ export const setHuefromRGB = async (item: PageItemLightDataItems['data'], c: RGB
 export function formatInSelText(Text: string[] | string): string {
     if (Text === undefined || Text === null) return `error`;
     let splitText = Text;
-    if (typeof splitText === 'string') splitText = splitText.replaceAll('__', '_').replaceAll('_', ' ').split(' ');
+    if (typeof splitText === 'string')
+        splitText = splitText.replaceAll('?', ' ').replaceAll('__', '_').replaceAll('_', ' ').split(' ');
 
     let lengthLineOne = 0;
     const arrayLineOne: string[] = [];

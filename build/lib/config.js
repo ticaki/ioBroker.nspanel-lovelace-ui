@@ -502,7 +502,7 @@ const pageMediaTest = {
         role: "media.album",
         dp: ""
       },
-      titel: {
+      title: {
         on: {
           type: "const",
           constVal: true
@@ -952,7 +952,7 @@ const pageMediaTest2 = {
         role: "media.album",
         dp: ""
       },
-      titel: {
+      title: {
         on: {
           type: "const",
           constVal: true

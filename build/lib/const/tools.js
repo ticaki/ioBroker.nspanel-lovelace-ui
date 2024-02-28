@@ -535,7 +535,7 @@ function formatInSelText(Text) {
     return `error`;
   let splitText = Text;
   if (typeof splitText === "string")
-    splitText = splitText.replaceAll("__", "_").replaceAll("_", " ").split(" ");
+    splitText = splitText.replaceAll("?", " ").replaceAll("__", "_").replaceAll("_", " ").split(" ");
   let lengthLineOne = 0;
   const arrayLineOne = [];
   for (let i = 0; i < splitText.length; i++) {

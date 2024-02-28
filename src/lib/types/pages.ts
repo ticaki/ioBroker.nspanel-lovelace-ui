@@ -483,7 +483,7 @@ type PageMediaBaseConfig = {
     headline: string;
     alwaysOnDisplay: boolean;
     album: string;
-    titel: listItem;
+    title: listItem;
     duration: string;
     elapsed: string;
     artist: listItem;
