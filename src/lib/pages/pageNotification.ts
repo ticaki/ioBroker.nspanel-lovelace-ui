@@ -81,8 +81,11 @@ export class PageNotify extends Page {
             message.brColor = await getIconEntryColor(data.colorButtonRight, value, White);
 
             message.text = (data.text && (await data.text.getString())) ?? '';
-            message.textColor = await getIconEntryColor(data.colorText, value, White);
             if (message.text) message.text = this.library.getTranslation(message.text);
+            if (message.text) message.text = message.text.replaceAll('\n', '\r\n').replaceAll('/r/n', '\r\n');
+
+            message.textColor = await getIconEntryColor(data.colorText, value, White);
+
             const placeholder = (data.optionalValue && (await data.optionalValue.getObject())) ?? null;
             if (placeholder && pages.isPlaceholderType(placeholder)) {
                 for (const key in placeholder) {

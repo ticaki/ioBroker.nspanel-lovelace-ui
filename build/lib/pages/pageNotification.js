@@ -91,9 +91,11 @@ class PageNotify extends import_Page.Page {
       message.brText = (_d = data.buttonRight && await data.buttonRight.getString()) != null ? _d : "";
       message.brColor = await (0, import_tools.getIconEntryColor)(data.colorButtonRight, value, import_Color.White);
       message.text = (_e = data.text && await data.text.getString()) != null ? _e : "";
-      message.textColor = await (0, import_tools.getIconEntryColor)(data.colorText, value, import_Color.White);
       if (message.text)
         message.text = this.library.getTranslation(message.text);
+      if (message.text)
+        message.text = message.text.replaceAll("\n", "\r\n").replaceAll("/r/n", "\r\n");
+      message.textColor = await (0, import_tools.getIconEntryColor)(data.colorText, value, import_Color.White);
       const placeholder = (_f = data.optionalValue && await data.optionalValue.getObject()) != null ? _f : null;
       if (placeholder && pages.isPlaceholderType(placeholder)) {
         for (const key in placeholder) {
