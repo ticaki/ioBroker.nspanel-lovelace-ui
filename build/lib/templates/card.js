@@ -322,7 +322,7 @@ const cardTemplates = {
               mode: "auto",
               role: "value",
               type: "triggered",
-              dp: ".player.trackId$"
+              dp: ".player.playlist.trackNo$"
             }
           },
           text: {

@@ -1407,7 +1407,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             if (val) {
               states = {};
               for (const a in val) {
-                states[val[a].id] = val[a].title;
+                states[parseInt(a) + 1] = val[a].title;
               }
             }
           }

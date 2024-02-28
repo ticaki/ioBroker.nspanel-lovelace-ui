@@ -1576,7 +1576,7 @@ export class PageItem extends BaseClassTriggerd {
                         if (val) {
                             states = {};
                             for (const a in val) {
-                                states[val[a].id] = val[a].title;
+                                states[parseInt(a) + 1] = val[a].title;
                             }
                         }
                     }
