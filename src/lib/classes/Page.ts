@@ -55,7 +55,11 @@ export class Page extends BaseClassPage {
                 // search states for mode auto
                 const dpInit = (this.dpInit ? this.dpInit : options.dpInit) ?? '';
                 options.data = dpInit
-                    ? await this.panel.statesControler.getDataItemsFromAuto(dpInit, options.data)
+                    ? await this.panel.statesControler.getDataItemsFromAuto(
+                          dpInit,
+                          options.data,
+                          'appendix' in options ? options.appendix : undefined,
+                      )
                     : options.data;
 
                 this.pageItemConfig[a] = options;
@@ -96,6 +100,9 @@ export class Page extends BaseClassPage {
             }
             options.type = template.type;
             options.role = template.role;
+            if (options.appendix) {
+                this.log.debug('c');
+            }
             options = deepAssign(newTemplate, options);
             if (template.template !== undefined) {
                 if (loop > 10) {

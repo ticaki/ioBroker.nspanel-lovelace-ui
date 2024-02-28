@@ -375,4 +375,212 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
             },
         },
     },
+    'text.accuweather.bot2values': {
+        role: '2values',
+        type: 'text',
+        modeScr: 'bottom',
+        data: {
+            entity1: {
+                value: { mode: 'auto', role: '', type: 'triggered', dp: '.Summary.TempMin_' },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                factor: undefined,
+                unit: {
+                    type: 'const',
+                    constVal: '° ',
+                },
+            },
+            entity2: {
+                value: { mode: 'auto', role: '', type: 'triggered', dp: '.Summary.TempMax_' },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                factor: undefined,
+                unit: {
+                    type: 'const',
+                    constVal: '°',
+                },
+            },
+            icon: {
+                true: {
+                    value: {
+                        mode: 'auto',
+                        role: '',
+                        type: 'triggered',
+                        dp: '.Summary.WeatherIcon_',
+                        read: `{
+                                switch (val) {
+                                    case 30: // Hot
+                                        return 'weather-sunny-alert'; // exceptional
+
+                                    case 24: // Ice
+                                    case 31: // Cold
+                                        return 'snowflake-alert'; // exceptional
+
+                                    case 7: // Cloudy
+                                    case 8: // Dreary (Overcast)
+                                    case 38: // Mostly Cloudy
+                                        return 'weather-cloudy'; // cloudy
+
+                                    case 11: // fog
+                                        return 'weather-fog'; // fog
+
+                                    case 25: // Sleet
+                                        return 'weather-hail'; // Hail
+
+                                    case 15: // T-Storms
+                                        return 'weather-lightning'; // lightning
+
+                                    case 16: // Mostly Cloudy w/ T-Storms
+                                    case 17: // Partly Sunny w/ T-Storms
+                                    case 41: // Partly Cloudy w/ T-Storms
+                                    case 42: // Mostly Cloudy w/ T-Storms
+                                        return 'weather-lightning-rainy'; // lightning-rainy
+
+                                    case 33: // Clear
+                                    case 34: // Mostly Clear
+                                    case 37: // Hazy Moonlight
+                                        return 'weather-night';
+
+                                    case 3: // Partly Sunny
+                                    case 4: // Intermittent Clouds
+                                    case 6: // Mostly Cloudy
+                                    case 35: // Partly Cloudy
+                                    case 36: // Intermittent Clouds
+                                        return 'weather-partly-cloudy'; // partlycloudy
+
+                                    case 18: // pouring
+                                        return 'weather-pouring'; // pouring
+
+                                    case 12: // Showers
+                                    case 13: // Mostly Cloudy w/ Showers
+                                    case 14: // Partly Sunny w/ Showers
+                                    case 26: // Freezing Rain
+                                    case 39: // Partly Cloudy w/ Showers
+                                    case 40: // Mostly Cloudy w/ Showers
+                                        return 'weather-rainy'; // rainy
+
+                                    case 19: // Flurries
+                                    case 20: // Mostly Cloudy w/ Flurries
+                                    case 21: // Partly Sunny w/ Flurries
+                                    case 22: // Snow
+                                    case 23: // Mostly Cloudy w/ Snow
+                                    case 43: // Mostly Cloudy w/ Flurries
+                                    case 44: // Mostly Cloudy w/ Snow
+                                        return 'weather-snowy'; // snowy
+
+                                    case 29: // Rain and Snow
+                                        return 'weather-snowy-rainy'; // snowy-rainy
+
+                                    case 1: // Sunny
+                                    case 2: // Mostly Sunny
+                                    case 5: // Hazy Sunshine
+                                        return 'weather-sunny'; // sunny
+
+                                    case 32: // windy
+                                        return 'weather-windy'; // windy
+
+                                    default:
+                                        return 'alert-circle-outline';
+                                }
+                            }`,
+                    },
+                    color: {
+                        mode: 'auto',
+                        role: '',
+                        type: 'triggered',
+                        dp: '.Summary.WeatherIcon_',
+                        read: `{
+                                switch (val) {
+                                    case 24: // Ice
+                                    case 30: // Hot
+                                    case 31: // Cold
+                                        return Color.swExceptional; // exceptional
+
+                                    case 7: // Cloudy
+                                    case 8: // Dreary (Overcast)
+                                    case 38: // Mostly Cloudy
+                                        return Color.swCloudy; // cloudy
+
+                                    case 11: // fog
+                                        return Color.swFog; // fog
+
+                                    case 25: // Sleet
+                                        return Color.swHail; // Hail
+
+                                    case 15: // T-Storms
+                                        return Color.swLightning; // lightning
+
+                                    case 16: // Mostly Cloudy w/ T-Storms
+                                    case 17: // Partly Sunny w/ T-Storms
+                                    case 41: // Partly Cloudy w/ T-Storms
+                                    case 42: // Mostly Cloudy w/ T-Storms
+                                        return Color.swLightningRainy; // lightning-rainy
+
+                                    case 33: // Clear
+                                    case 34: // Mostly Clear
+                                    case 37: // Hazy Moonlight
+                                        return Color.swClearNight;
+
+                                    case 3: // Partly Sunny
+                                    case 4: // Intermittent Clouds
+                                    case 6: // Mostly Cloudy
+                                    case 35: // Partly Cloudy
+                                    case 36: // Intermittent Clouds
+                                        return Color.swPartlycloudy; // partlycloudy
+
+                                    case 18: // pouring
+                                        return Color.swPouring; // pouring
+
+                                    case 12: // Showers
+                                    case 13: // Mostly Cloudy w/ Showers
+                                    case 14: // Partly Sunny w/ Showers
+                                    case 26: // Freezing Rain
+                                    case 39: // Partly Cloudy w/ Showers
+                                    case 40: // Mostly Cloudy w/ Showers
+                                        return Color.swRainy; // rainy
+
+                                    case 19: // Flurries
+                                    case 20: // Mostly Cloudy w/ Flurries
+                                    case 21: // Partly Sunny w/ Flurries
+                                    case 22: // Snow
+                                    case 23: // Mostly Cloudy w/ Snow
+                                    case 43: // Mostly Cloudy w/ Flurries
+                                    case 44: // Mostly Cloudy w/ Snow
+                                        return Color.swSnowy; // snowy
+
+                                    case 29: // Rain and Snow
+                                        return Color.swSnowyRainy; // snowy-rainy
+
+                                    case 1: // Sunny
+                                    case 2: // Mostly Sunny
+                                    case 5: // Hazy Sunshine
+                                        return Color.swSunny; // sunny
+
+                                    case 32: // windy
+                                        return Color.swWindy; // windy
+
+                                    default:
+                                        return Color.White;
+                                }
+                            }`,
+                    },
+                },
+                false: {
+                    value: undefined,
+                    color: undefined,
+                },
+                scale: undefined,
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: {
+                true: { mode: 'auto', role: '', type: 'triggered', dp: '.Summary.DayOfWeek_' },
+                false: undefined,
+            },
+        },
+    },
 };

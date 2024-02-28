@@ -569,14 +569,14 @@ export class StatesControler extends BaseClass {
         return StatesControler.TempObjectDB;
     }
 
-    async getDataItemsFromAuto(dpInit: string, data: any): Promise<any> {
+    async getDataItemsFromAuto(dpInit: string, data: any, appendix?: string): Promise<any> {
         if (dpInit === '') return data;
         const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
         for (const i in data) {
             const t = data[i];
             if (t === undefined) continue;
             if (typeof t === 'object' && !('type' in t)) {
-                data[i] = await this.getDataItemsFromAuto(dpInit, t);
+                data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix);
             } else if (typeof t === 'object' && 'type' in t) {
                 const d = t as DataItemsOptions;
                 let found = false;
@@ -605,12 +605,16 @@ export class StatesControler extends BaseClass {
                     for (const id in tempObjectDB.data) {
                         if (!id.startsWith(dpInit)) continue;
                         const obj: ioBroker.Object = tempObjectDB.data[id];
+                        if (appendix && (appendix === '' || id.endsWith(appendix))) {
+                            this.log.debug('c');
+                        }
                         if (
                             obj &&
                             obj.common &&
                             obj.type === 'state' &&
                             (d.dp === '' || (endsWith ? id.endsWith(endsWith) : id.includes(d.dp))) &&
-                            (role === '' || obj.common.role === role)
+                            (role === '' || obj.common.role === role) &&
+                            (!appendix || appendix === '' || id.endsWith(appendix))
                         ) {
                             if (found) {
                                 this.log.warn(`Found more as 1 state for role ${role} in ${dpInit} with ${d.dp}`);

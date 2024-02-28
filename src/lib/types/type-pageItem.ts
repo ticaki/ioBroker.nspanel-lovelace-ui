@@ -168,6 +168,7 @@ export type PageItemDataItemsOptions =
     | ({
           template: Types.TemplateIdent;
           dpInit: string;
+          appendix?: string;
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &
               pages.ChangeDeepPartial<

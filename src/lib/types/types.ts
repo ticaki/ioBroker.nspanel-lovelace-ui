@@ -20,7 +20,7 @@ export type TemplateIdent =
     | 'shutter.basic'
     | 'shutter.basic.onlyV'
     | 'text.battery.bydhvs'
-    | ''
+    | 'text.accuweather.bot2values'
     | ''
     | ''
     | ''

@@ -52,7 +52,11 @@ class Page extends import_states_controller.BaseClassPage {
         if (!options)
           continue;
         const dpInit = (_a = this.dpInit ? this.dpInit : options.dpInit) != null ? _a : "";
-        options.data = dpInit ? await this.panel.statesControler.getDataItemsFromAuto(dpInit, options.data) : options.data;
+        options.data = dpInit ? await this.panel.statesControler.getDataItemsFromAuto(
+          dpInit,
+          options.data,
+          "appendix" in options ? options.appendix : void 0
+        ) : options.data;
         this.pageItemConfig[a] = options;
       }
     }
@@ -79,6 +83,9 @@ class Page extends import_states_controller.BaseClassPage {
       }
       options.type = template.type;
       options.role = template.role;
+      if (options.appendix) {
+        this.log.debug("c");
+      }
       options = (0, import_tools.deepAssign)(newTemplate, options);
       if (template.template !== void 0) {
         if (loop > 10) {

@@ -524,7 +524,7 @@ class StatesControler extends import_library.BaseClass {
     }, 6e4);
     return StatesControler.TempObjectDB;
   }
-  async getDataItemsFromAuto(dpInit, data) {
+  async getDataItemsFromAuto(dpInit, data, appendix) {
     if (dpInit === "")
       return data;
     const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
@@ -533,7 +533,7 @@ class StatesControler extends import_library.BaseClass {
       if (t === void 0)
         continue;
       if (typeof t === "object" && !("type" in t)) {
-        data[i] = await this.getDataItemsFromAuto(dpInit, t);
+        data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix);
       } else if (typeof t === "object" && "type" in t) {
         const d = t;
         let found = false;
@@ -560,7 +560,10 @@ class StatesControler extends import_library.BaseClass {
             if (!id.startsWith(dpInit))
               continue;
             const obj = tempObjectDB.data[id];
-            if (obj && obj.common && obj.type === "state" && (d.dp === "" || (endsWith ? id.endsWith(endsWith) : id.includes(d.dp))) && (role === "" || obj.common.role === role)) {
+            if (appendix && (appendix === "" || id.endsWith(appendix))) {
+              this.log.debug("c");
+            }
+            if (obj && obj.common && obj.type === "state" && (d.dp === "" || (endsWith ? id.endsWith(endsWith) : id.includes(d.dp))) && (role === "" || obj.common.role === role) && (!appendix || appendix === "" || id.endsWith(appendix))) {
               if (found) {
                 this.log.warn(`Found more as 1 state for role ${role} in ${dpInit} with ${d.dp}`);
                 break;
