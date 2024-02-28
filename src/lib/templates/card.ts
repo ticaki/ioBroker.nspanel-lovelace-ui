@@ -605,11 +605,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                         },
                     },
                     entity1: {
-                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.0.DepartureDelayed$' },
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '.0.DepartureDelayed$' },
                     },
                     entity2: {
                         value: {
-                            role: '',
+                            role: 'date',
                             mode: 'auto',
                             type: 'state',
                             dp: '.0.Departure$',
@@ -653,11 +653,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                         },
                     },
                     entity1: {
-                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.1.DepartureDelayed$' },
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '.1.DepartureDelayed$' },
                     },
                     entity2: {
                         value: {
-                            role: '',
+                            role: 'date',
                             mode: 'auto',
                             type: 'state',
                             dp: '.1.Departure$',
@@ -701,11 +701,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                         },
                     },
                     entity1: {
-                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.2.DepartureDelayed$' },
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '.2.DepartureDelayed$' },
                     },
                     entity2: {
                         value: {
-                            role: '',
+                            role: 'date',
                             mode: 'auto',
                             type: 'state',
                             dp: '.2.Departure$',
@@ -749,11 +749,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                         },
                     },
                     entity1: {
-                        value: { role: 'value', mode: 'auto', type: 'state', dp: '.3.DepartureDelayed$' },
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '.3.DepartureDelayed$' },
                     },
                     entity2: {
                         value: {
-                            role: '',
+                            role: 'date',
                             mode: 'auto',
                             type: 'state',
                             dp: '.3.Departure$',
