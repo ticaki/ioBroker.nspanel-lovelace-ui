@@ -327,9 +327,7 @@ class StatesControler extends import_library.BaseClass {
   }
   async getState(id, response = "medium", internal = false) {
     let timespan = this.timespan;
-    if (response === "slow")
-      timespan = 1e4;
-    else if (response === "now")
+    if (response === "now")
       timespan = 10;
     else
       timespan = 1e3;
@@ -376,11 +374,11 @@ class StatesControler extends import_library.BaseClass {
       return this.stateDB[id].common.type;
     return void 0;
   }
-  getCommonStates(id) {
+  async getCommonStates(id) {
     let j = void 0;
     if (this.triggerDB[id] !== void 0 && this.triggerDB[id].common)
       j = this.triggerDB[id].common.states;
-    else if (this.stateDB[id] !== void 0)
+    else if (this.stateDB[id] !== void 0 && this.stateDB[id].common)
       j = this.stateDB[id].common.states;
     if (!j || typeof j === "string")
       return void 0;

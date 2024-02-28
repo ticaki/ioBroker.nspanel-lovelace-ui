@@ -112,7 +112,7 @@ class Dataitem extends import_library.BaseClass {
     var _a;
     return "dp" in this.options ? (_a = this.stateDB.getType(this.options.dp)) != null ? _a : this.type : this.type;
   }
-  getCommonStates() {
+  async getCommonStates() {
     return "dp" in this.options ? this.stateDB.getCommonStates(this.options.dp) : void 0;
   }
   async getState() {

@@ -1397,7 +1397,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   async getListFromStates(entityInSel, valueList, role) {
     var _a;
     const list = {};
-    if (entityInSel && entityInSel.value && ["string", "number"].indexOf((_a = entityInSel.value.type) != null ? _a : "") !== -1 && (entityInSel.value.getCommonStates() || role == "spotify-playlist")) {
+    if (entityInSel && entityInSel.value && ["string", "number"].indexOf((_a = entityInSel.value.type) != null ? _a : "") !== -1 && (role == "spotify-playlist" || await entityInSel.value.getCommonStates())) {
       let states = void 0;
       const value = await tools.getValueEntryString(entityInSel);
       switch (role) {
@@ -1414,7 +1414,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           break;
         }
         default: {
-          states = entityInSel.value.getCommonStates();
+          states = await entityInSel.value.getCommonStates();
         }
       }
       if (value !== null && states && states[value] !== void 0) {

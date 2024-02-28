@@ -728,6 +728,7 @@ class Panel extends import_library.BaseClass {
             this.statesControler.setInternalState(`${this.name}/cmd/screensaverTimeout`, val, true);
             this.library.writedp(`panels.${this.name}.cmd.screensaverTimeout`, this.timeout);
           }
+          break;
         }
         case "dimStandby": {
           const val = parseInt(String(state.val));

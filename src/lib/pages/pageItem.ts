@@ -1565,7 +1565,7 @@ export class PageItem extends BaseClassTriggerd {
             entityInSel &&
             entityInSel.value &&
             ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
-            (entityInSel.value.getCommonStates() || role == 'spotify-playlist')
+            (role == 'spotify-playlist' || (await entityInSel.value.getCommonStates()))
         ) {
             let states: Record<string | number, string> | undefined = undefined;
             const value = await tools.getValueEntryString(entityInSel);
@@ -1583,7 +1583,7 @@ export class PageItem extends BaseClassTriggerd {
                     break;
                 }
                 default: {
-                    states = entityInSel.value.getCommonStates();
+                    states = await entityInSel.value.getCommonStates();
                 }
             }
             if (value !== null && states && states[value] !== undefined) {

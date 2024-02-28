@@ -352,12 +352,11 @@ export class StatesControler extends BaseClass {
      */
     async getState(
         id: string,
-        response: 'now' | 'medium' | 'slow' = 'medium',
+        response: 'now' | 'medium' = 'medium',
         internal: boolean = false,
     ): Promise<ioBroker.State | null | undefined> {
         let timespan = this.timespan;
-        if (response === 'slow') timespan = 10000;
-        else if (response === 'now') timespan = 10;
+        if (response === 'now') timespan = 10;
         else timespan = 1000;
         if (
             this.triggerDB[id] !== undefined &&
@@ -403,10 +402,11 @@ export class StatesControler extends BaseClass {
         return undefined;
     }
 
-    getCommonStates(id: string): Record<string, string> | undefined {
+    async getCommonStates(id: string): Promise<Record<string, string> | undefined> {
         let j: string | string[] | Record<string, string> | undefined = undefined;
-        if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) j = this.triggerDB[id].common!.states;
-        else if (this.stateDB[id] !== undefined) j = this.stateDB[id].common.states;
+        if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) j = this.triggerDB[id].common.states;
+        else if (this.stateDB[id] !== undefined && this.stateDB[id].common) j = this.stateDB[id].common.states;
+
         if (!j || typeof j === 'string') return undefined;
         if (Array.isArray(j)) {
             const a: Record<string, string> = {};
@@ -467,7 +467,6 @@ export class StatesControler extends BaseClass {
                 else if (item.trueType() === 'number' && typeof val === 'boolean') val = val ? 1 : 0;
                 else if (item.trueType() === 'boolean') val = !!val;
                 if (item.trueType() === 'string') val = String(val);
-                //this.updateDBState(item.options.dp, val, ack);
                 if (writeable) await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
                 else this.log.error(`Forbidden write attempts on a read-only state! id: ${item.options.dp}`);
             }

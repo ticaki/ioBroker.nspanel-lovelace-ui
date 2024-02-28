@@ -446,7 +446,7 @@ export async function getValueEntryString(
         const format = ((i.dateFormat && (await i.dateFormat.getObject())) as any) ?? null;
         let res = '';
         if (isValueDateFormat(format)) {
-            if (nval > 0) return null;
+            if (nval <= 0) return null;
             res = new Date(nval).toLocaleString(format.local, format.format);
         } else {
             const d = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
