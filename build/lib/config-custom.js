@@ -3174,6 +3174,11 @@ const pageScreensaverTest = {
       }
     },
     {
+      template: "text.accuweather.sunriseset",
+      dpInit: "/^accuweather\\.0.Daily.+/",
+      modeScr: "bottom"
+    },
+    {
       template: "text.accuweather.bot2values",
       dpInit: "/^accuweather\\.0.+?d1$/g",
       modeScr: "bottom"

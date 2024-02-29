@@ -21,7 +21,7 @@ export type TemplateIdent =
     | 'shutter.basic.onlyV'
     | 'text.battery.bydhvs'
     | 'text.accuweather.bot2values'
-    | ''
+    | 'text.accuweather.sunriseset'
     | ''
     | ''
     | ''

@@ -271,9 +271,7 @@ export class PageItem extends BaseClassTriggerd {
                         let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1, false);
                         if (value === null) value = await tools.getValueEntryBoolean(item.entity1);
                         if (value === null) value = true;
-                        message.displayName = this.library.getTranslation(
-                            (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
-                        );
+
                         switch (entry.role) {
                             case '2values': {
                                 message.optionalValue = ``;
@@ -290,6 +288,25 @@ export class PageItem extends BaseClassTriggerd {
 
                                 break;
                             }
+                            case '4values': {
+                                let val = await tools.getValueEntryString(item.entity1);
+                                value = true;
+                                if (val === null) {
+                                    value = false;
+                                    val = await tools.getValueEntryString(item.entity2);
+                                    if (val === null) {
+                                        value = true;
+                                        val = await tools.getValueEntryString(item.entity3);
+                                        if (val === null) {
+                                            value = false;
+                                            val = await tools.getValueEntryString(item.entity4);
+                                        }
+                                    }
+                                }
+                                if (val) message.optionalValue = this.library.getTranslation(val);
+                                else message.optionalValue = '';
+                                break;
+                            }
                             default: {
                                 message.optionalValue = this.library.getTranslation(
                                     (await tools.getValueEntryString(item.entity2)) ??
@@ -298,6 +315,11 @@ export class PageItem extends BaseClassTriggerd {
                                 );
                             }
                         }
+
+                        message.displayName = this.library.getTranslation(
+                            (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
+                        );
+
                         switch (entry.role) {
                             case 'textNotIcon': {
                                 message.icon =

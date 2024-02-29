@@ -85,7 +85,27 @@ export type StateRole =
     | 'value'
     | ''
     | 'level.value'
-    | 'date';
+    | 'date'
+    | 'date.sunrise.forecast.0'
+    | 'date.sunset.forecast.0'
+    | 'date.sunrise.forecast.1'
+    | 'date.sunset.forecast.1'
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | ''
+    | '';
 
 export type DeviceRole =
     | 'text'
@@ -120,7 +140,8 @@ export type DeviceRole =
     | 'iconNotText'
     | 'test'
     | ''
-    | 'battery'; // timer with internal counter
+    | 'battery'
+    | '4values'; // timer with internal counter
 
 export function isStateRole(F: string | StateRole): F is StateRole {
     switch (F as StateRole) {

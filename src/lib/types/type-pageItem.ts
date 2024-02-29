@@ -240,7 +240,10 @@ export type PageItemFanDataItems = {
     data: pages.ChangeTypeOfKeys<PageItemFan, dataItem.Dataitem | undefined>;
 };
 
-export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'icon'>;
+export type PageItemText = Pick<
+    PageItemBase,
+    'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'entity4' | 'icon'
+>;
 export type PageItemTextDataItemsOptions = {
     type: 'text';
     data: pages.ChangeTypeOfKeys<PageItemText, Types.DataItemsOptions | undefined>;
@@ -365,6 +368,7 @@ export type PageItemBase = {
     entity1?: ValueEntryType; // Readonly Werte die angezeigt werden soll. wird immer für insel verwendet
     entity2?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     entity3?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+    entity4?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     text1?: TextEntryType;
     text2?: TextEntryType;
     text3?: TextEntryType;

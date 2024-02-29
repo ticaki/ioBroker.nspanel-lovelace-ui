@@ -392,6 +392,92 @@ const textTemplates = {
       }
     }
   },
+  "text.accuweather.sunriseset": {
+    role: "4values",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "weather-sunset-up" },
+          color: { type: "const", constVal: Color.Yellow }
+        },
+        false: {
+          value: { type: "const", constVal: "weather-sunset-down" },
+          color: { type: "const", constVal: Color.Yellow }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "date.sunrise.forecast.0",
+          dp: "",
+          read: `const n = Date.now();
+                        const t = new Date(val).getTime();
+                        if (t < n) return null;
+                        return t;`
+        },
+        dateFormat: {
+          type: "const",
+          constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+        }
+      },
+      entity2: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "date.sunset.forecast.0",
+          dp: "",
+          read: `const n = Date.now();
+                    const t = new Date(val).getTime();
+                    if (t < n) return null;
+                    return t;`
+        },
+        dateFormat: {
+          type: "const",
+          constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+        }
+      },
+      entity3: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "date.sunrise.forecast.1",
+          dp: "",
+          read: `const n = Date.now();
+                    const t = new Date(val).getTime();
+                    if (t < n) return null;
+                    return t;`
+        },
+        dateFormat: {
+          type: "const",
+          constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+        }
+      },
+      entity4: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "date.sunset.forecast.1",
+          dp: "",
+          read: `const n = Date.now();
+                    const t = new Date(val).getTime();
+                    if (t < n) return null;
+                    return t;`
+        },
+        dateFormat: {
+          type: "const",
+          constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "SunriseToken" },
+        false: { type: "const", constVal: "SunsetToken" }
+      },
+      text1: void 0
+    }
+  },
   "text.accuweather.bot2values": {
     role: "2values",
     type: "text",

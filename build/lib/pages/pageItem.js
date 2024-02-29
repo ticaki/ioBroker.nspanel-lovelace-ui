@@ -243,9 +243,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               value = await tools.getValueEntryBoolean(item.entity1);
             if (value === null)
               value = true;
-            message.displayName = this.library.getTranslation(
-              (_r = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _r : ""
-            );
             switch (entry.role) {
               case "2values": {
                 message.optionalValue = ``;
@@ -260,12 +257,36 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 }
                 break;
               }
+              case "4values": {
+                let val = await tools.getValueEntryString(item.entity1);
+                value = true;
+                if (val === null) {
+                  value = false;
+                  val = await tools.getValueEntryString(item.entity2);
+                  if (val === null) {
+                    value = true;
+                    val = await tools.getValueEntryString(item.entity3);
+                    if (val === null) {
+                      value = false;
+                      val = await tools.getValueEntryString(item.entity4);
+                    }
+                  }
+                }
+                if (val)
+                  message.optionalValue = this.library.getTranslation(val);
+                else
+                  message.optionalValue = "";
+                break;
+              }
               default: {
                 message.optionalValue = this.library.getTranslation(
-                  (_t = (_s = await tools.getValueEntryString(item.entity2)) != null ? _s : await tools.getEntryTextOnOff(item.text1, !!value)) != null ? _t : ""
+                  (_s = (_r = await tools.getValueEntryString(item.entity2)) != null ? _r : await tools.getEntryTextOnOff(item.text1, !!value)) != null ? _s : ""
                 );
               }
             }
+            message.displayName = this.library.getTranslation(
+              (_t = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _t : ""
+            );
             switch (entry.role) {
               case "textNotIcon": {
                 message.icon = (_u = await tools.getIconEntryValue(item.icon, !!value, "", null, true)) != null ? _u : "";
