@@ -95,10 +95,10 @@
                 "zh-cn": "首次出版"
             }
         },
-        "title": "NSPanel Lovelace UI",
+        "title": "NSPanel-Lovelace-UI Next Level",
         "titleLang": {
-            "en": "NSPanel Lovelace UI",
-            "de": "NSPanel Lovelace-Benutzeroberfläche",
+            "en": "NSPanel-Lovelace-UI Next Level",
+            "de": "NSPanel-Lovelace-UI Next Level",
             "ru": "Пользовательский интерфейс NSPanel Lovelace",
             "pt": "UI NSPanel Lovelace",
             "nl": "NSPanel Lovelace-gebruikersinterface",
@@ -111,7 +111,7 @@
         },
         "desc": {
             "en": "NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.",
-            "de": "NsPanel Lovelace UI ist eine Firmware für den Nextion-Bildschirm innerhalb von NSPanel im Design von Lovelace UI Design.",
+            "de": "NsPanel Lovelace UI ist eine Firmware für den Nextion-Bildschirm innerhalb von NSPanel im Lovelace UI Design.",
             "ru": "NsPanel Lovelace UI — это прошивка для следующего экрана внутри NSPanel в дизайне Lovelace UI Design.",
             "pt": "NsPanel Lovelace UI é um firmware para a tela nextion dentro do NSPanel no Design of Lovelace UI Design.",
             "nl": "NsPanel Lovelace UI is een firmware voor het volgende scherm binnen NSPanel in het ontwerp van Lovelace UI Design.",
