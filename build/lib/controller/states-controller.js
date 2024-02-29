@@ -235,6 +235,8 @@ class StatesControler extends import_library.BaseClass {
   };
   async delete() {
     await super.delete();
+    if (StatesControler.tempObjectDBTimeout)
+      this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
     if (this.intervalObjectDatabase)
       this.adapter.clearInterval(this.intervalObjectDatabase);
     if (StatesControler.tempObjectDBTimeout)
@@ -509,8 +511,8 @@ class StatesControler extends import_library.BaseClass {
     return target;
   }
   static TempObjectDB = {
-    data: {},
-    ids: {}
+    data: void 0,
+    keys: []
   };
   static tempObjectDBTimeout;
   static getTempObjectDB(adapter) {
@@ -520,65 +522,73 @@ class StatesControler extends import_library.BaseClass {
       if (adapter.unload)
         return;
       StatesControler.tempObjectDBTimeout = void 0;
-      StatesControler.TempObjectDB = { data: {}, ids: {} };
+      StatesControler.TempObjectDB = { data: void 0, keys: [] };
     }, 6e4);
     return StatesControler.TempObjectDB;
+  }
+  async getFilteredObjects(dpInit) {
+    const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
+    if (!tempObjectDB.data) {
+      tempObjectDB.data = await this.adapter.getForeignObjectsAsync(`*`);
+      if (!tempObjectDB.data)
+        throw new Error("getObjects fail. Critical Error!");
+      tempObjectDB.keys = Object.keys(tempObjectDB.data);
+    }
+    const result = {
+      data: tempObjectDB.data,
+      keys: tempObjectDB.keys
+    };
+    if (dpInit) {
+      if (typeof dpInit !== "string") {
+        result.keys = tempObjectDB.keys.filter((a) => a.match(dpInit) !== null);
+      } else {
+        result.keys = tempObjectDB.keys.filter((a) => a.includes(dpInit));
+      }
+      return result;
+    }
+    return tempObjectDB;
   }
   async getDataItemsFromAuto(dpInit, data, appendix) {
     if (dpInit === "")
       return data;
-    const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
-    for (const i in data) {
-      const t = data[i];
-      if (t === void 0)
-        continue;
-      if (typeof t === "object" && !("type" in t)) {
-        data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix);
-      } else if (typeof t === "object" && "type" in t) {
-        const d = t;
-        let found = false;
-        if (d.type !== "triggered" && d.type !== "state" || !d.mode || d.mode !== "auto")
+    const tempObjectDB = await this.getFilteredObjects(dpInit);
+    if (tempObjectDB.data) {
+      for (const i in data) {
+        const t = data[i];
+        if (t === void 0)
           continue;
-        let endsWith = "";
-        if (d.dp && d.dp.endsWith("$")) {
-          endsWith = d.dp.substring(0, d.dp.length - 1);
-        }
-        for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
-          if (false) {
-          }
-          if (!tempObjectDB.ids[dpInit]) {
-            const temp = await this.adapter.getForeignObjectsAsync(`${dpInit}.*`);
-            if (temp) {
-              tempObjectDB.ids[dpInit] = true;
-              tempObjectDB.data = Object.assign(tempObjectDB.data, temp);
+        if (typeof t === "object" && !("type" in t)) {
+          data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix);
+        } else if (typeof t === "object" && "type" in t) {
+          const d = t;
+          let found = false;
+          if (d.type !== "triggered" && d.type !== "state" || !d.mode || d.mode !== "auto")
+            continue;
+          for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
+            if (false) {
             }
-          }
-          if (!tempObjectDB.ids[dpInit]) {
-            this.log.warn(`Dont find states for ${dpInit}!`);
-          }
-          for (const id in tempObjectDB.data) {
-            if (!id.startsWith(dpInit))
-              continue;
-            const obj = tempObjectDB.data[id];
-            if (appendix && (appendix === "" || id.endsWith(appendix))) {
-              this.log.debug("c");
+            if (tempObjectDB.keys.length === 0) {
+              this.log.warn(`Dont find states for ${dpInit}!`);
             }
-            if (obj && obj.common && obj.type === "state" && (d.dp === "" || (endsWith ? id.endsWith(endsWith) : id.includes(d.dp))) && (role === "" || obj.common.role === role) && (!appendix || appendix === "" || id.endsWith(appendix))) {
-              if (found) {
-                this.log.warn(`Found more as 1 state for role ${role} in ${dpInit} with ${d.dp}`);
-                break;
+            for (const id of tempObjectDB.keys) {
+              const obj = tempObjectDB.data[id];
+              if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp)) && (role === "" || obj.common.role === role) && (!d.regexp || id.match(d.regexp) !== null)) {
+                if (found) {
+                  this.log.warn(`Found more as 1 state for role ${role} in ${dpInit} with ${d.dp}`);
+                  break;
+                }
+                d.dp = id;
+                d.mode = "done";
+                found = true;
               }
-              d.dp = id;
-              d.mode = "done";
-              found = true;
             }
+            if (found)
+              break;
           }
-          if (found)
-            break;
-        }
-        if (!found) {
-          data[i] = void 0;
-          this.log.warn(`No state found for role ${JSON.stringify(d.role)} in ${dpInit} with ${d.dp}`);
+          if (!found) {
+            data[i] = void 0;
+            this.log.warn(`No state found for role ${JSON.stringify(d.role)} in ${dpInit} with ${d.dp}`);
+          }
         }
       }
     }

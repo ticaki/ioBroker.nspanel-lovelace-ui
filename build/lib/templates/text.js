@@ -259,7 +259,8 @@ const textTemplates = {
             type: "triggered",
             mode: "auto",
             role: "value.battery",
-            dp: ".State.SOC$",
+            dp: "",
+            regexp: /\.State\.SOC$/,
             read: `const v = Math.round(val / 10)
                         switch (v) {
                             case 0:
@@ -283,7 +284,8 @@ const textTemplates = {
               type: "triggered",
               mode: "auto",
               role: "value.battery",
-              dp: ".State.SOC$"
+              dp: "",
+              regexp: /\.State\.SOC$/
             },
             unit: {
               type: "const",
@@ -298,7 +300,8 @@ const textTemplates = {
             type: "triggered",
             mode: "auto",
             role: "value.battery",
-            dp: ".State.SOC$",
+            dp: "",
+            regexp: /\.State\.SOC$/,
             read: `const v = Math.round(val / 10)
                             switch (v) {
                                 case 0:
@@ -326,7 +329,8 @@ const textTemplates = {
           type: "state",
           mode: "auto",
           role: "value.battery",
-          dp: ".State.SOC$"
+          dp: "",
+          regexp: /\.State\.SOC$/
         }
       },
       text: {
@@ -338,7 +342,8 @@ const textTemplates = {
           type: "triggered",
           mode: "auto",
           role: "value.battery",
-          dp: ".State.SOC$"
+          dp: "",
+          regexp: /\.State\.SOC$/
         },
         unit: { type: "const", constVal: "%" }
       },
@@ -347,7 +352,8 @@ const textTemplates = {
           type: "triggered",
           mode: "auto",
           role: "value.power",
-          dp: ".State.Power$",
+          dp: "",
+          regexp: /\.State\.Power$/,
           read: "return val <= 0"
         }
       }
@@ -393,7 +399,13 @@ const textTemplates = {
     adapter: "accuweather",
     data: {
       entity1: {
-        value: { mode: "auto", role: "", type: "triggered", dp: ".Summary.TempMin_" },
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          dp: "",
+          regexp: /^accuweather\.[0-9]+\.Summary\.TempMin_/
+        },
         decimal: {
           type: "const",
           constVal: 0
@@ -405,7 +417,13 @@ const textTemplates = {
         }
       },
       entity2: {
-        value: { mode: "auto", role: "", type: "triggered", dp: ".Summary.TempMax_" },
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          dp: "",
+          regexp: /^accuweather\.[0-9]+\.Summary\.TempMax_/
+        },
         decimal: {
           type: "const",
           constVal: 0
@@ -422,7 +440,8 @@ const textTemplates = {
             mode: "auto",
             role: "",
             type: "triggered",
-            dp: ".Summary.WeatherIcon_",
+            regexp: /accuweather\.[0-9]+\.Summary\.WeatherIcon_/,
+            dp: "",
             read: `{
                                 switch (val) {
                                     case 30: // Hot
@@ -504,7 +523,8 @@ const textTemplates = {
             mode: "auto",
             role: "",
             type: "triggered",
-            dp: ".Summary.WeatherIcon_",
+            dp: "",
+            regexp: /^accuweather\.[0-9]+\.Summary\.WeatherIcon_/,
             read: `{
                                 switch (val) {
                                     case 24: // Ice
@@ -590,7 +610,13 @@ const textTemplates = {
         minBri: void 0
       },
       text: {
-        true: { mode: "auto", role: "", type: "triggered", dp: ".Summary.DayOfWeek_" },
+        true: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          dp: "",
+          regexp: /^accuweather\.[0-9]+\.Summary\.DayOfWeek_/
+        },
         false: void 0
       }
     }

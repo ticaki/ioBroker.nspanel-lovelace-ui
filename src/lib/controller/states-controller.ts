@@ -18,7 +18,7 @@ export interface BaseClassTriggerdInterface {
     panelSend: PanelSend;
     alwaysOn?: 'none' | 'always' | 'action';
     panel: Panel;
-    dpInit?: string;
+    dpInit?: string | RegExp;
 }
 
 /**
@@ -43,7 +43,7 @@ export class BaseClassTriggerd extends BaseClass {
     sleep: boolean = true;
     parent: BaseClassTriggerd | undefined = undefined;
     triggerParent: boolean = false;
-    dpInit: string = '';
+    dpInit: string | RegExp = '';
     protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
         payload: string,
         opt?: IClientPublishOptions,
@@ -250,6 +250,7 @@ export class StatesControler extends BaseClass {
 
     async delete(): Promise<void> {
         await super.delete();
+        if (StatesControler.tempObjectDBTimeout) this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
         if (this.intervalObjectDatabase) this.adapter.clearInterval(this.intervalObjectDatabase);
         if (StatesControler.tempObjectDBTimeout) this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
         if (this.deletePageInterval) this.adapter.clearInterval(this.deletePageInterval);
@@ -552,9 +553,9 @@ export class StatesControler extends BaseClass {
         return target;
     }
 
-    static TempObjectDB: { data: Record<string, ioBroker.Object>; ids: Record<string, boolean> } = {
-        data: {},
-        ids: {},
+    static TempObjectDB: { data: Record<string, ioBroker.Object> | undefined; keys: string[] } = {
+        data: undefined,
+        keys: [],
     };
     static tempObjectDBTimeout: ioBroker.Timeout | undefined;
     static getTempObjectDB(adapter: AdapterClassDefinition): typeof StatesControler.TempObjectDB {
@@ -563,73 +564,89 @@ export class StatesControler extends BaseClass {
         StatesControler.tempObjectDBTimeout = adapter.setTimeout(() => {
             if (adapter.unload) return;
             StatesControler.tempObjectDBTimeout = undefined;
-            StatesControler.TempObjectDB = { data: {}, ids: {} };
+            StatesControler.TempObjectDB = { data: undefined, keys: [] };
         }, 60000);
 
         return StatesControler.TempObjectDB;
     }
 
-    async getDataItemsFromAuto(dpInit: string, data: any, appendix?: string): Promise<any> {
-        if (dpInit === '') return data;
+    async getFilteredObjects(
+        dpInit: string | RegExp,
+    ): Promise<{ data: Record<string, ioBroker.Object> | undefined; keys: string[] }> {
         const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
-        for (const i in data) {
-            const t = data[i];
-            if (t === undefined) continue;
-            if (typeof t === 'object' && !('type' in t)) {
-                data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix);
-            } else if (typeof t === 'object' && 'type' in t) {
-                const d = t as DataItemsOptions;
-                let found = false;
-                if ((d.type !== 'triggered' && d.type !== 'state') || !d.mode || d.mode !== 'auto') continue;
-                let endsWith = '';
-                // $ means must at the end of id
-                if (d.dp && d.dp.endsWith('$')) {
-                    endsWith = d.dp.substring(0, d.dp.length - 1);
-                }
+        if (!tempObjectDB.data) {
+            tempObjectDB.data = await this.adapter.getForeignObjectsAsync(`*`);
+            if (!tempObjectDB.data) throw new Error('getObjects fail. Critical Error!');
+            tempObjectDB.keys = Object.keys(tempObjectDB.data);
+        }
+        const result: { data: Record<string, ioBroker.Object> | undefined; keys: string[] } = {
+            data: tempObjectDB.data,
+            keys: tempObjectDB.keys,
+        };
+        if (dpInit) {
+            if (typeof dpInit !== 'string') {
+                result.keys = tempObjectDB.keys.filter((a) => a.match(dpInit) !== null);
+            } else {
+                result.keys = tempObjectDB.keys.filter((a) => a.includes(dpInit));
+            }
+            return result;
+        }
 
-                for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
-                    if (false) {
-                        //throw new Error(`${d.dp} has a unkowned role ${d.role}`);
-                    }
-                    if (!tempObjectDB.ids[dpInit]) {
-                        const temp = await this.adapter.getForeignObjectsAsync(`${dpInit}.*`);
-                        if (temp) {
-                            tempObjectDB.ids[dpInit] = true;
-                            tempObjectDB.data = Object.assign(tempObjectDB.data, temp);
-                        }
-                    }
-                    if (!tempObjectDB.ids[dpInit]) {
-                        this.log.warn(`Dont find states for ${dpInit}!`);
-                    }
+        return tempObjectDB;
+    }
+    async getDataItemsFromAuto(dpInit: string | RegExp, data: any, appendix?: string): Promise<any> {
+        if (dpInit === '') return data;
+        const tempObjectDB = await this.getFilteredObjects(dpInit);
+        if (tempObjectDB.data) {
+            for (const i in data) {
+                const t = data[i];
+                if (t === undefined) continue;
+                if (typeof t === 'object' && !('type' in t)) {
+                    data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix);
+                } else if (typeof t === 'object' && 'type' in t) {
+                    const d = t as DataItemsOptions;
+                    let found = false;
+                    if ((d.type !== 'triggered' && d.type !== 'state') || !d.mode || d.mode !== 'auto') continue;
+                    //let endsWith = '';
+                    // $ means must at the end of id
+                    /*if (d.dp && ) {
+                        endsWith = d.dp.substring(0, d.dp.length - 1);
+                    }*/
 
-                    for (const id in tempObjectDB.data) {
-                        if (!id.startsWith(dpInit)) continue;
-                        const obj: ioBroker.Object = tempObjectDB.data[id];
-                        if (appendix && (appendix === '' || id.endsWith(appendix))) {
-                            this.log.debug('c');
+                    for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
+                        if (false) {
+                            //throw new Error(`${d.dp} has a unkowned role ${d.role}`);
                         }
-                        if (
-                            obj &&
-                            obj.common &&
-                            obj.type === 'state' &&
-                            (d.dp === '' || (endsWith ? id.endsWith(endsWith) : id.includes(d.dp))) &&
-                            (role === '' || obj.common.role === role) &&
-                            (!appendix || appendix === '' || id.endsWith(appendix))
-                        ) {
-                            if (found) {
-                                this.log.warn(`Found more as 1 state for role ${role} in ${dpInit} with ${d.dp}`);
-                                break;
+                        if (tempObjectDB.keys.length === 0) {
+                            this.log.warn(`Dont find states for ${dpInit}!`);
+                        }
+
+                        for (const id of tempObjectDB.keys) {
+                            const obj: ioBroker.Object = tempObjectDB.data[id];
+
+                            if (
+                                obj &&
+                                obj.common &&
+                                obj.type === 'state' &&
+                                (d.dp === '' || id.includes(d.dp)) &&
+                                (role === '' || obj.common.role === role) &&
+                                (!d.regexp || id.match(d.regexp) !== null)
+                            ) {
+                                if (found) {
+                                    this.log.warn(`Found more as 1 state for role ${role} in ${dpInit} with ${d.dp}`);
+                                    break;
+                                }
+                                d.dp = id;
+                                d.mode = 'done';
+                                found = true;
                             }
-                            d.dp = id;
-                            d.mode = 'done';
-                            found = true;
                         }
+                        if (found) break;
                     }
-                    if (found) break;
-                }
-                if (!found) {
-                    data[i] = undefined;
-                    this.log.warn(`No state found for role ${JSON.stringify(d.role)} in ${dpInit} with ${d.dp}`);
+                    if (!found) {
+                        data[i] = undefined;
+                        this.log.warn(`No state found for role ${JSON.stringify(d.role)} in ${dpInit} with ${d.dp}`);
+                    }
                 }
             }
         }

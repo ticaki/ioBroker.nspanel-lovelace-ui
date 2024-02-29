@@ -1,6 +1,6 @@
 import { Page, PageInterface } from '../classes/Page';
 import { Icons } from '../const/icon_mapping';
-import { getPayload, getPayloadArray } from '../const/tools';
+import { getPayload, getPayloadArray, getValueEntryString } from '../const/tools';
 import * as pages from '../types/pages';
 import { ButtonActionType, IncomingEvent, PopupType } from '../types/types';
 
@@ -118,16 +118,8 @@ export class PageThermo extends Page {
                 (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
             );
             message.navigation = this.getNavigation();
-            let v: any = (item.data.text2 && (await item.data.text2.getNumber())) ?? null;
-            if (v !== null) {
-                message.currentTemp = (v as number).toFixed(1);
-            } else {
-                v = (item.data.text2 && (await item.data.text2.getString())) ?? null;
-                if (v !== null) {
-                    message.currentTemp = this.library.getTranslation(v);
-                }
-            }
-            v = (item.data.set1 && (await item.data.set1.getNumber())) ?? null;
+
+            let v: string | number | null = (item.data.set1 && (await item.data.set1.getNumber())) ?? null;
             if (v !== null) {
                 message.dstTemp = v * 10;
             }
@@ -148,27 +140,15 @@ export class PageThermo extends Page {
                 message.tCF = v;
                 message.currentTemp += v;
             }
-            v = (item.data.text1 && (await item.data.text1.getString())) ?? null;
-            if (v !== null) {
-                message.tCurTempLbl = this.library.getTranslation(v);
-            }
-            v = (item.data.text3 && (await item.data.text3.getString())) ?? null;
-            if (v !== null) {
-                message.tStateLbl = this.library.getTranslation(v);
-            }
             v = (item.data.tempStep && (await item.data.tempStep.getString())) ?? null;
             if (v !== null) {
                 message.tempStep = v;
             }
-            v = (item.data.text4 && (await item.data.text4.getNumber())) ?? null;
-            if (v !== null) {
-                message.status = v;
-            } else {
-                v = (item.data.text4 && (await item.data.text4.getString())) ?? null;
-                if (v !== null) {
-                    message.status = this.library.getTranslation(v);
-                }
-            }
+
+            message.tCurTempLbl = this.library.getTranslation((await getValueEntryString(item.data.mixed1)) ?? '');
+            message.currentTemp = this.library.getTranslation((await getValueEntryString(item.data.mixed2)) ?? '');
+            message.tStateLbl = this.library.getTranslation((await getValueEntryString(item.data.mixed3)) ?? '');
+            message.status = this.library.getTranslation((await getValueEntryString(item.data.mixed4)) ?? '');
 
             message.btDetail =
                 this.pageItems && this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === 'input_sel')

@@ -33,7 +33,6 @@ export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
     readonly id: string;
     config: pages.PageBaseConfig['config'];
-    dpInit: string = '';
     //config: Card['config'];
     constructor(card: PageInterface, pageItemsConfig: pages.PageBaseConfig | undefined) {
         super(card, pageItemsConfig && pageItemsConfig.pageItems);
@@ -83,7 +82,9 @@ export class Page extends BaseClassPage {
             }
             if (
                 template.adapter &&
+                typeof options.dpInit === 'string' &&
                 !options.dpInit.startsWith(template.adapter) &&
+                typeof this.dpInit === 'string' &&
                 !this.dpInit.startsWith(template.adapter)
             ) {
                 this.log.error(
@@ -132,7 +133,7 @@ export class Page extends BaseClassPage {
                 that.log.error('dont find template ' + config.template);
                 return config;
             }
-            if (template.adapter && !config.dpInit.startsWith(template.adapter)) {
+            if (template.adapter && typeof config.dpInit === 'string' && !config.dpInit.startsWith(template.adapter)) {
                 return config;
             }
             const newTemplate = structuredClone(template) as Partial<pages.PageBaseConfigTemplate>;

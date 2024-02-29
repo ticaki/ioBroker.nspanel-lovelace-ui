@@ -254,7 +254,7 @@ export type PageBaseConfig = (
                 card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
                 uniqueID: string;
                 template?: Types.PageTemplateIdent;
-                dpInit: string; // '' and initMode 'auto' throw an error
+                dpInit: string | RegExp; // '' and initMode 'auto' throw an error
                 alwaysOn: 'none' | 'always' | 'action';
                 useColor: boolean;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
@@ -276,7 +276,7 @@ export type PageBaseConfig = (
                 card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
                 uniqueID: string;
                 template?: Types.PageTemplateIdent;
-                dpInit: string; // '' and initMode 'auto' throw an error
+                dpInit: string | RegExp; // '' and initMode 'auto' throw an error
                 alwaysOn: 'none' | 'always' | 'action';
                 useColor: boolean;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
@@ -291,7 +291,7 @@ export type PageBaseConfig = (
           card: PageTypeCards;
           uniqueID: string;
           template: Types.PageTemplateIdent;
-          dpInit: string;
+          dpInit: string | RegExp;
       } & Partial<Omit<PageBaseConfigTemplate, 'template'>>)
 ) & {
     items?:
@@ -550,10 +550,10 @@ type PageThermoBaseConfig = {
     swing?: number;
     unit: string;
     headline: string;
-    text1: string;
-    text2: string;
-    text3: string;
-    text4: string;
+    mixed1: typePageItem.ValueEntryType;
+    mixed2: typePageItem.ValueEntryType;
+    mixed3: typePageItem.ValueEntryType;
+    mixed4: typePageItem.ValueEntryType;
     minTemp: number; // *10
     maxTemp: number; // *10
     tempStep: number; // *10

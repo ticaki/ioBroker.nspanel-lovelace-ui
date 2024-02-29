@@ -32,7 +32,6 @@ class Page extends import_states_controller.BaseClassPage {
   card;
   id;
   config;
-  dpInit = "";
   constructor(card, pageItemsConfig) {
     var _a;
     super(card, pageItemsConfig && pageItemsConfig.pageItems);
@@ -69,7 +68,7 @@ class Page extends import_states_controller.BaseClassPage {
         this.log.error("Dont find template " + options.template);
         return void 0;
       }
-      if (template.adapter && !options.dpInit.startsWith(template.adapter) && !this.dpInit.startsWith(template.adapter)) {
+      if (template.adapter && typeof options.dpInit === "string" && !options.dpInit.startsWith(template.adapter) && typeof this.dpInit === "string" && !this.dpInit.startsWith(template.adapter)) {
         this.log.error(
           "Missing dbInit or dbInit not starts with" + template.adapter + " for template " + options.template
         );
@@ -115,7 +114,7 @@ class Page extends import_states_controller.BaseClassPage {
         that.log.error("dont find template " + config.template);
         return config;
       }
-      if (template.adapter && !config.dpInit.startsWith(template.adapter)) {
+      if (template.adapter && typeof config.dpInit === "string" && !config.dpInit.startsWith(template.adapter)) {
         return config;
       }
       const newTemplate = structuredClone(template);

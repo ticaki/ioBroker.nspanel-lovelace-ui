@@ -247,7 +247,8 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                         type: 'triggered',
                         mode: 'auto',
                         role: 'value.battery',
-                        dp: '.State.SOC$',
+                        dp: '',
+                        regexp: /\.State\.SOC$/,
                         read: `const v = Math.round(val / 10)
                         switch (v) {
                             case 0:
@@ -271,7 +272,8 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                             type: 'triggered',
                             mode: 'auto',
                             role: 'value.battery',
-                            dp: '.State.SOC$',
+                            dp: '',
+                            regexp: /\.State\.SOC$/,
                         },
                         unit: {
                             type: 'const',
@@ -286,7 +288,8 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                         type: 'triggered',
                         mode: 'auto',
                         role: 'value.battery',
-                        dp: '.State.SOC$',
+                        dp: '',
+                        regexp: /\.State\.SOC$/,
                         read: `const v = Math.round(val / 10)
                             switch (v) {
                                 case 0:
@@ -314,7 +317,8 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                     type: 'state',
                     mode: 'auto',
                     role: 'value.battery',
-                    dp: '.State.SOC$',
+                    dp: '',
+                    regexp: /\.State\.SOC$/,
                 },
             },
             text: {
@@ -326,7 +330,8 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                     type: 'triggered',
                     mode: 'auto',
                     role: 'value.battery',
-                    dp: '.State.SOC$',
+                    dp: '',
+                    regexp: /\.State\.SOC$/,
                 },
                 unit: { type: 'const', constVal: '%' },
             },
@@ -335,7 +340,8 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                     type: 'triggered',
                     mode: 'auto',
                     role: 'value.power',
-                    dp: '.State.Power$',
+                    dp: '',
+                    regexp: /\.State\.Power$/,
                     read: 'return val <= 0',
                 },
             },
@@ -382,7 +388,13 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
         adapter: 'accuweather',
         data: {
             entity1: {
-                value: { mode: 'auto', role: '', type: 'triggered', dp: '.Summary.TempMin_' },
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    dp: '',
+                    regexp: /^accuweather\.[0-9]+\.Summary\.TempMin_/,
+                },
                 decimal: {
                     type: 'const',
                     constVal: 0,
@@ -394,7 +406,13 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                 },
             },
             entity2: {
-                value: { mode: 'auto', role: '', type: 'triggered', dp: '.Summary.TempMax_' },
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    dp: '',
+                    regexp: /^accuweather\.[0-9]+\.Summary\.TempMax_/,
+                },
                 decimal: {
                     type: 'const',
                     constVal: 0,
@@ -411,7 +429,8 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                         mode: 'auto',
                         role: '',
                         type: 'triggered',
-                        dp: '.Summary.WeatherIcon_',
+                        regexp: /accuweather\.[0-9]+\.Summary\.WeatherIcon_/,
+                        dp: '',
                         read: `{
                                 switch (val) {
                                     case 30: // Hot
@@ -493,7 +512,8 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                         mode: 'auto',
                         role: '',
                         type: 'triggered',
-                        dp: '.Summary.WeatherIcon_',
+                        dp: '',
+                        regexp: /^accuweather\.[0-9]+\.Summary\.WeatherIcon_/,
                         read: `{
                                 switch (val) {
                                     case 24: // Ice
@@ -579,7 +599,13 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                 minBri: undefined,
             },
             text: {
-                true: { mode: 'auto', role: '', type: 'triggered', dp: '.Summary.DayOfWeek_' },
+                true: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    dp: '',
+                    regexp: /^accuweather\.[0-9]+\.Summary\.DayOfWeek_/,
+                },
                 false: undefined,
             },
         },

@@ -469,7 +469,7 @@ class Panel extends import_library.BaseClass {
             this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
             if (!this.InitDone) {
               this.sendToTasmota(
-                this.topic + "/cmnd/Rule3",
+                this.topic + "/cmnd/Rule8",
                 "ON CustomSend DO RuleTimer1 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON"
               );
               this.sendToTasmota(this.topic + "/cmnd/Rule3", "ON");

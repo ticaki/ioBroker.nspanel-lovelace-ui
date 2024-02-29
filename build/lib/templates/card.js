@@ -51,7 +51,7 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "trash-can" },
-              color: { type: "state", dp: ".1.color$", mode: "auto", role: "state" }
+              color: { type: "state", dp: "", regexp: /\.1\.color$/, mode: "auto", role: "state" }
             }
           },
           entity1: {
@@ -74,7 +74,7 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "trash-can" },
-              color: { type: "state", dp: ".2.color$", mode: "auto", role: "state" }
+              color: { type: "state", dp: "", regexp: /\.2\.color$/, mode: "auto", role: "state" }
             }
           },
           entity1: {
@@ -97,7 +97,7 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "trash-can" },
-              color: { type: "state", dp: ".3.color$", mode: "auto", role: "state" }
+              color: { type: "state", dp: "", regexp: /\.3\.color$/, mode: "auto", role: "state" }
             }
           },
           entity1: {
@@ -120,7 +120,7 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "trash-can" },
-              color: { type: "state", dp: ".4.color$", mode: "auto", role: "state" }
+              color: { type: "state", dp: "", regexp: /\.4\.color$/, mode: "auto", role: "state" }
             }
           },
           entity1: {
@@ -158,7 +158,8 @@ const cardTemplates = {
           mode: "auto",
           role: "value",
           type: "triggered",
-          dp: ".player.album$"
+          dp: "",
+          regexp: /\.player\.album$/
         },
         title: {
           on: {
@@ -252,7 +253,8 @@ const cardTemplates = {
           mode: "auto",
           type: "state",
           role: "button",
-          dp: ".player.play$"
+          dp: "",
+          regexp: /\.player\.play$/
         },
         mediaState: {
           mode: "auto",
@@ -322,7 +324,8 @@ const cardTemplates = {
               mode: "auto",
               role: "value",
               type: "triggered",
-              dp: ".player.trackName$"
+              regexp: /\.player\.trackName$/,
+              dp: ""
             }
           },
           text: {
@@ -339,7 +342,8 @@ const cardTemplates = {
             role: "",
             mode: "auto",
             type: "state",
-            dp: ".player.playlist.trackNo$"
+            dp: "",
+            regexp: /\.player\.playlist\.trackNo$/
           }
         }
       },
@@ -366,7 +370,8 @@ const cardTemplates = {
               mode: "auto",
               role: "value",
               type: "triggered",
-              dp: ".playlists.playlistList$"
+              dp: "",
+              regexp: /\.playlists\.playlistList$/
             }
           },
           text: {
@@ -377,14 +382,16 @@ const cardTemplates = {
             mode: "auto",
             role: "value",
             type: "triggered",
-            dp: ".playlists.playlistListIds$",
+            dp: "",
+            regexp: /\.playlists\.playlistListIds$/,
             read: 'return val ? val.split(";") : []'
           },
           valueList2: {
             mode: "auto",
             role: "value",
             type: "triggered",
-            dp: ".playlists.playlistListString$",
+            dp: "",
+            regexp: /\.playlists\.playlistListString$/,
             read: 'return val ? val.split(";") : []'
           },
           setValue1: void 0
@@ -643,23 +650,24 @@ const cardTemplates = {
         data: {
           icon: {
             true: {
-              value: { role: "state", mode: "auto", type: "state", dp: ".0.Mode$" },
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.0\.Mode$/ },
               color: { type: "const", constVal: Color.Red }
             },
             false: {
-              value: { role: "state", mode: "auto", type: "state", dp: ".0.Mode$" },
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.0\.Mode$/ },
               color: { type: "const", constVal: Color.Green }
             }
           },
           entity1: {
-            value: { role: "state", mode: "auto", type: "state", dp: ".0.DepartureDelayed$" }
+            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.0\.DepartureDelayed$/ }
           },
           entity2: {
             value: {
               role: "date",
               mode: "auto",
               type: "state",
-              dp: ".0.Departure$",
+              dp: "",
+              regexp: /\.0\.Departure$/,
               read: "return val === 0 ? null : val"
             },
             dateFormat: {
@@ -668,7 +676,7 @@ const cardTemplates = {
             }
           },
           text: {
-            true: { role: "state", mode: "auto", type: "state", dp: ".0.Direction$" },
+            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.0\.Direction$/ },
             false: void 0
           },
           text1: {
@@ -676,7 +684,8 @@ const cardTemplates = {
               role: "date",
               mode: "auto",
               type: "state",
-              dp: ".0.DeparturePlanned$",
+              dp: "",
+              regexp: /\.0\.DeparturePlanned$/,
               read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
             },
             false: void 0
@@ -689,23 +698,24 @@ const cardTemplates = {
         data: {
           icon: {
             true: {
-              value: { role: "state", mode: "auto", type: "state", dp: ".1.Mode$" },
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.1\.Mode$/ },
               color: { type: "const", constVal: Color.Red }
             },
             false: {
-              value: { role: "state", mode: "auto", type: "state", dp: ".1.Mode$" },
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.1\.Mode$/ },
               color: { type: "const", constVal: Color.Green }
             }
           },
           entity1: {
-            value: { role: "state", mode: "auto", type: "state", dp: ".1.DepartureDelayed$" }
+            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.1\.DepartureDelayed$/ }
           },
           entity2: {
             value: {
               role: "date",
               mode: "auto",
               type: "state",
-              dp: ".1.Departure$",
+              dp: "",
+              regexp: /\.1\.Departure$/,
               read: "return val === 0 ? null : val"
             },
             dateFormat: {
@@ -714,7 +724,7 @@ const cardTemplates = {
             }
           },
           text: {
-            true: { role: "state", mode: "auto", type: "state", dp: ".1.Direction$" },
+            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.1\.Direction$/ },
             false: void 0
           },
           text1: {
@@ -722,7 +732,8 @@ const cardTemplates = {
               role: "date",
               mode: "auto",
               type: "state",
-              dp: ".1.DeparturePlanned$",
+              dp: "",
+              regexp: /\.1\.DeparturePlanned$/,
               read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
             },
             false: void 0
@@ -735,23 +746,24 @@ const cardTemplates = {
         data: {
           icon: {
             true: {
-              value: { role: "state", mode: "auto", type: "state", dp: ".2.Mode$" },
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.2\.Mode$/ },
               color: { type: "const", constVal: Color.Red }
             },
             false: {
-              value: { role: "state", mode: "auto", type: "state", dp: ".2.Mode$" },
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.2\.Mode$/ },
               color: { type: "const", constVal: Color.Green }
             }
           },
           entity1: {
-            value: { role: "state", mode: "auto", type: "state", dp: ".2.DepartureDelayed$" }
+            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.2\.DepartureDelayed$/ }
           },
           entity2: {
             value: {
               role: "date",
               mode: "auto",
               type: "state",
-              dp: ".2.Departure$",
+              dp: "",
+              regexp: /\.2\.Departure$/,
               read: "return val === 0 ? null : val"
             },
             dateFormat: {
@@ -760,7 +772,7 @@ const cardTemplates = {
             }
           },
           text: {
-            true: { role: "state", mode: "auto", type: "state", dp: ".2.Direction$" },
+            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.2\.Direction$/ },
             false: void 0
           },
           text1: {
@@ -768,7 +780,8 @@ const cardTemplates = {
               role: "date",
               mode: "auto",
               type: "state",
-              dp: ".2.DeparturePlanned$",
+              dp: "",
+              regexp: /\.2\.DeparturePlanned$/,
               read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
             },
             false: void 0
@@ -781,23 +794,24 @@ const cardTemplates = {
         data: {
           icon: {
             true: {
-              value: { role: "state", mode: "auto", type: "state", dp: ".3.Mode$" },
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.3\.Mode$/ },
               color: { type: "const", constVal: Color.Red }
             },
             false: {
-              value: { role: "state", mode: "auto", type: "state", dp: ".3.Mode$" },
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.3\.Mode$/ },
               color: { type: "const", constVal: Color.Green }
             }
           },
           entity1: {
-            value: { role: "state", mode: "auto", type: "state", dp: ".3.DepartureDelayed$" }
+            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.3\.DepartureDelayed$/ }
           },
           entity2: {
             value: {
               role: "date",
               mode: "auto",
               type: "state",
-              dp: ".3.Departure$",
+              dp: "",
+              regexp: /\.3\.Departure$/,
               read: "return val === 0 ? null : val"
             },
             dateFormat: {
@@ -806,7 +820,7 @@ const cardTemplates = {
             }
           },
           text: {
-            true: { role: "state", mode: "auto", type: "state", dp: ".3.Direction$" },
+            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.3\.Direction$/ },
             false: void 0
           },
           text1: {
@@ -814,7 +828,8 @@ const cardTemplates = {
               role: "date",
               mode: "auto",
               type: "state",
-              dp: ".3.DeparturePlanned$",
+              dp: "",
+              regexp: /\.3\.DeparturePlanned$/,
               read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
             },
             false: void 0

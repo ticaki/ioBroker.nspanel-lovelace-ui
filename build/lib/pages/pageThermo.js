@@ -91,7 +91,7 @@ class PageThermo extends import_Page.Page {
     await super.init();
   }
   async update() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     const message = {};
     message.options = ["~~~", "~~~", "~~~", "~~~", "~~~", "~~~", "~~~", "~~~"];
     if (this.items) {
@@ -127,57 +127,35 @@ class PageThermo extends import_Page.Page {
         (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
       );
       message.navigation = this.getNavigation();
-      let v = (_b = item.data.text2 && await item.data.text2.getNumber()) != null ? _b : null;
-      if (v !== null) {
-        message.currentTemp = v.toFixed(1);
-      } else {
-        v = (_c = item.data.text2 && await item.data.text2.getString()) != null ? _c : null;
-        if (v !== null) {
-          message.currentTemp = this.library.getTranslation(v);
-        }
-      }
-      v = (_d = item.data.set1 && await item.data.set1.getNumber()) != null ? _d : null;
+      let v = (_b = item.data.set1 && await item.data.set1.getNumber()) != null ? _b : null;
       if (v !== null) {
         message.dstTemp = v * 10;
       }
-      v = (_e = item.data.minTemp && await item.data.minTemp.getNumber()) != null ? _e : null;
+      v = (_c = item.data.minTemp && await item.data.minTemp.getNumber()) != null ? _c : null;
       if (v !== null) {
         message.minTemp = v * 10;
       }
-      v = (_f = item.data.maxTemp && await item.data.maxTemp.getNumber()) != null ? _f : null;
+      v = (_d = item.data.maxTemp && await item.data.maxTemp.getNumber()) != null ? _d : null;
       if (v !== null) {
         message.maxTemp = v * 10;
       }
-      v = (_g = item.data.set2 && await item.data.set2.getNumber()) != null ? _g : null;
+      v = (_e = item.data.set2 && await item.data.set2.getNumber()) != null ? _e : null;
       if (v !== null) {
         message.temp2 = v * 10;
       }
-      v = (_h = item.data.unit && await item.data.unit.getString()) != null ? _h : null;
+      v = (_f = item.data.unit && await item.data.unit.getString()) != null ? _f : null;
       if (v !== null) {
         message.tCF = v;
         message.currentTemp += v;
       }
-      v = (_i = item.data.text1 && await item.data.text1.getString()) != null ? _i : null;
-      if (v !== null) {
-        message.tCurTempLbl = this.library.getTranslation(v);
-      }
-      v = (_j = item.data.text3 && await item.data.text3.getString()) != null ? _j : null;
-      if (v !== null) {
-        message.tStateLbl = this.library.getTranslation(v);
-      }
-      v = (_k = item.data.tempStep && await item.data.tempStep.getString()) != null ? _k : null;
+      v = (_g = item.data.tempStep && await item.data.tempStep.getString()) != null ? _g : null;
       if (v !== null) {
         message.tempStep = v;
       }
-      v = (_l = item.data.text4 && await item.data.text4.getNumber()) != null ? _l : null;
-      if (v !== null) {
-        message.status = v;
-      } else {
-        v = (_m = item.data.text4 && await item.data.text4.getString()) != null ? _m : null;
-        if (v !== null) {
-          message.status = this.library.getTranslation(v);
-        }
-      }
+      message.tCurTempLbl = this.library.getTranslation((_h = await (0, import_tools.getValueEntryString)(item.data.mixed1)) != null ? _h : "");
+      message.currentTemp = this.library.getTranslation((_i = await (0, import_tools.getValueEntryString)(item.data.mixed2)) != null ? _i : "");
+      message.tStateLbl = this.library.getTranslation((_j = await (0, import_tools.getValueEntryString)(item.data.mixed3)) != null ? _j : "");
+      message.status = this.library.getTranslation((_k = await (0, import_tools.getValueEntryString)(item.data.mixed4)) != null ? _k : "");
       message.btDetail = this.pageItems && this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === "input_sel") ? "0" : "1";
     }
     const msg = Object.assign(PageThermoMessageDefault, message);

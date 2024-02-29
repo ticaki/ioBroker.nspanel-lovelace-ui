@@ -357,7 +357,7 @@ const pageEntitiesTest3: pages.PageBaseConfig = {
         data: {
             headline: {
                 type: 'const',
-                constVal: 'entities2',
+                constVal: 'entities3',
             },
         },
     },
@@ -407,9 +407,8 @@ const pageEntitiesTest3: pages.PageBaseConfig = {
             template: 'shutter.shelly.2PM',
         },
         {
-            type: 'text',
-            dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
-            template: 'text.battery',
+            dpInit: 'bydhvs',
+            template: 'text.battery.bydhvs',
         },
     ],
     items: undefined,
@@ -612,7 +611,7 @@ export const pageMediaTest: pages.PageBaseConfig = {
                 role: 'media.album',
                 dp: '',
             },
-            titel: {
+            title: {
                 on: {
                     type: 'const',
                     constVal: true,
@@ -1087,7 +1086,7 @@ export const pageMediaTest2: pages.PageBaseConfig = {
                 role: 'media.album',
                 dp: '',
             },
-            titel: {
+            title: {
                 on: {
                     type: 'const',
                     constVal: true,
@@ -1988,6 +1987,10 @@ const pageGridTest2: pages.PageBaseConfig = {
             type: 'text',
             dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
             template: 'text.temperature',
+        },
+        {
+            dpInit: 'bydhvs',
+            template: 'text.battery.bydhvs',
         },
     ],
 };
@@ -3024,21 +3027,27 @@ const pageThermoTest: pages.PageBaseConfig = {
                 type: 'const',
                 constVal: 'headline',
             },
-            text2: {
-                type: 'const',
-                constVal: '20',
+            mixed2: {
+                value: {
+                    type: 'const',
+                    constVal: '20',
+                },
             },
             unit: {
                 type: 'const',
                 constVal: '°C',
             },
-            text1: {
-                type: 'const',
-                constVal: 'text1',
+            mixed1: {
+                value: {
+                    type: 'const',
+                    constVal: 'H1',
+                },
             },
-            text3: {
-                type: 'const',
-                constVal: 'text2',
+            mixed3: {
+                value: {
+                    type: 'const',
+                    constVal: 'H2',
+                },
             },
             minTemp: {
                 type: 'const',
@@ -3053,7 +3062,12 @@ const pageThermoTest: pages.PageBaseConfig = {
                 constVal: '5',
             },
             set1: { type: 'state', dp: '0_userdata.0.number1' },
-            text4: undefined,
+            mixed4: {
+                value: {
+                    type: 'const',
+                    constVal: '20',
+                },
+            },
         },
     },
     items: undefined,
@@ -3489,7 +3503,43 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
+        // Bottom 1 - accuWeather.0. Forecast Day 1
+        {
+            template: 'text.accuweather.bot2values',
+            dpInit: /^accuweather.0.+?d1$/,
+            modeScr: 'bottom',
+        },
 
+        // Bottom 2 - accuWeather.0. Forecast Day 2
+        {
+            template: 'text.accuweather.bot2values',
+            dpInit: /^accuweather.0.+?d2$/,
+            modeScr: 'bottom',
+        },
+
+        // Bottom 3 - accuWeather.0. Forecast Day 3
+        {
+            template: 'text.accuweather.bot2values',
+            dpInit: /^accuweather.0.+?d3$/,
+            modeScr: 'bottom',
+        },
+
+        // Bottom 4 - accuWeather.0. Forecast Day 4
+        {
+            template: 'text.accuweather.bot2values',
+            dpInit: /^accuweather.0.+?d4$/,
+            modeScr: 'bottom',
+        },
+        // Bottom 5 - accuWeather.0. Forecast Day 5
+        {
+            template: 'text.accuweather.bot2values',
+            dpInit: /^accuweather\.0.+?d5$/,
+            modeScr: 'bottom',
+        },
+
+        // Bottom 6 - daswetter.0. Forecast Day 6
+
+        // Bottom 7 - Sonnenaufgang - Sonnenuntergang im Wechsel
         {
             role: 'text',
             dpInit: '',
@@ -3499,8 +3549,8 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 entity1: undefined,
                 entity2: {
                     value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Daily.Day1.Sunrise',
+                        type: 'triggered',
+                        dp: '0_userdata.0.Sunevent2.time',
                         read: 'return new Date(val).getTime()',
                         forceType: 'number',
                     },
@@ -3512,19 +3562,19 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 icon: {
                     true: {
                         value: {
-                            type: 'const',
-                            constVal: 'weather-sunset-up',
+                            type: 'triggered',
+                            dp: '0_userdata.0.Sunevent2.icon',
                         },
                         color: {
                             type: 'const',
-                            constVal: Color.Yellow,
+                            constVal: Color.MSYellow,
                         },
                     },
                     false: {
                         value: undefined,
                         color: {
                             type: 'const',
-                            constVal: Color.Blue,
+                            constVal: Color.MSYellow,
                         },
                     },
                     scale: undefined,
@@ -3535,21 +3585,38 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 text: {
                     true: {
                         type: 'const',
-                        constVal: 'Sun',
+                        constVal: 'Sonne',
                     },
                     false: undefined,
                 },
             },
         },
+
+        // Bottom 8 - Windgeschwindigkeit
         {
             role: 'text',
             dpInit: '',
             type: 'text',
             modeScr: 'bottom',
             data: {
+                entity1: {
+                    value: {
+                        type: 'triggered',
+                        dp: 'accuweather.0.Current.WindSpeed',
+                    },
+                    decimal: {
+                        type: 'const',
+                        constVal: 1,
+                    },
+                    factor: {
+                        type: 'const',
+                        constVal: 1000 / 3600,
+                    },
+                    unit: undefined,
+                },
                 entity2: {
                     value: {
-                        type: 'state',
+                        type: 'triggered',
                         dp: 'accuweather.0.Current.WindSpeed',
                     },
                     decimal: {
@@ -3565,20 +3632,27 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                         constVal: 'm/s',
                     },
                 },
-
                 icon: {
                     true: {
                         value: {
                             type: 'const',
                             constVal: 'weather-windy',
                         },
-                        color: undefined,
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
                     },
                     false: {
-                        value: undefined,
-                        color: undefined,
+                        value: {
+                            type: 'const',
+                            constVal: 'weather-windy',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSGreen,
+                        },
                     },
-
                     scale: {
                         type: 'const',
                         constVal: { val_min: 0, val_max: 80 },
@@ -3586,7 +3660,6 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-
                 text: {
                     true: {
                         type: 'const',
@@ -3596,15 +3669,32 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
+
+        // Bottom 9 - Böen
         {
             role: 'text',
             dpInit: '',
             type: 'text',
             modeScr: 'bottom',
             data: {
+                entity1: {
+                    value: {
+                        type: 'triggered',
+                        dp: 'accuweather.0.Current.WindGust',
+                    },
+                    decimal: {
+                        type: 'const',
+                        constVal: 1,
+                    },
+                    factor: {
+                        type: 'const',
+                        constVal: 1000 / 3600,
+                    },
+                    unit: undefined,
+                },
                 entity2: {
                     value: {
-                        type: 'state',
+                        type: 'triggered',
                         dp: 'accuweather.0.Current.WindGust',
                     },
                     decimal: {
@@ -3620,28 +3710,34 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                         constVal: 'm/s',
                     },
                 },
-
                 icon: {
                     true: {
                         value: {
                             type: 'const',
                             constVal: 'weather-tornado',
                         },
-                        color: undefined,
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
                     },
                     false: {
-                        value: undefined,
-                        color: undefined,
+                        value: {
+                            type: 'const',
+                            constVal: 'weather-tornado',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSGreen,
+                        },
                     },
-
                     scale: {
                         type: 'const',
-                        constVal: { val_min: 0, val_max: 7.2 },
+                        constVal: { val_min: 0, val_max: 80 },
                     },
                     maxBri: undefined,
                     minBri: undefined,
                 },
-
                 text: {
                     true: {
                         type: 'const',
@@ -3651,6 +3747,8 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
+
+        // Bottom 10 - Windrichtung
         {
             role: 'text',
             dpInit: '',
@@ -3659,7 +3757,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
             data: {
                 entity2: {
                     value: {
-                        type: 'state',
+                        type: 'triggered',
                         dp: 'accuweather.0.Current.WindDirectionText',
                     },
                     decimal: {
@@ -3672,7 +3770,6 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                         constVal: '°',
                     },
                 },
-
                 icon: {
                     true: {
                         value: {
@@ -3681,7 +3778,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                         },
                         color: {
                             type: 'const',
-                            constVal: '#FF00FF',
+                            constVal: '#FFFFFF',
                         },
                     },
                     false: {
@@ -3692,7 +3789,6 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-
                 text: {
                     true: {
                         type: 'const',
@@ -3702,16 +3798,30 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
+
+        // Bottom 11 - Luftfeuchte außen
         {
             role: 'text',
             dpInit: '',
             type: 'text',
             modeScr: 'bottom',
             data: {
+                entity1: {
+                    value: {
+                        type: 'triggered',
+                        dp: 'hmip.0.devices.3014F711A000185F2999676C.channels.1.humidity',
+                    },
+                    decimal: {
+                        type: 'const',
+                        constVal: 1,
+                    },
+                    factor: undefined,
+                    unit: undefined,
+                },
                 entity2: {
                     value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Current.RelativeHumidity',
+                        type: 'triggered',
+                        dp: 'hmip.0.devices.3014F711A000185F2999676C.channels.1.humidity',
                     },
                     decimal: {
                         type: 'const',
@@ -3723,18 +3833,26 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                         constVal: '%',
                     },
                 },
-
                 icon: {
                     true: {
                         value: {
                             type: 'const',
                             constVal: 'water-percent',
                         },
-                        color: undefined,
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
                     },
                     false: {
-                        value: undefined,
-                        color: undefined,
+                        value: {
+                            type: 'const',
+                            constVal: 'water-percent',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.Green,
+                        },
                     },
                     scale: {
                         type: 'const',
@@ -3743,165 +3861,74 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-
                 text: {
                     true: {
                         type: 'const',
-                        constVal: 'Feuchte.',
+                        constVal: 'Feuchte',
                     },
                     false: undefined,
                 },
             },
         },
 
+        // Bottom 12 - UV-Index
         {
             role: 'text',
             dpInit: '',
             type: 'text',
             modeScr: 'bottom',
             data: {
+                entity1: {
+                    value: {
+                        type: 'triggered',
+                        dp: 'accuweather.0.Current.UVIndex',
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
                 entity2: {
                     value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Current.DewPoint',
+                        type: 'triggered',
+                        dp: 'accuweather.0.Current.UVIndex',
+                        forceType: 'string',
                     },
-                    decimal: {
-                        type: 'const',
-                        constVal: 1,
-                    },
+                    decimal: undefined,
                     factor: undefined,
-                    unit: {
-                        type: 'const',
-                        constVal: '°C',
-                    },
+                    unit: undefined,
                 },
-
                 icon: {
                     true: {
                         value: {
                             type: 'const',
-                            constVal: 'thermometer-water',
+                            constVal: 'solar-power',
                         },
                         color: {
                             type: 'const',
-                            constVal: '#7799FF',
+                            constVal: Color.MSRed,
                         },
                     },
                     false: {
-                        value: undefined,
-                        color: undefined,
-                    },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
-                },
-
-                text: {
-                    true: {
-                        type: 'const',
-                        constVal: 'Taup.',
-                    },
-                    false: undefined,
-                },
-            },
-        },
-        {
-            role: 'text',
-            dpInit: '',
-            type: 'text',
-            modeScr: 'bottom',
-            data: {
-                entity2: {
-                    value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Current.DewPoint',
-                    },
-                    decimal: {
-                        type: 'const',
-                        constVal: 1,
-                    },
-                    factor: undefined,
-                    unit: {
-                        type: 'const',
-                        constVal: '°C',
-                    },
-                },
-
-                icon: {
-                    true: {
                         value: {
                             type: 'const',
-                            constVal: 'thermometer-water',
+                            constVal: 'solar-power',
                         },
                         color: {
                             type: 'const',
-                            constVal: '#7799FF',
+                            constVal: Color.MSGreen,
                         },
                     },
-                    false: {
-                        value: undefined,
-                        color: undefined,
+                    scale: {
+                        type: 'const',
+                        constVal: { val_min: 0, val_max: 9 },
                     },
-                    scale: undefined,
                     maxBri: undefined,
                     minBri: undefined,
                 },
-
                 text: {
                     true: {
                         type: 'const',
-                        constVal: 'Taup.',
-                    },
-                    false: undefined,
-                },
-            },
-        },
-        {
-            role: 'text',
-            dpInit: '',
-            type: 'text',
-            modeScr: 'bottom',
-            data: {
-                entity2: {
-                    value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Current.DewPoint',
-                    },
-                    decimal: {
-                        type: 'const',
-                        constVal: 1,
-                    },
-                    factor: undefined,
-                    unit: {
-                        type: 'const',
-                        constVal: '°C',
-                    },
-                },
-
-                icon: {
-                    true: {
-                        value: {
-                            type: 'const',
-                            constVal: 'thermometer-water',
-                        },
-                        color: {
-                            type: 'const',
-                            constVal: '#7799FF',
-                        },
-                    },
-                    false: {
-                        value: undefined,
-                        color: undefined,
-                    },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
-                },
-
-                text: {
-                    true: {
-                        type: 'const',
-                        constVal: 'Taup.',
+                        constVal: 'UV',
                     },
                     false: undefined,
                 },
@@ -4206,7 +4233,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
-        {
+        /*{
             role: 'combined',
             dpInit: '',
             type: 'text',
@@ -4261,63 +4288,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                     },
                 },
             },
-        },
-        {
-            role: 'combined',
-            dpInit: '',
-            type: 'text',
-            modeScr: 'mricon',
-            data: {
-                entity1: {
-                    value: {
-                        type: 'const',
-                        constVal: false,
-                    },
-                },
-                icon: {
-                    true: {
-                        value: {
-                            type: 'const',
-                            constVal: 'heat-wave',
-                        },
-                        color: {
-                            type: 'const',
-                            constVal: Color.MSRed,
-                        },
-                        text: {
-                            value: {
-                                type: 'state',
-                                dp: '0_userdata.0.number1',
-                            },
-                            unit: {
-                                type: 'const',
-                                constVal: '°C',
-                            },
-                        },
-                    },
-                    false: {
-                        value: {
-                            type: 'const',
-                            constVal: 'heat-wave',
-                        },
-                        color: {
-                            type: 'const',
-                            constVal: Color.MSYellow,
-                        },
-                        text: {
-                            value: {
-                                type: 'const',
-                                constVal: 'deconz.0.Sensors.5.temperature',
-                            },
-                            unit: {
-                                type: 'const',
-                                constVal: '°C',
-                            },
-                        },
-                    },
-                },
-            },
-        },
+        },*/
         {
             role: 'text',
             dpInit: '',
@@ -4623,6 +4594,7 @@ namespace pages {
         | Types.PagePower;
     */
     export type StateRole =
+        | 'value.power'
         | 'button.play'
         | 'button.pause'
         | 'button.next'
@@ -4665,6 +4637,7 @@ namespace pages {
         | 'switch'
         | 'button'
         | 'sensor.window'
+        | 'sensor.open'
         | 'value.temperature'
         | 'value.battery'
         | 'indicator.lowbat'
@@ -4705,7 +4678,8 @@ namespace pages {
         | 'textNotIcon'
         | 'iconNotText'
         | 'test'
-        | ''; // timer with internal counter
+        | ''
+        | 'battery'; // timer with internal counter
     
     export function isStateRole(F: string | StateRole): F is StateRole {
         switch (F as StateRole) {
@@ -4800,7 +4774,6 @@ namespace pages {
     export type PageBaseConfigTemplate =
         | {
               card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
-              template: Types.PageTemplateIdent;
               adapter: string;
               alwaysOn: 'none' | 'always' | 'action';
               useColor: boolean;
@@ -4840,7 +4813,7 @@ namespace pages {
                     card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
                     uniqueID: string;
                     template?: Types.PageTemplateIdent;
-                    dpInit: string; // '' and initMode 'auto' throw an error
+                    dpInit: string | RegExp; // '' and initMode 'auto' throw an error
                     alwaysOn: 'none' | 'always' | 'action';
                     useColor: boolean;
                     pageItems: typePageItem.PageItemDataItemsOptions[];
@@ -4862,7 +4835,7 @@ namespace pages {
                     card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
                     uniqueID: string;
                     template?: Types.PageTemplateIdent;
-                    dpInit: string; // '' and initMode 'auto' throw an error
+                    dpInit: string | RegExp; // '' and initMode 'auto' throw an error
                     alwaysOn: 'none' | 'always' | 'action';
                     useColor: boolean;
                     pageItems: typePageItem.PageItemDataItemsOptions[];
@@ -4877,7 +4850,7 @@ namespace pages {
               card: PageTypeCards;
               uniqueID: string;
               template: Types.PageTemplateIdent;
-              dpInit: string;
+              dpInit: string | RegExp;
           } & Partial<Omit<PageBaseConfigTemplate, 'template'>>)
     ) & {
         items?:
@@ -5070,7 +5043,7 @@ namespace pages {
         headline: string;
         alwaysOnDisplay: boolean;
         album: string;
-        titel: listItem;
+        title: listItem;
         duration: string;
         elapsed: string;
         artist: listItem;
@@ -5136,10 +5109,10 @@ namespace pages {
         swing?: number;
         unit: string;
         headline: string;
-        text1: string;
-        text2: string;
-        text3: string;
-        text4: string;
+        mixed1: typePageItem.ValueEntryType;
+        mixed2: typePageItem.ValueEntryType;
+        mixed3: typePageItem.ValueEntryType;
+        mixed4: typePageItem.ValueEntryType;
         minTemp: number; // *10
         maxTemp: number; // *10
         tempStep: number; // *10
@@ -5363,6 +5336,7 @@ namespace typePageItem {
               textColor: string;
               currentState: string;
               list: string;
+              headline: string;
           }
         | {
               type: 'popupThermo';
@@ -5487,7 +5461,8 @@ namespace typePageItem {
     export type PageItemDataItemsOptions =
         | ({
               template: Types.TemplateIdent;
-              dpInit: string;
+              dpInit: string | RegExp;
+              appendix?: string;
           } & Partial<
               Omit<PageItemUnion, 'template' | 'data' | 'type'> &
                   pages.ChangeDeepPartial<
@@ -5504,10 +5479,10 @@ namespace typePageItem {
         | PageItemDataItemsOptionsWithOutTemplate;
     
     export type PageItemOptionsTemplate = {
-        name: Types.TemplateIdent;
         template?: Types.TemplateIdent;
-        role: pages.DeviceRole;
+        role?: pages.DeviceRole;
         adapter: string;
+        modeScr?: string;
         //dpInit: string;
         type: Types.SerialTypePageElements;
     } & (
@@ -5559,7 +5534,7 @@ namespace typePageItem {
         data: pages.ChangeTypeOfKeys<PageItemFan, dataItem.Dataitem | undefined>;
     };
     
-    export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'entity2' | 'icon'>;
+    export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'icon'>;
     export type PageItemTextDataItemsOptions = {
         type: 'text';
         data: pages.ChangeTypeOfKeys<PageItemText, Types.DataItemsOptions | undefined>;
@@ -5625,7 +5600,16 @@ namespace typePageItem {
     
     export type PageItemInputSel = Pick<
         PageItemBase,
-        'entityInSel' | 'text' | 'icon' | 'color' | 'headline' | 'valueList' | 'setList'
+        | 'entityInSel'
+        | 'text'
+        | 'entity2'
+        | 'icon'
+        | 'color'
+        | 'headline'
+        | 'valueList'
+        | 'valueList2'
+        | 'setList'
+        | 'setValue1'
     >;
     
     export type PageItemInputSelDataItemsOptions = {
@@ -5682,6 +5666,7 @@ namespace typePageItem {
         setValue2?: string;
         setValue3?: string;
         valueList?: number;
+        valueList2?: number;
         setNavi?: number;
         setList?: number;
         maxValue1?: number;
@@ -5744,9 +5729,9 @@ namespace typePageItem {
     //XOR<XOR<A, B>, C>
     
     export type PageItemUnion = {
-        role: pages.DeviceRole;
+        role?: pages.DeviceRole;
         template?: undefined;
-        dpInit?: string;
+        dpInit?: string | RegExp;
         modeScr?: Types.ScreenSaverPlaces | undefined;
         type: Types.SerialTypePageElements;
         data: PageItemBase;
@@ -5826,7 +5811,7 @@ namespace typePageItem {
 
 namespace Types {
     export type PageTemplateIdent = 'entities.waste-calendar' | 'media.spotify-premium' | 'entities.departure-timetable';
-
+    
     export type TemplateIdent =
         | 'generic.shutter'
         | 'shutter.shelly.2PM'
@@ -5836,15 +5821,13 @@ namespace Types {
         | 'text.battery'
         | 'text.temperature'
         | 'text.battery.low'
-    | 'button.iconRightSize'
-    | 'button.iconLeftSize'
-        | ''
-        | ''
-        | ''
-        | ''
-        | ''
-        | ''
-        | ''
+        | 'button.iconRightSize'
+        | 'button.iconLeftSize'
+        | 'shutter.deconz.ikea.fyrtur'
+        | 'shutter.basic'
+        | 'shutter.basic.onlyV'
+        | 'text.battery.bydhvs'
+        | 'text.accuweather.bot2values'
         | ''
         | ''
         | ''
@@ -5867,8 +5850,8 @@ namespace Types {
         | ''
         | ''
         | '';
-
-    export function isEventMethod (F: string | EventMethod): F is EventMethod {
+    
+    export function isEventMethod(F: string | EventMethod): F is EventMethod {
         switch (F as EventMethod) {
             case 'startup':
             case 'sleepReached':
@@ -5884,8 +5867,8 @@ namespace Types {
                 return false;
         }
     }
-
-    export function isPopupType (F: PopupType | any): F is PopupType {
+    
+    export function isPopupType(F: PopupType | any): F is PopupType {
         switch (F as PopupType) {
             case 'popupFan':
             case 'popupInSel':
@@ -5901,7 +5884,7 @@ namespace Types {
                 return false;
         }
     }
-
+    
     export type EventMethod =
         | 'startup'
         | 'sleepReached'
@@ -5910,12 +5893,12 @@ namespace Types {
         | 'renderCurrentPage'
         | 'button1'
         | 'button2';
-
+    
     export type panelRecvType = {
         event: 'event';
         method: EventMethod;
     };
-
+    
     export const SerialTypeArray = [
         'light', //popup
         'shutter', //popup
@@ -5928,7 +5911,7 @@ namespace Types {
         'timer', //popup
         'fan', //popup
     ];
-
+    
     export type PopupType =
         | 'popupFan'
         | 'popupInSel'
@@ -5938,7 +5921,7 @@ namespace Types {
         | 'popupShutter'
         | 'popupThermo'
         | 'popupTimer';
-
+    
     export type SerialTypePageElements =
         | 'button' //~button~button.entityName~3~17299~bt-name~bt-text
         | 'light' // ~light~light.entityName~1~17299~Light1~0
@@ -5948,7 +5931,7 @@ namespace Types {
         | 'number' //~number~input_number.entityName~4~17299~Number123~value|min|max
         | 'switch' // ~switch~switch.entityName~4~17299~Switch1~0
         | 'delete'; //~delete~~~~~
-
+    
     export type SerialTypePopup =
         | 'button'
         | 'light'
@@ -5960,7 +5943,7 @@ namespace Types {
         | 'fan'
         | 'switch'
         | 'delete';
-
+    
     export type ButtonActionType =
         | 'bExit'
         | 'bUp'
@@ -6016,12 +5999,12 @@ namespace Types {
         | 'A4'
         | 'D1'
         | 'U1';
-
+    
     export type Payload = {
         payload: string;
     };
     export type BooleanUnion = 'true' | 'false';
-
+    
     export type DimMode = {
         dimmodeOn: boolean | undefined;
         brightnessDay: number | undefined;
@@ -6029,13 +6012,13 @@ namespace Types {
         timeDay: string | undefined;
         timeNight: string | undefined;
     };
-
-    export type ValueDateFormat = {local: string; format: any};
-
-    export function isValueDateFormat (F: any | ValueDateFormat): F is ValueDateFormat {
+    
+    export type ValueDateFormat = { local: string; format: any };
+    
+    export function isValueDateFormat(F: any | ValueDateFormat): F is ValueDateFormat {
         return F && typeof F === 'object' && F.local !== undefined && F.format !== undefined;
     }
-
+    
     export type ScreenSaverPlaces = 'left' | 'bottom' | 'indicator' | 'alternate' | 'favorit' | 'mricon' | 'time' | 'date';
     export type NSpanelModel = 'eu';
     export type Config = {
@@ -6064,15 +6047,15 @@ namespace Types {
         | [];
     export type indicatorScreensaverEntityType =
         | [
-            ScreenSaverElementWithUndefined?,
-            ScreenSaverElementWithUndefined?,
-            ScreenSaverElementWithUndefined?,
-            ScreenSaverElementWithUndefined?,
-            ScreenSaverElementWithUndefined?,
-        ]
+              ScreenSaverElementWithUndefined?,
+              ScreenSaverElementWithUndefined?,
+              ScreenSaverElementWithUndefined?,
+              ScreenSaverElementWithUndefined?,
+              ScreenSaverElementWithUndefined?,
+          ]
         | [];
     export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
-
+    
     export type ScreenSaverDataItems = {
         entityValue: pages.ChangeTypeOfKeys<typePageItem.ValueEntryType, dataItem.Dataitem | undefined>;
         entityDateFormat: dataItem.Dataitem | undefined;
@@ -6087,48 +6070,49 @@ namespace Types {
         entityText: pages.ChangeTypeOfKeys<typePageItem.TextEntryType, DataItemsOptions | undefined>;
         entityIconSelect: ScreenSaverElementConfig;
     };
-
+    
     type ScreenSaverElementConfig = DataItemsOptions | undefined;
-
+    
     export type IconScaleElement = {
         val_min: number;
         val_max: number;
         val_best?: number;
         log10?: 'max' | 'min';
     };
-
-    export function isIconScaleElement (F: any | IconScaleElement): F is IconScaleElement {
+    
+    export function isIconScaleElement(F: any | IconScaleElement): F is IconScaleElement {
         return F && 'val_min' in (F as IconScaleElement) && 'val_max' in (F as IconScaleElement);
     }
-    export function isPartialIconScaleElement (F: any | IconScaleElement): F is IconScaleElement {
+    export function isPartialIconScaleElement(F: any | IconScaleElement): F is IconScaleElement {
         return F && ('val_min' in (F as IconScaleElement) || 'val_max' in (F as IconScaleElement));
     }
-
+    
     export type DataItemstype = DataItemsOptions['type'];
     export type DataItemsMode = 'custom' | 'auto';
     export type DataItemsOptionsIcon =
         | Exclude<DataItemsOptions, DataItemsOptionsConst>
         | (DataItemsOptionsConst & {
-            constVal: AllIcons;
-        });
+              constVal: AllIcons;
+          });
     export type DataItemsOptions = {
         name?: string;
-        scale?: {min: number; max: number};
+        scale?: { min: number; max: number };
     } & (DataItemsOptionsConst | DataItemsOptionsState | DataItemsOptionsTriggered | DataItemsOptionsInternal);
-
+    
     type DataItemsOptionsAuto = {
         mode: 'auto' | 'done'; // not set means custom
         role: pages.StateRole | pages.StateRole[];
+        regexp?: RegExp;
     };
     type DataItemsOptionsCustom = {
         mode?: 'custom'; // not set means custom
         role?: string;
     };
-
+    
     type DataItemsOptionsConst = {
         type: 'const';
         role?: pages.StateRole;
-        constVal: StateValue | AllIcons;
+        constVal: StateValue | AllIcons | Color.RGB | pages.placeholderType | IconScaleElement;
         state?: State | null; // use just inside of class
         forceType?: 'string' | 'number' | 'boolean'; // force a type
     };
@@ -6147,7 +6131,7 @@ namespace Types {
         forceType?: 'string' | 'number' | 'boolean'; // force a type
         read?: string | ((val: any) => any);
         write?: string | ((val: any) => any);
-        response?: 'now' | 'medium' | 'slow';
+        response?: 'now' | 'medium';
     };
     type DataItemsOptionsTriggered = (DataItemsOptionsAuto | DataItemsOptionsCustom) & {
         type: 'triggered';
@@ -6158,7 +6142,7 @@ namespace Types {
         read?: string | ((val: any) => any);
         write?: string | ((val: any) => any);
     };
-
+    
     //type internalDatapoints = 'Relais1' | 'Relais2';
     export type IncomingEvent = {
         type: EventType;
@@ -6171,7 +6155,7 @@ namespace Types {
         id: string; //| PopupType;
         opt: string;
     };
-
+    
     export type Event = {
         type: EventType;
         method: EventMethod;
@@ -6180,18 +6164,18 @@ namespace Types {
         opt: string[];
     };
     export type EventType = 'event';
-    export function isEventType (F: string | EventType): F is EventType {
+    export function isEventType(F: string | EventType): F is EventType {
         return ['event'].indexOf(F) != -1;
     }
     export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced';
-
+    
     export interface State extends Omit<iobJS.State, 'val'> {
         val: StateValue;
     }
     export type StateValue = iobJS.StateValue | object;
-
+    
     export type TasmotaIncomingTopics = 'stat/POWER2' | 'stat/POWER1' | 'stat/STATUS0';
-
+    
     /**
      * Json to Status0 from Tasmota
      */
@@ -6351,22 +6335,30 @@ namespace Types {
             };
         };
     };
-
-    export type PanelInfo = Partial<{
-        displayVersion: number;
-        model: string;
-        net: {
-            ip: string;
-            gateway: string;
-            dnsserver: string;
-            subnetmask: string;
-            hostname: string;
-            mac: string;
+    
+    export type PanelInfo = {
+        nspanel: {
+            displayVersion: number;
+            model: string;
+            bigIconLeft: boolean;
+            bigIconRight: boolean;
+            isOnline: boolean;
+            currentPage: string;
         };
-        uptime: string;
-        wifi: {ssid: string; rssi: number; downtime: string};
-    }>;
-}
+        tasmota: {
+            net: {
+                ip: string;
+                gateway: string;
+                dnsserver: string;
+                subnetmask: string;
+                hostname: string;
+                mac: string;
+            };
+            uptime: string;
+            wifi: { ssid: string; rssi: number; downtime: string };
+        };
+    };
+    }
 export type ScreensaverConfigType = {
     momentLocale: string;
     locale: string; //Intl.DateTimeFormat;

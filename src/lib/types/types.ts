@@ -295,6 +295,7 @@ export type DataItemsOptions = {
 type DataItemsOptionsAuto = {
     mode: 'auto' | 'done'; // not set means custom
     role: pages.StateRole | pages.StateRole[];
+    regexp?: RegExp;
 };
 type DataItemsOptionsCustom = {
     mode?: 'custom'; // not set means custom

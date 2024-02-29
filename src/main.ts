@@ -109,7 +109,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 },
             );
             if (!this.mqttClient) return;
-            const testconfig = JSON.parse(JSON.stringify(this.config.Testconfig2));
+            const testconfig = structuredClone(this.config.Testconfig2);
             testconfig[0].name = this.config.name;
             testconfig[0].topic = this.config.topic;
             const mem = process.memoryUsage().heapUsed / 1024;

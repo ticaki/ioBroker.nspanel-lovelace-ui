@@ -167,7 +167,7 @@ export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data'
 export type PageItemDataItemsOptions =
     | ({
           template: Types.TemplateIdent;
-          dpInit: string;
+          dpInit: string | RegExp;
           appendix?: string;
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &
@@ -368,6 +368,10 @@ export type PageItemBase = {
     text1?: TextEntryType;
     text2?: TextEntryType;
     text3?: TextEntryType;
+    mixed1?: ValueEntryType; // Readonly Werte die angezeigt werden soll. wird immer für insel verwendet
+    mixed2?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+    mixed3?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+    mixed4?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     setValue1?: string;
     setValue2?: string;
     setValue3?: string;
@@ -437,7 +441,7 @@ export type PageTypeUnionTemplate = {
 export type PageItemUnion = {
     role?: pages.DeviceRole;
     template?: undefined;
-    dpInit?: string;
+    dpInit?: string | RegExp;
     modeScr?: Types.ScreenSaverPlaces | undefined;
     type: Types.SerialTypePageElements;
     data: PageItemBase;
