@@ -3175,7 +3175,7 @@ const pageScreensaverTest = {
     },
     {
       template: "text.accuweather.bot2values",
-      dpInit: "/^accuweather.0.+?d1$/g",
+      dpInit: "/^accuweather\\.0.+?d1$/g",
       modeScr: "bottom"
     },
     {
