@@ -23,5 +23,10 @@
     "Color brightness": "Яркость цвета",
     "welcomeTToken": "Хорошего дня,\r\n желаю тебе\r\n Армилар, ТТ-Том, тикаки\r\n   и Кукукманн",
     "welcomeHToken": "Добро пожаловать на NSPanel",
-    "departure": "Отправление"
+    "departure": "Отправление",
+    "HORIZONTAL": "горизонтальный",
+    "VERTICAL": "вертикальный",
+    "VERTICAL_AND_HORIZONTAL": "вертикальный и горизонтальный",
+    "opened": "открыт",
+    "closed": "закрыто"
 }

@@ -24,86 +24,105 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var config_custom_exports = {};
 __export(config_custom_exports, {
-  Testconfig: () => Testconfig,
-  pageMediaTest: () => pageMediaTest,
-  pageMediaTest2: () => pageMediaTest2
+  Testconfig: () => Testconfig
 });
 module.exports = __toCommonJS(config_custom_exports);
 var Color = __toESM(require("./const/Color"));
-const pageEntitiesTest1 = {
-  card: "cardEntities",
+const pageGridMain = {
+  card: "cardGrid",
   dpInit: "",
   alwaysOn: "none",
-  uniqueID: "entities1",
+  uniqueID: "main",
   useColor: false,
   config: {
-    card: "cardEntities",
+    card: "cardGrid",
     data: {
       headline: {
         type: "const",
-        constVal: "entities1"
+        constVal: "\xDCbersicht"
       }
     }
   },
   pageItems: [
     {
       role: "text.list",
-      type: "number",
+      type: "button",
       dpInit: "",
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
+            value: { type: "const", constVal: "window-open-variant" },
             color: { type: "const", constVal: Color.Red }
           },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          false: {
+            value: { type: "const", constVal: "window-closed-variant" },
+            color: { type: "const", constVal: Color.Green }
+          }
         },
         entity1: {
           value: {
             type: "triggered",
-            dp: "0_userdata.0.dimmer"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
+            dp: "0_userdata.0.NSPanel.Allgemein.Fenster.Status_offene"
+          }
         },
         text: {
           true: {
-            type: "const",
-            constVal: "Number"
+            type: "triggered",
+            dp: "0_userdata.0.NSPanel.Allgemein.Fenster.Anzahl_offene"
           },
-          false: void 0
+          false: {
+            type: "const",
+            constVal: "Fenster"
+          }
+        },
+        setNavi: {
+          type: "const",
+          constVal: 12
         }
       }
     },
     {
-      template: "generic.shutter",
-      dpInit: "0_userdata.0.shutter_test",
+      role: "text.list",
+      type: "button",
+      dpInit: "",
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "window-open" },
-            color: { type: "const", constVal: "aqua", role: "level.color.name" }
+            value: { type: "const", constVal: "door-open" },
+            color: { type: "const", constVal: Color.Red }
           },
-          false: null
+          false: {
+            value: { type: "const", constVal: "door-closed" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.NSPanel.Allgemein.T\xFCren.Status_offene"
+          }
+        },
+        text: {
+          true: {
+            type: "triggered",
+            dp: "0_userdata.0.NSPanel.Allgemein.T\xFCren.Anzahl_offene"
+          },
+          false: {
+            type: "const",
+            constVal: "T\xFCren"
+          }
+        },
+        setNavi: {
+          type: "const",
+          constVal: 11
         }
       }
     },
     {
-      role: "rgb",
-      type: "light",
+      role: "text.list",
+      type: "button",
       dpInit: "",
       data: {
-        color: {
-          true: { type: "triggered", dp: "0_userdata.0.RGB" },
-          false: void 0
-        },
         icon: {
           true: {
             value: { type: "const", constVal: "lightbulb" },
@@ -111,216 +130,155 @@ const pageEntitiesTest1 = {
           },
           false: {
             value: { type: "const", constVal: "lightbulb-outline" },
-            color: { type: "const", constVal: Color.HMIOff }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        colorMode: { type: "const", constVal: true },
-        dimmer: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.dimmer"
+            color: { type: "const", constVal: Color.Green }
           }
         },
         entity1: {
-          value: { type: "triggered", dp: "0_userdata.0.example_state" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        entityInSel: void 0,
-        text1: {
-          true: {
-            type: "const",
-            constVal: "Licht"
-          },
-          false: void 0
-        },
-        text2: {
-          true: {
-            type: "const",
-            constVal: "Picker1"
-          },
-          false: void 0
-        },
-        text3: {
-          true: {
-            type: "const",
-            constVal: "Picker2"
-          },
-          false: void 0
-        },
-        ct: {
           value: {
             type: "triggered",
-            dp: "0_userdata.0.ct"
+            dp: "0_userdata.0.NSPanel.Allgemein.Licht.Status_Ein"
           }
         },
-        valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+        text: {
+          true: {
+            type: "triggered",
+            dp: "0_userdata.0.NSPanel.Allgemein.Licht.Anzahl_Ein"
+          },
+          false: {
+            type: "const",
+            constVal: "Licht"
+          }
+        },
+        setNavi: {
+          type: "const",
+          constVal: 14
+        }
       }
     },
     {
       role: "text.list",
-      type: "fan",
+      type: "button",
       dpInit: "",
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
+            value: { type: "const", constVal: "lock" },
+            color: { type: "const", constVal: Color.Green }
           },
           false: {
-            value: { type: "const", constVal: "fan" },
+            value: { type: "const", constVal: "lock-open-variant" },
             color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          }
         },
         entity1: {
           value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        speed: {
-          value: {
-            type: "const",
-            constVal: 1e3
-          },
-          factor: void 0,
-          maxScale: {
-            type: "const",
-            constVal: 3e3
+            type: "triggered",
+            dp: "0_userdata.0.NSPanel.Allgemein.T\xFCrschloss.state"
           }
-        },
-        headline: {
-          type: "const",
-          constVal: "Football-Fan"
         },
         text: {
           true: {
             type: "const",
-            constVal: "Details"
+            constVal: "T\xFCrschlo\xDF"
           },
           false: void 0
-        },
-        entityInSel: { value: { type: "const", constVal: "2" } },
-        valueList: { type: "const", constVal: "1?2?3?4" }
+        }
       }
     }
   ],
   items: void 0
 };
-const popupTest = {
-  card: "popupNotify",
+const pageGridTueren = {
+  card: "cardGrid",
   dpInit: "",
   alwaysOn: "none",
-  uniqueID: "popup1",
+  uniqueID: "tuer",
   useColor: false,
   config: {
-    card: "popupNotify",
-    data: {
-      entity1: { value: { type: "state", dp: "0_userdata.0.example_state" } },
-      headline: { type: "const", constVal: "welcomeHToken" },
-      colorHeadline: { true: { color: { type: "const", constVal: Color.White } } },
-      buttonLeft: { type: "const", constVal: "" },
-      colorButtonLeft: { true: { color: { type: "const", constVal: Color.White } } },
-      buttonRight: { type: "const", constVal: "" },
-      colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
-      text: { type: "const", constVal: "Text Test ${pl}" },
-      colorText: { true: { color: { type: "const", constVal: Color.White } } },
-      timeout: { type: "const", constVal: 0 },
-      optionalValue: { type: "const", constVal: { pl: { text: "das ist ein placeholder" } } },
-      setValue1: { type: "const", constVal: true }
-    }
-  },
-  pageItems: [],
-  items: void 0
-};
-const pageEntitiesTest3 = {
-  card: "cardEntities",
-  dpInit: "",
-  alwaysOn: "none",
-  uniqueID: "entities3",
-  useColor: false,
-  config: {
-    card: "cardEntities",
+    card: "cardGrid",
     data: {
       headline: {
         type: "const",
-        constVal: "entities3"
+        constVal: "Status T\xFCren"
       }
     }
   },
   pageItems: [
     {
-      role: "timer",
-      type: "timer",
+      role: "text.list",
+      type: "button",
       dpInit: "",
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "timer" },
+            value: { type: "const", constVal: "door-open" },
             color: { type: "const", constVal: Color.Red }
           },
           false: {
-            value: void 0,
+            value: { type: "const", constVal: "door-closed" },
             color: { type: "const", constVal: Color.Green }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          }
         },
         entity1: {
           value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
+            type: "triggered",
+            dp: "alias.0.T\xFCren.Haust\xFCr.ACTUAL"
+          }
         },
-        headline: { type: "const", constVal: "Timer" },
-        setValue1: { type: "state", dp: "0_userdata.0.example_state" }
+        text: {
+          true: {
+            type: "const",
+            constVal: "Haust\xFCr"
+          },
+          false: void 0
+        }
       }
     },
     {
-      role: "rgbSingle",
-      type: "light",
-      dpInit: "0_userdata.0.shelly.0.SHRGBW2#258794#1",
-      template: "light.shelly.rgbw2"
-    },
-    {
-      type: "shutter",
-      dpInit: "0_userdata.0.shelly.0.SHSW-25#C45BBE5FC53F#1",
-      template: "shutter.shelly.2PM"
-    },
-    {
-      dpInit: "bydhvs",
-      template: "text.battery.bydhvs"
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "door-open" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: { type: "const", constVal: "door-closed" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.T\xFCren.Terassent\xFCr.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Terasse"
+          },
+          false: void 0
+        }
+      }
     }
   ],
   items: void 0
 };
-const pageEntitiesTest2 = {
-  card: "cardEntities",
+const pageGridFenster1 = {
+  card: "cardGrid",
   dpInit: "",
   alwaysOn: "none",
-  uniqueID: "entities2",
+  uniqueID: "fenster1",
   useColor: false,
   config: {
-    card: "cardEntities",
+    card: "cardGrid",
     data: {
       headline: {
         type: "const",
-        constVal: "entities2"
+        constVal: "Status Fenster"
       }
     }
   },
@@ -328,36 +286,918 @@ const pageEntitiesTest2 = {
     {
       role: "text.list",
       type: "button",
-      template: "button.iconLeftSize",
-      dpInit: ""
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-open-variant" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: { type: "const", constVal: "window-closed-variant" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Fenster.WC-Fenster.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "G\xE4ste WC"
+          },
+          false: void 0
+        }
+      }
     },
     {
       role: "text.list",
       type: "button",
-      template: "button.iconRightSize",
-      dpInit: ""
-    },
-    {
-      role: "",
-      type: "number",
+      dpInit: "",
       data: {
-        entity1: {
-          value: { type: "internal", dp: "cmd/screensaverTimeout" },
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 90 }
-        },
         icon: {
           true: {
-            value: { type: "const", constVal: "clock-time-twelve-outline" },
-            color: { type: "const", constVal: Color.White }
+            value: { type: "const", constVal: "window-open-variant" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: { type: "const", constVal: "window-closed-variant" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Fenster.K\xFCchenfenster.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "K\xFCche"
           },
           false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-open-variant" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: { type: "const", constVal: "window-closed-variant" },
+            color: { type: "const", constVal: Color.Green }
+          }
         },
-        text: { true: { type: "const", constVal: "screensaverTimeout" }, false: void 0 }
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Fenster.B\xFCrofenster.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "B\xFCro"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-open-variant" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: { type: "const", constVal: "window-closed-variant" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Fenster.JosiFenster.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Josi"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-open-variant" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: { type: "const", constVal: "window-closed-variant" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Fenster.Schalfzimmerfenster.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Schalfzimmer"
+          },
+          false: void 0
+        }
       }
     }
   ],
   items: void 0
+};
+const pageGridFenster2 = {
+  card: "cardGrid",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "fenster2",
+  useColor: false,
+  config: {
+    card: "cardGrid",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Status Dachfenster"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-open-variant" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: { type: "const", constVal: "window-closed-variant" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Fenster.Dachfenster1.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Dach 1"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-open-variant" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: { type: "const", constVal: "window-closed-variant" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Fenster.Dachfenster2.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Dach 2"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-open-variant" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: { type: "const", constVal: "window-closed-variant" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Fenster.Dachfenster3.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Dach 3"
+          },
+          false: void 0
+        }
+      }
+    }
+  ],
+  items: void 0
+};
+const pageGridLicht1 = {
+  card: "cardGrid",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "licht1",
+  useColor: false,
+  config: {
+    card: "cardGrid",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Licht unten"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.Licht_Treppe.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Treppe"
+          },
+          false: void 0
+        },
+        setValue1: { type: "state", dp: "alias.0.Licht.Licht_Treppe.SET" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.LED_K\xFCche.ON_ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "K\xFCche Sp\xFCle"
+          },
+          false: void 0
+        },
+        setValue1: { type: "state", dp: "alias.0.Licht.LED_K\xFCche.ON_SET" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.LED_K\xFCche_Board.ON_ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "K\xFCche Board"
+          },
+          false: void 0
+        },
+        setValue1: { type: "state", dp: "alias.0.Licht.LED_K\xFCche_Board.ON_SET" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.LED_HWR.ON_ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "HWR"
+          },
+          false: void 0
+        },
+        setValue1: { type: "state", dp: "alias.0.Licht.LED_HWR.ON_SET" }
+      }
+    }
+  ],
+  items: void 0
+};
+const pageGridLicht2 = {
+  card: "cardGrid",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "licht2",
+  useColor: false,
+  config: {
+    card: "cardGrid",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Licht oben"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.Licht_B\xFCro.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "B\xFCro"
+          },
+          false: void 0
+        },
+        setValue1: { type: "state", dp: "alias.0.Licht.Licht_B\xFCro.SET" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Steckdosen.Schreibtisch.Control.Power"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "B\xFCro Schreibtisch"
+          },
+          false: void 0
+        },
+        setValue1: { type: "state", dp: "alias.0.Steckdosen.Schreibtisch.Control.Power" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.Licht_Dach.ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Dach"
+          },
+          false: void 0
+        },
+        setValue1: { type: "state", dp: "alias.0.Licht.Licht_Dach.SET" }
+      }
+    }
+  ],
+  items: void 0
+};
+const pageGridLicht3 = {
+  card: "cardGrid",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "licht3",
+  useColor: false,
+  config: {
+    card: "cardGrid",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Licht Josi"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.Licht_Josi_Decke.ON"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Decke"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.RegalJosiKalt.ON_ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Regal kalt"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.RegalJosiWarm.ON_ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Regal warm"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.RegalJosiEfeu.ON_ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Efeu"
+          },
+          false: void 0
+        }
+      }
+    }
+  ],
+  items: void 0
+};
+const pageGridLicht4 = {
+  card: "cardGrid",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "licht4",
+  useColor: false,
+  config: {
+    card: "cardGrid",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Licht Wohnzimmer"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.LED_TV.ON_ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "TV"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.LED_Board.ON_ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Regal"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Steckdosen.Sterne_WZ.Control.Power"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Fenster"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Licht.LED_WZ.ON_ACTUAL"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Decke"
+          },
+          false: void 0
+        }
+      }
+    }
+  ],
+  items: void 0
+};
+const pageAbfall = {
+  card: "cardEntities",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "abfall",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Abfall"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "text.list",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "trash-can" },
+            color: { type: "state", dp: "0_userdata.0.Abfallkalender.1.color" }
+          }
+        },
+        entity1: {
+          value: { type: "const", constVal: true }
+        },
+        text: {
+          true: { type: "state", dp: "0_userdata.0.Abfallkalender.1.event" },
+          false: void 0
+        },
+        text1: {
+          true: { type: "state", dp: "0_userdata.0.Abfallkalender.1.date" },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "trash-can" },
+            color: { type: "state", dp: "0_userdata.0.Abfallkalender.2.color" }
+          }
+        },
+        entity1: {
+          value: { type: "const", constVal: true }
+        },
+        text: {
+          true: { type: "state", dp: "0_userdata.0.Abfallkalender.2.event" },
+          false: void 0
+        },
+        text1: {
+          true: { type: "state", dp: "0_userdata.0.Abfallkalender.2.date" },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "trash-can" },
+            color: { type: "state", dp: "0_userdata.0.Abfallkalender.3.color" }
+          }
+        },
+        entity1: {
+          value: { type: "const", constVal: true }
+        },
+        text: {
+          true: { type: "state", dp: "0_userdata.0.Abfallkalender.3.event" },
+          false: void 0
+        },
+        text1: {
+          true: { type: "state", dp: "0_userdata.0.Abfallkalender.3.date" },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "trash-can" },
+            color: { type: "state", dp: "0_userdata.0.Abfallkalender.4.color" }
+          }
+        },
+        entity1: {
+          value: { type: "const", constVal: true }
+        },
+        text: {
+          true: { type: "state", dp: "0_userdata.0.Abfallkalender.4.event" },
+          false: void 0
+        },
+        text1: {
+          true: { type: "state", dp: "0_userdata.0.Abfallkalender.4.date" },
+          false: void 0
+        }
+      }
+    }
+  ],
+  items: void 0
+};
+const pageAbfallTemplate = {
+  card: "cardEntities",
+  dpInit: "0_userdata.0.Abfallkalender",
+  uniqueID: "abfall1",
+  template: "entities.waste-calendar"
 };
 const pagePowerTest1 = {
   card: "cardPower",
@@ -369,2397 +1209,403 @@ const pagePowerTest1 = {
   config: {
     card: "cardPower",
     data: {
-      headline: { type: "const", constVal: "headline" },
-      homeValueTop: {
-        value: { type: "const", constVal: "top" }
-      },
-      homeValueBot: {
-        value: { type: "internal", dp: "///power1/powerSum" },
-        math: { type: "const", constVal: "return r1+r2+r3+l1+l2+l3 -999" }
-      },
-      leftTop: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "arrow-up" },
-            color: void 0
-          },
-          false: {
-            value: void 0,
-            color: void 0
-          }
+      headline: { type: "const", constVal: "Stromverteilung" },
+      homeIcon: {
+        true: {
+          value: { type: "const", constVal: "home-lightning-bolt-outline" },
+          color: void 0
         },
-        value: {
-          value: { type: "const", constVal: 1e3 }
+        false: {
+          value: void 0,
+          color: void 0
         }
       },
+      homeValueTop: void 0,
+      homeValueBot: {
+        value: { type: "internal", dp: "///power1/powerSum" },
+        math: { type: "const", constVal: "return r2+l2" }
+      },
+      leftTop: void 0,
       leftMiddle: {
         icon: {
           true: {
-            value: { type: "const", constVal: "arrow-left" },
-            color: void 0
+            value: { type: "const", constVal: "solar-power-variant-outline" },
+            color: { type: "const", constVal: Color.MSGreen },
+            text: void 0
           },
           false: {
             value: void 0,
-            color: void 0
-          }
+            color: { type: "const", constVal: Color.MSRed },
+            text: void 0
+          },
+          scale: { type: "const", constVal: { val_min: 0, val_max: 650, val_best: 650 } }
         },
         value: {
-          value: { type: "const", constVal: 2 }
+          value: { type: "triggered", dp: "mqtt.2.Solar.P_AC" },
+          decimal: { type: "const", constVal: 0 },
+          unit: { type: "const", constVal: "W" }
+        },
+        speed: {
+          value: {
+            type: "state",
+            dp: "mqtt.2.Solar.P_AC",
+            read: `{
+                            let v = val*125/650; 
+                            v = v<0?0:v>125?125:v; 
+                            return (v*-1).toFixed(0);
+                        }`
+          }
         }
       },
       leftBottom: {
         icon: {
           true: {
-            value: { type: "const", constVal: "arrow-down" },
-            color: void 0
+            value: { type: "const", constVal: "tumble-dryer" },
+            color: { type: "const", constVal: Color.MSGreen },
+            text: void 0
           },
           false: {
             value: void 0,
-            color: void 0
-          }
+            color: { type: "const", constVal: Color.MSRed },
+            text: void 0
+          },
+          scale: { type: "const", constVal: { val_min: 0, val_max: 2e3, val_best: 0 } }
         },
         value: {
-          value: { type: "const", constVal: 3 }
+          value: { type: "triggered", dp: "alias.0.Trockner.Leistung" },
+          unit: { type: "const", constVal: "W" }
+        },
+        speed: {
+          value: {
+            type: "state",
+            dp: "alias.0.Trockner.Leistung",
+            read: `{
+                            let v = val*125/2000; 
+                            v = v<0?0:v>125?125:v; 
+                            return (v*-1).toFixed(0);
+                        }`
+          }
         }
       },
       rightTop: {
         icon: {
           true: {
-            value: { type: "const", constVal: "arrow-up" },
-            color: void 0
+            value: { type: "const", constVal: "washing-machine" },
+            color: { type: "const", constVal: Color.MSGreen },
+            text: void 0
           },
           false: {
             value: void 0,
-            color: void 0
-          }
+            color: { type: "const", constVal: Color.MSRed },
+            text: void 0
+          },
+          scale: { type: "const", constVal: { val_min: 0, val_max: 2e3, val_best: 0 } }
         },
         value: {
-          value: { type: "const", constVal: 4 }
+          value: { type: "triggered", dp: "alias.0.WMA.Leistung" },
+          unit: { type: "const", constVal: "W" }
+        },
+        speed: {
+          value: {
+            type: "state",
+            dp: "alias.0.WMA.Leistung",
+            read: `{
+                            let v = val*125/2000; 
+                            v = v<0?0:v>125?125:v; 
+                            return (v*-1).toFixed(0);
+                        }`
+          }
         }
       },
       rightMiddle: {
         icon: {
           true: {
-            value: { type: "const", constVal: "arrow-right" },
-            color: void 0
+            value: { type: "const", constVal: "transmission-tower" },
+            color: { type: "const", constVal: Color.MSGreen },
+            text: void 0
           },
           false: {
             value: void 0,
-            color: void 0
-          }
+            color: { type: "const", constVal: Color.MSRed },
+            text: void 0
+          },
+          scale: { type: "const", constVal: { val_min: 0, val_max: 5e3, val_best: 0 } }
         },
         value: {
-          value: { type: "const", constVal: 5 }
-        }
-      },
-      rightBottom: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "arrow-down" },
-            color: void 0
-          },
-          false: {
-            value: void 0,
-            color: void 0
-          }
+          value: { type: "triggered", dp: "alias.0.Stromzaehler.Daten.Leistung" },
+          unit: { type: "const", constVal: "W" }
         },
-        value: {
-          value: { type: "const", constVal: 6 }
-        }
-      },
-      homeIcon: void 0
-    }
-  },
-  items: void 0
-};
-const pageMediaTest = {
-  card: "cardMedia",
-  dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
-  alwaysOn: "none",
-  config: {
-    card: "cardMedia",
-    data: {
-      headline: {
-        type: "const",
-        constVal: "home"
-      },
-      alwaysOnDisplay: {
-        type: "const",
-        constVal: "test"
-      },
-      album: {
-        mode: "auto",
-        type: "state",
-        role: "media.album",
-        dp: ""
-      },
-      title: {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: {
-          type: "triggered",
-          dp: "0_userdata.0.spotify-premium.0.player.playlist.trackNo"
-        },
-        color: {
-          type: "const",
-          constVal: { r: 250, g: 2, b: 3 }
-        }
-      },
-      duration: {
-        mode: "auto",
-        type: "state",
-        role: "media.duration",
-        dp: ""
-      },
-      elapsed: {
-        mode: "auto",
-        type: "triggered",
-        role: ["media.elapsed", "media.elapsed.text"],
-        dp: ""
-      },
-      volume: {
-        value: {
-          mode: "auto",
-          type: "state",
-          role: ["level.volume"],
-          response: "now",
-          scale: { min: 0, max: 100 },
-          dp: ""
-        },
-        set: {
-          mode: "auto",
-          type: "state",
-          role: ["level.volume"],
-          response: "medium",
-          scale: { min: 0, max: 100 },
-          dp: ""
-        }
-      },
-      artist: {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: {
-          mode: "auto",
-          type: "state",
-          role: "media.artist",
-          dp: ""
-        },
-        color: void 0,
-        icon: {
-          type: "const",
-          constVal: "diameter"
-        },
-        list: void 0
-      },
-      shuffle: {
-        value: {
-          mode: "auto",
-          type: "state",
-          role: "media.mode.shuffle",
-          dp: ""
-        },
-        set: {
-          mode: "auto",
-          type: "state",
-          role: "media.mode.shuffle",
-          dp: ""
-        }
-      },
-      icon: {
-        type: "const",
-        constVal: "dialpad"
-      },
-      play: {
-        mode: "auto",
-        type: "state",
-        role: ["button.play"],
-        dp: ""
-      },
-      mediaState: {
-        mode: "auto",
-        type: "triggered",
-        role: ["media.state"],
-        dp: ""
-      },
-      stop: {
-        mode: "auto",
-        type: "state",
-        role: ["button.stop"],
-        dp: ""
-      },
-      pause: {
-        mode: "auto",
-        type: "state",
-        role: "button.pause",
-        dp: ""
-      },
-      forward: {
-        mode: "auto",
-        type: "state",
-        role: "button.next",
-        dp: ""
-      },
-      backward: {
-        mode: "auto",
-        type: "state",
-        role: "button.prev",
-        dp: ""
-      },
-      logo: {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: { type: "const", constVal: "1" },
-        icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { r: 250, b: 250, g: 0 } },
-        list: void 0,
-        action: "cross"
-      }
-    }
-  },
-  items: void 0,
-  pageItems: [
-    {
-      role: "spotify-playlist",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entityInSel: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.spotify-premium.0.player.playlist.trackNo"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        },
-        valueList: { type: "state", dp: "0_userdata.0.spotify-premium.0.player.playlist.trackListArray" }
-      }
-    },
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entityInSel: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        },
-        valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    }
-  ],
-  uniqueID: "media1",
-  useColor: false
-};
-const pageAbfall = {
-  card: "cardEntities",
-  dpInit: "0_userdata.0.Abfallkalender",
-  uniqueID: "abfall1",
-  template: "entities.waste-calendar"
-};
-const pageMediaTest2 = {
-  card: "cardMedia",
-  dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
-  alwaysOn: "none",
-  config: {
-    card: "cardMedia",
-    data: {
-      headline: {
-        type: "const",
-        constVal: "home"
-      },
-      alwaysOnDisplay: {
-        type: "const",
-        constVal: "test"
-      },
-      album: {
-        mode: "auto",
-        type: "state",
-        role: "media.album",
-        dp: ""
-      },
-      title: {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: {
-          mode: "auto",
-          type: "triggered",
-          role: "media.title",
-          dp: ""
-        },
-        color: {
-          type: "const",
-          constVal: { r: 250, g: 2, b: 3 }
-        }
-      },
-      duration: {
-        mode: "auto",
-        type: "state",
-        role: "media.duration",
-        dp: ""
-      },
-      elapsed: {
-        mode: "auto",
-        type: "triggered",
-        role: ["media.elapsed", "media.elapsed.text"],
-        dp: ""
-      },
-      volume: {
-        value: {
-          mode: "auto",
-          type: "state",
-          role: ["level.volume"],
-          response: "now",
-          scale: { min: 0, max: 100 },
-          dp: ""
-        },
-        set: {
-          mode: "auto",
-          type: "state",
-          role: ["level.volume"],
-          response: "medium",
-          scale: { min: 0, max: 100 },
-          dp: ""
-        }
-      },
-      artist: {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: {
-          mode: "auto",
-          type: "state",
-          role: "media.artist",
-          dp: ""
-        },
-        color: void 0,
-        icon: {
-          type: "const",
-          constVal: "diameter"
-        },
-        list: void 0
-      },
-      shuffle: {
-        value: {
-          mode: "auto",
-          type: "state",
-          role: "media.mode.shuffle",
-          dp: ""
-        },
-        set: {
-          mode: "auto",
-          type: "state",
-          role: "media.mode.shuffle",
-          dp: ""
-        }
-      },
-      icon: {
-        type: "const",
-        constVal: "dialpad"
-      },
-      play: {
-        mode: "auto",
-        type: "state",
-        role: ["button.play"],
-        dp: ""
-      },
-      mediaState: {
-        mode: "auto",
-        type: "triggered",
-        role: ["media.state"],
-        dp: ""
-      },
-      stop: {
-        mode: "auto",
-        type: "state",
-        role: ["button.stop"],
-        dp: ""
-      },
-      pause: {
-        mode: "auto",
-        type: "state",
-        role: "button.pause",
-        dp: ""
-      },
-      forward: {
-        mode: "auto",
-        type: "state",
-        role: "button.next",
-        dp: ""
-      },
-      backward: {
-        mode: "auto",
-        type: "state",
-        role: "button.prev",
-        dp: ""
-      },
-      logo: {
-        on: {
-          type: "const",
-          constVal: true
-        },
-        text: { type: "const", constVal: "1" },
-        icon: { type: "const", constVal: "home" },
-        color: { type: "const", constVal: { r: 250, b: 250, g: 0 } },
-        list: void 0,
-        action: "cross"
-      }
-    }
-  },
-  items: void 0,
-  pageItems: [
-    {
-      role: "spotify-playlist",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entityInSel: {
+        speed: {
           value: {
             type: "state",
-            dp: "0_userdata.0.spotify-premium.0.player.playlist.trackNo"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        },
-        valueList: { type: "state", dp: "0_userdata.0.spotify-premium.0.player.playlist.trackListArray" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
+            dp: "alias.0.Stromzaehler.Daten.Leistung",
+            read: `{
+                            let v = val*125/5000; 
+                            v = v<0?0:v>125?125:v; 
+                            return (v).toFixed(0);
+                        }`
+          }
         }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    }
-  ],
-  uniqueID: "media2",
-  useColor: false
-};
-const pageMediaTest3 = {
-  template: "media.spotify-premium",
-  dpInit: "0_userdata.0.spotify-premium.0",
-  uniqueID: "media3",
-  card: "cardMedia"
-};
-const pageGridTest1 = {
-  card: "cardGrid",
-  dpInit: "",
-  alwaysOn: "none",
-  uniqueID: "grid1",
-  useColor: false,
-  config: {
-    card: "cardGrid",
-    data: {
-      headline: {
-        type: "const",
-        constVal: "grid1"
-      }
+      },
+      rightBottom: void 0
     }
   },
-  pageItems: [
-    {
-      role: "text.list",
-      type: "number",
-      dpInit: "",
-      data: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: 23
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "Number"
-          },
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "rgb",
-      type: "shutter",
-      dpInit: "",
-      data: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "window-shutter-open" },
-            color: { type: "const", constVal: Color.Yellow }
-          },
-          false: {
-            value: { type: "const", constVal: "window-shutter" },
-            color: { type: "const", constVal: Color.HMIOff }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0,
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 100 }
-        },
-        entity2: {
-          value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0,
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 100 }
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "text"
-          },
-          false: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Shutter"
-        },
-        text1: {
-          true: {
-            type: "const",
-            constVal: "text1"
-          },
-          false: void 0
-        },
-        text2: {
-          true: {
-            type: "const",
-            constVal: "text2"
-          },
-          false: void 0
-        },
-        up: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.open.blind", "button.open"]
-        },
-        down: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.close.blind", "button.close"]
-        },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-      }
-    },
-    {
-      role: "rgb",
-      type: "light",
-      dpInit: "",
-      data: {
-        color: {
-          true: { type: "triggered", dp: "0_userdata.0.RGB" },
-          false: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "lightbulb" },
-            color: { type: "const", constVal: Color.Yellow }
-          },
-          false: {
-            value: { type: "const", constVal: "lightbulb-outline" },
-            color: { type: "const", constVal: Color.HMIOff }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        colorMode: { type: "const", constVal: true },
-        dimmer: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.dimmer"
-          }
-        },
-        entity1: {
-          value: { type: "triggered", dp: "0_userdata.0.example_state" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        entityInSel: void 0,
-        text1: {
-          true: {
-            type: "const",
-            constVal: "Licht"
-          },
-          false: void 0
-        },
-        text2: {
-          true: {
-            type: "const",
-            constVal: "Picker1"
-          },
-          false: void 0
-        },
-        text3: {
-          true: {
-            type: "const",
-            constVal: "Picker2"
-          },
-          false: void 0
-        },
-        ct: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.ct"
-          }
-        },
-        valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-      }
-    },
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        headline: { type: "const", constVal: "insel" },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entityInSel: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        },
-        valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "music" },
-            color: { type: "const", constVal: Color.Gray }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: { type: "const", constVal: "Navbutton" },
-          false: void 0
-        },
-        setNavi: {
-          type: "const",
-          constVal: "3"
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "text",
-      dpInit: "",
-      data: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            text: { value: { type: "const", constVal: "22.2" }, textSize: { type: "const", constVal: 3 } },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: { type: "const", constVal: "text" },
-          false: void 0
-        },
-        text1: {
-          true: { type: "const", constVal: "text1" },
-          false: void 0
-        }
-      }
-    }
-  ],
   items: void 0
 };
-const pageGridTest2 = {
-  card: "cardGrid",
+const pageEntitiesFahrplan = {
+  card: "cardEntities",
   dpInit: "",
   alwaysOn: "none",
-  uniqueID: "grid2",
+  uniqueID: "fahrplan",
   useColor: false,
   config: {
-    card: "cardGrid",
+    card: "cardEntities",
     data: {
       headline: {
         type: "const",
-        constVal: "grid2"
+        constVal: "Fahrplan S-Bhf"
       }
     }
   },
-  items: void 0,
   pageItems: [
     {
       role: "text.list",
-      type: "fan",
-      dpInit: "",
-      data: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        },
-        entityInSel: void 0
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "account" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "timer",
-      type: "timer",
-      dpInit: "",
-      data: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "timer" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          false: {
-            value: void 0,
-            color: { type: "const", constVal: Color.Green }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        headline: { type: "const", constVal: "Timer" },
-        setValue1: { type: "state", dp: "0_userdata.0.example_state" }
-      }
-    },
-    {
       type: "text",
-      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
-      template: "text.temperature"
-    },
-    {
-      dpInit: "bydhvs",
-      template: "text.battery.bydhvs"
-    }
-  ]
-};
-const pageGridTest5 = {
-  card: "cardGrid",
-  dpInit: "",
-  alwaysOn: "none",
-  uniqueID: "grid5",
-  useColor: false,
-  config: {
-    card: "cardGrid",
-    data: {
-      headline: {
-        type: "const",
-        constVal: "grid1"
-      }
-    }
-  },
-  pageItems: [
-    {
-      role: "text.list",
-      type: "number",
-      dpInit: "",
+      dpInit: "fahrplan.0.DepartureTimetable0",
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
+            value: { role: "", mode: "auto", type: "state", dp: ".0.Mode$" },
             color: { type: "const", constVal: Color.Red }
           },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          false: {
+            value: { role: "", mode: "auto", type: "state", dp: ".0.Mode$" },
+            color: { type: "const", constVal: Color.Green }
+          }
         },
         entity1: {
           value: {
-            type: "const",
-            constVal: 23
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "Number"
-          },
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "rgb",
-      type: "shutter",
-      dpInit: "",
-      data: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "window-shutter-open" },
-            color: { type: "const", constVal: Color.Yellow }
-          },
-          false: {
-            value: { type: "const", constVal: "window-shutter" },
-            color: { type: "const", constVal: Color.HMIOff }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0,
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 100 }
+            role: "state",
+            mode: "auto",
+            type: "triggered",
+            dp: ".0.DepartureDelayed$"
+          }
         },
         entity2: {
-          value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0,
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 100 }
+          value: {
+            role: "date",
+            mode: "auto",
+            type: "triggered",
+            dp: ".0.Departure$",
+            read: "return val && val !=0 ? val : null"
+          },
+          dateFormat: {
+            type: "const",
+            constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+          }
         },
         text: {
           true: {
-            type: "const",
-            constVal: "text"
+            role: "state",
+            mode: "auto",
+            type: "triggered",
+            dp: ".0.Direction$"
           },
           false: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Shutter"
         },
         text1: {
           true: {
-            type: "const",
-            constVal: "text1"
-          },
-          false: void 0
-        },
-        text2: {
-          true: {
-            type: "const",
-            constVal: "text2"
-          },
-          false: void 0
-        },
-        up: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.open.blind", "button.open"]
-        },
-        down: {
-          type: "state",
-          dp: "",
-          mode: "auto",
-          role: ["button.close.blind", "button.close"]
-        },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-      }
-    },
-    {
-      role: "rgb",
-      type: "light",
-      dpInit: "",
-      data: {
-        color: {
-          true: { type: "triggered", dp: "0_userdata.0.RGB" },
-          false: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "lightbulb" },
-            color: { type: "const", constVal: Color.Yellow }
-          },
-          false: {
-            value: { type: "const", constVal: "lightbulb-outline" },
-            color: { type: "const", constVal: Color.HMIOff }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        colorMode: { type: "const", constVal: true },
-        dimmer: {
-          value: {
+            role: "date",
+            mode: "auto",
             type: "triggered",
-            dp: "0_userdata.0.dimmer"
-          }
-        },
-        entity1: {
-          value: { type: "triggered", dp: "0_userdata.0.example_state" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        entityInSel: void 0,
-        text1: {
-          true: {
-            type: "const",
-            constVal: "Licht"
+            dp: ".0.DeparturePlanned$",
+            read: `{ return new Date(val).toLocaleTimeString().slice(0,6) }`
           },
           false: void 0
-        },
-        text2: {
-          true: {
-            type: "const",
-            constVal: "Picker1"
-          },
-          false: void 0
-        },
-        text3: {
-          true: {
-            type: "const",
-            constVal: "Picker2"
-          },
-          false: void 0
-        },
-        ct: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.ct"
-          }
-        },
-        valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-      }
-    },
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        headline: { type: "const", constVal: "insel" },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entityInSel: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        },
-        valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "music" },
-            color: { type: "const", constVal: Color.Gray }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: { type: "const", constVal: "Navbutton" },
-          false: void 0
-        },
-        setNavi: {
-          type: "const",
-          constVal: "3"
         }
       }
     },
     {
       role: "text.list",
       type: "text",
-      dpInit: "",
+      dpInit: "fahrplan.0.DepartureTimetable0",
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "home" },
-            text: { value: { type: "const", constVal: "22.2" } },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
+            value: { role: "", mode: "auto", type: "state", dp: ".1.Mode$" },
             color: { type: "const", constVal: Color.Red }
           },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          false: {
+            value: { role: "", mode: "auto", type: "state", dp: ".1.Mode$" },
+            color: { type: "const", constVal: Color.Green }
+          }
         },
         entity1: {
           value: {
-            type: "const",
-            constVal: true
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".1.DepartureDelayed$"
+          }
+        },
+        entity2: {
+          value: {
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".1.Departure$",
+            read: "return val === 0 ? null : val"
           },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
+          dateFormat: {
+            type: "const",
+            constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+          }
         },
         text: {
-          true: { type: "const", constVal: "text" },
+          true: {
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".1.Direction$"
+          },
           false: void 0
         },
         text1: {
-          true: { type: "const", constVal: "text1" },
+          true: {
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".1.DeparturePlanned$",
+            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+          },
           false: void 0
         }
-      }
-    }
-  ],
-  items: void 0
-};
-const pageGridTest4 = {
-  card: "cardGrid",
-  dpInit: "",
-  alwaysOn: "none",
-  uniqueID: "grid4",
-  useColor: false,
-  config: {
-    card: "cardGrid",
-    data: {
-      headline: {
-        type: "const",
-        constVal: "\xDCberschrift2"
-      }
-    }
-  },
-  items: void 0,
-  pageItems: [
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entityInSel: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        },
-        valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
     {
       role: "text.list",
-      type: "button",
-      dpInit: "",
+      type: "text",
+      dpInit: "fahrplan.0.DepartureTimetable0",
       data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
         icon: {
           true: {
-            value: { type: "const", constVal: "account" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
+            value: { role: "", mode: "auto", type: "state", dp: ".2.Mode$" },
             color: { type: "const", constVal: Color.Red }
           },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          false: {
+            value: { role: "", mode: "auto", type: "state", dp: ".2.Mode$" },
+            color: { type: "const", constVal: Color.Green }
+          }
         },
         entity1: {
           value: {
-            type: "const",
-            constVal: true
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".2.DepartureDelayed$"
+          }
+        },
+        entity2: {
+          value: {
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".2.Departure$",
+            read: "return val === 0 ? null : val"
           },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
+          dateFormat: {
+            type: "const",
+            constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+          }
         },
         text: {
-          true: void 0,
+          true: {
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".2.Direction$"
+          },
+          false: void 0
+        },
+        text1: {
+          true: {
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".2.DeparturePlanned$",
+            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "text",
+      dpInit: "fahrplan.0.DepartureTimetable0",
+      data: {
+        icon: {
+          true: {
+            value: { role: "", mode: "auto", type: "state", dp: ".3.Mode$" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: {
+            value: { role: "", mode: "auto", type: "state", dp: ".3.Mode$" },
+            color: { type: "const", constVal: Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".3.DepartureDelayed$"
+          }
+        },
+        entity2: {
+          value: {
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".3.Departure$",
+            read: "return val === 0 ? null : val"
+          },
+          dateFormat: {
+            type: "const",
+            constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+          }
+        },
+        text: {
+          true: {
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".3.Direction$"
+          },
+          false: void 0
+        },
+        text1: {
+          true: {
+            role: "",
+            mode: "auto",
+            type: "state",
+            dp: ".3.DeparturePlanned$",
+            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+          },
           false: void 0
         }
       }
     }
   ]
 };
-const pageGrid2Test3 = {
-  card: "cardGrid2",
-  dpInit: "",
-  alwaysOn: "none",
-  uniqueID: "grid3",
-  useColor: false,
-  config: {
-    card: "cardGrid2",
-    data: {
-      headline: {
-        type: "const",
-        constVal: "\xDCberschrift"
-      }
-    }
-  },
-  items: void 0,
-  pageItems: [
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entityInSel: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        },
-        valueList: { type: "const", constVal: "home?butter" },
-        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
-      }
-    },
-    {
-      role: "text.list",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    }
-  ]
-};
-const pageThermoTest = {
-  card: "cardThermo",
-  uniqueID: "thermo1",
-  dpInit: "",
-  alwaysOn: "none",
-  pageItems: [
-    {
-      role: "indicator",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "arrow-right" },
-            color: { type: "const", constVal: Color.Blue }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        entityInSel: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.statesTest"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Test"
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        entityInSel: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.statesTest"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Test"
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        entityInSel: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.statesTest"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Test"
-        }
-      }
-    },
-    {
-      role: "text.list",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        entityInSel: {
-          value: {
-            type: "triggered",
-            dp: "0_userdata.0.statesTest"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        headline: {
-          type: "const",
-          constVal: "Test"
-        }
-      }
-    },
-    {
-      role: "button",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "indicator",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: { type: "state", dp: "0_userdata.0.example_state" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "indicator",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: { type: "state", dp: "0_userdata.0.example_state" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "indicator",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: { type: "state", dp: "0_userdata.0.example_state" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "indicator",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: { type: "state", dp: "0_userdata.0.example_state" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "indicator",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: { type: "state", dp: "0_userdata.0.example_state" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "indicator",
-      type: "button",
-      dpInit: "",
-      data: {
-        color: {
-          true: {
-            type: "const",
-            constVal: Color.HMIOn
-          },
-          false: void 0,
-          scale: void 0
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
-          },
-          false: {
-            value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: { type: "state", dp: "0_userdata.0.example_state" },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        text: {
-          true: void 0,
-          false: void 0
-        }
-      }
-    }
-  ],
-  config: {
-    card: "cardThermo",
-    data: {
-      headline: {
-        type: "const",
-        constVal: "headline"
-      },
-      text2: {
-        type: "const",
-        constVal: "20"
-      },
-      unit: {
-        type: "const",
-        constVal: "\xB0C"
-      },
-      text1: {
-        type: "const",
-        constVal: "text1"
-      },
-      text3: {
-        type: "const",
-        constVal: "text2"
-      },
-      minTemp: {
-        type: "const",
-        constVal: "10"
-      },
-      maxTemp: {
-        type: "const",
-        constVal: "60"
-      },
-      tempStep: {
-        type: "const",
-        constVal: "5"
-      },
-      set1: { type: "state", dp: "0_userdata.0.number1" },
-      text4: void 0
-    }
-  },
-  items: void 0,
-  useColor: false
+const pageEntitiesFahrplanTemplate = {
+  card: "cardEntities",
+  dpInit: "fahrplan.0.DepartureTimetable0",
+  uniqueID: "fahrplan1",
+  template: "entities.departure-timetable"
 };
 const pageScreensaverTest = {
-  card: "screensaver2",
+  card: "screensaver",
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "scr",
@@ -2767,11 +1613,55 @@ const pageScreensaverTest = {
   config: {
     card: "screensaver2",
     mode: "advanced",
-    rotationTime: 0,
+    rotationTime: 10,
     model: "eu",
     data: void 0
   },
   pageItems: [
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "time",
+      data: {
+        entity2: {
+          value: {
+            type: "internal",
+            dp: "///time"
+          },
+          dateFormat: {
+            type: "const",
+            constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+          }
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "date",
+      data: {
+        entity2: {
+          value: {
+            type: "internal",
+            dp: "///date"
+          },
+          dateFormat: {
+            type: "const",
+            constVal: {
+              local: "de",
+              format: {
+                weekday: "long",
+                month: "short",
+                year: "numeric",
+                day: "numeric"
+              }
+            }
+          }
+        }
+      }
+    },
     {
       role: "text",
       dpInit: "",
@@ -2782,7 +1672,7 @@ const pageScreensaverTest = {
           value: { type: "triggered", dp: "accuweather.0.Current.Temperature" },
           decimal: {
             type: "const",
-            constVal: null
+            constVal: 1
           },
           factor: void 0,
           unit: {
@@ -2963,234 +1853,137 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "left",
       data: {
+        entity1: void 0,
         entity2: {
           value: {
-            type: "state",
-            dp: "accuweather.0.Current.WindSpeed"
+            type: "triggered",
+            dp: "alias.0.NSPanel.Flur.Sensor.ANALOG.Temperature.ACTUAL"
           },
           decimal: {
             type: "const",
             constVal: 1
           },
-          factor: {
-            type: "const",
-            constVal: 1e3 / 3600
-          },
           unit: {
             type: "const",
-            constVal: "m/s"
+            constVal: "\xB0C"
           }
         },
         icon: {
           true: {
             value: {
               type: "const",
-              constVal: "weather-windy"
-            },
-            color: void 0
-          },
-          false: {
-            value: void 0,
-            color: void 0
-          },
-          scale: {
-            type: "const",
-            constVal: { val_min: 0, val_max: 80 }
-          },
-          maxBri: void 0,
-          minBri: void 0
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "Wind"
-          },
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "text",
-      dpInit: "",
-      type: "text",
-      modeScr: "left",
-      data: {
-        entity2: {
-          value: {
-            type: "state",
-            dp: "accuweather.0.Current.WindSpeed"
-          },
-          decimal: {
-            type: "const",
-            constVal: 1
-          },
-          factor: {
-            type: "const",
-            constVal: 1e3 / 3600
-          },
-          unit: {
-            type: "const",
-            constVal: "m/s"
-          }
-        },
-        icon: {
-          true: {
-            value: {
-              type: "const",
-              constVal: "weather-windy"
-            },
-            color: void 0
-          },
-          false: {
-            value: void 0,
-            color: void 0
-          },
-          scale: {
-            type: "const",
-            constVal: { val_min: 0, val_max: 80 }
-          },
-          maxBri: void 0,
-          minBri: void 0
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "Wind"
-          },
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "text",
-      dpInit: "",
-      type: "text",
-      modeScr: "left",
-      data: {
-        entity2: {
-          value: {
-            type: "state",
-            dp: "accuweather.0.Current.WindGust"
-          },
-          decimal: {
-            type: "const",
-            constVal: 1
-          },
-          factor: {
-            type: "const",
-            constVal: 1e3 / 3600
-          },
-          unit: {
-            type: "const",
-            constVal: "m/s"
-          }
-        },
-        icon: {
-          true: {
-            value: {
-              type: "const",
-              constVal: "weather-tornado"
-            },
-            color: void 0
-          },
-          false: {
-            value: void 0,
-            color: void 0
-          },
-          scale: {
-            type: "const",
-            constVal: { val_min: 0, val_max: 7.2 }
-          },
-          maxBri: void 0,
-          minBri: void 0
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "B\xF6en"
-          },
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "text",
-      dpInit: "",
-      type: "text",
-      modeScr: "left",
-      data: {
-        entity2: {
-          value: {
-            type: "state",
-            dp: "accuweather.0.Current.WindDirectionText"
-          },
-          decimal: {
-            type: "const",
-            constVal: 0
-          },
-          factor: void 0,
-          unit: {
-            type: "const",
-            constVal: "\xB0"
-          }
-        },
-        icon: {
-          true: {
-            value: {
-              type: "const",
-              constVal: "windsock"
+              constVal: "thermometer"
             },
             color: {
-              type: "state",
-              dp: "0_userdata.0.dimmer"
+              type: "const",
+              constVal: Color.MSRed
+            }
+          },
+          false: {
+            value: void 0,
+            color: {
+              type: "const",
+              constVal: Color.MSGreen
+            }
+          },
+          scale: {
+            type: "const",
+            constVal: { val_min: 0, val_max: 35, val_best: 20 }
+          },
+          maxBri: void 0,
+          minBri: void 0
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "left",
+      data: {
+        entity1: void 0,
+        entity2: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.Heizung.W\xE4rmeTagesVerbrauch.ACTUAL"
+          },
+          decimal: {
+            type: "const",
+            constVal: 1
+          },
+          unit: {
+            type: "const",
+            constVal: "kWh"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "counter"
+            },
+            color: {
+              type: "const",
+              constVal: Color.MSRed
+            }
+          },
+          false: {
+            value: void 0,
+            color: {
+              type: "const",
+              constVal: Color.MSGreen
+            }
+          },
+          scale: {
+            type: "const",
+            constVal: { val_min: 0, val_max: 5e3 }
+          },
+          maxBri: void 0,
+          minBri: void 0
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "left",
+      data: {
+        entity1: void 0,
+        entity2: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.Abfallkalender.1.date"
+          },
+          dateFormat: {
+            type: "const",
+            constVal: {
+              local: "de",
+              format: {
+                month: "2-digit",
+                year: "numeric",
+                day: "2-digit"
+              }
+            }
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "const",
+              constVal: "trash-can"
+            },
+            color: {
+              type: "triggered",
+              dp: "0_userdata.0.Abfallkalender.1.color"
             }
           },
           false: {
             value: void 0,
             color: void 0
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "Windr."
-          },
-          false: void 0
+          }
         }
       }
-    },
-    {
-      template: "text.accuweather.bot2values",
-      dpInit: "accuweather.0",
-      appendix: "d1",
-      modeScr: "bottom"
-    },
-    {
-      template: "text.accuweather.bot2values",
-      dpInit: "accuweather.0",
-      appendix: "d2",
-      modeScr: "bottom"
-    },
-    {
-      template: "text.accuweather.bot2values",
-      dpInit: "accuweather.0",
-      appendix: "d3",
-      modeScr: "bottom"
-    },
-    {
-      template: "text.accuweather.bot2values",
-      dpInit: "accuweather.0",
-      appendix: "d4",
-      modeScr: "bottom"
-    },
-    {
-      template: "text.accuweather.bot2values",
-      dpInit: "accuweather.0",
-      appendix: "d5",
-      modeScr: "bottom"
     },
     {
       role: "text",
@@ -3201,8 +1994,8 @@ const pageScreensaverTest = {
         entity1: void 0,
         entity2: {
           value: {
-            type: "triggered",
-            dp: "0_userdata.0.Sunevent2.time",
+            type: "state",
+            dp: "accuweather.0.Daily.Day1.Sunrise",
             read: "return new Date(val).getTime()",
             forceType: "number"
           },
@@ -3214,19 +2007,19 @@ const pageScreensaverTest = {
         icon: {
           true: {
             value: {
-              type: "triggered",
-              dp: "0_userdata.0.Sunevent2.icon"
+              type: "const",
+              constVal: "weather-sunset-up"
             },
             color: {
               type: "const",
-              constVal: Color.MSYellow
+              constVal: Color.Yellow
             }
           },
           false: {
             value: void 0,
             color: {
               type: "const",
-              constVal: Color.MSYellow
+              constVal: Color.Blue
             }
           },
           scale: void 0,
@@ -3236,7 +2029,7 @@ const pageScreensaverTest = {
         text: {
           true: {
             type: "const",
-            constVal: "Sonne"
+            constVal: "Sun"
           },
           false: void 0
         }
@@ -3261,7 +2054,10 @@ const pageScreensaverTest = {
             type: "const",
             constVal: 1e3 / 3600
           },
-          unit: void 0
+          unit: {
+            type: "const",
+            constVal: "m/s"
+          }
         },
         entity2: {
           value: {
@@ -3293,10 +2089,7 @@ const pageScreensaverTest = {
             }
           },
           false: {
-            value: {
-              type: "const",
-              constVal: "weather-windy"
-            },
+            value: void 0,
             color: {
               type: "const",
               constVal: Color.MSGreen
@@ -3304,7 +2097,7 @@ const pageScreensaverTest = {
           },
           scale: {
             type: "const",
-            constVal: { val_min: 0, val_max: 80 }
+            constVal: { val_min: 0, val_max: 120 }
           },
           maxBri: void 0,
           minBri: void 0
@@ -3412,7 +2205,7 @@ const pageScreensaverTest = {
           factor: void 0,
           unit: {
             type: "const",
-            constVal: "\xB0"
+            constVal: ""
           }
         },
         icon: {
@@ -3423,7 +2216,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: "#FFFFFF"
+              constVal: Color.White
             }
           },
           false: {
@@ -3452,19 +2245,22 @@ const pageScreensaverTest = {
         entity1: {
           value: {
             type: "triggered",
-            dp: "hmip.0.devices.3014F711A000185F2999676C.channels.1.humidity"
+            dp: "accuweather.0.Current.RelativeHumidity"
           },
           decimal: {
             type: "const",
             constVal: 1
           },
           factor: void 0,
-          unit: void 0
+          unit: {
+            type: "const",
+            constVal: "%"
+          }
         },
         entity2: {
           value: {
             type: "triggered",
-            dp: "hmip.0.devices.3014F711A000185F2999676C.channels.1.humidity"
+            dp: "accuweather.0.Current.RelativeHumidity"
           },
           decimal: {
             type: "const",
@@ -3484,17 +2280,14 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.MSRed
+              constVal: Color.MSGreen
             }
           },
           false: {
-            value: {
-              type: "const",
-              constVal: "water-percent"
-            },
+            value: void 0,
             color: {
               type: "const",
-              constVal: Color.Green
+              constVal: Color.MSRed
             }
           },
           scale: {
@@ -3507,7 +2300,7 @@ const pageScreensaverTest = {
         text: {
           true: {
             type: "const",
-            constVal: "Feuchte"
+            constVal: "Feuchte."
           },
           false: void 0
         }
@@ -3519,193 +2312,70 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "bottom",
       data: {
-        entity1: {
-          value: {
-            type: "triggered",
-            dp: "accuweather.0.Current.UVIndex"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        entity2: {
-          value: {
-            type: "triggered",
-            dp: "accuweather.0.Current.UVIndex",
-            forceType: "string"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        icon: {
-          true: {
-            value: {
-              type: "const",
-              constVal: "solar-power"
-            },
-            color: {
-              type: "const",
-              constVal: Color.MSRed
-            }
-          },
-          false: {
-            value: {
-              type: "const",
-              constVal: "solar-power"
-            },
-            color: {
-              type: "const",
-              constVal: Color.MSGreen
-            }
-          },
-          scale: {
-            type: "const",
-            constVal: { val_min: 0, val_max: 9 }
-          },
-          maxBri: void 0,
-          minBri: void 0
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "UV"
-          },
-          false: void 0
-        }
-      }
-    },
-    {
-      role: "test",
-      dpInit: "",
-      type: "text",
-      modeScr: "indicator",
-      data: {
-        entity1: {
-          value: {
-            type: "const",
-            constVal: "850"
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        icon: {
-          true: {
-            value: {
-              type: "const",
-              constVal: "waves-arrow-up"
-            },
-            color: {
-              type: "const",
-              constVal: Color.MSGreen
-            }
-          },
-          false: {
-            value: {
-              type: "const",
-              constVal: "waves-arrow-up"
-            },
-            color: {
-              type: "const",
-              constVal: Color.MSRed
-            }
-          },
-          scale: {
-            type: "const",
-            constVal: { val_min: 0, val_max: 1e3, val_best: 500, log10: "max" }
-          },
-          maxBri: void 0,
-          minBri: void 0
-        },
-        text: {
-          true: {
-            type: "const",
-            constVal: "Wasserstand"
-          },
-          false: void 0
-        }
-      }
-    },
-    {
-      type: "text",
-      dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
-      template: "text.battery",
-      modeScr: "indicator",
-      data: {
-        icon: {
-          true: {
-            text: null
-          },
-          false: {
-            text: null
-          }
-        }
-      }
-    },
-    {
-      role: "text",
-      dpInit: "",
-      type: "text",
-      modeScr: "indicator",
-      data: {
+        entity1: void 0,
         entity2: {
           value: {
             type: "state",
-            dp: "accuweather.0.Current.WindGust"
+            dp: "accuweather.0.Daily.Day1.Sunset",
+            read: "return new Date(val).getTime()",
+            forceType: "number"
           },
-          decimal: {
+          dateFormat: {
             type: "const",
-            constVal: 1
-          },
-          factor: {
-            type: "const",
-            constVal: 1e3 / 3600
-          },
-          unit: {
-            type: "const",
-            constVal: "m/s"
+            constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
           }
         },
         icon: {
           true: {
             value: {
               type: "const",
-              constVal: "weather-tornado"
+              constVal: "weather-sunset-down"
             },
-            color: void 0
+            color: {
+              type: "const",
+              constVal: Color.Yellow
+            }
           },
           false: {
             value: void 0,
-            color: void 0
+            color: {
+              type: "const",
+              constVal: Color.Blue
+            }
           },
-          scale: {
-            type: "const",
-            constVal: { val_min: 0, val_max: 7.2 }
-          },
+          scale: void 0,
           maxBri: void 0,
           minBri: void 0
         },
         text: {
           true: {
             type: "const",
-            constVal: "B\xF6en"
+            constVal: "Sun"
           },
           false: void 0
         }
       }
     },
     {
-      role: "text",
+      role: "2values",
       dpInit: "",
       type: "text",
-      modeScr: "indicator",
+      modeScr: "bottom",
       data: {
-        entity2: {
-          value: {
-            type: "state",
-            dp: "accuweather.0.Current.WindDirectionText"
+        entity1: {
+          value: { type: "triggered", dp: "accuweather.0.Summary.TempMin_d1" },
+          decimal: {
+            type: "const",
+            constVal: 0
           },
+          factor: void 0,
+          unit: {
+            type: "const",
+            constVal: "\xB0 "
+          }
+        },
+        entity2: {
+          value: { type: "triggered", dp: "accuweather.0.Summary.TempMax_d1" },
           decimal: {
             type: "const",
             constVal: 0
@@ -3719,17 +2389,993 @@ const pageScreensaverTest = {
         icon: {
           true: {
             value: {
-              type: "const",
-              constVal: "windsock"
+              type: "state",
+              read: `{
+                        switch (val) {
+                            case 30: // Hot
+                                return 'weather-sunny-alert'; // exceptional
+
+                            case 24: // Ice
+                            case 31: // Cold
+                                return 'snowflake-alert'; // exceptional
+
+                            case 7: // Cloudy
+                            case 8: // Dreary (Overcast)
+                            case 38: // Mostly Cloudy
+                                return 'weather-cloudy'; // cloudy
+
+                            case 11: // fog
+                                return 'weather-fog'; // fog
+
+                            case 25: // Sleet
+                                return 'weather-hail'; // Hail
+
+                            case 15: // T-Storms
+                                return 'weather-lightning'; // lightning
+
+                            case 16: // Mostly Cloudy w/ T-Storms
+                            case 17: // Partly Sunny w/ T-Storms
+                            case 41: // Partly Cloudy w/ T-Storms
+                            case 42: // Mostly Cloudy w/ T-Storms
+                                return 'weather-lightning-rainy'; // lightning-rainy
+
+                            case 33: // Clear
+                            case 34: // Mostly Clear
+                            case 37: // Hazy Moonlight
+                                return 'weather-night';
+
+                            case 3: // Partly Sunny
+                            case 4: // Intermittent Clouds
+                            case 6: // Mostly Cloudy
+                            case 35: // Partly Cloudy
+                            case 36: // Intermittent Clouds
+                                return 'weather-partly-cloudy'; // partlycloudy
+
+                            case 18: // pouring
+                                return 'weather-pouring'; // pouring
+
+                            case 12: // Showers
+                            case 13: // Mostly Cloudy w/ Showers
+                            case 14: // Partly Sunny w/ Showers
+                            case 26: // Freezing Rain
+                            case 39: // Partly Cloudy w/ Showers
+                            case 40: // Mostly Cloudy w/ Showers
+                                return 'weather-rainy'; // rainy
+
+                            case 19: // Flurries
+                            case 20: // Mostly Cloudy w/ Flurries
+                            case 21: // Partly Sunny w/ Flurries
+                            case 22: // Snow
+                            case 23: // Mostly Cloudy w/ Snow
+                            case 43: // Mostly Cloudy w/ Flurries
+                            case 44: // Mostly Cloudy w/ Snow
+                                return 'weather-snowy'; // snowy
+
+                            case 29: // Rain and Snow
+                                return 'weather-snowy-rainy'; // snowy-rainy
+
+                            case 1: // Sunny
+                            case 2: // Mostly Sunny
+                            case 5: // Hazy Sunshine
+                                return 'weather-sunny'; // sunny
+
+                            case 32: // windy
+                                return 'weather-windy'; // windy
+
+                            default:
+                                return 'alert-circle-outline';
+                        }
+                    }`,
+              dp: "accuweather.0.Summary.WeatherIcon_d1"
             },
             color: {
-              type: "const",
-              constVal: "#FF00FF"
+              type: "triggered",
+              dp: "accuweather.0.Summary.WeatherIcon_d1",
+              read: `switch (val) {
+                        case 24: // Ice
+                        case 30: // Hot
+                        case 31: // Cold
+                            return Color.swExceptional; // exceptional
+
+                        case 7: // Cloudy
+                        case 8: // Dreary (Overcast)
+                        case 38: // Mostly Cloudy
+                            return Color.swCloudy; // cloudy
+
+                        case 11: // fog
+                            return Color.swFog; // fog
+
+                        case 25: // Sleet
+                            return Color.swHail; // Hail
+
+                        case 15: // T-Storms
+                            return Color.swLightning; // lightning
+
+                        case 16: // Mostly Cloudy w/ T-Storms
+                        case 17: // Partly Sunny w/ T-Storms
+                        case 41: // Partly Cloudy w/ T-Storms
+                        case 42: // Mostly Cloudy w/ T-Storms
+                            return Color.swLightningRainy; // lightning-rainy
+
+                        case 33: // Clear
+                        case 34: // Mostly Clear
+                        case 37: // Hazy Moonlight
+                            return Color.swClearNight;
+
+                        case 3: // Partly Sunny
+                        case 4: // Intermittent Clouds
+                        case 6: // Mostly Cloudy
+                        case 35: // Partly Cloudy
+                        case 36: // Intermittent Clouds
+                            return Color.swPartlycloudy; // partlycloudy
+
+                        case 18: // pouring
+                            return Color.swPouring; // pouring
+
+                        case 12: // Showers
+                        case 13: // Mostly Cloudy w/ Showers
+                        case 14: // Partly Sunny w/ Showers
+                        case 26: // Freezing Rain
+                        case 39: // Partly Cloudy w/ Showers
+                        case 40: // Mostly Cloudy w/ Showers
+                            return Color.swRainy; // rainy
+
+                        case 19: // Flurries
+                        case 20: // Mostly Cloudy w/ Flurries
+                        case 21: // Partly Sunny w/ Flurries
+                        case 22: // Snow
+                        case 23: // Mostly Cloudy w/ Snow
+                        case 43: // Mostly Cloudy w/ Flurries
+                        case 44: // Mostly Cloudy w/ Snow
+                            return Color.swSnowy; // snowy
+
+                        case 29: // Rain and Snow
+                            return Color.swSnowyRainy; // snowy-rainy
+
+                        case 1: // Sunny
+                        case 2: // Mostly Sunny
+                        case 5: // Hazy Sunshine
+                            return Color.swSunny; // sunny
+
+                        case 32: // windy
+                            return Color.swWindy; // windy
+
+                        default:
+                            return Color.White;
+                    }`
             }
           },
+          false: { value: void 0, color: void 0 }
+        },
+        text: {
+          true: {
+            type: "state",
+            dp: "accuweather.0.Summary.DayOfWeek_d1"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "2values",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity1: {
+          value: { type: "triggered", dp: "accuweather.0.Summary.TempMin_d2" },
+          decimal: {
+            type: "const",
+            constVal: 0
+          },
+          factor: void 0,
+          unit: {
+            type: "const",
+            constVal: "\xB0 "
+          }
+        },
+        entity2: {
+          value: { type: "triggered", dp: "accuweather.0.Summary.TempMax_d2" },
+          decimal: {
+            type: "const",
+            constVal: 0
+          },
+          factor: void 0,
+          unit: {
+            type: "const",
+            constVal: "\xB0"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "state",
+              read: `{
+                        switch (val) {
+                            case 30: // Hot
+                                return 'weather-sunny-alert'; // exceptional
+
+                            case 24: // Ice
+                            case 31: // Cold
+                                return 'snowflake-alert'; // exceptional
+
+                            case 7: // Cloudy
+                            case 8: // Dreary (Overcast)
+                            case 38: // Mostly Cloudy
+                                return 'weather-cloudy'; // cloudy
+
+                            case 11: // fog
+                                return 'weather-fog'; // fog
+
+                            case 25: // Sleet
+                                return 'weather-hail'; // Hail
+
+                            case 15: // T-Storms
+                                return 'weather-lightning'; // lightning
+
+                            case 16: // Mostly Cloudy w/ T-Storms
+                            case 17: // Partly Sunny w/ T-Storms
+                            case 41: // Partly Cloudy w/ T-Storms
+                            case 42: // Mostly Cloudy w/ T-Storms
+                                return 'weather-lightning-rainy'; // lightning-rainy
+
+                            case 33: // Clear
+                            case 34: // Mostly Clear
+                            case 37: // Hazy Moonlight
+                                return 'weather-night';
+
+                            case 3: // Partly Sunny
+                            case 4: // Intermittent Clouds
+                            case 6: // Mostly Cloudy
+                            case 35: // Partly Cloudy
+                            case 36: // Intermittent Clouds
+                                return 'weather-partly-cloudy'; // partlycloudy
+
+                            case 18: // pouring
+                                return 'weather-pouring'; // pouring
+
+                            case 12: // Showers
+                            case 13: // Mostly Cloudy w/ Showers
+                            case 14: // Partly Sunny w/ Showers
+                            case 26: // Freezing Rain
+                            case 39: // Partly Cloudy w/ Showers
+                            case 40: // Mostly Cloudy w/ Showers
+                                return 'weather-rainy'; // rainy
+
+                            case 19: // Flurries
+                            case 20: // Mostly Cloudy w/ Flurries
+                            case 21: // Partly Sunny w/ Flurries
+                            case 22: // Snow
+                            case 23: // Mostly Cloudy w/ Snow
+                            case 43: // Mostly Cloudy w/ Flurries
+                            case 44: // Mostly Cloudy w/ Snow
+                                return 'weather-snowy'; // snowy
+
+                            case 29: // Rain and Snow
+                                return 'weather-snowy-rainy'; // snowy-rainy
+
+                            case 1: // Sunny
+                            case 2: // Mostly Sunny
+                            case 5: // Hazy Sunshine
+                                return 'weather-sunny'; // sunny
+
+                            case 32: // windy
+                                return 'weather-windy'; // windy
+
+                            default:
+                                return 'alert-circle-outline';
+                        }
+                    }`,
+              dp: "accuweather.0.Summary.WeatherIcon_d2"
+            },
+            color: {
+              type: "triggered",
+              dp: "accuweather.0.Summary.WeatherIcon_d2",
+              read: `switch (val) {
+                        case 24: // Ice
+                        case 30: // Hot
+                        case 31: // Cold
+                            return Color.swExceptional; // exceptional
+
+                        case 7: // Cloudy
+                        case 8: // Dreary (Overcast)
+                        case 38: // Mostly Cloudy
+                            return Color.swCloudy; // cloudy
+
+                        case 11: // fog
+                            return Color.swFog; // fog
+
+                        case 25: // Sleet
+                            return Color.swHail; // Hail
+
+                        case 15: // T-Storms
+                            return Color.swLightning; // lightning
+
+                        case 16: // Mostly Cloudy w/ T-Storms
+                        case 17: // Partly Sunny w/ T-Storms
+                        case 41: // Partly Cloudy w/ T-Storms
+                        case 42: // Mostly Cloudy w/ T-Storms
+                            return Color.swLightningRainy; // lightning-rainy
+
+                        case 33: // Clear
+                        case 34: // Mostly Clear
+                        case 37: // Hazy Moonlight
+                            return Color.swClearNight;
+
+                        case 3: // Partly Sunny
+                        case 4: // Intermittent Clouds
+                        case 6: // Mostly Cloudy
+                        case 35: // Partly Cloudy
+                        case 36: // Intermittent Clouds
+                            return Color.swPartlycloudy; // partlycloudy
+
+                        case 18: // pouring
+                            return Color.swPouring; // pouring
+
+                        case 12: // Showers
+                        case 13: // Mostly Cloudy w/ Showers
+                        case 14: // Partly Sunny w/ Showers
+                        case 26: // Freezing Rain
+                        case 39: // Partly Cloudy w/ Showers
+                        case 40: // Mostly Cloudy w/ Showers
+                            return Color.swRainy; // rainy
+
+                        case 19: // Flurries
+                        case 20: // Mostly Cloudy w/ Flurries
+                        case 21: // Partly Sunny w/ Flurries
+                        case 22: // Snow
+                        case 23: // Mostly Cloudy w/ Snow
+                        case 43: // Mostly Cloudy w/ Flurries
+                        case 44: // Mostly Cloudy w/ Snow
+                            return Color.swSnowy; // snowy
+
+                        case 29: // Rain and Snow
+                            return Color.swSnowyRainy; // snowy-rainy
+
+                        case 1: // Sunny
+                        case 2: // Mostly Sunny
+                        case 5: // Hazy Sunshine
+                            return Color.swSunny; // sunny
+
+                        case 32: // windy
+                            return Color.swWindy; // windy
+
+                        default:
+                            return Color.White;
+                    }`
+            }
+          },
+          false: { value: void 0, color: void 0 }
+        },
+        text: {
+          true: {
+            type: "state",
+            dp: "accuweather.0.Summary.DayOfWeek_d2"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "2values",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity1: {
+          value: { type: "triggered", dp: "accuweather.0.Summary.TempMin_d3" },
+          decimal: {
+            type: "const",
+            constVal: 0
+          },
+          factor: void 0,
+          unit: {
+            type: "const",
+            constVal: "\xB0 "
+          }
+        },
+        entity2: {
+          value: { type: "triggered", dp: "accuweather.0.Summary.TempMax_d3" },
+          decimal: {
+            type: "const",
+            constVal: 0
+          },
+          factor: void 0,
+          unit: {
+            type: "const",
+            constVal: "\xB0"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "state",
+              read: `{
+                        switch (val) {
+                            case 30: // Hot
+                                return 'weather-sunny-alert'; // exceptional
+
+                            case 24: // Ice
+                            case 31: // Cold
+                                return 'snowflake-alert'; // exceptional
+
+                            case 7: // Cloudy
+                            case 8: // Dreary (Overcast)
+                            case 38: // Mostly Cloudy
+                                return 'weather-cloudy'; // cloudy
+
+                            case 11: // fog
+                                return 'weather-fog'; // fog
+
+                            case 25: // Sleet
+                                return 'weather-hail'; // Hail
+
+                            case 15: // T-Storms
+                                return 'weather-lightning'; // lightning
+
+                            case 16: // Mostly Cloudy w/ T-Storms
+                            case 17: // Partly Sunny w/ T-Storms
+                            case 41: // Partly Cloudy w/ T-Storms
+                            case 42: // Mostly Cloudy w/ T-Storms
+                                return 'weather-lightning-rainy'; // lightning-rainy
+
+                            case 33: // Clear
+                            case 34: // Mostly Clear
+                            case 37: // Hazy Moonlight
+                                return 'weather-night';
+
+                            case 3: // Partly Sunny
+                            case 4: // Intermittent Clouds
+                            case 6: // Mostly Cloudy
+                            case 35: // Partly Cloudy
+                            case 36: // Intermittent Clouds
+                                return 'weather-partly-cloudy'; // partlycloudy
+
+                            case 18: // pouring
+                                return 'weather-pouring'; // pouring
+
+                            case 12: // Showers
+                            case 13: // Mostly Cloudy w/ Showers
+                            case 14: // Partly Sunny w/ Showers
+                            case 26: // Freezing Rain
+                            case 39: // Partly Cloudy w/ Showers
+                            case 40: // Mostly Cloudy w/ Showers
+                                return 'weather-rainy'; // rainy
+
+                            case 19: // Flurries
+                            case 20: // Mostly Cloudy w/ Flurries
+                            case 21: // Partly Sunny w/ Flurries
+                            case 22: // Snow
+                            case 23: // Mostly Cloudy w/ Snow
+                            case 43: // Mostly Cloudy w/ Flurries
+                            case 44: // Mostly Cloudy w/ Snow
+                                return 'weather-snowy'; // snowy
+
+                            case 29: // Rain and Snow
+                                return 'weather-snowy-rainy'; // snowy-rainy
+
+                            case 1: // Sunny
+                            case 2: // Mostly Sunny
+                            case 5: // Hazy Sunshine
+                                return 'weather-sunny'; // sunny
+
+                            case 32: // windy
+                                return 'weather-windy'; // windy
+
+                            default:
+                                return 'alert-circle-outline';
+                        }
+                    }`,
+              dp: "accuweather.0.Summary.WeatherIcon_d3"
+            },
+            color: {
+              type: "triggered",
+              dp: "accuweather.0.Summary.WeatherIcon_d3",
+              read: `switch (val) {
+                        case 24: // Ice
+                        case 30: // Hot
+                        case 31: // Cold
+                            return Color.swExceptional; // exceptional
+
+                        case 7: // Cloudy
+                        case 8: // Dreary (Overcast)
+                        case 38: // Mostly Cloudy
+                            return Color.swCloudy; // cloudy
+
+                        case 11: // fog
+                            return Color.swFog; // fog
+
+                        case 25: // Sleet
+                            return Color.swHail; // Hail
+
+                        case 15: // T-Storms
+                            return Color.swLightning; // lightning
+
+                        case 16: // Mostly Cloudy w/ T-Storms
+                        case 17: // Partly Sunny w/ T-Storms
+                        case 41: // Partly Cloudy w/ T-Storms
+                        case 42: // Mostly Cloudy w/ T-Storms
+                            return Color.swLightningRainy; // lightning-rainy
+
+                        case 33: // Clear
+                        case 34: // Mostly Clear
+                        case 37: // Hazy Moonlight
+                            return Color.swClearNight;
+
+                        case 3: // Partly Sunny
+                        case 4: // Intermittent Clouds
+                        case 6: // Mostly Cloudy
+                        case 35: // Partly Cloudy
+                        case 36: // Intermittent Clouds
+                            return Color.swPartlycloudy; // partlycloudy
+
+                        case 18: // pouring
+                            return Color.swPouring; // pouring
+
+                        case 12: // Showers
+                        case 13: // Mostly Cloudy w/ Showers
+                        case 14: // Partly Sunny w/ Showers
+                        case 26: // Freezing Rain
+                        case 39: // Partly Cloudy w/ Showers
+                        case 40: // Mostly Cloudy w/ Showers
+                            return Color.swRainy; // rainy
+
+                        case 19: // Flurries
+                        case 20: // Mostly Cloudy w/ Flurries
+                        case 21: // Partly Sunny w/ Flurries
+                        case 22: // Snow
+                        case 23: // Mostly Cloudy w/ Snow
+                        case 43: // Mostly Cloudy w/ Flurries
+                        case 44: // Mostly Cloudy w/ Snow
+                            return Color.swSnowy; // snowy
+
+                        case 29: // Rain and Snow
+                            return Color.swSnowyRainy; // snowy-rainy
+
+                        case 1: // Sunny
+                        case 2: // Mostly Sunny
+                        case 5: // Hazy Sunshine
+                            return Color.swSunny; // sunny
+
+                        case 32: // windy
+                            return Color.swWindy; // windy
+
+                        default:
+                            return Color.White;
+                    }`
+            }
+          },
+          false: { value: void 0, color: void 0 }
+        },
+        text: {
+          true: {
+            type: "state",
+            dp: "accuweather.0.Summary.DayOfWeek_d3"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "2values",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity1: {
+          value: { type: "triggered", dp: "accuweather.0.Summary.TempMin_d4" },
+          decimal: {
+            type: "const",
+            constVal: 0
+          },
+          factor: void 0,
+          unit: {
+            type: "const",
+            constVal: "\xB0 "
+          }
+        },
+        entity2: {
+          value: { type: "triggered", dp: "accuweather.0.Summary.TempMax_d4" },
+          decimal: {
+            type: "const",
+            constVal: 0
+          },
+          factor: void 0,
+          unit: {
+            type: "const",
+            constVal: "\xB0"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "state",
+              read: `{
+                        switch (val) {
+                            case 30: // Hot
+                                return 'weather-sunny-alert'; // exceptional
+
+                            case 24: // Ice
+                            case 31: // Cold
+                                return 'snowflake-alert'; // exceptional
+
+                            case 7: // Cloudy
+                            case 8: // Dreary (Overcast)
+                            case 38: // Mostly Cloudy
+                                return 'weather-cloudy'; // cloudy
+
+                            case 11: // fog
+                                return 'weather-fog'; // fog
+
+                            case 25: // Sleet
+                                return 'weather-hail'; // Hail
+
+                            case 15: // T-Storms
+                                return 'weather-lightning'; // lightning
+
+                            case 16: // Mostly Cloudy w/ T-Storms
+                            case 17: // Partly Sunny w/ T-Storms
+                            case 41: // Partly Cloudy w/ T-Storms
+                            case 42: // Mostly Cloudy w/ T-Storms
+                                return 'weather-lightning-rainy'; // lightning-rainy
+
+                            case 33: // Clear
+                            case 34: // Mostly Clear
+                            case 37: // Hazy Moonlight
+                                return 'weather-night';
+
+                            case 3: // Partly Sunny
+                            case 4: // Intermittent Clouds
+                            case 6: // Mostly Cloudy
+                            case 35: // Partly Cloudy
+                            case 36: // Intermittent Clouds
+                                return 'weather-partly-cloudy'; // partlycloudy
+
+                            case 18: // pouring
+                                return 'weather-pouring'; // pouring
+
+                            case 12: // Showers
+                            case 13: // Mostly Cloudy w/ Showers
+                            case 14: // Partly Sunny w/ Showers
+                            case 26: // Freezing Rain
+                            case 39: // Partly Cloudy w/ Showers
+                            case 40: // Mostly Cloudy w/ Showers
+                                return 'weather-rainy'; // rainy
+
+                            case 19: // Flurries
+                            case 20: // Mostly Cloudy w/ Flurries
+                            case 21: // Partly Sunny w/ Flurries
+                            case 22: // Snow
+                            case 23: // Mostly Cloudy w/ Snow
+                            case 43: // Mostly Cloudy w/ Flurries
+                            case 44: // Mostly Cloudy w/ Snow
+                                return 'weather-snowy'; // snowy
+
+                            case 29: // Rain and Snow
+                                return 'weather-snowy-rainy'; // snowy-rainy
+
+                            case 1: // Sunny
+                            case 2: // Mostly Sunny
+                            case 5: // Hazy Sunshine
+                                return 'weather-sunny'; // sunny
+
+                            case 32: // windy
+                                return 'weather-windy'; // windy
+
+                            default:
+                                return 'alert-circle-outline';
+                        }
+                    }`,
+              dp: "accuweather.0.Summary.WeatherIcon_d4"
+            },
+            color: {
+              type: "triggered",
+              dp: "accuweather.0.Summary.WeatherIcon_d4",
+              read: `switch (val) {
+                        case 24: // Ice
+                        case 30: // Hot
+                        case 31: // Cold
+                            return Color.swExceptional; // exceptional
+
+                        case 7: // Cloudy
+                        case 8: // Dreary (Overcast)
+                        case 38: // Mostly Cloudy
+                            return Color.swCloudy; // cloudy
+
+                        case 11: // fog
+                            return Color.swFog; // fog
+
+                        case 25: // Sleet
+                            return Color.swHail; // Hail
+
+                        case 15: // T-Storms
+                            return Color.swLightning; // lightning
+
+                        case 16: // Mostly Cloudy w/ T-Storms
+                        case 17: // Partly Sunny w/ T-Storms
+                        case 41: // Partly Cloudy w/ T-Storms
+                        case 42: // Mostly Cloudy w/ T-Storms
+                            return Color.swLightningRainy; // lightning-rainy
+
+                        case 33: // Clear
+                        case 34: // Mostly Clear
+                        case 37: // Hazy Moonlight
+                            return Color.swClearNight;
+
+                        case 3: // Partly Sunny
+                        case 4: // Intermittent Clouds
+                        case 6: // Mostly Cloudy
+                        case 35: // Partly Cloudy
+                        case 36: // Intermittent Clouds
+                            return Color.swPartlycloudy; // partlycloudy
+
+                        case 18: // pouring
+                            return Color.swPouring; // pouring
+
+                        case 12: // Showers
+                        case 13: // Mostly Cloudy w/ Showers
+                        case 14: // Partly Sunny w/ Showers
+                        case 26: // Freezing Rain
+                        case 39: // Partly Cloudy w/ Showers
+                        case 40: // Mostly Cloudy w/ Showers
+                            return Color.swRainy; // rainy
+
+                        case 19: // Flurries
+                        case 20: // Mostly Cloudy w/ Flurries
+                        case 21: // Partly Sunny w/ Flurries
+                        case 22: // Snow
+                        case 23: // Mostly Cloudy w/ Snow
+                        case 43: // Mostly Cloudy w/ Flurries
+                        case 44: // Mostly Cloudy w/ Snow
+                            return Color.swSnowy; // snowy
+
+                        case 29: // Rain and Snow
+                            return Color.swSnowyRainy; // snowy-rainy
+
+                        case 1: // Sunny
+                        case 2: // Mostly Sunny
+                        case 5: // Hazy Sunshine
+                            return Color.swSunny; // sunny
+
+                        case 32: // windy
+                            return Color.swWindy; // windy
+
+                        default:
+                            return Color.White;
+                    }`
+            }
+          },
+          false: { value: void 0, color: void 0 }
+        },
+        text: {
+          true: {
+            type: "state",
+            dp: "accuweather.0.Summary.DayOfWeek_d4"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "2values",
+      dpInit: "",
+      type: "text",
+      modeScr: "bottom",
+      data: {
+        entity1: {
+          value: { type: "triggered", dp: "accuweather.0.Summary.TempMin_d5" },
+          decimal: {
+            type: "const",
+            constVal: 0
+          },
+          factor: void 0,
+          unit: {
+            type: "const",
+            constVal: "\xB0 "
+          }
+        },
+        entity2: {
+          value: { type: "triggered", dp: "accuweather.0.Summary.TempMax_d5" },
+          decimal: {
+            type: "const",
+            constVal: 0
+          },
+          factor: void 0,
+          unit: {
+            type: "const",
+            constVal: "\xB0"
+          }
+        },
+        icon: {
+          true: {
+            value: {
+              type: "state",
+              read: `{
+                        switch (val) {
+                            case 30: // Hot
+                                return 'weather-sunny-alert'; // exceptional
+
+                            case 24: // Ice
+                            case 31: // Cold
+                                return 'snowflake-alert'; // exceptional
+
+                            case 7: // Cloudy
+                            case 8: // Dreary (Overcast)
+                            case 38: // Mostly Cloudy
+                                return 'weather-cloudy'; // cloudy
+
+                            case 11: // fog
+                                return 'weather-fog'; // fog
+
+                            case 25: // Sleet
+                                return 'weather-hail'; // Hail
+
+                            case 15: // T-Storms
+                                return 'weather-lightning'; // lightning
+
+                            case 16: // Mostly Cloudy w/ T-Storms
+                            case 17: // Partly Sunny w/ T-Storms
+                            case 41: // Partly Cloudy w/ T-Storms
+                            case 42: // Mostly Cloudy w/ T-Storms
+                                return 'weather-lightning-rainy'; // lightning-rainy
+
+                            case 33: // Clear
+                            case 34: // Mostly Clear
+                            case 37: // Hazy Moonlight
+                                return 'weather-night';
+
+                            case 3: // Partly Sunny
+                            case 4: // Intermittent Clouds
+                            case 6: // Mostly Cloudy
+                            case 35: // Partly Cloudy
+                            case 36: // Intermittent Clouds
+                                return 'weather-partly-cloudy'; // partlycloudy
+
+                            case 18: // pouring
+                                return 'weather-pouring'; // pouring
+
+                            case 12: // Showers
+                            case 13: // Mostly Cloudy w/ Showers
+                            case 14: // Partly Sunny w/ Showers
+                            case 26: // Freezing Rain
+                            case 39: // Partly Cloudy w/ Showers
+                            case 40: // Mostly Cloudy w/ Showers
+                                return 'weather-rainy'; // rainy
+
+                            case 19: // Flurries
+                            case 20: // Mostly Cloudy w/ Flurries
+                            case 21: // Partly Sunny w/ Flurries
+                            case 22: // Snow
+                            case 23: // Mostly Cloudy w/ Snow
+                            case 43: // Mostly Cloudy w/ Flurries
+                            case 44: // Mostly Cloudy w/ Snow
+                                return 'weather-snowy'; // snowy
+
+                            case 29: // Rain and Snow
+                                return 'weather-snowy-rainy'; // snowy-rainy
+
+                            case 1: // Sunny
+                            case 2: // Mostly Sunny
+                            case 5: // Hazy Sunshine
+                                return 'weather-sunny'; // sunny
+
+                            case 32: // windy
+                                return 'weather-windy'; // windy
+
+                            default:
+                                return 'alert-circle-outline';
+                        }
+                    }`,
+              dp: "accuweather.0.Summary.WeatherIcon_d5"
+            },
+            color: {
+              type: "triggered",
+              dp: "accuweather.0.Summary.WeatherIcon_d5",
+              read: `switch (val) {
+                        case 24: // Ice
+                        case 30: // Hot
+                        case 31: // Cold
+                            return Color.swExceptional; // exceptional
+
+                        case 7: // Cloudy
+                        case 8: // Dreary (Overcast)
+                        case 38: // Mostly Cloudy
+                            return Color.swCloudy; // cloudy
+
+                        case 11: // fog
+                            return Color.swFog; // fog
+
+                        case 25: // Sleet
+                            return Color.swHail; // Hail
+
+                        case 15: // T-Storms
+                            return Color.swLightning; // lightning
+
+                        case 16: // Mostly Cloudy w/ T-Storms
+                        case 17: // Partly Sunny w/ T-Storms
+                        case 41: // Partly Cloudy w/ T-Storms
+                        case 42: // Mostly Cloudy w/ T-Storms
+                            return Color.swLightningRainy; // lightning-rainy
+
+                        case 33: // Clear
+                        case 34: // Mostly Clear
+                        case 37: // Hazy Moonlight
+                            return Color.swClearNight;
+
+                        case 3: // Partly Sunny
+                        case 4: // Intermittent Clouds
+                        case 6: // Mostly Cloudy
+                        case 35: // Partly Cloudy
+                        case 36: // Intermittent Clouds
+                            return Color.swPartlycloudy; // partlycloudy
+
+                        case 18: // pouring
+                            return Color.swPouring; // pouring
+
+                        case 12: // Showers
+                        case 13: // Mostly Cloudy w/ Showers
+                        case 14: // Partly Sunny w/ Showers
+                        case 26: // Freezing Rain
+                        case 39: // Partly Cloudy w/ Showers
+                        case 40: // Mostly Cloudy w/ Showers
+                            return Color.swRainy; // rainy
+
+                        case 19: // Flurries
+                        case 20: // Mostly Cloudy w/ Flurries
+                        case 21: // Partly Sunny w/ Flurries
+                        case 22: // Snow
+                        case 23: // Mostly Cloudy w/ Snow
+                        case 43: // Mostly Cloudy w/ Flurries
+                        case 44: // Mostly Cloudy w/ Snow
+                            return Color.swSnowy; // snowy
+
+                        case 29: // Rain and Snow
+                            return Color.swSnowyRainy; // snowy-rainy
+
+                        case 1: // Sunny
+                        case 2: // Mostly Sunny
+                        case 5: // Hazy Sunshine
+                            return Color.swSunny; // sunny
+
+                        case 32: // windy
+                            return Color.swWindy; // windy
+
+                        default:
+                            return Color.White;
+                    }`
+            }
+          },
+          false: { value: void 0, color: void 0 }
+        },
+        text: {
+          true: {
+            type: "state",
+            dp: "accuweather.0.Summary.DayOfWeek_d5"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.NSPanel.Allgemein.Fenster.Status_offene"
+          }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-open-variant" },
+            color: { type: "const", constVal: Color.Red }
+          },
           false: {
-            value: void 0,
-            color: void 0
+            value: { type: "const", constVal: "window-closed-variant" },
+            color: { type: "const", constVal: Color.Green }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3738,7 +3384,7 @@ const pageScreensaverTest = {
         text: {
           true: {
             type: "const",
-            constVal: "Windr."
+            constVal: "Fenster"
           },
           false: void 0
         }
@@ -3750,47 +3396,29 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "indicator",
       data: {
-        entity2: {
+        entity1: {
           value: {
-            type: "state",
-            dp: "accuweather.0.Current.WindSpeed"
-          },
-          decimal: {
-            type: "const",
-            constVal: 1
-          },
-          factor: {
-            type: "const",
-            constVal: 1e3 / 3600
-          },
-          unit: {
-            type: "const",
-            constVal: "m/s"
+            type: "triggered",
+            dp: "0_userdata.0.NSPanel.Allgemein.T\xFCren.Status_offene"
           }
         },
         icon: {
           true: {
-            value: {
-              type: "const",
-              constVal: "weather-windy"
-            },
-            color: void 0
+            value: { type: "const", constVal: "door-open" },
+            color: { type: "const", constVal: Color.Red }
           },
           false: {
-            value: void 0,
-            color: void 0
+            value: { type: "const", constVal: "door-closed" },
+            color: { type: "const", constVal: Color.Green }
           },
-          scale: {
-            type: "const",
-            constVal: { val_min: 0, val_max: 80 }
-          },
+          scale: void 0,
           maxBri: void 0,
           minBri: void 0
         },
         text: {
           true: {
             type: "const",
-            constVal: "Wind"
+            constVal: "T\xFCren"
           },
           false: void 0
         }
@@ -3802,47 +3430,97 @@ const pageScreensaverTest = {
       type: "text",
       modeScr: "indicator",
       data: {
-        entity2: {
+        entity1: {
           value: {
-            type: "state",
-            dp: "accuweather.0.Current.WindGust"
-          },
-          decimal: {
-            type: "const",
-            constVal: 1
-          },
-          factor: {
-            type: "const",
-            constVal: 1e3 / 3600
-          },
-          unit: {
-            type: "const",
-            constVal: "m/s"
+            type: "triggered",
+            dp: "0_userdata.0.NSPanel.Allgemein.Licht.Status_Ein"
           }
         },
         icon: {
           true: {
-            value: {
-              type: "const",
-              constVal: "weather-tornado"
-            },
-            color: void 0
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Red }
           },
           false: {
-            value: void 0,
-            color: void 0
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.Green }
           },
-          scale: {
-            type: "const",
-            constVal: { val_min: 0, val_max: 7.2 }
-          },
+          scale: void 0,
           maxBri: void 0,
           minBri: void 0
         },
         text: {
           true: {
             type: "const",
-            constVal: "B\xF6en"
+            constVal: "Licht"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.NSPanel.Allgemein.T\xFCrschloss.state"
+          }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lock" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "lock-open" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "T\xFCrschloss"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text",
+      dpInit: "",
+      type: "text",
+      modeScr: "indicator",
+      data: {
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "vw-connect.0.TMBLE7NS2K8033846.status.isCarLocked"
+          }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "car-key" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: void 0,
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Auto"
           },
           false: void 0
         }
@@ -3856,8 +3534,8 @@ const pageScreensaverTest = {
       data: {
         entity1: {
           value: {
-            type: "internal",
-            dp: "cmd/power1"
+            type: "triggered",
+            dp: "alias.0.Steckdosen.Schreibtisch.Control.Power"
           }
         },
         icon: {
@@ -3892,7 +3570,7 @@ const pageScreensaverTest = {
       }
     },
     {
-      role: "text",
+      role: "combined",
       dpInit: "",
       type: "text",
       modeScr: "mricon",
@@ -3912,6 +3590,12 @@ const pageScreensaverTest = {
             color: {
               type: "const",
               constVal: Color.Yellow
+            },
+            text: {
+              value: {
+                type: "state",
+                dp: "0_userdata.0.example_state_number"
+              }
             }
           },
           false: {
@@ -3926,156 +3610,122 @@ const pageScreensaverTest = {
           }
         }
       }
-    },
-    {
-      role: "text",
-      dpInit: "",
-      type: "text",
-      modeScr: "time",
-      data: {
-        entity2: {
-          value: {
-            type: "internal",
-            dp: "///time"
-          },
-          dateFormat: {
-            type: "const",
-            constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
-          }
-        }
-      }
-    },
-    {
-      role: "text",
-      dpInit: "",
-      type: "text",
-      modeScr: "date",
-      data: {
-        entity2: {
-          value: {
-            type: "internal",
-            dp: "///date"
-          },
-          dateFormat: {
-            type: "const",
-            constVal: {
-              local: "de",
-              format: {
-                weekday: "long",
-                month: "short",
-                year: "numeric",
-                day: "numeric"
-              }
-            }
-          }
-        }
-      }
     }
   ]
 };
 const Testconfig = [
   {
     pages: [
-      pageGridTest4,
-      pageEntitiesTest1,
       pagePowerTest1,
-      pageThermoTest,
-      pageGridTest1,
-      pageGrid2Test3,
-      pageGridTest2,
       pageScreensaverTest,
-      pageEntitiesTest2,
       pageAbfall,
-      pageGridTest5,
-      pageMediaTest3,
-      popupTest,
-      pageEntitiesTest3
+      pageAbfallTemplate,
+      pageGridMain,
+      pageGridTueren,
+      pageGridFenster1,
+      pageGridFenster2,
+      pageGridLicht1,
+      pageGridLicht2,
+      pageGridLicht3,
+      pageGridLicht4,
+      pageEntitiesFahrplan,
+      pageEntitiesFahrplanTemplate
     ],
     navigation: [
       {
         name: "main",
-        page: "entities1",
-        left: { single: "7" },
-        right: { single: "abfall1", double: "2" }
-      },
-      {
-        name: "5",
-        page: "thermo1",
-        left: { single: "4" },
-        right: { single: "6", double: "main" }
-      },
-      {
-        name: "abfall1",
-        page: "abfall1",
-        left: { single: "main" },
-        right: { single: "entities3", double: "main" }
-      },
-      {
-        name: "entities3",
-        page: "entities3",
-        left: { double: "abfall1" },
-        right: { double: "entities2" }
-      },
-      {
-        name: "entities2",
-        page: "entities2",
-        left: { single: "main" },
+        page: "main",
+        left: { single: "5" },
         right: { single: "1", double: "main" }
       },
       {
-        name: "6",
-        page: "power1",
-        left: { single: "5" },
-        right: { single: "7", double: "main" }
+        name: "11",
+        left: { single: "main" },
+        right: { single: "main" },
+        page: "tuer"
       },
       {
-        name: "7",
-        page: "grid4",
-        left: { single: "6" },
-        right: { single: "main", double: "main" }
+        name: "12",
+        left: { single: "main" },
+        right: { single: "13" },
+        page: "fenster1"
+      },
+      {
+        name: "13",
+        left: { single: "12" },
+        right: { single: "main" },
+        page: "fenster2"
+      },
+      {
+        name: "14",
+        left: { single: "main" },
+        right: { single: "15" },
+        page: "licht1"
+      },
+      {
+        name: "15",
+        left: { single: "14" },
+        right: { single: "16" },
+        page: "licht2"
+      },
+      {
+        name: "16",
+        left: { single: "15" },
+        right: { single: "17" },
+        page: "licht3"
+      },
+      {
+        name: "17",
+        left: { single: "16" },
+        right: { single: "main" },
+        page: "licht4"
       },
       {
         name: "1",
         left: { single: "main" },
-        right: { single: "2" },
-        page: "grid1"
+        right: { single: "4" },
+        page: "abfall"
       },
       {
         name: "2",
-        left: { single: "1" },
+        left: { single: "4" },
         right: { single: "3" },
-        page: "grid2"
+        page: "power1"
       },
       {
         name: "3",
         left: { single: "2" },
-        right: { single: "4", double: "main" },
-        page: "media3"
+        right: { single: "5" },
+        page: "fahrplan"
       },
       {
         name: "4",
-        left: { single: "3", double: "1" },
-        right: { single: "5", double: "2" },
-        page: "grid3"
+        left: { single: "1" },
+        right: { single: "2" },
+        page: "abfall1"
+      },
+      {
+        name: "5",
+        left: { single: "3" },
+        right: { single: "main" },
+        page: "fahrplan1"
       }
     ],
-    topic: "nspanel/ns_panel2",
-    name: "Wohnzimmer",
+    topic: "SmartHome/NSPanel_1",
+    name: "B\xFCro",
     config: {
       momentLocale: "",
       locale: "de-DE",
       iconBig1: false,
       iconBig2: false
     },
-    timeout: 15,
+    timeout: 30,
     dimLow: 20,
     dimHigh: 90
   }
 ];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Testconfig,
-  pageMediaTest,
-  pageMediaTest2
+  Testconfig
 });
 //# sourceMappingURL=config-custom.js.map

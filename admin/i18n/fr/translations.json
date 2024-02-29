@@ -23,5 +23,10 @@
     "Color brightness": "Luminosité des couleurs",
     "welcomeTToken": "Passe une bonne journée,\r\n te souhaite\r\n Armilar, TT-Tom, ticaki\r\n   & Kuckuckmann",
     "welcomeHToken": "Bienvenue sur NSPanel",
-    "departure": "Départ"
+    "departure": "Départ",
+    "HORIZONTAL": "horizontal",
+    "VERTICAL": "verticale",
+    "VERTICAL_AND_HORIZONTAL": "vertical et horizontal",
+    "opened": "ouvert",
+    "closed": "fermé"
 }

@@ -23,5 +23,10 @@
     "Color brightness": "Jasność koloru",
     "welcomeTToken": "Miłego dnia,\r\n życzę Ci\r\n Armilar, TT-Tom, ticaki\r\n   & Kuckuckmann",
     "welcomeHToken": "Witamy w NSPanelu",
-    "departure": "Wyjazd"
+    "departure": "Wyjazd",
+    "HORIZONTAL": "poziomy",
+    "VERTICAL": "pionowy",
+    "VERTICAL_AND_HORIZONTAL": "pionowo i poziomo",
+    "opened": "otwierany",
+    "closed": "closed"
 }

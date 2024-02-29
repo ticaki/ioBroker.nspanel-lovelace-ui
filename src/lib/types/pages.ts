@@ -78,6 +78,7 @@ export type StateRole =
     | 'switch'
     | 'button'
     | 'sensor.window'
+    | 'sensor.open'
     | 'value.temperature'
     | 'value.battery'
     | 'indicator.lowbat'

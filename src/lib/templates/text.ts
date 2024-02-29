@@ -22,7 +22,7 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                 value: {
                     type: 'triggered',
                     mode: 'auto',
-                    role: 'sensor.window',
+                    role: ['sensor.window', 'sensor.open'],
                     dp: '',
                 },
             },
@@ -31,8 +31,8 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                 false: undefined,
             },
             text1: {
-                true: { type: 'const', constVal: 'open' },
-                false: { type: 'const', constVal: 'close' },
+                true: { type: 'const', constVal: 'opened' },
+                false: { type: 'const', constVal: 'closed' },
             },
         },
     },
@@ -56,7 +56,7 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                 value: {
                     type: 'triggered',
                     mode: 'auto',
-                    role: 'sensor.window',
+                    role: ['sensor.window', 'sensor.open'],
                     dp: '',
                     read: 'return !val',
                 },
@@ -66,8 +66,8 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                 false: undefined,
             },
             text1: {
-                true: { type: 'const', constVal: 'open' },
-                false: { type: 'const', constVal: 'close' },
+                true: { type: 'const', constVal: 'opened' },
+                false: { type: 'const', constVal: 'closed' },
             },
         },
     },

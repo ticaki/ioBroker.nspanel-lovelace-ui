@@ -23,5 +23,10 @@
     "Color brightness": "Brillo del color",
     "welcomeTToken": "Que tenga un lindo día,\r\n desearte\r\n Armilar, TT-Tom, ticaki\r\n   & Kuckuckmann",
     "welcomeHToken": "Bienvenido al NSPanel",
-    "departure": "Partida"
+    "departure": "Partida",
+    "HORIZONTAL": "horizontal",
+    "VERTICAL": "vertical",
+    "VERTICAL_AND_HORIZONTAL": "Vertical y Horizontal",
+    "opened": "abrió",
+    "closed": "cerrado"
 }
