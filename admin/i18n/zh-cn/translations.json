@@ -23,5 +23,10 @@
     "Color brightness": "色彩亮度",
     "welcomeTToken": "祝你今天过得愉快，\r\n 希望你\r\n 阿米拉尔、TT-Tom、ticaki\r\n   ＆库克曼",
     "welcomeHToken": "欢迎来到 NSPanel",
-    "departure": "离开"
+    "departure": "离开",
+    "HORIZONTAL": "水平的",
+    "VERTICAL": "垂直的",
+    "VERTICAL_AND_HORIZONTAL": "垂直和水平",
+    "opened": "打开",
+    "closed": "关闭"
 }

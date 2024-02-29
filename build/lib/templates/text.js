@@ -48,7 +48,7 @@ const textTemplates = {
         value: {
           type: "triggered",
           mode: "auto",
-          role: "sensor.window",
+          role: ["sensor.window", "sensor.open"],
           dp: ""
         }
       },
@@ -57,8 +57,8 @@ const textTemplates = {
         false: void 0
       },
       text1: {
-        true: { type: "const", constVal: "open" },
-        false: { type: "const", constVal: "close" }
+        true: { type: "const", constVal: "opened" },
+        false: { type: "const", constVal: "closed" }
       }
     }
   },
@@ -81,7 +81,7 @@ const textTemplates = {
         value: {
           type: "triggered",
           mode: "auto",
-          role: "sensor.window",
+          role: ["sensor.window", "sensor.open"],
           dp: "",
           read: "return !val"
         }
@@ -91,8 +91,8 @@ const textTemplates = {
         false: void 0
       },
       text1: {
-        true: { type: "const", constVal: "open" },
-        false: { type: "const", constVal: "close" }
+        true: { type: "const", constVal: "opened" },
+        false: { type: "const", constVal: "closed" }
       }
     }
   },

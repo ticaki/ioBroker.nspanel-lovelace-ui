@@ -26,5 +26,7 @@
     "departure": "Departure",
     "HORIZONTAL": "horizontal",
     "VERTICAL": "vertical",
-    "VERTICAL_AND_HORIZONTAL": "vertical and horizontal"
+    "VERTICAL_AND_HORIZONTAL": "vertical and horizontal",
+    "opened": "opened",
+    "closed": "closed"
 }
