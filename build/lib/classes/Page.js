@@ -37,6 +37,12 @@ class Page extends import_states_controller.BaseClassPage {
     super(card, pageItemsConfig && pageItemsConfig.pageItems);
     this.card = card.card;
     this.id = card.id;
+    if (card.dpInit && typeof card.dpInit === "string") {
+      const reg = (0, import_tools.getRegExp)(card.dpInit);
+      if (reg) {
+        card.dpInit = reg;
+      }
+    }
     this.dpInit = (_a = card.dpInit) != null ? _a : "";
     this.config = pageItemsConfig && pageItemsConfig.config;
   }
@@ -47,6 +53,12 @@ class Page extends import_states_controller.BaseClassPage {
         let options = this.pageItemConfig[a];
         if (options === void 0)
           continue;
+        if (options.dpInit && typeof options.dpInit === "string") {
+          const reg = (0, import_tools.getRegExp)(options.dpInit);
+          if (reg) {
+            options.dpInit = reg;
+          }
+        }
         options = await this.getItemFromTemplate(options);
         if (!options)
           continue;
@@ -114,8 +126,14 @@ class Page extends import_states_controller.BaseClassPage {
         that.log.error("dont find template " + config.template);
         return config;
       }
-      if (template.adapter && typeof config.dpInit === "string" && !config.dpInit.startsWith(template.adapter)) {
-        return config;
+      if (config.dpInit && typeof config.dpInit === "string") {
+        const reg = (0, import_tools.getRegExp)(config.dpInit);
+        if (reg) {
+          config.dpInit = reg;
+        }
+        if (template.adapter && typeof config.dpInit === "string" && !config.dpInit.startsWith(template.adapter)) {
+          return config;
+        }
       }
       const newTemplate = structuredClone(template);
       delete newTemplate.adapter;

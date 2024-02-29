@@ -5,7 +5,7 @@ import { ButtonActionType, IncomingEvent, PopupType, TemplateIdent, isPopupType 
 import { PageItem } from '../pages/pageItem';
 import { BaseClass } from './library';
 import { cardTemplates } from '../templates/card';
-import { deepAssign } from '../const/tools';
+import { deepAssign, getRegExp } from '../const/tools';
 import { PageItemDataItemsOptions, PageItemOptionsTemplate } from '../types/type-pageItem';
 import { pageItemTemplates } from '../templates/templateArray';
 
@@ -38,6 +38,12 @@ export class Page extends BaseClassPage {
         super(card, pageItemsConfig && pageItemsConfig.pageItems);
         this.card = card.card;
         this.id = card.id;
+        if (card.dpInit && typeof card.dpInit === 'string') {
+            const reg = getRegExp(card.dpInit);
+            if (reg) {
+                card.dpInit = reg;
+            }
+        }
         this.dpInit = card.dpInit ?? '';
         this.config = pageItemsConfig && pageItemsConfig.config;
     }
@@ -48,6 +54,12 @@ export class Page extends BaseClassPage {
             for (let a = 0; a < this.pageItemConfig.length; a++) {
                 let options = this.pageItemConfig[a];
                 if (options === undefined) continue;
+                if (options.dpInit && typeof options.dpInit === 'string') {
+                    const reg = getRegExp(options.dpInit);
+                    if (reg) {
+                        options.dpInit = reg;
+                    }
+                }
                 options = await this.getItemFromTemplate(options);
                 if (!options) continue;
 
@@ -133,8 +145,18 @@ export class Page extends BaseClassPage {
                 that.log.error('dont find template ' + config.template);
                 return config;
             }
-            if (template.adapter && typeof config.dpInit === 'string' && !config.dpInit.startsWith(template.adapter)) {
-                return config;
+            if (config.dpInit && typeof config.dpInit === 'string') {
+                const reg = getRegExp(config.dpInit);
+                if (reg) {
+                    config.dpInit = reg;
+                }
+                if (
+                    template.adapter &&
+                    typeof config.dpInit === 'string' &&
+                    !config.dpInit.startsWith(template.adapter)
+                ) {
+                    return config;
+                }
             }
             const newTemplate = structuredClone(template) as Partial<pages.PageBaseConfigTemplate>;
             delete newTemplate.adapter;

@@ -38,6 +38,7 @@ __export(tools_exports, {
   getPayload: () => getPayload,
   getPayloadArray: () => getPayloadArray,
   getRGBfromRGBThree: () => getRGBfromRGBThree,
+  getRegExp: () => getRegExp,
   getScaledNumber: () => getScaledNumber,
   getSliderCTFromValue: () => getSliderCTFromValue,
   getTemperaturColorFromValue: () => getTemperaturColorFromValue,
@@ -645,6 +646,16 @@ function setTriggeredToState(theObject, exclude) {
     }
   }
 }
+function getRegExp(s) {
+  if (!s.startsWith("/"))
+    return null;
+  const i = s.lastIndexOf("/");
+  const reg = s.slice(1, i);
+  const arg = s.slice(i + 1);
+  if (!reg)
+    return null;
+  return new RegExp(reg, arg ? arg : void 0);
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
@@ -661,6 +672,7 @@ function setTriggeredToState(theObject, exclude) {
   getPayload,
   getPayloadArray,
   getRGBfromRGBThree,
+  getRegExp,
   getScaledNumber,
   getSliderCTFromValue,
   getTemperaturColorFromValue,

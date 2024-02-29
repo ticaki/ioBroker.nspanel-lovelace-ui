@@ -646,3 +646,12 @@ export function setTriggeredToState(theObject: any, exclude: string[]): void {
         }
     }
 }
+
+export function getRegExp(s: string): RegExp | null {
+    if (!s.startsWith('/')) return null;
+    const i = s.lastIndexOf('/');
+    const reg = s.slice(1, i);
+    const arg = s.slice(i + 1);
+    if (!reg) return null;
+    return new RegExp(reg, arg ? arg : undefined);
+}

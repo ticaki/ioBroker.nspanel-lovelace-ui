@@ -46,13 +46,7 @@ export class PageItem extends BaseClassTriggerd {
     async init(): Promise<void> {
         if (!this.config) return;
         const config = structuredClone(this.config);
-        /*// search states for mode auto
-        const dpInit = (this.parent && this.parent.dpInit ? this.parent.dpInit : this.config.dpInit) ?? '';
-        const tempConfig: Partial<PageItemDataItemsOptions['data']> = dpInit
-            ? await this.panel.statesControler.getDataItemsFromAuto(dpInit, config.data)
-            : config.data;*/
-        // create Dataitems
-        //this.log.debug(JSON.stringify(tempConfig));
+
         const tempItem: typePageItem.PageItemDataItems['data'] = (await this.panel.statesControler.createDataItems(
             config.data,
             this,

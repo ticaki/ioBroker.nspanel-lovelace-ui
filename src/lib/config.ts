@@ -244,7 +244,7 @@ const pageEntitiesTest3: pages.PageBaseConfig = {
         data: {
             headline: {
                 type: 'const',
-                constVal: 'entities2',
+                constVal: 'entities3',
             },
         },
     },
@@ -294,9 +294,8 @@ const pageEntitiesTest3: pages.PageBaseConfig = {
             template: 'shutter.shelly.2PM',
         },
         {
-            type: 'text',
-            dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
-            template: 'text.battery',
+            dpInit: 'bydhvs',
+            template: 'text.battery.bydhvs',
         },
     ],
     items: undefined,
@@ -369,7 +368,8 @@ const pagePowerTest1: pages.PageBaseConfig = {
                 value: { type: 'const', constVal: 'top' },
             },
             homeValueBot: {
-                value: { type: 'const', constVal: 'bot' },
+                value: { type: 'internal', dp: '///power1/powerSum' },
+                math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
             },
             leftTop: {
                 icon: {
@@ -383,7 +383,7 @@ const pagePowerTest1: pages.PageBaseConfig = {
                     },
                 },
                 value: {
-                    value: { type: 'const', constVal: 1 },
+                    value: { type: 'const', constVal: 1000 },
                 },
             },
             leftMiddle: {
@@ -461,7 +461,7 @@ const pagePowerTest1: pages.PageBaseConfig = {
                     value: { type: 'const', constVal: 6 },
                 },
             },
-            homeIcon: {
+            homeIcon: undefined /*{
                 true: {
                     value: { type: 'const', constVal: 'home' },
                     color: undefined,
@@ -470,7 +470,7 @@ const pagePowerTest1: pages.PageBaseConfig = {
                     value: undefined,
                     color: undefined,
                 },
-            },
+            },*/,
         },
     },
     items: undefined,
@@ -1875,6 +1875,10 @@ const pageGridTest2: pages.PageBaseConfig = {
             dpInit: 'zigbee2mqtt.0.0x00158d00041fdbcb',
             template: 'text.temperature',
         },
+        {
+            dpInit: 'bydhvs',
+            template: 'text.battery.bydhvs',
+        },
     ],
 };
 const pageGridTest5: pages.PageBaseConfig = {
@@ -2910,21 +2914,27 @@ const pageThermoTest: pages.PageBaseConfig = {
                 type: 'const',
                 constVal: 'headline',
             },
-            text2: {
-                type: 'const',
-                constVal: '20',
+            mixed2: {
+                value: {
+                    type: 'const',
+                    constVal: '20',
+                },
             },
             unit: {
                 type: 'const',
                 constVal: '°C',
             },
-            text1: {
-                type: 'const',
-                constVal: 'text1',
+            mixed1: {
+                value: {
+                    type: 'const',
+                    constVal: 'H1',
+                },
             },
-            text3: {
-                type: 'const',
-                constVal: 'text2',
+            mixed3: {
+                value: {
+                    type: 'const',
+                    constVal: 'H2',
+                },
             },
             minTemp: {
                 type: 'const',
@@ -2939,7 +2949,12 @@ const pageThermoTest: pages.PageBaseConfig = {
                 constVal: '5',
             },
             set1: { type: 'state', dp: '0_userdata.0.number1' },
-            text4: undefined,
+            mixed4: {
+                value: {
+                    type: 'const',
+                    constVal: '20',
+                },
+            },
         },
     },
     items: undefined,
@@ -3375,7 +3390,43 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
+        // Bottom 1 - accuWeather.0. Forecast Day 1
+        {
+            template: 'text.accuweather.bot2values',
+            dpInit: /^accuweather.0.+?d1$/,
+            modeScr: 'bottom',
+        },
 
+        // Bottom 2 - accuWeather.0. Forecast Day 2
+        {
+            template: 'text.accuweather.bot2values',
+            dpInit: /^accuweather.0.+?d2$/,
+            modeScr: 'bottom',
+        },
+
+        // Bottom 3 - accuWeather.0. Forecast Day 3
+        {
+            template: 'text.accuweather.bot2values',
+            dpInit: /^accuweather.0.+?d3$/,
+            modeScr: 'bottom',
+        },
+
+        // Bottom 4 - accuWeather.0. Forecast Day 4
+        {
+            template: 'text.accuweather.bot2values',
+            dpInit: /^accuweather.0.+?d4$/,
+            modeScr: 'bottom',
+        },
+        // Bottom 5 - accuWeather.0. Forecast Day 5
+        {
+            template: 'text.accuweather.bot2values',
+            dpInit: /^accuweather\.0.+?d5$/,
+            modeScr: 'bottom',
+        },
+
+        // Bottom 6 - daswetter.0. Forecast Day 6
+
+        // Bottom 7 - Sonnenaufgang - Sonnenuntergang im Wechsel
         {
             role: 'text',
             dpInit: '',
@@ -3385,8 +3436,8 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 entity1: undefined,
                 entity2: {
                     value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Daily.Day1.Sunrise',
+                        type: 'triggered',
+                        dp: '0_userdata.0.Sunevent2.time',
                         read: 'return new Date(val).getTime()',
                         forceType: 'number',
                     },
@@ -3398,19 +3449,19 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 icon: {
                     true: {
                         value: {
-                            type: 'const',
-                            constVal: 'weather-sunset-up',
+                            type: 'triggered',
+                            dp: '0_userdata.0.Sunevent2.icon',
                         },
                         color: {
                             type: 'const',
-                            constVal: Color.Yellow,
+                            constVal: Color.MSYellow,
                         },
                     },
                     false: {
                         value: undefined,
                         color: {
                             type: 'const',
-                            constVal: Color.Blue,
+                            constVal: Color.MSYellow,
                         },
                     },
                     scale: undefined,
@@ -3421,21 +3472,38 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 text: {
                     true: {
                         type: 'const',
-                        constVal: 'Sun',
+                        constVal: 'Sonne',
                     },
                     false: undefined,
                 },
             },
         },
+
+        // Bottom 8 - Windgeschwindigkeit
         {
             role: 'text',
             dpInit: '',
             type: 'text',
             modeScr: 'bottom',
             data: {
+                entity1: {
+                    value: {
+                        type: 'triggered',
+                        dp: 'accuweather.0.Current.WindSpeed',
+                    },
+                    decimal: {
+                        type: 'const',
+                        constVal: 1,
+                    },
+                    factor: {
+                        type: 'const',
+                        constVal: 1000 / 3600,
+                    },
+                    unit: undefined,
+                },
                 entity2: {
                     value: {
-                        type: 'state',
+                        type: 'triggered',
                         dp: 'accuweather.0.Current.WindSpeed',
                     },
                     decimal: {
@@ -3451,20 +3519,27 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                         constVal: 'm/s',
                     },
                 },
-
                 icon: {
                     true: {
                         value: {
                             type: 'const',
                             constVal: 'weather-windy',
                         },
-                        color: undefined,
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
                     },
                     false: {
-                        value: undefined,
-                        color: undefined,
+                        value: {
+                            type: 'const',
+                            constVal: 'weather-windy',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSGreen,
+                        },
                     },
-
                     scale: {
                         type: 'const',
                         constVal: { val_min: 0, val_max: 80 },
@@ -3472,7 +3547,6 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-
                 text: {
                     true: {
                         type: 'const',
@@ -3482,15 +3556,32 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
+
+        // Bottom 9 - Böen
         {
             role: 'text',
             dpInit: '',
             type: 'text',
             modeScr: 'bottom',
             data: {
+                entity1: {
+                    value: {
+                        type: 'triggered',
+                        dp: 'accuweather.0.Current.WindGust',
+                    },
+                    decimal: {
+                        type: 'const',
+                        constVal: 1,
+                    },
+                    factor: {
+                        type: 'const',
+                        constVal: 1000 / 3600,
+                    },
+                    unit: undefined,
+                },
                 entity2: {
                     value: {
-                        type: 'state',
+                        type: 'triggered',
                         dp: 'accuweather.0.Current.WindGust',
                     },
                     decimal: {
@@ -3506,28 +3597,34 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                         constVal: 'm/s',
                     },
                 },
-
                 icon: {
                     true: {
                         value: {
                             type: 'const',
                             constVal: 'weather-tornado',
                         },
-                        color: undefined,
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
                     },
                     false: {
-                        value: undefined,
-                        color: undefined,
+                        value: {
+                            type: 'const',
+                            constVal: 'weather-tornado',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSGreen,
+                        },
                     },
-
                     scale: {
                         type: 'const',
-                        constVal: { val_min: 0, val_max: 7.2 },
+                        constVal: { val_min: 0, val_max: 80 },
                     },
                     maxBri: undefined,
                     minBri: undefined,
                 },
-
                 text: {
                     true: {
                         type: 'const',
@@ -3537,6 +3634,8 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
+
+        // Bottom 10 - Windrichtung
         {
             role: 'text',
             dpInit: '',
@@ -3545,7 +3644,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
             data: {
                 entity2: {
                     value: {
-                        type: 'state',
+                        type: 'triggered',
                         dp: 'accuweather.0.Current.WindDirectionText',
                     },
                     decimal: {
@@ -3558,7 +3657,6 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                         constVal: '°',
                     },
                 },
-
                 icon: {
                     true: {
                         value: {
@@ -3567,7 +3665,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                         },
                         color: {
                             type: 'const',
-                            constVal: '#FF00FF',
+                            constVal: '#FFFFFF',
                         },
                     },
                     false: {
@@ -3578,7 +3676,6 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-
                 text: {
                     true: {
                         type: 'const',
@@ -3588,16 +3685,30 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
+
+        // Bottom 11 - Luftfeuchte außen
         {
             role: 'text',
             dpInit: '',
             type: 'text',
             modeScr: 'bottom',
             data: {
+                entity1: {
+                    value: {
+                        type: 'triggered',
+                        dp: 'hmip.0.devices.3014F711A000185F2999676C.channels.1.humidity',
+                    },
+                    decimal: {
+                        type: 'const',
+                        constVal: 1,
+                    },
+                    factor: undefined,
+                    unit: undefined,
+                },
                 entity2: {
                     value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Current.RelativeHumidity',
+                        type: 'triggered',
+                        dp: 'hmip.0.devices.3014F711A000185F2999676C.channels.1.humidity',
                     },
                     decimal: {
                         type: 'const',
@@ -3609,18 +3720,26 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                         constVal: '%',
                     },
                 },
-
                 icon: {
                     true: {
                         value: {
                             type: 'const',
                             constVal: 'water-percent',
                         },
-                        color: undefined,
+                        color: {
+                            type: 'const',
+                            constVal: Color.MSRed,
+                        },
                     },
                     false: {
-                        value: undefined,
-                        color: undefined,
+                        value: {
+                            type: 'const',
+                            constVal: 'water-percent',
+                        },
+                        color: {
+                            type: 'const',
+                            constVal: Color.Green,
+                        },
                     },
                     scale: {
                         type: 'const',
@@ -3629,165 +3748,74 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-
                 text: {
                     true: {
                         type: 'const',
-                        constVal: 'Feuchte.',
+                        constVal: 'Feuchte',
                     },
                     false: undefined,
                 },
             },
         },
 
+        // Bottom 12 - UV-Index
         {
             role: 'text',
             dpInit: '',
             type: 'text',
             modeScr: 'bottom',
             data: {
+                entity1: {
+                    value: {
+                        type: 'triggered',
+                        dp: 'accuweather.0.Current.UVIndex',
+                    },
+                    decimal: undefined,
+                    factor: undefined,
+                    unit: undefined,
+                },
                 entity2: {
                     value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Current.DewPoint',
+                        type: 'triggered',
+                        dp: 'accuweather.0.Current.UVIndex',
+                        forceType: 'string',
                     },
-                    decimal: {
-                        type: 'const',
-                        constVal: 1,
-                    },
+                    decimal: undefined,
                     factor: undefined,
-                    unit: {
-                        type: 'const',
-                        constVal: '°C',
-                    },
+                    unit: undefined,
                 },
-
                 icon: {
                     true: {
                         value: {
                             type: 'const',
-                            constVal: 'thermometer-water',
+                            constVal: 'solar-power',
                         },
                         color: {
                             type: 'const',
-                            constVal: '#7799FF',
+                            constVal: Color.MSRed,
                         },
                     },
                     false: {
-                        value: undefined,
-                        color: undefined,
-                    },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
-                },
-
-                text: {
-                    true: {
-                        type: 'const',
-                        constVal: 'Taup.',
-                    },
-                    false: undefined,
-                },
-            },
-        },
-        {
-            role: 'text',
-            dpInit: '',
-            type: 'text',
-            modeScr: 'bottom',
-            data: {
-                entity2: {
-                    value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Current.DewPoint',
-                    },
-                    decimal: {
-                        type: 'const',
-                        constVal: 1,
-                    },
-                    factor: undefined,
-                    unit: {
-                        type: 'const',
-                        constVal: '°C',
-                    },
-                },
-
-                icon: {
-                    true: {
                         value: {
                             type: 'const',
-                            constVal: 'thermometer-water',
+                            constVal: 'solar-power',
                         },
                         color: {
                             type: 'const',
-                            constVal: '#7799FF',
+                            constVal: Color.MSGreen,
                         },
                     },
-                    false: {
-                        value: undefined,
-                        color: undefined,
+                    scale: {
+                        type: 'const',
+                        constVal: { val_min: 0, val_max: 9 },
                     },
-                    scale: undefined,
                     maxBri: undefined,
                     minBri: undefined,
                 },
-
                 text: {
                     true: {
                         type: 'const',
-                        constVal: 'Taup.',
-                    },
-                    false: undefined,
-                },
-            },
-        },
-        {
-            role: 'text',
-            dpInit: '',
-            type: 'text',
-            modeScr: 'bottom',
-            data: {
-                entity2: {
-                    value: {
-                        type: 'state',
-                        dp: 'accuweather.0.Current.DewPoint',
-                    },
-                    decimal: {
-                        type: 'const',
-                        constVal: 1,
-                    },
-                    factor: undefined,
-                    unit: {
-                        type: 'const',
-                        constVal: '°C',
-                    },
-                },
-
-                icon: {
-                    true: {
-                        value: {
-                            type: 'const',
-                            constVal: 'thermometer-water',
-                        },
-                        color: {
-                            type: 'const',
-                            constVal: '#7799FF',
-                        },
-                    },
-                    false: {
-                        value: undefined,
-                        color: undefined,
-                    },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
-                },
-
-                text: {
-                    true: {
-                        type: 'const',
-                        constVal: 'Taup.',
+                        constVal: 'UV',
                     },
                     false: undefined,
                 },
@@ -4092,7 +4120,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 },
             },
         },
-        {
+        /*{
             role: 'combined',
             dpInit: '',
             type: 'text',
@@ -4147,63 +4175,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                     },
                 },
             },
-        },
-        {
-            role: 'combined',
-            dpInit: '',
-            type: 'text',
-            modeScr: 'mricon',
-            data: {
-                entity1: {
-                    value: {
-                        type: 'const',
-                        constVal: false,
-                    },
-                },
-                icon: {
-                    true: {
-                        value: {
-                            type: 'const',
-                            constVal: 'heat-wave',
-                        },
-                        color: {
-                            type: 'const',
-                            constVal: Color.MSRed,
-                        },
-                        text: {
-                            value: {
-                                type: 'state',
-                                dp: '0_userdata.0.number1',
-                            },
-                            unit: {
-                                type: 'const',
-                                constVal: '°C',
-                            },
-                        },
-                    },
-                    false: {
-                        value: {
-                            type: 'const',
-                            constVal: 'heat-wave',
-                        },
-                        color: {
-                            type: 'const',
-                            constVal: Color.MSYellow,
-                        },
-                        text: {
-                            value: {
-                                type: 'const',
-                                constVal: 'deconz.0.Sensors.5.temperature',
-                            },
-                            unit: {
-                                type: 'const',
-                                constVal: '°C',
-                            },
-                        },
-                    },
-                },
-            },
-        },
+        },*/
         {
             role: 'text',
             dpInit: '',
@@ -4430,7 +4402,7 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             iconBig1: false,
             iconBig2: false,
         },
-        timeout: 5, // dat kommt vom Admin
+        timeout: 15, // dat kommt vom Admin
         dimLow: 20,
         dimHigh: 90,
     },

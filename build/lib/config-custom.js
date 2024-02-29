@@ -3175,22 +3175,22 @@ const pageScreensaverTest = {
     },
     {
       template: "text.accuweather.bot2values",
-      dpInit: /^accuweather.0.+?d1$/,
+      dpInit: "/^accuweather.0.+?d1$/g",
       modeScr: "bottom"
     },
     {
       template: "text.accuweather.bot2values",
-      dpInit: /^accuweather.0.+?d2$/,
+      dpInit: /^accuweather\.0.+?d2$/,
       modeScr: "bottom"
     },
     {
       template: "text.accuweather.bot2values",
-      dpInit: /^accuweather.0.+?d3$/,
+      dpInit: /^accuweather\.0.+?d3$/,
       modeScr: "bottom"
     },
     {
       template: "text.accuweather.bot2values",
-      dpInit: /^accuweather.0.+?d4$/,
+      dpInit: /^accuweather\.0.+?d4$/,
       modeScr: "bottom"
     },
     {
