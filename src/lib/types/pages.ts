@@ -238,7 +238,7 @@ export type PageBaseConfigTemplate =
           card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
           adapter: string;
           alwaysOn: 'none' | 'always' | 'action';
-          useColor: boolean;
+          useColor?: boolean;
           pageItems: typePageItem.PageItemDataItemsOptions[];
 
           //    mediaNamespace: string;
@@ -260,7 +260,7 @@ export type PageBaseConfigTemplate =
           template: Types.PageTemplateIdent;
           adapter: string;
           alwaysOn: 'none' | 'always' | 'action';
-          useColor: boolean;
+          useColor?: boolean;
           pageItems: typePageItem.PageItemDataItemsOptions[];
 
           //    mediaNamespace: string;
@@ -275,11 +275,10 @@ export type PageBaseConfig = (
                 card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
                 uniqueID: string;
                 template?: Types.PageTemplateIdent;
-                dpInit: string | RegExp; // '' and initMode 'auto' throw an error
+                dpInit: string | RegExp; // ''
                 alwaysOn: 'none' | 'always' | 'action';
-                useColor: boolean;
+                useColor?: boolean;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
-
                 //    mediaNamespace: string;
                 config:
                     | undefined
@@ -297,9 +296,10 @@ export type PageBaseConfig = (
                 card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
                 uniqueID: string;
                 template?: Types.PageTemplateIdent;
-                dpInit: string | RegExp; // '' and initMode 'auto' throw an error
+                dpInit: string | RegExp; // ''
+                enums?: string | string[];
                 alwaysOn: 'none' | 'always' | 'action';
-                useColor: boolean;
+                useColor?: boolean;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
                 /*&
                     Required<Pick<typePageItem.PageItemDataItemsOptions, 'modeScr'>>*/

@@ -44,6 +44,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   parent = void 0;
   triggerParent = false;
   dpInit = "";
+  enums = "";
   sendToPanel = (payload, opt) => {
     if (payload == this.lastMessage)
       return;
@@ -538,7 +539,8 @@ class StatesControler extends import_library.BaseClass {
   }
   static TempObjectDB = {
     data: void 0,
-    keys: []
+    keys: [],
+    enums: void 0
   };
   static tempObjectDBTimeout;
   static getTempObjectDB(adapter) {
@@ -548,17 +550,25 @@ class StatesControler extends import_library.BaseClass {
       if (adapter.unload)
         return;
       StatesControler.tempObjectDBTimeout = void 0;
-      StatesControler.TempObjectDB = { data: void 0, keys: [] };
+      StatesControler.TempObjectDB = { data: void 0, keys: [], enums: void 0 };
     }, 6e4);
     return StatesControler.TempObjectDB;
   }
-  async getFilteredObjects(dpInit) {
+  /**
+   * hhhhhh
+   * @param dpInit
+   * @param enums
+   * @returns
+   */
+  async getFilteredObjects(dpInit, enums) {
     const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
     if (!tempObjectDB.data) {
       tempObjectDB.data = await this.adapter.getForeignObjectsAsync(`*`);
       if (!tempObjectDB.data)
         throw new Error("getObjects fail. Critical Error!");
       tempObjectDB.keys = Object.keys(tempObjectDB.data);
+      const temp = await this.adapter.getEnumsAsync(["rooms", "functions"]);
+      tempObjectDB.enums = Object.assign(temp["enum.rooms"], temp["enum.functions"]);
     }
     const result = {
       data: tempObjectDB.data,
@@ -570,14 +580,28 @@ class StatesControler extends import_library.BaseClass {
       } else {
         result.keys = tempObjectDB.keys.filter((a) => a.includes(dpInit));
       }
-      return result;
     }
-    return tempObjectDB;
+    if (enums && tempObjectDB.enums) {
+      if (typeof enums === "string") {
+        enums = [enums];
+      }
+      let r = [];
+      for (const e of enums) {
+        for (const a in tempObjectDB.enums) {
+          if (a.startsWith(e)) {
+            if (tempObjectDB.enums[a] && tempObjectDB.enums[a].common && tempObjectDB.enums[a].common.members)
+              r = r.concat(tempObjectDB.enums[a].common.members);
+          }
+        }
+      }
+      result.keys = result.keys.filter((a) => r.some((b) => a.startsWith(b)));
+    }
+    return result;
   }
-  async getDataItemsFromAuto(dpInit, data, appendix) {
+  async getDataItemsFromAuto(dpInit, data, appendix, enums) {
     if (dpInit === "")
       return data;
-    const tempObjectDB = await this.getFilteredObjects(dpInit);
+    const tempObjectDB = await this.getFilteredObjects(dpInit, enums);
     if (tempObjectDB.data) {
       for (const i in data) {
         const t = data[i];

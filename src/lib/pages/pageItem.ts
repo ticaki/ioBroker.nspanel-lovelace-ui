@@ -33,6 +33,7 @@ export class PageItem extends BaseClassTriggerd {
         this.parent = config && config.parent;
         this.name = this.parent ? this.parent.name + '.' + this.id : this.id;
         this.sleep = false;
+        this.enums = options && 'enums' in options && options.enums ? options.enums : '';
     }
 
     static async getPageItem(

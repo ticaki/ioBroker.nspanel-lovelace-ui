@@ -130,7 +130,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           Math.trunc(mem) + "k/" + String(Math.trunc(process.memoryUsage().heapUsed / 1024)) + "k Start/Jetzt: "
         );
       }, 6e4);
-    }, 1500);
+    }, 4500);
   }
   /**
    * Is called when adapter shuts down - callback has to be called under any circumstances!

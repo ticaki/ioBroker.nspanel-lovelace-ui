@@ -56,6 +56,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.parent = config && config.parent;
     this.name = this.parent ? this.parent.name + "." + this.id : this.id;
     this.sleep = false;
+    this.enums = options && "enums" in options && options.enums ? options.enums : "";
   }
   static async getPageItem(config, options) {
     if (options === void 0)

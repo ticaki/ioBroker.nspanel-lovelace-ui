@@ -1862,6 +1862,7 @@ const pageGridTest2 = {
       template: "text.temperature"
     },
     {
+      enums: "enum.rooms",
       dpInit: "bydhvs",
       template: "text.battery.bydhvs"
     }

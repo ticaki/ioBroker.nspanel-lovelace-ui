@@ -31,6 +31,7 @@ var import_templateArray = require("../templates/templateArray");
 class Page extends import_states_controller.BaseClassPage {
   card;
   id;
+  //readonly enums: string | string[];
   config;
   //config: Card['config'];
   constructor(card, pageItemsConfig) {
@@ -38,6 +39,7 @@ class Page extends import_states_controller.BaseClassPage {
     super(card, pageItemsConfig && pageItemsConfig.pageItems);
     this.card = card.card;
     this.id = card.id;
+    this.enums = pageItemsConfig && "enums" in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : "";
     if (card.dpInit && typeof card.dpInit === "string") {
       const reg = (0, import_tools.getRegExp)(card.dpInit);
       if (reg) {
@@ -67,7 +69,8 @@ class Page extends import_states_controller.BaseClassPage {
         options.data = dpInit ? await this.panel.statesControler.getDataItemsFromAuto(
           dpInit,
           options.data,
-          "appendix" in options ? options.appendix : void 0
+          "appendix" in options ? options.appendix : void 0,
+          this.enums ? this.enums : options.enums
         ) : options.data;
         this.pageItemConfig[a] = options;
       }

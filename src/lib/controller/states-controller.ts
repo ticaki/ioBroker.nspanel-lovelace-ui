@@ -44,6 +44,7 @@ export class BaseClassTriggerd extends BaseClass {
     parent: BaseClassTriggerd | undefined = undefined;
     triggerParent: boolean = false;
     dpInit: string | RegExp = '';
+    protected enums: string | string[] = '';
     protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
         payload: string,
         opt?: IClientPublishOptions,
@@ -554,9 +555,14 @@ export class StatesControler extends BaseClass {
         return target;
     }
 
-    static TempObjectDB: { data: Record<string, ioBroker.Object> | undefined; keys: string[] } = {
+    static TempObjectDB: {
+        data: Record<string, ioBroker.Object> | undefined;
+        keys: string[];
+        enums: Record<string, ioBroker.EnumObject> | undefined;
+    } = {
         data: undefined,
         keys: [],
+        enums: undefined,
     };
     static tempObjectDBTimeout: ioBroker.Timeout | undefined;
     static getTempObjectDB(adapter: AdapterClassDefinition): typeof StatesControler.TempObjectDB {
@@ -565,20 +571,25 @@ export class StatesControler extends BaseClass {
         StatesControler.tempObjectDBTimeout = adapter.setTimeout(() => {
             if (adapter.unload) return;
             StatesControler.tempObjectDBTimeout = undefined;
-            StatesControler.TempObjectDB = { data: undefined, keys: [] };
+            StatesControler.TempObjectDB = { data: undefined, keys: [], enums: undefined };
         }, 60000);
 
         return StatesControler.TempObjectDB;
     }
-
-    async getFilteredObjects(
-        dpInit: string | RegExp,
-    ): Promise<{ data: Record<string, ioBroker.Object> | undefined; keys: string[] }> {
+    /**
+     * hhhhhh
+     * @param dpInit
+     * @param enums
+     * @returns
+     */
+    async getFilteredObjects(dpInit: string | RegExp, enums?: string | string[]): Promise<typeof result> {
         const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
         if (!tempObjectDB.data) {
             tempObjectDB.data = await this.adapter.getForeignObjectsAsync(`*`);
             if (!tempObjectDB.data) throw new Error('getObjects fail. Critical Error!');
             tempObjectDB.keys = Object.keys(tempObjectDB.data);
+            const temp = await this.adapter.getEnumsAsync(['rooms', 'functions']);
+            tempObjectDB.enums = Object.assign(temp['enum.rooms'], temp['enum.functions']);
         }
         const result: { data: Record<string, ioBroker.Object> | undefined; keys: string[] } = {
             data: tempObjectDB.data,
@@ -590,14 +601,36 @@ export class StatesControler extends BaseClass {
             } else {
                 result.keys = tempObjectDB.keys.filter((a) => a.includes(dpInit));
             }
-            return result;
         }
-
-        return tempObjectDB;
+        if (enums && tempObjectDB.enums) {
+            if (typeof enums === 'string') {
+                enums = [enums];
+            }
+            let r: string[] = [];
+            for (const e of enums) {
+                for (const a in tempObjectDB.enums) {
+                    if (a.startsWith(e)) {
+                        if (
+                            tempObjectDB.enums[a] &&
+                            tempObjectDB.enums[a].common &&
+                            tempObjectDB.enums[a].common.members
+                        )
+                            r = r.concat(tempObjectDB.enums[a].common.members!);
+                    }
+                }
+            }
+            result.keys = result.keys.filter((a) => r.some((b) => a.startsWith(b)));
+        }
+        return result;
     }
-    async getDataItemsFromAuto(dpInit: string | RegExp, data: any, appendix?: string): Promise<any> {
+    async getDataItemsFromAuto(
+        dpInit: string | RegExp,
+        data: any,
+        appendix?: string,
+        enums?: string | string[],
+    ): Promise<any> {
         if (dpInit === '') return data;
-        const tempObjectDB = await this.getFilteredObjects(dpInit);
+        const tempObjectDB = await this.getFilteredObjects(dpInit, enums);
         if (tempObjectDB.data) {
             for (const i in data) {
                 const t = data[i];

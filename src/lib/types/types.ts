@@ -27,7 +27,7 @@ export type TemplateIdent =
     | 'text.battery.bydhvs'
     | 'text.accuweather.bot2values'
     | 'text.accuweather.sunriseset'
-    | ''
+    | 'button.esphome.powerplug'
     | ''
     | ''
     | ''

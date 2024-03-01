@@ -28,12 +28,15 @@ export type PageConfigAll = pages.PageBaseConfig;
 export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
     readonly id: string;
+    //readonly enums: string | string[];
     config: pages.PageBaseConfig['config'];
     //config: Card['config'];
     constructor(card: PageInterface, pageItemsConfig: pages.PageBaseConfig | undefined) {
         super(card, pageItemsConfig && pageItemsConfig.pageItems);
         this.card = card.card;
         this.id = card.id;
+        this.enums =
+            pageItemsConfig && 'enums' in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : '';
         if (card.dpInit && typeof card.dpInit === 'string') {
             const reg = getRegExp(card.dpInit);
             if (reg) {
@@ -66,6 +69,7 @@ export class Page extends BaseClassPage {
                           dpInit,
                           options.data,
                           'appendix' in options ? options.appendix : undefined,
+                          this.enums ? this.enums : options.enums,
                       )
                     : options.data;
 

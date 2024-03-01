@@ -90,6 +90,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.log.error('Invalid admin configuration for mqtt!');
                 return;
             }
+
             this.mqttClient = new MQTT.MQTTClientClass(
                 this,
                 this.config.mqttIp,
@@ -136,7 +137,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         'k Start/Jetzt: ',
                 );
             }, 60000);
-        }, 1500);
+        }, 4500);
     }
 
     /**

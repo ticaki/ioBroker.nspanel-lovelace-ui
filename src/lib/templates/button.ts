@@ -75,4 +75,46 @@ export const buttonTemplates: Partial<Record<TemplateIdent, PageItemOptionsTempl
             },
         },
     },
+    'button.esphome.powerplug': {
+        role: '',
+        type: 'button',
+        adapter: 'esphome',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'power-plug' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'power-plug-off-outline' },
+                    color: { type: 'const', constVal: Color.Gray },
+                },
+            },
+            entity1: {
+                value: {
+                    mode: 'auto',
+                    type: 'triggered',
+                    role: '',
+                    dp: '',
+                    regexp: /esphome\.[0-9]+\..+?\.Switch\..+?\.state/,
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Plug' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'on' },
+                false: { type: 'const', constVal: 'off' },
+            },
+            setValue1: {
+                mode: 'auto',
+                type: 'state',
+                role: '',
+                dp: '',
+                regexp: /esphome\.[0-9]+\..+?\.Switch\..+?\.state/,
+            },
+        },
+    },
 };

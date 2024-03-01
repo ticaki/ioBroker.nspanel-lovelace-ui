@@ -446,6 +446,7 @@ export type PageItemUnion = {
     role?: pages.DeviceRole;
     template?: undefined;
     dpInit?: string | RegExp;
+    enums?: string | string[];
     modeScr?: Types.ScreenSaverPlaces | undefined;
     type: Types.SerialTypePageElements;
     data: PageItemBase;
