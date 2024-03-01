@@ -9,10 +9,6 @@ import { deepAssign, getRegExp } from '../const/tools';
 import { PageItemDataItemsOptions, PageItemOptionsTemplate } from '../types/type-pageItem';
 import { pageItemTemplates } from '../templates/templateArray';
 
-export interface PageConfigInterface {
-    config: pages.PageBaseConfig;
-    page: PageInterface;
-}
 export type PageItemInterface = BaseClassTriggerdInterface & {
     card: pages.PageTypeCards;
     panel: Panel;

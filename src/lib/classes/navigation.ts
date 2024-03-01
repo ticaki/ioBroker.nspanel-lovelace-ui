@@ -5,7 +5,7 @@ import { Icons } from '../const/icon_mapping';
 import { Page } from './Page';
 import { getPayload } from '../const/tools';
 
-export type NavigationItemConfig = {
+type NavigationItemConfig = {
     name: string;
     left?: {
         single?: string;
@@ -18,7 +18,7 @@ export type NavigationItemConfig = {
     page: string;
 } | null;
 
-export type NavigationItem = {
+type NavigationItem = {
     left: {
         single?: number;
         double?: number;

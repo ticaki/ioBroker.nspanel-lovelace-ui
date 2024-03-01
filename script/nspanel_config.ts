@@ -3585,7 +3585,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 text: {
                     true: {
                         type: 'const',
-                        constVal: 'Sonne',
+                        constVal: 'SunAsWord',
                     },
                     false: undefined,
                 },
