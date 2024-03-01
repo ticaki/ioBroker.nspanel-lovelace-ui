@@ -45,7 +45,8 @@ export class Controller extends Library.BaseClass {
      */
     dateUpdateLoop = async (): Promise<void> => {
         if (this.unload) return;
-        this.statesControler.setInternalState('///date', await this.getCurrentTime(), true);
+        this.log.debug('Set current Date with time: ' + (await this.getCurrentTime()).toString);
+        await this.statesControler.setInternalState('///date', await this.getCurrentTime(), true);
         const d: Date = new Date();
         d.setDate(d.getDate() + 1);
         d.setHours(0, 0, 0);
