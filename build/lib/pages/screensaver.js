@@ -61,6 +61,7 @@ class Screensaver extends import_Page.Page {
     }
     config.alwaysOn = "none";
     super(config, options);
+    this.neverDeactivateTrigger = true;
     this.rotationTime = options.config.rotationTime !== 0 && options.config.rotationTime < 3 ? 3e3 : options.config.rotationTime * 1e3;
   }
   async init() {
@@ -159,6 +160,8 @@ class Screensaver extends import_Page.Page {
     await super.onVisibilityChange(v);
     this.step = -1;
     if (v) {
+      this.HandleTime();
+      this.HandleDate();
       this.rotationLoop();
     } else {
       if (this.timoutRotation)

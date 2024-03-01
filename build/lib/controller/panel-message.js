@@ -75,7 +75,7 @@ class PanelSend extends import_library.BaseClass {
       this.messageTimeout = void 0;
       return;
     }
-    if (this.losingMessageCount++ > 5) {
+    if (this.losingMessageCount++ > 3) {
       if (this._panel)
         this._panel.isOnline = false;
     }

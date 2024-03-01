@@ -146,24 +146,27 @@ class Page extends import_states_controller.BaseClassPage {
     }
     return config;
   }
+  async createPageItems() {
+    if (!this.pageItems && this.pageItemConfig) {
+      this.pageItems = [];
+      for (let a = 0; a < this.pageItemConfig.length; a++) {
+        const config = {
+          name: "PI",
+          adapter: this.adapter,
+          panel: this.panel,
+          panelSend: this.panelSend,
+          card: "cardItemSpecial",
+          id: `${this.id}?${a}`,
+          parent: this
+        };
+        this.pageItems[a] = import_pageItem.PageItem.getPageItem(config, this.pageItemConfig[a]);
+        this.pageItems[a] && await this.pageItems[a].init();
+      }
+    }
+  }
   async onVisibilityChange(val) {
     if (val) {
-      if (!this.pageItems && this.pageItemConfig) {
-        this.pageItems = [];
-        for (let a = 0; a < this.pageItemConfig.length; a++) {
-          const config = {
-            name: "PI",
-            adapter: this.adapter,
-            panel: this.panel,
-            panelSend: this.panelSend,
-            card: "cardItemSpecial",
-            id: `${this.id}?${a}`,
-            parent: this
-          };
-          this.pageItems[a] = import_pageItem.PageItem.getPageItem(config, this.pageItemConfig[a]);
-          this.pageItems[a] && await this.pageItems[a].init();
-        }
-      }
+      await this.createPageItems();
       this.sendType();
       this.update();
     } else {

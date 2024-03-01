@@ -165,24 +165,27 @@ export class Page extends BaseClassPage {
         }
         return config;
     }
+    protected async createPageItems(): Promise<void> {
+        if (!this.pageItems && this.pageItemConfig) {
+            this.pageItems = [];
+            for (let a = 0; a < this.pageItemConfig.length; a++) {
+                const config: Omit<PageItemInterface, 'pageItemsConfig'> = {
+                    name: 'PI',
+                    adapter: this.adapter,
+                    panel: this.panel,
+                    panelSend: this.panelSend,
+                    card: 'cardItemSpecial',
+                    id: `${this.id}?${a}`,
+                    parent: this,
+                };
+                this.pageItems[a] = PageItem.getPageItem(config, this.pageItemConfig[a]);
+                this.pageItems[a] && (await this.pageItems[a]!.init());
+            }
+        }
+    }
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
-            if (!this.pageItems && this.pageItemConfig) {
-                this.pageItems = [];
-                for (let a = 0; a < this.pageItemConfig.length; a++) {
-                    const config: Omit<PageItemInterface, 'pageItemsConfig'> = {
-                        name: 'PI',
-                        adapter: this.adapter,
-                        panel: this.panel,
-                        panelSend: this.panelSend,
-                        card: 'cardItemSpecial',
-                        id: `${this.id}?${a}`,
-                        parent: this,
-                    };
-                    this.pageItems[a] = PageItem.getPageItem(config, this.pageItemConfig[a]);
-                    this.pageItems[a] && (await this.pageItems[a]!.init());
-                }
-            }
+            await this.createPageItems();
             this.sendType();
             this.update();
         } else {

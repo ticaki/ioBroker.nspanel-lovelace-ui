@@ -28,8 +28,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var panel_exports = {};
 __export(panel_exports, {
-  Panel: () => Panel,
-  isPanelConfig: () => isPanelConfig
+  Panel: () => Panel
 });
 module.exports = __toCommonJS(panel_exports);
 var import_panel_message = require("./panel-message");
@@ -48,17 +47,6 @@ var import_pageEntities = require("../pages/pageEntities");
 var import_tools = require("../const/tools");
 var import_pageNotification = require("../pages/pageNotification");
 var import_notifications = require("../const/notifications");
-function isPanelConfig(F) {
-  if (F.controller === void 0)
-    return false;
-  if (F.pages === void 0)
-    return false;
-  if (F.topic === void 0)
-    return false;
-  if (F.name === void 0)
-    return false;
-  return true;
-}
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -289,21 +277,13 @@ class Panel extends import_library.BaseClass {
       if (currentPage && currentPage.val) {
         this.navigation.setMainPageByName(String(currentPage.val));
       }
-      const states = this.navigation.buildCommonStates();
+      import_definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint.common.states = this.navigation.buildCommonStates();
       const page = this.navigation.getCurrentMainPoint();
-      this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, page, {
-        _id: "",
-        type: "state",
-        common: {
-          name: "StateObjects.mainNavigationPoint",
-          type: "string",
-          role: "value.text",
-          read: true,
-          write: true,
-          states
-        },
-        native: {}
-      });
+      this.library.writedp(
+        `panels.${this.name}.cmd.mainNavigationPoint`,
+        page,
+        import_definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint
+      );
     }
     {
       const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
@@ -320,19 +300,12 @@ class Panel extends import_library.BaseClass {
         if (a)
           states[a.name] = a.name.slice(1);
       });
-      this.library.writedp(`panels.${this.name}.cmd.screenSaver`, this.screenSaver ? this.screenSaver.name : "", {
-        _id: "",
-        type: "state",
-        common: {
-          name: "StateObjects.screenSaver",
-          type: "string",
-          role: "value.text",
-          read: true,
-          write: true,
-          states
-        },
-        native: {}
-      });
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;
+      this.library.writedp(
+        `panels.${this.name}.cmd.screenSaver`,
+        this.screenSaver ? this.screenSaver.name : "",
+        import_definition.genericStateObjects.panel.panels.cmd.screenSaver
+      );
     }
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
@@ -628,9 +601,10 @@ class Panel extends import_library.BaseClass {
   minuteLoop = () => {
     if (this.unload)
       return;
+    this.sendToTasmota(this.topic + "/cmnd/STATUS0", "");
     this.pages = this.pages.filter((a) => a && !a.unload);
-    const diff = 6e4 - Date.now() % 6e4 + 10;
-    this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
+    const t = 3e5 + Math.random() * 3e4 - 15e3;
+    this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, t);
   };
   async delete() {
     await super.delete();
@@ -960,7 +934,6 @@ class Panel extends import_library.BaseClass {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Panel,
-  isPanelConfig
+  Panel
 });
 //# sourceMappingURL=panel.js.map

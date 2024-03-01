@@ -23,11 +23,7 @@ export class Controller extends Library.BaseClass {
         for (const panelConfig of options.panels) {
             if (panelConfig === undefined) continue;
             panelConfig.controller = this;
-            if (!Panel.isPanelConfig(panelConfig)) {
-                this.log.warn(`Panelconfig for ${panelConfig.name} is invalid!`);
-                continue;
-            }
-            const panel = new Panel.Panel(adapter, panelConfig);
+            const panel = new Panel.Panel(adapter, panelConfig as Panel.panelConfigPartial);
             this.panels.push(panel);
         }
     }

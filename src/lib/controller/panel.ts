@@ -30,22 +30,6 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     navigation: NavigationConfig['navigationConfig'];
     config: ScreensaverConfigType;
 }
-export function isPanelConfig(F: object | panelConfig): F is panelConfig {
-    if ((F as panelConfig).controller === undefined) return false;
-    if ((F as panelConfig).pages === undefined) return false;
-    if ((F as panelConfig).topic === undefined) return false;
-    if ((F as panelConfig).name === undefined) return false;
-    return true;
-}
-type panelConfig = panelConfigTop & {
-    format: Intl.DateTimeFormatOptions;
-    controller: Controller;
-    topic: string;
-    name: string;
-    pages: PageConfigAll[];
-    config: ScreensaverConfigType;
-    navigation: NavigationConfig['navigationConfig'];
-};
 
 const DefaultOptions = {
     format: {
@@ -294,21 +278,15 @@ export class Panel extends BaseClass {
             if (currentPage && currentPage.val) {
                 this.navigation.setMainPageByName(String(currentPage.val));
             }
-            const states = this.navigation.buildCommonStates();
+
+            genericStateObjects.panel.panels.cmd.mainNavigationPoint.common.states =
+                this.navigation.buildCommonStates();
             const page = this.navigation.getCurrentMainPoint();
-            this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, page, {
-                _id: '',
-                type: 'state',
-                common: {
-                    name: 'StateObjects.mainNavigationPoint',
-                    type: 'string',
-                    role: 'value.text',
-                    read: true,
-                    write: true,
-                    states: states,
-                },
-                native: {},
-            });
+            this.library.writedp(
+                `panels.${this.name}.cmd.mainNavigationPoint`,
+                page,
+                genericStateObjects.panel.panels.cmd.mainNavigationPoint,
+            );
         }
         {
             const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
@@ -324,19 +302,12 @@ export class Panel extends BaseClass {
             scs.forEach((a) => {
                 if (a) states[a.name] = a.name.slice(1);
             });
-            this.library.writedp(`panels.${this.name}.cmd.screenSaver`, this.screenSaver ? this.screenSaver.name : '', {
-                _id: '',
-                type: 'state',
-                common: {
-                    name: 'StateObjects.screenSaver',
-                    type: 'string',
-                    role: 'value.text',
-                    read: true,
-                    write: true,
-                    states: states,
-                },
-                native: {},
-            });
+            genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;
+            this.library.writedp(
+                `panels.${this.name}.cmd.screenSaver`,
+                this.screenSaver ? this.screenSaver.name : '',
+                genericStateObjects.panel.panels.cmd.screenSaver,
+            );
         }
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
@@ -639,11 +610,10 @@ export class Panel extends BaseClass {
     minuteLoop = (): void => {
         if (this.unload) return;
         //this.sendToPanel(`time~${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`);
-
+        this.sendToTasmota(this.topic + '/cmnd/STATUS0', '');
         this.pages = this.pages.filter((a) => a && !a.unload);
-
-        const diff = 60000 - (Date.now() % 60000) + 10;
-        this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
+        const t = 300000 + Math.random() * 30000 - 15000;
+        this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, t);
     };
 
     async delete(): Promise<void> {

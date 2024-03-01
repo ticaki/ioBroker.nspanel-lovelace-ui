@@ -97,6 +97,32 @@ const genericStateObjects = {
           },
           native: {}
         },
+        screenSaver: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.screenSaver",
+            type: "string",
+            role: "value.text",
+            read: true,
+            write: true,
+            states: {}
+          },
+          native: {}
+        },
+        mainNavigationPoint: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.mainNavigationPoint",
+            type: "string",
+            role: "value.text",
+            read: true,
+            write: true,
+            states: {}
+          },
+          native: {}
+        },
         goToNavigationPoint: {
           _id: "",
           type: "state",

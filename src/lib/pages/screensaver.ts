@@ -43,7 +43,7 @@ export class Screensaver extends Page {
         }
         config.alwaysOn = 'none';
         super(config, options);
-
+        this.neverDeactivateTrigger = true;
         //moment.locale(this.config2.momentLocale);
         this.rotationTime =
             options.config.rotationTime !== 0 && options.config.rotationTime < 3
@@ -147,6 +147,8 @@ export class Screensaver extends Page {
         await super.onVisibilityChange(v);
         this.step = -1;
         if (v) {
+            this.HandleTime();
+            this.HandleDate();
             this.rotationLoop();
         } else {
             if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);

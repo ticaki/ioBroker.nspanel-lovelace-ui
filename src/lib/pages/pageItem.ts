@@ -1065,6 +1065,7 @@ export class PageItem extends BaseClassTriggerd {
                     if (!('entityInSel' in entry.data)) break;
                     await this.setListCommand(entry, value);
                 }
+
                 break;
             case 'button': {
                 if (entry.type === 'button') {

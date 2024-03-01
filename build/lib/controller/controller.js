@@ -50,10 +50,6 @@ class Controller extends Library.BaseClass {
       if (panelConfig === void 0)
         continue;
       panelConfig.controller = this;
-      if (!Panel.isPanelConfig(panelConfig)) {
-        this.log.warn(`Panelconfig for ${panelConfig.name} is invalid!`);
-        continue;
-      }
       const panel = new Panel.Panel(adapter, panelConfig);
       this.panels.push(panel);
     }
