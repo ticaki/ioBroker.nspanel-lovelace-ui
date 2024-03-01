@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -61,14 +65,18 @@ class Controller extends Library.BaseClass {
     const diff = 6e4 - Date.now() % 6e4 + 10;
     this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
   };
+  /**
+   * Update Date every hour.
+   * @returns
+   */
   dateUpdateLoop = async () => {
     if (this.unload)
       return;
     this.statesControler.setInternalState("///date", await this.getCurrentTime(), true);
-    const d = new Date();
+    const d = /* @__PURE__ */ new Date();
     d.setDate(d.getDate() + 1);
     d.setHours(0, 0, 0);
-    const diff = d.getTime() - Date.now();
+    const diff = (d.getTime() - Date.now()) / 24 + 1e3;
     this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
   };
   getCurrentTime = async () => {

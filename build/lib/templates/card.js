@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -30,6 +34,7 @@ module.exports = __toCommonJS(card_exports);
 var Color = __toESM(require("../const/Color"));
 const cardTemplates = {
   "entities.waste-calendar": {
+    // Abfallkalender
     adapter: "0_userdata.0",
     card: "cardEntities",
     alwaysOn: "none",
@@ -140,6 +145,7 @@ const cardTemplates = {
     items: void 0
   },
   "media.spotify-premium": {
+    //cardMedia
     card: "cardMedia",
     adapter: "",
     alwaysOn: "none",
@@ -332,6 +338,9 @@ const cardTemplates = {
             true: void 0,
             false: void 0
           },
+          /**
+           * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+           */
           valueList: {
             type: "triggered",
             mode: "auto",
@@ -345,6 +354,10 @@ const cardTemplates = {
             dp: "",
             regexp: /\.player\.playlist\.trackNo$/
           }
+          /**
+           * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+           */
+          //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
         }
       },
       {
@@ -378,6 +391,9 @@ const cardTemplates = {
             true: void 0,
             false: void 0
           },
+          /**
+           * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+           */
           valueList: {
             mode: "auto",
             role: "value",
@@ -395,6 +411,10 @@ const cardTemplates = {
             read: 'return val ? val.split(";") : []'
           },
           setValue1: void 0
+          /**
+           * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+           */
+          //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
         }
       },
       {
@@ -432,7 +452,13 @@ const cardTemplates = {
             true: void 0,
             false: void 0
           },
+          /**
+           * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+           */
           valueList: { type: "const", constVal: "home?butter" },
+          /**
+           * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+           */
           setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
         }
       },
@@ -630,6 +656,7 @@ const cardTemplates = {
     useColor: false
   },
   "entities.departure-timetable": {
+    //Anzeigetafel Fahrplan
     adapter: "fahrplan.0",
     card: "cardEntities",
     alwaysOn: "none",
@@ -651,10 +678,12 @@ const cardTemplates = {
           icon: {
             true: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.0\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
               color: { type: "const", constVal: Color.Red }
             },
             false: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.0\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
               color: { type: "const", constVal: Color.Green }
             }
           },
@@ -699,10 +728,12 @@ const cardTemplates = {
           icon: {
             true: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.1\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
               color: { type: "const", constVal: Color.Red }
             },
             false: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.1\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
               color: { type: "const", constVal: Color.Green }
             }
           },
@@ -747,10 +778,12 @@ const cardTemplates = {
           icon: {
             true: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.2\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
               color: { type: "const", constVal: Color.Red }
             },
             false: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.2\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
               color: { type: "const", constVal: Color.Green }
             }
           },
@@ -795,10 +828,12 @@ const cardTemplates = {
           icon: {
             true: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.3\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
               color: { type: "const", constVal: Color.Red }
             },
             false: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.3\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
               color: { type: "const", constVal: Color.Green }
             }
           },

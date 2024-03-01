@@ -32,6 +32,7 @@ class Page extends import_states_controller.BaseClassPage {
   card;
   id;
   config;
+  //config: Card['config'];
   constructor(card, pageItemsConfig) {
     var _a;
     super(card, pageItemsConfig && pageItemsConfig.pageItems);

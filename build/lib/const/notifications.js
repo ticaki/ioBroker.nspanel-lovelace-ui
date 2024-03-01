@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -45,8 +49,12 @@ const popupTest = {
       buttonRight: { type: "const", constVal: "" },
       colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
       text: { type: "const", constVal: "welcomeTToken" },
+      // text: { type: 'const', constVal: 'Text Test ${pl}' },
       colorText: { true: { color: { type: "const", constVal: Color.White } } },
       timeout: { type: "const", constVal: 3 }
+      // {placeholder: {text: '' oder dp: ''}}
+      // optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
+      //setValue1: { type: 'const', constVal: true },
     }
   },
   pageItems: [],

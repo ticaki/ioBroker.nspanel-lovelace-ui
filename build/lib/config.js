@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -31,6 +35,7 @@ __export(config_exports, {
 module.exports = __toCommonJS(config_exports);
 var Color = __toESM(require("./const/Color"));
 const pageEntitiesTest1 = {
+  //type: 'sonstiges',
   card: "cardEntities",
   dpInit: "",
   alwaysOn: "none",
@@ -125,6 +130,7 @@ const pageEntitiesTest1 = {
           }
         },
         entity1: {
+          // button
           value: { type: "triggered", dp: "0_userdata.0.example_state" },
           decimal: void 0,
           factor: void 0,
@@ -158,7 +164,13 @@ const pageEntitiesTest1 = {
             dp: "0_userdata.0.ct"
           }
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
         valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -212,6 +224,9 @@ const pageEntitiesTest1 = {
           false: void 0
         },
         entityInSel: { value: { type: "const", constVal: "2" } },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
         valueList: { type: "const", constVal: "1?2?3?4" }
       }
     }
@@ -237,6 +252,7 @@ const popupTest = {
       text: { type: "const", constVal: "Text Test ${pl}" },
       colorText: { true: { color: { type: "const", constVal: Color.White } } },
       timeout: { type: "const", constVal: 0 },
+      // {placeholder: {text: '' oder dp: ''}}
       optionalValue: { type: "const", constVal: { pl: { text: "das ist ein placeholder" } } },
       setValue1: { type: "const", constVal: true }
     }
@@ -245,6 +261,7 @@ const popupTest = {
   items: void 0
 };
 const pageEntitiesTest3 = {
+  //type: 'sonstiges',
   card: "cardEntities",
   dpInit: "",
   alwaysOn: "none",
@@ -310,6 +327,7 @@ const pageEntitiesTest3 = {
   items: void 0
 };
 const pageEntitiesTest2 = {
+  //type: 'sonstiges',
   card: "cardEntities",
   dpInit: "",
   alwaysOn: "none",
@@ -360,6 +378,7 @@ const pageEntitiesTest2 = {
   items: void 0
 };
 const pagePowerTest1 = {
+  //type: 'sonstiges',
   card: "cardPower",
   dpInit: "",
   alwaysOn: "none",
@@ -473,6 +492,7 @@ const pagePowerTest1 = {
   items: void 0
 };
 const pageMediaTest = {
+  //type: 'sonstiges',
   card: "cardMedia",
   dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
   alwaysOn: "none",
@@ -662,7 +682,14 @@ const pageMediaTest = {
           true: void 0,
           false: void 0
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
         valueList: { type: "state", dp: "0_userdata.0.spotify-premium.0.player.playlist.trackListArray" }
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
       }
     },
     {
@@ -703,7 +730,13 @@ const pageMediaTest = {
           true: void 0,
           false: void 0
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
         valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -917,12 +950,14 @@ const pageMediaTest = {
   useColor: false
 };
 const pageAbfall = {
+  //type: 'sonstiges',
   card: "cardEntities",
   dpInit: "0_userdata.0.Abfallkalender",
   uniqueID: "abfall1",
   template: "entities.waste-calendar"
 };
 const pageMediaTest2 = {
+  //type: 'sonstiges',
   card: "cardMedia",
   dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
   alwaysOn: "none",
@@ -1114,7 +1149,13 @@ const pageMediaTest2 = {
           true: void 0,
           false: void 0
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
         valueList: { type: "state", dp: "0_userdata.0.spotify-premium.0.player.playlist.trackListArray" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -1328,12 +1369,14 @@ const pageMediaTest2 = {
   useColor: false
 };
 const pageMediaTest3 = {
+  //type: 'sonstiges',
   template: "media.spotify-premium",
   dpInit: "0_userdata.0.spotify-premium.0",
   uniqueID: "media3",
   card: "cardMedia"
 };
 const pageGridTest1 = {
+  //type: 'sonstiges',
   card: "cardGrid",
   dpInit: "",
   alwaysOn: "none",
@@ -1386,6 +1429,9 @@ const pageGridTest1 = {
       }
     },
     {
+      /**
+       * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
+       */
       role: "rgb",
       type: "shutter",
       dpInit: "",
@@ -1403,7 +1449,9 @@ const pageGridTest1 = {
           maxBri: void 0,
           minBri: void 0
         },
+        // 1. slider
         entity1: {
+          // button
           value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
           decimal: void 0,
           factor: void 0,
@@ -1411,7 +1459,9 @@ const pageGridTest1 = {
           minScale: { type: "const", constVal: 0 },
           maxScale: { type: "const", constVal: 100 }
         },
+        // 2. slider
         entity2: {
+          // button
           value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
           decimal: void 0,
           factor: void 0,
@@ -1456,6 +1506,13 @@ const pageGridTest1 = {
           mode: "auto",
           role: ["button.close.blind", "button.close"]
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        //valueList: { type: 'const', constVal: 'home?butter' },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -1489,6 +1546,7 @@ const pageGridTest1 = {
           }
         },
         entity1: {
+          // button
           value: { type: "triggered", dp: "0_userdata.0.example_state" },
           decimal: void 0,
           factor: void 0,
@@ -1522,7 +1580,13 @@ const pageGridTest1 = {
             dp: "0_userdata.0.ct"
           }
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
         valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -1566,7 +1630,13 @@ const pageGridTest1 = {
           true: void 0,
           false: void 0
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
         valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -1657,6 +1727,7 @@ const pageGridTest1 = {
   items: void 0
 };
 const pageGridTest2 = {
+  //type: 'sonstiges',
   card: "cardGrid",
   dpInit: "",
   alwaysOn: "none",
@@ -1705,6 +1776,9 @@ const pageGridTest2 = {
           false: void 0
         },
         entityInSel: void 0
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
       }
     },
     {
@@ -1780,6 +1854,9 @@ const pageGridTest2 = {
       }
     },
     {
+      /**
+       * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
+       */
       type: "text",
       dpInit: "zigbee2mqtt.0.0x00158d00041fdbcb",
       template: "text.temperature"
@@ -1791,6 +1868,7 @@ const pageGridTest2 = {
   ]
 };
 const pageGridTest5 = {
+  //type: 'sonstiges',
   card: "cardGrid",
   dpInit: "",
   alwaysOn: "none",
@@ -1843,6 +1921,9 @@ const pageGridTest5 = {
       }
     },
     {
+      /**
+       * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
+       */
       role: "rgb",
       type: "shutter",
       dpInit: "",
@@ -1860,7 +1941,9 @@ const pageGridTest5 = {
           maxBri: void 0,
           minBri: void 0
         },
+        // 1. slider
         entity1: {
+          // button
           value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
           decimal: void 0,
           factor: void 0,
@@ -1868,7 +1951,9 @@ const pageGridTest5 = {
           minScale: { type: "const", constVal: 0 },
           maxScale: { type: "const", constVal: 100 }
         },
+        // 2. slider
         entity2: {
+          // button
           value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
           decimal: void 0,
           factor: void 0,
@@ -1913,6 +1998,13 @@ const pageGridTest5 = {
           mode: "auto",
           role: ["button.close.blind", "button.close"]
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        //valueList: { type: 'const', constVal: 'home?butter' },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -1946,6 +2038,7 @@ const pageGridTest5 = {
           }
         },
         entity1: {
+          // button
           value: { type: "triggered", dp: "0_userdata.0.example_state" },
           decimal: void 0,
           factor: void 0,
@@ -1979,7 +2072,13 @@ const pageGridTest5 = {
             dp: "0_userdata.0.ct"
           }
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
         valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -2023,7 +2122,13 @@ const pageGridTest5 = {
           true: void 0,
           false: void 0
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
         valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -2114,6 +2219,7 @@ const pageGridTest5 = {
   items: void 0
 };
 const pageGridTest4 = {
+  //type: 'sonstiges',
   card: "cardGrid",
   dpInit: "",
   alwaysOn: "none",
@@ -2169,7 +2275,13 @@ const pageGridTest4 = {
           true: void 0,
           false: void 0
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
         valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -2217,6 +2329,7 @@ const pageGridTest4 = {
   ]
 };
 const pageGrid2Test3 = {
+  //type: 'sonstiges',
   card: "cardGrid2",
   dpInit: "",
   alwaysOn: "none",
@@ -2272,7 +2385,13 @@ const pageGrid2Test3 = {
           true: void 0,
           false: void 0
         },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
         valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
         setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
       }
     },
@@ -2384,6 +2503,14 @@ const pageThermoTest = {
           type: "const",
           constVal: "Test"
         }
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        //valueList: { type: 'const', constVal: 'home?butter' },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
       }
     },
     {
@@ -2404,6 +2531,14 @@ const pageThermoTest = {
           type: "const",
           constVal: "Test"
         }
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        //valueList: { type: 'const', constVal: 'home?butter' },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
       }
     },
     {
@@ -2424,6 +2559,14 @@ const pageThermoTest = {
           type: "const",
           constVal: "Test"
         }
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        //valueList: { type: 'const', constVal: 'home?butter' },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
       }
     },
     {
@@ -2444,6 +2587,14 @@ const pageThermoTest = {
           type: "const",
           constVal: "Test"
         }
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        //valueList: { type: 'const', constVal: 'home?butter' },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
       }
     },
     {
@@ -2771,6 +2922,7 @@ const pageThermoTest = {
 };
 const pageScreensaverTest = {
   card: "screensaver2",
+  // mode of screensaver
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "scr",
@@ -2782,6 +2934,7 @@ const pageScreensaverTest = {
     model: "eu",
     data: void 0
   },
+  // Config of Entitys
   pageItems: [
     {
       role: "text",
@@ -2805,6 +2958,14 @@ const pageScreensaverTest = {
           true: {
             value: {
               type: "state",
+              /** How to use
+               * this run its own this. U dont have accress to variables that no definied for this.
+               * Color: in a import of color.ts
+               * val: is the incoming value - raw
+               *
+               * The best thing is to write the function with () => { here }. Then remove the () => {}
+               * and convert it into a template literal, using ``. A return is mandatory.
+               */
               read: `{
                         switch (val) {
                             case 30: // Hot
@@ -3173,31 +3334,38 @@ const pageScreensaverTest = {
         }
       }
     },
+    // Bottom 1 - accuWeather.0. Forecast Day 1
     {
       template: "text.accuweather.bot2values",
       dpInit: /^accuweather.0.+?d1$/,
       modeScr: "bottom"
     },
+    // Bottom 2 - accuWeather.0. Forecast Day 2
     {
       template: "text.accuweather.bot2values",
       dpInit: /^accuweather.0.+?d2$/,
       modeScr: "bottom"
     },
+    // Bottom 3 - accuWeather.0. Forecast Day 3
     {
       template: "text.accuweather.bot2values",
       dpInit: /^accuweather.0.+?d3$/,
       modeScr: "bottom"
     },
+    // Bottom 4 - accuWeather.0. Forecast Day 4
     {
       template: "text.accuweather.bot2values",
       dpInit: /^accuweather.0.+?d4$/,
       modeScr: "bottom"
     },
+    // Bottom 5 - accuWeather.0. Forecast Day 5
     {
       template: "text.accuweather.bot2values",
       dpInit: /^accuweather\.0.+?d5$/,
       modeScr: "bottom"
     },
+    // Bottom 6 - daswetter.0. Forecast Day 6
+    // Bottom 7 - Sonnenaufgang - Sonnenuntergang im Wechsel
     {
       role: "text",
       dpInit: "",
@@ -3248,6 +3416,7 @@ const pageScreensaverTest = {
         }
       }
     },
+    // Bottom 8 - Windgeschwindigkeit
     {
       role: "text",
       dpInit: "",
@@ -3324,6 +3493,7 @@ const pageScreensaverTest = {
         }
       }
     },
+    // Bottom 9 - Böen
     {
       role: "text",
       dpInit: "",
@@ -3400,6 +3570,7 @@ const pageScreensaverTest = {
         }
       }
     },
+    // Bottom 10 - Windrichtung
     {
       role: "text",
       dpInit: "",
@@ -3449,6 +3620,7 @@ const pageScreensaverTest = {
         }
       }
     },
+    // Bottom 11 - Luftfeuchte außen
     {
       role: "text",
       dpInit: "",
@@ -3519,6 +3691,7 @@ const pageScreensaverTest = {
         }
       }
     },
+    // Bottom 12 - UV-Index
     {
       role: "text",
       dpInit: "",
@@ -3596,6 +3769,15 @@ const pageScreensaverTest = {
           factor: void 0,
           unit: void 0
         },
+        /*entity2: {
+            value: {
+                type: 'const',
+                constVal: 500,
+            },
+            decimal: undefined,
+            factor: undefined,
+            unit: undefined,
+        },*/
         icon: {
           true: {
             value: {
@@ -3854,6 +4036,62 @@ const pageScreensaverTest = {
         }
       }
     },
+    /*{
+        role: 'combined',
+        dpInit: '',
+        type: 'text',
+        modeScr: 'mricon',
+        data: {
+            entity1: {
+                value: {
+                    type: 'state',
+                    dp: '0_userdata.0.number1',
+                },
+            },
+            icon: {
+                true: {
+                    value: {
+                        type: 'const',
+                        constVal: 'heat-wave',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSRed,
+                    },
+                    text: {
+                        value: {
+                            type: 'state',
+                            dp: '0_userdata.0.number1',
+                        },
+                        unit: {
+                            type: 'const',
+                            constVal: '°C',
+                        },
+                    },
+                },
+                false: {
+                    value: {
+                        type: 'const',
+                        constVal: 'heat-wave',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSYellow,
+                    },
+                    text: {
+                        value: {
+                            type: 'const',
+                            constVal: 'deconz.0.Sensors.5.temperature',
+                        },
+                        unit: {
+                            type: 'const',
+                            constVal: '°C',
+                        },
+                    },
+                },
+            },
+        },
+    },*/
     {
       role: "text",
       dpInit: "",
@@ -3990,6 +4228,7 @@ const Testconfig = [
       pageGrid2Test3,
       pageGridTest2,
       pageScreensaverTest,
+      //pageMediaTest,
       pageEntitiesTest2,
       pageAbfall,
       pageGridTest5,
@@ -3997,54 +4236,70 @@ const Testconfig = [
       popupTest,
       pageEntitiesTest3
     ],
+    // override by password.ts
     navigation: [
       {
         name: "main",
+        //main ist die erste Seite
         page: "entities1",
         left: { single: "7" },
+        // Die 4 bezieht sich auf den name: 4
         right: { single: "abfall1", double: "2" }
       },
       {
         name: "5",
+        //main ist die erste Seite
         page: "thermo1",
         left: { single: "4" },
+        // Die 4 bezieht sich auf den name: 4
         right: { single: "6", double: "main" }
       },
       {
         name: "abfall1",
+        //main ist die erste Seite
         page: "abfall1",
         left: { single: "main" },
+        // Die 4 bezieht sich auf den name: 4
         right: { single: "entities3", double: "main" }
       },
       {
         name: "entities3",
+        //main ist die erste Seite
         page: "entities3",
         left: { double: "abfall1" },
+        // Die 4 bezieht sich auf den name: 4
         right: { double: "entities2" }
       },
       {
         name: "entities2",
+        //main ist die erste Seite
         page: "entities2",
         left: { single: "main" },
+        // Die 4 bezieht sich auf den name: 4
         right: { single: "1", double: "main" }
       },
       {
         name: "6",
         page: "power1",
         left: { single: "5" },
+        // Die 4 bezieht sich auf den name: 4
         right: { single: "7", double: "main" }
       },
       {
         name: "7",
+        //main ist die erste Seite
         page: "grid4",
         left: { single: "6" },
+        // Die 4 bezieht sich auf den name: 4
         right: { single: "main", double: "main" }
       },
       {
         name: "1",
         left: { single: "main" },
+        // Die 0 bezieht sich auf den name: 0
         right: { single: "2" },
         page: "grid1"
+        // das grid1 bezieht sich auf die uniqueID oben in pages
       },
       {
         name: "2",
@@ -4068,12 +4323,14 @@ const Testconfig = [
     topic: "nspanel/ns_panel2",
     name: "Wohnzimmer",
     config: {
+      // dat hier hat noch keine bedeutung glaube ich :)
       momentLocale: "",
       locale: "de-DE",
       iconBig1: false,
       iconBig2: false
     },
     timeout: 15,
+    // dat kommt vom Admin
     dimLow: 20,
     dimHigh: 90
   }

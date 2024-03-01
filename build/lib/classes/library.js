@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -109,6 +113,15 @@ class Library extends BaseClass {
   async init() {
     await this.checkLanguage();
   }
+  /**
+   * Write/create from a Json with defined keys, the associated states and channels
+   * @param prefix iobroker datapoint prefix where to write
+   * @param objNode Entry point into the definition json.
+   * @param def the definition json
+   * @param data The Json to read
+   * @param expandTree expand arrays up to 99
+   * @returns  void
+   */
   async writeFromJson(prefix, objNode, def, data, expandTree = false) {
     if (!def || typeof def !== "object")
       return;
@@ -152,6 +165,13 @@ class Library extends BaseClass {
       await this.writedp(prefix, data, objectDefinition);
     }
   }
+  /**
+   * Get the ioBroker.Object out of stateDefinition
+   *
+   * @param key is the deep linking key to the definition
+   * @param data  is the definition dataset
+   * @returns ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.StateObject
+   */
   async getObjectDefFromJson(key, def, data) {
     let result = this.deepJsonValue(key, def);
     if (result === null || result === void 0) {
@@ -206,6 +226,12 @@ class Library extends BaseClass {
     }
     return s;
   }
+  /**
+   * Get a channel/device definition from property _channel out of a getObjectDefFromJson() result or a default definition.
+   *
+   * @param def the data coming from getObjectDefFromJson()
+   * @returns ioBroker.ChannelObject | ioBroker.DeviceObject or a default channel obj
+   */
   getChannelObject(definition = null) {
     const def = definition && definition._channel || null;
     const result = {
@@ -218,6 +244,14 @@ class Library extends BaseClass {
     };
     return result;
   }
+  /**
+   * Write/Create the specified data point with value, will only be written if val != oldval and obj.type == state or the data point value in the DB is not undefined. Channel and Devices have an undefined value.
+   * @param dp Data point to be written. Library.clean() is called with it.
+   * @param val Value for this data point. Channel vals (old and new) are undefined so they never will be written.
+   * @param obj The object definition for this data point (ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.StateObject)
+   * @param ack set ack to false if needed - NEVER after u subscript to states)
+   * @returns void
+   */
   async writedp(dp, val, obj = null, ack = true) {
     dp = this.cleandp(dp);
     let node = this.readdb(dp);
@@ -311,6 +345,13 @@ class Library extends BaseClass {
       this.log.debug(`Clean up tree delete: ${del[a]}`);
     }
   }
+  /**
+   * Remove forbidden chars from datapoint string.
+   * @param string Datapoint string to clean
+   * @param lowerCase lowerCase() first param.
+   * @param removePoints remove . from dp
+   * @returns void
+   */
   cleandp(string, lowerCase = false, removePoints = false) {
     if (!string && typeof string != "string")
       return string;
@@ -321,6 +362,11 @@ class Library extends BaseClass {
       string = string.replace(/[^0-9A-Za-z\._-]/gu, "_");
     return lowerCase ? string.toLowerCase() : string;
   }
+  /* Convert a value to the given type
+   * @param {string|boolean|number} value 	then value to convert
+   * @param {string}   type  					the target type
+   * @returns
+   */
   convertToType(value, type) {
     if (value === null)
       return null;
@@ -394,6 +440,11 @@ class Library extends BaseClass {
       return true;
     return false;
   }
+  /**
+   * Initialise the database with the states to prevent unnecessary creation and writing.
+   * @param states States that are to be read into the database during initialisation.
+   * @returns void
+   */
   async initStates(states) {
     if (!states)
       return;
@@ -424,6 +475,12 @@ class Library extends BaseClass {
       }
     }
   }
+  /**
+   * Resets states that have not been updated in the database in offset time.
+   * @param prefix String with which states begin that are reset.
+   * @param offset Time in ms since last update.
+   * @returns void
+   */
   async garbageColleting(prefix, offset = 2e3, del = false) {
     if (!prefix)
       return;
@@ -525,6 +582,13 @@ class Library extends BaseClass {
     });
     return text;
   }
+  /**
+   *
+   * @param text string to replace a Date
+   * @param noti appendix to translation key
+   * @param day true = Mo, 12.05 - false = 12.05
+   * @returns Monday first March
+   */
   convertSpeakDate(text, noti = "", day = false) {
     if (!text || typeof text !== `string`)
       return ``;
@@ -532,7 +596,7 @@ class Library extends BaseClass {
     if (day) {
       b[0] = b[0].split(" ")[2];
     }
-    return " " + (new Date(`${b[1]}/${b[0]}/${new Date().getFullYear()}`).toLocaleString(this.getLocalLanguage(), {
+    return " " + ((/* @__PURE__ */ new Date(`${b[1]}/${b[0]}/${(/* @__PURE__ */ new Date()).getFullYear()}`)).toLocaleString(this.getLocalLanguage(), {
       weekday: day ? "long" : void 0,
       day: "numeric",
       month: `long`

@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -30,6 +34,9 @@ module.exports = __toCommonJS(shutter_exports);
 var Color = __toESM(require("../const/Color"));
 const shutterTemplates = {
   "generic.shutter": {
+    /**
+     * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
+     */
     role: "",
     type: "shutter",
     adapter: "",
@@ -47,7 +54,9 @@ const shutterTemplates = {
         maxBri: void 0,
         minBri: void 0
       },
+      // 1. slider
       entity1: {
+        // button
         value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
         decimal: void 0,
         factor: void 0,
@@ -55,7 +64,9 @@ const shutterTemplates = {
         minScale: { type: "const", constVal: 0 },
         maxScale: { type: "const", constVal: 100 }
       },
+      // 2. slider
       entity2: {
+        // button
         value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
         decimal: void 0,
         factor: void 0,
@@ -112,6 +123,14 @@ const shutterTemplates = {
         mode: "auto",
         role: ["button.stop.tilt"]
       }
+      /**
+       * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+       */
+      //valueList: { type: 'const', constVal: 'home?butter' },
+      /**
+       * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+       */
+      //setList: { type: 'const', constVal: '0_userdata.0.test?1|0_userdata.0.test?2' },
     }
   },
   "shutter.shelly.2PM": {
@@ -120,7 +139,9 @@ const shutterTemplates = {
     template: "shutter.basic.onlyV",
     adapter: "0_userdata.0",
     data: {
+      // 1. slider
       entity1: {
+        // button
         value: { mode: "auto", role: "level.blind", type: "triggered", dp: ".Shutter.Position" },
         decimal: void 0,
         factor: void 0,
@@ -128,6 +149,7 @@ const shutterTemplates = {
         minScale: { type: "const", constVal: 0 },
         maxScale: { type: "const", constVal: 100 }
       },
+      // 2. slider
       entity2: void 0,
       headline: {
         type: "const",
@@ -214,7 +236,9 @@ const shutterTemplates = {
     template: "shutter.basic.onlyV",
     adapter: "deconz",
     data: {
+      // 1. slider
       entity1: {
+        // button
         value: { mode: "auto", role: "level.value", type: "triggered", dp: ".lift" },
         decimal: void 0,
         factor: void 0,

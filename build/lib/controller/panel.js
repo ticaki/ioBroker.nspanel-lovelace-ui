@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -242,12 +246,12 @@ class Panel extends import_library.BaseClass {
     await this.library.writedp(`panels.${this.name}`, void 0, import_definition.genericStateObjects.panel.panels._channel);
     await this.library.writedp(
       `panels.${this.name}.cmd`,
-      void 0 === "ON",
+      false,
       import_definition.genericStateObjects.panel.panels.cmd._channel
     );
     await this.library.writedp(
       `panels.${this.name}.alarm`,
-      void 0 === "ON",
+      false,
       import_definition.genericStateObjects.panel.panels.alarm._channel
     );
     let state = this.library.readdb(`panels.${this.name}.cmd.dimStandby`);
@@ -557,6 +561,10 @@ class Panel extends import_library.BaseClass {
       }
     }
   }
+  /**
+   * timeout screensaver after sec
+   * @param sec seconds for timeout
+   */
   sendScreeensaverTimeout(sec) {
     this.log.debug(`Set screeensaver timeout to ${sec}s.`);
     this.sendToPanel(`timeout~${sec}`);
@@ -569,6 +577,10 @@ class Panel extends import_library.BaseClass {
       this.adapter.clearTimeout(this.minuteLoopTimeout);
     this.minuteLoop();
   }
+  /**
+   * Do panel work always at full minute
+   * @returns void
+   */
   minuteLoop = () => {
     if (this.unload)
       return;
@@ -832,6 +844,80 @@ class Panel extends import_library.BaseClass {
         opt: (_d = temp[4]) != null ? _d : ""
       };
   }
+  /*
+  function HandleMessage(typ: string, method: NSPanel.EventMethod, page: number | undefined, words: string[] | undefined): void {
+      try {
+          if (typ == 'event') {
+              switch (method as NSPanel.EventMethod) {
+                  case 'startup':
+                      screensaverEnabled = false;
+                      UnsubscribeWatcher();
+                      HandleStartupProcess();
+                      pageId = 0;
+                      GeneratePage(config.pages[0]);
+                      if (Debug) log('HandleMessage -> Startup', 'info');
+                      Init_Release();
+                      break;
+                  case 'sleepReached':
+                      useMediaEvents = false;
+                      screensaverEnabled = true;
+                      if (pageId < 0)
+                          pageId = 0;
+                      HandleScreensaver();
+                      if (Debug) log('HandleMessage -> sleepReached', 'info');
+                      break;
+                  case 'pageOpenDetail':
+                      if (words != undefined) {
+                          screensaverEnabled = false;
+                          UnsubscribeWatcher();
+                          if (Debug) {
+                              log('HandleMessage -> pageOpenDetail ' + words[0] + ' - ' + words[1] + ' - ' + words[2] + ' - ' + words[3] + ' - ' + words[4], 'info');
+                          }
+                          let tempId: PageItem['id'];
+                          let tempPageItem = words[3].split('?');
+                          let placeId: number | undefined = undefined;
+                          if (!isNaN(parseInt(tempPageItem[0]))){
+                              tempId = activePage!.items[tempPageItem[0]].id;
+                              placeId = parseInt(tempPageItem[0])
+                              if (tempId == undefined) {
+                                  throw new Error(`Missing id in HandleMessage!`)
+                              }
+                          } else {
+                              tempId = tempPageItem[0];
+                          }
+                          let pageItem: PageItem = findPageItem(tempId);
+                          if (pageItem !== undefined && isPopupType(words[2])) {
+                              let temp: string | NSPanel.mediaOptional | undefined = tempPageItem[1]
+                              if (isMediaOptional(temp)) SendToPanel(GenerateDetailPage(words[2], temp, pageItem, placeId));
+                              else SendToPanel(GenerateDetailPage(words[2], undefined, pageItem, placeId));
+                          }
+                      }
+                      break;
+                  case 'buttonPress2':
+                      screensaverEnabled = false;
+                      HandleButtonEvent(words);
+                      if (Debug) {
+                          if (words != undefined) log('HandleMessage -> buttonPress2 ' + words[0] + ' - ' + words[1] + ' - ' + words[2] + ' - ' + words[3] + ' - ' + words[4], 'info');
+                      }
+                      break;
+                  case 'renderCurrentPage':
+                      // Event only for HA at this Moment
+                      if (Debug) log('renderCurrentPage', 'info');
+                      break;
+                  case 'button1':
+                  case 'button2':
+                      screensaverEnabled = false;
+                      HandleHardwareButton(method);
+                      if (Debug) log('HandleMessage -> button1 /  button2', 'info')
+                      break;
+                  default:
+                      break;
+              }
+          }
+      } catch (err: any) {
+          log('error at function HandleMessage: ' + err.message, 'warn');
+      }
+  }*/
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

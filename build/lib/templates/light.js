@@ -74,6 +74,7 @@ const lightTemplates = {
         dp: ""
       },
       entity1: {
+        // button
         value: {
           type: "triggered",
           mode: "auto",
@@ -85,6 +86,7 @@ const lightTemplates = {
         unit: void 0
       },
       entityInSel: {
+        // button
         value: {
           type: "triggered",
           mode: "auto",

@@ -60,15 +60,21 @@ function isPopupType(F) {
 }
 const SerialTypeArray = [
   "light",
+  //popup
   "shutter",
+  //popup
   "delete",
   "text",
   "button",
   "switch",
+  // nur für cardQR
   "number",
   "input_sel",
+  //popup
   "timer",
+  //popup
   "fan"
+  //popup
 ];
 function isValueDateFormat(F) {
   return F && typeof F === "object" && F.local !== void 0 && F.format !== void 0;

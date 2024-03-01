@@ -171,6 +171,9 @@ class BaseClassTriggerd extends import_library.BaseClass {
     } else
       this.visibility = v;
   };
+  /**
+   * Event when visibility is on Change.
+   */
   async onVisibilityChange(val) {
     val;
     this.adapter.log.warn(
@@ -244,6 +247,11 @@ class StatesControler extends import_library.BaseClass {
     if (this.deletePageInterval)
       this.adapter.clearInterval(this.deletePageInterval);
   }
+  /**
+   * Set a subscript to a foreignState and write current state/value to db
+   * @param id state id
+   * @param from the page that handle the trigger
+   */
   async setTrigger(id, from, internal = false) {
     if (id.startsWith(this.adapter.namespace)) {
       this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
@@ -279,6 +287,10 @@ class StatesControler extends import_library.BaseClass {
       this.log.debug(`Set a new trigger to ${id}`);
     }
   }
+  /**
+   * Activate the triggers of a page. First subscribes to the state.
+   * @param to Page
+   */
   async activateTrigger(to) {
     if (!to)
       return;
@@ -301,6 +313,10 @@ class StatesControler extends import_library.BaseClass {
       entry.subscribed[index] = true;
     }
   }
+  /**
+   * Deactivate the triggers of a page. Last unsubscribes to the state.
+   * @param to Page
+   */
   async deactivateTrigger(to) {
     for (const id in this.triggerDB) {
       if (to.neverDeactivateTrigger)
@@ -327,6 +343,11 @@ class StatesControler extends import_library.BaseClass {
     }
     return null;
   }
+  /**
+   * Read a state from DB or js-controller
+   * @param id state id with namespace
+   * @returns
+   */
   async getState(id, response = "medium", internal = false) {
     let timespan = this.timespan;
     if (response === "now")
@@ -493,6 +514,12 @@ class StatesControler extends import_library.BaseClass {
     }
     return false;
   }
+  /**
+   * Create dataitems from a json (deep)
+   * @param data Json with configuration to create dataitems
+   * @param parent Page etc.
+   * @returns then json with values dataitem or undefined
+   */
   async createDataItems(data, parent, target = {}) {
     var _a;
     for (const i in data) {

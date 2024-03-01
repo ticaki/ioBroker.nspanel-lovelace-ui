@@ -6936,6 +6936,11 @@ class Icons {
     }
     return "";
   }
+  /**
+   * Just a dummy
+   * @param F
+   * @returns
+   */
   static isIcon(F) {
     return true;
   }

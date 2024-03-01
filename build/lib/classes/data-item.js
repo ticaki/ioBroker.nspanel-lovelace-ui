@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -33,10 +37,18 @@ var import_library = require("./library");
 var NSPanel = __toESM(require("../types/types"));
 class Dataitem extends import_library.BaseClass {
   options;
+  //private obj: ioBroker.Object | null | undefined;
   stateDB;
   type = void 0;
   parent;
   _writeable = false;
+  /**
+   * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
+   * @param adapter this of adapter
+   * @param options {NSPanel.DataItemsOptions}
+   * @param parent {BaseClassTriggerd}
+   * @param db {StatesControler}
+   */
   constructor(adapter, options, parent, db) {
     super(adapter, options.name || "");
     this.options = options;
@@ -60,6 +72,10 @@ class Dataitem extends import_library.BaseClass {
   get writeable() {
     return this._writeable;
   }
+  /**
+   * Init and check dp is valid
+   * @returns if false value is not valid
+   */
   async isValidAndInit() {
     switch (this.options.type) {
       case "const":
@@ -257,6 +273,9 @@ class Dataitem extends import_library.BaseClass {
   async setStateFalse() {
     await this.setStateAsync(false);
   }
+  /**
+   * Flip this 'ON'/'OFF', 0/1 or true/false. Depend on this.type
+   */
   async setStateFlip() {
     const value = await this.getBoolean();
     this.log.debug(String(value));
@@ -272,6 +291,11 @@ class Dataitem extends import_library.BaseClass {
         break;
     }
   }
+  /**
+   * Set a internal, const or external State
+   * @param val number | boolean | string | null
+   * @returns
+   */
   async setStateAsync(val) {
     if (val === void 0)
       return;

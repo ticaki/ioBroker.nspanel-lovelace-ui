@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -124,7 +128,7 @@ class PageMedia extends import_Page2.Page {
       if (item.data.duration && item.data.elapsed) {
         const d = await item.data.duration.getNumber();
         if (d !== null) {
-          const t = new Date().setHours(0, 0, d, 0);
+          const t = (/* @__PURE__ */ new Date()).setHours(0, 0, d, 0);
           duration = new Date(t).toLocaleTimeString("de-DE", { minute: "2-digit", second: "2-digit" });
         }
         if (item.data.elapsed.type === "string") {
@@ -135,7 +139,7 @@ class PageMedia extends import_Page2.Page {
         } else if (item.data.elapsed.type === "number") {
           const e = await item.data.elapsed.getNumber();
           if (e !== null) {
-            const t = new Date().setHours(0, 0, e, 0);
+            const t = (/* @__PURE__ */ new Date()).setHours(0, 0, e, 0);
             elapsed = new Date(t).toLocaleTimeString("de-DE", { minute: "2-digit", second: "2-digit" });
           }
         }
@@ -284,6 +288,7 @@ class PageMedia extends import_Page2.Page {
       message.onoffbuttonColor,
       import_icon_mapping.Icons.GetIcon(message.shuffle_icon),
       message.logo,
+      //'~~~~~'
       (0, import_tools.getPayloadArray)(message.options)
     );
   }

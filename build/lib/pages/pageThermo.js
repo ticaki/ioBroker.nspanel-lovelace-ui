@@ -44,6 +44,7 @@ const PageThermoMessageDefault = {
   btDetail: "1"
 };
 class PageThermo extends import_Page.Page {
+  //config: pages.cardThermoDataItemOptions;
   items;
   step = 1;
   headlinePos = 0;

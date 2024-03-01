@@ -14,6 +14,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -43,6 +47,9 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
   }
+  /**
+   * Is called when databases are connected and adapter received configuration.
+   */
   async onReady() {
     import_icon_mapping.Icons.adapter = this;
     this.library = new import_library.Library(this);
@@ -120,6 +127,9 @@ class NspanelLovelaceUi extends utils.Adapter {
       }, 6e4);
     }, 1500);
   }
+  /**
+   * Is called when adapter shuts down - callback has to be called under any circumstances!
+   */
   async onUnload(callback) {
     try {
       this.unload = true;
@@ -130,6 +140,23 @@ class NspanelLovelaceUi extends utils.Adapter {
       callback();
     }
   }
+  // If you need to react to object changes, uncomment the following block and the corresponding line in the constructor.
+  // You also need to subscribe to the objects with `this.subscribeObjects`, similar to `this.subscribeStates`.
+  // /**
+  //  * Is called if a subscribed object changes
+  //  */
+  // private onObjectChange(id: string, obj: ioBroker.Object | null | undefined): void {
+  //     if (obj) {
+  //         // The object was changed
+  //         this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
+  //     } else {
+  //         // The object was deleted
+  //         this.log.info(`object ${id} deleted`);
+  //     }
+  // }
+  /**
+   * Is called if a subscribed state changes
+   */
   async onStateChange(id, state) {
     if (state) {
       if (this.controller) {
@@ -139,6 +166,11 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.log.info(`state ${id} deleted`);
     }
   }
+  // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
+  // /**
+  //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
+  //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
+  //  */
   async onMessage(obj) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     if (typeof obj === "object" && obj.message) {

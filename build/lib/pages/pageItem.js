@@ -18,6 +18,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -42,6 +46,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   lastPopupType = void 0;
   parent;
   tempData = void 0;
+  // use this to save some data while object is active
   tempInterval;
   constructor(config, options) {
     super({ ...config });
@@ -189,8 +194,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           message.iconColor = await tools.getIconEntryColor(item.icon, value, Color.White);
           const optionalValue = item.valueList ? await item.valueList.getObject() : [
             "arrow-up",
+            //up
             "stop",
+            //stop
             "arrow-down"
+            //down
           ];
           let optionalValueC = Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === "string") ? [...optionalValue] : ["", "", ""];
           optionalValueC = optionalValueC.splice(0, 3).map((a) => a ? import_icon_mapping.Icons.GetIcon(a) : a);
@@ -392,7 +400,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             if (value !== null) {
               let opt = "";
               if (this.tempData) {
-                opt = new Date(new Date().setHours(0, 0, this.tempData.value, 0)).toLocaleTimeString(
+                opt = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, this.tempData.value, 0)).toLocaleTimeString(
                   "de",
                   { minute: "2-digit", second: "2-digit" }
                 );
@@ -840,11 +848,17 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           message.icon = (_J = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _J : "";
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
           "arrow-up",
+          //up
           "stop",
+          //stop
           "arrow-down",
+          //down
           "arrow-top-right",
+          //t-up
           "stop",
+          //t-stop
           "arrow-bottom-left"
+          //t-down
         ];
         const arr = [pos1, pos2];
         for (let index = 0; index < arr.length; index++) {
@@ -1321,6 +1335,13 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     }
     return list;
   }
+  /**
+   * Die Setzliste besteht aus 1 Arrays in Stringform mit trenner | und einem json mit trenner ? { id: t[0], value: t[1] }
+   * oder { id: t[0], value: t[1], command: t[2]} command bitte in der funktion nachsehen. Hier sind meist nicht alle beschrieben
+   *
+   * Standardnutzung, NSPanelauswahl von z.B. Eintrag 2 benutzt das Element 2 aus diesem Array und setzt die ID auf den Wert value
+   * 'flip': Liest den State mit ID ein, negiert den Wert und schreibt ihn wieder zurück. string, number, boolean möglich.
+   */
   async setListCommand(entry, value) {
     const item = entry.data;
     if (!("entityInSel" in item))

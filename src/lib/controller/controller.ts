@@ -40,7 +40,7 @@ export class Controller extends Library.BaseClass {
     };
 
     /**
-     * Update Date 2 times per day because of daylight saving.
+     * Update Date every hour.
      * @returns
      */
     dateUpdateLoop = async (): Promise<void> => {
@@ -49,7 +49,7 @@ export class Controller extends Library.BaseClass {
         const d: Date = new Date();
         d.setDate(d.getDate() + 1);
         d.setHours(0, 0, 0);
-        const diff = d.getTime() - Date.now();
+        const diff = (d.getTime() - Date.now()) / 24 + 1000;
         this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
     };
     getCurrentTime = async (): Promise<number> => {
