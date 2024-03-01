@@ -28,5 +28,7 @@
     "VERTICAL": "вертикальный",
     "VERTICAL_AND_HORIZONTAL": "вертикальный и горизонтальный",
     "opened": "открыт",
-    "closed": "закрыто"
+    "closed": "закрыто",
+    "sunsetToken": "Закат",
+    "sunriseToken": "Восход"
 }

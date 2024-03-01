@@ -28,5 +28,7 @@
     "VERTICAL": "verticale",
     "VERTICAL_AND_HORIZONTAL": "vertical et horizontal",
     "opened": "ouvert",
-    "closed": "fermé"
+    "closed": "fermé",
+    "sunsetToken": "Coucher de soleil",
+    "sunriseToken": "Lever du soleil"
 }

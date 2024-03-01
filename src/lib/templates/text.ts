@@ -390,11 +390,11 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'weather-sunset-up' },
-                    color: { type: 'const', constVal: Color.Yellow },
+                    color: { type: 'const', constVal: { r: 255, g: 138, b: 18 } },
                 },
                 false: {
                     value: { type: 'const', constVal: 'weather-sunset-down' },
-                    color: { type: 'const', constVal: Color.Yellow },
+                    color: { type: 'const', constVal: { r: 255, g: 209, b: 163 } },
                 },
             },
             entity1: {

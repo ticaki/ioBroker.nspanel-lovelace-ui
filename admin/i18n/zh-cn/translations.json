@@ -28,5 +28,7 @@
     "VERTICAL": "垂直的",
     "VERTICAL_AND_HORIZONTAL": "垂直和水平",
     "opened": "打开",
-    "closed": "关闭"
+    "closed": "关闭",
+    "sunsetToken": "日落",
+    "sunriseToken": "日出"
 }

@@ -28,5 +28,7 @@
     "VERTICAL": "verticaal",
     "VERTICAL_AND_HORIZONTAL": "verticaal en horizontaal",
     "opened": "geopend",
-    "closed": "gesloten"
+    "closed": "gesloten",
+    "sunsetToken": "Zonsondergang",
+    "sunriseToken": "zonsopkomst"
 }

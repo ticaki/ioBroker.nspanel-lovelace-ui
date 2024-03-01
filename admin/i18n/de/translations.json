@@ -28,5 +28,7 @@
     "VERTICAL": "senkrecht",
     "VERTICAL_AND_HORIZONTAL": "senkrecht und waagerecht",
     "opened": "geöffnet",
-    "closed": "geschlossen"
+    "closed": "geschlossen",
+    "sunsetToken": "Sonne",
+    "sunriseToken": "Sonne"
 }

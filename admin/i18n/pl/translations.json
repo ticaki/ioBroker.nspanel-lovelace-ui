@@ -28,5 +28,7 @@
     "VERTICAL": "pionowy",
     "VERTICAL_AND_HORIZONTAL": "pionowo i poziomo",
     "opened": "otwierany",
-    "closed": "closed"
+    "closed": "closed",
+    "sunsetToken": "Zachód słońca",
+    "sunriseToken": "wschód słońca"
 }
