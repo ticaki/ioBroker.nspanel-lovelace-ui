@@ -227,6 +227,58 @@ export class Panel extends BaseClass {
     };
     start = async (): Promise<void> => {
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
+
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/screensaverTimeout`,
+            this.timeout,
+            true,
+            getInternalDefaults('number', 'value'),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/dimStandby`,
+            this.timeout,
+            true,
+            getInternalDefaults('number', 'value'),
+            this.onInternalCommand,
+        );
+
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/dimActive`,
+            this.timeout,
+            true,
+            getInternalDefaults('number', 'value'),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/bigIconLeft`,
+            true,
+            true,
+            getInternalDefaults('boolean', 'indicator'),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/bigIconRight`,
+            true,
+            true,
+            getInternalDefaults('boolean', 'indicator'),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
+            name: 'power1',
+            type: 'boolean',
+            write: false,
+            read: true,
+            role: 'value',
+        });
+        await this.statesControler.setInternalState(`${this.name}/cmd/power2`, false, true, {
+            name: 'power1',
+            type: 'boolean',
+            write: false,
+            read: true,
+            role: 'value',
+        });
+
         genericStateObjects.panel.panels._channel.common.name = this.friendlyName;
         await this.library.writedp(`panels.${this.name}`, undefined, genericStateObjects.panel.panels._channel);
         await this.library.writedp(
@@ -315,56 +367,7 @@ export class Panel extends BaseClass {
         this.info.nspanel.bigIconRight = state ? !!state.val : false;
 
         //done with states
-        await this.statesControler.setInternalState(
-            `${this.name}/cmd/screensaverTimeout`,
-            this.timeout,
-            true,
-            getInternalDefaults('number', 'value'),
-            this.onInternalCommand,
-        );
-        await this.statesControler.setInternalState(
-            `${this.name}/cmd/dimStandby`,
-            this.timeout,
-            true,
-            getInternalDefaults('number', 'value'),
-            this.onInternalCommand,
-        );
 
-        await this.statesControler.setInternalState(
-            `${this.name}/cmd/dimActive`,
-            this.timeout,
-            true,
-            getInternalDefaults('number', 'value'),
-            this.onInternalCommand,
-        );
-        await this.statesControler.setInternalState(
-            `${this.name}/cmd/bigIconLeft`,
-            true,
-            true,
-            getInternalDefaults('boolean', 'indicator'),
-            this.onInternalCommand,
-        );
-        await this.statesControler.setInternalState(
-            `${this.name}/cmd/bigIconRight`,
-            true,
-            true,
-            getInternalDefaults('boolean', 'indicator'),
-            this.onInternalCommand,
-        );
-        await this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
-            name: 'power1',
-            type: 'boolean',
-            write: false,
-            read: true,
-            role: 'value',
-        });
-        await this.statesControler.setInternalState(`${this.name}/cmd/power2`, false, true, {
-            name: 'power1',
-            type: 'boolean',
-            write: false,
-            read: true,
-            role: 'value',
-        });
         this.sendToTasmota(this.topic + '/cmnd/POWER1', '');
         this.sendToTasmota(this.topic + '/cmnd/POWER2', '');
         this.sendToPanel('pageType~pageStartup', { retain: true });

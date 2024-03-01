@@ -44,7 +44,6 @@ class Screensaver extends import_Page.Page {
   nextArrow = false;
   rotationTime = 3e5;
   timoutRotation = void 0;
-  firstRun = true;
   constructor(config, options) {
     if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2")
       return;
@@ -61,11 +60,11 @@ class Screensaver extends import_Page.Page {
     }
     config.alwaysOn = "none";
     super(config, options);
-    this.neverDeactivateTrigger = true;
     this.rotationTime = options.config.rotationTime !== 0 && options.config.rotationTime < 3 ? 3e3 : options.config.rotationTime * 1e3;
   }
   async init() {
     await super.init();
+    await this.createPageItems();
   }
   async getData(places) {
     const config = this.config;
@@ -132,11 +131,6 @@ class Screensaver extends import_Page.Page {
     return message;
   }
   async update() {
-    if (this.firstRun) {
-      this.HandleTime();
-      this.HandleDate();
-      this.firstRun = false;
-    }
     if (!this.visibility) {
       this.log.error("get update command but not visible!");
       return;
@@ -157,11 +151,10 @@ class Screensaver extends import_Page.Page {
     this.HandleScreensaverStatusIcons();
   }
   async onVisibilityChange(v) {
-    await super.onVisibilityChange(v);
     this.step = -1;
     if (v) {
-      this.HandleTime();
-      this.HandleDate();
+      this.sendType();
+      this.update();
       this.rotationLoop();
     } else {
       if (this.timoutRotation)
@@ -263,114 +256,6 @@ class Screensaver extends import_Page.Page {
       }, 500);
     }
   }
-  /*
-          const payload: Partial<sendTemplates['statusUpdate']> = { eventType: 'statusUpdate' };
-          const maxItems = Definition.ScreenSaverConst[this.layout]['mrIconEntity'].maxEntries;
-          for (let i = 0; i < maxItems; i++) {
-              const s: '1' | '2' = i == 0 ? '1' : '2';
-              const item = this.items['mrIconEntity'][i];
-              if (item === null || item === undefined) {
-                  payload[`icon${s}`] = '';
-                  payload[`icon${s}Color`] = '';
-                  payload[`icon${s}Font`] = '';
-                  continue;
-              }
-  
-              let value: number | boolean | string | null = await tools.getValueEntryNumber(item.entityValue);
-              if (value === null) value = await tools.getValueEntryString(item.entityValue);
-              if (value === null) value = await tools.getValueEntryBoolean(item.entityValue);
-  
-              if (value === null) {
-                  payload[`icon${s}`] = '';
-                  payload[`icon${s}Color`] = '';
-                  payload[`icon${s}Font`] = '';
-                  continue;
-              }
-  
-              const entity =
-                  item.entityValue && item.entityValue.value
-                      ? item.entityValue.value.type == 'string'
-                          ? await item.entityValue.value.getString()
-                          : await item.entityValue.value.getBoolean()
-                      : null;
-              const offcolor =
-                  item.entityIcon && item.entityIcon.false && item.entityIcon.false.color
-                      ? await item.entityIcon.false.color.getRGBDec()
-                      : String(Color.rgb_dec565(Color.White));
-              const onColor =
-                  item.entityIcon && item.entityIcon.true && item.entityIcon.true.color
-                      ? await item.entityIcon.true.color.getRGBDec()
-                      : null;
-              payload[`icon${s}Color`] = offcolor !== null ? offcolor : String(Color.rgb_dec565(Color.White));
-              if (item.entityValue != null || value !== null || onColor != null) {
-                  // Prüfung ob Entity vom Typ String ist
-                  if (entity != null && onColor) {
-                      if (typeof entity == 'string') {
-                          switch (entity.toUpperCase()) {
-                              case 'ON':
-                              case 'OK':
-                              case 'AN':
-                              case 'YES':
-                              case 'TRUE':
-                              case 'ONLINE':
-                                  payload[`icon${s}Color`] = onColor;
-                                  break;
-                              default:
-                          }
-                          // Alles was kein String ist in Boolean umwandeln
-                      } else {
-                          if (entity) {
-                              payload[`icon${s}Color`] = onColor;
-                          }
-                      }
-                  }
-                  const entityIconSelect: any | null = item.entityIconSelect
-                      ? await item.entityIconSelect.getObject()
-                      : null;
-  
-                  // Icon ermitteln
-                  const onIcon =
-                      item.entityIcon && item.entityIcon.true && item.entityIcon.true.value
-                          ? await item.entityIcon.true.value.getString()
-                          : null;
-                  const offIcon =
-                      item.entityIcon && item.entityIcon.false && item.entityIcon.false.value
-                          ? await item.entityIcon.false.value.getString()
-                          : null;
-                  const selectIcon =
-                      typeof entity !== 'boolean' && entity !== null && entityIconSelect
-                          ? (entityIconSelect[entity] as string | undefined)
-                          : undefined;
-  
-                  if (selectIcon) {
-                      payload[`icon${s}`] = Icons.GetIcon(selectIcon);
-                      this.log.debug('SelectIcon: ' + JSON.stringify(payload), 'info');
-                  } else if (entity && onIcon) {
-                      payload[`icon${s}`] = Icons.GetIcon(onIcon);
-                      this.log.debug('Icon if true ' + JSON.stringify(payload), 'info');
-                  } else {
-                      if (offIcon) {
-                          payload[`icon${s}`] = Icons.GetIcon(offIcon);
-                          this.log.debug('Icon1 else true ' + JSON.stringify(payload), 'info');
-                      } else if (onIcon) {
-                          payload[`icon${s}`] = Icons.GetIcon(onIcon);
-                          this.log.debug('Icon1 else false ' + JSON.stringify(payload), 'info');
-                      }
-                  }
-  
-                  if (value !== null && value !== undefined) {
-                      payload[`icon${s}`] += typeof value === 'string' ? value : '';
-                      const unit =
-                          item.entityValue && item.entityValue.unit ? await item.entityValue.unit.getString() : null;
-                      if (unit !== null) payload[`icon${s}`] += unit;
-                  }
-              } else {
-                  payload[`icon${s}Color`] = String(Color.rgb_dec565(Color.Black));
-              }
-              payload[`icon${s}Font`] = this.config2[`iconBig${s}`] ? '1' : '';
-          }
-          this.sendStatusUpdate(payload as sendTemplates['statusUpdate'], this.layout);
-      }*/
   async delete() {
     await super.delete();
     if (this.timoutRotation)

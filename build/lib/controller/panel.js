@@ -228,6 +228,55 @@ class Panel extends import_library.BaseClass {
   };
   start = async () => {
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/screensaverTimeout`,
+      this.timeout,
+      true,
+      (0, import_tools.getInternalDefaults)("number", "value"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/dimStandby`,
+      this.timeout,
+      true,
+      (0, import_tools.getInternalDefaults)("number", "value"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/dimActive`,
+      this.timeout,
+      true,
+      (0, import_tools.getInternalDefaults)("number", "value"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/bigIconLeft`,
+      true,
+      true,
+      (0, import_tools.getInternalDefaults)("boolean", "indicator"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/bigIconRight`,
+      true,
+      true,
+      (0, import_tools.getInternalDefaults)("boolean", "indicator"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
+      name: "power1",
+      type: "boolean",
+      write: false,
+      read: true,
+      role: "value"
+    });
+    await this.statesControler.setInternalState(`${this.name}/cmd/power2`, false, true, {
+      name: "power1",
+      type: "boolean",
+      write: false,
+      read: true,
+      role: "value"
+    });
     import_definition.genericStateObjects.panel.panels._channel.common.name = this.friendlyName;
     await this.library.writedp(`panels.${this.name}`, void 0, import_definition.genericStateObjects.panel.panels._channel);
     await this.library.writedp(
@@ -311,55 +360,6 @@ class Panel extends import_library.BaseClass {
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
     this.info.nspanel.bigIconRight = state ? !!state.val : false;
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/screensaverTimeout`,
-      this.timeout,
-      true,
-      (0, import_tools.getInternalDefaults)("number", "value"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/dimStandby`,
-      this.timeout,
-      true,
-      (0, import_tools.getInternalDefaults)("number", "value"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/dimActive`,
-      this.timeout,
-      true,
-      (0, import_tools.getInternalDefaults)("number", "value"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/bigIconLeft`,
-      true,
-      true,
-      (0, import_tools.getInternalDefaults)("boolean", "indicator"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/bigIconRight`,
-      true,
-      true,
-      (0, import_tools.getInternalDefaults)("boolean", "indicator"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
-      name: "power1",
-      type: "boolean",
-      write: false,
-      read: true,
-      role: "value"
-    });
-    await this.statesControler.setInternalState(`${this.name}/cmd/power2`, false, true, {
-      name: "power1",
-      type: "boolean",
-      write: false,
-      read: true,
-      role: "value"
-    });
     this.sendToTasmota(this.topic + "/cmnd/POWER1", "");
     this.sendToTasmota(this.topic + "/cmnd/POWER2", "");
     this.sendToPanel("pageType~pageStartup", { retain: true });

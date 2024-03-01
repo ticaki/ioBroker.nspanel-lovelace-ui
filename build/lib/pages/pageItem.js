@@ -57,12 +57,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.name = this.parent ? this.parent.name + "." + this.id : this.id;
     this.sleep = false;
   }
-  static getPageItem(config, options) {
+  static async getPageItem(config, options) {
     if (options === void 0)
       return void 0;
     if (config.panel.persistentPageItems[config.id])
       return config.panel.persistentPageItems[config.id];
-    return new PageItem(config, options);
+    const p = new PageItem(config, options);
+    await p.init();
+    return p;
   }
   async init() {
     if (!this.config)
@@ -132,6 +134,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             case "indicator":
             case "alternate":
             case "favorit":
+              break;
             case "mricon":
               break;
             case "time":

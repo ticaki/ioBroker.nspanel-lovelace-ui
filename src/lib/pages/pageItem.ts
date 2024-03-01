@@ -35,13 +35,15 @@ export class PageItem extends BaseClassTriggerd {
         this.sleep = false;
     }
 
-    static getPageItem(
+    static async getPageItem(
         config: Omit<PageItemInterface, 'pageItemsConfig'>,
         options: typePageItem.PageItemDataItemsOptions | undefined,
-    ): PageItem | undefined {
+    ): Promise<PageItem | undefined> {
         if (options === undefined) return undefined;
         if (config.panel.persistentPageItems[config.id]) return config.panel.persistentPageItems[config.id];
-        return new PageItem(config, options as typePageItem.PageItemDataItemsOptionsWithOutTemplate);
+        const p = new PageItem(config, options as typePageItem.PageItemDataItemsOptionsWithOutTemplate);
+        await p.init();
+        return p;
     }
     async init(): Promise<void> {
         if (!this.config) return;
@@ -129,6 +131,7 @@ export class PageItem extends BaseClassTriggerd {
                         case 'indicator':
                         case 'alternate':
                         case 'favorit':
+                            break;
                         case 'mricon':
                             break;
                         case 'time':

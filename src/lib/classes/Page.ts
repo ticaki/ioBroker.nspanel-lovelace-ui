@@ -178,8 +178,7 @@ export class Page extends BaseClassPage {
                     id: `${this.id}?${a}`,
                     parent: this,
                 };
-                this.pageItems[a] = PageItem.getPageItem(config, this.pageItemConfig[a]);
-                this.pageItems[a] && (await this.pageItems[a]!.init());
+                this.pageItems[a] = await PageItem.getPageItem(config, this.pageItemConfig[a]);
             }
         }
     }

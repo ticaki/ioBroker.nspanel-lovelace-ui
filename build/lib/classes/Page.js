@@ -159,8 +159,7 @@ class Page extends import_states_controller.BaseClassPage {
           id: `${this.id}?${a}`,
           parent: this
         };
-        this.pageItems[a] = import_pageItem.PageItem.getPageItem(config, this.pageItemConfig[a]);
-        this.pageItems[a] && await this.pageItems[a].init();
+        this.pageItems[a] = await import_pageItem.PageItem.getPageItem(config, this.pageItemConfig[a]);
       }
     }
   }

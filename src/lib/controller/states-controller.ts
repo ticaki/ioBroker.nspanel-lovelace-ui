@@ -70,7 +70,8 @@ export class BaseClassTriggerd extends BaseClass {
         if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
     }
     readonly onStateTriggerSuperDoNotOverride = async (from: BaseClassTriggerd): Promise<boolean> => {
-        if ((!this.visibility && !this.neverDeactivateTrigger) || this.unload) return false;
+        if ((!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger)) || this.unload)
+            return false;
         if (this.sleep && !this.neverDeactivateTrigger) return false;
         if (this.waitForTimeout) return false;
         if (this.updateTimeout) {
@@ -203,6 +204,7 @@ export class StatesControler extends BaseClass {
         };
     } = {};
     private deletePageInterval: ioBroker.Interval | undefined;
+
     private stateDB: { [key: string]: { state: ioBroker.State; ts: number; common: ioBroker.StateCommon } } = {};
     objectDatabase: Record<string, ioBroker.Object | null> = {};
     intervalObjectDatabase: ioBroker.Interval | undefined;
@@ -255,7 +257,7 @@ export class StatesControler extends BaseClass {
         if (this.deletePageInterval) this.adapter.clearInterval(this.deletePageInterval);
     }
     /**
-     * Set a subscript to a foreignState and write current state/value to db
+     * Set a subscript to an foreignState and write current state/value to db
      * @param id state id
      * @param from the page that handle the trigger
      */

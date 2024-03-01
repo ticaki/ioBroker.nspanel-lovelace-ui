@@ -69,7 +69,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
       this.sendToPanelClass = card.panelSend.addMessage;
   }
   onStateTriggerSuperDoNotOverride = async (from) => {
-    if (!this.visibility && !this.neverDeactivateTrigger || this.unload)
+    if (!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger) || this.unload)
       return false;
     if (this.sleep && !this.neverDeactivateTrigger)
       return false;
@@ -247,7 +247,7 @@ class StatesControler extends import_library.BaseClass {
       this.adapter.clearInterval(this.deletePageInterval);
   }
   /**
-   * Set a subscript to a foreignState and write current state/value to db
+   * Set a subscript to an foreignState and write current state/value to db
    * @param id state id
    * @param from the page that handle the trigger
    */
