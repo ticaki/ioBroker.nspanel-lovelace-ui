@@ -3,6 +3,11 @@ import * as Color from '../const/Color';
 import * as typePageItem from './type-pageItem';
 import * as pages from './pages';
 
+/**
+ * Bitte an folgendes Schema halten
+ * card.adapter?.aufgabe?.gerät?
+ */
+
 export type PageTemplateIdent = 'entities.waste-calendar' | 'media.spotify-premium' | 'entities.departure-timetable';
 
 export type TemplateIdent =

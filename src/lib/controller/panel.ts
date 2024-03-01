@@ -130,6 +130,7 @@ export class Panel extends BaseClass {
         if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = this.panelSend.addMessage;
         if (typeof this.panelSend.addMessageTasmota === 'function')
             this.sendToTasmota = this.panelSend.addMessageTasmota;
+
         this.statesControler = options.controller.statesControler;
 
         this.dimMode = { low: options.dimLow ?? 70, high: options.dimHigh ?? 90 };
@@ -203,14 +204,14 @@ export class Panel extends BaseClass {
                 }
                 case 'screensaver':
                 case 'screensaver2': {
-                    if (scsFound++ > 0) continue;
+                    scsFound++;
 
                     //const opt = Object.assign(DefaultOptions, pageConfig);
                     const ssconfig: PageInterface = {
                         card: pageConfig.card,
                         panel: this,
                         id: String(a),
-                        name: 'SrS',
+                        name: pageConfig.uniqueID,
                         adapter: this.adapter,
                         panelSend: this.panelSend,
                         dpInit: '',
@@ -221,11 +222,10 @@ export class Panel extends BaseClass {
                 }
             }
         }
-        if (scsFound === 0 || this.screenSaver === undefined) {
+        if (scsFound === 0) {
             this.log.error('no screensaver found! Stop!');
             this.adapter.controller!.delete();
             throw new Error('no screensaver found! Stop!');
-            return;
         }
         const navConfig: NavigationConfig = {
             adapter: this.adapter,
@@ -308,7 +308,34 @@ export class Panel extends BaseClass {
             },
             native: {},
         });
+        {
+            const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
+            const scs: Page[] = this.pages.filter(
+                (a) => a && (a.card === 'screensaver' || a.card === 'screensaver2'),
+            ) as Page[];
+            const s = scs.filter((a) => currentScreensaver && a.name === currentScreensaver.val);
+            if (currentScreensaver && currentScreensaver.val) {
+                if (s && s[0]) this.screenSaver = s[0] as Screensaver;
+            }
 
+            const states: Record<string, string> = {};
+            scs.forEach((a) => {
+                if (a) states[a.name] = a.name.slice(1);
+            });
+            this.library.writedp(`panels.${this.name}.cmd.screenSaver`, this.screenSaver ? this.screenSaver.name : '', {
+                _id: '',
+                type: 'state',
+                common: {
+                    name: 'StateObjects.screenSaver',
+                    type: 'string',
+                    role: 'value.text',
+                    read: true,
+                    write: true,
+                    states: states,
+                },
+                native: {},
+            });
+        }
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
@@ -567,6 +594,14 @@ export class Panel extends BaseClass {
                     );
                     break;
                 }
+                case 'screenSaver': {
+                    const i = this.pages.findIndex((a) => a && a.name === state.val);
+                    const s = this.pages[i] as Screensaver;
+                    if (s) {
+                        this.screenSaver = s;
+                        this.library.writedp(`panels.${this.name}.cmd.screenSaver`, s.name);
+                    }
+                }
             }
         }
     }
@@ -623,11 +658,8 @@ export class Panel extends BaseClass {
     async HandleIncomingMessage(event: Types.IncomingEvent): Promise<void> {
         if (!this.InitDone) return;
         this.log.debug('Receive message:' + JSON.stringify(event));
-        const index = this.pages.findIndex((a) => {
-            if (a && a.card !== 'screensaver' && a.card !== 'screensaver2') return true;
-            return false;
-        });
-        if (index === -1 || (this.isOnline === false && event.method !== 'startup')) return;
+
+        if (!this.screenSaver || (this.isOnline === false && event.method !== 'startup')) return;
         switch (event.method) {
             case 'startup': {
                 this.isOnline = true;

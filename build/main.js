@@ -73,18 +73,6 @@ class NspanelLovelaceUi extends utils.Adapter {
       return;
     }
     this.setTimeout(async () => {
-      if (!import_config_custom.Testconfig[0].pages)
-        return;
-      const names = [];
-      for (const p of import_config_custom.Testconfig[0].pages) {
-        if (p.card === "screensaver" || p.card === "screensaver2")
-          continue;
-        if (!("uniqueID" in p))
-          continue;
-        if (names.indexOf(p.uniqueID) !== -1)
-          throw new Error(`uniqueID ${p.uniqueID} is double!`);
-        names.push(p.uniqueID);
-      }
       await this.library.init();
       const states = await this.getStatesAsync("*");
       await this.library.initStates(states);
@@ -110,8 +98,25 @@ class NspanelLovelaceUi extends utils.Adapter {
       if (!this.mqttClient)
         return;
       const testconfig = structuredClone(this.config.Testconfig2);
-      testconfig[0].name = this.config.name;
-      testconfig[0].topic = this.config.topic;
+      let counter = 0;
+      const names = [];
+      for (const a of testconfig) {
+        if (a && a.pages) {
+          for (const p of a.pages) {
+            counter++;
+            if (!("uniqueID" in p))
+              continue;
+            if (p.card === "screensaver" || p.card === "screensaver2") {
+              p.uniqueID = "#" + p.uniqueID;
+            }
+            if (names.indexOf(p.uniqueID) !== -1)
+              throw new Error(`uniqueID ${p.uniqueID} is double!`);
+            names.push(p.uniqueID);
+          }
+        }
+      }
+      if (counter === 0)
+        return;
       const mem = process.memoryUsage().heapUsed / 1024;
       this.log.debug(String(mem + "k"));
       this.controller = new import_controller.Controller(this, {

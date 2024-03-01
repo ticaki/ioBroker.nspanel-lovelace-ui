@@ -204,13 +204,12 @@ class Panel extends import_library.BaseClass {
         }
         case "screensaver":
         case "screensaver2": {
-          if (scsFound++ > 0)
-            continue;
+          scsFound++;
           const ssconfig = {
             card: pageConfig.card,
             panel: this,
             id: String(a),
-            name: "SrS",
+            name: pageConfig.uniqueID,
             adapter: this.adapter,
             panelSend: this.panelSend,
             dpInit: ""
@@ -221,11 +220,10 @@ class Panel extends import_library.BaseClass {
         }
       }
     }
-    if (scsFound === 0 || this.screenSaver === void 0) {
+    if (scsFound === 0) {
       this.log.error("no screensaver found! Stop!");
       this.adapter.controller.delete();
       throw new Error("no screensaver found! Stop!");
-      return;
     }
     const navConfig = {
       adapter: this.adapter,
@@ -305,6 +303,35 @@ class Panel extends import_library.BaseClass {
       },
       native: {}
     });
+    {
+      const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
+      const scs = this.pages.filter(
+        (a) => a && (a.card === "screensaver" || a.card === "screensaver2")
+      );
+      const s = scs.filter((a) => currentScreensaver && a.name === currentScreensaver.val);
+      if (currentScreensaver && currentScreensaver.val) {
+        if (s && s[0])
+          this.screenSaver = s[0];
+      }
+      const states2 = {};
+      scs.forEach((a) => {
+        if (a)
+          states2[a.name] = a.name.slice(1);
+      });
+      this.library.writedp(`panels.${this.name}.cmd.screenSaver`, this.screenSaver ? this.screenSaver.name : "", {
+        _id: "",
+        type: "state",
+        common: {
+          name: "StateObjects.screenSaver",
+          type: "string",
+          role: "value.text",
+          read: true,
+          write: true,
+          states: states2
+        },
+        native: {}
+      });
+    }
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
@@ -558,6 +585,14 @@ class Panel extends import_library.BaseClass {
           );
           break;
         }
+        case "screenSaver": {
+          const i = this.pages.findIndex((a) => a && a.name === state.val);
+          const s = this.pages[i];
+          if (s) {
+            this.screenSaver = s;
+            this.library.writedp(`panels.${this.name}.cmd.screenSaver`, s.name);
+          }
+        }
       }
     }
   }
@@ -614,12 +649,7 @@ class Panel extends import_library.BaseClass {
     if (!this.InitDone)
       return;
     this.log.debug("Receive message:" + JSON.stringify(event));
-    const index = this.pages.findIndex((a) => {
-      if (a && a.card !== "screensaver" && a.card !== "screensaver2")
-        return true;
-      return false;
-    });
-    if (index === -1 || this.isOnline === false && event.method !== "startup")
+    if (!this.screenSaver || this.isOnline === false && event.method !== "startup")
       return;
     switch (event.method) {
       case "startup": {
