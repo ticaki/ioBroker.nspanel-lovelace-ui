@@ -154,7 +154,6 @@ export class BaseClassTriggerd extends BaseClass {
                 );
             } else {
                 if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
-                await this.panel.sendScreeensaverTimeout(this.panel.timeout);
                 this.log.debug(`Switch page to invisible${force ? ' (forced)' : ''}!`);
                 if (!this.neverDeactivateTrigger) {
                     this.stopTriggerTimeout();

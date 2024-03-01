@@ -284,7 +284,7 @@ export class Library extends BaseClass {
 
         if (obj && obj.type !== 'state') return;
 
-        if (node && !(node.type === 'state' && val === undefined)) this.setdb(dp, node.type, val, node.stateTyp, true);
+        if (node && !(node.type === 'state' && val === undefined)) this.setdb(dp, node.type, val, node.stateTyp, false);
 
         if (node && val !== undefined && (this.defaults.updateStateOnChangeOnly || node.val != val || !node.ack)) {
             const typ = (obj && obj.common && obj.common.type) || node.stateTyp;

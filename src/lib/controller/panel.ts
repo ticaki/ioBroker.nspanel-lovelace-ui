@@ -287,27 +287,29 @@ export class Panel extends BaseClass {
             this.timeout,
             genericStateObjects.panel.panels.cmd.screensaverTimeout,
         );
-
         this.navigation.init();
-        const currentPage = this.library.readdb(`panels.${this.name}.cmd.mainPage`);
-        if (currentPage && currentPage.val) {
-            this.navigation.setMainPageByName(String(currentPage.val));
+
+        {
+            const currentPage = this.library.readdb(`panels.${this.name}.cmd.mainNavigationPoint`);
+            if (currentPage && currentPage.val) {
+                this.navigation.setMainPageByName(String(currentPage.val));
+            }
+            const states = this.navigation.buildCommonStates();
+            const page = this.navigation.getCurrentMainPoint();
+            this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, page, {
+                _id: '',
+                type: 'state',
+                common: {
+                    name: 'StateObjects.mainNavigationPoint',
+                    type: 'string',
+                    role: 'value.text',
+                    read: true,
+                    write: true,
+                    states: states,
+                },
+                native: {},
+            });
         }
-        const states = this.navigation.buildCommonStates();
-        const page = this.navigation.getCurrentMainPoint();
-        this.library.writedp(`panels.${this.name}.cmd.mainPage`, page, {
-            _id: '',
-            type: 'state',
-            common: {
-                name: 'StateObjects.mainPage',
-                type: 'string',
-                role: 'value.text',
-                read: true,
-                write: true,
-                states: states,
-            },
-            native: {},
-        });
         {
             const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
             const scs: Page[] = this.pages.filter(
@@ -565,9 +567,16 @@ export class Panel extends BaseClass {
                     this.sendToTasmota(this.topic + '/cmnd/POWER2', state.val ? 'ON' : 'OFF');
                     break;
                 }
-                case 'mainPage': {
+                case 'mainNavigationPoint': {
                     this.navigation.setMainPageByName(state.val ? String(state.val) : 'main');
-                    this.library.writedp(`panels.${this.name}.cmd.mainPage`, state.val ? String(state.val) : 'main');
+                    this.library.writedp(
+                        `panels.${this.name}.cmd.mainNavigationPoint`,
+                        state.val ? String(state.val) : 'main',
+                    );
+                    break;
+                }
+                case 'goToNavigationPoint': {
+                    this.navigation.setTargetPageByName(state.val ? String(state.val) : 'main');
                     break;
                 }
                 case 'screensaverTimeout': {

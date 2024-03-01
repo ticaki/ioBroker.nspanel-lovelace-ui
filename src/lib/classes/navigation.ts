@@ -4,6 +4,7 @@ import { rgb_dec565, White } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { Page } from './Page';
 import { getPayload } from '../const/tools';
+import { genericStateObjects } from '../const/definition';
 
 type NavigationItemConfig = {
     name: string;
@@ -43,7 +44,23 @@ export class Navigation extends BaseClass {
     doubleClickDelay: number = 400;
     private mainPage = 'main';
     private doubleClickTimeout: ioBroker.Timeout | undefined;
-    private currentItem: number = 0;
+    private _currentItem: number = 0;
+    public get currentItem(): number {
+        return this._currentItem;
+    }
+    public set currentItem(value: number) {
+        const c = this.navigationConfig[value];
+        if (c) {
+            const states = this.buildCommonStates();
+            genericStateObjects.panel.panels.cmd.goToNavigationPoint.common.states = states;
+            this.library.writedp(
+                `panels.${this.panel.name}.cmd.goToNavigationPoint`,
+                c.name,
+                genericStateObjects.panel.panels.cmd.goToNavigationPoint,
+            );
+        }
+        this._currentItem = value;
+    }
     constructor(config: NavigationConfig) {
         super(config.adapter, `${config.panel.name}-navigation`);
         this.panel = config.panel;

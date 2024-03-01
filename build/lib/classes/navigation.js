@@ -25,6 +25,7 @@ var import_library = require("./library");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
+var import_definition = require("../const/definition");
 class Navigation extends import_library.BaseClass {
   panel;
   database = [];
@@ -32,7 +33,23 @@ class Navigation extends import_library.BaseClass {
   doubleClickDelay = 400;
   mainPage = "main";
   doubleClickTimeout;
-  currentItem = 0;
+  _currentItem = 0;
+  get currentItem() {
+    return this._currentItem;
+  }
+  set currentItem(value) {
+    const c = this.navigationConfig[value];
+    if (c) {
+      const states = this.buildCommonStates();
+      import_definition.genericStateObjects.panel.panels.cmd.goToNavigationPoint.common.states = states;
+      this.library.writedp(
+        `panels.${this.panel.name}.cmd.goToNavigationPoint`,
+        c.name,
+        import_definition.genericStateObjects.panel.panels.cmd.goToNavigationPoint
+      );
+    }
+    this._currentItem = value;
+  }
   constructor(config) {
     super(config.adapter, `${config.panel.name}-navigation`);
     this.panel = config.panel;

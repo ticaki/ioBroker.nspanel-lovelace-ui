@@ -66,6 +66,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     },
                 },
             },
+            
             {
                 role: 'text.list',
                 type: 'text',

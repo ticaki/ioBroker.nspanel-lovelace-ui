@@ -268,10 +268,10 @@ class Panel extends import_library.BaseClass {
       this.dimMode.high,
       import_definition.genericStateObjects.panel.panels.cmd.dimActive
     );
-    for (const page2 of this.pages) {
-      if (page2) {
-        this.log.debug("init page " + page2.name);
-        await page2.init();
+    for (const page of this.pages) {
+      if (page) {
+        this.log.debug("init page " + page.name);
+        await page.init();
       }
     }
     state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
@@ -284,25 +284,27 @@ class Panel extends import_library.BaseClass {
       import_definition.genericStateObjects.panel.panels.cmd.screensaverTimeout
     );
     this.navigation.init();
-    const currentPage = this.library.readdb(`panels.${this.name}.cmd.mainPage`);
-    if (currentPage && currentPage.val) {
-      this.navigation.setMainPageByName(String(currentPage.val));
+    {
+      const currentPage = this.library.readdb(`panels.${this.name}.cmd.mainNavigationPoint`);
+      if (currentPage && currentPage.val) {
+        this.navigation.setMainPageByName(String(currentPage.val));
+      }
+      const states = this.navigation.buildCommonStates();
+      const page = this.navigation.getCurrentMainPoint();
+      this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, page, {
+        _id: "",
+        type: "state",
+        common: {
+          name: "StateObjects.mainNavigationPoint",
+          type: "string",
+          role: "value.text",
+          read: true,
+          write: true,
+          states
+        },
+        native: {}
+      });
     }
-    const states = this.navigation.buildCommonStates();
-    const page = this.navigation.getCurrentMainPoint();
-    this.library.writedp(`panels.${this.name}.cmd.mainPage`, page, {
-      _id: "",
-      type: "state",
-      common: {
-        name: "StateObjects.mainPage",
-        type: "string",
-        role: "value.text",
-        read: true,
-        write: true,
-        states
-      },
-      native: {}
-    });
     {
       const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
       const scs = this.pages.filter(
@@ -313,10 +315,10 @@ class Panel extends import_library.BaseClass {
         if (s && s[0])
           this.screenSaver = s[0];
       }
-      const states2 = {};
+      const states = {};
       scs.forEach((a) => {
         if (a)
-          states2[a.name] = a.name.slice(1);
+          states[a.name] = a.name.slice(1);
       });
       this.library.writedp(`panels.${this.name}.cmd.screenSaver`, this.screenSaver ? this.screenSaver.name : "", {
         _id: "",
@@ -327,7 +329,7 @@ class Panel extends import_library.BaseClass {
           role: "value.text",
           read: true,
           write: true,
-          states: states2
+          states
         },
         native: {}
       });
@@ -556,9 +558,16 @@ class Panel extends import_library.BaseClass {
           this.sendToTasmota(this.topic + "/cmnd/POWER2", state.val ? "ON" : "OFF");
           break;
         }
-        case "mainPage": {
+        case "mainNavigationPoint": {
           this.navigation.setMainPageByName(state.val ? String(state.val) : "main");
-          this.library.writedp(`panels.${this.name}.cmd.mainPage`, state.val ? String(state.val) : "main");
+          this.library.writedp(
+            `panels.${this.name}.cmd.mainNavigationPoint`,
+            state.val ? String(state.val) : "main"
+          );
+          break;
+        }
+        case "goToNavigationPoint": {
+          this.navigation.setTargetPageByName(state.val ? String(state.val) : "main");
           break;
         }
         case "screensaverTimeout": {

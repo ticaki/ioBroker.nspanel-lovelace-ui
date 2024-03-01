@@ -97,6 +97,19 @@ const genericStateObjects = {
           },
           native: {}
         },
+        goToNavigationPoint: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.navigateToPage",
+            type: "string",
+            role: "value.text",
+            read: true,
+            write: true,
+            states: {}
+          },
+          native: {}
+        },
         power1: {
           _id: "",
           type: "state",

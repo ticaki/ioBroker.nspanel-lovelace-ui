@@ -37,6 +37,7 @@ export const genericStateObjects: {
                 screensaverTimeout: ioBroker.StateObject;
                 dimActive: ioBroker.StateObject;
                 dimStandby: ioBroker.StateObject;
+                goToNavigationPoint: ioBroker.StateObject;
             };
             info: customChannelType & {
                 status: ioBroker.StateObject;
@@ -87,6 +88,19 @@ export const genericStateObjects: {
                     type: 'channel',
                     common: {
                         name: 'StateObjects.cmd',
+                    },
+                    native: {},
+                },
+                goToNavigationPoint: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.navigateToPage',
+                        type: 'string',
+                        role: 'value.text',
+                        read: true,
+                        write: true,
+                        states: {},
                     },
                     native: {},
                 },
