@@ -66,6 +66,7 @@ export class PageNotify extends Page {
         const message: Partial<pages.PageNotifyMessage> = {};
         const items = this.items;
         if (!items) return;
+        this.log.debug('update notification page!');
         let value: number | boolean | null = null;
         if (items.card === 'popupNotify' || items.card === 'popupNotify2') {
             const data = items.data;
@@ -144,27 +145,32 @@ export class PageNotify extends Page {
             message.iconColor ?? '',
         );
     }
-    protected async onStateTrigger(): Promise<void> {
-        this.panel.setActivePage(this);
+    protected async onStateTrigger(_dp: string): Promise<void> {
+        this.log.debug('state triggerd ' + _dp);
+        if (_dp.includes('popupNotification')) this.panel.setActivePage(this);
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
-        this.log.debug('we are here');
         if (_event.action === 'notifyAction') {
             const data = this.items && this.items.card === 'popupNotify' && this.items.data;
             if (data) {
                 if (data.setValue2) {
-                    if (_event.opt === 'yes') data.setValue1 && (await data.setValue1.setStateTrue());
-                    else data.setValue2 && (await data.setValue2.setStateTrue());
-                } else data.setValue1 && (await data.setValue1.setStateAsync(_event.opt === 'yes'));
+                    if (_event.opt === 'yes') data.setValue1 && data.setValue1.setStateTrue();
+                    else data.setValue2 && data.setValue2.setStateTrue();
+                } else data.setValue1 && data.setValue1.setStateAsync(_event.opt === 'yes');
             }
-        }
-        const p = this.lastpage.pop();
-        if (p) {
-            p.removeLastPage(this);
-            this.panel.setActivePage(p);
         } else {
-            const page = this.panel.navigation.getCurrentPage();
-            this.panel.setActivePage(page);
+            if (this.name.includes('///popupNotification'))
+                this.lastpage = this.lastpage.filter((a) => !a.name.includes('///popupNotification'));
+            const p = this.lastpage.pop();
+            if (p) {
+                p.removeLastPage(this);
+                this.log.debug('Set active page from popup to ' + p.name);
+                await this.panel.setActivePage(p);
+            } else {
+                const page = this.panel.navigation.getCurrentPage();
+                this.log.debug('Set active page from currentpage to ' + page.name);
+                await this.panel.setActivePage(page);
+            }
         }
     }
 }

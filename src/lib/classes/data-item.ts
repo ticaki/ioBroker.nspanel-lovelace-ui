@@ -189,6 +189,8 @@ export class Dataitem extends BaseClass {
                     return state && state.val !== null ? String(state.val).substring(args[0], args[1]) : null;
                 }
                 return state && state.val !== null ? String(state.val) : null;
+            case 'internal':
+                return state && state.val !== null ? String(state.val) : null;
         }
         return null;
     }

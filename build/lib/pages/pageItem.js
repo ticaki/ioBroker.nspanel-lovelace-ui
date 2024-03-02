@@ -1276,7 +1276,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               if (this.visibility)
                 this.onStateTrigger();
               else if (this.parent && !this.parent.sleep && this.parent.getVisibility())
-                this.parent.onStateTriggerSuperDoNotOverride(this);
+                this.parent.onStateTriggerSuperDoNotOverride("timer", this);
             }
           }, 1e3);
         }

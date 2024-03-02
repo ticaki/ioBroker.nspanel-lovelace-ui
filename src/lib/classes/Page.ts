@@ -206,8 +206,8 @@ export class Page extends BaseClassPage {
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
             await this.createPageItems();
-            this.sendType();
-            this.update();
+            await this.sendType();
+            await this.update();
         } else {
             if (this.pageItems) {
                 for (const item of this.pageItems) {

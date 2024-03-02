@@ -48,7 +48,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.on("unload", this.onUnload.bind(this));
   }
   /**
-   * Is called when databases are connected and adapter received configuration.
+   * Is called when databases are connected and adapter received configuration...
    */
   async onReady() {
     import_icon_mapping.Icons.adapter = this;
@@ -133,7 +133,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }, 2500);
   }
   /**
-   * Is called when adapter shuts down - callback has to be called under any circumstances
+   * Is called when adapter shuts down - callback has to be called under any circumstances.
    */
   async onUnload(callback) {
     try {
@@ -173,7 +173,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
   // /**
-  //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
+  //  * Somee message was sent to this instance over message box. Used by email, pushover, text2speech, .
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {

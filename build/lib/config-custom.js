@@ -1862,7 +1862,6 @@ const pageGridTest2 = {
       template: "text.temperature"
     },
     {
-      //enums: 'enum.rooms',
       device: "0",
       template: "text.battery.bydhvs"
     }

@@ -57,19 +57,22 @@ export class Panel extends BaseClass {
     private _activePage: Page | undefined = undefined;
     private screenSaver: Screensaver | undefined;
     private InitDone: boolean = false;
-    dimMode: { low: number; high: number };
+    private _isOnline: boolean = false;
+    private notifyIndex: number = 0;
+    private afterPopupPage: Page | undefined;
     readonly navigation: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
     readonly controller: Controller;
     readonly topic: string;
     readonly reivCallbacks: callbackMessageType[] = [];
-    private _isOnline: boolean = false;
     readonly panelSend: PanelSend;
     readonly statesControler: StatesControler;
     readonly config: ScreensaverConfigType;
-    timeout: number;
     readonly CustomFormat: string;
     readonly sendToTasmota: (topic: string, payload: string, opt?: IClientPublishOptions) => void = () => {};
+
+    timeout: number;
+    dimMode: { low: number; high: number };
     public persistentPageItems: Record<string, PageItem> = {};
 
     info: Types.PanelInfo = {
@@ -227,7 +230,48 @@ export class Panel extends BaseClass {
     };
     start = async (): Promise<void> => {
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
-
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/popupNotification`,
+            JSON.stringify({}),
+            true,
+            getInternalDefaults('string', 'json'),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/NotificationNext`,
+            false,
+            true,
+            getInternalDefaults('boolean', 'button'),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/NotificationCleared`,
+            false,
+            true,
+            getInternalDefaults('boolean', 'button'),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/popupNotification2`,
+            JSON.stringify({}),
+            true,
+            getInternalDefaults('string', 'json'),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/NotificationNext2`,
+            false,
+            true,
+            getInternalDefaults('boolean', 'button'),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/NotificationCleared2`,
+            false,
+            true,
+            getInternalDefaults('boolean', 'button'),
+            this.onInternalCommand,
+        );
         await this.statesControler.setInternalState(
             `${this.name}/cmd/screensaverTimeout`,
             this.timeout,
@@ -380,8 +424,6 @@ export class Panel extends BaseClass {
     ) => {
         this.sendToPanelClass(payload, opt);
     };
-    async setActivePage(_notSleep?: boolean): Promise<void>;
-    async setActivePage(_page?: Page | boolean | undefined): Promise<void>;
     async setActivePage(_page?: Page | boolean | undefined, _notSleep?: boolean): Promise<void> {
         if (_page === undefined) return;
         let page = this._activePage;
@@ -637,6 +679,12 @@ export class Panel extends BaseClass {
         const index = this.pages.findIndex((a) => a && a.name && a.name === uniqueID);
         return this.pages[index] ?? null;
     }
+
+    /**
+     *  Handle incoming messages from panel
+     * @param event incoming event
+     * @returns
+     */
     async HandleIncomingMessage(event: Types.IncomingEvent): Promise<void> {
         if (!this.InitDone) return;
         this.log.debug('Receive message:' + JSON.stringify(event));
@@ -689,6 +737,13 @@ export class Panel extends BaseClass {
             case 'buttonPress2': {
                 if (event.id == 'screensaver') {
                     await this.setActivePage(this.navigation.getCurrentPage());
+                    if (
+                        (this.notifyIndex = this.controller.systemNotification.getNotificationIndex(
+                            this.notifyIndex,
+                        )) !== -1
+                    ) {
+                        await this.statesControler.setInternalState(`${this.name}/cmd/NotificationNext2`, true, false);
+                    }
                 } else if (event.action === 'bExit' && event.id !== 'popupNotify') {
                     await this.setActivePage(true);
                 } else {
@@ -789,6 +844,32 @@ export class Panel extends BaseClass {
                     this.library.writedp(`panels.${this.name}.cmd.dimActive`, this.dimMode.high);
                     break;
                 }
+                case 'NotificationCleared2':
+                case 'NotificationCleared': {
+                    await this.controller.systemNotification.clearNotification(this.notifyIndex);
+                }
+                case 'NotificationNext2':
+                case 'NotificationNext': {
+                    this.notifyIndex = this.controller.systemNotification.getNotificationIndex(++this.notifyIndex);
+                    if (this.notifyIndex !== -1) {
+                        const val = this.controller.systemNotification.getNotification(this.notifyIndex);
+                        if (val)
+                            await this.statesControler.setInternalState(
+                                `${this.name}/cmd/popupNotification${token.endsWith('2') ? '' : '2'}`,
+                                JSON.stringify(val),
+                                false,
+                            );
+                        break;
+                    }
+                    this.HandleIncomingMessage({
+                        type: 'event',
+                        method: 'buttonPress2',
+                        id: 'popupNotify',
+                        action: 'bExit',
+                        opt: '',
+                    });
+                    break;
+                }
             }
             this.statesControler.setInternalState(id, state.val, true);
         } else if (!state) {
@@ -807,6 +888,14 @@ export class Panel extends BaseClass {
                 }
                 case 'dimActive': {
                     return this.dimMode.high;
+                }
+                case 'popupNotification2':
+                case 'popupNotification': {
+                    if (this.notifyIndex !== -1) {
+                        const val = this.controller.systemNotification.getNotification(this.notifyIndex);
+                        if (val) return JSON.stringify(val);
+                    }
+                    return null;
                 }
             }
         }

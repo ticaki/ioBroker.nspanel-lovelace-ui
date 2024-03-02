@@ -71,7 +71,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
     if (typeof this.panelSend.addMessage === "function")
       this.sendToPanelClass = card.panelSend.addMessage;
   }
-  onStateTriggerSuperDoNotOverride = async (from) => {
+  onStateTriggerSuperDoNotOverride = async (dp, from) => {
     if (!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger) || this.unload)
       return false;
     if (this.sleep && !this.neverDeactivateTrigger)
@@ -84,7 +84,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
     } else {
       this.waitForTimeout = this.adapter.setTimeout(() => {
         this.waitForTimeout = void 0;
-        this.onStateTrigger(from);
+        this.onStateTrigger(dp, from);
         if (this.alwaysOnState)
           this.adapter.clearTimeout(this.alwaysOnState);
         if (this.alwaysOn === "action") {
@@ -95,20 +95,20 @@ class BaseClassTriggerd extends import_library.BaseClass {
             this.panel.timeout * 1e3 || 5e3
           );
         }
-      }, 10);
+      }, 20);
       this.updateTimeout = this.adapter.setTimeout(async () => {
         if (this.unload)
           return;
         this.updateTimeout = void 0;
         if (this.doUpdate) {
           this.doUpdate = false;
-          await this.onStateTrigger(from);
+          await this.onStateTrigger(dp, from);
         }
       }, this.minUpdateInterval);
       return true;
     }
   };
-  async onStateTrigger(_from) {
+  async onStateTrigger(_dp, _from) {
     this.adapter.log.warn(
       `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`
     );
@@ -427,11 +427,11 @@ class StatesControler extends import_library.BaseClass {
           if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack) {
             this.triggerDB[dp].state = state;
             if (state.ack || dp.startsWith("0_userdata.0")) {
-              this.triggerDB[dp].to.forEach((c) => {
+              await this.triggerDB[dp].to.forEach(async (c) => {
                 if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
-                  c.parent.onStateTriggerSuperDoNotOverride && c.parent.onStateTriggerSuperDoNotOverride(c);
+                  c.parent.onStateTriggerSuperDoNotOverride && await c.parent.onStateTriggerSuperDoNotOverride(dp, c);
                 } else if (!c.unload) {
-                  c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride(c);
+                  c.onStateTriggerSuperDoNotOverride && await c.onStateTriggerSuperDoNotOverride(dp, c);
                 }
               });
             }
@@ -450,6 +450,8 @@ class StatesControler extends import_library.BaseClass {
           }
         }
       }
+      if (dp.startsWith("system.host"))
+        this.adapter.controller && await this.adapter.controller.systemNotification.onStateChange(dp, state);
     }
   }
   async setStateAsync(item, val, writeable) {
@@ -472,7 +474,7 @@ class StatesControler extends import_library.BaseClass {
       }
     } else if (item.options.type === "internal") {
       if (this.triggerDB[item.options.dp]) {
-        this.setInternalState(item.options.dp, val, false);
+        await this.setInternalState(item.options.dp, val, false);
       }
     }
   }
@@ -560,7 +562,7 @@ class StatesControler extends import_library.BaseClass {
    * Filterfunktion umso genauer filter unm so weniger Ressourcen werden verbraucht.
    * @param dpInit string RegExp oder '' für aus; string wird mit include verwendet.
    * @param enums string, string[], RegExp als String übergeben oder ein String der mit include verwenden wird.
-   * @returns 2 arrays keys: gefilterten keys und data: alle Objekte..
+   * @returns 2 arrays keys: gefilterten keys und data: alle Objekte...
    */
   async getFilteredObjects(dpInit, enums) {
     const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);

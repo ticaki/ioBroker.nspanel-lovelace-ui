@@ -66,9 +66,6 @@ class Page extends import_states_controller.BaseClassPage {
         options = await this.getItemFromTemplate(options);
         if (!options)
           continue;
-        if (options.device) {
-          this.log.debug("found");
-        }
         options.dpInit = typeof options.dpInit === "string" && options.device ? options.dpInit.replace("#\xB0^\xB0#", options.device) : options.dpInit;
         if (options.dpInit && typeof options.dpInit === "string") {
           const reg = (0, import_tools.getRegExp)(options.dpInit);
@@ -181,8 +178,8 @@ class Page extends import_states_controller.BaseClassPage {
   async onVisibilityChange(val) {
     if (val) {
       await this.createPageItems();
-      this.sendType();
-      this.update();
+      await this.sendType();
+      await this.update();
     } else {
       if (this.pageItems) {
         for (const item of this.pageItems) {

@@ -1382,7 +1382,7 @@ export class PageItem extends BaseClassTriggerd {
                         } else if (this.tempData.value > 0) {
                             if (this.visibility) this.onStateTrigger();
                             else if (this.parent && !this.parent.sleep && this.parent.getVisibility())
-                                this.parent.onStateTriggerSuperDoNotOverride(this);
+                                this.parent.onStateTriggerSuperDoNotOverride('timer', this);
                         }
                     }, 1000);
                 }

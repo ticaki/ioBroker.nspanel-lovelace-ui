@@ -32,7 +32,7 @@ __export(notifications_exports, {
 });
 module.exports = __toCommonJS(notifications_exports);
 var Color = __toESM(require("./Color"));
-const popupTest = {
+const popupWelcome = {
   card: "popupNotify",
   dpInit: "",
   alwaysOn: "none",
@@ -60,7 +60,65 @@ const popupTest = {
   pageItems: [],
   items: void 0
 };
-const systemNotifications = [popupTest];
+const popupNotification = {
+  card: "popupNotify",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///popupNotification",
+  useColor: false,
+  config: {
+    card: "popupNotify",
+    data: {
+      entity1: { value: { type: "internal", dp: "cmd/popupNotification", read: "return true" } },
+      headline: { type: "internal", dp: "cmd/popupNotification", read: "return JSON.parse(val).headline" },
+      colorHeadline: { true: { color: { type: "const", constVal: Color.Green } } },
+      buttonLeft: { type: "const", constVal: "next" },
+      colorButtonLeft: { true: { color: { type: "const", constVal: Color.White } } },
+      buttonRight: { type: "const", constVal: "delete" },
+      colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
+      text: { type: "internal", dp: "cmd/popupNotification", read: "return JSON.parse(val).text" },
+      // text: { type: 'const', constVal: 'Text Test ${pl}' },
+      colorText: { true: { color: { type: "const", constVal: Color.White } } },
+      timeout: { type: "const", constVal: 0 },
+      // {placeholder: {text: '' oder dp: ''}}
+      // optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
+      setValue1: { type: "internal", dp: "cmd/NotificationCleared" },
+      setValue2: { type: "internal", dp: "cmd/NotificationNext" }
+    }
+  },
+  pageItems: [],
+  items: void 0
+};
+const popupNotification2 = {
+  card: "popupNotify",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///popupNotification2",
+  useColor: false,
+  config: {
+    card: "popupNotify",
+    data: {
+      entity1: { value: { type: "internal", dp: "cmd/popupNotification2", read: "return true" } },
+      headline: { type: "internal", dp: "cmd/popupNotification2", read: "return JSON.parse(val).headline" },
+      colorHeadline: { true: { color: { type: "const", constVal: Color.Green } } },
+      buttonLeft: { type: "const", constVal: "next" },
+      colorButtonLeft: { true: { color: { type: "const", constVal: Color.White } } },
+      buttonRight: { type: "const", constVal: "delete" },
+      colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
+      text: { type: "internal", dp: "cmd/popupNotification2", read: "return JSON.parse(val).text" },
+      // text: { type: 'const', constVal: 'Text Test ${pl}' },
+      colorText: { true: { color: { type: "const", constVal: Color.White } } },
+      timeout: { type: "const", constVal: 0 },
+      // {placeholder: {text: '' oder dp: ''}}
+      // optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
+      setValue1: { type: "internal", dp: "cmd/NotificationCleared2" },
+      setValue2: { type: "internal", dp: "cmd/NotificationNext2" }
+    }
+  },
+  pageItems: [],
+  items: void 0
+};
+const systemNotifications = [popupWelcome, popupNotification, popupNotification2];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   systemNotifications

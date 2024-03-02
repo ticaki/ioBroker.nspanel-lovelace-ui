@@ -35,12 +35,14 @@ var Library = __toESM(require("../classes/library"));
 var import_states_controller = require("./states-controller");
 var Panel = __toESM(require("./panel"));
 var import_definition = require("../const/definition");
+var import_system_notifications = require("../classes/system-notifications");
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
   panels = [];
   minuteLoopTimeout;
   dateUpdateTimeout;
+  systemNotification;
   constructor(adapter, options) {
     super(adapter, options.name);
     this.adapter.controller = this;
@@ -53,6 +55,7 @@ class Controller extends Library.BaseClass {
       const panel = new Panel.Panel(adapter, panelConfig);
       this.panels.push(panel);
     }
+    this.systemNotification = new import_system_notifications.SystemNotifications(this.adapter);
   }
   minuteLoop = async () => {
     if (this.unload)
@@ -107,7 +110,8 @@ class Controller extends Library.BaseClass {
       this.getCurrentTime
     );
     const newPanels = [];
-    this.library.writedp(`panels`, void 0, import_definition.genericStateObjects.panel._channel);
+    await this.library.writedp(`panels`, void 0, import_definition.genericStateObjects.panel._channel);
+    await this.systemNotification.init();
     for (const panel of this.panels)
       if (await panel.isValid()) {
         newPanels.push(panel);
@@ -128,6 +132,11 @@ class Controller extends Library.BaseClass {
     await super.delete();
     for (const a of this.panels)
       await a.delete();
+  }
+  async notificationToPanel() {
+    if (!this.panels)
+      return;
+    this.statesControler.setInternalState("///Notifications", true, true);
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

@@ -3,6 +3,7 @@ import * as Library from '../classes/library';
 import { StatesControler } from './states-controller';
 import * as Panel from './panel';
 import { genericStateObjects } from '../const/definition';
+import { SystemNotifications } from '../classes/system-notifications';
 
 export class Controller extends Library.BaseClass {
     mqttClient: MQTT.MQTTClientClass;
@@ -10,6 +11,8 @@ export class Controller extends Library.BaseClass {
     panels: Panel.Panel[] = [];
     private minuteLoopTimeout: ioBroker.Timeout | undefined;
     private dateUpdateTimeout: ioBroker.Timeout | undefined;
+
+    systemNotification: SystemNotifications;
 
     constructor(
         adapter: Library.AdapterClassDefinition,
@@ -26,6 +29,7 @@ export class Controller extends Library.BaseClass {
             const panel = new Panel.Panel(adapter, panelConfig as Panel.panelConfigPartial);
             this.panels.push(panel);
         }
+        this.systemNotification = new SystemNotifications(this.adapter);
     }
 
     minuteLoop = async (): Promise<void> => {
@@ -82,7 +86,9 @@ export class Controller extends Library.BaseClass {
         );
         const newPanels = [];
         // erzeuge übergeordneten channel
-        this.library.writedp(`panels`, undefined, genericStateObjects.panel._channel);
+        await this.library.writedp(`panels`, undefined, genericStateObjects.panel._channel);
+
+        await this.systemNotification.init();
 
         for (const panel of this.panels)
             if (await panel.isValid()) {
@@ -101,5 +107,10 @@ export class Controller extends Library.BaseClass {
         if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
         await super.delete();
         for (const a of this.panels) await a.delete();
+    }
+
+    async notificationToPanel(): Promise<void> {
+        if (!this.panels) return;
+        this.statesControler.setInternalState('///Notifications', true, true);
     }
 }

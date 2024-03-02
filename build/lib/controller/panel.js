@@ -64,20 +64,22 @@ class Panel extends import_library.BaseClass {
   _activePage = void 0;
   screenSaver;
   InitDone = false;
-  dimMode;
+  _isOnline = false;
+  notifyIndex = 0;
+  afterPopupPage;
   navigation;
   format;
   controller;
   topic;
   reivCallbacks = [];
-  _isOnline = false;
   panelSend;
   statesControler;
   config;
-  timeout;
   CustomFormat;
   sendToTasmota = () => {
   };
+  timeout;
+  dimMode;
   persistentPageItems = {};
   info = {
     nspanel: {
@@ -228,6 +230,48 @@ class Panel extends import_library.BaseClass {
   };
   start = async () => {
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/popupNotification`,
+      JSON.stringify({}),
+      true,
+      (0, import_tools.getInternalDefaults)("string", "json"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/NotificationNext`,
+      false,
+      true,
+      (0, import_tools.getInternalDefaults)("boolean", "button"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/NotificationCleared`,
+      false,
+      true,
+      (0, import_tools.getInternalDefaults)("boolean", "button"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/popupNotification2`,
+      JSON.stringify({}),
+      true,
+      (0, import_tools.getInternalDefaults)("string", "json"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/NotificationNext2`,
+      false,
+      true,
+      (0, import_tools.getInternalDefaults)("boolean", "button"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/NotificationCleared2`,
+      false,
+      true,
+      (0, import_tools.getInternalDefaults)("boolean", "button"),
+      this.onInternalCommand
+    );
     await this.statesControler.setInternalState(
       `${this.name}/cmd/screensaverTimeout`,
       this.timeout,
@@ -628,6 +672,11 @@ class Panel extends import_library.BaseClass {
     const index = this.pages.findIndex((a) => a && a.name && a.name === uniqueID);
     return (_a = this.pages[index]) != null ? _a : null;
   }
+  /**
+   *  Handle incoming messages from panel
+   * @param event incoming event
+   * @returns
+   */
   async HandleIncomingMessage(event) {
     if (!this.InitDone)
       return;
@@ -677,6 +726,11 @@ class Panel extends import_library.BaseClass {
       case "buttonPress2": {
         if (event.id == "screensaver") {
           await this.setActivePage(this.navigation.getCurrentPage());
+          if ((this.notifyIndex = this.controller.systemNotification.getNotificationIndex(
+            this.notifyIndex
+          )) !== -1) {
+            await this.statesControler.setInternalState(`${this.name}/cmd/NotificationNext2`, true, false);
+          }
         } else if (event.action === "bExit" && event.id !== "popupNotify") {
           await this.setActivePage(true);
         } else {
@@ -773,6 +827,32 @@ class Panel extends import_library.BaseClass {
           this.library.writedp(`panels.${this.name}.cmd.dimActive`, this.dimMode.high);
           break;
         }
+        case "NotificationCleared2":
+        case "NotificationCleared": {
+          await this.controller.systemNotification.clearNotification(this.notifyIndex);
+        }
+        case "NotificationNext2":
+        case "NotificationNext": {
+          this.notifyIndex = this.controller.systemNotification.getNotificationIndex(++this.notifyIndex);
+          if (this.notifyIndex !== -1) {
+            const val = this.controller.systemNotification.getNotification(this.notifyIndex);
+            if (val)
+              await this.statesControler.setInternalState(
+                `${this.name}/cmd/popupNotification${token.endsWith("2") ? "" : "2"}`,
+                JSON.stringify(val),
+                false
+              );
+            break;
+          }
+          this.HandleIncomingMessage({
+            type: "event",
+            method: "buttonPress2",
+            id: "popupNotify",
+            action: "bExit",
+            opt: ""
+          });
+          break;
+        }
       }
       this.statesControler.setInternalState(id, state.val, true);
     } else if (!state) {
@@ -791,6 +871,15 @@ class Panel extends import_library.BaseClass {
         }
         case "dimActive": {
           return this.dimMode.high;
+        }
+        case "popupNotification2":
+        case "popupNotification": {
+          if (this.notifyIndex !== -1) {
+            const val = this.controller.systemNotification.getNotification(this.notifyIndex);
+            if (val)
+              return JSON.stringify(val);
+          }
+          return null;
         }
       }
     }

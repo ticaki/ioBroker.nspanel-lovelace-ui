@@ -543,9 +543,9 @@ export class Library extends BaseClass {
         }
     }
 
-    getLocalLanguage(): string {
+    getLocalLanguage(): ioBroker.Languages {
         if (this.adapter.language) return this.adapter.language;
-        return 'en-En';
+        return 'en';
     }
     getTranslation(key: string | null | undefined): string {
         if (!key) return '';

@@ -22,7 +22,7 @@
                     "newLine": true
                 },
                 "mqttPassword": {
-                    "type": "text",
+                    "type": "password",
                     "label": "mqttPassword",
                     "newLine": false
                 },
@@ -49,6 +49,7 @@
                 "onlyStartFromSystemConfig": {
                     "type": "checkbox",
                     "label": "onlyStartFromSystemConfig",
+                    "default": true,
                     "newLine": true
                 },
                 "Testconfig2": {

@@ -163,7 +163,7 @@ export class Screensaver extends Page {
         );
     };
 
-    onStateTrigger = async (from: BaseClassTriggerd): Promise<void> => {
+    onStateTrigger = async (_dp: string, from: BaseClassTriggerd): Promise<void> => {
         const config = this.config;
         if (!config || (config.card !== 'screensaver' && config.card !== 'screensaver2')) return;
         if (from instanceof PageItem && this.pageItems) {

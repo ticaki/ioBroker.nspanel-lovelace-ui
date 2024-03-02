@@ -533,7 +533,7 @@ class Library extends BaseClass {
   getLocalLanguage() {
     if (this.adapter.language)
       return this.adapter.language;
-    return "en-En";
+    return "en";
   }
   getTranslation(key) {
     if (!key)

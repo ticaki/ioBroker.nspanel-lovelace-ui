@@ -72,7 +72,7 @@ export class BaseClassTriggerd extends BaseClass {
 
         if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
     }
-    readonly onStateTriggerSuperDoNotOverride = async (from: BaseClassTriggerd): Promise<boolean> => {
+    readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseClassTriggerd): Promise<boolean> => {
         if ((!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger)) || this.unload)
             return false;
         if (this.sleep && !this.neverDeactivateTrigger) return false;
@@ -83,7 +83,7 @@ export class BaseClassTriggerd extends BaseClass {
         } else {
             this.waitForTimeout = this.adapter.setTimeout(() => {
                 this.waitForTimeout = undefined;
-                this.onStateTrigger(from);
+                this.onStateTrigger(dp, from);
                 if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
                 if (this.alwaysOn === 'action') {
                     this.alwaysOnState = this.adapter.setTimeout(
@@ -93,19 +93,19 @@ export class BaseClassTriggerd extends BaseClass {
                         this.panel.timeout * 1000 || 5000,
                     );
                 }
-            }, 10);
+            }, 20);
             this.updateTimeout = this.adapter.setTimeout(async () => {
                 if (this.unload) return;
                 this.updateTimeout = undefined;
                 if (this.doUpdate) {
                     this.doUpdate = false;
-                    await this.onStateTrigger(from);
+                    await this.onStateTrigger(dp, from);
                 }
             }, this.minUpdateInterval);
             return true;
         }
     };
-    protected async onStateTrigger(_from: BaseClassTriggerd): Promise<void> {
+    protected async onStateTrigger(_dp: string, _from: BaseClassTriggerd): Promise<void> {
         this.adapter.log.warn(
             `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`,
         );
@@ -433,12 +433,13 @@ export class StatesControler extends BaseClass {
                     if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack) {
                         this.triggerDB[dp].state = state;
                         if (state.ack || dp.startsWith('0_userdata.0')) {
-                            this.triggerDB[dp].to.forEach((c) => {
+                            await this.triggerDB[dp].to.forEach(async (c) => {
                                 if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
                                     c.parent.onStateTriggerSuperDoNotOverride &&
-                                        c.parent.onStateTriggerSuperDoNotOverride(c);
+                                        (await c.parent.onStateTriggerSuperDoNotOverride(dp, c));
                                 } else if (!c.unload) {
-                                    c.onStateTriggerSuperDoNotOverride && c.onStateTriggerSuperDoNotOverride(c);
+                                    c.onStateTriggerSuperDoNotOverride &&
+                                        (await c.onStateTriggerSuperDoNotOverride(dp, c));
                                 }
                             });
                         }
@@ -464,6 +465,8 @@ export class StatesControler extends BaseClass {
                     }
                 }
             }
+            if (dp.startsWith('system.host'))
+                this.adapter.controller && (await this.adapter.controller.systemNotification.onStateChange(dp, state));
         }
     }
     async setStateAsync(item: Dataitem, val: ioBroker.StateValue, writeable: boolean): Promise<void> {
@@ -480,7 +483,7 @@ export class StatesControler extends BaseClass {
             }
         } else if (item.options.type === 'internal') {
             if (this.triggerDB[item.options.dp]) {
-                this.setInternalState(item.options.dp, val, false);
+                await this.setInternalState(item.options.dp, val, false);
             }
         }
     }
@@ -582,7 +585,7 @@ export class StatesControler extends BaseClass {
      * Filterfunktion umso genauer filter unm so weniger Ressourcen werden verbraucht.
      * @param dpInit string RegExp oder '' für aus; string wird mit include verwendet.
      * @param enums string, string[], RegExp als String übergeben oder ein String der mit include verwenden wird.
-     * @returns 2 arrays keys: gefilterten keys und data: alle Objekte..
+     * @returns 2 arrays keys: gefilterten keys und data: alle Objekte...
      */
     async getFilteredObjects(dpInit: string | RegExp, enums?: string | string[]): Promise<typeof result> {
         const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
