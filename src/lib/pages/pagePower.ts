@@ -88,9 +88,10 @@ export class PagePower extends Page {
         );
         const config = structuredClone(this.config);
         // search states for mode auto
-        const tempConfig: Partial<pages.cardPowerDataItemOptions> = this.dpInit
-            ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)
-            : config;
+        const tempConfig: Partial<pages.cardPowerDataItemOptions> =
+            this.enums || this.dpInit
+                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
+                : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
         const tempItem: Partial<pages.cardPowerDataItems> = await this.panel.statesControler.createDataItems(

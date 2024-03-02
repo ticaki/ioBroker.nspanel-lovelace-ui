@@ -275,7 +275,9 @@ export type PageBaseConfig = (
                 card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
                 uniqueID: string;
                 template?: Types.PageTemplateIdent;
-                dpInit: string | RegExp; // ''
+                dpInit?: string | RegExp; // ''
+                enums?: string | string[];
+                device?: string;
                 alwaysOn: 'none' | 'always' | 'action';
                 useColor?: boolean;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
@@ -299,6 +301,7 @@ export type PageBaseConfig = (
                 dpInit: string | RegExp; // ''
                 enums?: string | string[];
                 alwaysOn: 'none' | 'always' | 'action';
+                device?: string;
                 useColor?: boolean;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
                 /*&

@@ -26,6 +26,7 @@ module.exports = __toCommonJS(states_controller_exports);
 var import_data_item = require("../classes/data-item");
 var import_library = require("../classes/library");
 var import_definition = require("../const/definition");
+var import_tools = require("../const/tools");
 class BaseClassTriggerd extends import_library.BaseClass {
   updateTimeout;
   waitForTimeout;
@@ -45,6 +46,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   triggerParent = false;
   dpInit = "";
   enums = "";
+  device = "";
   sendToPanel = (payload, opt) => {
     if (payload == this.lastMessage)
       return;
@@ -555,10 +557,10 @@ class StatesControler extends import_library.BaseClass {
     return StatesControler.TempObjectDB;
   }
   /**
-   * hhhhhh
-   * @param dpInit
-   * @param enums
-   * @returns
+   * Filterfunktion umso genauer filter unm so weniger Ressourcen werden verbraucht.
+   * @param dpInit string RegExp oder '' für aus; string wird mit include verwendet.
+   * @param enums string, string[], RegExp als String übergeben oder ein String der mit include verwenden wird.
+   * @returns 2 arrays keys: gefilterten keys und data: alle Objekte.
    */
   async getFilteredObjects(dpInit, enums) {
     const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
@@ -587,8 +589,9 @@ class StatesControler extends import_library.BaseClass {
       }
       let r = [];
       for (const e of enums) {
+        const regexp = (0, import_tools.getRegExp)(e);
         for (const a in tempObjectDB.enums) {
-          if (a.startsWith(e)) {
+          if (!regexp && a.includes(e) || regexp && a.match(regexp) !== null) {
             if (tempObjectDB.enums[a] && tempObjectDB.enums[a].common && tempObjectDB.enums[a].common.members)
               r = r.concat(tempObjectDB.enums[a].common.members);
           }
@@ -599,7 +602,7 @@ class StatesControler extends import_library.BaseClass {
     return result;
   }
   async getDataItemsFromAuto(dpInit, data, appendix, enums) {
-    if (dpInit === "")
+    if (dpInit === "" && enums === void 0)
       return data;
     const tempObjectDB = await this.getFilteredObjects(dpInit, enums);
     if (tempObjectDB.data) {
@@ -608,7 +611,7 @@ class StatesControler extends import_library.BaseClass {
         if (t === void 0)
           continue;
         if (typeof t === "object" && !("type" in t)) {
-          data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix);
+          data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix, enums);
         } else if (typeof t === "object" && "type" in t) {
           const d = t;
           let found = false;

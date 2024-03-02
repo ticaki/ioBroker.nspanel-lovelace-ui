@@ -34,9 +34,10 @@ export class PageNotify extends Page {
     async init(): Promise<void> {
         const config = structuredClone(this.config);
         // search states for mode auto
-        const tempConfig: Partial<pages.cardNotifyDataItemOptions> = this.dpInit
-            ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)
-            : config;
+        const tempConfig: Partial<pages.cardNotifyDataItemOptions> =
+            this.enums || this.dpInit
+                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
+                : config;
         setTriggeredToState(tempConfig, ['entity1', 'optinalValue']);
         // create Dataitems
 

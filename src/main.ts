@@ -137,7 +137,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         'k Start/Jetzt: ',
                 );
             }, 60000);
-        }, 4500);
+        }, 2500);
     }
 
     /**

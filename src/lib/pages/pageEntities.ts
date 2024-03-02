@@ -30,8 +30,8 @@ export class PageEntities extends Page {
     async init(): Promise<void> {
         const config = structuredClone(this.config);
         // search states for mode auto
-        const tempConfig: Partial<pages.cardEntitiesDataItemOptions> = this.dpInit
-            ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config)
+        const tempConfig: Partial<pages.cardEntitiesDataItemOptions> = this.enums || this.dpInit
+            ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
             : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));

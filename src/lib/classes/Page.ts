@@ -37,6 +37,10 @@ export class Page extends BaseClassPage {
         this.id = card.id;
         this.enums =
             pageItemsConfig && 'enums' in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : '';
+        this.device =
+            pageItemsConfig && 'device' in pageItemsConfig && pageItemsConfig.device ? pageItemsConfig.device : '';
+        card.dpInit = typeof card.dpInit === 'string' ? card.dpInit.replace('#°^°#', this.device) : card.dpInit;
+
         if (card.dpInit && typeof card.dpInit === 'string') {
             const reg = getRegExp(card.dpInit);
             if (reg) {
@@ -53,6 +57,12 @@ export class Page extends BaseClassPage {
             for (let a = 0; a < this.pageItemConfig.length; a++) {
                 let options = this.pageItemConfig[a];
                 if (options === undefined) continue;
+
+                options.dpInit =
+                    typeof options.dpInit === 'string' && options.device
+                        ? options.dpInit.replace('#°^°#', options.device)
+                        : options.dpInit;
+
                 if (options.dpInit && typeof options.dpInit === 'string') {
                     const reg = getRegExp(options.dpInit);
                     if (reg) {
@@ -64,14 +74,17 @@ export class Page extends BaseClassPage {
 
                 // search states for mode auto
                 const dpInit = (this.dpInit ? this.dpInit : options.dpInit) ?? '';
-                options.data = dpInit
-                    ? await this.panel.statesControler.getDataItemsFromAuto(
-                          dpInit,
-                          options.data,
-                          'appendix' in options ? options.appendix : undefined,
-                          this.enums ? this.enums : options.enums,
-                      )
-                    : options.data;
+                const enums = this.enums ? this.enums : options.enums;
+
+                options.data =
+                    dpInit || enums
+                        ? await this.panel.statesControler.getDataItemsFromAuto(
+                              (this.dpInit ? this.dpInit : options.dpInit) ?? '',
+                              options.data,
+                              'appendix' in options ? options.appendix : undefined,
+                              this.enums ? this.enums : options.enums,
+                          )
+                        : options.data;
 
                 this.pageItemConfig[a] = options;
             }

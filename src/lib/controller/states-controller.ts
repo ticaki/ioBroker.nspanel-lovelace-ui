@@ -11,6 +11,7 @@ import { Controller } from './controller';
 import { Panel } from './panel';
 import { PanelSend } from './panel-message';
 import { genericStateObjects } from '../const/definition';
+import { getRegExp } from '../const/tools';
 
 export interface BaseClassTriggerdInterface {
     name: string;
@@ -45,6 +46,7 @@ export class BaseClassTriggerd extends BaseClass {
     triggerParent: boolean = false;
     dpInit: string | RegExp = '';
     protected enums: string | string[] = '';
+    protected device: string = '';
     protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
         payload: string,
         opt?: IClientPublishOptions,
@@ -577,10 +579,10 @@ export class StatesControler extends BaseClass {
         return StatesControler.TempObjectDB;
     }
     /**
-     * hhhhhh
-     * @param dpInit
-     * @param enums
-     * @returns
+     * Filterfunktion umso genauer filter unm so weniger Ressourcen werden verbraucht.
+     * @param dpInit string RegExp oder '' für aus; string wird mit include verwendet.
+     * @param enums string, string[], RegExp als String übergeben oder ein String der mit include verwenden wird.
+     * @returns 2 arrays keys: gefilterten keys und data: alle Objekte.
      */
     async getFilteredObjects(dpInit: string | RegExp, enums?: string | string[]): Promise<typeof result> {
         const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
@@ -608,8 +610,9 @@ export class StatesControler extends BaseClass {
             }
             let r: string[] = [];
             for (const e of enums) {
+                const regexp = getRegExp(e);
                 for (const a in tempObjectDB.enums) {
-                    if (a.startsWith(e)) {
+                    if ((!regexp && a.includes(e)) || (regexp && a.match(regexp) !== null)) {
                         if (
                             tempObjectDB.enums[a] &&
                             tempObjectDB.enums[a].common &&
@@ -629,23 +632,18 @@ export class StatesControler extends BaseClass {
         appendix?: string,
         enums?: string | string[],
     ): Promise<any> {
-        if (dpInit === '') return data;
+        if (dpInit === '' && enums === undefined) return data;
         const tempObjectDB = await this.getFilteredObjects(dpInit, enums);
         if (tempObjectDB.data) {
             for (const i in data) {
                 const t = data[i];
                 if (t === undefined) continue;
                 if (typeof t === 'object' && !('type' in t)) {
-                    data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix);
+                    data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix, enums);
                 } else if (typeof t === 'object' && 'type' in t) {
                     const d = t as DataItemsOptions;
                     let found = false;
                     if ((d.type !== 'triggered' && d.type !== 'state') || !d.mode || d.mode !== 'auto') continue;
-                    //let endsWith = '';
-                    // $ means must at the end of id
-                    /*if (d.dp && ) {
-                        endsWith = d.dp.substring(0, d.dp.length - 1);
-                    }*/
 
                     for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
                         if (false) {

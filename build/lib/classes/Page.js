@@ -40,6 +40,8 @@ class Page extends import_states_controller.BaseClassPage {
     this.card = card.card;
     this.id = card.id;
     this.enums = pageItemsConfig && "enums" in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : "";
+    this.device = pageItemsConfig && "device" in pageItemsConfig && pageItemsConfig.device ? pageItemsConfig.device : "";
+    card.dpInit = typeof card.dpInit === "string" ? card.dpInit.replace("#\xB0^\xB0#", this.device) : card.dpInit;
     if (card.dpInit && typeof card.dpInit === "string") {
       const reg = (0, import_tools.getRegExp)(card.dpInit);
       if (reg) {
@@ -50,12 +52,13 @@ class Page extends import_states_controller.BaseClassPage {
     this.config = pageItemsConfig && pageItemsConfig.config;
   }
   async init() {
-    var _a;
+    var _a, _b;
     if (this.pageItemConfig) {
       for (let a = 0; a < this.pageItemConfig.length; a++) {
         let options = this.pageItemConfig[a];
         if (options === void 0)
           continue;
+        options.dpInit = typeof options.dpInit === "string" && options.device ? options.dpInit.replace("#\xB0^\xB0#", options.device) : options.dpInit;
         if (options.dpInit && typeof options.dpInit === "string") {
           const reg = (0, import_tools.getRegExp)(options.dpInit);
           if (reg) {
@@ -66,8 +69,9 @@ class Page extends import_states_controller.BaseClassPage {
         if (!options)
           continue;
         const dpInit = (_a = this.dpInit ? this.dpInit : options.dpInit) != null ? _a : "";
-        options.data = dpInit ? await this.panel.statesControler.getDataItemsFromAuto(
-          dpInit,
+        const enums = this.enums ? this.enums : options.enums;
+        options.data = dpInit || enums ? await this.panel.statesControler.getDataItemsFromAuto(
+          (_b = this.dpInit ? this.dpInit : options.dpInit) != null ? _b : "",
           options.data,
           "appendix" in options ? options.appendix : void 0,
           this.enums ? this.enums : options.enums

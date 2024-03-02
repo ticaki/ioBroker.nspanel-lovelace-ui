@@ -167,7 +167,7 @@ export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data'
 export type PageItemDataItemsOptions =
     | ({
           template: Types.TemplateIdent;
-          dpInit: string | RegExp;
+          dpInit?: string | RegExp;
           appendix?: string;
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &
@@ -447,6 +447,7 @@ export type PageItemUnion = {
     template?: undefined;
     dpInit?: string | RegExp;
     enums?: string | string[];
+    device?: string;
     modeScr?: Types.ScreenSaverPlaces | undefined;
     type: Types.SerialTypePageElements;
     data: PageItemBase;
