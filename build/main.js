@@ -133,7 +133,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }, 2500);
   }
   /**
-   * Is called when adapter shuts down - callback has to be called under any circumstances!
+   * Is called when adapter shuts down - callback has to be called under any circumstances
    */
   async onUnload(callback) {
     try {

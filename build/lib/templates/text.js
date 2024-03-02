@@ -266,6 +266,7 @@ const textTemplates = {
     role: "battery",
     adapter: "bydhvs",
     type: "text",
+    dpInit: "/bydhvs\\.#\xB0^\xB0#\\./",
     data: {
       icon: {
         true: {

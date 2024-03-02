@@ -560,7 +560,7 @@ class StatesControler extends import_library.BaseClass {
    * Filterfunktion umso genauer filter unm so weniger Ressourcen werden verbraucht.
    * @param dpInit string RegExp oder '' für aus; string wird mit include verwendet.
    * @param enums string, string[], RegExp als String übergeben oder ein String der mit include verwenden wird.
-   * @returns 2 arrays keys: gefilterten keys und data: alle Objekte.
+   * @returns 2 arrays keys: gefilterten keys und data: alle Objekte..
    */
   async getFilteredObjects(dpInit, enums) {
     const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);

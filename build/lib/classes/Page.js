@@ -41,7 +41,9 @@ class Page extends import_states_controller.BaseClassPage {
     this.id = card.id;
     this.enums = pageItemsConfig && "enums" in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : "";
     this.device = pageItemsConfig && "device" in pageItemsConfig && pageItemsConfig.device ? pageItemsConfig.device : "";
-    card.dpInit = typeof card.dpInit === "string" ? card.dpInit.replace("#\xB0^\xB0#", this.device) : card.dpInit;
+    if (this.device) {
+      card.dpInit = typeof card.dpInit === "string" ? card.dpInit.replace("#\xB0^\xB0#", this.device) : card.dpInit;
+    }
     if (card.dpInit && typeof card.dpInit === "string") {
       const reg = (0, import_tools.getRegExp)(card.dpInit);
       if (reg) {
@@ -51,6 +53,9 @@ class Page extends import_states_controller.BaseClassPage {
     this.dpInit = (_a = card.dpInit) != null ? _a : "";
     this.config = pageItemsConfig && pageItemsConfig.config;
   }
+  /**
+   * ...
+   */
   async init() {
     var _a, _b;
     if (this.pageItemConfig) {
@@ -58,6 +63,12 @@ class Page extends import_states_controller.BaseClassPage {
         let options = this.pageItemConfig[a];
         if (options === void 0)
           continue;
+        options = await this.getItemFromTemplate(options);
+        if (!options)
+          continue;
+        if (options.device) {
+          this.log.debug("found");
+        }
         options.dpInit = typeof options.dpInit === "string" && options.device ? options.dpInit.replace("#\xB0^\xB0#", options.device) : options.dpInit;
         if (options.dpInit && typeof options.dpInit === "string") {
           const reg = (0, import_tools.getRegExp)(options.dpInit);
@@ -65,9 +76,6 @@ class Page extends import_states_controller.BaseClassPage {
             options.dpInit = reg;
           }
         }
-        options = await this.getItemFromTemplate(options);
-        if (!options)
-          continue;
         const dpInit = (_a = this.dpInit ? this.dpInit : options.dpInit) != null ? _a : "";
         const enums = this.enums ? this.enums : options.enums;
         options.data = dpInit || enums ? await this.panel.statesControler.getDataItemsFromAuto(
@@ -88,7 +96,7 @@ class Page extends import_states_controller.BaseClassPage {
         this.log.error("Dont find template " + options.template);
         return void 0;
       }
-      if (template.adapter && typeof options.dpInit === "string" && !options.dpInit.startsWith(template.adapter) && typeof this.dpInit === "string" && !this.dpInit.startsWith(template.adapter)) {
+      if (template.adapter && typeof options.dpInit === "string" && !options.dpInit.includes(template.adapter) && typeof this.dpInit === "string" && !this.dpInit.includes(template.adapter)) {
         this.log.error(
           "Missing dbInit or dbInit not starts with" + template.adapter + " for template " + options.template
         );

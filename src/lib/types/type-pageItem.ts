@@ -189,7 +189,7 @@ export type PageItemOptionsTemplate = {
     role?: pages.DeviceRole;
     adapter: string;
     modeScr?: string;
-    //dpInit: string;
+    dpInit?: string;
     type: Types.SerialTypePageElements;
 } & (
     | ({ template?: undefined } & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit' | 'modeScr'> &

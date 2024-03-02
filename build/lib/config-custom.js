@@ -1863,7 +1863,6 @@ const pageGridTest2 = {
     },
     {
       //enums: 'enum.rooms',
-      dpInit: "bydhvs.#\xB0^\xB0#",
       device: "0",
       template: "text.battery.bydhvs"
     }

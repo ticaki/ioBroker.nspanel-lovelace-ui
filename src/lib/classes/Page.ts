@@ -39,8 +39,9 @@ export class Page extends BaseClassPage {
             pageItemsConfig && 'enums' in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : '';
         this.device =
             pageItemsConfig && 'device' in pageItemsConfig && pageItemsConfig.device ? pageItemsConfig.device : '';
-        card.dpInit = typeof card.dpInit === 'string' ? card.dpInit.replace('#°^°#', this.device) : card.dpInit;
-
+        if (this.device) {
+            card.dpInit = typeof card.dpInit === 'string' ? card.dpInit.replace('#°^°#', this.device) : card.dpInit;
+        }
         if (card.dpInit && typeof card.dpInit === 'string') {
             const reg = getRegExp(card.dpInit);
             if (reg) {
@@ -51,12 +52,18 @@ export class Page extends BaseClassPage {
         this.config = pageItemsConfig && pageItemsConfig.config;
     }
 
+    /**
+     * ...
+     */
     async init(): Promise<void> {
         // do the work für PageItems only one time - changes in ObjectDB need a adapter restart.
         if (this.pageItemConfig) {
             for (let a = 0; a < this.pageItemConfig.length; a++) {
                 let options = this.pageItemConfig[a];
                 if (options === undefined) continue;
+
+                options = await this.getItemFromTemplate(options);
+                if (!options) continue;
 
                 options.dpInit =
                     typeof options.dpInit === 'string' && options.device
@@ -69,9 +76,6 @@ export class Page extends BaseClassPage {
                         options.dpInit = reg;
                     }
                 }
-                options = await this.getItemFromTemplate(options);
-                if (!options) continue;
-
                 // search states for mode auto
                 const dpInit = (this.dpInit ? this.dpInit : options.dpInit) ?? '';
                 const enums = this.enums ? this.enums : options.enums;
@@ -108,9 +112,9 @@ export class Page extends BaseClassPage {
             if (
                 template.adapter &&
                 typeof options.dpInit === 'string' &&
-                !options.dpInit.startsWith(template.adapter) &&
+                !options.dpInit.includes(template.adapter) &&
                 typeof this.dpInit === 'string' &&
-                !this.dpInit.startsWith(template.adapter)
+                !this.dpInit.includes(template.adapter)
             ) {
                 this.log.error(
                     'Missing dbInit or dbInit not starts with' + template.adapter + ' for template ' + options.template,

@@ -239,6 +239,7 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
         role: 'battery',
         adapter: 'bydhvs',
         type: 'text',
+        dpInit: '/bydhvs\\.#°^°#\\./',
 
         data: {
             icon: {
