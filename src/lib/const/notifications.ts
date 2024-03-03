@@ -6,7 +6,6 @@ const popupWelcome: PageBaseConfig = {
     dpInit: '',
     alwaysOn: 'none',
     uniqueID: '///WelcomePopup',
-    useColor: false,
     config: {
         card: 'popupNotify',
         data: {
@@ -35,7 +34,6 @@ const popupNotification: PageBaseConfig = {
     dpInit: '',
     alwaysOn: 'none',
     uniqueID: '///popupNotification',
-    useColor: false,
     config: {
         card: 'popupNotify',
         data: {
@@ -64,7 +62,6 @@ const popupNotification2: PageBaseConfig = {
     dpInit: '',
     alwaysOn: 'none',
     uniqueID: '///popupNotification2',
-    useColor: false,
     config: {
         card: 'popupNotify',
         data: {

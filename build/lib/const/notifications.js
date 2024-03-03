@@ -37,11 +37,10 @@ const popupWelcome = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///WelcomePopup",
-  useColor: false,
   config: {
     card: "popupNotify",
     data: {
-      entity1: { value: { type: "triggered", dp: "0_userdata.0.example_state" } },
+      entity1: { value: { type: "state", dp: "0_userdata.0.example_state" } },
       headline: { type: "const", constVal: "welcomeHToken" },
       colorHeadline: { true: { color: { type: "const", constVal: Color.Green } } },
       buttonLeft: { type: "const", constVal: "" },
@@ -66,7 +65,6 @@ const popupNotification = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///popupNotification",
-  useColor: false,
   config: {
     card: "popupNotify",
     data: {
@@ -95,7 +93,6 @@ const popupNotification2 = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///popupNotification2",
-  useColor: false,
   config: {
     card: "popupNotify",
     data: {
