@@ -79,6 +79,7 @@ class Panel extends import_library.BaseClass {
   };
   timeout;
   dimMode;
+  detach = { left: false, right: false };
   persistentPageItems = {};
   info = {
     nspanel: {
@@ -307,6 +308,20 @@ class Panel extends import_library.BaseClass {
       this.onInternalCommand
     );
     await this.statesControler.setInternalState(
+      `${this.name}/cmd/detachRight`,
+      true,
+      true,
+      (0, import_tools.getInternalDefaults)("boolean", "switch"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/detachLeft`,
+      true,
+      true,
+      (0, import_tools.getInternalDefaults)("boolean", "switch"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
       `${this.name}/cmd/bigIconRight`,
       true,
       true,
@@ -339,6 +354,21 @@ class Panel extends import_library.BaseClass {
       false,
       import_definition.genericStateObjects.panel.panels.alarm._channel
     );
+    await this.library.writedp(
+      `panels.${this.name}.buttons`,
+      void 0,
+      import_definition.genericStateObjects.panel.panels.buttons._channel
+    );
+    await this.library.writedp(
+      `panels.${this.name}.buttons.left`,
+      true,
+      import_definition.genericStateObjects.panel.panels.buttons.left
+    );
+    await this.library.writedp(
+      `panels.${this.name}.buttons.right`,
+      true,
+      import_definition.genericStateObjects.panel.panels.buttons.right
+    );
     let state = this.library.readdb(`panels.${this.name}.cmd.dimStandby`);
     if (state && state.val)
       this.dimMode.low = state.val;
@@ -355,6 +385,24 @@ class Panel extends import_library.BaseClass {
       this.dimMode.high,
       import_definition.genericStateObjects.panel.panels.cmd.dimActive
     );
+    {
+      let state2 = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
+      if (state2 && state2.val)
+        this.detach.right = !!state2.val;
+      state2 = this.library.readdb(`panels.${this.name}.cmd.detachLeft`);
+      if (state2 && state2.val)
+        this.detach.left = !!state2.val;
+      this.library.writedp(
+        `panels.${this.name}.cmd.detachRight`,
+        this.detach.right,
+        import_definition.genericStateObjects.panel.panels.cmd.detachRight
+      );
+      this.library.writedp(
+        `panels.${this.name}.cmd.detachLeft`,
+        this.detach.left,
+        import_definition.genericStateObjects.panel.panels.cmd.detachLeft
+      );
+    }
     for (const page of this.pages) {
       if (page) {
         this.log.debug("init page " + page.name);
@@ -412,6 +460,7 @@ class Panel extends import_library.BaseClass {
     this.info.nspanel.bigIconRight = state ? !!state.val : false;
     this.sendToTasmota(this.topic + "/cmnd/POWER1", "");
     this.sendToTasmota(this.topic + "/cmnd/POWER2", "");
+    this.sendRules();
     this.sendToPanel("pageType~pageStartup", { retain: true });
   };
   sendToPanelClass = () => {
@@ -524,11 +573,6 @@ class Panel extends import_library.BaseClass {
             const data = JSON.parse(message);
             this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
             if (!this.InitDone) {
-              this.sendToTasmota(
-                this.topic + "/cmnd/Rule3",
-                `ON CustomSend DO RuleTimer1 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON on Button1#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button1"} endon on Button2#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button2"} endon`
-              );
-              this.sendToTasmota(this.topic + "/cmnd/Rule3", "ON");
               await this.start();
               this.InitDone = true;
             }
@@ -567,6 +611,16 @@ class Panel extends import_library.BaseClass {
       }
     }
   };
+  /**
+   *
+   */
+  sendRules() {
+    this.sendToTasmota(
+      this.topic + "/cmnd/Rule3",
+      "ON CustomSend DO RuleTimer1 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON" + (this.detach.left ? ` ON Button1#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button1"} ENDON` : "") + (this.detach.right ? ` ON Button2#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button2"} ENDON` : "")
+    );
+    this.sendToTasmota(this.topic + "/cmnd/Rule3", "ON");
+  }
   async onStateChange(id, state) {
     if (state.ack)
       return;
@@ -615,6 +669,14 @@ class Panel extends import_library.BaseClass {
             parseInt(String(state.val)),
             false
           );
+          break;
+        }
+        case "detachLeft": {
+          this.statesControler.setInternalState(`${this.name}/cmd/detachLeft`, !!state.val, false);
+          break;
+        }
+        case "detachRight": {
+          this.statesControler.setInternalState(`${this.name}/cmd/detachRight`, !!state.val, false);
           break;
         }
         case "screenSaver": {
@@ -760,11 +822,11 @@ class Panel extends import_library.BaseClass {
         break;
       }
       case "button1": {
-        this.screenSaver.setVisibility(false);
+        await this.library.writedp(`panels.${this.name}.buttons.left`, true, null, true, true);
         break;
       }
       case "button2": {
-        this.screenSaver.setVisibility(false);
+        await this.library.writedp(`panels.${this.name}.buttons.right`, true, null, true, true);
         break;
       }
     }
@@ -783,10 +845,21 @@ class Panel extends import_library.BaseClass {
           this.sendToTasmota(this.topic + "/cmnd/POWER2", state.val ? "ON" : "OFF");
           break;
         }
+        case `detachRight`: {
+          this.detach.right = !!state.val;
+          this.library.writedp(`panels.${this.name}.cmd.detachRight`, this.detach.right);
+          this.sendRules();
+          break;
+        }
+        case "detachLeft": {
+          this.detach.left = !!state.val;
+          this.library.writedp(`panels.${this.name}.cmd.detachLeft`, this.detach.left);
+          this.sendRules();
+          break;
+        }
         case "bigIconLeft": {
           this.info.nspanel.bigIconLeft = !!state.val;
           this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
-          this.statesControler.setInternalState(`${this.name}/cmd/bigIconLeft`, !!state.val, true);
           this.library.writeFromJson(
             `panels.${this.name}.info`,
             "panel.panels.info",
@@ -798,7 +871,6 @@ class Panel extends import_library.BaseClass {
         case "bigIconRight": {
           this.info.nspanel.bigIconRight = !!state.val;
           this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
-          this.statesControler.setInternalState(`${this.name}/cmd/bigIconRight`, !!state.val, true);
           this.library.writeFromJson(
             `panels.${this.name}.info`,
             "panel.panels.info",
@@ -875,6 +947,12 @@ class Panel extends import_library.BaseClass {
       }
       case "dimActive": {
         return this.dimMode.high;
+      }
+      case "detachLeft": {
+        return this.detach.left;
+      }
+      case "detachRight": {
+        return this.detach.right;
       }
       case "popupNotification2":
       case "popupNotification": {

@@ -252,7 +252,7 @@ class Library extends BaseClass {
    * @param ack set ack to false if needed - NEVER after u subscript to states)
    * @returns void
    */
-  async writedp(dp, val, obj = null, ack = true) {
+  async writedp(dp, val, obj = null, ack = true, forceWrite = false) {
     dp = this.cleandp(dp);
     let node = this.readdb(dp);
     const del = !this.isDirAllowed(dp);
@@ -293,7 +293,7 @@ class Library extends BaseClass {
       return;
     if (node && !(node.type === "state" && val === void 0))
       this.setdb(dp, node.type, val, node.stateTyp, false);
-    if (node && val !== void 0 && (this.defaults.updateStateOnChangeOnly || node.val != val || !node.ack)) {
+    if (node && val !== void 0 && (this.defaults.updateStateOnChangeOnly || node.val != val || forceWrite || !node.ack)) {
       const typ = obj && obj.common && obj.common.type || node.stateTyp;
       if (typ && typ != typeof val && val !== void 0)
         val = this.convertToType(val, typ);

@@ -245,6 +245,7 @@ export class Library extends BaseClass {
         val: ioBroker.StateValue | undefined,
         obj: ioBroker.Object | null = null,
         ack: boolean = true,
+        forceWrite: boolean = false,
     ): Promise<void> {
         dp = this.cleandp(dp);
         let node = this.readdb(dp);
@@ -286,7 +287,11 @@ export class Library extends BaseClass {
 
         if (node && !(node.type === 'state' && val === undefined)) this.setdb(dp, node.type, val, node.stateTyp, false);
 
-        if (node && val !== undefined && (this.defaults.updateStateOnChangeOnly || node.val != val || !node.ack)) {
+        if (
+            node &&
+            val !== undefined &&
+            (this.defaults.updateStateOnChangeOnly || node.val != val || forceWrite || !node.ack)
+        ) {
             const typ = (obj && obj.common && obj.common.type) || node.stateTyp;
             if (typ && typ != typeof val && val !== undefined) val = this.convertToType(val, typ);
             if (!del)

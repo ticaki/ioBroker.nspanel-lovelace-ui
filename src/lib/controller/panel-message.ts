@@ -75,7 +75,7 @@ export class PanelSend extends BaseClass {
     readonly addMessageTasmota = (topic: string, payload: string, opt?: IClientPublishOptions): void => {
         if (
             this.messageDbTasmota.length > 0 &&
-            !this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt)
+            this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt)
         )
             return;
         this.messageDbTasmota.push({ topic: topic, payload: payload, opt: opt });

@@ -88,6 +88,40 @@ const genericStateObjects = {
         },
         native: {}
       },
+      buttons: {
+        _channel: {
+          _id: "",
+          type: "channel",
+          common: {
+            name: "StateObjects.buttons"
+          },
+          native: {}
+        },
+        left: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.buttons.left",
+            type: "boolean",
+            role: "button.press",
+            read: true,
+            write: false
+          },
+          native: {}
+        },
+        right: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.buttons.right",
+            type: "boolean",
+            role: "button.press",
+            read: true,
+            write: false
+          },
+          native: {}
+        }
+      },
       cmd: {
         _channel: {
           _id: "",
@@ -153,6 +187,30 @@ const genericStateObjects = {
           type: "state",
           common: {
             name: "StateObjects.power2",
+            type: "boolean",
+            role: "switch",
+            read: true,
+            write: true
+          },
+          native: {}
+        },
+        detachLeft: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.detachLeft",
+            type: "boolean",
+            role: "switch",
+            read: true,
+            write: true
+          },
+          native: {}
+        },
+        detachRight: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.detachRight",
             type: "boolean",
             role: "switch",
             read: true,
