@@ -665,9 +665,14 @@ function insertLinebreak(text, lineLength) {
   let counter = 0;
   let a = 0;
   let olda = a;
-  while (counter++ < 10) {
+  while (counter++ < 30) {
     if (a + lineLength >= text.length)
       break;
+    const n = text.lastIndexOf("\n", lineLength + a);
+    if (n > a) {
+      a = n;
+      continue;
+    }
     a = text.lastIndexOf(" ", lineLength + a);
     if (olda === a)
       break;

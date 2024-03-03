@@ -16,10 +16,11 @@ export class PageNotify extends Page {
     config: pages.PageBaseConfig['config'];
     items: pages.PageBaseConfig['items'];
     private lastpage: Page[] = [];
-    private step: number = 1;
+    private step: number = 0;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
+    private rotationTimeout: ioBroker.Timeout | undefined;
     tempItem: PageItem | undefined;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
@@ -63,6 +64,10 @@ export class PageNotify extends Page {
         this.lastpage.forEach((a) => a.removeLastPage(_p));
     }
 
+    /**
+     *
+     * @returns Build the view for nspanel.
+     */
     public async update(): Promise<void> {
         const message: Partial<pages.PageNotifyMessage> = {};
         const items = this.items;
@@ -84,7 +89,6 @@ export class PageNotify extends Page {
             message.brColor = await getIconEntryColor(data.colorButtonRight, value, White);
 
             message.text = (data.text && (await data.text.getTranslatedString())) ?? '';
-            if (message.text) message.text = message.text.replaceAll('\n', '\r\n').replaceAll('/r/n', '\r\n');
 
             message.textColor = await getIconEntryColor(data.colorText, value, White);
 
@@ -103,6 +107,33 @@ export class PageNotify extends Page {
                         this.library.getTranslation(val as string),
                     );
                 }
+            }
+            if (message.text) message.text = message.text.replaceAll('\n', '\r\n').replaceAll('/r/n', '\r\n');
+            const maxLineCount = 8;
+            let lines = 0;
+            if (message.text && (lines = message.text.split('\r\n').length) > maxLineCount) {
+                let test = 0;
+                let counter = 0;
+                let pos = 0;
+                this.step = this.step % (lines + 1);
+
+                const currentPos = this.step;
+                const text = message.text + '\r\n' + '\r\n' + message.text;
+                message.text = '';
+                while (test++ < 100) {
+                    const pos2 = text.indexOf('\r\n', pos) + 2;
+                    if (pos2 == -1) {
+                        message.text += text.slice(pos);
+                        break;
+                    }
+                    if (counter >= currentPos) {
+                        message.text = message.text + text.slice(pos, pos2);
+                    }
+                    counter++;
+                    if (counter >= currentPos + maxLineCount) break;
+                    pos = pos2;
+                }
+                if (!this.rotationTimeout) this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3000);
             }
 
             message.timeout = (data.timeout && (await data.timeout.getNumber())) ?? 0;
@@ -152,7 +183,29 @@ export class PageNotify extends Page {
             message.iconColor ?? '',
         );
     }
+
+    /**
+     * Rotate text in view
+     * @returns
+     */
+    private rotation = async (): Promise<void> => {
+        if (!this.visibility) {
+            this.rotationTimeout = undefined;
+            return;
+        }
+        this.step++;
+        await this.update();
+        this.rotationTimeout = this.adapter.setTimeout(await this.rotation, 1500);
+    };
+    async delete(): Promise<void> {
+        if (this.rotationTimeout) this.adapter.clearTimeout(this.rotationTimeout);
+        this.rotationTimeout = undefined;
+        await super.delete();
+    }
     protected async onStateTrigger(_dp: string): Promise<void> {
+        this.step = 0;
+        if (this.rotationTimeout) this.adapter.clearTimeout(this.rotationTimeout);
+        this.rotationTimeout = undefined;
         this.log.debug('state triggerd ' + _dp);
         /*if (_dp.includes('popupNotification'))*/ this.panel.setActivePage(this);
     }

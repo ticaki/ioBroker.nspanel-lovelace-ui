@@ -39,10 +39,11 @@ class PageNotify extends import_Page.Page {
   config;
   items;
   lastpage = [];
-  step = 1;
+  step = 0;
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
+  rotationTimeout;
   tempItem;
   constructor(config, options) {
     super(config, options);
@@ -77,6 +78,10 @@ class PageNotify extends import_Page.Page {
     this.lastpage = this.lastpage.filter((a) => a !== _p);
     this.lastpage.forEach((a) => a.removeLastPage(_p));
   }
+  /**
+   *
+   * @returns Build the view for nspanel.
+   */
   async update() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     const message = {};
@@ -97,8 +102,6 @@ class PageNotify extends import_Page.Page {
       message.brText = (_d = data.buttonRight && await data.buttonRight.getTranslatedString()) != null ? _d : "";
       message.brColor = await (0, import_tools.getIconEntryColor)(data.colorButtonRight, value, import_Color.White);
       message.text = (_e = data.text && await data.text.getTranslatedString()) != null ? _e : "";
-      if (message.text)
-        message.text = message.text.replaceAll("\n", "\r\n").replaceAll("/r/n", "\r\n");
       message.textColor = await (0, import_tools.getIconEntryColor)(data.colorText, value, import_Color.White);
       const placeholder = (_f = data.optionalValue && await data.optionalValue.getObject()) != null ? _f : null;
       if (placeholder && pages.isPlaceholderType(placeholder)) {
@@ -116,6 +119,35 @@ class PageNotify extends import_Page.Page {
             this.library.getTranslation(val)
           );
         }
+      }
+      if (message.text)
+        message.text = message.text.replaceAll("\n", "\r\n").replaceAll("/r/n", "\r\n");
+      const maxLineCount = 8;
+      let lines = 0;
+      if (message.text && (lines = message.text.split("\r\n").length) > maxLineCount) {
+        let test = 0;
+        let counter = 0;
+        let pos = 0;
+        this.step = this.step % (lines + 1);
+        const currentPos = this.step;
+        const text = message.text + "\r\n\r\n" + message.text;
+        message.text = "";
+        while (test++ < 100) {
+          const pos2 = text.indexOf("\r\n", pos) + 2;
+          if (pos2 == -1) {
+            message.text += text.slice(pos);
+            break;
+          }
+          if (counter >= currentPos) {
+            message.text = message.text + text.slice(pos, pos2);
+          }
+          counter++;
+          if (counter >= currentPos + maxLineCount)
+            break;
+          pos = pos2;
+        }
+        if (!this.rotationTimeout)
+          this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3e3);
       }
       message.timeout = (_i = data.timeout && await data.timeout.getNumber()) != null ? _i : 0;
     }
@@ -166,7 +198,30 @@ class PageNotify extends import_Page.Page {
       (_l = message.iconColor) != null ? _l : ""
     );
   }
+  /**
+   * Rotate text in view
+   * @returns
+   */
+  rotation = async () => {
+    if (!this.visibility) {
+      this.rotationTimeout = void 0;
+      return;
+    }
+    this.step++;
+    await this.update();
+    this.rotationTimeout = this.adapter.setTimeout(await this.rotation, 1500);
+  };
+  async delete() {
+    if (this.rotationTimeout)
+      this.adapter.clearTimeout(this.rotationTimeout);
+    this.rotationTimeout = void 0;
+    await super.delete();
+  }
   async onStateTrigger(_dp) {
+    this.step = 0;
+    if (this.rotationTimeout)
+      this.adapter.clearTimeout(this.rotationTimeout);
+    this.rotationTimeout = void 0;
     this.log.debug("state triggerd " + _dp);
     this.panel.setActivePage(this);
   }
