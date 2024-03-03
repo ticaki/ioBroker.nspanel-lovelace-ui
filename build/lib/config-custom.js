@@ -30,7 +30,9 @@ var config_custom_exports = {};
 __export(config_custom_exports, {
   Testconfig: () => Testconfig,
   pageMediaTest: () => pageMediaTest,
-  pageMediaTest2: () => pageMediaTest2
+  pageMediaTest2: () => pageMediaTest2,
+  popupTest: () => popupTest,
+  popupTest2: () => popupTest2
 });
 module.exports = __toCommonJS(config_custom_exports);
 var Color = __toESM(require("./const/Color"));
@@ -233,11 +235,11 @@ const pageEntitiesTest1 = {
   ],
   items: void 0
 };
-const popupTest = {
+const popupTest2 = {
   card: "popupNotify",
   dpInit: "",
   alwaysOn: "none",
-  uniqueID: "popup1",
+  uniqueID: "popup2",
   useColor: false,
   config: {
     card: "popupNotify",
@@ -2920,6 +2922,37 @@ const pageThermoTest = {
   items: void 0,
   useColor: false
 };
+const popupTest = {
+  card: "popupNotify",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "popup1",
+  useColor: false,
+  config: {
+    card: "popupNotify",
+    data: {
+      entity1: { value: { type: "triggered", dp: "0_userdata.0.example_state_boolean" } },
+      headline: { type: "const", constVal: "test" },
+      colorHeadline: { true: { color: { type: "const", constVal: "#F80000" } } },
+      buttonLeft: { type: "const", constVal: "test" },
+      colorButtonLeft: { true: { color: { type: "const", constVal: Color.Green } } },
+      buttonRight: { type: "const", constVal: "test" },
+      colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
+      text: { type: "const", constVal: "Text Test ${pl}" },
+      //text: { type: 'state', dp: '0_userdata.0.NSPanel.Flur.popupNotify.popupNotifyText' },
+      colorText: { true: { color: { type: "const", constVal: Color.White } } },
+      timeout: { type: "const", constVal: 4 },
+      // {placeholder: {text: '' oder dp: ''}} im Text muss dann ${dieserKeyStehtImText} stehen
+      // optionalValue: { type: 'const', constVal: { dieserKeyStehtImText: { text: 'das ist ein placeholder' } } },
+      setValue1: { type: "const", constVal: true },
+      // alleine ist es ein switch
+      closingBehaviour: { type: "const", constVal: "both" }
+      //setValue2: { type: 'const', constVal: true }, // mit setValue2 wird 1, bei yes und 2 bei no auf true gesetzt
+    }
+  },
+  pageItems: [],
+  items: void 0
+};
 const pageScreensaverTest = {
   card: "screensaver2",
   // mode of screensaver
@@ -4239,8 +4272,8 @@ const Testconfig = [
       pageAbfall,
       pageGridTest5,
       pageMediaTest3,
-      popupTest,
-      pageEntitiesTest3
+      pageEntitiesTest3,
+      popupTest
     ],
     // override by password.ts
     navigation: [
@@ -4345,6 +4378,8 @@ const Testconfig = [
 0 && (module.exports = {
   Testconfig,
   pageMediaTest,
-  pageMediaTest2
+  pageMediaTest2,
+  popupTest,
+  popupTest2
 });
 //# sourceMappingURL=config-custom.js.map

@@ -41,8 +41,6 @@ class PageNotify extends import_Page.Page {
   lastpage = [];
   step = 0;
   headlinePos = 0;
-  titelPos = 0;
-  nextArrow = false;
   rotationTimeout;
   tempItem;
   constructor(config, options) {
@@ -226,9 +224,11 @@ class PageNotify extends import_Page.Page {
     this.panel.setActivePage(this);
   }
   async onButtonEvent(_event) {
-    if (_event.action === "notifyAction") {
-      const data = this.items && this.items.card === "popupNotify" && this.items.data;
-      if (data) {
+    var _a;
+    const data = this.items && this.items.card === "popupNotify" && this.items.data;
+    let close = true;
+    if (data) {
+      if (_event.action === "notifyAction") {
         if (data.setValue2) {
           if (_event.opt === "yes")
             data.setValue1 && data.setValue1.setStateTrue();
@@ -236,8 +236,24 @@ class PageNotify extends import_Page.Page {
             data.setValue2 && data.setValue2.setStateTrue();
         } else
           data.setValue1 && data.setValue1.setStateAsync(_event.opt === "yes");
+        const cb = (_a = data.closingBehaviour && await data.closingBehaviour.getString()) != null ? _a : "";
+        if (pages.isClosingBehavior(cb)) {
+          switch (cb) {
+            case "none":
+              close = false;
+              break;
+            case "both":
+              close = true;
+              break;
+            case "yes":
+            case "no":
+              close = cb == _event.opt;
+              break;
+          }
+        }
       }
-    } else {
+    }
+    if (close) {
       if (this.name.includes("///popupNotification"))
         this.lastpage = this.lastpage.filter((a) => !a.name.includes("///popupNotification"));
       const p = this.lastpage.pop();

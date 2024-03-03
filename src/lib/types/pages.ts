@@ -343,11 +343,17 @@ type PageNotifyConfig = {
     optionalValue?: string;
     setValue1?: string;
     setValue2?: string;
+    closingBehaviour?: string;
 };
 export type cardNotifyDataItemOptions = {
     card: 'popupNotify';
     data: ChangeTypeOfKeys<PageNotifyConfig, Types.DataItemsOptions | undefined>;
 };
+
+export type closingBehaviour = 'both' | 'yes' | 'no' | 'none';
+export function isClosingBehavior(F: any): F is closingBehaviour {
+    return ['both', 'yes', 'no', 'none'].indexOf(F) !== -1;
+}
 export type cardNotifyDataItems = {
     card: 'popupNotify';
     data: ChangeTypeOfKeys<PageNotifyConfig, dataItem.Dataitem | undefined>;

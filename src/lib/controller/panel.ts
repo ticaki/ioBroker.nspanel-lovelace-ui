@@ -533,8 +533,10 @@ export class Panel extends BaseClass {
                         this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
                         if (!this.InitDone) {
                             this.sendToTasmota(
-                                this.topic + '/cmnd/Rule8',
-                                'ON CustomSend DO RuleTimer1 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON',
+                                this.topic + '/cmnd/Rule3',
+                                'ON CustomSend DO RuleTimer1 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON' +
+                                    ` on Button1#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button1"} endon` +
+                                    ` on Button2#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button2"} endon`,
                             );
                             this.sendToTasmota(this.topic + '/cmnd/Rule3', 'ON');
                             await this.start();

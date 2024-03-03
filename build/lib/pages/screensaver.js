@@ -175,6 +175,12 @@ class Screensaver extends import_Page.Page {
       this.rotationTime < 3e3 ? 3e3 : this.rotationTime
     );
   };
+  /**
+   *
+   * @param _dp
+   * @param from
+   * @returns
+   */
   onStateTrigger = async (_dp, from) => {
     const config = this.config;
     if (!config || config.card !== "screensaver" && config.card !== "screensaver2")

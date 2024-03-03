@@ -82,7 +82,8 @@ const popupNotification = {
       // {placeholder: {text: '' oder dp: ''}}
       // optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
       setValue1: { type: "internalState", dp: "cmd/NotificationCleared" },
-      setValue2: { type: "internalState", dp: "cmd/NotificationNext" }
+      setValue2: { type: "internalState", dp: "cmd/NotificationNext" },
+      closingBehaviour: { type: "const", constVal: "none" }
     }
   },
   pageItems: [],
@@ -108,7 +109,8 @@ const popupNotification2 = {
       colorText: { true: { color: { type: "const", constVal: Color.White } } },
       timeout: { type: "const", constVal: 0 },
       setValue1: { type: "internalState", dp: "cmd/NotificationCleared2" },
-      setValue2: { type: "internalState", dp: "cmd/NotificationNext2" }
+      setValue2: { type: "internalState", dp: "cmd/NotificationNext2" },
+      closingBehaviour: { type: "const", constVal: "none" }
     }
   },
   pageItems: [],

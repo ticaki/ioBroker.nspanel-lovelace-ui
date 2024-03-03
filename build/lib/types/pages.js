@@ -19,6 +19,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var pages_exports = {};
 __export(pages_exports, {
   isButtonActionType: () => isButtonActionType,
+  isClosingBehavior: () => isClosingBehavior,
   isColorEntryType: () => isColorEntryType,
   isPlaceholderType: () => isPlaceholderType,
   isStateRole: () => isStateRole
@@ -113,6 +114,9 @@ function isButtonActionType(F) {
       return false;
   }
 }
+function isClosingBehavior(F) {
+  return ["both", "yes", "no", "none"].indexOf(F) !== -1;
+}
 function isColorEntryType(F) {
   if ("true" in F && "false" in F && "scale" in F)
     return true;
@@ -137,6 +141,7 @@ function isPlaceholderType(F) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   isButtonActionType,
+  isClosingBehavior,
   isColorEntryType,
   isPlaceholderType,
   isStateRole

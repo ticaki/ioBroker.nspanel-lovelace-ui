@@ -18,8 +18,6 @@ export class PageNotify extends Page {
     private lastpage: Page[] = [];
     private step: number = 0;
     private headlinePos: number = 0;
-    private titelPos: number = 0;
-    private nextArrow: boolean = false;
     private rotationTimeout: ioBroker.Timeout | undefined;
     tempItem: PageItem | undefined;
 
@@ -210,15 +208,33 @@ export class PageNotify extends Page {
         /*if (_dp.includes('popupNotification'))*/ this.panel.setActivePage(this);
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
-        if (_event.action === 'notifyAction') {
-            const data = this.items && this.items.card === 'popupNotify' && this.items.data;
-            if (data) {
+        const data = this.items && this.items.card === 'popupNotify' && this.items.data;
+        let close = true;
+        if (data) {
+            if (_event.action === 'notifyAction') {
                 if (data.setValue2) {
                     if (_event.opt === 'yes') data.setValue1 && data.setValue1.setStateTrue();
                     else data.setValue2 && data.setValue2.setStateTrue();
                 } else data.setValue1 && data.setValue1.setStateAsync(_event.opt === 'yes');
+
+                const cb = (data.closingBehaviour && (await data.closingBehaviour.getString())) ?? '';
+                if (pages.isClosingBehavior(cb)) {
+                    switch (cb) {
+                        case 'none':
+                            close = false;
+                            break;
+                        case 'both':
+                            close = true;
+                            break;
+                        case 'yes':
+                        case 'no':
+                            close = cb == _event.opt;
+                            break;
+                    }
+                }
             }
-        } else {
+        }
+        if (close) {
             if (this.name.includes('///popupNotification'))
                 this.lastpage = this.lastpage.filter((a) => !a.name.includes('///popupNotification'));
             const p = this.lastpage.pop();

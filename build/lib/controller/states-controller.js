@@ -435,7 +435,7 @@ class StatesControler extends import_library.BaseClass {
             this.triggerDB[dp].state = state;
             if (state.ack || this.triggerDB[dp].internal || dp.startsWith("0_userdata.0")) {
               await this.triggerDB[dp].to.forEach(async (c, i) => {
-                if (!this.triggerDB[dp].subscribed[i] || !this.triggerDB[dp].triggerAllowed[i])
+                if (!c.neverDeactivateTrigger && !this.triggerDB[dp].subscribed[i] || !this.triggerDB[dp].triggerAllowed[i])
                   return;
                 if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
                   c.parent.onStateTriggerSuperDoNotOverride && await c.parent.onStateTriggerSuperDoNotOverride(dp, c);
