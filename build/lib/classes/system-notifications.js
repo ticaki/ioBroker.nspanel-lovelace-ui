@@ -24,10 +24,7 @@ module.exports = __toCommonJS(system_notifications_exports);
 var import_library = require("./library");
 class SystemNotifications extends import_library.BaseClass {
   language;
-  alert = false;
-  info = false;
   notifications = [];
-  msgIndex = 0;
   messageTimeout;
   constructor(adapter) {
     super(adapter, "system-notifcations");
@@ -122,8 +119,6 @@ class SystemNotifications extends import_library.BaseClass {
     if (this.messageTimeout)
       return;
     this.messageTimeout = this.adapter.setTimeout(() => {
-      this.alert = false;
-      this.info = false;
       this.notifications.sort((a, b) => {
         if (a.severity === b.severity)
           return 0;
@@ -132,12 +127,6 @@ class SystemNotifications extends import_library.BaseClass {
         if (b.severity === "alert")
           return -1;
         return 0;
-      });
-      this.notifications.forEach((a) => {
-        if (a.severity === "alert")
-          this.alert = true;
-        else
-          this.info = true;
       });
       if (this.notifications.some((a) => !a.cleared))
         this.adapter.controller && this.adapter.controller.notificationToPanel();
@@ -183,14 +172,13 @@ class SystemNotifications extends import_library.BaseClass {
     if (index === -1)
       index = 0;
     const l = this.notifications.length;
-    const lastPos = index + l - 1;
     if (index >= 0) {
-      for (index; index < lastPos; index++) {
-        if (this.notifications[index % l] && !this.notifications[index % l].cleared)
+      for (index; index < l; index++) {
+        if (this.notifications[index] && !this.notifications[index].cleared)
           break;
       }
-      if (!this.notifications[index % l].cleared) {
-        return index % l;
+      if (this.notifications[index] && !this.notifications[index].cleared) {
+        return index;
       }
     }
     return -1;

@@ -726,9 +726,7 @@ class Panel extends import_library.BaseClass {
       case "buttonPress2": {
         if (event.id == "screensaver") {
           await this.setActivePage(this.navigation.getCurrentPage());
-          if ((this.notifyIndex = this.controller.systemNotification.getNotificationIndex(
-            this.notifyIndex
-          )) !== -1) {
+          if (this.controller.systemNotification.getNotificationIndex(this.notifyIndex) !== -1) {
             await this.statesControler.setInternalState(`${this.name}/cmd/NotificationNext2`, true, false);
           }
         } else if (event.action === "bExit" && event.id !== "popupNotify") {
@@ -885,6 +883,11 @@ class Panel extends import_library.BaseClass {
     }
     return null;
   };
+  /**
+   *
+   * @param msg
+   * @returns
+   */
   convertToEvent(msg) {
     var _a, _b, _c, _d;
     try {

@@ -737,11 +737,7 @@ export class Panel extends BaseClass {
             case 'buttonPress2': {
                 if (event.id == 'screensaver') {
                     await this.setActivePage(this.navigation.getCurrentPage());
-                    if (
-                        (this.notifyIndex = this.controller.systemNotification.getNotificationIndex(
-                            this.notifyIndex,
-                        )) !== -1
-                    ) {
+                    if (this.controller.systemNotification.getNotificationIndex(this.notifyIndex) !== -1) {
                         await this.statesControler.setInternalState(`${this.name}/cmd/NotificationNext2`, true, false);
                     }
                 } else if (event.action === 'bExit' && event.id !== 'popupNotify') {
@@ -851,6 +847,7 @@ export class Panel extends BaseClass {
                 case 'NotificationNext2':
                 case 'NotificationNext': {
                     this.notifyIndex = this.controller.systemNotification.getNotificationIndex(++this.notifyIndex);
+
                     if (this.notifyIndex !== -1) {
                         const val = this.controller.systemNotification.getNotification(this.notifyIndex);
                         if (val)
@@ -902,6 +899,11 @@ export class Panel extends BaseClass {
         return null;
     };
 
+    /**
+     *
+     * @param msg
+     * @returns
+     */
     private convertToEvent(msg: string): Types.IncomingEvent | null {
         try {
             msg = (JSON.parse(msg) || {}).CustomRecv;

@@ -3,10 +3,7 @@ import { AdapterClassDefinition, BaseClass } from './library';
 
 export class SystemNotifications extends BaseClass {
     private language: ioBroker.Languages;
-    public alert: boolean = false;
-    public info: boolean = false;
     private notifications: notification[] = [];
-    private msgIndex: number = 0;
     private messageTimeout: ioBroker.Timeout | undefined;
 
     constructor(adapter: AdapterClassDefinition) {
@@ -109,18 +106,11 @@ export class SystemNotifications extends BaseClass {
 
         if (this.messageTimeout) return;
         this.messageTimeout = this.adapter.setTimeout(() => {
-            this.alert = false;
-            this.info = false;
             this.notifications.sort((a, b) => {
                 if (a.severity === b.severity) return 0;
                 if (a.severity === 'alert') return 1;
                 if (b.severity === 'alert') return -1;
                 return 0;
-            });
-
-            this.notifications.forEach((a) => {
-                if (a.severity === 'alert') this.alert = true;
-                else this.info = true;
             });
 
             if (this.notifications.some((a) => !a.cleared))
@@ -165,13 +155,12 @@ export class SystemNotifications extends BaseClass {
     public getNotificationIndex(index: number): number {
         if (index === -1) index = 0;
         const l = this.notifications.length;
-        const lastPos = index + l - 1;
         if (index >= 0) {
-            for (index; index < lastPos; index++) {
-                if (this.notifications[index % l] && !this.notifications[index % l].cleared) break;
+            for (index; index < l; index++) {
+                if (this.notifications[index] && !this.notifications[index].cleared) break;
             }
-            if (!this.notifications[index % l].cleared) {
-                return index % l;
+            if (this.notifications[index] && !this.notifications[index].cleared) {
+                return index;
             }
         }
         return -1;
