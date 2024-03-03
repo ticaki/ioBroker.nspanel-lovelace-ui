@@ -87,6 +87,10 @@ class Dataitem extends import_library.BaseClass {
       case "triggered":
         if (!this.options.dp)
           return false;
+        this.options.dp = this.options.dp.replace(
+          "${this.namespace}",
+          `${this.adapter.namespace}.panels.${this.parent.panel.name}`
+        );
         const obj = await this.stateDB.getObjectAsync(this.options.dp);
         if (!obj || obj.type != "state" || !obj.common) {
           this.log.warn(`801: ${this.options.dp} has a invalid state object!`);
