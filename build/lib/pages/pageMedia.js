@@ -103,6 +103,8 @@ class PageMedia extends import_Page2.Page {
     }
   }
   async update() {
+    if (!this.visibility)
+      return;
     const item = this.items;
     if (item === void 0)
       return;
@@ -293,7 +295,7 @@ class PageMedia extends import_Page2.Page {
     );
   }
   onStateTrigger = async () => {
-    this.update();
+    await this.update();
   };
   async onButtonEvent(event) {
     if (!this.getVisibility() || this.sleep)
@@ -374,7 +376,7 @@ class PageMedia extends import_Page2.Page {
       case "button": {
         if (event.id === "0" && this.nextArrow) {
           this.step++;
-          this.update();
+          await this.update();
         }
         break;
       }

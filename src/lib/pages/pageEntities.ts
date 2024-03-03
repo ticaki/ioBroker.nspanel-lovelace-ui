@@ -30,9 +30,10 @@ export class PageEntities extends Page {
     async init(): Promise<void> {
         const config = structuredClone(this.config);
         // search states for mode auto
-        const tempConfig: Partial<pages.cardEntitiesDataItemOptions> = this.enums || this.dpInit
-            ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
-            : config;
+        const tempConfig: Partial<pages.cardEntitiesDataItemOptions> =
+            this.enums || this.dpInit
+                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
+                : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
         const tempItem: Partial<pages.cardEntitiesDataItems> = await this.panel.statesControler.createDataItems(
@@ -46,6 +47,7 @@ export class PageEntities extends Page {
     }
 
     public async update(): Promise<void> {
+        if (!this.visibility) return;
         const message: Partial<pages.PageEntitiesMessage> = {};
         message.options = [];
         if (this.pageItems) {
@@ -67,7 +69,7 @@ export class PageEntities extends Page {
         return getPayload('entityUpd', message.headline, message.navigation, getPayloadArray(message.options));
     }
     protected async onStateTrigger(): Promise<void> {
-        this.update();
+        await this.update();
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {}
 }

@@ -141,8 +141,8 @@ export class Screensaver extends Page {
         //await super.onVisibilityChange(v);
         this.step = -1;
         if (v) {
-            this.sendType();
-            this.update();
+            await this.sendType();
+            await this.update();
             this.rotationLoop();
         } else {
             if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);
@@ -178,11 +178,11 @@ export class Screensaver extends Page {
                         case 'indicator':
                         case 'alternate':
                         case 'favorit': {
-                            this.update();
+                            await this.update();
                             break;
                         }
                         case 'mricon': {
-                            this.HandleScreensaverStatusIcons();
+                            await this.HandleScreensaverStatusIcons();
                             break;
                         }
                         case 'time': {

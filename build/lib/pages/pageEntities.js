@@ -57,6 +57,8 @@ class PageEntities extends import_Page.Page {
   }
   async update() {
     var _a;
+    if (!this.visibility)
+      return;
     const message = {};
     message.options = [];
     if (this.pageItems) {
@@ -78,7 +80,7 @@ class PageEntities extends import_Page.Page {
     return (0, import_tools.getPayload)("entityUpd", message.headline, message.navigation, (0, import_tools.getPayloadArray)(message.options));
   }
   async onStateTrigger() {
-    this.update();
+    await this.update();
   }
   async onButtonEvent(_event) {
   }

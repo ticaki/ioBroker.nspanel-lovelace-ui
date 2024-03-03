@@ -83,6 +83,7 @@ export class PageMedia extends Page {
         }
     }
     async update(): Promise<void> {
+        if (!this.visibility) return;
         const item = this.items;
         if (item === undefined) return;
         const message: Partial<pages.PageMediaMessage> = {};
@@ -285,7 +286,7 @@ export class PageMedia extends Page {
     }
 
     onStateTrigger = async (): Promise<void> => {
-        this.update();
+        await this.update();
     };
     async onButtonEvent(event: IncomingEvent): Promise<void> {
         if (!this.getVisibility() || this.sleep) return;
@@ -363,7 +364,7 @@ export class PageMedia extends Page {
             case 'button': {
                 if (event.id === '0' && this.nextArrow) {
                     this.step++;
-                    this.update();
+                    await this.update();
                 }
                 break;
             }

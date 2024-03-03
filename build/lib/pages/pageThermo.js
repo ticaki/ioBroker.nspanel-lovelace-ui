@@ -93,6 +93,8 @@ class PageThermo extends import_Page.Page {
   }
   async update() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    if (!this.visibility)
+      return;
     const message = {};
     message.options = ["~~~", "~~~", "~~~", "~~~", "~~~", "~~~", "~~~", "~~~"];
     if (this.items) {
@@ -186,7 +188,7 @@ class PageThermo extends import_Page.Page {
     } else if (event.action === "hvac_action" && this.pageItems && this.pageItems[Number(event.opt.split("?")[1])]) {
       if (this.nextArrow && event.opt.split("?")[1] === "0") {
         this.step++;
-        this.update();
+        await this.update();
       } else if (await this.pageItems[Number(event.opt.split("?")[1])].onCommand("button", ""))
         return;
     }

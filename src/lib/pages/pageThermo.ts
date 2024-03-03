@@ -77,6 +77,7 @@ export class PageThermo extends Page {
     }
 
     public async update(): Promise<void> {
+        if (!this.visibility) return;
         const message: Partial<pages.PageThermoMessage> = {};
         message.options = ['~~~', '~~~', '~~~', '~~~', '~~~', '~~~', '~~~', '~~~'];
         if (this.items) {
@@ -184,7 +185,7 @@ export class PageThermo extends Page {
         ) {
             if (this.nextArrow && event.opt.split('?')[1] === '0') {
                 this.step++;
-                this.update();
+                await this.update();
             } else if (await this.pageItems[Number(event.opt.split('?')[1])]!.onCommand('button', '')) return;
         }
     }

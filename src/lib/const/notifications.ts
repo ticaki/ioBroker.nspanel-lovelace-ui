@@ -20,9 +20,10 @@ const popupWelcome: PageBaseConfig = {
             text: { type: 'const', constVal: 'welcomeTToken' }, // text: { type: 'const', constVal: 'Text Test ${pl}' },
             colorText: { true: { color: { type: 'const', constVal: Color.White } } },
             timeout: { type: 'const', constVal: 3 },
-            // {placeholder: {text: '' oder dp: ''}}
-            // optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
-            //setValue1: { type: 'const', constVal: true },
+            // {placeholder: {text: '' oder dp: ''}} im Text muss dann ${dieserKeyStehtImText} stehen
+            // optionalValue: { type: 'const', constVal: { dieserKeyStehtImText: { text: 'das ist ein placeholder' } } },
+            //setValue1: { type: 'const', constVal: true }, // alleine ist es ein switch
+            //setValue2: { type: 'const', constVal: true }, // mit setValue2 wird 1, bei yes und 2 bei no auf true gesetzt
         },
     },
     pageItems: [],

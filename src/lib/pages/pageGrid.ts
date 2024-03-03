@@ -53,6 +53,7 @@ export class PageGrid extends Page {
     }
 
     public async update(): Promise<void> {
+        if (!this.visibility) return;
         const message: Partial<pages.PageGridMessage> = {};
         message.options = [];
         if (!this.items || (this.items.card !== 'cardGrid' && this.items.card !== 'cardGrid2')) return;
@@ -78,7 +79,7 @@ export class PageGrid extends Page {
         return getPayload('entityUpd', message.headline, message.navigation, getPayloadArray(message.options));
     }
     protected async onStateTrigger(): Promise<void> {
-        this.update();
+        await this.update();
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         //if (event.page && event.id && this.pageItems) {

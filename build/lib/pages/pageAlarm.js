@@ -70,6 +70,8 @@ class PageAlarm extends import_Page.Page {
   }
   async update() {
     var _a, _b, _c, _d, _e;
+    if (!this.visibility)
+      return;
     const message = {};
     const items = this.items;
     if (!items || items.card !== "cardAlarm")
@@ -117,7 +119,7 @@ class PageAlarm extends import_Page.Page {
     return (0, import_tools.getPayload)("", "", (_a = i.icon) != null ? _a : "", (_b = i.iconColor) != null ? _b : "", (_c = i.name) != null ? _c : "", (_d = i.value) != null ? _d : "", String((_e = i.speed) != null ? _e : ""));
   }
   async onStateTrigger() {
-    this.update();
+    await this.update();
   }
   async onButtonEvent(_event) {
   }

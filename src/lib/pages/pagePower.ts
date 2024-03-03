@@ -127,6 +127,7 @@ export class PagePower extends Page {
         return null;
     };
     public async update(): Promise<void> {
+        if (!this.visibility) return;
         const message: Partial<pages.PagePowerMessage> = {};
         const items = this.items;
         if (!items || items.card !== 'cardPower') return;
@@ -211,7 +212,7 @@ export class PagePower extends Page {
         return getPayload('', '', i.icon ?? '', i.iconColor ?? '', i.name ?? '', i.value ?? '', String(i.speed ?? ''));
     }
     protected async onStateTrigger(): Promise<void> {
-        this.update();
+        await this.update();
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         //if (event.page && event.id && this.pageItems) {
