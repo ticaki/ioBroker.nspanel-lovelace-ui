@@ -49,6 +49,7 @@ export class PageNotify extends Page {
         // set card because we lose it
         this.items.card = this.card as any;
         await super.init();
+        await this.panel.statesControler.activateTrigger(this);
     }
 
     setLastPage(p: Page | undefined): void {
@@ -73,17 +74,16 @@ export class PageNotify extends Page {
             value = await getValueEntryNumber(data.entity1);
             if (value === null) value = (await getValueEntryBoolean(data.entity1)) ?? true;
 
-            message.headline = this.library.getTranslation((data.headline && (await data.headline.getString())) ?? '');
+            message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? '';
             message.hColor = await getIconEntryColor(data.colorHeadline, value, White);
 
-            message.blText = (data.buttonLeft && (await data.buttonLeft.getString())) ?? '';
+            message.blText = (data.buttonLeft && (await data.buttonLeft.getTranslatedString())) ?? '';
             message.blColor = await getIconEntryColor(data.colorButtonLeft, value, White);
 
-            message.brText = (data.buttonRight && (await data.buttonRight.getString())) ?? '';
+            message.brText = (data.buttonRight && (await data.buttonRight.getTranslatedString())) ?? '';
             message.brColor = await getIconEntryColor(data.colorButtonRight, value, White);
 
-            message.text = (data.text && (await data.text.getString())) ?? '';
-            if (message.text) message.text = this.library.getTranslation(message.text);
+            message.text = (data.text && (await data.text.getTranslatedString())) ?? '';
             if (message.text) message.text = message.text.replaceAll('\n', '\r\n').replaceAll('/r/n', '\r\n');
 
             message.textColor = await getIconEntryColor(data.colorText, value, White);
@@ -94,7 +94,14 @@ export class PageNotify extends Page {
                     const target = placeholder[key];
                     let val = (target.dp && (await this.panel.statesControler.getStateVal(target.dp))) ?? '';
                     if (val === '') val = target.text ?? '';
-                    message.text = message.text.replaceAll('${' + key + '}', val as string);
+                    message.headline = message.headline.replaceAll(
+                        '${' + key + '}',
+                        this.library.getTranslation(val as string),
+                    );
+                    message.text = message.text.replaceAll(
+                        '${' + key + '}',
+                        this.library.getTranslation(val as string),
+                    );
                 }
             }
 
@@ -147,7 +154,7 @@ export class PageNotify extends Page {
     }
     protected async onStateTrigger(_dp: string): Promise<void> {
         this.log.debug('state triggerd ' + _dp);
-        if (_dp.includes('popupNotification')) this.panel.setActivePage(this);
+        /*if (_dp.includes('popupNotification'))*/ this.panel.setActivePage(this);
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         if (_event.action === 'notifyAction') {

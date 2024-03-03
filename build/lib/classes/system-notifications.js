@@ -26,6 +26,7 @@ class SystemNotifications extends import_library.BaseClass {
   language;
   notifications = [];
   messageTimeout;
+  count = 0;
   constructor(adapter) {
     super(adapter, "system-notifcations");
     this.language = this.adapter.library.getLocalLanguage();
@@ -128,6 +129,7 @@ class SystemNotifications extends import_library.BaseClass {
           return -1;
         return 0;
       });
+      this.count = this.notifications.filter((a) => !a.cleared).length;
       if (this.notifications.some((a) => !a.cleared))
         this.adapter.controller && this.adapter.controller.notificationToPanel();
     }, 2500);
@@ -143,6 +145,8 @@ class SystemNotifications extends import_library.BaseClass {
   }
   getNotification(index) {
     if (this.notifications[index]) {
+      let currentNotify = 0;
+      this.notifications.forEach((a2) => !a2.cleared && currentNotify <= index && currentNotify++);
       let { headline, text } = this.notifications[index];
       const line = 46;
       let counter = 0;
@@ -159,7 +163,10 @@ class SystemNotifications extends import_library.BaseClass {
       }
       headline += "\n";
       text = headline + "\n" + text;
-      return { headline: "Notification", text };
+      return {
+        headline: `${this.library.getTranslation("Notification")} (${currentNotify}/${this.count})`,
+        text
+      };
     }
     return null;
   }

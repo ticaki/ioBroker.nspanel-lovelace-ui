@@ -204,6 +204,7 @@ export class StatesControler extends BaseClass {
             common: ioBroker.StateCommon;
             internal?: boolean;
             f?: getInternalFunctionType;
+            triggerAllowed: boolean[];
         };
     } = {};
     private deletePageInterval: ioBroker.Interval | undefined;
@@ -264,7 +265,12 @@ export class StatesControler extends BaseClass {
      * @param id state id
      * @param from the page that handle the trigger
      */
-    async setTrigger(id: string, from: BaseClassTriggerd, internal: boolean = false): Promise<void> {
+    async setTrigger(
+        id: string,
+        from: BaseClassTriggerd,
+        internal: boolean = false,
+        trigger: boolean = true,
+    ): Promise<void> {
         if (id.startsWith(this.adapter.namespace)) {
             this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
             return;
@@ -275,6 +281,7 @@ export class StatesControler extends BaseClass {
             if (index === -1) {
                 this.triggerDB[id].to.push(from);
                 this.triggerDB[id].subscribed.push(false);
+                this.triggerDB[id].triggerAllowed.push(trigger);
             } else {
             }
         } else if (internal) {
@@ -292,6 +299,7 @@ export class StatesControler extends BaseClass {
                     ts: Date.now(),
                     subscribed: [false],
                     common: obj.common,
+                    triggerAllowed: [trigger],
                 };
                 if (this.stateDB[id] !== undefined) {
                     delete this.stateDB[id];
@@ -309,10 +317,10 @@ export class StatesControler extends BaseClass {
         if (!to) return;
         for (const id in this.triggerDB) {
             const entry = this.triggerDB[id];
-            if (entry.internal) continue;
             const index = entry.to.indexOf(to);
             if (index === -1) continue;
             if (entry.subscribed[index]) continue;
+            if (!entry.triggerAllowed[index]) continue;
             if (!entry.subscribed.some((a) => a)) {
                 await this.adapter.subscribeForeignStatesAsync(id);
                 const state = await this.adapter.getForeignStateAsync(id);
@@ -424,6 +432,11 @@ export class StatesControler extends BaseClass {
         return j;
     }
 
+    /**
+     * Check if the trigger should trigger other classes. dont check if object has a active subscription. this is done in next step with visible & neverDeactiveTrigger
+     * @param dp internal/external
+     * @param state iobroker state
+     */
     async onStateChange(dp: string, state: ioBroker.State | null | undefined): Promise<void> {
         if (dp && state) {
             if (this.triggerDB[dp]) {
@@ -432,8 +445,9 @@ export class StatesControler extends BaseClass {
                     this.triggerDB[dp].ts = Date.now();
                     if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack) {
                         this.triggerDB[dp].state = state;
-                        if (state.ack || dp.startsWith('0_userdata.0')) {
-                            await this.triggerDB[dp].to.forEach(async (c) => {
+                        if (state.ack || this.triggerDB[dp].internal || dp.startsWith('0_userdata.0')) {
+                            await this.triggerDB[dp].to.forEach(async (c, i) => {
+                                if (!this.triggerDB[dp].subscribed[i] || !this.triggerDB[dp].triggerAllowed[i]) return;
                                 if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
                                     c.parent.onStateTriggerSuperDoNotOverride &&
                                         (await c.parent.onStateTriggerSuperDoNotOverride(dp, c));
@@ -481,12 +495,22 @@ export class StatesControler extends BaseClass {
                 if (writeable) await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
                 else this.log.error(`Forbidden write attempts on a read-only state! id: ${item.options.dp}`);
             }
-        } else if (item.options.type === 'internal') {
+        } else if (item.options.type === 'internal' || item.options.type === 'internalState') {
             if (this.triggerDB[item.options.dp]) {
                 await this.setInternalState(item.options.dp, val, false);
             }
         }
     }
+
+    /**
+     * Set a internal state and trigger
+     * @param id something like 'cmd/blabla'
+     * @param val Value
+     * @param ack false use value/ true use func
+     * @param common optional for first call
+     * @param func optional for first call
+     * @returns
+     */
     public async setInternalState(
         id: string,
         val: ioBroker.StateValue,
@@ -496,29 +520,20 @@ export class StatesControler extends BaseClass {
     ): Promise<boolean> {
         if (this.triggerDB[id] !== undefined) {
             const f = this.triggerDB[id].f;
-            if (ack) {
-                await this.onStateChange(id, {
-                    ...this.triggerDB[id].state,
-                    val: f ? await f(id, undefined) : val,
-                    ack: ack,
-                    ts: Date.now(),
-                });
-            } else {
-                if (f)
-                    f(id, {
-                        ...this.triggerDB[id].state,
-                        val: val,
-                        ack: ack,
-                        ts: Date.now(),
-                    });
 
-                this.triggerDB[id].state = {
-                    ...this.triggerDB[id].state,
-                    val,
-                    ack: ack,
-                    ts: Date.now(),
-                };
-            }
+            const newState = {
+                ...this.triggerDB[id].state,
+                val: ack && f ? (await f(id, undefined)) ?? val : val,
+                ack: ack,
+                ts: Date.now(),
+            };
+
+            // use this to active pages
+            await this.onStateChange(id, newState);
+
+            // here we trigger the state action
+            f && (await f(id, this.triggerDB[id].state));
+
             return true;
         } else if (common) {
             this.log.warn(`No warning, just info. add internal state ${id} with ${JSON.stringify(common)}`);
@@ -530,6 +545,7 @@ export class StatesControler extends BaseClass {
                 common: common,
                 internal: true,
                 f: func,
+                triggerAllowed: [],
             };
         }
         return false;
@@ -560,6 +576,9 @@ export class StatesControler extends BaseClass {
         return target;
     }
 
+    /**
+     * Temporäes Datenobject zum speichern aller Enums und Objecte
+     */
     static TempObjectDB: {
         data: Record<string, ioBroker.Object> | undefined;
         keys: string[];
@@ -582,7 +601,7 @@ export class StatesControler extends BaseClass {
         return StatesControler.TempObjectDB;
     }
     /**
-     * Filterfunktion umso genauer filter unm so weniger Ressourcen werden verbraucht.
+     * Filterfunktion umso genauere Filter um so weniger Ressourcen werden verbraucht.
      * @param dpInit string RegExp oder '' für aus; string wird mit include verwendet.
      * @param enums string, string[], RegExp als String übergeben oder ein String der mit include verwenden wird.
      * @returns 2 arrays keys: gefilterten keys und data: alle Objekte...

@@ -30,5 +30,8 @@
     "opened": "відкрито",
     "closed": "ЗАЧИНЕНО",
     "sunsetToken": "Захід сонця",
-    "sunriseToken": "Схід сонця"
+    "sunriseToken": "Схід сонця",
+    "confirm": "bestätigen",
+    "nextF": "nächste",
+    "Notification": "Benachrichtigung"
 }

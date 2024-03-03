@@ -72,9 +72,9 @@ const popupNotification = {
       entity1: { value: { type: "internal", dp: "cmd/popupNotification", read: "return true" } },
       headline: { type: "internal", dp: "cmd/popupNotification", read: "return JSON.parse(val).headline" },
       colorHeadline: { true: { color: { type: "const", constVal: Color.Green } } },
-      buttonLeft: { type: "const", constVal: "next" },
+      buttonLeft: { type: "const", constVal: "nextF" },
       colorButtonLeft: { true: { color: { type: "const", constVal: Color.White } } },
-      buttonRight: { type: "const", constVal: "delete" },
+      buttonRight: { type: "const", constVal: "ok" },
       colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
       text: { type: "internal", dp: "cmd/popupNotification", read: "return JSON.parse(val).text" },
       // text: { type: 'const', constVal: 'Text Test ${pl}' },
@@ -82,8 +82,8 @@ const popupNotification = {
       timeout: { type: "const", constVal: 0 },
       // {placeholder: {text: '' oder dp: ''}}
       // optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
-      setValue1: { type: "internal", dp: "cmd/NotificationCleared" },
-      setValue2: { type: "internal", dp: "cmd/NotificationNext" }
+      setValue1: { type: "internalState", dp: "cmd/NotificationCleared" },
+      setValue2: { type: "internalState", dp: "cmd/NotificationNext" }
     }
   },
   pageItems: [],
@@ -101,18 +101,16 @@ const popupNotification2 = {
       entity1: { value: { type: "internal", dp: "cmd/popupNotification2", read: "return true" } },
       headline: { type: "internal", dp: "cmd/popupNotification2", read: "return JSON.parse(val).headline" },
       colorHeadline: { true: { color: { type: "const", constVal: Color.Green } } },
-      buttonLeft: { type: "const", constVal: "next" },
+      buttonLeft: { type: "const", constVal: "nextF" },
       colorButtonLeft: { true: { color: { type: "const", constVal: Color.White } } },
-      buttonRight: { type: "const", constVal: "delete" },
-      colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
+      buttonRight: { type: "const", constVal: "ok" },
+      colorButtonRight: { true: { color: { type: "const", constVal: Color.Green } } },
       text: { type: "internal", dp: "cmd/popupNotification2", read: "return JSON.parse(val).text" },
       // text: { type: 'const', constVal: 'Text Test ${pl}' },
       colorText: { true: { color: { type: "const", constVal: Color.White } } },
       timeout: { type: "const", constVal: 0 },
-      // {placeholder: {text: '' oder dp: ''}}
-      // optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
-      setValue1: { type: "internal", dp: "cmd/NotificationCleared2" },
-      setValue2: { type: "internal", dp: "cmd/NotificationNext2" }
+      setValue1: { type: "internalState", dp: "cmd/NotificationCleared2" },
+      setValue2: { type: "internalState", dp: "cmd/NotificationNext2" }
     }
   },
   pageItems: [],

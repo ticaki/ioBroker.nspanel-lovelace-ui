@@ -254,7 +254,7 @@ class StatesControler extends import_library.BaseClass {
    * @param id state id
    * @param from the page that handle the trigger
    */
-  async setTrigger(id, from, internal = false) {
+  async setTrigger(id, from, internal = false, trigger = true) {
     if (id.startsWith(this.adapter.namespace)) {
       this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
       return;
@@ -264,6 +264,7 @@ class StatesControler extends import_library.BaseClass {
       if (index === -1) {
         this.triggerDB[id].to.push(from);
         this.triggerDB[id].subscribed.push(false);
+        this.triggerDB[id].triggerAllowed.push(trigger);
       } else {
       }
     } else if (internal) {
@@ -280,7 +281,8 @@ class StatesControler extends import_library.BaseClass {
           to: [from],
           ts: Date.now(),
           subscribed: [false],
-          common: obj.common
+          common: obj.common,
+          triggerAllowed: [trigger]
         };
         if (this.stateDB[id] !== void 0) {
           delete this.stateDB[id];
@@ -298,12 +300,12 @@ class StatesControler extends import_library.BaseClass {
       return;
     for (const id in this.triggerDB) {
       const entry = this.triggerDB[id];
-      if (entry.internal)
-        continue;
       const index = entry.to.indexOf(to);
       if (index === -1)
         continue;
       if (entry.subscribed[index])
+        continue;
+      if (!entry.triggerAllowed[index])
         continue;
       if (!entry.subscribed.some((a) => a)) {
         await this.adapter.subscribeForeignStatesAsync(id);
@@ -418,6 +420,11 @@ class StatesControler extends import_library.BaseClass {
     }
     return j;
   }
+  /**
+   * Check if the trigger should trigger other classes. dont check if object has a active subscription. this is done in next step with visible & neverDeactiveTrigger
+   * @param dp internal/external
+   * @param state iobroker state
+   */
   async onStateChange(dp, state) {
     if (dp && state) {
       if (this.triggerDB[dp]) {
@@ -426,8 +433,10 @@ class StatesControler extends import_library.BaseClass {
           this.triggerDB[dp].ts = Date.now();
           if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack) {
             this.triggerDB[dp].state = state;
-            if (state.ack || dp.startsWith("0_userdata.0")) {
-              await this.triggerDB[dp].to.forEach(async (c) => {
+            if (state.ack || this.triggerDB[dp].internal || dp.startsWith("0_userdata.0")) {
+              await this.triggerDB[dp].to.forEach(async (c, i) => {
+                if (!this.triggerDB[dp].subscribed[i] || !this.triggerDB[dp].triggerAllowed[i])
+                  return;
                 if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
                   c.parent.onStateTriggerSuperDoNotOverride && await c.parent.onStateTriggerSuperDoNotOverride(dp, c);
                 } else if (!c.unload) {
@@ -472,37 +481,33 @@ class StatesControler extends import_library.BaseClass {
         else
           this.log.error(`Forbidden write attempts on a read-only state! id: ${item.options.dp}`);
       }
-    } else if (item.options.type === "internal") {
+    } else if (item.options.type === "internal" || item.options.type === "internalState") {
       if (this.triggerDB[item.options.dp]) {
         await this.setInternalState(item.options.dp, val, false);
       }
     }
   }
+  /**
+   * Set a internal state and trigger
+   * @param id something like 'cmd/blabla'
+   * @param val Value
+   * @param ack false use value/ true use func
+   * @param common optional for first call
+   * @param func optional for first call
+   * @returns
+   */
   async setInternalState(id, val, ack = false, common = void 0, func = void 0) {
+    var _a;
     if (this.triggerDB[id] !== void 0) {
       const f = this.triggerDB[id].f;
-      if (ack) {
-        await this.onStateChange(id, {
-          ...this.triggerDB[id].state,
-          val: f ? await f(id, void 0) : val,
-          ack,
-          ts: Date.now()
-        });
-      } else {
-        if (f)
-          f(id, {
-            ...this.triggerDB[id].state,
-            val,
-            ack,
-            ts: Date.now()
-          });
-        this.triggerDB[id].state = {
-          ...this.triggerDB[id].state,
-          val,
-          ack,
-          ts: Date.now()
-        };
-      }
+      const newState = {
+        ...this.triggerDB[id].state,
+        val: ack && f ? (_a = await f(id, void 0)) != null ? _a : val : val,
+        ack,
+        ts: Date.now()
+      };
+      await this.onStateChange(id, newState);
+      f && await f(id, this.triggerDB[id].state);
       return true;
     } else if (common) {
       this.log.warn(`No warning, just info. add internal state ${id} with ${JSON.stringify(common)}`);
@@ -513,7 +518,8 @@ class StatesControler extends import_library.BaseClass {
         subscribed: [],
         common,
         internal: true,
-        f: func
+        f: func,
+        triggerAllowed: []
       };
     }
     return false;
@@ -541,6 +547,9 @@ class StatesControler extends import_library.BaseClass {
     }
     return target;
   }
+  /**
+   * Temporäes Datenobject zum speichern aller Enums und Objecte
+   */
   static TempObjectDB = {
     data: void 0,
     keys: [],
@@ -559,7 +568,7 @@ class StatesControler extends import_library.BaseClass {
     return StatesControler.TempObjectDB;
   }
   /**
-   * Filterfunktion umso genauer filter unm so weniger Ressourcen werden verbraucht.
+   * Filterfunktion umso genauere Filter um so weniger Ressourcen werden verbraucht.
    * @param dpInit string RegExp oder '' für aus; string wird mit include verwendet.
    * @param enums string, string[], RegExp als String übergeben oder ein String der mit include verwenden wird.
    * @returns 2 arrays keys: gefilterten keys und data: alle Objekte...

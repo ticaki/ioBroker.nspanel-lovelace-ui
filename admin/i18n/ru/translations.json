@@ -30,5 +30,8 @@
     "opened": "открыт",
     "closed": "закрыто",
     "sunsetToken": "Закат",
-    "sunriseToken": "Восход"
+    "sunriseToken": "Восход",
+    "confirm": "Bestätigen",
+    "nextF": "ночь",
+    "Notification": "Бенахрихтигунг"
 }

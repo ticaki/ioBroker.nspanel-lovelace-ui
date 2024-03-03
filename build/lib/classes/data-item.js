@@ -62,6 +62,7 @@ class Dataitem extends import_library.BaseClass {
       case "triggered":
         this.type = this.options.forceType ? this.options.forceType : void 0;
         break;
+      case "internalState":
       case "internal": {
         if (!this.options.dp.startsWith("///"))
           this.options.dp = this.parent.panel.name + "/" + this.options.dp;
@@ -82,6 +83,7 @@ class Dataitem extends import_library.BaseClass {
         return !(this.options.constVal === void 0 || this.options.constVal === null);
       case "state":
       case "internal":
+      case "internalState":
       case "triggered":
         if (!this.options.dp)
           return false;
@@ -97,9 +99,11 @@ class Dataitem extends import_library.BaseClass {
           this.stateDB.setTrigger(this.options.dp, this.parent);
         else if (this.options.type == "internal")
           this.stateDB.setTrigger(this.options.dp, this.parent, true);
+        else if (this.options.type == "internalState")
+          this.stateDB.setTrigger(this.options.dp, this.parent, true, false);
         const value = await this.stateDB.getState(
           this.options.dp,
-          this.options.type == "triggered" || this.options.type == "internal" ? "medium" : this.options.response
+          this.options.type == "triggered" || this.options.type == "internal" || this.options.type == "internalState" ? "medium" : this.options.response
         );
         return value !== null && value !== void 0;
     }
@@ -118,6 +122,7 @@ class Dataitem extends import_library.BaseClass {
           this.options.dp,
           this.options.type == "triggered" ? "medium" : this.options.response
         );
+      case "internalState":
       case "internal": {
         return await this.stateDB.getState(this.options.dp, "now");
       }
@@ -204,6 +209,13 @@ class Dataitem extends import_library.BaseClass {
     }
     return null;
   }
+  async getTranslatedString() {
+    const val = await this.getString();
+    if (val) {
+      return await this.library.getTranslation(val);
+    }
+    return null;
+  }
   async getString() {
     const state = await this.getState();
     switch (this.options.type) {
@@ -216,6 +228,7 @@ class Dataitem extends import_library.BaseClass {
           return state && state.val !== null ? String(state.val).substring(args[0], args[1]) : null;
         }
         return state && state.val !== null ? String(state.val) : null;
+      case "internalState":
       case "internal":
         return state && state.val !== null ? String(state.val) : null;
     }

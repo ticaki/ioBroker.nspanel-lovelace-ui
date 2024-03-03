@@ -65,8 +65,7 @@ class Panel extends import_library.BaseClass {
   screenSaver;
   InitDone = false;
   _isOnline = false;
-  notifyIndex = 0;
-  afterPopupPage;
+  notifyIndex = -1;
   navigation;
   format;
   controller;
@@ -232,6 +231,13 @@ class Panel extends import_library.BaseClass {
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
     await this.statesControler.setInternalState(
       `${this.name}/cmd/popupNotification`,
+      JSON.stringify({}),
+      true,
+      (0, import_tools.getInternalDefaults)("string", "json"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/info/NotificationCounter`,
       JSON.stringify({}),
       true,
       (0, import_tools.getInternalDefaults)("string", "json"),
@@ -853,32 +859,31 @@ class Panel extends import_library.BaseClass {
         }
       }
       this.statesControler.setInternalState(id, state.val, true);
-    } else if (!state) {
-      switch (token) {
-        case "bigIconLeft": {
-          return this.info.nspanel.bigIconLeft;
+    }
+    switch (token) {
+      case "bigIconLeft": {
+        return this.info.nspanel.bigIconLeft;
+      }
+      case "bigIconRight": {
+        return this.info.nspanel.bigIconRight;
+      }
+      case "screensaverTimeout": {
+        return this.timeout;
+      }
+      case "dimStandby": {
+        return this.dimMode.low;
+      }
+      case "dimActive": {
+        return this.dimMode.high;
+      }
+      case "popupNotification2":
+      case "popupNotification": {
+        if (this.notifyIndex !== -1) {
+          const val = this.controller.systemNotification.getNotification(this.notifyIndex);
+          if (val)
+            return JSON.stringify(val);
         }
-        case "bigIconRight": {
-          return this.info.nspanel.bigIconRight;
-        }
-        case "screensaverTimeout": {
-          return this.timeout;
-        }
-        case "dimStandby": {
-          return this.dimMode.low;
-        }
-        case "dimActive": {
-          return this.dimMode.high;
-        }
-        case "popupNotification2":
-        case "popupNotification": {
-          if (this.notifyIndex !== -1) {
-            const val = this.controller.systemNotification.getNotification(this.notifyIndex);
-            if (val)
-              return JSON.stringify(val);
-          }
-          return null;
-        }
+        return null;
       }
     }
     return null;

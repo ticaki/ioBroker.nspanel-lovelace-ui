@@ -30,5 +30,8 @@
     "opened": "geopend",
     "closed": "gesloten",
     "sunsetToken": "Zonsondergang",
-    "sunriseToken": "zonsopkomst"
+    "sunriseToken": "zonsopkomst",
+    "confirm": "bestätigen",
+    "nextF": "volgende",
+    "Notification": "Benachrichtigung"
 }

@@ -63,6 +63,7 @@ class PageNotify extends import_Page.Page {
     this.items = tempItem;
     this.items.card = this.card;
     await super.init();
+    await this.panel.statesControler.activateTrigger(this);
   }
   setLastPage(p) {
     if (p !== this) {
@@ -89,15 +90,13 @@ class PageNotify extends import_Page.Page {
       value = await (0, import_tools.getValueEntryNumber)(data.entity1);
       if (value === null)
         value = (_a = await (0, import_tools.getValueEntryBoolean)(data.entity1)) != null ? _a : true;
-      message.headline = this.library.getTranslation((_b = data.headline && await data.headline.getString()) != null ? _b : "");
+      message.headline = (_b = data.headline && await data.headline.getTranslatedString()) != null ? _b : "";
       message.hColor = await (0, import_tools.getIconEntryColor)(data.colorHeadline, value, import_Color.White);
-      message.blText = (_c = data.buttonLeft && await data.buttonLeft.getString()) != null ? _c : "";
+      message.blText = (_c = data.buttonLeft && await data.buttonLeft.getTranslatedString()) != null ? _c : "";
       message.blColor = await (0, import_tools.getIconEntryColor)(data.colorButtonLeft, value, import_Color.White);
-      message.brText = (_d = data.buttonRight && await data.buttonRight.getString()) != null ? _d : "";
+      message.brText = (_d = data.buttonRight && await data.buttonRight.getTranslatedString()) != null ? _d : "";
       message.brColor = await (0, import_tools.getIconEntryColor)(data.colorButtonRight, value, import_Color.White);
-      message.text = (_e = data.text && await data.text.getString()) != null ? _e : "";
-      if (message.text)
-        message.text = this.library.getTranslation(message.text);
+      message.text = (_e = data.text && await data.text.getTranslatedString()) != null ? _e : "";
       if (message.text)
         message.text = message.text.replaceAll("\n", "\r\n").replaceAll("/r/n", "\r\n");
       message.textColor = await (0, import_tools.getIconEntryColor)(data.colorText, value, import_Color.White);
@@ -108,7 +107,14 @@ class PageNotify extends import_Page.Page {
           let val = (_g = target.dp && await this.panel.statesControler.getStateVal(target.dp)) != null ? _g : "";
           if (val === "")
             val = (_h = target.text) != null ? _h : "";
-          message.text = message.text.replaceAll("${" + key + "}", val);
+          message.headline = message.headline.replaceAll(
+            "${" + key + "}",
+            this.library.getTranslation(val)
+          );
+          message.text = message.text.replaceAll(
+            "${" + key + "}",
+            this.library.getTranslation(val)
+          );
         }
       }
       message.timeout = (_i = data.timeout && await data.timeout.getNumber()) != null ? _i : 0;
@@ -162,8 +168,7 @@ class PageNotify extends import_Page.Page {
   }
   async onStateTrigger(_dp) {
     this.log.debug("state triggerd " + _dp);
-    if (_dp.includes("popupNotification"))
-      this.panel.setActivePage(this);
+    this.panel.setActivePage(this);
   }
   async onButtonEvent(_event) {
     if (_event.action === "notifyAction") {

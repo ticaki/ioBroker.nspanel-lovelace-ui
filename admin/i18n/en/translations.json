@@ -30,5 +30,8 @@
     "opened": "opened",
     "closed": "closed",
     "sunsetToken": "Sunset",
-    "sunriseToken": "Sunrise"
+    "sunriseToken": "Sunrise",
+    "confirm": "bestätigen",
+    "nextF": "nächste",
+    "Notification" : "Benachrichtigung"
 }

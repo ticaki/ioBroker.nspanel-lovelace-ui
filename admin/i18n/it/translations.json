@@ -30,5 +30,8 @@
     "opened": "ha aperto",
     "closed": "Chiuso",
     "sunsetToken": "Tramonto",
-    "sunriseToken": "Alba"
+    "sunriseToken": "Alba",
+    "confirm": "bestätigen",
+    "nextF": "prossimo",
+    "Notification": "Benachrichtigung"
 }

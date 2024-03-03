@@ -30,5 +30,8 @@
     "opened": "ouvert",
     "closed": "fermé",
     "sunsetToken": "Coucher de soleil",
-    "sunriseToken": "Lever du soleil"
+    "sunriseToken": "Lever du soleil",
+    "confirm": "meilleur",
+    "nextF": "près",
+    "Notification": "Benachrichtigung"
 }

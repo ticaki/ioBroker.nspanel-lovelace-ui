@@ -30,5 +30,7 @@
     "opened": "geöffnet",
     "closed": "geschlossen",
     "sunsetToken": "Sonne",
-    "sunriseToken": "Sonne"
+    "sunriseToken": "Sonne",
+    "nextF": "Nächste",
+    "Notification": "Benachrichtigung"
 }

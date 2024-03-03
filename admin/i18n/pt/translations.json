@@ -30,5 +30,8 @@
     "opened": "aberto",
     "closed": "fechado",
     "sunsetToken": "Pôr do sol",
-    "sunriseToken": "Nascer do sol"
+    "sunriseToken": "Nascer do sol",
+    "confirm": "bestätigen",
+    "nextF": "mais próximo",
+    "Notification": "Benachrichtigung"
 }

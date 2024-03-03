@@ -295,7 +295,13 @@ export type DataItemsOptionsIcon =
 export type DataItemsOptions = {
     name?: string;
     scale?: { min: number; max: number };
-} & (DataItemsOptionsConst | DataItemsOptionsState | DataItemsOptionsTriggered | DataItemsOptionsInternal);
+} & (
+    | DataItemsOptionsConst
+    | DataItemsOptionsState
+    | DataItemsOptionsTriggered
+    | DataItemsOptionsInternal
+    | DataItemsOptionsInternalState
+);
 
 type DataItemsOptionsAuto = {
     mode: 'auto' | 'done'; // not set means custom
@@ -316,6 +322,14 @@ type DataItemsOptionsConst = {
 };
 type DataItemsOptionsInternal = {
     type: 'internal';
+    role?: string;
+    dp: string;
+    read?: string | ((val: any) => any);
+    write?: string | ((val: any) => any);
+};
+
+type DataItemsOptionsInternalState = {
+    type: 'internalState';
     role?: string;
     dp: string;
     read?: string | ((val: any) => any);

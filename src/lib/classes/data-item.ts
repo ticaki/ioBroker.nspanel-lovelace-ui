@@ -31,6 +31,7 @@ export class Dataitem extends BaseClass {
                 this.type = this.options.forceType ? this.options.forceType : undefined;
                 // all work is done in isValidAndInit
                 break;
+            case 'internalState':
             case 'internal': {
                 if (!this.options.dp.startsWith('///'))
                     this.options.dp = this.parent.panel.name + '/' + this.options.dp;
@@ -51,6 +52,7 @@ export class Dataitem extends BaseClass {
                 return !(this.options.constVal === undefined || this.options.constVal === null);
             case 'state':
             case 'internal':
+            case 'internalState':
             case 'triggered':
                 if (!this.options.dp) return false;
                 const obj = await this.stateDB.getObjectAsync(this.options.dp);
@@ -64,9 +66,13 @@ export class Dataitem extends BaseClass {
                 this._writeable = !!obj.common.write;
                 if (this.options.type == 'triggered') this.stateDB.setTrigger(this.options.dp, this.parent);
                 else if (this.options.type == 'internal') this.stateDB.setTrigger(this.options.dp, this.parent, true);
+                else if (this.options.type == 'internalState')
+                    this.stateDB.setTrigger(this.options.dp, this.parent, true, false);
                 const value = await this.stateDB.getState(
                     this.options.dp,
-                    this.options.type == 'triggered' || this.options.type == 'internal'
+                    this.options.type == 'triggered' ||
+                        this.options.type == 'internal' ||
+                        this.options.type == 'internalState'
                         ? 'medium'
                         : this.options.response,
                 );
@@ -87,6 +93,7 @@ export class Dataitem extends BaseClass {
                     this.options.dp,
                     this.options.type == 'triggered' ? 'medium' : this.options.response,
                 );
+            case 'internalState':
             case 'internal': {
                 return await this.stateDB.getState(this.options.dp, 'now');
             }
@@ -177,6 +184,14 @@ export class Dataitem extends BaseClass {
         }
         return null;
     }
+    async getTranslatedString(): Promise<string | null> {
+        const val = await this.getString();
+        if (val) {
+            return await this.library.getTranslation(val);
+        }
+        return null;
+    }
+
     async getString(): Promise<string | null> {
         const state = await this.getState();
         switch (this.options.type) {
@@ -189,6 +204,7 @@ export class Dataitem extends BaseClass {
                     return state && state.val !== null ? String(state.val).substring(args[0], args[1]) : null;
                 }
                 return state && state.val !== null ? String(state.val) : null;
+            case 'internalState':
             case 'internal':
                 return state && state.val !== null ? String(state.val) : null;
         }
