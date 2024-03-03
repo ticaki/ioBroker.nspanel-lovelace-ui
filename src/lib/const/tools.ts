@@ -655,3 +655,17 @@ export function getRegExp(s: string): RegExp | null {
     if (!reg) return null;
     return new RegExp(reg, arg ? arg : undefined);
 }
+
+export function insertLinebreak(text: string, lineLength: number): string {
+    let counter = 0;
+    let a = 0;
+    let olda = a;
+    while (counter++ < 10) {
+        if (a + lineLength >= text.length) break;
+        a = text.lastIndexOf(' ', lineLength + a);
+        if (olda === a) break;
+        olda = a;
+        text = text.slice(0, a) + '\n' + text.slice(++a);
+    }
+    return text;
+}

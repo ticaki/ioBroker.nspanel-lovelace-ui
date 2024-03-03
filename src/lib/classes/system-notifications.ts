@@ -1,3 +1,4 @@
+import { insertLinebreak } from '../const/tools';
 import { GetNotificationsResponse, HostId, notification } from '../types/system-notifications';
 import { AdapterClassDefinition, BaseClass } from './library';
 
@@ -83,15 +84,22 @@ export class SystemNotifications extends BaseClass {
                 for (const c in sub.categories) {
                     msgs.push({
                         id: `${k}.${c}`,
-                        headline: sub.categories[c].name[this.language],
+                        headline: (hosts.length > 1 ? host + ': ' : '') + sub.categories[c].name[this.language],
                         text: sub.categories[c].description[this.language],
                         version: 0,
                         severity: sub.categories[c].severity,
                         ts: 0,
                         cleared: false,
+                        scopeid: k,
+                        categoryid: c,
+                        host: host,
                     });
                 }
             }
+            this.notifications = this.notifications.filter((a) => {
+                if (!a.scopeid || !a.categoryid || a.host !== host) return true;
+                return msgs.findIndex((b) => b.scopeid === a.scopeid && b.categoryid === a.categoryid) !== -1;
+            });
             for (const m of msgs) await this.sendNotifications(m);
         }
     }
@@ -99,7 +107,14 @@ export class SystemNotifications extends BaseClass {
     private async sendNotifications(notify: notification): Promise<void> {
         if (
             this.notifications.some((a) => {
-                if (a.id === notify.id && a.ts === notify.ts && a.severity == notify.severity) return true;
+                if (
+                    (!a.scopeid && a.id === notify.id && a.ts === notify.ts && a.severity == notify.severity) ||
+                    (a.scopeid &&
+                        a.scopeid === notify.scopeid &&
+                        a.categoryid === notify.scopeid &&
+                        a.host === notify.host)
+                )
+                    return true;
             })
         )
             return;
@@ -123,7 +138,19 @@ export class SystemNotifications extends BaseClass {
      * name
      */
     public async clearNotification(index: number): Promise<void> {
-        if (this.notifications[index]) {
+        if (this.notifications[index] && !this.notifications[index].cleared) {
+            if (this.notifications[index].scopeid) {
+                const msg = this.notifications[index];
+                if (msg.host)
+                    try {
+                        await this.adapter.sendToHostAsync(msg.host, 'clearNotifications', {
+                            scopeFilter: msg.scopeid ?? null,
+                            categoryFilter: msg.categoryid ?? null,
+                        });
+                    } catch (e) {
+                        this.log.error('Error while clear notification');
+                    }
+            }
             this.notifications[index].cleared = true;
             await this.writeConfig();
         }
@@ -132,23 +159,11 @@ export class SystemNotifications extends BaseClass {
         if (this.notifications[index]) {
             let currentNotify = 0;
             this.notifications.forEach((a) => !a.cleared && currentNotify <= index && currentNotify++);
-            let { headline, text } = this.notifications[index];
+            const { headline, text } = this.notifications[index];
             const line = 46;
-            let counter = 0;
-            let a = 0;
-            let olda = a;
-            while (counter++ < 10) {
-                if (a + line >= text.length) break;
-                a = text.lastIndexOf(' ', line + a);
-                if (olda === a) break;
-                olda = a;
-                text = text.slice(0, a) + '\n' + text.slice(++a);
-            }
-            headline += '\n';
-            text = headline + '\n' + text;
             return {
                 headline: `${this.library.getTranslation('Notification')} (${currentNotify}/${this.count})`,
-                text,
+                text: insertLinebreak(headline, line) + '\n' + insertLinebreak(text, line),
             };
         }
         return null;

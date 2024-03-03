@@ -15,6 +15,10 @@ interface notification {
     ts: number;
     cleared: boolean;
     severity: Severity;
+    scopeid?: string;
+    categoryid?: string;
+    instanceid?: string;
+    host?: string;
 }
 
 interface GetNotificationsResponse {

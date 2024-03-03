@@ -51,6 +51,7 @@ __export(tools_exports, {
   getValueEntryNumber: () => getValueEntryNumber,
   getValueEntryString: () => getValueEntryString,
   ifValueEntryIs: () => ifValueEntryIs,
+  insertLinebreak: () => insertLinebreak,
   messageItemDefault: () => messageItemDefault,
   setHuefromRGB: () => setHuefromRGB,
   setRGBThreefromRGB: () => setRGBThreefromRGB,
@@ -660,6 +661,21 @@ function getRegExp(s) {
     return null;
   return new RegExp(reg, arg ? arg : void 0);
 }
+function insertLinebreak(text, lineLength) {
+  let counter = 0;
+  let a = 0;
+  let olda = a;
+  while (counter++ < 10) {
+    if (a + lineLength >= text.length)
+      break;
+    a = text.lastIndexOf(" ", lineLength + a);
+    if (olda === a)
+      break;
+    olda = a;
+    text = text.slice(0, a) + "\n" + text.slice(++a);
+  }
+  return text;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
@@ -685,6 +701,7 @@ function getRegExp(s) {
   getValueEntryNumber,
   getValueEntryString,
   ifValueEntryIs,
+  insertLinebreak,
   messageItemDefault,
   setHuefromRGB,
   setRGBThreefromRGB,

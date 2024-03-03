@@ -21,6 +21,7 @@ __export(system_notifications_exports, {
   SystemNotifications: () => SystemNotifications
 });
 module.exports = __toCommonJS(system_notifications_exports);
+var import_tools = require("../const/tools");
 var import_library = require("./library");
 class SystemNotifications extends import_library.BaseClass {
   language;
@@ -97,22 +98,30 @@ class SystemNotifications extends import_library.BaseClass {
         for (const c in sub.categories) {
           msgs.push({
             id: `${k}.${c}`,
-            headline: sub.categories[c].name[this.language],
+            headline: (hosts.length > 1 ? host + ": " : "") + sub.categories[c].name[this.language],
             text: sub.categories[c].description[this.language],
             version: 0,
             severity: sub.categories[c].severity,
             ts: 0,
-            cleared: false
+            cleared: false,
+            scopeid: k,
+            categoryid: c,
+            host
           });
         }
       }
+      this.notifications = this.notifications.filter((a) => {
+        if (!a.scopeid || !a.categoryid || a.host !== host)
+          return true;
+        return msgs.findIndex((b) => b.scopeid === a.scopeid && b.categoryid === a.categoryid) !== -1;
+      });
       for (const m of msgs)
         await this.sendNotifications(m);
     }
   }
   async sendNotifications(notify) {
     if (this.notifications.some((a) => {
-      if (a.id === notify.id && a.ts === notify.ts && a.severity == notify.severity)
+      if (!a.scopeid && a.id === notify.id && a.ts === notify.ts && a.severity == notify.severity || a.scopeid && a.scopeid === notify.scopeid && a.categoryid === notify.scopeid && a.host === notify.host)
         return true;
     }))
       return;
@@ -138,7 +147,20 @@ class SystemNotifications extends import_library.BaseClass {
    * name
    */
   async clearNotification(index) {
-    if (this.notifications[index]) {
+    var _a, _b;
+    if (this.notifications[index] && !this.notifications[index].cleared) {
+      if (this.notifications[index].scopeid) {
+        const msg = this.notifications[index];
+        if (msg.host)
+          try {
+            await this.adapter.sendToHostAsync(msg.host, "clearNotifications", {
+              scopeFilter: (_a = msg.scopeid) != null ? _a : null,
+              categoryFilter: (_b = msg.categoryid) != null ? _b : null
+            });
+          } catch (e) {
+            this.log.error("Error while clear notification");
+          }
+      }
       this.notifications[index].cleared = true;
       await this.writeConfig();
     }
@@ -146,26 +168,12 @@ class SystemNotifications extends import_library.BaseClass {
   getNotification(index) {
     if (this.notifications[index]) {
       let currentNotify = 0;
-      this.notifications.forEach((a2) => !a2.cleared && currentNotify <= index && currentNotify++);
-      let { headline, text } = this.notifications[index];
+      this.notifications.forEach((a) => !a.cleared && currentNotify <= index && currentNotify++);
+      const { headline, text } = this.notifications[index];
       const line = 46;
-      let counter = 0;
-      let a = 0;
-      let olda = a;
-      while (counter++ < 10) {
-        if (a + line >= text.length)
-          break;
-        a = text.lastIndexOf(" ", line + a);
-        if (olda === a)
-          break;
-        olda = a;
-        text = text.slice(0, a) + "\n" + text.slice(++a);
-      }
-      headline += "\n";
-      text = headline + "\n" + text;
       return {
         headline: `${this.library.getTranslation("Notification")} (${currentNotify}/${this.count})`,
-        text
+        text: (0, import_tools.insertLinebreak)(headline, line) + "\n" + (0, import_tools.insertLinebreak)(text, line)
       };
     }
     return null;
