@@ -107,7 +107,7 @@ export class PageAlarm extends Page {
             if (status === 'pending') await this.setStatus('armed');
             else if (status === 'arming') await this.setStatus('disarmed');
             else await this.setStatus(this.status);
-        } else this.status = 'armed';
+        } else this.setStatus('armed');
         this.pin =
             (this.items && this.items.data && this.items.data.pin && (await this.items.data.pin.getNumber())) ?? 0;
     }
@@ -122,11 +122,11 @@ export class PageAlarm extends Page {
         const items = this.items;
         if (!items || items.card !== 'cardAlarm') return;
         const data = items.data;
+        await this.getStatus();
         message.intNameEntity = this.id;
         message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? this.name;
         message.navigation = this.getNavigation();
         if (this.alarmType === 'alarm') {
-            await this.getStatus();
             if (this.status === 'armed' || this.status === 'triggered') {
                 message.button1 = 'disarm';
                 message.status1 = 'D1';
@@ -307,6 +307,7 @@ export class PageAlarm extends Page {
                         this.panel.navigation.setTargetPageByName(value);
                         break;
                     }
+                    this.setStatus('armed');
                     break;
                 }
             }

@@ -123,7 +123,7 @@ class PageAlarm extends import_Page.Page {
       else
         await this.setStatus(this.status);
     } else
-      this.status = "armed";
+      this.setStatus("armed");
     this.pin = (_b = this.items && this.items.data && this.items.data.pin && await this.items.data.pin.getNumber()) != null ? _b : 0;
   }
   /**
@@ -139,11 +139,11 @@ class PageAlarm extends import_Page.Page {
     if (!items || items.card !== "cardAlarm")
       return;
     const data = items.data;
+    await this.getStatus();
     message.intNameEntity = this.id;
     message.headline = (_a = data.headline && await data.headline.getTranslatedString()) != null ? _a : this.name;
     message.navigation = this.getNavigation();
     if (this.alarmType === "alarm") {
-      await this.getStatus();
       if (this.status === "armed" || this.status === "triggered") {
         message.button1 = "disarm";
         message.status1 = "D1";
@@ -312,6 +312,7 @@ class PageAlarm extends import_Page.Page {
             this.panel.navigation.setTargetPageByName(value2);
             break;
           }
+          this.setStatus("armed");
           break;
         }
       }
