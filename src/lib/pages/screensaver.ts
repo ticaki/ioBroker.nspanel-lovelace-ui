@@ -21,9 +21,6 @@ export class Screensaver extends Page {
     items: undefined;
     private step: number = 0;
     private blockButtons: ioBroker.Timeout | undefined;
-    private headlinePos: number = 0;
-    private titelPos: number = 0;
-    private nextArrow: boolean = false;
     private rotationTime: number = 300000;
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
@@ -42,11 +39,12 @@ export class Screensaver extends Page {
         }
         config.alwaysOn = 'none';
         super(config, options);
-        //moment.locale(this.conddffig2.momentLocale);
+
         this.rotationTime =
             options.config.rotationTime !== 0 && options.config.rotationTime < 3
                 ? 3000
                 : options.config.rotationTime * 1000;
+        this.neverDeactivateTrigger = true;
     }
 
     async init(): Promise<void> {

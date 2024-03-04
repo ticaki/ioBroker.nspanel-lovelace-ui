@@ -797,10 +797,8 @@ class Panel extends import_library.BaseClass {
       }
       case "buttonPress2": {
         if (event.id == "screensaver") {
-          await this.setActivePage(this.navigation.getCurrentPage());
-          if (this.controller.systemNotification.getNotificationIndex(this.notifyIndex) !== -1) {
-            await this.statesControler.setInternalState(`${this.name}/cmd/NotificationNext2`, true, false);
-          }
+          this.navigation.resetPosition();
+          await this.navigation.setCurrentPage();
         } else if (event.action === "bExit" && event.id !== "popupNotify") {
           await this.setActivePage(true);
         } else {

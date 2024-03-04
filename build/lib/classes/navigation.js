@@ -62,7 +62,7 @@ class Navigation extends import_library.BaseClass {
       if (!c)
         continue;
       const pageID = this.panel.getPagebyUniqueID(c.page);
-      this.database[c.name === "main" ? 0 : b++] = pageID !== null ? { page: pageID, left: {}, right: {} } : null;
+      this.database[c.name === "main" ? 0 : b++] = pageID !== null ? { page: pageID, left: {}, right: {}, index: a } : null;
     }
     for (let a = 0; a < this.database.length; a++) {
       const c = this.navigationConfig[a];
@@ -89,11 +89,20 @@ class Navigation extends import_library.BaseClass {
       }
     }
   }
+  async setPageByIndex(index) {
+    if (index !== -1 && index !== void 0) {
+      const item = this.database[index];
+      if (item) {
+        this.currentItem = index;
+        await this.panel.setActivePage(this.database[index].page);
+        await this.optionalActions(item);
+      }
+    }
+  }
   setTargetPageByName(n) {
     const index = this.navigationConfig.findIndex((a) => a && a.name === n);
-    if (index !== -1 && this.database[index]) {
-      this.currentItem = index;
-      this.panel.setActivePage(this.database[index].page);
+    if (index !== -1) {
+      this.setPageByIndex(index);
     } else {
       this.log.warn(`Dont find navigation target for ${n}`);
     }
@@ -127,10 +136,7 @@ class Navigation extends import_library.BaseClass {
       this.doubleClickTimeout = void 0;
       if (i && i[d] && i[d].double) {
         const index = i[d].double;
-        if (index !== void 0 && this.database[index]) {
-          this.currentItem = index;
-          this.panel.setActivePage(this.database[index].page);
-        }
+        this.setPageByIndex(index);
       }
       this.log.debug("Navigation double click not work.");
     } else if (!single && i && i[d] && i[d].double) {
@@ -148,24 +154,32 @@ class Navigation extends import_library.BaseClass {
       this.doubleClickTimeout = void 0;
       if (i && i[d] && i[d].single !== void 0) {
         const index = i[d].single;
-        if (index !== void 0 && this.database[index]) {
-          this.currentItem = index;
-          this.panel.setActivePage(this.database[index].page);
-          return;
-        }
+        this.setPageByIndex(index);
         this.log.debug(`Navigation single click with target ${i[d].single} not work.`);
         return;
       } else if (i && i[d] && i[d].double !== void 0) {
         const index = i[d].double;
-        if (index !== void 0 && this.database[index]) {
-          this.currentItem = index;
-          this.panel.setActivePage(this.database[index].page);
-          return;
-        }
+        this.setPageByIndex(index);
         this.log.debug(`Navigation single click (use double target) with target ${i[d].double} not work.`);
         return;
       }
       this.log.debug("Navigation single click not work.");
+    }
+  }
+  async optionalActions(item) {
+    if (!item)
+      return;
+    const nItem = this.navigationConfig[item.index];
+    if (!nItem)
+      return;
+    if (nItem.optional === "notifications") {
+      if (this.panel.controller.systemNotification.getNotificationIndex(this.panel.notifyIndex) !== -1) {
+        await this.panel.statesControler.setInternalState(
+          `${this.panel.name}/cmd/NotificationNext2`,
+          true,
+          false
+        );
+      }
     }
   }
   buildNavigationString() {
@@ -231,6 +245,15 @@ class Navigation extends import_library.BaseClass {
       return this.database[index].page;
     }
     return page.page;
+  }
+  async setCurrentPage() {
+    let page = this.database[this.currentItem];
+    if (page === null || page === void 0) {
+      const index = this.database.findIndex((a) => a && a.page !== null);
+      page = this.database[index];
+    }
+    if (page)
+      await this.setPageByIndex(page.index);
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

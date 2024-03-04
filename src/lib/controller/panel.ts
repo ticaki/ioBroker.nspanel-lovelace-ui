@@ -59,7 +59,7 @@ export class Panel extends BaseClass {
     private screenSaver: Screensaver | undefined;
     private InitDone: boolean = false;
     private _isOnline: boolean = false;
-    private notifyIndex: number = -1;
+    public notifyIndex: number = -1;
     readonly navigation: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
     readonly controller: Controller;
@@ -813,10 +813,11 @@ export class Panel extends BaseClass {
             }
             case 'buttonPress2': {
                 if (event.id == 'screensaver') {
-                    await this.setActivePage(this.navigation.getCurrentPage());
-                    if (this.controller.systemNotification.getNotificationIndex(this.notifyIndex) !== -1) {
+                    this.navigation.resetPosition();
+                    await this.navigation.setCurrentPage();
+                    /*if (this.controller.systemNotification.getNotificationIndex(this.notifyIndex) !== -1) {
                         await this.statesControler.setInternalState(`${this.name}/cmd/NotificationNext2`, true, false);
-                    }
+                    }*/
                 } else if (event.action === 'bExit' && event.id !== 'popupNotify') {
                     await this.setActivePage(true);
                 } else {

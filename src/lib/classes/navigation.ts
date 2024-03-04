@@ -5,7 +5,7 @@ import { Icons } from '../const/icon_mapping';
 import { Page } from './Page';
 import { getPayload } from '../const/tools';
 import { genericStateObjects } from '../const/definition';
-
+type optionalActionsType = 'notifications';
 type NavigationItemConfig = {
     name: string;
     left?: {
@@ -17,6 +17,7 @@ type NavigationItemConfig = {
         double?: string;
     };
     page: string;
+    optional?: optionalActionsType;
 } | null;
 
 type NavigationItem = {
@@ -29,6 +30,7 @@ type NavigationItem = {
         double?: number;
     };
     page: Page;
+    index: number;
 } | null;
 
 export interface NavigationConfig {
@@ -73,7 +75,8 @@ export class Navigation extends BaseClass {
             const c = this.navigationConfig[a];
             if (!c) continue;
             const pageID = this.panel.getPagebyUniqueID(c.page);
-            this.database[c.name === 'main' ? 0 : b++] = pageID !== null ? { page: pageID, left: {}, right: {} } : null;
+            this.database[c.name === 'main' ? 0 : b++] =
+                pageID !== null ? { page: pageID, left: {}, right: {}, index: a } : null;
         }
         for (let a = 0; a < this.database.length; a++) {
             const c = this.navigationConfig[a];
@@ -97,12 +100,21 @@ export class Navigation extends BaseClass {
             }
         }
     }
+    async setPageByIndex(index: number | undefined): Promise<void> {
+        if (index !== -1 && index !== undefined) {
+            const item = this.database[index];
+            if (item) {
+                this.currentItem = index;
+                await this.panel.setActivePage(this.database[index]!.page);
+                await this.optionalActions(item);
+            }
+        }
+    }
 
     setTargetPageByName(n: string): void {
         const index = this.navigationConfig.findIndex((a) => a && a.name === n);
-        if (index !== -1 && this.database[index]) {
-            this.currentItem = index;
-            this.panel.setActivePage(this.database[index]!.page);
+        if (index !== -1) {
+            this.setPageByIndex(index);
         } else {
             this.log.warn(`Dont find navigation target for ${n}`);
         }
@@ -137,10 +149,7 @@ export class Navigation extends BaseClass {
             this.doubleClickTimeout = undefined;
             if (i && i[d] && i[d].double) {
                 const index = i[d].double;
-                if (index !== undefined && this.database[index]) {
-                    this.currentItem = index;
-                    this.panel.setActivePage(this.database[index]!.page);
-                }
+                this.setPageByIndex(index);
             }
             this.log.debug('Navigation double click not work.');
             // erster Klick und check obs ein Ziel für den 2. Klick gibt.
@@ -160,26 +169,34 @@ export class Navigation extends BaseClass {
             this.doubleClickTimeout = undefined;
             if (i && i[d] && i[d].single !== undefined) {
                 const index = i[d].single;
-                if (index !== undefined && this.database[index]) {
-                    this.currentItem = index;
-                    this.panel.setActivePage(this.database[index]!.page);
-                    return;
-                }
+                this.setPageByIndex(index);
                 this.log.debug(`Navigation single click with target ${i[d].single} not work.`);
                 return;
             } else if (i && i[d] && i[d].double !== undefined) {
                 const index = i[d].double;
-                if (index !== undefined && this.database[index]) {
-                    this.currentItem = index;
-                    this.panel.setActivePage(this.database[index]!.page);
-                    return;
-                }
+                this.setPageByIndex(index);
                 this.log.debug(`Navigation single click (use double target) with target ${i[d].double} not work.`);
                 return;
             }
             this.log.debug('Navigation single click not work.');
         }
     }
+
+    async optionalActions(item: NavigationItem): Promise<void> {
+        if (!item) return;
+        const nItem = this.navigationConfig[item.index];
+        if (!nItem) return;
+        if (nItem.optional === 'notifications') {
+            if (this.panel.controller.systemNotification.getNotificationIndex(this.panel.notifyIndex) !== -1) {
+                await this.panel.statesControler.setInternalState(
+                    `${this.panel.name}/cmd/NotificationNext2`,
+                    true,
+                    false,
+                );
+            }
+        }
+    }
+
     buildNavigationString(): string {
         const item = this.database[this.currentItem];
         if (!item) return '';
@@ -252,5 +269,14 @@ export class Navigation extends BaseClass {
             return this.database[index]!.page;
         }
         return page.page;
+    }
+
+    async setCurrentPage(): Promise<void> {
+        let page = this.database[this.currentItem];
+        if (page === null || page === undefined) {
+            const index = this.database.findIndex((a) => a && a.page !== null);
+            page = this.database[index];
+        }
+        if (page) await this.setPageByIndex(page.index);
     }
 }

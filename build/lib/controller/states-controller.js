@@ -432,10 +432,11 @@ class StatesControler extends import_library.BaseClass {
       if (this.triggerDB[dp] && this.triggerDB[dp].state) {
         this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
         this.triggerDB[dp].ts = Date.now();
+        const oldState = { val: this.triggerDB[dp].state.val, ack: this.triggerDB[dp].state.ack };
         this.triggerDB[dp].state = state;
         if (state.ack || this.triggerDB[dp].internal || dp.startsWith("0_userdata.0")) {
           await this.triggerDB[dp].to.forEach(async (c, i) => {
-            if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack || this.triggerDB[dp].change[i] === "ts") {
+            if (oldState.val !== state.val || oldState.ack !== state.ack || this.triggerDB[dp].change[i] === "ts") {
               if (!c.neverDeactivateTrigger && !this.triggerDB[dp].subscribed[i] || !this.triggerDB[dp].triggerAllowed[i])
                 return;
               if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {

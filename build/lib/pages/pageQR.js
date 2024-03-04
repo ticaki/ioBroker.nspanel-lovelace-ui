@@ -16,11 +16,11 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var pageOR_exports = {};
-__export(pageOR_exports, {
+var pageQR_exports = {};
+__export(pageQR_exports, {
   PageQR: () => PageQR
 });
-module.exports = __toCommonJS(pageOR_exports);
+module.exports = __toCommonJS(pageQR_exports);
 var import_Page = require("../classes/Page");
 class PageQR extends import_Page.Page {
   items;
@@ -90,4 +90,4 @@ class PageQR extends import_Page.Page {
 0 && (module.exports = {
   PageQR
 });
-//# sourceMappingURL=pageOR.js.map
+//# sourceMappingURL=pageQR.js.map

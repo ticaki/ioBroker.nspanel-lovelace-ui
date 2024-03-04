@@ -39,9 +39,6 @@ class Screensaver extends import_Page.Page {
   items;
   step = 0;
   blockButtons;
-  headlinePos = 0;
-  titelPos = 0;
-  nextArrow = false;
   rotationTime = 3e5;
   timoutRotation = void 0;
   constructor(config, options) {
@@ -61,6 +58,7 @@ class Screensaver extends import_Page.Page {
     config.alwaysOn = "none";
     super(config, options);
     this.rotationTime = options.config.rotationTime !== 0 && options.config.rotationTime < 3 ? 3e3 : options.config.rotationTime * 1e3;
+    this.neverDeactivateTrigger = true;
   }
   async init() {
     await super.init();
