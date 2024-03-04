@@ -159,7 +159,7 @@ class Page extends import_states_controller.BaseClassPage {
     return config;
   }
   async createPageItems() {
-    if (!this.pageItems && this.pageItemConfig) {
+    if (this.pageItemConfig) {
       this.pageItems = [];
       for (let a = 0; a < this.pageItemConfig.length; a++) {
         const config = {

@@ -187,7 +187,7 @@ export class Page extends BaseClassPage {
         return config;
     }
     protected async createPageItems(): Promise<void> {
-        if (!this.pageItems && this.pageItemConfig) {
+        if (this.pageItemConfig) {
             this.pageItems = [];
             for (let a = 0; a < this.pageItemConfig.length; a++) {
                 const config: Omit<PageItemInterface, 'pageItemsConfig'> = {

@@ -695,7 +695,7 @@ export type PageQRMessage = {
     headline: string;
     navigation: string;
     textQR: string;
-    options: string[];
+    options: [string?, string?];
 };
 
 export type PagePowerMessageItem = {
