@@ -213,7 +213,7 @@ export class Page extends BaseClassPage {
                 for (const item of this.pageItems) {
                     item && (await item.delete());
                 }
-                this.pageItems = undefined;
+                this.pageItems = [];
             }
         }
     }
@@ -255,7 +255,7 @@ export class Page extends BaseClassPage {
     }
     async delete(): Promise<void> {
         await super.delete();
-        this.pageItems = undefined;
+        this.pageItems = [];
     }
 }
 

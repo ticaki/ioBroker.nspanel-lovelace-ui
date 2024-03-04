@@ -185,7 +185,7 @@ class Page extends import_states_controller.BaseClassPage {
         for (const item of this.pageItems) {
           item && await item.delete();
         }
-        this.pageItems = void 0;
+        this.pageItems = [];
       }
     }
   }
@@ -221,7 +221,7 @@ class Page extends import_states_controller.BaseClassPage {
   }
   async delete() {
     await super.delete();
-    this.pageItems = void 0;
+    this.pageItems = [];
   }
 }
 function isMediaButtonActionType(F) {

@@ -253,6 +253,7 @@ class PageAlarm extends import_Page.Page {
         case "A4": {
           if (this.status === "disarmed" && approved) {
             await this.setStatus("arming");
+            await this.setMode(button);
             this.adapter.setTimeout(() => this.update(), 50);
           } else if (this.status === "arming") {
           } else if (!approved) {
@@ -265,6 +266,7 @@ class PageAlarm extends import_Page.Page {
         case "D1": {
           if (this.status === "armed" && approved) {
             await this.setStatus("pending");
+            await this.setMode(button);
             this.adapter.setTimeout(() => this.update(), 50);
           } else if (this.status === "pending") {
           } else if (!approved) {
