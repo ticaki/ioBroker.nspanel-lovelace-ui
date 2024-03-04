@@ -129,6 +129,7 @@ class PageAlarm extends import_Page.Page {
     if (!items || items.card !== "cardAlarm")
       return;
     const data = items.data;
+    message.intNameEntity = this.id;
     message.headline = (_a = data.headline && await data.headline.getTranslatedString()) != null ? _a : this.name;
     message.navigation = this.getNavigation();
     if (this.status === "armed" || this.status === "triggered") {
