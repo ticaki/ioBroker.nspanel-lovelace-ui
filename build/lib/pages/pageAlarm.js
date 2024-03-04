@@ -112,7 +112,13 @@ class PageAlarm extends import_Page.Page {
       import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
     );
     await super.init();
-    await this.setStatus("armed");
+    const status = await this.getStatus();
+    if (status === "pending")
+      await this.setStatus("armed");
+    else if (status === "arming")
+      await this.setStatus("disarmed");
+    else
+      await this.setStatus(this.status);
     this.pin = (_a = this.items && this.items.data && this.items.data.pin && await this.items.data.pin.getNumber()) != null ? _a : 0;
   }
   /**
