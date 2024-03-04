@@ -63,6 +63,7 @@ class PageAlarm extends import_Page.Page {
   titelPos = 0;
   nextArrow = false;
   status = "armed";
+  alarmType = "alarm";
   async setMode(m) {
     this.library.writedp(
       `panels.${this.panel.name}.alarm.${this.name}.mode`,
@@ -97,7 +98,7 @@ class PageAlarm extends import_Page.Page {
     this.neverDeactivateTrigger = true;
   }
   async init() {
-    var _a;
+    var _a, _b;
     const config = structuredClone(this.config);
     const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
     const tempItem = await this.panel.statesControler.createDataItems(
@@ -112,14 +113,18 @@ class PageAlarm extends import_Page.Page {
       import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
     );
     await super.init();
-    const status = await this.getStatus();
-    if (status === "pending")
-      await this.setStatus("armed");
-    else if (status === "arming")
-      await this.setStatus("disarmed");
-    else
-      await this.setStatus(this.status);
-    this.pin = (_a = this.items && this.items.data && this.items.data.pin && await this.items.data.pin.getNumber()) != null ? _a : 0;
+    this.alarmType = (_a = this.items && this.items.data && this.items.data.alarmType && await this.items.data.alarmType.getString()) != null ? _a : "alarm";
+    if (this.alarmType === "alarm") {
+      const status = await this.getStatus();
+      if (status === "pending")
+        await this.setStatus("armed");
+      else if (status === "arming")
+        await this.setStatus("disarmed");
+      else
+        await this.setStatus(this.status);
+    } else
+      this.status = "armed";
+    this.pin = (_b = this.items && this.items.data && this.items.data.pin && await this.items.data.pin.getNumber()) != null ? _b : 0;
   }
   /**
    *
@@ -129,7 +134,6 @@ class PageAlarm extends import_Page.Page {
     var _a, _b, _c, _d, _e;
     if (!this.visibility)
       return;
-    await this.getStatus();
     const message = {};
     const items = this.items;
     if (!items || items.card !== "cardAlarm")
@@ -138,42 +142,58 @@ class PageAlarm extends import_Page.Page {
     message.intNameEntity = this.id;
     message.headline = (_a = data.headline && await data.headline.getTranslatedString()) != null ? _a : this.name;
     message.navigation = this.getNavigation();
-    if (this.status === "armed" || this.status === "triggered") {
-      message.button1 = "disarm";
-      message.status1 = "D1";
+    if (this.alarmType === "alarm") {
+      await this.getStatus();
+      if (this.status === "armed" || this.status === "triggered") {
+        message.button1 = "disarm";
+        message.status1 = "D1";
+        message.button2 = "";
+        message.status2 = "";
+        message.button3 = "";
+        message.status3 = "";
+        message.button4 = "";
+        message.status4 = "";
+      } else {
+        message.button1 = (_b = data.button1 && await data.button1.getTranslatedString()) != null ? _b : this.library.getTranslation("arm_away");
+        message.status1 = message.button1 ? "A1" : "";
+        message.button2 = (_c = data.button2 && await data.button2.getTranslatedString()) != null ? _c : this.library.getTranslation("arm_home");
+        message.status2 = message.button2 ? "A2" : "";
+        message.button3 = (_d = data.button3 && await data.button3.getTranslatedString()) != null ? _d : this.library.getTranslation("arm_night");
+        message.status3 = message.button3 ? "A3" : "";
+        message.button4 = (_e = data.button4 && await data.button4.getTranslatedString()) != null ? _e : this.library.getTranslation("arm_vacation");
+        message.status4 = message.button4 ? "A4" : "";
+      }
+      if (this.status == "armed") {
+        message.icon = import_icon_mapping.Icons.GetIcon("shield-home");
+        message.iconColor = "63488";
+        message.numpad = "enable";
+        message.flashing = "disable";
+      } else if (this.status == "disarmed") {
+        message.icon = import_icon_mapping.Icons.GetIcon("shield-off");
+        message.iconColor = String((0, import_Color.rgb_dec565)(import_Color.Green));
+        message.numpad = "enable";
+        message.flashing = "disable";
+      } else if (this.status == "arming" || this.status == "pending") {
+        message.icon = import_icon_mapping.Icons.GetIcon("shield");
+        message.iconColor = String((0, import_Color.rgb_dec565)({ r: 243, g: 179, b: 0 }));
+        message.numpad = "disable";
+        message.flashing = "enable";
+      } else if (this.status == "triggered") {
+        message.icon = import_icon_mapping.Icons.GetIcon("bell-ring");
+        message.iconColor = String((0, import_Color.rgb_dec565)({ r: 223, g: 76, b: 30 }));
+        message.numpad = "enable";
+        message.flashing = "enable";
+      }
+    } else if (this.alarmType === "unlock") {
+      message.button1 = "unlock";
+      message.status1 = "U1";
       message.button2 = "";
       message.status2 = "";
       message.button3 = "";
       message.status3 = "";
       message.button4 = "";
       message.status4 = "";
-    } else {
-      message.button1 = (_b = data.button1 && await data.button1.getTranslatedString()) != null ? _b : this.library.getTranslation("arm_away");
-      message.status1 = message.button1 ? "A1" : "";
-      message.button2 = (_c = data.button2 && await data.button2.getTranslatedString()) != null ? _c : this.library.getTranslation("arm_home");
-      message.status2 = message.button2 ? "A2" : "";
-      message.button3 = (_d = data.button3 && await data.button3.getTranslatedString()) != null ? _d : this.library.getTranslation("arm_night");
-      message.status3 = message.button3 ? "A3" : "";
-      message.button4 = (_e = data.button4 && await data.button4.getTranslatedString()) != null ? _e : this.library.getTranslation("arm_vacation");
-      message.status4 = message.button4 ? "A4" : "";
-    }
-    if (this.status == "armed") {
-      message.icon = import_icon_mapping.Icons.GetIcon("shield-home");
-      message.iconColor = "63488";
-      message.numpad = "enable";
-      message.flashing = "disable";
-    } else if (this.status == "disarmed") {
-      message.icon = import_icon_mapping.Icons.GetIcon("shield-off");
-      message.iconColor = String((0, import_Color.rgb_dec565)(import_Color.Green));
-      message.numpad = "enable";
-      message.flashing = "disable";
-    } else if (this.status == "arming" || this.status == "pending") {
-      message.icon = import_icon_mapping.Icons.GetIcon("shield");
-      message.iconColor = String((0, import_Color.rgb_dec565)({ r: 243, g: 179, b: 0 }));
-      message.numpad = "disable";
-      message.flashing = "enable";
-    } else if (this.status == "triggered") {
-      message.icon = import_icon_mapping.Icons.GetIcon("bell-ring");
+      message.icon = import_icon_mapping.Icons.GetIcon("lock-remove");
       message.iconColor = String((0, import_Color.rgb_dec565)({ r: 223, g: 76, b: 30 }));
       message.numpad = "enable";
       message.flashing = "enable";
@@ -229,6 +249,7 @@ class PageAlarm extends import_Page.Page {
    * @returns
    */
   async onButtonEvent(_event) {
+    var _a;
     const button = _event.action;
     const value = _event.opt;
     if (!this.items || this.items.card !== "cardAlarm")
@@ -284,6 +305,13 @@ class PageAlarm extends import_Page.Page {
           break;
         }
         case "U1": {
+          const entry = this.items;
+          const item = entry.data;
+          const value2 = (_a = item.setNavi && await item.setNavi.getString()) != null ? _a : null;
+          if (value2 !== null) {
+            this.panel.navigation.setTargetPageByName(value2);
+            break;
+          }
           break;
         }
       }

@@ -36,6 +36,7 @@ export class PageAlarm extends Page {
     private titelPos: number = 0;
     private nextArrow: boolean = false;
     private status: pages.AlarmStates = 'armed';
+    private alarmType: string = 'alarm';
 
     async setMode(m: pages.AlarmButtonEvents): Promise<void> {
         this.library.writedp(
@@ -95,11 +96,18 @@ export class PageAlarm extends Page {
             genericStateObjects.panel.panels.alarm.cardAlarm._channel,
         );
         await super.init();
-        const status = await this.getStatus();
-        if (status === 'pending') await this.setStatus('armed');
-        else if (status === 'arming') await this.setStatus('disarmed');
-        else await this.setStatus(this.status);
-
+        this.alarmType =
+            (this.items &&
+                this.items.data &&
+                this.items.data.alarmType &&
+                (await this.items.data.alarmType.getString())) ??
+            'alarm';
+        if (this.alarmType === 'alarm') {
+            const status = await this.getStatus();
+            if (status === 'pending') await this.setStatus('armed');
+            else if (status === 'arming') await this.setStatus('disarmed');
+            else await this.setStatus(this.status);
+        } else this.status = 'armed';
         this.pin =
             (this.items && this.items.data && this.items.data.pin && (await this.items.data.pin.getNumber())) ?? 0;
     }
@@ -110,7 +118,6 @@ export class PageAlarm extends Page {
      */
     public async update(): Promise<void> {
         if (!this.visibility) return;
-        await this.getStatus();
         const message: Partial<pages.PageAlarmMessage> = {};
         const items = this.items;
         if (!items || items.card !== 'cardAlarm') return;
@@ -118,49 +125,67 @@ export class PageAlarm extends Page {
         message.intNameEntity = this.id;
         message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? this.name;
         message.navigation = this.getNavigation();
-        if (this.status === 'armed' || this.status === 'triggered') {
-            message.button1 = 'disarm';
-            message.status1 = 'D1';
+        if (this.alarmType === 'alarm') {
+            await this.getStatus();
+            if (this.status === 'armed' || this.status === 'triggered') {
+                message.button1 = 'disarm';
+                message.status1 = 'D1';
+                message.button2 = '';
+                message.status2 = '';
+                message.button3 = '';
+                message.status3 = '';
+                message.button4 = '';
+                message.status4 = '';
+            } else {
+                //const entity1 = await getValueEntryNumber(data.entity1);
+                message.button1 =
+                    (data.button1 && (await data.button1.getTranslatedString())) ??
+                    this.library.getTranslation('arm_away');
+                message.status1 = message.button1 ? 'A1' : '';
+                message.button2 =
+                    (data.button2 && (await data.button2.getTranslatedString())) ??
+                    this.library.getTranslation('arm_home');
+                message.status2 = message.button2 ? 'A2' : '';
+                message.button3 =
+                    (data.button3 && (await data.button3.getTranslatedString())) ??
+                    this.library.getTranslation('arm_night');
+                message.status3 = message.button3 ? 'A3' : '';
+                message.button4 =
+                    (data.button4 && (await data.button4.getTranslatedString())) ??
+                    this.library.getTranslation('arm_vacation');
+                message.status4 = message.button4 ? 'A4' : '';
+            }
+            if (this.status == 'armed') {
+                message.icon = Icons.GetIcon('shield-home'); //icon*~*
+                message.iconColor = '63488'; //iconcolor*~*
+                message.numpad = 'enable'; //numpadStatus*~*
+                message.flashing = 'disable'; //flashing*
+            } else if (this.status == 'disarmed') {
+                message.icon = Icons.GetIcon('shield-off'); //icon*~*
+                message.iconColor = String(rgb_dec565(Green)); //iconcolor*~*
+                message.numpad = 'enable'; //numpadStatus*~*
+                message.flashing = 'disable'; //flashing*
+            } else if (this.status == 'arming' || this.status == 'pending') {
+                message.icon = Icons.GetIcon('shield'); //icon*~*
+                message.iconColor = String(rgb_dec565({ r: 243, g: 179, b: 0 })); //iconcolor*~*
+                message.numpad = 'disable'; //numpadStatus*~*
+                message.flashing = 'enable'; //flashing*
+            } else if (this.status == 'triggered') {
+                message.icon = Icons.GetIcon('bell-ring'); //icon*~*
+                message.iconColor = String(rgb_dec565({ r: 223, g: 76, b: 30 })); //iconcolor*~*
+                message.numpad = 'enable'; //numpadStatus*~*
+                message.flashing = 'enable'; //flashing*
+            }
+        } else if (this.alarmType === 'unlock') {
+            message.button1 = 'unlock';
+            message.status1 = 'U1';
             message.button2 = '';
             message.status2 = '';
             message.button3 = '';
             message.status3 = '';
             message.button4 = '';
             message.status4 = '';
-        } else {
-            //const entity1 = await getValueEntryNumber(data.entity1);
-            message.button1 =
-                (data.button1 && (await data.button1.getTranslatedString())) ?? this.library.getTranslation('arm_away');
-            message.status1 = message.button1 ? 'A1' : '';
-            message.button2 =
-                (data.button2 && (await data.button2.getTranslatedString())) ?? this.library.getTranslation('arm_home');
-            message.status2 = message.button2 ? 'A2' : '';
-            message.button3 =
-                (data.button3 && (await data.button3.getTranslatedString())) ??
-                this.library.getTranslation('arm_night');
-            message.status3 = message.button3 ? 'A3' : '';
-            message.button4 =
-                (data.button4 && (await data.button4.getTranslatedString())) ??
-                this.library.getTranslation('arm_vacation');
-            message.status4 = message.button4 ? 'A4' : '';
-        }
-        if (this.status == 'armed') {
-            message.icon = Icons.GetIcon('shield-home'); //icon*~*
-            message.iconColor = '63488'; //iconcolor*~*
-            message.numpad = 'enable'; //numpadStatus*~*
-            message.flashing = 'disable'; //flashing*
-        } else if (this.status == 'disarmed') {
-            message.icon = Icons.GetIcon('shield-off'); //icon*~*
-            message.iconColor = String(rgb_dec565(Green)); //iconcolor*~*
-            message.numpad = 'enable'; //numpadStatus*~*
-            message.flashing = 'disable'; //flashing*
-        } else if (this.status == 'arming' || this.status == 'pending') {
-            message.icon = Icons.GetIcon('shield'); //icon*~*
-            message.iconColor = String(rgb_dec565({ r: 243, g: 179, b: 0 })); //iconcolor*~*
-            message.numpad = 'disable'; //numpadStatus*~*
-            message.flashing = 'enable'; //flashing*
-        } else if (this.status == 'triggered') {
-            message.icon = Icons.GetIcon('bell-ring'); //icon*~*
+            message.icon = Icons.GetIcon('lock-remove'); //icon*~*
             message.iconColor = String(rgb_dec565({ r: 223, g: 76, b: 30 })); //iconcolor*~*
             message.numpad = 'enable'; //numpadStatus*~*
             message.flashing = 'enable'; //flashing*
@@ -275,6 +300,13 @@ export class PageAlarm extends Page {
                     break;
                 }
                 case 'U1': {
+                    const entry = this.items;
+                    const item = entry.data;
+                    const value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
+                    if (value !== null) {
+                        this.panel.navigation.setTargetPageByName(value);
+                        break;
+                    }
                     break;
                 }
             }

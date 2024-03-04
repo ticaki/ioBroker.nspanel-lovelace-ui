@@ -383,6 +383,7 @@ export type cardNotify2DataItems = {
 };
 
 type PageAlarmPowerConfig = {
+    alarmType?: string; //alarm unlock
     headline: string;
     entity1: typePageItem.ValueEntryType;
     button1: string;
@@ -392,6 +393,7 @@ type PageAlarmPowerConfig = {
     icon: typePageItem.IconEntryType;
     pin: number;
     approved?: boolean;
+    setNavi?: string;
 };
 export type cardAlarmDataItemOptions = {
     card: 'cardAlarm';

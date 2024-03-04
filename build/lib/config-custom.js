@@ -2943,6 +2943,28 @@ const pageAlarmTest = {
     }
   }
 };
+const pageUnlockTest = {
+  card: "cardAlarm",
+  uniqueID: "unlock1",
+  alwaysOn: "always",
+  dpInit: "",
+  pageItems: [],
+  config: {
+    card: "cardAlarm",
+    data: {
+      alarmType: { type: "const", constVal: "unlock" },
+      headline: { type: "const", constVal: "Unlock" },
+      entity1: void 0,
+      button1: void 0,
+      button2: void 0,
+      button3: void 0,
+      button4: void 0,
+      icon: void 0,
+      pin: { type: "const", constVal: "12345" },
+      setNavi: { type: "const", constVal: "entities3" }
+    }
+  }
+};
 const popupTest = {
   card: "popupNotify",
   dpInit: "",
@@ -4295,7 +4317,8 @@ const Testconfig = [
       pageMediaTest3,
       pageAlarmTest,
       pageEntitiesTest3,
-      popupTest
+      popupTest,
+      pageUnlockTest
     ],
     // override by password.ts
     navigation: [
@@ -4321,8 +4344,12 @@ const Testconfig = [
         page: "abfall1",
         left: { single: "main" },
         // Die 4 bezieht sich auf den name: 4
-        right: { single: "entities3", double: "main" },
+        right: { single: "unlock1", double: "main" },
         optional: "notifications"
+      },
+      {
+        name: "unlock1",
+        page: "unlock1"
       },
       {
         name: "entities3",
