@@ -100,7 +100,7 @@ class Dataitem extends import_library.BaseClass {
         this.options.role = obj.common.role;
         this._writeable = !!obj.common.write;
         if (this.options.type == "triggered")
-          this.stateDB.setTrigger(this.options.dp, this.parent);
+          this.stateDB.setTrigger(this.options.dp, this.parent, false, void 0, this.options.change);
         else if (this.options.type == "internal")
           this.stateDB.setTrigger(this.options.dp, this.parent, true);
         else if (this.options.type == "internalState")
@@ -215,7 +215,7 @@ class Dataitem extends import_library.BaseClass {
   }
   async getTranslatedString() {
     const val = await this.getString();
-    if (val) {
+    if (val !== null) {
       return await this.library.getTranslation(val);
     }
     return null;

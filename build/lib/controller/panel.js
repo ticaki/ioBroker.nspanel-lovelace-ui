@@ -47,6 +47,7 @@ var import_pageEntities = require("../pages/pageEntities");
 var import_tools = require("../const/tools");
 var import_pageNotification = require("../pages/pageNotification");
 var import_notifications = require("../const/notifications");
+var import_pageAlarm = require("../pages/pageAlarm");
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -176,6 +177,8 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cardAlarm": {
+          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          this.pages[a] = new import_pageAlarm.PageAlarm(pmconfig, pageConfig);
           break;
         }
         case "cardPower": {
@@ -230,6 +233,7 @@ class Panel extends import_library.BaseClass {
   };
   start = async () => {
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
+    this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
     await this.statesControler.setInternalState(
       `${this.name}/cmd/popupNotification`,
       JSON.stringify({}),

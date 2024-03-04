@@ -534,36 +534,24 @@ const genericStateObjects = {
             _id: "",
             type: "state",
             common: {
-              name: "StateObjects.power2",
+              name: "StateObjects.status",
               type: "number",
               role: "value",
               states: ["disarmed", "armed", "arming", "pending", "triggered"],
               read: true,
+              write: true
+            },
+            native: {}
+          },
+          mode: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.power2",
+              type: "string",
+              role: "text",
+              read: true,
               write: false
-            },
-            native: {}
-          },
-          trigger: {
-            _id: "",
-            type: "state",
-            common: {
-              name: "StateObjects.power2",
-              type: "boolean",
-              role: "button",
-              read: false,
-              write: true
-            },
-            native: {}
-          },
-          arm: {
-            _id: "",
-            type: "state",
-            common: {
-              name: "StateObjects.power2",
-              type: "boolean",
-              role: "button",
-              read: false,
-              write: true
             },
             native: {}
           }

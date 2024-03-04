@@ -20,6 +20,7 @@ import { PageEntities } from '../pages/pageEntities';
 import { getInternalDefaults } from '../const/tools';
 import { PageNotify } from '../pages/pageNotification';
 import { systemNotifications } from '../const/notifications';
+import { PageAlarm } from '../pages/pageAlarm';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -173,6 +174,8 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cardAlarm': {
+                    pageConfig = Page.getPage(pageConfig, this);
+                    this.pages[a] = new PageAlarm(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardPower': {
@@ -230,6 +233,7 @@ export class Panel extends BaseClass {
     };
     start = async (): Promise<void> => {
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
+        this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
         await this.statesControler.setInternalState(
             `${this.name}/cmd/popupNotification`,
             JSON.stringify({}),

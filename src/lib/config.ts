@@ -205,11 +205,11 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
     items: undefined,
 };
 
-const popupTest: pages.PageBaseConfig = {
+export const popupTest2: pages.PageBaseConfig = {
     card: 'popupNotify',
     dpInit: '',
     alwaysOn: 'none',
-    uniqueID: 'popup1',
+    uniqueID: 'popup2',
     useColor: false,
     config: {
         card: 'popupNotify',
@@ -1876,7 +1876,7 @@ const pageGridTest2: pages.PageBaseConfig = {
             template: 'text.temperature',
         },
         {
-            dpInit: 'bydhvs',
+            device: '0',
             template: 'text.battery.bydhvs',
         },
     ],
@@ -2476,7 +2476,6 @@ const pageThermoTest: pages.PageBaseConfig = {
             role: 'indicator',
             type: 'button',
             dpInit: '',
-
             data: {
                 color: {
                     true: {
@@ -2960,6 +2959,57 @@ const pageThermoTest: pages.PageBaseConfig = {
     items: undefined,
     useColor: false,
 };
+const pageAlarmTest: pages.PageBaseConfig = {
+    card: 'cardAlarm',
+    uniqueID: 'alarm1',
+    alwaysOn: 'none',
+    dpInit: '',
+    pageItems: [],
+    config: {
+        card: 'cardAlarm',
+        data: {
+            headline: undefined,
+            entity1: undefined,
+            button1: undefined,
+            button2: undefined,
+            button3: undefined,
+            button4: undefined,
+            icon: undefined,
+            pin: { type: 'const', constVal: '12345' },
+            approved: { type: 'triggered', dp: '0_userdata.0.example_state_boolean2', change: 'ts' },
+        },
+    },
+};
+export const popupTest: pages.PageBaseConfig = {
+    card: 'popupNotify',
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: 'popup1',
+    useColor: false,
+    config: {
+        card: 'popupNotify',
+        data: {
+            entity1: { value: { type: 'triggered', dp: '0_userdata.0.example_state_boolean' } },
+            headline: { type: 'const', constVal: 'test' },
+            colorHeadline: { true: { color: { type: 'const', constVal: '#F80000' } } },
+            buttonLeft: { type: 'const', constVal: 'test' },
+            colorButtonLeft: { true: { color: { type: 'const', constVal: Color.Green } } },
+            buttonRight: { type: 'const', constVal: 'test' },
+            colorButtonRight: { true: { color: { type: 'const', constVal: Color.White } } },
+            text: { type: 'const', constVal: 'Text Test ${pl}' },
+            //text: { type: 'state', dp: '0_userdata.0.NSPanel.Flur.popupNotify.popupNotifyText' },
+            colorText: { true: { color: { type: 'const', constVal: Color.White } } },
+            timeout: { type: 'const', constVal: 4 },
+            // {placeholder: {text: '' oder dp: ''}} im Text muss dann ${dieserKeyStehtImText} stehen
+            // optionalValue: { type: 'const', constVal: { dieserKeyStehtImText: { text: 'das ist ein placeholder' } } },
+            setValue1: { type: 'const', constVal: true }, // alleine ist es ein switch
+            closingBehaviour: { type: 'const', constVal: 'both' },
+            //setValue2: { type: 'const', constVal: true }, // mit setValue2 wird 1, bei yes und 2 bei no auf true gesetzt
+        },
+    },
+    pageItems: [],
+    items: undefined,
+};
 const pageScreensaverTest: pages.PageBaseConfig = {
     card: 'screensaver2',
     // mode of screensaver
@@ -3392,29 +3442,35 @@ const pageScreensaverTest: pages.PageBaseConfig = {
         },
         // Bottom 1 - accuWeather.0. Forecast Day 1
         {
+            template: 'text.accuweather.sunriseset',
+            dpInit: '/^accuweather\\.0.Daily.+/',
+            modeScr: 'bottom',
+        },
+        // Bottom 1 - accuWeather.0. Forecast Day 1
+        {
             template: 'text.accuweather.bot2values',
-            dpInit: /^accuweather.0.+?d1$/,
+            dpInit: '/^accuweather\\.0.+?d1$/g',
             modeScr: 'bottom',
         },
 
         // Bottom 2 - accuWeather.0. Forecast Day 2
         {
             template: 'text.accuweather.bot2values',
-            dpInit: /^accuweather.0.+?d2$/,
+            dpInit: /^accuweather\.0.+?d2$/,
             modeScr: 'bottom',
         },
 
         // Bottom 3 - accuWeather.0. Forecast Day 3
         {
             template: 'text.accuweather.bot2values',
-            dpInit: /^accuweather.0.+?d3$/,
+            dpInit: /^accuweather\.0.+?d3$/,
             modeScr: 'bottom',
         },
 
         // Bottom 4 - accuWeather.0. Forecast Day 4
         {
             template: 'text.accuweather.bot2values',
-            dpInit: /^accuweather.0.+?d4$/,
+            dpInit: /^accuweather\.0.+?d4$/,
             modeScr: 'bottom',
         },
         // Bottom 5 - accuWeather.0. Forecast Day 5
@@ -4321,8 +4377,9 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             pageAbfall,
             pageGridTest5,
             pageMediaTest3,
-            popupTest,
+            pageAlarmTest,
             pageEntitiesTest3,
+            popupTest,
         ],
         // override by password.ts
         navigation: [
@@ -4334,7 +4391,7 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             },
             {
                 name: '5', //main ist die erste Seite
-                page: 'thermo1',
+                page: 'alarm1',
                 left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
                 right: { single: '6', double: 'main' },
             },

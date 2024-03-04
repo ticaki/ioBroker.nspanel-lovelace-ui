@@ -268,6 +268,13 @@ export type PageBaseConfigTemplate =
           items: undefined;
       };
 
+export type AlarmButtonEvents = 'A1' | 'A2' | 'A3' | 'A4' | 'D1' | 'U1' | '';
+export type AlarmStates = 'disarmed' | 'armed' | 'arming' | 'pending' | 'triggered';
+
+export function isAlarmButtonEvent(F: any): F is AlarmButtonEvents {
+    return ['A1', 'A2', 'A3', 'A4', 'D1', 'U1'].indexOf(F) !== -1;
+}
+
 export type PageBaseConfig = (
     | (
           | {
@@ -381,6 +388,8 @@ type PageAlarmPowerConfig = {
     button3: string;
     button4: string;
     icon: typePageItem.IconEntryType;
+    pin: number;
+    approved?: boolean;
 };
 export type cardAlarmDataItemOptions = {
     card: 'cardAlarm';
@@ -648,9 +657,13 @@ export type PageAlarmMessage = {
     headline: string;
     navigation: string;
     button1: string;
+    status1: AlarmButtonEvents;
     button2: string;
+    status2: AlarmButtonEvents;
     button3: string;
+    status3: AlarmButtonEvents;
     button4: string;
+    status4: AlarmButtonEvents;
     icon: string;
     iconColor: string;
     numpad: 'enable' | 'disable';

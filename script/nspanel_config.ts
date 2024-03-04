@@ -318,11 +318,11 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
     items: undefined,
 };
 
-const popupTest: pages.PageBaseConfig = {
+export const popupTest2: pages.PageBaseConfig = {
     card: 'popupNotify',
     dpInit: '',
     alwaysOn: 'none',
-    uniqueID: 'popup1',
+    uniqueID: 'popup2',
     useColor: false,
     config: {
         card: 'popupNotify',
@@ -1989,7 +1989,7 @@ const pageGridTest2: pages.PageBaseConfig = {
             template: 'text.temperature',
         },
         {
-            dpInit: 'bydhvs',
+            device: '0',
             template: 'text.battery.bydhvs',
         },
     ],
@@ -2589,7 +2589,6 @@ const pageThermoTest: pages.PageBaseConfig = {
             role: 'indicator',
             type: 'button',
             dpInit: '',
-
             data: {
                 color: {
                     true: {
@@ -3073,6 +3072,57 @@ const pageThermoTest: pages.PageBaseConfig = {
     items: undefined,
     useColor: false,
 };
+const pageAlarmTest: pages.PageBaseConfig = {
+    card: 'cardAlarm',
+    uniqueID: 'alarm1',
+    alwaysOn: 'none',
+    dpInit: '',
+    pageItems: [],
+    config: {
+        card: 'cardAlarm',
+        data: {
+            headline: undefined,
+            entity1: undefined,
+            button1: undefined,
+            button2: undefined,
+            button3: undefined,
+            button4: undefined,
+            icon: undefined,
+            pin: { type: 'const', constVal: '12345' },
+            approved: { type: 'triggered', dp: '0_userdata.0.example_state_boolean2', change: 'ts' },
+        },
+    },
+};
+export const popupTest: pages.PageBaseConfig = {
+    card: 'popupNotify',
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: 'popup1',
+    useColor: false,
+    config: {
+        card: 'popupNotify',
+        data: {
+            entity1: { value: { type: 'triggered', dp: '0_userdata.0.example_state_boolean' } },
+            headline: { type: 'const', constVal: 'test' },
+            colorHeadline: { true: { color: { type: 'const', constVal: '#F80000' } } },
+            buttonLeft: { type: 'const', constVal: 'test' },
+            colorButtonLeft: { true: { color: { type: 'const', constVal: Color.Green } } },
+            buttonRight: { type: 'const', constVal: 'test' },
+            colorButtonRight: { true: { color: { type: 'const', constVal: Color.White } } },
+            text: { type: 'const', constVal: 'Text Test ${pl}' },
+            //text: { type: 'state', dp: '0_userdata.0.NSPanel.Flur.popupNotify.popupNotifyText' },
+            colorText: { true: { color: { type: 'const', constVal: Color.White } } },
+            timeout: { type: 'const', constVal: 4 },
+            // {placeholder: {text: '' oder dp: ''}} im Text muss dann ${dieserKeyStehtImText} stehen
+            // optionalValue: { type: 'const', constVal: { dieserKeyStehtImText: { text: 'das ist ein placeholder' } } },
+            setValue1: { type: 'const', constVal: true }, // alleine ist es ein switch
+            closingBehaviour: { type: 'const', constVal: 'both' },
+            //setValue2: { type: 'const', constVal: true }, // mit setValue2 wird 1, bei yes und 2 bei no auf true gesetzt
+        },
+    },
+    pageItems: [],
+    items: undefined,
+};
 const pageScreensaverTest: pages.PageBaseConfig = {
     card: 'screensaver2',
     // mode of screensaver
@@ -3505,29 +3555,35 @@ const pageScreensaverTest: pages.PageBaseConfig = {
         },
         // Bottom 1 - accuWeather.0. Forecast Day 1
         {
+            template: 'text.accuweather.sunriseset',
+            dpInit: '/^accuweather\\.0.Daily.+/',
+            modeScr: 'bottom',
+        },
+        // Bottom 1 - accuWeather.0. Forecast Day 1
+        {
             template: 'text.accuweather.bot2values',
-            dpInit: /^accuweather.0.+?d1$/,
+            dpInit: '/^accuweather\\.0.+?d1$/g',
             modeScr: 'bottom',
         },
 
         // Bottom 2 - accuWeather.0. Forecast Day 2
         {
             template: 'text.accuweather.bot2values',
-            dpInit: /^accuweather.0.+?d2$/,
+            dpInit: /^accuweather\.0.+?d2$/,
             modeScr: 'bottom',
         },
 
         // Bottom 3 - accuWeather.0. Forecast Day 3
         {
             template: 'text.accuweather.bot2values',
-            dpInit: /^accuweather.0.+?d3$/,
+            dpInit: /^accuweather\.0.+?d3$/,
             modeScr: 'bottom',
         },
 
         // Bottom 4 - accuWeather.0. Forecast Day 4
         {
             template: 'text.accuweather.bot2values',
-            dpInit: /^accuweather.0.+?d4$/,
+            dpInit: /^accuweather\.0.+?d4$/,
             modeScr: 'bottom',
         },
         // Bottom 5 - accuWeather.0. Forecast Day 5
@@ -3585,7 +3641,7 @@ const pageScreensaverTest: pages.PageBaseConfig = {
                 text: {
                     true: {
                         type: 'const',
-                        constVal: 'SunAsWord',
+                        constVal: 'Sonne',
                     },
                     false: undefined,
                 },
@@ -4434,8 +4490,9 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             pageAbfall,
             pageGridTest5,
             pageMediaTest3,
-            popupTest,
+            pageAlarmTest,
             pageEntitiesTest3,
+            popupTest,
         ],
         // override by password.ts
         navigation: [
@@ -4447,7 +4504,7 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             },
             {
                 name: '5', //main ist die erste Seite
-                page: 'thermo1',
+                page: 'alarm1',
                 left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
                 right: { single: '6', double: 'main' },
             },
@@ -4644,7 +4701,27 @@ namespace pages {
         | 'value'
         | ''
         | 'level.value'
-        | 'date';
+        | 'date'
+        | 'date.sunrise.forecast.0'
+        | 'date.sunset.forecast.0'
+        | 'date.sunrise.forecast.1'
+        | 'date.sunset.forecast.1'
+        | ''
+        | ''
+        | ''
+        | ''
+        | ''
+        | ''
+        | ''
+        | ''
+        | ''
+        | ''
+        | ''
+        | ''
+        | ''
+        | ''
+        | ''
+        | '';
     
     export type DeviceRole =
         | 'text'
@@ -4679,7 +4756,8 @@ namespace pages {
         | 'iconNotText'
         | 'test'
         | ''
-        | 'battery'; // timer with internal counter
+        | 'battery'
+        | '4values'; // timer with internal counter
     
     export function isStateRole(F: string | StateRole): F is StateRole {
         switch (F as StateRole) {
@@ -4776,7 +4854,7 @@ namespace pages {
               card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
               adapter: string;
               alwaysOn: 'none' | 'always' | 'action';
-              useColor: boolean;
+              useColor?: boolean;
               pageItems: typePageItem.PageItemDataItemsOptions[];
     
               //    mediaNamespace: string;
@@ -4798,13 +4876,20 @@ namespace pages {
               template: Types.PageTemplateIdent;
               adapter: string;
               alwaysOn: 'none' | 'always' | 'action';
-              useColor: boolean;
+              useColor?: boolean;
               pageItems: typePageItem.PageItemDataItemsOptions[];
     
               //    mediaNamespace: string;
               config: undefined | screensaverDataItemOptions;
               items: undefined;
           };
+    
+    export type AlarmButtonEvents = 'A1' | 'A2' | 'A3' | 'A4' | 'D1' | 'U1' | '';
+    export type AlarmStates = 'disarmed' | 'armed' | 'arming' | 'pending' | 'triggered';
+    
+    export function isAlarmButtonEvent(F: any): F is AlarmButtonEvents {
+        return ['A1', 'A2', 'A3', 'A4', 'D1', 'U1'].indexOf(F) !== -1;
+    }
     
     export type PageBaseConfig = (
         | (
@@ -4813,11 +4898,12 @@ namespace pages {
                     card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
                     uniqueID: string;
                     template?: Types.PageTemplateIdent;
-                    dpInit: string | RegExp; // '' and initMode 'auto' throw an error
+                    dpInit?: string | RegExp; // ''
+                    enums?: string | string[];
+                    device?: string;
                     alwaysOn: 'none' | 'always' | 'action';
-                    useColor: boolean;
+                    useColor?: boolean;
                     pageItems: typePageItem.PageItemDataItemsOptions[];
-    
                     //    mediaNamespace: string;
                     config:
                         | undefined
@@ -4835,9 +4921,11 @@ namespace pages {
                     card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
                     uniqueID: string;
                     template?: Types.PageTemplateIdent;
-                    dpInit: string | RegExp; // '' and initMode 'auto' throw an error
+                    dpInit: string | RegExp; // ''
+                    enums?: string | string[];
                     alwaysOn: 'none' | 'always' | 'action';
-                    useColor: boolean;
+                    device?: string;
+                    useColor?: boolean;
                     pageItems: typePageItem.PageItemDataItemsOptions[];
                     /*&
                         Required<Pick<typePageItem.PageItemDataItemsOptions, 'modeScr'>>*/
@@ -4878,11 +4966,17 @@ namespace pages {
         optionalValue?: string;
         setValue1?: string;
         setValue2?: string;
+        closingBehaviour?: string;
     };
     export type cardNotifyDataItemOptions = {
         card: 'popupNotify';
         data: ChangeTypeOfKeys<PageNotifyConfig, Types.DataItemsOptions | undefined>;
     };
+    
+    export type closingBehaviour = 'both' | 'yes' | 'no' | 'none';
+    export function isClosingBehavior(F: any): F is closingBehaviour {
+        return ['both', 'yes', 'no', 'none'].indexOf(F) !== -1;
+    }
     export type cardNotifyDataItems = {
         card: 'popupNotify';
         data: ChangeTypeOfKeys<PageNotifyConfig, dataItem.Dataitem | undefined>;
@@ -4910,6 +5004,8 @@ namespace pages {
         button3: string;
         button4: string;
         icon: typePageItem.IconEntryType;
+        pin: number;
+        approved?: boolean;
     };
     export type cardAlarmDataItemOptions = {
         card: 'cardAlarm';
@@ -5177,9 +5273,13 @@ namespace pages {
         headline: string;
         navigation: string;
         button1: string;
+        status1: AlarmButtonEvents;
         button2: string;
+        status2: AlarmButtonEvents;
         button3: string;
+        status3: AlarmButtonEvents;
         button4: string;
+        status4: AlarmButtonEvents;
         icon: string;
         iconColor: string;
         numpad: 'enable' | 'disable';
@@ -5295,7 +5395,7 @@ namespace pages {
         }
         return true;
     }
-    }
+     }
 namespace typePageItem {
     export type PageLightItem = {
         type: 'light' | 'dimmer' | 'brightnessSlider' | 'hue' | 'rgb';
@@ -5461,7 +5561,7 @@ namespace typePageItem {
     export type PageItemDataItemsOptions =
         | ({
               template: Types.TemplateIdent;
-              dpInit: string | RegExp;
+              dpInit?: string | RegExp;
               appendix?: string;
           } & Partial<
               Omit<PageItemUnion, 'template' | 'data' | 'type'> &
@@ -5483,7 +5583,7 @@ namespace typePageItem {
         role?: pages.DeviceRole;
         adapter: string;
         modeScr?: string;
-        //dpInit: string;
+        dpInit?: string;
         type: Types.SerialTypePageElements;
     } & (
         | ({ template?: undefined } & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit' | 'modeScr'> &
@@ -5534,7 +5634,10 @@ namespace typePageItem {
         data: pages.ChangeTypeOfKeys<PageItemFan, dataItem.Dataitem | undefined>;
     };
     
-    export type PageItemText = Pick<PageItemBase, 'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'icon'>;
+    export type PageItemText = Pick<
+        PageItemBase,
+        'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'entity4' | 'icon'
+    >;
     export type PageItemTextDataItemsOptions = {
         type: 'text';
         data: pages.ChangeTypeOfKeys<PageItemText, Types.DataItemsOptions | undefined>;
@@ -5659,9 +5762,14 @@ namespace typePageItem {
         entity1?: ValueEntryType; // Readonly Werte die angezeigt werden soll. wird immer für insel verwendet
         entity2?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
         entity3?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+        entity4?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
         text1?: TextEntryType;
         text2?: TextEntryType;
         text3?: TextEntryType;
+        mixed1?: ValueEntryType; // Readonly Werte die angezeigt werden soll. wird immer für insel verwendet
+        mixed2?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+        mixed3?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+        mixed4?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
         setValue1?: string;
         setValue2?: string;
         setValue3?: string;
@@ -5732,6 +5840,8 @@ namespace typePageItem {
         role?: pages.DeviceRole;
         template?: undefined;
         dpInit?: string | RegExp;
+        enums?: string | string[];
+        device?: string;
         modeScr?: Types.ScreenSaverPlaces | undefined;
         type: Types.SerialTypePageElements;
         data: PageItemBase;
@@ -5807,9 +5917,14 @@ namespace typePageItem {
         explicit: boolean;
         popularity: number;
     }>;
-    }
+     }
 
 namespace Types {
+    /**
+     * Bitte an folgendes Schema halten
+     * card.adapter?.aufgabe?.gerät?
+     */
+    
     export type PageTemplateIdent = 'entities.waste-calendar' | 'media.spotify-premium' | 'entities.departure-timetable';
     
     export type TemplateIdent =
@@ -5828,8 +5943,8 @@ namespace Types {
         | 'shutter.basic.onlyV'
         | 'text.battery.bydhvs'
         | 'text.accuweather.bot2values'
-        | ''
-        | ''
+        | 'text.accuweather.sunriseset'
+        | 'button.esphome.powerplug'
         | ''
         | ''
         | ''
@@ -6097,7 +6212,13 @@ namespace Types {
     export type DataItemsOptions = {
         name?: string;
         scale?: { min: number; max: number };
-    } & (DataItemsOptionsConst | DataItemsOptionsState | DataItemsOptionsTriggered | DataItemsOptionsInternal);
+    } & (
+        | DataItemsOptionsConst
+        | DataItemsOptionsState
+        | DataItemsOptionsTriggered
+        | DataItemsOptionsInternal
+        | DataItemsOptionsInternalState
+    );
     
     type DataItemsOptionsAuto = {
         mode: 'auto' | 'done'; // not set means custom
@@ -6123,6 +6244,14 @@ namespace Types {
         read?: string | ((val: any) => any);
         write?: string | ((val: any) => any);
     };
+    
+    type DataItemsOptionsInternalState = {
+        type: 'internalState';
+        role?: string;
+        dp: string;
+        read?: string | ((val: any) => any);
+        write?: string | ((val: any) => any);
+    };
     type DataItemsOptionsState = (DataItemsOptionsAuto | DataItemsOptionsCustom) & {
         type: 'state';
         dp: string;
@@ -6141,6 +6270,7 @@ namespace Types {
         forceType?: 'string' | 'number' | 'boolean'; // force a type
         read?: string | ((val: any) => any);
         write?: string | ((val: any) => any);
+        change?: 'ts';
     };
     
     //type internalDatapoints = 'Relais1' | 'Relais2';
@@ -6358,7 +6488,7 @@ namespace Types {
             wifi: { ssid: string; rssi: number; downtime: string };
         };
     };
-    }
+     }
 export type ScreensaverConfigType = {
     momentLocale: string;
     locale: string; //Intl.DateTimeFormat;

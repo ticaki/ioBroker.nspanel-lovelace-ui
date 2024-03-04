@@ -2922,6 +2922,27 @@ const pageThermoTest = {
   items: void 0,
   useColor: false
 };
+const pageAlarmTest = {
+  card: "cardAlarm",
+  uniqueID: "alarm1",
+  alwaysOn: "none",
+  dpInit: "",
+  pageItems: [],
+  config: {
+    card: "cardAlarm",
+    data: {
+      headline: void 0,
+      entity1: void 0,
+      button1: void 0,
+      button2: void 0,
+      button3: void 0,
+      button4: void 0,
+      icon: void 0,
+      pin: { type: "const", constVal: "12345" },
+      approved: { type: "triggered", dp: "0_userdata.0.example_state_boolean2", change: "ts" }
+    }
+  }
+};
 const popupTest = {
   card: "popupNotify",
   dpInit: "",
@@ -4272,6 +4293,7 @@ const Testconfig = [
       pageAbfall,
       pageGridTest5,
       pageMediaTest3,
+      pageAlarmTest,
       pageEntitiesTest3,
       popupTest
     ],
@@ -4288,7 +4310,7 @@ const Testconfig = [
       {
         name: "5",
         //main ist die erste Seite
-        page: "thermo1",
+        page: "alarm1",
         left: { single: "4" },
         // Die 4 bezieht sich auf den name: 4
         right: { single: "6", double: "main" }

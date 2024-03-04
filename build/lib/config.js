@@ -30,7 +30,9 @@ var config_exports = {};
 __export(config_exports, {
   Testconfig: () => Testconfig,
   pageMediaTest: () => pageMediaTest,
-  pageMediaTest2: () => pageMediaTest2
+  pageMediaTest2: () => pageMediaTest2,
+  popupTest: () => popupTest,
+  popupTest2: () => popupTest2
 });
 module.exports = __toCommonJS(config_exports);
 var Color = __toESM(require("./const/Color"));
@@ -233,11 +235,11 @@ const pageEntitiesTest1 = {
   ],
   items: void 0
 };
-const popupTest = {
+const popupTest2 = {
   card: "popupNotify",
   dpInit: "",
   alwaysOn: "none",
-  uniqueID: "popup1",
+  uniqueID: "popup2",
   useColor: false,
   config: {
     card: "popupNotify",
@@ -1862,7 +1864,7 @@ const pageGridTest2 = {
       template: "text.temperature"
     },
     {
-      dpInit: "bydhvs",
+      device: "0",
       template: "text.battery.bydhvs"
     }
   ]
@@ -2920,6 +2922,58 @@ const pageThermoTest = {
   items: void 0,
   useColor: false
 };
+const pageAlarmTest = {
+  card: "cardAlarm",
+  uniqueID: "alarm1",
+  alwaysOn: "none",
+  dpInit: "",
+  pageItems: [],
+  config: {
+    card: "cardAlarm",
+    data: {
+      headline: void 0,
+      entity1: void 0,
+      button1: void 0,
+      button2: void 0,
+      button3: void 0,
+      button4: void 0,
+      icon: void 0,
+      pin: { type: "const", constVal: "12345" },
+      approved: { type: "triggered", dp: "0_userdata.0.example_state_boolean2", change: "ts" }
+    }
+  }
+};
+const popupTest = {
+  card: "popupNotify",
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "popup1",
+  useColor: false,
+  config: {
+    card: "popupNotify",
+    data: {
+      entity1: { value: { type: "triggered", dp: "0_userdata.0.example_state_boolean" } },
+      headline: { type: "const", constVal: "test" },
+      colorHeadline: { true: { color: { type: "const", constVal: "#F80000" } } },
+      buttonLeft: { type: "const", constVal: "test" },
+      colorButtonLeft: { true: { color: { type: "const", constVal: Color.Green } } },
+      buttonRight: { type: "const", constVal: "test" },
+      colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
+      text: { type: "const", constVal: "Text Test ${pl}" },
+      //text: { type: 'state', dp: '0_userdata.0.NSPanel.Flur.popupNotify.popupNotifyText' },
+      colorText: { true: { color: { type: "const", constVal: Color.White } } },
+      timeout: { type: "const", constVal: 4 },
+      // {placeholder: {text: '' oder dp: ''}} im Text muss dann ${dieserKeyStehtImText} stehen
+      // optionalValue: { type: 'const', constVal: { dieserKeyStehtImText: { text: 'das ist ein placeholder' } } },
+      setValue1: { type: "const", constVal: true },
+      // alleine ist es ein switch
+      closingBehaviour: { type: "const", constVal: "both" }
+      //setValue2: { type: 'const', constVal: true }, // mit setValue2 wird 1, bei yes und 2 bei no auf true gesetzt
+    }
+  },
+  pageItems: [],
+  items: void 0
+};
 const pageScreensaverTest = {
   card: "screensaver2",
   // mode of screensaver
@@ -3336,26 +3390,32 @@ const pageScreensaverTest = {
     },
     // Bottom 1 - accuWeather.0. Forecast Day 1
     {
+      template: "text.accuweather.sunriseset",
+      dpInit: "/^accuweather\\.0.Daily.+/",
+      modeScr: "bottom"
+    },
+    // Bottom 1 - accuWeather.0. Forecast Day 1
+    {
       template: "text.accuweather.bot2values",
-      dpInit: /^accuweather.0.+?d1$/,
+      dpInit: "/^accuweather\\.0.+?d1$/g",
       modeScr: "bottom"
     },
     // Bottom 2 - accuWeather.0. Forecast Day 2
     {
       template: "text.accuweather.bot2values",
-      dpInit: /^accuweather.0.+?d2$/,
+      dpInit: /^accuweather\.0.+?d2$/,
       modeScr: "bottom"
     },
     // Bottom 3 - accuWeather.0. Forecast Day 3
     {
       template: "text.accuweather.bot2values",
-      dpInit: /^accuweather.0.+?d3$/,
+      dpInit: /^accuweather\.0.+?d3$/,
       modeScr: "bottom"
     },
     // Bottom 4 - accuWeather.0. Forecast Day 4
     {
       template: "text.accuweather.bot2values",
-      dpInit: /^accuweather.0.+?d4$/,
+      dpInit: /^accuweather\.0.+?d4$/,
       modeScr: "bottom"
     },
     // Bottom 5 - accuWeather.0. Forecast Day 5
@@ -4233,8 +4293,9 @@ const Testconfig = [
       pageAbfall,
       pageGridTest5,
       pageMediaTest3,
-      popupTest,
-      pageEntitiesTest3
+      pageAlarmTest,
+      pageEntitiesTest3,
+      popupTest
     ],
     // override by password.ts
     navigation: [
@@ -4249,7 +4310,7 @@ const Testconfig = [
       {
         name: "5",
         //main ist die erste Seite
-        page: "thermo1",
+        page: "alarm1",
         left: { single: "4" },
         // Die 4 bezieht sich auf den name: 4
         right: { single: "6", double: "main" }
@@ -4339,6 +4400,8 @@ const Testconfig = [
 0 && (module.exports = {
   Testconfig,
   pageMediaTest,
-  pageMediaTest2
+  pageMediaTest2,
+  popupTest,
+  popupTest2
 });
 //# sourceMappingURL=config.js.map

@@ -254,7 +254,7 @@ class StatesControler extends import_library.BaseClass {
    * @param id state id
    * @param from the page that handle the trigger
    */
-  async setTrigger(id, from, internal = false, trigger = true) {
+  async setTrigger(id, from, internal = false, trigger = true, change) {
     if (id.startsWith(this.adapter.namespace)) {
       this.log.warn(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
       return;
@@ -265,6 +265,7 @@ class StatesControler extends import_library.BaseClass {
         this.triggerDB[id].to.push(from);
         this.triggerDB[id].subscribed.push(false);
         this.triggerDB[id].triggerAllowed.push(trigger);
+        this.triggerDB[id].change.push(change ? change : "ne");
       } else {
       }
     } else if (internal) {
@@ -282,7 +283,8 @@ class StatesControler extends import_library.BaseClass {
           ts: Date.now(),
           subscribed: [false],
           common: obj.common,
-          triggerAllowed: [trigger]
+          triggerAllowed: [trigger],
+          change: [change ? change : "ne"]
         };
         if (this.stateDB[id] !== void 0) {
           delete this.stateDB[id];
@@ -427,24 +429,22 @@ class StatesControler extends import_library.BaseClass {
    */
   async onStateChange(dp, state) {
     if (dp && state) {
-      if (this.triggerDB[dp]) {
-        if (this.triggerDB[dp].state) {
-          this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
-          this.triggerDB[dp].ts = Date.now();
-          if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack) {
-            this.triggerDB[dp].state = state;
-            if (state.ack || this.triggerDB[dp].internal || dp.startsWith("0_userdata.0")) {
-              await this.triggerDB[dp].to.forEach(async (c, i) => {
-                if (!c.neverDeactivateTrigger && !this.triggerDB[dp].subscribed[i] || !this.triggerDB[dp].triggerAllowed[i])
-                  return;
-                if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
-                  c.parent.onStateTriggerSuperDoNotOverride && await c.parent.onStateTriggerSuperDoNotOverride(dp, c);
-                } else if (!c.unload) {
-                  c.onStateTriggerSuperDoNotOverride && await c.onStateTriggerSuperDoNotOverride(dp, c);
-                }
-              });
+      if (this.triggerDB[dp] && this.triggerDB[dp].state) {
+        this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
+        this.triggerDB[dp].ts = Date.now();
+        this.triggerDB[dp].state = state;
+        if (state.ack || this.triggerDB[dp].internal || dp.startsWith("0_userdata.0")) {
+          await this.triggerDB[dp].to.forEach(async (c, i) => {
+            if (this.triggerDB[dp].state.val !== state.val || this.triggerDB[dp].state.ack !== state.ack || this.triggerDB[dp].change[i] === "ts") {
+              if (!c.neverDeactivateTrigger && !this.triggerDB[dp].subscribed[i] || !this.triggerDB[dp].triggerAllowed[i])
+                return;
+              if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
+                c.parent.onStateTriggerSuperDoNotOverride && await c.parent.onStateTriggerSuperDoNotOverride(dp, c);
+              } else if (!c.unload) {
+                c.onStateTriggerSuperDoNotOverride && await c.onStateTriggerSuperDoNotOverride(dp, c);
+              }
             }
-          }
+          });
         }
       }
       if (dp.startsWith(this.adapter.namespace)) {
@@ -519,7 +519,8 @@ class StatesControler extends import_library.BaseClass {
         common,
         internal: true,
         f: func,
-        triggerAllowed: []
+        triggerAllowed: [],
+        change: []
       };
     }
     return false;
