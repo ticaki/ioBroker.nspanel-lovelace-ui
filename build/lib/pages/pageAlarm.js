@@ -91,7 +91,7 @@ class PageAlarm extends import_Page.Page {
   failCount = 0;
   constructor(config, options) {
     super(config, options);
-    if (options.config && options.config.card == "cardPower")
+    if (options.config && options.config.card == "cardAlarm")
       this.config = options.config;
     this.minUpdateInterval = 500;
     this.neverDeactivateTrigger = true;
@@ -142,13 +142,13 @@ class PageAlarm extends import_Page.Page {
       message.status4 = "";
     } else {
       message.button1 = (_b = data.button1 && await data.button1.getTranslatedString()) != null ? _b : this.library.getTranslation("arm_away");
-      message.status1 = "A1";
+      message.status1 = message.button1 ? "A1" : "";
       message.button2 = (_c = data.button2 && await data.button2.getTranslatedString()) != null ? _c : this.library.getTranslation("arm_home");
-      message.status2 = "A2";
+      message.status2 = message.button2 ? "A2" : "";
       message.button3 = (_d = data.button3 && await data.button3.getTranslatedString()) != null ? _d : this.library.getTranslation("arm_night");
-      message.status3 = "A3";
+      message.status3 = message.button3 ? "A3" : "";
       message.button4 = (_e = data.button4 && await data.button4.getTranslatedString()) != null ? _e : this.library.getTranslation("arm_vacation");
-      message.status4 = "A4";
+      message.status4 = message.button4 ? "A4" : "";
     }
     if (this.status == "armed") {
       message.icon = import_icon_mapping.Icons.GetIcon("shield-home");

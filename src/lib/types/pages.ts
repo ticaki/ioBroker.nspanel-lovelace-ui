@@ -298,7 +298,8 @@ export type PageBaseConfig = (
                     | cardEntitiesDataItemOptions
                     | cardAlarmDataItemOptions
                     | cardNotifyDataItemOptions
-                    | cardNotify2DataItemOptions;
+                    | cardNotify2DataItemOptions
+                    | cardQRDataItemOptions;
             }
           | {
                 //    type: PlayerType;
@@ -334,7 +335,8 @@ export type PageBaseConfig = (
         | cardThermoDataItems
         | cardAlarmDataItems
         | cardNotifyDataItems
-        | cardNotify2DataItems;
+        | cardNotify2DataItems
+        | cardQRDataItems;
 };
 type PageNotifyConfig = {
     headline: string;
@@ -398,6 +400,24 @@ export type cardAlarmDataItemOptions = {
 export type cardAlarmDataItems = {
     card: 'cardAlarm';
     data: ChangeTypeOfKeys<PageAlarmPowerConfig, dataItem.Dataitem | undefined>;
+};
+
+type PageQRConfig = {
+    headline: string;
+    entity1: typePageItem.ValueEntryType;
+    ssid: string;
+    encryption: string;
+    password: string;
+    hidden: string;
+    icon: typePageItem.IconEntryType;
+};
+export type cardQRDataItemOptions = {
+    card: 'cardQR';
+    data: ChangeTypeOfKeys<PageQRConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardQRDataItems = {
+    card: 'cardQR';
+    data: ChangeTypeOfKeys<PageQRConfig, dataItem.Dataitem | undefined>;
 };
 
 export type cardPowerDataItemOptions = {
@@ -668,6 +688,14 @@ export type PageAlarmMessage = {
     iconColor: string;
     numpad: 'enable' | 'disable';
     flashing: 'enable' | 'disable';
+};
+
+export type PageQRMessage = {
+    event: 'entityUpd';
+    headline: string;
+    navigation: string;
+    textQR: string;
+    options: string[];
 };
 
 export type PagePowerMessageItem = {

@@ -68,7 +68,7 @@ export class PageAlarm extends Page {
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
-        if (options.config && options.config.card == 'cardPower') this.config = options.config;
+        if (options.config && options.config.card == 'cardAlarm') this.config = options.config;
         this.minUpdateInterval = 500;
         this.neverDeactivateTrigger = true;
     }
@@ -127,18 +127,18 @@ export class PageAlarm extends Page {
             //const entity1 = await getValueEntryNumber(data.entity1);
             message.button1 =
                 (data.button1 && (await data.button1.getTranslatedString())) ?? this.library.getTranslation('arm_away');
-            message.status1 = 'A1';
+            message.status1 = message.button1 ? 'A1' : '';
             message.button2 =
                 (data.button2 && (await data.button2.getTranslatedString())) ?? this.library.getTranslation('arm_home');
-            message.status2 = 'A2';
+            message.status2 = message.button2 ? 'A2' : '';
             message.button3 =
                 (data.button3 && (await data.button3.getTranslatedString())) ??
                 this.library.getTranslation('arm_night');
-            message.status3 = 'A3';
+            message.status3 = message.button3 ? 'A3' : '';
             message.button4 =
                 (data.button4 && (await data.button4.getTranslatedString())) ??
                 this.library.getTranslation('arm_vacation');
-            message.status4 = 'A4';
+            message.status4 = message.button4 ? 'A4' : '';
         }
         if (this.status == 'armed') {
             message.icon = Icons.GetIcon('shield-home'); //icon*~*
