@@ -3,6 +3,7 @@ import * as Color from '../const/Color';
 import * as typePageItem from './type-pageItem';
 import * as Types from './types';
 
+type CardRole = 'adapter';
 export type PageTypeCards =
     | 'cardChart'
     | 'cardLChart'
@@ -311,6 +312,7 @@ export type PageBaseConfig = (
                 alwaysOn: 'none' | 'always' | 'action';
                 device?: string;
                 useColor?: boolean;
+                cardRole?: CardRole;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
                 /*&
                     Required<Pick<typePageItem.PageItemDataItemsOptions, 'modeScr'>>*/
@@ -442,6 +444,8 @@ export type cardGridDataItems = {
 
 export type cardEntitiesDataItemOptions = {
     card: 'cardEntities';
+    cardRole?: CardRole;
+    scrolltype?: 'page';
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardEntitiesDataItems = {

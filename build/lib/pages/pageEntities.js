@@ -88,7 +88,76 @@ class PageEntities extends import_Page.Page {
   }
   async onButtonEvent(_event) {
   }
+  async handleCardRole() {
+    if (!this.config || this.config.card !== "cardEntities" || !this.config.cardRole)
+      return;
+    switch (this.config.cardRole) {
+      case "adapter": {
+        const list = await this.adapter.getObjectViewAsync("system", "instance", {
+          startkey: `system.adapter`,
+          endkey: `system.adapter}`
+        });
+        if (!list)
+          return;
+        this.pageItemConfig = [];
+        for (const item of list.rows) {
+          const obj = item.value;
+          let n = obj.common.titleLang && obj.common.titleLang[this.library.getLocalLanguage()];
+          n = n ? n : obj.common.titleLang && obj.common.titleLang["en"];
+          n = n ? n : obj.common.name;
+          const pi = {
+            role: "text.list",
+            type: "text",
+            dpInit: "",
+            data: {
+              icon: {
+                true: {
+                  value: { type: "const", constVal: "power" },
+                  color: { type: "const", constVal: import_Color.Green }
+                },
+                false: {
+                  value: { type: "const", constVal: "power-off" },
+                  color: { type: "const", constVal: import_Color.Red }
+                },
+                scale: void 0,
+                maxBri: void 0,
+                minBri: void 0
+              },
+              entity1: {
+                value: {
+                  type: "triggered",
+                  dp: `${item.id}.alive`
+                }
+              },
+              text: {
+                true: { type: "const", constVal: n },
+                false: void 0
+              },
+              text1: {
+                true: { type: "const", constVal: obj.common.version },
+                false: void 0
+              }
+            }
+          };
+          this.pageItemConfig.push(pi);
+        }
+        break;
+      }
+    }
+  }
+  async onVisibilityChange(val) {
+    if (val) {
+      await this.handleCardRole();
+    }
+    await super.onVisibilityChange(val);
+  }
   goLeft() {
+    if (!this.config || this.config.card !== "cardEntities")
+      return;
+    if (this.config.scrolltype === "page") {
+      this.goLeftP();
+      return;
+    }
     if (--this.step < 0 && Date.now() - this.lastNavClick > 300) {
       this.step = 0;
       this.panel.navigation.goLeft();
@@ -97,8 +166,14 @@ class PageEntities extends import_Page.Page {
     this.lastNavClick = Date.now();
   }
   goRight() {
+    if (!this.config || this.config.card !== "cardEntities")
+      return;
+    if (this.config.scrolltype === "page") {
+      this.goRightP();
+      return;
+    }
     const length = this.pageItems ? this.pageItems.length : 0;
-    if (++this.step + this.maxItems >= length && Date.now() - this.lastNavClick > 300) {
+    if (++this.step + this.maxItems > length && Date.now() - this.lastNavClick > 300) {
       this.step--;
       this.panel.navigation.goRight();
     } else
@@ -106,6 +181,11 @@ class PageEntities extends import_Page.Page {
     this.lastNavClick = Date.now();
   }
   getNavigation() {
+    if (!this.config || this.config.card !== "cardEntities")
+      return "";
+    if (this.config.scrolltype === "page") {
+      return this.getNavigationP();
+    }
     const length = this.pageItems ? this.pageItems.length : 0;
     if (this.maxItems >= length) {
       return super.getNavigation();
@@ -115,7 +195,7 @@ class PageEntities extends import_Page.Page {
     if (this.step <= 0) {
       left = this.panel.navigation.buildNavigationString("left");
     }
-    if (this.step + 1 + this.maxItems >= length) {
+    if (this.step + this.maxItems >= length) {
       right = this.panel.navigation.buildNavigationString("right");
     }
     if (!left)
@@ -125,6 +205,54 @@ class PageEntities extends import_Page.Page {
         "button",
         "bSubNext",
         import_icon_mapping.Icons.GetIcon("arrow-down-bold"),
+        String((0, import_Color.rgb_dec565)(import_Color.HMIOn)),
+        "",
+        ""
+      );
+    return (0, import_tools.getPayload)(left, right);
+  }
+  goLeftP() {
+    if (--this.step < 0) {
+      this.step = 0;
+      this.panel.navigation.goLeft();
+    } else
+      this.update();
+  }
+  goRightP() {
+    const length = this.pageItems ? this.pageItems.length : 0;
+    if (++this.step * this.maxItems >= length) {
+      this.step--;
+      this.panel.navigation.goRight();
+    } else
+      this.update();
+  }
+  getNavigationP() {
+    const length = this.pageItems ? this.pageItems.length : 0;
+    if (this.maxItems >= length) {
+      return super.getNavigation();
+    }
+    let left = "";
+    let right = "";
+    if (this.step <= 0) {
+      left = this.panel.navigation.buildNavigationString("left");
+    }
+    if ((this.step + 1) * this.maxItems >= length) {
+      right = this.panel.navigation.buildNavigationString("right");
+    }
+    if (!left)
+      left = (0, import_tools.getPayload)(
+        "button",
+        "bSubPrev",
+        import_icon_mapping.Icons.GetIcon("arrow-left-bold"),
+        String((0, import_Color.rgb_dec565)(import_Color.HMIOn)),
+        "",
+        ""
+      );
+    if (!right)
+      right = (0, import_tools.getPayload)(
+        "button",
+        "bSubNext",
+        import_icon_mapping.Icons.GetIcon("arrow-right-bold"),
         String((0, import_Color.rgb_dec565)(import_Color.HMIOn)),
         "",
         ""

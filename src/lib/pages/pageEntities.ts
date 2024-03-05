@@ -1,8 +1,9 @@
 import { Page, PageInterface } from '../classes/Page';
-import { HMIOn, rgb_dec565 } from '../const/Color';
+import { Green, HMIOn, Red, rgb_dec565 } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadArray } from '../const/tools';
 import * as pages from '../types/pages';
+import { PageItemDataItemsOptions } from '../types/type-pageItem';
 import { IncomingEvent } from '../types/types';
 import { PageItem } from './pageItem';
 
@@ -77,7 +78,76 @@ export class PageEntities extends Page {
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {}
 
+    private async handleCardRole(): Promise<void> {
+        if (!this.config || this.config.card !== 'cardEntities' || !this.config.cardRole) return;
+        switch (this.config.cardRole) {
+            case 'adapter': {
+                const list = await this.adapter.getObjectViewAsync('system', 'instance', {
+                    startkey: `system.adapter`,
+                    endkey: `system.adapter}`,
+                });
+                if (!list) return;
+                this.pageItemConfig = [];
+                for (const item of list.rows) {
+                    const obj = item.value;
+                    let n = obj.common.titleLang && obj.common.titleLang[this.library.getLocalLanguage()];
+                    n = n ? n : obj.common.titleLang && obj.common.titleLang['en'];
+                    n = n ? n : obj.common.name;
+
+                    const pi: PageItemDataItemsOptions = {
+                        role: 'text.list',
+                        type: 'text',
+                        dpInit: '',
+
+                        data: {
+                            icon: {
+                                true: {
+                                    value: { type: 'const', constVal: 'power' },
+                                    color: { type: 'const', constVal: Green },
+                                },
+                                false: {
+                                    value: { type: 'const', constVal: 'power-off' },
+                                    color: { type: 'const', constVal: Red },
+                                },
+                                scale: undefined,
+                                maxBri: undefined,
+                                minBri: undefined,
+                            },
+                            entity1: {
+                                value: {
+                                    type: 'triggered',
+                                    dp: `${item.id}.alive`,
+                                },
+                            },
+                            text: {
+                                true: { type: 'const', constVal: n },
+                                false: undefined,
+                            },
+                            text1: {
+                                true: { type: 'const', constVal: obj.common.version },
+                                false: undefined,
+                            },
+                        },
+                    };
+                    this.pageItemConfig.push(pi);
+                }
+                break;
+            }
+        }
+    }
+    protected async onVisibilityChange(val: boolean): Promise<void> {
+        if (val) {
+            await this.handleCardRole();
+        }
+        await super.onVisibilityChange(val);
+    }
+
     goLeft(): void {
+        if (!this.config || this.config.card !== 'cardEntities') return;
+        if (this.config.scrolltype === 'page') {
+            this.goLeftP();
+            return;
+        }
         if (--this.step < 0 && Date.now() - this.lastNavClick > 300) {
             this.step = 0;
             this.panel.navigation.goLeft();
@@ -85,14 +155,23 @@ export class PageEntities extends Page {
         this.lastNavClick = Date.now();
     }
     goRight(): void {
+        if (!this.config || this.config.card !== 'cardEntities') return;
+        if (this.config.scrolltype === 'page') {
+            this.goRightP();
+            return;
+        }
         const length = this.pageItems ? this.pageItems.length : 0;
-        if (++this.step + this.maxItems >= length && Date.now() - this.lastNavClick > 300) {
+        if (++this.step + this.maxItems > length && Date.now() - this.lastNavClick > 300) {
             this.step--;
             this.panel.navigation.goRight();
         } else this.update();
         this.lastNavClick = Date.now();
     }
     protected getNavigation(): string {
+        if (!this.config || this.config.card !== 'cardEntities') return '';
+        if (this.config.scrolltype === 'page') {
+            return this.getNavigationP();
+        }
         const length = this.pageItems ? this.pageItems.length : 0;
         if (this.maxItems >= length) {
             return super.getNavigation();
@@ -102,7 +181,7 @@ export class PageEntities extends Page {
         if (this.step <= 0) {
             left = this.panel.navigation.buildNavigationString('left');
         }
-        if (this.step + 1 + this.maxItems >= length) {
+        if (this.step + this.maxItems >= length) {
             right = this.panel.navigation.buildNavigationString('right');
         }
         if (!left)
@@ -113,6 +192,54 @@ export class PageEntities extends Page {
                 'button',
                 'bSubNext',
                 Icons.GetIcon('arrow-down-bold'),
+                String(rgb_dec565(HMIOn)),
+                '',
+                '',
+            );
+
+        return getPayload(left, right);
+    }
+    goLeftP(): void {
+        if (--this.step < 0) {
+            this.step = 0;
+            this.panel.navigation.goLeft();
+        } else this.update();
+    }
+    goRightP(): void {
+        const length = this.pageItems ? this.pageItems.length : 0;
+        if (++this.step * this.maxItems >= length) {
+            this.step--;
+            this.panel.navigation.goRight();
+        } else this.update();
+    }
+    protected getNavigationP(): string {
+        const length = this.pageItems ? this.pageItems.length : 0;
+        if (this.maxItems >= length) {
+            return super.getNavigation();
+        }
+        let left = '';
+        let right = '';
+        if (this.step <= 0) {
+            left = this.panel.navigation.buildNavigationString('left');
+        }
+        if ((this.step + 1) * this.maxItems >= length) {
+            right = this.panel.navigation.buildNavigationString('right');
+        }
+        if (!left)
+            left = getPayload(
+                'button',
+                'bSubPrev',
+                Icons.GetIcon('arrow-left-bold'),
+                String(rgb_dec565(HMIOn)),
+                '',
+                '',
+            );
+
+        if (!right)
+            right = getPayload(
+                'button',
+                'bSubNext',
+                Icons.GetIcon('arrow-right-bold'),
                 String(rgb_dec565(HMIOn)),
                 '',
                 '',

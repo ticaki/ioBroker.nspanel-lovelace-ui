@@ -173,7 +173,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
   // /**
-  //  * Somee message was sent to this instance over message box. Used by email, pushover, text2speech, .
+  //  * Somee message was sent to this instance over message box. Used by email, pushover, text2speech, ........
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {

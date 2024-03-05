@@ -450,6 +450,8 @@ const pageEntitiesTest3 = {
   useColor: false,
   config: {
     card: "cardEntities",
+    cardRole: "adapter",
+    scrolltype: "page",
     data: {
       headline: {
         type: "const",
@@ -458,52 +460,56 @@ const pageEntitiesTest3 = {
     }
   },
   pageItems: [
-    {
-      role: "timer",
-      type: "timer",
-      dpInit: "",
-      data: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "timer" },
-            color: { type: "const", constVal: Color.Red }
-          },
-          false: {
-            value: void 0,
-            color: { type: "const", constVal: Color.Green }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
-        },
-        entity1: {
-          value: {
-            type: "const",
-            constVal: true
-          },
-          decimal: void 0,
-          factor: void 0,
-          unit: void 0
-        },
-        headline: { type: "const", constVal: "Timer" },
-        setValue1: { type: "state", dp: "0_userdata.0.example_state" }
-      }
-    },
-    {
-      role: "rgbSingle",
-      type: "light",
-      dpInit: "0_userdata.0.shelly.0.SHRGBW2#258794#1",
-      template: "light.shelly.rgbw2"
-    },
-    {
-      type: "shutter",
-      dpInit: "0_userdata.0.shelly.0.SHSW-25#C45BBE5FC53F#1",
-      template: "shutter.shelly.2PM"
-    },
-    {
-      dpInit: "bydhvs",
-      template: "text.battery.bydhvs"
-    }
+    /*
+            {
+                role: 'timer',
+                type: 'timer',
+                dpInit: '',
+    
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'timer' },
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: undefined,
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                        scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
+                    },
+                    entity1: {
+                        value: {
+                            type: 'const',
+                            constVal: true,
+                        },
+                        decimal: undefined,
+                        factor: undefined,
+                        unit: undefined,
+                    },
+                    headline: { type: 'const', constVal: 'Timer' },
+    
+                    setValue1: { type: 'state', dp: '0_userdata.0.example_state' },
+                },
+            },
+            {
+                role: 'rgbSingle',
+                type: 'light',
+                dpInit: '0_userdata.0.shelly.0.SHRGBW2#258794#1',
+                template: 'light.shelly.rgbw2',
+            },
+            {
+                type: 'shutter',
+                dpInit: '0_userdata.0.shelly.0.SHSW-25#C45BBE5FC53F#1',
+                template: 'shutter.shelly.2PM',
+            },
+            {
+                dpInit: 'bydhvs',
+                template: 'text.battery.bydhvs',
+            },
+        */
   ],
   items: void 0
 };

@@ -181,7 +181,7 @@ export class BaseClassTriggerd extends BaseClass {
 }
 
 export class BaseClassPage extends BaseClassTriggerd {
-    readonly pageItemConfig: (PageItemDataItemsOptions | undefined)[] | undefined;
+    pageItemConfig: (PageItemDataItemsOptions | undefined)[] | undefined;
     pageItems: (PageItem | undefined)[] | undefined;
     constructor(card: PageInterface, pageItemsConfig: (PageItemDataItemsOptions | undefined)[] | undefined) {
         super(card);
