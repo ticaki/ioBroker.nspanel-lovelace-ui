@@ -450,7 +450,7 @@ const pageEntitiesTest3 = {
   useColor: false,
   config: {
     card: "cardEntities",
-    cardRole: "adapter",
+    cardRole: "adapterOff",
     scrolltype: "page",
     data: {
       headline: {

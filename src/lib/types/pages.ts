@@ -3,7 +3,7 @@ import * as Color from '../const/Color';
 import * as typePageItem from './type-pageItem';
 import * as Types from './types';
 
-type CardRole = 'adapter';
+type CardRole = 'adapter' | 'adapterOff';
 export type PageTypeCards =
     | 'cardChart'
     | 'cardLChart'

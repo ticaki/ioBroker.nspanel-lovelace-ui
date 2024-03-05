@@ -107,6 +107,7 @@ class PageEntities extends import_Page.Page {
     if (!this.config || this.config.card !== "cardEntities" || !this.config.cardRole)
       return;
     switch (this.config.cardRole) {
+      case "adapterOff":
       case "adapter": {
         const list = await this.adapter.getObjectViewAsync("system", "instance", {
           startkey: `system.adapter`,
@@ -120,6 +121,11 @@ class PageEntities extends import_Page.Page {
           let n = obj.common.titleLang && obj.common.titleLang[this.library.getLocalLanguage()];
           n = n ? n : obj.common.titleLang && obj.common.titleLang["en"];
           n = n ? n : obj.common.name;
+          if (this.config.cardRole === "adapterOff") {
+            const state = await this.adapter.getForeignStateAsync(`${item.id}.alive`);
+            if (state && state.val)
+              continue;
+          }
           const pi = {
             role: "text.list",
             type: "text",
