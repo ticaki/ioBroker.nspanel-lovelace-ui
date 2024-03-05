@@ -66,6 +66,7 @@ class Panel extends import_library.BaseClass {
   screenSaver;
   InitDone = false;
   _isOnline = false;
+  lastCard = "";
   notifyIndex = -1;
   navigation;
   format;

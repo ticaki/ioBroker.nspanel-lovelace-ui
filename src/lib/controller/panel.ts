@@ -59,6 +59,7 @@ export class Panel extends BaseClass {
     private screenSaver: Screensaver | undefined;
     private InitDone: boolean = false;
     private _isOnline: boolean = false;
+    public lastCard: string = '';
     public notifyIndex: number = -1;
     readonly navigation: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;

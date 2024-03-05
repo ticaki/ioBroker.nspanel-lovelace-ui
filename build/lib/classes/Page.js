@@ -130,7 +130,9 @@ class Page extends import_states_controller.BaseClassPage {
     this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
   }
   sendType() {
-    this.sendToPanel(`pageType~${this.card}`);
+    if (this.panel.lastCard !== this.card)
+      this.sendToPanel(`pageType~${this.card}`);
+    this.panel.lastCard = this.card;
   }
   static getPage(config, that) {
     if ("template" in config && config.template) {
