@@ -115,7 +115,6 @@ export class Screensaver extends Page {
     }
     async update(): Promise<void> {
         if (!this.visibility) {
-            this.log.error('get update command but not visible!');
             return;
         }
 
@@ -251,4 +250,6 @@ export class Screensaver extends Page {
         if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);
         if (this.blockButtons) this.adapter.clearTimeout(this.blockButtons);
     }
+    goLeft(): void {}
+    goRight(): void {}
 }

@@ -424,18 +424,37 @@ async function getEntryColor(i, value, def) {
   return color != null ? color : def;
 }
 async function getEntryTextOnOff(i, on) {
-  var _a, _b, _c;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
   if (!i)
     return null;
+  let value = "";
+  let v = null;
   if (!(0, import_data_item.isDataItem)(i)) {
-    const value = i.true && await i.true.getString();
-    if (!(on != null ? on : true)) {
-      return (_b = (_a = i.false && await i.false.getString()) != null ? _a : value) != null ? _b : null;
+    if ((0, import_data_item.isDataItem)(i.true)) {
+      v = (_a = i.true && await i.true.getString()) != null ? _a : null;
+      value = v != null ? v : "";
+    } else {
+      value = (_b = i.true && i.true.prefix && await i.true.prefix.getString()) != null ? _b : "";
+      v = (_c = i.true && i.true.value && await i.true.value.getString()) != null ? _c : null;
+      value += v != null ? v : "";
+      value += (_d = i.true && i.true.suffix && await i.true.suffix.getString()) != null ? _d : "";
     }
-    return value != null ? value : null;
-  } else {
-    return (_c = await i.getString()) != null ? _c : null;
-  }
+    if (!(on != null ? on : true)) {
+      let value2 = "";
+      let v2 = null;
+      if ((0, import_data_item.isDataItem)(i.false)) {
+        v2 = (_e = i.false && await i.false.getString()) != null ? _e : null;
+      } else {
+        value2 = (_f = i.false && i.false.prefix && await i.false.prefix.getString()) != null ? _f : "";
+        v2 = (_g = i.false && i.false.value && await i.false.value.getString()) != null ? _g : null;
+        value2 += v2 != null ? v2 : "";
+        value2 += (_h = i.false && i.false.suffix && await i.false.suffix.getString()) != null ? _h : "";
+      }
+      return v2 === null ? v === null ? null : value : value2;
+    }
+    return v === null ? null : value;
+  } else
+    return (_i = await i.getString()) != null ? _i : null;
 }
 async function getValueEntryBoolean(i) {
   if (!i)

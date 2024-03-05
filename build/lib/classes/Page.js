@@ -175,6 +175,12 @@ class Page extends import_states_controller.BaseClassPage {
       }
     }
   }
+  goLeft() {
+    this.panel.navigation.goLeft();
+  }
+  goRight() {
+    this.panel.navigation.goRight();
+  }
   async onVisibilityChange(val) {
     if (val) {
       await this.createPageItems();

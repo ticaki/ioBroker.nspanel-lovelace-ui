@@ -391,7 +391,11 @@ export class PageItem extends BaseClassTriggerd {
                     );
 
                     message.icon = await tools.getIconEntryValue(item.icon, message.optionalValue === '1', 'home');
-                    message.iconColor = await tools.GetIconColor(item.icon, message.optionalValue === '1');
+                    message.iconColor = await tools.getIconEntryColor(
+                        item.icon,
+                        message.optionalValue === '1',
+                        Color.HMIOn,
+                    );
                     return tools.getPayload(
                         'button',
                         message.intNameEntity,
@@ -944,7 +948,7 @@ export class PageItem extends BaseClassTriggerd {
                 const item = entry.data;
                 message.type = 'popupShutter';
                 if (!(message.type === 'popupShutter')) break;
-                message.text2 = (item.text && item.text.true && (await item.text.true.getString())) ?? '';
+                message.text2 = (await tools.getEntryTextOnOff(item.text, true)) ?? '';
                 message.text2 = this.library.getTranslation(message.text2);
                 const pos1 = (await tools.getValueEntryNumber(item.entity1)) ?? 'disable';
                 const pos2 = (await tools.getValueEntryNumber(item.entity2)) ?? 'disable';

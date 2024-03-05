@@ -130,7 +130,6 @@ class Screensaver extends import_Page.Page {
   }
   async update() {
     if (!this.visibility) {
-      this.log.error("get update command but not visible!");
       return;
     }
     const message = await this.getData(["left", "bottom", "indicator", "alternate", "favorit"]);
@@ -266,6 +265,10 @@ class Screensaver extends import_Page.Page {
       this.adapter.clearTimeout(this.timoutRotation);
     if (this.blockButtons)
       this.adapter.clearTimeout(this.blockButtons);
+  }
+  goLeft() {
+  }
+  goRight() {
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

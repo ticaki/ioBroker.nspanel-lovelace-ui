@@ -197,57 +197,70 @@ export class Navigation extends BaseClass {
         }
     }
 
-    buildNavigationString(): string {
+    buildNavigationString(side?: 'left' | 'right'): string {
         const item = this.database[this.currentItem];
         if (!item) return '';
         let navigationString = '';
-        if (
-            item.left.single !== undefined &&
-            (item.left.double === undefined || this.doubleClickTimeout === undefined)
-        ) {
-            navigationString = getPayload(
-                'button',
-                'bSubPrev',
-                item.left.double !== undefined
-                    ? Icons.GetIcon('arrow-left-bold')
-                    : Icons.GetIcon('arrow-top-left-bold-outline'),
-                String(rgb_dec565(White)),
-                '',
-                '',
-            );
-        } else if (item.left.double !== undefined) {
-            navigationString = getPayload(
-                'button',
-                'bUp',
-                Icons.GetIcon('arrow-up-bold'),
-                String(rgb_dec565(White)),
-                '',
-                '',
-            );
-        } else {
-            navigationString = getPayload('', '', '', '', '', '');
+        if (!side || side === 'left') {
+            if (
+                item.left.single !== undefined &&
+                (item.left.double === undefined || this.doubleClickTimeout === undefined)
+            ) {
+                navigationString = getPayload(
+                    'button',
+                    'bSubPrev',
+                    item.left.double !== undefined
+                        ? Icons.GetIcon('arrow-left-bold')
+                        : Icons.GetIcon('arrow-top-left-bold-outline'),
+                    String(rgb_dec565(White)),
+                    '',
+                    '',
+                );
+            } else if (item.left.double !== undefined) {
+                navigationString = getPayload(
+                    'button',
+                    'bUp',
+                    Icons.GetIcon('arrow-up-bold'),
+                    String(rgb_dec565(White)),
+                    '',
+                    '',
+                );
+            } else {
+                navigationString = getPayload('', '', '', '', '', '');
+            }
         }
         let navigationString2 = '';
         //Right icon
-        if (
-            item.right.single !== undefined &&
-            (item.right.double === undefined || this.doubleClickTimeout === undefined)
-        ) {
-            navigationString2 = getPayload(
-                'button',
-                'bSubNext',
-                item.left.double === undefined
-                    ? Icons.GetIcon('arrow-right-bold')
-                    : Icons.GetIcon('arrow-top-right-bold-outline'),
-                String(rgb_dec565(White)),
-                '',
-                '',
-            );
-        } else if (item.right.double !== undefined) {
-            navigationString2 = getPayload('button', 'bHome', Icons.GetIcon('home'), String(rgb_dec565(White)), '', '');
-        } else {
-            navigationString2 = getPayload('', '', '', '', '', '');
+        if (!side || side === 'right') {
+            if (
+                item.right.single !== undefined &&
+                (item.right.double === undefined || this.doubleClickTimeout === undefined)
+            ) {
+                navigationString2 = getPayload(
+                    'button',
+                    'bSubNext',
+                    item.left.double === undefined
+                        ? Icons.GetIcon('arrow-right-bold')
+                        : Icons.GetIcon('arrow-top-right-bold-outline'),
+                    String(rgb_dec565(White)),
+                    '',
+                    '',
+                );
+            } else if (item.right.double !== undefined) {
+                navigationString2 = getPayload(
+                    'button',
+                    'bHome',
+                    Icons.GetIcon('home'),
+                    String(rgb_dec565(White)),
+                    '',
+                    '',
+                );
+            } else {
+                navigationString2 = getPayload('', '', '', '', '', '');
+            }
         }
+        if (side === 'left') return navigationString;
+        else if (side === 'right') return navigationString2;
         return getPayload(navigationString, navigationString2);
     }
     resetPosition(): void {

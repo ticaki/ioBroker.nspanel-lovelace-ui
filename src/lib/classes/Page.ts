@@ -203,6 +203,13 @@ export class Page extends BaseClassPage {
             }
         }
     }
+
+    goLeft(): void {
+        this.panel.navigation.goLeft();
+    }
+    goRight(): void {
+        this.panel.navigation.goRight();
+    }
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
             await this.createPageItems();

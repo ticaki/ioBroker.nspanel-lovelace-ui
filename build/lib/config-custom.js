@@ -1724,6 +1724,337 @@ const pageGridTest1 = {
           false: void 0
         }
       }
+    },
+    {
+      role: "text.list",
+      type: "number",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: 23
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Number"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      /**
+       * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
+       */
+      role: "rgb",
+      type: "shutter",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-shutter-open" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "window-shutter" },
+            color: { type: "const", constVal: Color.HMIOff }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        // 1. slider
+        entity1: {
+          // button
+          value: { mode: "auto", role: "level.blind", type: "triggered", dp: "" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0,
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 100 }
+        },
+        // 2. slider
+        entity2: {
+          // button
+          value: { mode: "auto", role: "level.tilt", type: "triggered", dp: "" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0,
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 100 }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "text"
+          },
+          false: void 0
+        },
+        headline: {
+          type: "const",
+          constVal: "Shutter"
+        },
+        text1: {
+          true: {
+            type: "const",
+            constVal: "text1"
+          },
+          false: void 0
+        },
+        text2: {
+          true: {
+            type: "const",
+            constVal: "text2"
+          },
+          false: void 0
+        },
+        up: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.open.blind", "button.open"]
+        },
+        down: {
+          type: "state",
+          dp: "",
+          mode: "auto",
+          role: ["button.close.blind", "button.close"]
+        },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        //valueList: { type: 'const', constVal: 'home?butter' },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "rgb",
+      type: "light",
+      dpInit: "",
+      data: {
+        color: {
+          true: { type: "triggered", dp: "0_userdata.0.RGB" },
+          false: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.HMIOff }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        colorMode: { type: "const", constVal: true },
+        dimmer: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.dimmer"
+          }
+        },
+        entity1: {
+          // button
+          value: { type: "triggered", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        entityInSel: void 0,
+        text1: {
+          true: {
+            type: "const",
+            constVal: "Licht"
+          },
+          false: void 0
+        },
+        text2: {
+          true: {
+            type: "const",
+            constVal: "Picker1"
+          },
+          false: void 0
+        },
+        text3: {
+          true: {
+            type: "const",
+            constVal: "Picker2"
+          },
+          false: void 0
+        },
+        ct: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.ct"
+          }
+        },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        headline: { type: "const", constVal: "insel" },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entityInSel: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "music" },
+            color: { type: "const", constVal: Color.Gray }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: { type: "const", constVal: "Navbutton" },
+          false: void 0
+        },
+        setNavi: {
+          type: "const",
+          constVal: "3"
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            text: { value: { type: "const", constVal: "22.2" }, textSize: { type: "const", constVal: 3 } },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: { type: "const", constVal: "text" },
+          false: void 0
+        },
+        text1: {
+          true: { type: "const", constVal: "text1" },
+          false: void 0
+        }
+      }
     }
   ],
   items: void 0
@@ -2342,12 +2673,282 @@ const pageGrid2Test3 = {
     data: {
       headline: {
         type: "const",
-        constVal: "\xDCberschrift"
+        constVal: "\xDCberschrift Grid3"
       }
     }
   },
   items: void 0,
   pageItems: [
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entityInSel: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entityInSel: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entityInSel: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "button",
+      dpInit: "",
+      data: {
+        color: {
+          true: {
+            type: "const",
+            constVal: Color.HMIOn
+          },
+          false: void 0,
+          scale: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: void 0,
+          false: void 0
+        }
+      }
+    },
     {
       role: "text.list",
       type: "input_sel",

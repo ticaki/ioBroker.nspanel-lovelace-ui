@@ -7,6 +7,7 @@ import {
     PageItemLightDataItems,
     ScaledNumberType,
     TextEntryType,
+    TextEntryType2,
     TextSizeEntryType,
     ValueEntryType,
 } from '../types/type-pageItem';
@@ -407,20 +408,40 @@ export async function getEntryColor(
     return color ?? def;
 }
 export async function getEntryTextOnOff(
-    i: ChangeTypeOfKeys<TextEntryType, Dataitem | undefined> | undefined | Dataitem,
+    i: ChangeTypeOfKeys<TextEntryType | TextEntryType2, Dataitem | undefined> | undefined | Dataitem,
     on: boolean | null,
 ): Promise<string | null> {
     if (!i) return null;
+    let value = '';
+    let v: string | null = null;
     if (!isDataItem(i)) {
-        //i = i as ChangeTypeOfKeys<TextEntryType, Dataitem>;
-        const value = i.true && (await i.true.getString());
-        if (!(on ?? true)) {
-            return (i.false && (await i.false.getString())) ?? value ?? null;
+        if (isDataItem(i.true)) {
+            //i = i as ChangeTypeOfKeys<TextEntryType, Dataitem>;
+            v = (i.true && (await i.true.getString())) ?? null;
+            value = v ?? '';
+        } else {
+            value = (i.true && i.true.prefix && (await i.true.prefix.getString())) ?? '';
+            v = (i.true && i.true.value && (await i.true.value.getString())) ?? null;
+            value += v ?? '';
+            value += (i.true && i.true.suffix && (await i.true.suffix.getString())) ?? '';
         }
-        return value ?? null;
-    } else {
-        return (await i.getString()) ?? null;
-    }
+        if (!(on ?? true)) {
+            let value2 = '';
+            let v2: string | null = null;
+            if (isDataItem(i.false)) {
+                //i = i as ChangeTypeOfKeys<TextEntryType, Dataitem>;
+                v2 = (i.false && (await i.false.getString())) ?? null;
+            } else {
+                value2 = (i.false && i.false.prefix && (await i.false.prefix.getString())) ?? '';
+                v2 = (i.false && i.false.value && (await i.false.value.getString())) ?? null;
+                value2 += v2 ?? '';
+                value2 += (i.false && i.false.suffix && (await i.false.suffix.getString())) ?? '';
+            }
+
+            return v2 === null ? (v === null ? null : value) : value2;
+        }
+        return v === null ? null : value;
+    } else return (await i.getString()) ?? null;
 }
 
 export async function getValueEntryBoolean(

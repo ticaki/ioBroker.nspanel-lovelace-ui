@@ -764,7 +764,9 @@ export class Panel extends BaseClass {
      */
     async HandleIncomingMessage(event: Types.IncomingEvent): Promise<void> {
         if (!this.InitDone) return;
-        this.log.debug('Receive message:' + JSON.stringify(event));
+        if (!event.method) return;
+        if (this._activePage && this._activePage.card !== 'cardAlarm')
+            this.log.debug('Receive message:' + JSON.stringify(event));
 
         if (!this.screenSaver || (this.isOnline === false && event.method !== 'startup')) return;
         switch (event.method) {
@@ -825,8 +827,8 @@ export class Panel extends BaseClass {
                         event.action === 'button' &&
                         ['bNext', 'bPrev', 'bUp', 'bHome', 'bSubNext', 'bSubPrev'].indexOf(event.id) != -1
                     ) {
-                        if (['bPrev', 'bUp', 'bSubPrev'].indexOf(event.id) != -1) this.navigation.goLeft();
-                        else if (['bNext', 'bHome', 'bSubNext'].indexOf(event.id) != -1) this.navigation.goRight();
+                        if (['bPrev', 'bUp', 'bSubPrev'].indexOf(event.id) != -1) this.getActivePage().goLeft();
+                        else if (['bNext', 'bHome', 'bSubNext'].indexOf(event.id) != -1) this.getActivePage().goRight();
                         break;
                     }
                     this.getActivePage().onPopupRequest(
@@ -845,15 +847,16 @@ export class Panel extends BaseClass {
                 break;
             }
             case 'button1': {
-                //this.screenSaver!.setVisibility(false);
                 await this.library.writedp(`panels.${this.name}.buttons.left`, true, null, true, true);
 
                 break;
             }
             case 'button2': {
-                //this.screenSaver!.setVisibility(false);
                 await this.library.writedp(`panels.${this.name}.buttons.right`, true, null, true, true);
                 break;
+            }
+            default: {
+                this.log.warn('Missing method in HandleIncomingMessage()');
             }
         }
     }

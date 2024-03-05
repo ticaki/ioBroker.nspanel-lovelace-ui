@@ -309,7 +309,7 @@ export class Dataitem extends BaseClass {
     }
 }
 
-export function isDataItem(F: object | Dataitem): F is Dataitem {
+export function isDataItem(F: any | Dataitem): F is Dataitem {
     if (F instanceof Dataitem) return true;
     return false;
 }

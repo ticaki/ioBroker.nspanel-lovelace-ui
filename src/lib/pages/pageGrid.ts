@@ -3,6 +3,8 @@ import { getPayload, getPayloadArray } from '../const/tools';
 import * as pages from '../types/pages';
 import { IncomingEvent } from '../types/types';
 import { PageItem } from './pageItem';
+import { HMIOn, rgb_dec565 } from '../const/Color';
+import { Icons } from '../const/icon_mapping';
 
 const PageGridMessageDefault: pages.PageGridMessage = {
     event: 'entityUpd',
@@ -19,7 +21,8 @@ const PageGrid2MessageDefault: pages.PageGridMessage = {
 export class PageGrid extends Page {
     config: pages.PageBaseConfig['config'];
     items: pages.PageBaseConfig['items'];
-    private step: number = 1;
+    private maxItems: number;
+    private step: number = 0;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
@@ -30,6 +33,7 @@ export class PageGrid extends Page {
         this.config = options.config;
         if (options.items && (options.items.card == 'cardGrid' || options.items.card == 'cardGrid2'))
             this.items = options.items;
+        this.maxItems = this.card === 'cardGrid' ? 6 : 8;
         this.minUpdateInterval = 2000;
     }
 
@@ -58,8 +62,13 @@ export class PageGrid extends Page {
         message.options = [];
         if (!this.items || (this.items.card !== 'cardGrid' && this.items.card !== 'cardGrid2')) return;
         if (this.pageItems) {
-            const maxItems = this.card === 'cardGrid' ? 6 : 8;
-            for (let a = 0; a < maxItems; a++) {
+            let maxItems = this.card === 'cardGrid' ? 6 : 8;
+            let a = 0;
+            if (this.pageItems.length > maxItems) {
+                a = maxItems * this.step;
+                maxItems = a + maxItems;
+            }
+            for (; a < maxItems; a++) {
                 const temp = this.pageItems[a];
                 if (temp) message.options[a] = await temp.getPageItemPayload();
             }
@@ -85,5 +94,53 @@ export class PageGrid extends Page {
         //if (event.page && event.id && this.pageItems) {
         //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
         //}
+    }
+    goLeft(): void {
+        if (--this.step < 0) {
+            this.step = 0;
+            this.panel.navigation.goLeft();
+        } else this.update();
+    }
+    goRight(): void {
+        const length = this.pageItems ? this.pageItems.length : 0;
+        if (++this.step * this.maxItems >= length) {
+            this.step--;
+            this.panel.navigation.goRight();
+        } else this.update();
+    }
+    protected getNavigation(): string {
+        const length = this.pageItems ? this.pageItems.length : 0;
+        if (this.maxItems > length) {
+            return super.getNavigation();
+        }
+        let left = '';
+        let right = '';
+        if (this.step <= 0) {
+            left = this.panel.navigation.buildNavigationString('left');
+        }
+        if ((this.step + 1) * this.maxItems >= length) {
+            right = this.panel.navigation.buildNavigationString('right');
+        }
+        if (!left)
+            left = getPayload(
+                'button',
+                'bSubPrev',
+                Icons.GetIcon('arrow-left-bold'),
+                String(rgb_dec565(HMIOn)),
+                '',
+                '',
+            );
+
+        if (!right)
+            right = getPayload(
+                'button',
+                'bSubNext',
+                Icons.GetIcon('arrow-right-bold'),
+                String(rgb_dec565(HMIOn)),
+                '',
+                '',
+            );
+
+        return getPayload(left, right);
     }
 }

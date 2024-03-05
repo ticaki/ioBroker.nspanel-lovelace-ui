@@ -752,7 +752,10 @@ class Panel extends import_library.BaseClass {
   async HandleIncomingMessage(event) {
     if (!this.InitDone)
       return;
-    this.log.debug("Receive message:" + JSON.stringify(event));
+    if (!event.method)
+      return;
+    if (this._activePage && this._activePage.card !== "cardAlarm")
+      this.log.debug("Receive message:" + JSON.stringify(event));
     if (!this.screenSaver || this.isOnline === false && event.method !== "startup")
       return;
     switch (event.method) {
@@ -804,9 +807,9 @@ class Panel extends import_library.BaseClass {
         } else {
           if (event.action === "button" && ["bNext", "bPrev", "bUp", "bHome", "bSubNext", "bSubPrev"].indexOf(event.id) != -1) {
             if (["bPrev", "bUp", "bSubPrev"].indexOf(event.id) != -1)
-              this.navigation.goLeft();
+              this.getActivePage().goLeft();
             else if (["bNext", "bHome", "bSubNext"].indexOf(event.id) != -1)
-              this.navigation.goRight();
+              this.getActivePage().goRight();
             break;
           }
           this.getActivePage().onPopupRequest(
@@ -830,6 +833,9 @@ class Panel extends import_library.BaseClass {
       case "button2": {
         await this.library.writedp(`panels.${this.name}.buttons.right`, true, null, true, true);
         break;
+      }
+      default: {
+        this.log.warn("Missing method in HandleIncomingMessage()");
       }
     }
   }

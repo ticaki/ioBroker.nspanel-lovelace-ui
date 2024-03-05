@@ -363,7 +363,7 @@ export type PageItemBase = {
     headline?: string;
     color?: ColorEntryType;
     icon?: IconEntryType;
-    text?: TextEntryType;
+    text?: TextEntryType | TextEntryType2;
     entityInSel: ValueEntryType;
     entity1?: ValueEntryType; // Readonly Werte die angezeigt werden soll. wird immer für insel verwendet
     entity2?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
@@ -468,6 +468,7 @@ export type IconEntryType =
 
 export type TextEntryType = Record<Types.BooleanUnion, string>;
 export type TextSizeEntryType = ValueEntryType & { textSize?: number };
+export type TextEntryType2 = Record<Types.BooleanUnion, { value: string; prefix: string; suffix: string }>;
 export type ValueEntryType =
     | {
           value: number;

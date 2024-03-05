@@ -349,7 +349,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             (_F = await tools.getEntryTextOnOff(item.text, message.optionalValue === "1")) != null ? _F : ""
           );
           message.icon = await tools.getIconEntryValue(item.icon, message.optionalValue === "1", "home");
-          message.iconColor = await tools.GetIconColor(item.icon, message.optionalValue === "1");
+          message.iconColor = await tools.getIconEntryColor(
+            item.icon,
+            message.optionalValue === "1",
+            Color.HMIOn
+          );
           return tools.getPayload(
             "button",
             message.intNameEntity,
@@ -842,7 +846,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         message.type = "popupShutter";
         if (!(message.type === "popupShutter"))
           break;
-        message.text2 = (_F = item.text && item.text.true && await item.text.true.getString()) != null ? _F : "";
+        message.text2 = (_F = await tools.getEntryTextOnOff(item.text, true)) != null ? _F : "";
         message.text2 = this.library.getTranslation(message.text2);
         const pos1 = (_G = await tools.getValueEntryNumber(item.entity1)) != null ? _G : "disable";
         const pos2 = (_H = await tools.getValueEntryNumber(item.entity2)) != null ? _H : "disable";

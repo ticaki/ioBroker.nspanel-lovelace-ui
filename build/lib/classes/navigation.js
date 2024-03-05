@@ -182,47 +182,62 @@ class Navigation extends import_library.BaseClass {
       }
     }
   }
-  buildNavigationString() {
+  buildNavigationString(side) {
     const item = this.database[this.currentItem];
     if (!item)
       return "";
     let navigationString = "";
-    if (item.left.single !== void 0 && (item.left.double === void 0 || this.doubleClickTimeout === void 0)) {
-      navigationString = (0, import_tools.getPayload)(
-        "button",
-        "bSubPrev",
-        item.left.double !== void 0 ? import_icon_mapping.Icons.GetIcon("arrow-left-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-left-bold-outline"),
-        String((0, import_Color.rgb_dec565)(import_Color.White)),
-        "",
-        ""
-      );
-    } else if (item.left.double !== void 0) {
-      navigationString = (0, import_tools.getPayload)(
-        "button",
-        "bUp",
-        import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
-        String((0, import_Color.rgb_dec565)(import_Color.White)),
-        "",
-        ""
-      );
-    } else {
-      navigationString = (0, import_tools.getPayload)("", "", "", "", "", "");
+    if (!side || side === "left") {
+      if (item.left.single !== void 0 && (item.left.double === void 0 || this.doubleClickTimeout === void 0)) {
+        navigationString = (0, import_tools.getPayload)(
+          "button",
+          "bSubPrev",
+          item.left.double !== void 0 ? import_icon_mapping.Icons.GetIcon("arrow-left-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-left-bold-outline"),
+          String((0, import_Color.rgb_dec565)(import_Color.White)),
+          "",
+          ""
+        );
+      } else if (item.left.double !== void 0) {
+        navigationString = (0, import_tools.getPayload)(
+          "button",
+          "bUp",
+          import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
+          String((0, import_Color.rgb_dec565)(import_Color.White)),
+          "",
+          ""
+        );
+      } else {
+        navigationString = (0, import_tools.getPayload)("", "", "", "", "", "");
+      }
     }
     let navigationString2 = "";
-    if (item.right.single !== void 0 && (item.right.double === void 0 || this.doubleClickTimeout === void 0)) {
-      navigationString2 = (0, import_tools.getPayload)(
-        "button",
-        "bSubNext",
-        item.left.double === void 0 ? import_icon_mapping.Icons.GetIcon("arrow-right-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-right-bold-outline"),
-        String((0, import_Color.rgb_dec565)(import_Color.White)),
-        "",
-        ""
-      );
-    } else if (item.right.double !== void 0) {
-      navigationString2 = (0, import_tools.getPayload)("button", "bHome", import_icon_mapping.Icons.GetIcon("home"), String((0, import_Color.rgb_dec565)(import_Color.White)), "", "");
-    } else {
-      navigationString2 = (0, import_tools.getPayload)("", "", "", "", "", "");
+    if (!side || side === "right") {
+      if (item.right.single !== void 0 && (item.right.double === void 0 || this.doubleClickTimeout === void 0)) {
+        navigationString2 = (0, import_tools.getPayload)(
+          "button",
+          "bSubNext",
+          item.left.double === void 0 ? import_icon_mapping.Icons.GetIcon("arrow-right-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-right-bold-outline"),
+          String((0, import_Color.rgb_dec565)(import_Color.White)),
+          "",
+          ""
+        );
+      } else if (item.right.double !== void 0) {
+        navigationString2 = (0, import_tools.getPayload)(
+          "button",
+          "bHome",
+          import_icon_mapping.Icons.GetIcon("home"),
+          String((0, import_Color.rgb_dec565)(import_Color.White)),
+          "",
+          ""
+        );
+      } else {
+        navigationString2 = (0, import_tools.getPayload)("", "", "", "", "", "");
+      }
     }
+    if (side === "left")
+      return navigationString;
+    else if (side === "right")
+      return navigationString2;
     return (0, import_tools.getPayload)(navigationString, navigationString2);
   }
   resetPosition() {
