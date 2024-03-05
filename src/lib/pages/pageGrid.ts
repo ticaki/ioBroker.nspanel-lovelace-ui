@@ -62,15 +62,16 @@ export class PageGrid extends Page {
         message.options = [];
         if (!this.items || (this.items.card !== 'cardGrid' && this.items.card !== 'cardGrid2')) return;
         if (this.pageItems) {
-            let maxItems = this.card === 'cardGrid' ? 6 : 8;
+            let maxItems = this.maxItems;
             let a = 0;
             if (this.pageItems.length > maxItems) {
                 a = maxItems * this.step;
                 maxItems = a + maxItems;
             }
+            let b = 0;
             for (; a < maxItems; a++) {
                 const temp = this.pageItems[a];
-                if (temp) message.options[a] = await temp.getPageItemPayload();
+                message.options[b++] = temp ? await temp.getPageItemPayload() : '~~~~~';
             }
         }
         message.headline = this.library.getTranslation(

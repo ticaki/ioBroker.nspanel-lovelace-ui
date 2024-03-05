@@ -66,18 +66,33 @@ class PageEntities extends import_Page.Page {
     const message = {};
     message.options = [];
     if (this.pageItems) {
-      let a = this.step;
-      for (; a < this.maxItems + this.step; a++) {
-        const temp = this.pageItems[a];
-        if (temp)
-          message.options[a - this.step] = await temp.getPageItemPayload();
+      if (this.config && this.config.card == "cardEntities") {
+        if (this.config.scrolltype === "page") {
+          let maxItems = this.maxItems;
+          let a = 0;
+          if (this.pageItems.length > maxItems) {
+            a = maxItems * this.step;
+            maxItems = a + maxItems;
+          }
+          let b = 0;
+          for (; a < maxItems; a++) {
+            const temp = this.pageItems[a];
+            message.options[b++] = temp ? await temp.getPageItemPayload() : "~~~~~";
+          }
+        } else {
+          let a = this.step;
+          for (; a < this.maxItems + this.step; a++) {
+            const temp = this.pageItems[a];
+            message.options[a - this.step] = temp ? await temp.getPageItemPayload() : "~~~~~";
+          }
+        }
       }
     }
     message.headline = this.library.getTranslation(
       (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
     );
     message.navigation = this.getNavigation();
-    const msg = Object.assign(PageEntitiesMessageDefault, message);
+    const msg = Object.assign(structuredClone(PageEntitiesMessageDefault), message);
     this.sendToPanel(this.getMessage(msg));
   }
   getMessage(message) {
@@ -243,7 +258,7 @@ class PageEntities extends import_Page.Page {
       left = (0, import_tools.getPayload)(
         "button",
         "bSubPrev",
-        import_icon_mapping.Icons.GetIcon("arrow-left-bold"),
+        import_icon_mapping.Icons.GetIcon("arrow-up-bold-outline"),
         String((0, import_Color.rgb_dec565)(import_Color.HMIOn)),
         "",
         ""
@@ -252,7 +267,7 @@ class PageEntities extends import_Page.Page {
       right = (0, import_tools.getPayload)(
         "button",
         "bSubNext",
-        import_icon_mapping.Icons.GetIcon("arrow-right-bold"),
+        import_icon_mapping.Icons.GetIcon("arrow-down-bold-outline"),
         String((0, import_Color.rgb_dec565)(import_Color.HMIOn)),
         "",
         ""

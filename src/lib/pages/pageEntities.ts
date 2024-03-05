@@ -56,17 +56,33 @@ export class PageEntities extends Page {
         const message: Partial<pages.PageEntitiesMessage> = {};
         message.options = [];
         if (this.pageItems) {
-            let a = this.step;
-            for (; a < this.maxItems + this.step; a++) {
-                const temp = this.pageItems[a];
-                if (temp) message.options[a - this.step] = await temp.getPageItemPayload();
+            if (this.config && this.config.card == 'cardEntities') {
+                if (this.config.scrolltype === 'page') {
+                    let maxItems = this.maxItems;
+                    let a = 0;
+                    if (this.pageItems.length > maxItems) {
+                        a = maxItems * this.step;
+                        maxItems = a + maxItems;
+                    }
+                    let b = 0;
+                    for (; a < maxItems; a++) {
+                        const temp = this.pageItems[a];
+                        message.options[b++] = temp ? await temp.getPageItemPayload() : '~~~~~';
+                    }
+                } else {
+                    let a = this.step;
+                    for (; a < this.maxItems + this.step; a++) {
+                        const temp = this.pageItems[a];
+                        message.options[a - this.step] = temp ? await temp.getPageItemPayload() : '~~~~~';
+                    }
+                }
             }
         }
         message.headline = this.library.getTranslation(
             (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
         );
         message.navigation = this.getNavigation();
-        const msg: pages.PageEntitiesMessage = Object.assign(PageEntitiesMessageDefault, message);
+        const msg: pages.PageEntitiesMessage = Object.assign(structuredClone(PageEntitiesMessageDefault), message);
 
         this.sendToPanel(this.getMessage(msg));
     }
@@ -229,7 +245,7 @@ export class PageEntities extends Page {
             left = getPayload(
                 'button',
                 'bSubPrev',
-                Icons.GetIcon('arrow-left-bold'),
+                Icons.GetIcon('arrow-up-bold-outline'),
                 String(rgb_dec565(HMIOn)),
                 '',
                 '',
@@ -239,7 +255,7 @@ export class PageEntities extends Page {
             right = getPayload(
                 'button',
                 'bSubNext',
-                Icons.GetIcon('arrow-right-bold'),
+                Icons.GetIcon('arrow-down-bold-outline'),
                 String(rgb_dec565(HMIOn)),
                 '',
                 '',
