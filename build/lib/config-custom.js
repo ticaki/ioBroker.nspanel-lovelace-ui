@@ -442,12 +442,10 @@ const popupTest2 = {
   items: void 0
 };
 const pageEntitiesTest3 = {
-  //type: 'sonstiges',
   card: "cardEntities",
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "entities3",
-  useColor: false,
   config: {
     card: "cardEntities",
     cardRole: "adapterOff",
@@ -455,7 +453,7 @@ const pageEntitiesTest3 = {
     data: {
       headline: {
         type: "const",
-        constVal: "entities3"
+        constVal: "Adapter Offline"
       }
     }
   },

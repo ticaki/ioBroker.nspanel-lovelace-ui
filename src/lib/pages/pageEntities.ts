@@ -23,7 +23,7 @@ export class PageEntities extends Page {
     private titelPos: number = 0;
     private nextArrow: boolean = false;
     private lastNavClick: number = 0;
-    tempItem: PageItem | undefined;
+    tempItems: (PageItem | undefined)[] | undefined;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
@@ -65,8 +65,29 @@ export class PageEntities extends Page {
                         maxItems = a + maxItems;
                     }
                     let b = 0;
+                    let pageItems = this.pageItems;
+
+                    /**
+                     * Live update von gefilterten Adaptern.
+                     */
+                    if (this.config.cardRole === 'adapterOff') {
+                        this.tempItems = [];
+                        for (const a of this.pageItems) {
+                            if (
+                                a &&
+                                a.dataItems &&
+                                a.dataItems.data &&
+                                'entity1' in a.dataItems.data &&
+                                a.dataItems.data.entity1 &&
+                                a.dataItems.data.entity1.value &&
+                                !(await a.dataItems.data.entity1.value.getBoolean())
+                            )
+                                this.tempItems.push(a);
+                        }
+                        pageItems = this.tempItems;
+                    }
                     for (; a < maxItems; a++) {
-                        const temp = this.pageItems[a];
+                        const temp = pageItems[a];
                         message.options[b++] = temp ? await temp.getPageItemPayload() : '~~~~~';
                     }
                 } else {
@@ -110,10 +131,7 @@ export class PageEntities extends Page {
                     let n = obj.common.titleLang && obj.common.titleLang[this.library.getLocalLanguage()];
                     n = n ? n : obj.common.titleLang && obj.common.titleLang['en'];
                     n = n ? n : obj.common.name;
-                    if (this.config.cardRole === 'adapterOff') {
-                        const state = await this.adapter.getForeignStateAsync(`${item.id}.alive`);
-                        if (state && state.val) continue;
-                    }
+
                     const pi: PageItemDataItemsOptions = {
                         role: 'text.list',
                         type: 'text',
@@ -180,7 +198,7 @@ export class PageEntities extends Page {
             this.goRightP();
             return;
         }
-        const length = this.pageItems ? this.pageItems.length : 0;
+        const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
         if (++this.step + this.maxItems > length && Date.now() - this.lastNavClick > 300) {
             this.step--;
             this.panel.navigation.goRight();
@@ -192,7 +210,7 @@ export class PageEntities extends Page {
         if (this.config.scrolltype === 'page') {
             return this.getNavigationP();
         }
-        const length = this.pageItems ? this.pageItems.length : 0;
+        const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
         if (this.maxItems >= length) {
             return super.getNavigation();
         }
@@ -226,14 +244,14 @@ export class PageEntities extends Page {
         } else this.update();
     }
     goRightP(): void {
-        const length = this.pageItems ? this.pageItems.length : 0;
+        const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
         if (++this.step * this.maxItems >= length) {
             this.step--;
             this.panel.navigation.goRight();
         } else this.update();
     }
     protected getNavigationP(): string {
-        const length = this.pageItems ? this.pageItems.length : 0;
+        const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
         if (this.maxItems >= length) {
             return super.getNavigation();
         }

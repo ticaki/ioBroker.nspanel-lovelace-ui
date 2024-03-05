@@ -40,7 +40,7 @@ class PageEntities extends import_Page.Page {
   titelPos = 0;
   nextArrow = false;
   lastNavClick = 0;
-  tempItem;
+  tempItems;
   constructor(config, options) {
     super(config, options);
     this.config = options.config;
@@ -75,8 +75,17 @@ class PageEntities extends import_Page.Page {
             maxItems = a + maxItems;
           }
           let b = 0;
+          let pageItems = this.pageItems;
+          if (this.config.cardRole === "adapterOff") {
+            this.tempItems = [];
+            for (const a2 of this.pageItems) {
+              if (a2 && a2.dataItems && a2.dataItems.data && "entity1" in a2.dataItems.data && a2.dataItems.data.entity1 && a2.dataItems.data.entity1.value && !await a2.dataItems.data.entity1.value.getBoolean())
+                this.tempItems.push(a2);
+            }
+            pageItems = this.tempItems;
+          }
           for (; a < maxItems; a++) {
-            const temp = this.pageItems[a];
+            const temp = pageItems[a];
             message.options[b++] = temp ? await temp.getPageItemPayload() : "~~~~~";
           }
         } else {
@@ -121,11 +130,6 @@ class PageEntities extends import_Page.Page {
           let n = obj.common.titleLang && obj.common.titleLang[this.library.getLocalLanguage()];
           n = n ? n : obj.common.titleLang && obj.common.titleLang["en"];
           n = n ? n : obj.common.name;
-          if (this.config.cardRole === "adapterOff") {
-            const state = await this.adapter.getForeignStateAsync(`${item.id}.alive`);
-            if (state && state.val)
-              continue;
-          }
           const pi = {
             role: "text.list",
             type: "text",
@@ -193,7 +197,7 @@ class PageEntities extends import_Page.Page {
       this.goRightP();
       return;
     }
-    const length = this.pageItems ? this.pageItems.length : 0;
+    const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
     if (++this.step + this.maxItems > length && Date.now() - this.lastNavClick > 300) {
       this.step--;
       this.panel.navigation.goRight();
@@ -207,7 +211,7 @@ class PageEntities extends import_Page.Page {
     if (this.config.scrolltype === "page") {
       return this.getNavigationP();
     }
-    const length = this.pageItems ? this.pageItems.length : 0;
+    const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
     if (this.maxItems >= length) {
       return super.getNavigation();
     }
@@ -240,7 +244,7 @@ class PageEntities extends import_Page.Page {
       this.update();
   }
   goRightP() {
-    const length = this.pageItems ? this.pageItems.length : 0;
+    const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
     if (++this.step * this.maxItems >= length) {
       this.step--;
       this.panel.navigation.goRight();
@@ -248,7 +252,7 @@ class PageEntities extends import_Page.Page {
       this.update();
   }
   getNavigationP() {
-    const length = this.pageItems ? this.pageItems.length : 0;
+    const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
     if (this.maxItems >= length) {
       return super.getNavigation();
     }
