@@ -231,6 +231,185 @@ const pageEntitiesTest1 = {
          */
         valueList: { type: "const", constVal: "1?2?3?4" }
       }
+    },
+    {
+      role: "text.list",
+      type: "number",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "arrow-up" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.dimmer"
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Number"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      template: "generic.shutter",
+      dpInit: "0_userdata.0.shutter_test",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "window-open" },
+            color: { type: "const", constVal: "aqua", role: "level.color.name" }
+          },
+          false: null
+        }
+      }
+    },
+    {
+      role: "rgb",
+      type: "light",
+      dpInit: "",
+      data: {
+        color: {
+          true: { type: "triggered", dp: "0_userdata.0.RGB" },
+          false: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "lightbulb" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: {
+            value: { type: "const", constVal: "lightbulb-outline" },
+            color: { type: "const", constVal: Color.HMIOff }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        colorMode: { type: "const", constVal: true },
+        dimmer: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.dimmer"
+          }
+        },
+        entity1: {
+          // button
+          value: { type: "triggered", dp: "0_userdata.0.example_state" },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        entityInSel: void 0,
+        text1: {
+          true: {
+            type: "const",
+            constVal: "Licht"
+          },
+          false: void 0
+        },
+        text2: {
+          true: {
+            type: "const",
+            constVal: "Picker1"
+          },
+          false: void 0
+        },
+        text3: {
+          true: {
+            type: "const",
+            constVal: "Picker2"
+          },
+          false: void 0
+        },
+        ct: {
+          value: {
+            type: "triggered",
+            dp: "0_userdata.0.ct"
+          }
+        },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        valueList: { type: "const", constVal: "home?butter" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        setList: { type: "const", constVal: "0_userdata.0.test?1|0_userdata.0.test?2" }
+      }
+    },
+    {
+      role: "text.list",
+      type: "fan",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          scale: void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          },
+          decimal: void 0,
+          factor: void 0,
+          unit: void 0
+        },
+        speed: {
+          value: {
+            type: "const",
+            constVal: 1e3
+          },
+          factor: void 0,
+          maxScale: {
+            type: "const",
+            constVal: 3e3
+          }
+        },
+        headline: {
+          type: "const",
+          constVal: "Football-Fan"
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Details"
+          },
+          false: void 0
+        },
+        entityInSel: { value: { type: "const", constVal: "2" } },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        valueList: { type: "const", constVal: "1?2?3?4" }
+      }
     }
   ],
   items: void 0

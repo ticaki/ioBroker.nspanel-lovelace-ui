@@ -1,4 +1,6 @@
 import { Page, PageInterface } from '../classes/Page';
+import { HMIOn, rgb_dec565 } from '../const/Color';
+import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadArray } from '../const/tools';
 import * as pages from '../types/pages';
 import { IncomingEvent } from '../types/types';
@@ -6,18 +8,20 @@ import { PageItem } from './pageItem';
 
 const PageEntitiesMessageDefault: pages.PageEntitiesMessage = {
     event: 'entityUpd',
-    headline: 'Page Grid',
+    headline: 'Page Entities',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
-    options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
+    options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
 };
 
 export class PageEntities extends Page {
     config: pages.PageBaseConfig['config'];
     items: pages.PageBaseConfig['items'];
-    private step: number = 1;
+    private maxItems: number = 4;
+    private step: number = 0;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
+    private lastNavClick: number = 0;
     tempItem: PageItem | undefined;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
@@ -51,10 +55,10 @@ export class PageEntities extends Page {
         const message: Partial<pages.PageEntitiesMessage> = {};
         message.options = [];
         if (this.pageItems) {
-            const maxItems = 4;
-            for (let a = 0; a < maxItems; a++) {
+            let a = this.step;
+            for (; a < this.maxItems + this.step; a++) {
                 const temp = this.pageItems[a];
-                if (temp) message.options[a] = await temp.getPageItemPayload();
+                if (temp) message.options[a - this.step] = await temp.getPageItemPayload();
             }
         }
         message.headline = this.library.getTranslation(
@@ -72,4 +76,48 @@ export class PageEntities extends Page {
         await this.update();
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {}
+
+    goLeft(): void {
+        if (--this.step < 0 && Date.now() - this.lastNavClick > 300) {
+            this.step = 0;
+            this.panel.navigation.goLeft();
+        } else this.update();
+        this.lastNavClick = Date.now();
+    }
+    goRight(): void {
+        const length = this.pageItems ? this.pageItems.length : 0;
+        if (++this.step + this.maxItems >= length && Date.now() - this.lastNavClick > 300) {
+            this.step--;
+            this.panel.navigation.goRight();
+        } else this.update();
+        this.lastNavClick = Date.now();
+    }
+    protected getNavigation(): string {
+        const length = this.pageItems ? this.pageItems.length : 0;
+        if (this.maxItems >= length) {
+            return super.getNavigation();
+        }
+        let left = '';
+        let right = '';
+        if (this.step <= 0) {
+            left = this.panel.navigation.buildNavigationString('left');
+        }
+        if (this.step + 1 + this.maxItems >= length) {
+            right = this.panel.navigation.buildNavigationString('right');
+        }
+        if (!left)
+            left = getPayload('button', 'bSubPrev', Icons.GetIcon('arrow-up-bold'), String(rgb_dec565(HMIOn)), '', '');
+
+        if (!right)
+            right = getPayload(
+                'button',
+                'bSubNext',
+                Icons.GetIcon('arrow-down-bold'),
+                String(rgb_dec565(HMIOn)),
+                '',
+                '',
+            );
+
+        return getPayload(left, right);
+    }
 }

@@ -22,20 +22,24 @@ __export(pageEntities_exports, {
 });
 module.exports = __toCommonJS(pageEntities_exports);
 var import_Page = require("../classes/Page");
+var import_Color = require("../const/Color");
+var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
 const PageEntitiesMessageDefault = {
   event: "entityUpd",
-  headline: "Page Grid",
+  headline: "Page Entities",
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
-  options: ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"]
+  options: ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"]
 };
 class PageEntities extends import_Page.Page {
   config;
   items;
-  step = 1;
+  maxItems = 4;
+  step = 0;
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
+  lastNavClick = 0;
   tempItem;
   constructor(config, options) {
     super(config, options);
@@ -62,11 +66,11 @@ class PageEntities extends import_Page.Page {
     const message = {};
     message.options = [];
     if (this.pageItems) {
-      const maxItems = 4;
-      for (let a = 0; a < maxItems; a++) {
+      let a = this.step;
+      for (; a < this.maxItems + this.step; a++) {
         const temp = this.pageItems[a];
         if (temp)
-          message.options[a] = await temp.getPageItemPayload();
+          message.options[a - this.step] = await temp.getPageItemPayload();
       }
     }
     message.headline = this.library.getTranslation(
@@ -83,6 +87,49 @@ class PageEntities extends import_Page.Page {
     await this.update();
   }
   async onButtonEvent(_event) {
+  }
+  goLeft() {
+    if (--this.step < 0 && Date.now() - this.lastNavClick > 300) {
+      this.step = 0;
+      this.panel.navigation.goLeft();
+    } else
+      this.update();
+    this.lastNavClick = Date.now();
+  }
+  goRight() {
+    const length = this.pageItems ? this.pageItems.length : 0;
+    if (++this.step + this.maxItems >= length && Date.now() - this.lastNavClick > 300) {
+      this.step--;
+      this.panel.navigation.goRight();
+    } else
+      this.update();
+    this.lastNavClick = Date.now();
+  }
+  getNavigation() {
+    const length = this.pageItems ? this.pageItems.length : 0;
+    if (this.maxItems >= length) {
+      return super.getNavigation();
+    }
+    let left = "";
+    let right = "";
+    if (this.step <= 0) {
+      left = this.panel.navigation.buildNavigationString("left");
+    }
+    if (this.step + 1 + this.maxItems >= length) {
+      right = this.panel.navigation.buildNavigationString("right");
+    }
+    if (!left)
+      left = (0, import_tools.getPayload)("button", "bSubPrev", import_icon_mapping.Icons.GetIcon("arrow-up-bold"), String((0, import_Color.rgb_dec565)(import_Color.HMIOn)), "", "");
+    if (!right)
+      right = (0, import_tools.getPayload)(
+        "button",
+        "bSubNext",
+        import_icon_mapping.Icons.GetIcon("arrow-down-bold"),
+        String((0, import_Color.rgb_dec565)(import_Color.HMIOn)),
+        "",
+        ""
+      );
+    return (0, import_tools.getPayload)(left, right);
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

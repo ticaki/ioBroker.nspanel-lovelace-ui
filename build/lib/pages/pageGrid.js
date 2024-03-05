@@ -121,7 +121,7 @@ class PageGrid extends import_Page.Page {
   }
   getNavigation() {
     const length = this.pageItems ? this.pageItems.length : 0;
-    if (this.maxItems > length) {
+    if (this.maxItems >= length) {
       return super.getNavigation();
     }
     let left = "";
