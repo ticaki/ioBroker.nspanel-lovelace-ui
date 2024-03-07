@@ -54,7 +54,12 @@
                 },
                 "Testconfig2": {
                     "type": "jsonEditor",
-                    "label": "Testconfig2",
+                    "label": "Testconfig2"
+                },
+                "pw1": {
+                    "type": "password",
+                    "label": "Pin",
+                    "newLine": true
                 }
             }
         }/*,

@@ -151,7 +151,6 @@ const pageAdapterInformation: PageBaseConfig = {
     items: undefined,
 };
 const pageServiceUnlock: PageBaseConfig = {
-    //card: 'cardAlarm',
     uniqueID: '///unlock',
     alwaysOn: 'always',
     dpInit: '',
@@ -167,7 +166,7 @@ const pageServiceUnlock: PageBaseConfig = {
             button3: undefined,
             button4: undefined,
             icon: undefined,
-            pin: { type: 'const', constVal: '' },
+            pin: { type: 'const', constVal: '-1' },
             setNavi: { type: 'const', constVal: '///Overview' },
         },
     },

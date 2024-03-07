@@ -64,7 +64,7 @@ export class PageAlarm extends Page {
             genericStateObjects.panel.panels.alarm.cardAlarm.status,
         );
     }
-    private pin: number = 0;
+    private pin: string = '0';
     private failCount: number = 0;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
@@ -109,7 +109,8 @@ export class PageAlarm extends Page {
             else await this.setStatus(this.status);
         } else this.setStatus('armed');
         this.pin =
-            (this.items && this.items.data && this.items.data.pin && (await this.items.data.pin.getNumber())) ?? 0;
+            (this.items && this.items.data && this.items.data.pin && (await this.items.data.pin.getString())) ?? '';
+        if (this.pin == '-1') this.pin = this.adapter.config.pw1 ? this.adapter.config.pw1 : '';
     }
 
     /**
@@ -257,7 +258,7 @@ export class PageAlarm extends Page {
                 this.log.warn(`Pin is missing`);
                 return;
             }*/
-            if (this.pin && this.pin !== parseInt(value)) {
+            if (this.pin && this.pin != value) {
                 if (++this.failCount < 3) {
                     this.log.warn('Wrong pin entered. try ' + this.failCount + ' of 3');
                 } else {

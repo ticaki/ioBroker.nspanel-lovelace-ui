@@ -182,7 +182,6 @@ const pageAdapterInformation = {
   items: void 0
 };
 const pageServiceUnlock = {
-  //card: 'cardAlarm',
   uniqueID: "///unlock",
   alwaysOn: "always",
   dpInit: "",
@@ -198,7 +197,7 @@ const pageServiceUnlock = {
       button3: void 0,
       button4: void 0,
       icon: void 0,
-      pin: { type: "const", constVal: "" },
+      pin: { type: "const", constVal: "-1" },
       setNavi: { type: "const", constVal: "///Overview" }
     }
   }
