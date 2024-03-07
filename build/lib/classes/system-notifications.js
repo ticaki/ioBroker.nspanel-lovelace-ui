@@ -58,7 +58,7 @@ class SystemNotifications extends import_library.BaseClass {
     }
   }
   /**
-   * Get all existing hosts of this installation
+   * Get all existing hosts of this installation.
    */
   async getAllHosts() {
     const res = await this.adapter.getObjectViewAsync("system", "host", {

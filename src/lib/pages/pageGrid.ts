@@ -26,7 +26,7 @@ export class PageGrid extends Page {
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
-    tempItem: PageItem | undefined;
+    tempItems: (PageItem | undefined)[] | undefined;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
@@ -61,6 +61,7 @@ export class PageGrid extends Page {
         const message: Partial<pages.PageGridMessage> = {};
         message.options = [];
         if (!this.items || (this.items.card !== 'cardGrid' && this.items.card !== 'cardGrid2')) return;
+        if (!this.config || (this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')) return;
         if (this.pageItems) {
             let maxItems = this.maxItems;
             let a = 0;
@@ -68,9 +69,30 @@ export class PageGrid extends Page {
                 a = maxItems * this.step;
                 maxItems = a + maxItems;
             }
+            let pageItems = this.pageItems;
+            /**
+             * Live update von gefilterten Adaptern.
+             */
+            if (this.config.filterType === 'true' || this.config.filterType === 'false') {
+                this.tempItems = [];
+                const testIt = this.config.filterType === 'true';
+                for (const a of this.pageItems) {
+                    if (
+                        a &&
+                        a.dataItems &&
+                        a.dataItems.data &&
+                        'entity1' in a.dataItems.data &&
+                        a.dataItems.data.entity1 &&
+                        a.dataItems.data.entity1.value &&
+                        testIt === !!(await a.dataItems.data.entity1.value.getBoolean())
+                    )
+                        this.tempItems.push(a);
+                }
+                pageItems = this.tempItems;
+            }
             let b = 0;
             for (; a < maxItems; a++) {
-                const temp = this.pageItems[a];
+                const temp = pageItems[a];
                 message.options[b++] = temp ? await temp.getPageItemPayload() : '~~~~~';
             }
         }

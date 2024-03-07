@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../src/lib/const/forTemplates.ts"],
-  "sourcesContent": ["import { ChangeTypeOfKeys } from '../types/pages';\nimport { IconEntryType } from '../types/type-pageItem';\nimport { DataItemsOptions } from '../types/types';\nimport * as Color from './Color';\n\nexport const lightIcon: ChangeTypeOfKeys<IconEntryType, DataItemsOptions> = {\n    true: {\n        value: { type: 'const', constVal: 'lightbulb' },\n        color: { type: 'const', constVal: Color.Yellow },\n    },\n    false: {\n        value: { type: 'const', constVal: 'lightbulb-outline' },\n        color: { type: 'const', constVal: Color.HMIOff },\n    },\n    scale: undefined,\n    maxBri: undefined,\n    minBri: undefined,\n};\n"],
-  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAGA,YAAuB;AAEhB,MAAM,YAA+D;AAAA,EACxE,MAAM;AAAA,IACF,OAAO,EAAE,MAAM,SAAS,UAAU,YAAY;AAAA,IAC9C,OAAO,EAAE,MAAM,SAAS,UAAU,MAAM,OAAO;AAAA,EACnD;AAAA,EACA,OAAO;AAAA,IACH,OAAO,EAAE,MAAM,SAAS,UAAU,oBAAoB;AAAA,IACtD,OAAO,EAAE,MAAM,SAAS,UAAU,MAAM,OAAO;AAAA,EACnD;AAAA,EACA,OAAO;AAAA,EACP,QAAQ;AAAA,EACR,QAAQ;AACZ;",
-  "names": []
-}

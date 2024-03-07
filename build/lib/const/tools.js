@@ -444,6 +444,7 @@ async function getEntryTextOnOff(i, on) {
       let v2 = null;
       if ((0, import_data_item.isDataItem)(i.false)) {
         v2 = (_e = i.false && await i.false.getString()) != null ? _e : null;
+        value2 = v2 != null ? v2 : "";
       } else {
         value2 = (_f = i.false && i.false.prefix && await i.false.prefix.getString()) != null ? _f : "";
         v2 = (_g = i.false && i.false.value && await i.false.value.getString()) != null ? _g : null;
@@ -642,13 +643,13 @@ function deepAssign(def, source, level = 0) {
   }
   return Object.assign(def, source);
 }
-function getInternalDefaults(type, role) {
+function getInternalDefaults(type, role, write = true) {
   return {
     name: "",
     type,
     role,
     read: true,
-    write: true
+    write
   };
 }
 function setTriggeredToState(theObject, exclude) {

@@ -1,0 +1,95 @@
+"use strict";
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var data_collection_functions_exports = {};
+__export(data_collection_functions_exports, {
+  handleCardRole: () => handleCardRole
+});
+module.exports = __toCommonJS(data_collection_functions_exports);
+var import_Color = require("../const/Color");
+async function handleCardRole(adapter, cardRole) {
+  if (!cardRole)
+    return null;
+  switch (cardRole) {
+    case "AdapterConnection":
+    case "AdapterStopped": {
+      const list = await adapter.getObjectViewAsync("system", "instance", {
+        startkey: `system.adapter`,
+        endkey: `system.adapter}`
+      });
+      if (!list)
+        return null;
+      const result = [];
+      for (const item of list.rows) {
+        const obj = item.value;
+        if (!obj.common.enabled || obj.common.mode !== "daemon")
+          continue;
+        let n = obj.common.titleLang && obj.common.titleLang[adapter.library.getLocalLanguage()];
+        n = n ? n : obj.common.titleLang && obj.common.titleLang["en"];
+        n = n ? n : obj.common.name;
+        const state = await adapter.getForeignStateAsync(
+          cardRole === "AdapterConnection" ? `${item.id.split(".").slice(2).join(".")}.info.connection` : `${item.id}.alive`
+        );
+        if (!state)
+          continue;
+        const pi = {
+          role: "text.list",
+          type: "text",
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: "checkbox-intermediate" },
+                color: { type: "const", constVal: import_Color.Green }
+              },
+              false: {
+                value: { type: "const", constVal: "checkbox-intermediate" },
+                color: { type: "const", constVal: cardRole === "AdapterConnection" ? import_Color.Yellow : import_Color.Red }
+              },
+              scale: void 0,
+              maxBri: void 0,
+              minBri: void 0
+            },
+            entity1: {
+              value: {
+                type: "triggered",
+                dp: cardRole === "AdapterConnection" ? `${item.id.split(".").slice(2).join(".")}.info.connection` : `${item.id}.alive`
+              }
+            },
+            text: {
+              true: { type: "const", constVal: n },
+              false: void 0
+            },
+            text1: {
+              true: { type: "const", constVal: obj.common.version },
+              false: void 0
+            }
+          }
+        };
+        result.push(pi);
+      }
+      return result;
+    }
+  }
+  return null;
+}
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  handleCardRole
+});
+//# sourceMappingURL=data-collection-functions.js.map

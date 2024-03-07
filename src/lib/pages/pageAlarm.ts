@@ -253,11 +253,11 @@ export class PageAlarm extends Page {
             await this.getStatus();
             if (this.status === 'triggered') return;
 
-            if (this.pin === 0) {
+            /*if (this.pin === 0) {
                 this.log.warn(`Pin is missing`);
                 return;
-            }
-            if (this.pin !== parseInt(value)) {
+            }*/
+            if (this.pin && this.pin !== parseInt(value)) {
                 if (++this.failCount < 3) {
                     this.log.warn('Wrong pin entered. try ' + this.failCount + ' of 3');
                 } else {

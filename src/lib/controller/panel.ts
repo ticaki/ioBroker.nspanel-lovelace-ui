@@ -19,7 +19,7 @@ import { PageItem } from '../pages/pageItem';
 import { PageEntities } from '../pages/pageEntities';
 import { getInternalDefaults } from '../const/tools';
 import { PageNotify } from '../pages/pageNotification';
-import { systemNotifications } from '../const/notifications';
+import { systemNavigation, systemTemplates } from '../const/system-templates';
 import { PageAlarm } from '../pages/pageAlarm';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
@@ -123,14 +123,17 @@ export class Panel extends BaseClass {
         this.statesControler = options.controller.statesControler;
 
         this.dimMode = { low: options.dimLow ?? 70, high: options.dimHigh ?? 90 };
-        options.pages = options.pages.concat(systemNotifications);
+
+        options.pages = options.pages.concat(systemTemplates);
+        options.navigation = options.navigation.concat(systemNavigation);
+
         let scsFound = 0;
         for (let a = 0; a < options.pages.length; a++) {
             let pageConfig = options.pages[a];
 
-            if (!pageConfig) continue;
+            if (!pageConfig || !pageConfig.config) continue;
             const pmconfig = {
-                card: pageConfig.card,
+                card: pageConfig.config.card,
                 panel: this,
                 id: String(a),
                 name: pageConfig.uniqueID,
@@ -139,13 +142,13 @@ export class Panel extends BaseClass {
                 panelSend: this.panelSend,
                 dpInit: pageConfig.dpInit,
             };
-            switch (pageConfig.card) {
-                case 'cardChart': {
-                    break;
-                }
-                case 'cardLChart': {
-                    break;
-                }
+            switch (pageConfig.config.card) {
+                //case 'cardChart': {
+                //    break;
+                //}
+                //case 'cardLChart': {
+                //    break;
+                //}
                 case 'cardEntities': {
                     pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageEntities(pmconfig, pageConfig);
@@ -168,9 +171,7 @@ export class Panel extends BaseClass {
                     this.pages[a] = new PageMedia(pmconfig, pageConfig);
                     break;
                 }
-                case 'cardUnlock': {
-                    break;
-                }
+
                 case 'cardQR': {
                     break;
                 }
@@ -184,9 +185,6 @@ export class Panel extends BaseClass {
                     this.pages[a] = new PagePower(pmconfig, pageConfig);
                     break;
                 }
-                case 'cardBurnRec':
-                case 'cardItemSpecial':
-                    break;
                 case 'popupNotify2':
                 case 'popupNotify': {
                     pageConfig = Page.getPage(pageConfig, this);
@@ -199,7 +197,7 @@ export class Panel extends BaseClass {
 
                     //const opt = Object.assign(DefaultOptions, pageConfig);
                     const ssconfig: PageInterface = {
-                        card: pageConfig.card,
+                        card: pageConfig.config.card,
                         panel: this,
                         id: String(a),
                         name: pageConfig.uniqueID,
@@ -760,7 +758,7 @@ export class Panel extends BaseClass {
 
     /**
      *  Handle incoming messages from panel
-     * @param event incoming event
+     * @param event incoming event...
      * @returns
      */
     async HandleIncomingMessage(event: Types.IncomingEvent): Promise<void> {

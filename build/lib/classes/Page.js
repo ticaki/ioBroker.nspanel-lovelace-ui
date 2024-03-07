@@ -152,10 +152,6 @@ class Page extends import_states_controller.BaseClassPage {
       }
       const newTemplate = structuredClone(template);
       delete newTemplate.adapter;
-      if (config.card && config.card !== template.card) {
-        that.log.error(config.card + "is not equal with " + template.card);
-        return config;
-      }
       config = (0, import_tools.deepAssign)(newTemplate, config);
     }
     return config;

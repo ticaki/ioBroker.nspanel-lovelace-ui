@@ -57,12 +57,30 @@ class Navigation extends import_library.BaseClass {
   }
   init() {
     let b = 1;
+    let serviceLeft = "";
+    let serviceRight = "";
+    let serviceID = -1;
     for (let a = 0; a < this.navigationConfig.length; a++) {
       const c = this.navigationConfig[a];
       if (!c)
         continue;
+      if (c.left && c.left.single === "///service")
+        serviceRight = c.name;
+      if (c.right && c.right.single === "///service")
+        serviceLeft = c.name;
+      if (c.name === "///service")
+        serviceID = a;
       const pageID = this.panel.getPagebyUniqueID(c.page);
       this.database[c.name === "main" ? 0 : b++] = pageID !== null ? { page: pageID, left: {}, right: {}, index: a } : null;
+    }
+    if (serviceID !== -1) {
+      const c = this.navigationConfig[serviceID];
+      if (c) {
+        if (serviceLeft)
+          c.left = { single: serviceLeft };
+        if (serviceRight)
+          c.right = { single: serviceRight };
+      }
     }
     for (let a = 0; a < this.database.length; a++) {
       const c = this.navigationConfig[a];

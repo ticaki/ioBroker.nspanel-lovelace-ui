@@ -1,5 +1,5 @@
 //import * as Color from '../const/Color';
-import { lightIcon } from '../const/forTemplates';
+import { HMIOff, Yellow } from '../const/Color';
 import { PageItemOptionsTemplate } from '../types/type-pageItem';
 import { TemplateIdent } from '../types/types';
 
@@ -9,7 +9,19 @@ export const lightTemplates: Partial<Record<TemplateIdent, PageItemOptionsTempla
         type: 'light',
         adapter: '0_userdata.0',
         data: {
-            icon: lightIcon,
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'lightbulb' },
+                    color: { type: 'const', constVal: Yellow },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'lightbulb-outline' },
+                    color: { type: 'const', constVal: HMIOff },
+                },
+                scale: undefined,
+                maxBri: undefined,
+                minBri: undefined,
+            },
             colorMode: { type: 'const', constVal: true },
             headline: { type: 'const', constVal: 'SHRGB2' },
             dimmer: {

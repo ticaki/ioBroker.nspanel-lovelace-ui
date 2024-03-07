@@ -143,6 +143,60 @@ const buttonTemplates = {
         regexp: /esphome\.[0-9]+\..+?\.Switch\..+?\.state/
       }
     }
+  },
+  "button.service.adapter.noconnection": {
+    role: "",
+    type: "button",
+    adapter: "",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "checkbox-intermediate" },
+          color: { type: "const", constVal: Color.Yellow },
+          text: { value: { type: "internal", dp: "///AdapterNoConnection" } }
+        },
+        false: {
+          value: { type: "const", constVal: "checkbox-marked-outline" },
+          color: { type: "const", constVal: Color.Green },
+          text: { value: { type: "internal", dp: "///AdapterNoConnection" } }
+        }
+      },
+      entity1: {
+        value: { type: "internal", dp: "///AdapterNoConnectionBoolean" }
+      },
+      text: {
+        true: { type: "const", constVal: "not connected" },
+        false: { type: "const", constVal: "all connected" }
+      },
+      text1: { true: { type: "internal", dp: "///AdapterNoConnection" }, false: void 0 }
+    }
+  },
+  "button.service.adapter.stopped": {
+    role: "",
+    type: "button",
+    adapter: "",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "checkbox-intermediate" },
+          color: { type: "const", constVal: Color.Red },
+          text: { value: { type: "internal", dp: "///AdapterStopped" } }
+        },
+        false: {
+          value: { type: "const", constVal: "checkbox-marked-outline" },
+          color: { type: "const", constVal: Color.Green },
+          text: { value: { type: "internal", dp: "///AdapterStopped" } }
+        }
+      },
+      entity1: {
+        value: { type: "internal", dp: "///AdapterStoppedBoolean" }
+      },
+      text: {
+        true: { type: "const", constVal: "stopped" },
+        false: void 0
+      },
+      text1: { true: { type: "internal", dp: "///AdapterStopped" }, false: void 0 }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

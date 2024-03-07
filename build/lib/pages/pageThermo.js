@@ -51,7 +51,7 @@ class PageThermo extends import_Page.Page {
   titelPos = 0;
   nextArrow = false;
   constructor(config, options) {
-    if (options.card === "screensaver" || options.card === "screensaver2")
+    if (config.card !== "cardThermo")
       return;
     if (options && options.pageItems) {
       options.pageItems.unshift({

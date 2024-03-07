@@ -46,7 +46,7 @@ var import_pagePower = require("../pages/pagePower");
 var import_pageEntities = require("../pages/pageEntities");
 var import_tools = require("../const/tools");
 var import_pageNotification = require("../pages/pageNotification");
-var import_notifications = require("../const/notifications");
+var import_system_templates = require("../const/system-templates");
 var import_pageAlarm = require("../pages/pageAlarm");
 const DefaultOptions = {
   format: {
@@ -127,14 +127,15 @@ class Panel extends import_library.BaseClass {
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     this.statesControler = options.controller.statesControler;
     this.dimMode = { low: (_b = options.dimLow) != null ? _b : 70, high: (_c = options.dimHigh) != null ? _c : 90 };
-    options.pages = options.pages.concat(import_notifications.systemNotifications);
+    options.pages = options.pages.concat(import_system_templates.systemTemplates);
+    options.navigation = options.navigation.concat(import_system_templates.systemNavigation);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
       let pageConfig = options.pages[a];
-      if (!pageConfig)
+      if (!pageConfig || !pageConfig.config)
         continue;
       const pmconfig = {
-        card: pageConfig.card,
+        card: pageConfig.config.card,
         panel: this,
         id: String(a),
         name: pageConfig.uniqueID,
@@ -143,13 +144,7 @@ class Panel extends import_library.BaseClass {
         panelSend: this.panelSend,
         dpInit: pageConfig.dpInit
       };
-      switch (pageConfig.card) {
-        case "cardChart": {
-          break;
-        }
-        case "cardLChart": {
-          break;
-        }
+      switch (pageConfig.config.card) {
         case "cardEntities": {
           pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pageEntities.PageEntities(pmconfig, pageConfig);
@@ -171,9 +166,6 @@ class Panel extends import_library.BaseClass {
           this.pages[a] = new import_pageMedia.PageMedia(pmconfig, pageConfig);
           break;
         }
-        case "cardUnlock": {
-          break;
-        }
         case "cardQR": {
           break;
         }
@@ -187,9 +179,6 @@ class Panel extends import_library.BaseClass {
           this.pages[a] = new import_pagePower.PagePower(pmconfig, pageConfig);
           break;
         }
-        case "cardBurnRec":
-        case "cardItemSpecial":
-          break;
         case "popupNotify2":
         case "popupNotify": {
           pageConfig = import_Page.Page.getPage(pageConfig, this);
@@ -200,7 +189,7 @@ class Panel extends import_library.BaseClass {
         case "screensaver2": {
           scsFound++;
           const ssconfig = {
-            card: pageConfig.card,
+            card: pageConfig.config.card,
             panel: this,
             id: String(a),
             name: pageConfig.uniqueID,
@@ -747,7 +736,7 @@ class Panel extends import_library.BaseClass {
   }
   /**
    *  Handle incoming messages from panel
-   * @param event incoming event
+   * @param event incoming event...
    * @returns
    */
   async HandleIncomingMessage(event) {

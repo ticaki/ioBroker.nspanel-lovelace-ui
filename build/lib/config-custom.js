@@ -38,7 +38,7 @@ module.exports = __toCommonJS(config_custom_exports);
 var Color = __toESM(require("./const/Color"));
 const pageEntitiesTest1 = {
   //type: 'sonstiges',
-  card: "cardEntities",
+  //card: 'cardEntities',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "entities1",
@@ -90,17 +90,12 @@ const pageEntitiesTest1 = {
       }
     },
     {
-      template: "generic.shutter",
-      dpInit: "0_userdata.0.shutter_test",
-      data: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "window-open" },
-            color: { type: "const", constVal: "aqua", role: "level.color.name" }
-          },
-          false: null
-        }
-      }
+      template: "button.service.adapter.noconnection",
+      dpInit: ""
+    },
+    {
+      template: "button.service.adapter.stopped",
+      dpInit: ""
     },
     {
       role: "rgb",
@@ -415,7 +410,7 @@ const pageEntitiesTest1 = {
   items: void 0
 };
 const popupTest2 = {
-  card: "popupNotify",
+  //card: 'popupNotify',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "popup2",
@@ -442,14 +437,15 @@ const popupTest2 = {
   items: void 0
 };
 const pageEntitiesTest3 = {
-  card: "cardEntities",
+  //card: 'cardEntities',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "entities3",
   config: {
     card: "cardEntities",
-    cardRole: "adapterOff",
-    scrolltype: "page",
+    cardRole: "AdapterConnection",
+    scrollType: "page",
+    filterType: "true",
     data: {
       headline: {
         type: "const",
@@ -513,7 +509,7 @@ const pageEntitiesTest3 = {
 };
 const pageEntitiesTest2 = {
   //type: 'sonstiges',
-  card: "cardEntities",
+  //card: 'cardEntities',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "entities2",
@@ -564,7 +560,7 @@ const pageEntitiesTest2 = {
 };
 const pagePowerTest1 = {
   //type: 'sonstiges',
-  card: "cardPower",
+  //card: 'cardPower',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "power1",
@@ -678,7 +674,7 @@ const pagePowerTest1 = {
 };
 const pageMediaTest = {
   //type: 'sonstiges',
-  card: "cardMedia",
+  //card: 'cardMedia',
   dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
   alwaysOn: "none",
   config: {
@@ -1143,7 +1139,7 @@ const pageAbfall = {
 };
 const pageMediaTest2 = {
   //type: 'sonstiges',
-  card: "cardMedia",
+  //card: 'cardMedia',
   dpInit: "alexa2.0.Echo-Devices.G091EV0704641J8R.Player",
   alwaysOn: "none",
   config: {
@@ -1562,7 +1558,7 @@ const pageMediaTest3 = {
 };
 const pageGridTest1 = {
   //type: 'sonstiges',
-  card: "cardGrid",
+  //card: 'cardGrid',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "grid1",
@@ -1884,10 +1880,7 @@ const pageGridTest1 = {
           false: {
             value: { type: "const", constVal: "fan" },
             color: { type: "const", constVal: Color.Red }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          }
         },
         entity1: {
           value: {
@@ -2244,7 +2237,7 @@ const pageGridTest1 = {
 };
 const pageGridTest2 = {
   //type: 'sonstiges',
-  card: "cardGrid",
+  //card: 'cardGrid',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "grid2",
@@ -2385,7 +2378,7 @@ const pageGridTest2 = {
 };
 const pageGridTest5 = {
   //type: 'sonstiges',
-  card: "cardGrid",
+  //card: 'cardGrid',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "grid5",
@@ -2736,7 +2729,7 @@ const pageGridTest5 = {
 };
 const pageGridTest4 = {
   //type: 'sonstiges',
-  card: "cardGrid",
+  //card: 'cardGrid',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "grid4",
@@ -2846,7 +2839,7 @@ const pageGridTest4 = {
 };
 const pageGrid2Test3 = {
   //type: 'sonstiges',
-  card: "cardGrid2",
+  //ard: 'cardGrid2',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "grid3",
@@ -3225,7 +3218,7 @@ const pageGrid2Test3 = {
   ]
 };
 const pageThermoTest = {
-  card: "cardThermo",
+  //card: 'cardThermo',
   uniqueID: "thermo1",
   dpInit: "",
   alwaysOn: "none",
@@ -3707,7 +3700,7 @@ const pageThermoTest = {
   useColor: false
 };
 const pageAlarmTest = {
-  card: "cardAlarm",
+  //card: 'cardAlarm',
   uniqueID: "alarm1",
   alwaysOn: "none",
   dpInit: "",
@@ -3728,7 +3721,7 @@ const pageAlarmTest = {
   }
 };
 const pageUnlockTest = {
-  card: "cardAlarm",
+  //card: 'cardAlarm',
   uniqueID: "unlock1",
   alwaysOn: "always",
   dpInit: "",
@@ -3750,7 +3743,7 @@ const pageUnlockTest = {
   }
 };
 const popupTest = {
-  card: "popupNotify",
+  //card: 'popupNotify',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "popup1",
@@ -3781,7 +3774,7 @@ const popupTest = {
   items: void 0
 };
 const pageScreensaverTest = {
-  card: "screensaver2",
+  //card: 'screensaver2',
   // mode of screensaver
   dpInit: "",
   alwaysOn: "none",
@@ -5110,36 +5103,39 @@ const Testconfig = [
         name: "main",
         //main ist die erste Seite
         page: "entities1",
-        left: { single: "7" },
+        left: { single: "grid3" },
         // Die 4 bezieht sich auf den name: 4
-        right: { single: "abfall1", double: "2" }
+        right: { single: "///service", double: "2" }
       },
       {
-        name: "5",
+        name: "alarm1",
         //main ist die erste Seite
         page: "alarm1",
-        left: { single: "4" },
+        left: { single: "///service" },
         // Die 4 bezieht sich auf den name: 4
-        right: { single: "6", double: "main" }
+        right: { single: "abfall1", double: "main" }
       },
       {
         name: "abfall1",
         //main ist die erste Seite
         page: "abfall1",
-        left: { single: "main" },
+        left: { single: "alarm1" },
         // Die 4 bezieht sich auf den name: 4
         right: { single: "unlock1", double: "main" },
         optional: "notifications"
       },
       {
         name: "unlock1",
-        page: "unlock1"
+        page: "unlock1",
+        left: { double: "abfall1" },
+        // Die 4 bezieht sich auf den name: 4
+        right: { double: "entities3" }
       },
       {
         name: "entities3",
         //main ist die erste Seite
         page: "entities3",
-        left: { double: "abfall1" },
+        left: { double: "unlock1" },
         // Die 4 bezieht sich auf den name: 4
         right: { double: "entities2" }
       },
@@ -5147,49 +5143,49 @@ const Testconfig = [
         name: "entities2",
         //main ist die erste Seite
         page: "entities2",
-        left: { single: "main" },
+        left: { single: "entities3" },
         // Die 4 bezieht sich auf den name: 4
-        right: { single: "1", double: "main" }
+        right: { single: "power1", double: "main" }
       },
       {
-        name: "6",
+        name: "power1",
         page: "power1",
-        left: { single: "5" },
+        left: { single: "entities2" },
         // Die 4 bezieht sich auf den name: 4
-        right: { single: "7", double: "main" }
+        right: { single: "grid4", double: "main" }
       },
       {
-        name: "7",
+        name: "grid4",
         //main ist die erste Seite
         page: "grid4",
-        left: { single: "6" },
+        left: { single: "power1" },
         // Die 4 bezieht sich auf den name: 4
-        right: { single: "main", double: "main" }
+        right: { single: "grid1", double: "main" }
       },
       {
-        name: "1",
-        left: { single: "main" },
+        name: "grid1",
+        left: { single: "grid4" },
         // Die 0 bezieht sich auf den name: 0
-        right: { single: "2" },
+        right: { single: "grid2" },
         page: "grid1"
         // das grid1 bezieht sich auf die uniqueID oben in pages
       },
       {
-        name: "2",
-        left: { single: "1" },
-        right: { single: "3" },
+        name: "grid2",
+        left: { single: "grid1" },
+        right: { single: "media3" },
         page: "grid2"
       },
       {
-        name: "3",
-        left: { single: "2" },
-        right: { single: "4", double: "main" },
+        name: "media3",
+        left: { single: "grid2" },
+        right: { single: "grid3", double: "main" },
         page: "media3"
       },
       {
-        name: "4",
-        left: { single: "3", double: "1" },
-        right: { single: "5", double: "2" },
+        name: "grid3",
+        left: { single: "media3", double: "1" },
+        right: { single: "main", double: "2" },
         page: "grid3"
       }
     ],

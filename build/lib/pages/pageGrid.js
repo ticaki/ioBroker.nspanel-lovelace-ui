@@ -45,7 +45,7 @@ class PageGrid extends import_Page.Page {
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
-  tempItem;
+  tempItems;
   constructor(config, options) {
     super(config, options);
     this.config = options.config;
@@ -73,6 +73,8 @@ class PageGrid extends import_Page.Page {
     message.options = [];
     if (!this.items || this.items.card !== "cardGrid" && this.items.card !== "cardGrid2")
       return;
+    if (!this.config || this.config.card !== "cardGrid" && this.config.card !== "cardGrid2")
+      return;
     if (this.pageItems) {
       let maxItems = this.maxItems;
       let a = 0;
@@ -80,9 +82,19 @@ class PageGrid extends import_Page.Page {
         a = maxItems * this.step;
         maxItems = a + maxItems;
       }
+      let pageItems = this.pageItems;
+      if (this.config.filterType === "true" || this.config.filterType === "false") {
+        this.tempItems = [];
+        const testIt = this.config.filterType === "true";
+        for (const a2 of this.pageItems) {
+          if (a2 && a2.dataItems && a2.dataItems.data && "entity1" in a2.dataItems.data && a2.dataItems.data.entity1 && a2.dataItems.data.entity1.value && testIt === !!await a2.dataItems.data.entity1.value.getBoolean())
+            this.tempItems.push(a2);
+        }
+        pageItems = this.tempItems;
+      }
       let b = 0;
       for (; a < maxItems; a++) {
-        const temp = this.pageItems[a];
+        const temp = pageItems[a];
         message.options[b++] = temp ? await temp.getPageItemPayload() : "~~~~~";
       }
     }

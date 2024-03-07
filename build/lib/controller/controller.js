@@ -36,12 +36,14 @@ var import_states_controller = require("./states-controller");
 var Panel = __toESM(require("./panel"));
 var import_definition = require("../const/definition");
 var import_system_notifications = require("../classes/system-notifications");
+var import_tools = require("../const/tools");
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
   panels = [];
   minuteLoopTimeout;
   dateUpdateTimeout;
+  dataCache = {};
   systemNotification;
   constructor(adapter, options) {
     super(adapter, options.name);
@@ -82,6 +84,82 @@ class Controller extends Library.BaseClass {
   getCurrentTime = async () => {
     return Date.now();
   };
+  /**
+   *....
+   * @param id
+   * @param _state
+   * @returns
+   */
+  onInternalCommand = async (id, _state) => {
+    if (!id.startsWith("///"))
+      return null;
+    const token = id.split("///").pop();
+    switch (token) {
+      case "AdapterStoppedBoolean":
+      case "AdapterNoConnectionBoolean":
+      case "AdapterNoConnection":
+      case "AdapterStopped": {
+        if (this.dataCache[token] && this.dataCache[token].time < Date.now() - 5e3)
+          delete this.dataCache[token];
+        let save = false;
+        if (!this.dataCache[token]) {
+          this.dataCache[token] = { time: Date.now(), data: {} };
+          save = true;
+        }
+        let list;
+        if (save) {
+          list = await this.adapter.getObjectViewAsync("system", "instance", {
+            startkey: `system.adapter`,
+            endkey: `system.adapter}`
+          });
+          this.dataCache[token].data[`system#view.instance`] = list;
+        } else {
+          list = this.dataCache[token].data[`system#view.instance`];
+        }
+        let total = 0;
+        let withProblems = 0;
+        for (const item of list.rows) {
+          const obj = item.value;
+          if (!obj.common.enabled || obj.common.mode !== "daemon")
+            continue;
+          if (token === "AdapterStopped" || token === "AdapterStoppedBoolean") {
+            let state;
+            if (save) {
+              state = await this.adapter.getForeignStateAsync(`${item.id}.alive`);
+              this.dataCache[token].data[`${item.id}.alive`] = state;
+            } else {
+              state = this.dataCache[token].data[`${item.id}.alive`];
+            }
+            if (state && !state.val) {
+              withProblems++;
+              if (token === "AdapterStoppedBoolean")
+                return true;
+            }
+            total++;
+          } else if (token === "AdapterNoConnection" || token === "AdapterNoConnectionBoolean") {
+            const nID = item.id.split(".").slice(2).join(".");
+            let state;
+            if (save) {
+              state = await this.adapter.getForeignStateAsync(`${nID}.info.connection`);
+              this.dataCache[token].data[`${nID}.info.connection`] = state;
+            } else {
+              state = this.dataCache[token].data[`${nID}.info.connection`];
+            }
+            if (state && !state.val) {
+              withProblems++;
+              if (token === "AdapterNoConnectionBoolean")
+                return true;
+            }
+            total++;
+          }
+        }
+        if (token === "AdapterNoConnectionBoolean" || token === "AdapterStoppedBoolean")
+          return false;
+        return `(${withProblems}/${total})`;
+      }
+    }
+    return null;
+  };
   async init() {
     await this.statesControler.setInternalState(
       "///time",
@@ -108,6 +186,34 @@ class Controller extends Library.BaseClass {
         write: false
       },
       this.getCurrentTime
+    );
+    await this.statesControler.setInternalState(
+      `///AdapterNoConnection`,
+      "",
+      true,
+      (0, import_tools.getInternalDefaults)("string", "text", false),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `///AdapterStopped`,
+      "",
+      true,
+      (0, import_tools.getInternalDefaults)("string", "text", false),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `///AdapterNoConnectionBoolean`,
+      true,
+      true,
+      (0, import_tools.getInternalDefaults)("boolean", "indicator", false),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `///AdapterStoppedBoolean`,
+      true,
+      true,
+      (0, import_tools.getInternalDefaults)("boolean", "indicator", false),
+      this.onInternalCommand
     );
     const newPanels = [];
     await this.library.writedp(`panels`, void 0, import_definition.genericStateObjects.panel._channel);

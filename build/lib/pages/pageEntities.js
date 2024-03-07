@@ -25,6 +25,7 @@ var import_Page = require("../classes/Page");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
+var import_data_collection_functions = require("./data-collection-functions");
 const PageEntitiesMessageDefault = {
   event: "entityUpd",
   headline: "Page Entities",
@@ -43,6 +44,9 @@ class PageEntities extends import_Page.Page {
   tempItems;
   constructor(config, options) {
     super(config, options);
+    if (!options.config || options.config.card !== "cardEntities") {
+      throw new Error("wrong card, should never happen");
+    }
     this.config = options.config;
     if (options.items && options.items.card == "cardEntities")
       this.items = options.items;
@@ -67,7 +71,7 @@ class PageEntities extends import_Page.Page {
     message.options = [];
     if (this.pageItems) {
       if (this.config && this.config.card == "cardEntities") {
-        if (this.config.scrolltype === "page") {
+        if (this.config.scrollType === "page") {
           let maxItems = this.maxItems;
           let a = 0;
           if (this.pageItems.length > maxItems) {
@@ -76,10 +80,11 @@ class PageEntities extends import_Page.Page {
           }
           let b = 0;
           let pageItems = this.pageItems;
-          if (this.config.cardRole === "adapterOff") {
+          if (this.config.filterType === "true" || this.config.filterType === "false") {
             this.tempItems = [];
+            const testIt = this.config.filterType === "true";
             for (const a2 of this.pageItems) {
-              if (a2 && a2.dataItems && a2.dataItems.data && "entity1" in a2.dataItems.data && a2.dataItems.data.entity1 && a2.dataItems.data.entity1.value && !await a2.dataItems.data.entity1.value.getBoolean())
+              if (a2 && a2.dataItems && a2.dataItems.data && "entity1" in a2.dataItems.data && a2.dataItems.data.entity1 && a2.dataItems.data.entity1.value && testIt === await a2.dataItems.data.entity1.value.getBoolean())
                 this.tempItems.push(a2);
             }
             pageItems = this.tempItems;
@@ -112,76 +117,20 @@ class PageEntities extends import_Page.Page {
   }
   async onButtonEvent(_event) {
   }
-  async handleCardRole() {
-    if (!this.config || this.config.card !== "cardEntities" || !this.config.cardRole)
-      return;
-    switch (this.config.cardRole) {
-      case "adapterOff":
-      case "adapter": {
-        const list = await this.adapter.getObjectViewAsync("system", "instance", {
-          startkey: `system.adapter`,
-          endkey: `system.adapter}`
-        });
-        if (!list)
-          return;
-        this.pageItemConfig = [];
-        for (const item of list.rows) {
-          const obj = item.value;
-          if (!obj.common.enabled || obj.common.mode !== "daemon")
-            continue;
-          let n = obj.common.titleLang && obj.common.titleLang[this.library.getLocalLanguage()];
-          n = n ? n : obj.common.titleLang && obj.common.titleLang["en"];
-          n = n ? n : obj.common.name;
-          const pi = {
-            role: "text.list",
-            type: "text",
-            dpInit: "",
-            data: {
-              icon: {
-                true: {
-                  value: { type: "const", constVal: "power" },
-                  color: { type: "const", constVal: import_Color.Green }
-                },
-                false: {
-                  value: { type: "const", constVal: "power-off" },
-                  color: { type: "const", constVal: import_Color.Red }
-                },
-                scale: void 0,
-                maxBri: void 0,
-                minBri: void 0
-              },
-              entity1: {
-                value: {
-                  type: "triggered",
-                  dp: `${item.id}.alive`
-                }
-              },
-              text: {
-                true: { type: "const", constVal: n },
-                false: void 0
-              },
-              text1: {
-                true: { type: "const", constVal: obj.common.version },
-                false: void 0
-              }
-            }
-          };
-          this.pageItemConfig.push(pi);
-        }
-        break;
-      }
-    }
-  }
   async onVisibilityChange(val) {
     if (val) {
-      await this.handleCardRole();
+      if (this.config.card === "cardEntities") {
+        const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole);
+        if (temp)
+          this.pageItemConfig = temp;
+      }
     }
     await super.onVisibilityChange(val);
   }
   goLeft() {
     if (!this.config || this.config.card !== "cardEntities")
       return;
-    if (this.config.scrolltype === "page") {
+    if (this.config.scrollType === "page") {
       this.goLeftP();
       return;
     }
@@ -195,7 +144,7 @@ class PageEntities extends import_Page.Page {
   goRight() {
     if (!this.config || this.config.card !== "cardEntities")
       return;
-    if (this.config.scrolltype === "page") {
+    if (this.config.scrollType === "page") {
       this.goRightP();
       return;
     }
@@ -210,7 +159,7 @@ class PageEntities extends import_Page.Page {
   getNavigation() {
     if (!this.config || this.config.card !== "cardEntities")
       return "";
-    if (this.config.scrolltype === "page") {
+    if (this.config.scrollType === "page") {
       return this.getNavigationP();
     }
     const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;

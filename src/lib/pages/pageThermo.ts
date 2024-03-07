@@ -33,7 +33,7 @@ export class PageThermo extends Page {
     private nextArrow: boolean = false;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        if (options.card === 'screensaver' || options.card === 'screensaver2') return;
+        if (config.card !== 'cardThermo') return;
         if (options && options.pageItems) {
             options.pageItems.unshift({
                 type: 'button',

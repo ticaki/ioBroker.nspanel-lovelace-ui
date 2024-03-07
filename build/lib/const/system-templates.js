@@ -26,14 +26,14 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var notifications_exports = {};
-__export(notifications_exports, {
-  systemNotifications: () => systemNotifications
+var system_templates_exports = {};
+__export(system_templates_exports, {
+  systemNavigation: () => systemNavigation,
+  systemTemplates: () => systemTemplates
 });
-module.exports = __toCommonJS(notifications_exports);
+module.exports = __toCommonJS(system_templates_exports);
 var Color = __toESM(require("./Color"));
 const popupWelcome = {
-  card: "popupNotify",
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///WelcomePopup",
@@ -61,7 +61,6 @@ const popupWelcome = {
   items: void 0
 };
 const popupNotification = {
-  card: "popupNotify",
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///popupNotification",
@@ -90,7 +89,6 @@ const popupNotification = {
   items: void 0
 };
 const popupNotification2 = {
-  card: "popupNotify",
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///popupNotification2",
@@ -116,9 +114,200 @@ const popupNotification2 = {
   pageItems: [],
   items: void 0
 };
-const systemNotifications = [popupWelcome, popupNotification, popupNotification2];
+const pageAdapterInformation = {
+  //type: 'sonstiges',
+  //card: 'cardEntities',
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///adapter-info",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Adapter-Information"
+      }
+    }
+  },
+  pageItems: [
+    {
+      template: "button.service.adapter.noconnection",
+      dpInit: "",
+      data: {
+        setNavi: { type: "const", constVal: "///AdapterNotConnectedDetail" }
+      }
+    },
+    {
+      template: "button.service.adapter.stopped",
+      dpInit: "",
+      data: {
+        setNavi: { type: "const", constVal: "///AdapterStoppedDetail" }
+      }
+    }
+  ],
+  items: void 0
+};
+const pageServiceUnlock = {
+  //card: 'cardAlarm',
+  uniqueID: "///unlock",
+  alwaysOn: "always",
+  dpInit: "",
+  pageItems: [],
+  config: {
+    card: "cardAlarm",
+    data: {
+      alarmType: { type: "const", constVal: "unlock" },
+      headline: { type: "const", constVal: "Service-Unlock" },
+      entity1: void 0,
+      button1: void 0,
+      button2: void 0,
+      button3: void 0,
+      button4: void 0,
+      icon: void 0,
+      pin: { type: "const", constVal: "" },
+      setNavi: { type: "const", constVal: "///Overview" }
+    }
+  }
+};
+const pageGridOverview = {
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///Overview",
+  useColor: false,
+  config: {
+    card: "cardGrid2",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Overview"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "power" },
+            color: { type: "const", constVal: Color.Yellow }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Adapter" },
+          false: void 0
+        },
+        setNavi: { type: "const", constVal: "///adapter-info" }
+      }
+    }
+  ],
+  items: void 0
+};
+const AdapterNotConnectedDetail = {
+  //card: 'cardEntities',
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///AdapterNotConnectedDetail",
+  config: {
+    card: "cardEntities",
+    cardRole: "AdapterConnection",
+    scrollType: "page",
+    filterType: "false",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Adapter Offline"
+      }
+    }
+  },
+  pageItems: [],
+  items: void 0
+};
+const AdapterStoppedDetail = {
+  //card: 'cardEntities',
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///AdapterStoppedDetail",
+  config: {
+    card: "cardEntities",
+    cardRole: "AdapterStopped",
+    scrollType: "page",
+    filterType: "false",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Adapter stopped"
+      }
+    }
+  },
+  pageItems: [],
+  items: void 0
+};
+const systemTemplates = [
+  popupWelcome,
+  popupNotification,
+  popupNotification2,
+  pageAdapterInformation,
+  pageServiceUnlock,
+  pageGridOverview,
+  AdapterStoppedDetail,
+  AdapterNotConnectedDetail
+];
+const systemNavigation = [
+  {
+    name: "///service",
+    //main ist die erste Seite
+    page: "///unlock",
+    left: { single: "main" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'alarm1', double: '2' },
+  },
+  {
+    name: "///Overview",
+    //main ist die erste Seite
+    page: "///Overview",
+    right: { double: "main" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///adapter-info",
+    //main ist die erste Seite
+    page: "///adapter-info",
+    left: { double: "///Overview" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///AdapterStoppedDetail",
+    //main ist die erste Seite
+    page: "///AdapterStoppedDetail",
+    left: { double: "///adapter-info" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///AdapterNotConnectedDetail",
+    //main ist die erste Seite
+    page: "///AdapterNotConnectedDetail",
+    left: { double: "///adapter-info" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  }
+];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  systemNotifications
+  systemNavigation,
+  systemTemplates
 });
-//# sourceMappingURL=notifications.js.map
+//# sourceMappingURL=system-templates.js.map

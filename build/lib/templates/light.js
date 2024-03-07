@@ -21,14 +21,26 @@ __export(light_exports, {
   lightTemplates: () => lightTemplates
 });
 module.exports = __toCommonJS(light_exports);
-var import_forTemplates = require("../const/forTemplates");
+var import_Color = require("../const/Color");
 const lightTemplates = {
   "light.shelly.rgbw2": {
     role: "rgbSingle",
     type: "light",
     adapter: "0_userdata.0",
     data: {
-      icon: import_forTemplates.lightIcon,
+      icon: {
+        true: {
+          value: { type: "const", constVal: "lightbulb" },
+          color: { type: "const", constVal: import_Color.Yellow }
+        },
+        false: {
+          value: { type: "const", constVal: "lightbulb-outline" },
+          color: { type: "const", constVal: import_Color.HMIOff }
+        },
+        scale: void 0,
+        maxBri: void 0,
+        minBri: void 0
+      },
       colorMode: { type: "const", constVal: true },
       headline: { type: "const", constVal: "SHRGB2" },
       dimmer: {

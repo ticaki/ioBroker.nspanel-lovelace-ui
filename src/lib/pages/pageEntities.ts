@@ -1,10 +1,10 @@
 import { Page, PageInterface } from '../classes/Page';
-import { Green, HMIOn, Red, rgb_dec565 } from '../const/Color';
+import { HMIOn, rgb_dec565 } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadArray } from '../const/tools';
 import * as pages from '../types/pages';
-import { PageItemDataItemsOptions } from '../types/type-pageItem';
 import { IncomingEvent } from '../types/types';
+import { handleCardRole } from './data-collection-functions';
 import { PageItem } from './pageItem';
 
 const PageEntitiesMessageDefault: pages.PageEntitiesMessage = {
@@ -15,7 +15,7 @@ const PageEntitiesMessageDefault: pages.PageEntitiesMessage = {
 };
 
 export class PageEntities extends Page {
-    config: pages.PageBaseConfig['config'];
+    config: pages.cardEntitiesDataItemOptions;
     items: pages.PageBaseConfig['items'];
     private maxItems: number = 4;
     private step: number = 0;
@@ -27,6 +27,9 @@ export class PageEntities extends Page {
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
+        if (!options.config || options.config.card !== 'cardEntities') {
+            throw new Error('wrong card, should never happen');
+        }
         this.config = options.config;
         if (options.items && options.items.card == 'cardEntities') this.items = options.items;
         this.minUpdateInterval = 2000;
@@ -57,7 +60,7 @@ export class PageEntities extends Page {
         message.options = [];
         if (this.pageItems) {
             if (this.config && this.config.card == 'cardEntities') {
-                if (this.config.scrolltype === 'page') {
+                if (this.config.scrollType === 'page') {
                     let maxItems = this.maxItems;
                     let a = 0;
                     if (this.pageItems.length > maxItems) {
@@ -70,8 +73,9 @@ export class PageEntities extends Page {
                     /**
                      * Live update von gefilterten Adaptern.
                      */
-                    if (this.config.cardRole === 'adapterOff') {
+                    if (this.config.filterType === 'true' || this.config.filterType === 'false') {
                         this.tempItems = [];
+                        const testIt = this.config.filterType === 'true';
                         for (const a of this.pageItems) {
                             if (
                                 a &&
@@ -80,7 +84,7 @@ export class PageEntities extends Page {
                                 'entity1' in a.dataItems.data &&
                                 a.dataItems.data.entity1 &&
                                 a.dataItems.data.entity1.value &&
-                                !(await a.dataItems.data.entity1.value.getBoolean())
+                                testIt === (await a.dataItems.data.entity1.value.getBoolean())
                             )
                                 this.tempItems.push(a);
                         }
@@ -115,78 +119,19 @@ export class PageEntities extends Page {
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {}
 
-    private async handleCardRole(): Promise<void> {
-        if (!this.config || this.config.card !== 'cardEntities' || !this.config.cardRole) return;
-        switch (this.config.cardRole) {
-            /**
-             * only for enabled adapters
-             */
-            case 'adapterOff':
-            case 'adapter': {
-                const list = await this.adapter.getObjectViewAsync('system', 'instance', {
-                    startkey: `system.adapter`,
-                    endkey: `system.adapter}`,
-                });
-                if (!list) return;
-                this.pageItemConfig = [];
-                for (const item of list.rows) {
-                    const obj = item.value;
-                    if (!obj.common.enabled || obj.common.mode !== 'daemon') continue;
-                    let n = obj.common.titleLang && obj.common.titleLang[this.library.getLocalLanguage()];
-                    n = n ? n : obj.common.titleLang && obj.common.titleLang['en'];
-                    n = n ? n : obj.common.name;
-
-                    const pi: PageItemDataItemsOptions = {
-                        role: 'text.list',
-                        type: 'text',
-                        dpInit: '',
-
-                        data: {
-                            icon: {
-                                true: {
-                                    value: { type: 'const', constVal: 'power' },
-                                    color: { type: 'const', constVal: Green },
-                                },
-                                false: {
-                                    value: { type: 'const', constVal: 'power-off' },
-                                    color: { type: 'const', constVal: Red },
-                                },
-                                scale: undefined,
-                                maxBri: undefined,
-                                minBri: undefined,
-                            },
-                            entity1: {
-                                value: {
-                                    type: 'triggered',
-                                    dp: `${item.id}.alive`,
-                                },
-                            },
-                            text: {
-                                true: { type: 'const', constVal: n },
-                                false: undefined,
-                            },
-                            text1: {
-                                true: { type: 'const', constVal: obj.common.version },
-                                false: undefined,
-                            },
-                        },
-                    };
-                    this.pageItemConfig.push(pi);
-                }
-                break;
-            }
-        }
-    }
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
-            await this.handleCardRole();
+            if (this.config.card === 'cardEntities') {
+                const temp = await handleCardRole(this.adapter, this.config.cardRole);
+                if (temp) this.pageItemConfig = temp;
+            }
         }
         await super.onVisibilityChange(val);
     }
 
     goLeft(): void {
         if (!this.config || this.config.card !== 'cardEntities') return;
-        if (this.config.scrolltype === 'page') {
+        if (this.config.scrollType === 'page') {
             this.goLeftP();
             return;
         }
@@ -198,7 +143,7 @@ export class PageEntities extends Page {
     }
     goRight(): void {
         if (!this.config || this.config.card !== 'cardEntities') return;
-        if (this.config.scrolltype === 'page') {
+        if (this.config.scrollType === 'page') {
             this.goRightP();
             return;
         }
@@ -211,7 +156,7 @@ export class PageEntities extends Page {
     }
     protected getNavigation(): string {
         if (!this.config || this.config.card !== 'cardEntities') return '';
-        if (this.config.scrolltype === 'page') {
+        if (this.config.scrollType === 'page') {
             return this.getNavigationP();
         }
         const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;

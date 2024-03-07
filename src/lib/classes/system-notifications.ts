@@ -39,7 +39,7 @@ export class SystemNotifications extends BaseClass {
     }
 
     /**
-     * Get all existing hosts of this installation
+     * Get all existing hosts of this installation.
      */
     private async getAllHosts(): Promise<HostId[]> {
         const res = await this.adapter.getObjectViewAsync('system', 'host', {

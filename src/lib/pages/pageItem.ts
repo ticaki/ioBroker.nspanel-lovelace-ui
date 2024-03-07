@@ -380,22 +380,17 @@ export class PageItem extends BaseClassTriggerd {
                      * Alles was einen Druckfläche sein kann. D
                      */
                     const item = entry.data;
-
-                    message.optionalValue = (await tools.getValueEntryBoolean(item.entity1)) ?? true ? '1' : '0';
+                    const value = await tools.getValueEntryBoolean(item.entity1);
+                    message.optionalValue = value ?? true ? '1' : '0';
                     if (this.parent && this.parent.card === 'cardEntities')
                         message.optionalValue =
-                            (await tools.getEntryTextOnOff(item.text1, message.optionalValue == '1')) ??
-                            message.optionalValue;
+                            (await tools.getEntryTextOnOff(item.text1, value)) ?? message.optionalValue;
                     message.displayName = this.library.getTranslation(
-                        (await tools.getEntryTextOnOff(item.text, message.optionalValue === '1')) ?? '',
+                        (await tools.getEntryTextOnOff(item.text, value)) ?? '',
                     );
 
-                    message.icon = await tools.getIconEntryValue(item.icon, message.optionalValue === '1', 'home');
-                    message.iconColor = await tools.getIconEntryColor(
-                        item.icon,
-                        message.optionalValue === '1',
-                        Color.HMIOn,
-                    );
+                    message.icon = await tools.getIconEntryValue(item.icon, value, 'home');
+                    message.iconColor = await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOn);
                     return tools.getPayload(
                         'button',
                         message.intNameEntity,

@@ -429,8 +429,8 @@ export async function getEntryTextOnOff(
             let value2 = '';
             let v2: string | null = null;
             if (isDataItem(i.false)) {
-                //i = i as ChangeTypeOfKeys<TextEntryType, Dataitem>;
                 v2 = (i.false && (await i.false.getString())) ?? null;
+                value2 = v2 ?? '';
             } else {
                 value2 = (i.false && i.false.prefix && (await i.false.prefix.getString())) ?? '';
                 v2 = (i.false && i.false.value && (await i.false.value.getString())) ?? null;
@@ -640,13 +640,14 @@ export function deepAssign(def: Record<any, any>, source: Record<any, any>, leve
 export function getInternalDefaults(
     type: ioBroker.StateCommon['type'],
     role: ioBroker.StateCommon['role'],
+    write: boolean = true,
 ): ioBroker.StateCommon {
     return {
         name: '',
         type: type,
         role: role,
         read: true,
-        write: true,
+        write: write,
     };
 }
 

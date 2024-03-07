@@ -3,7 +3,7 @@ import * as Color from '../const/Color';
 import * as typePageItem from './type-pageItem';
 import * as Types from './types';
 
-type CardRole = 'adapter' | 'adapterOff';
+export type CardRole = 'AdapterConnection' | 'AdapterStopped';
 export type PageTypeCards =
     | 'cardChart'
     | 'cardLChart'
@@ -280,7 +280,7 @@ export type PageBaseConfig = (
     | (
           | {
                 //    type: PlayerType;
-                card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
+                //card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
                 uniqueID: string;
                 template?: Types.PageTemplateIdent;
                 dpInit?: string | RegExp; // ''
@@ -291,7 +291,6 @@ export type PageBaseConfig = (
                 pageItems: typePageItem.PageItemDataItemsOptions[];
                 //    mediaNamespace: string;
                 config:
-                    | undefined
                     | cardPowerDataItemOptions
                     | cardMediaDataItemOptions
                     | cardGridDataItemOptions
@@ -304,7 +303,7 @@ export type PageBaseConfig = (
             }
           | {
                 //    type: PlayerType;
-                card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
+                //card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
                 uniqueID: string;
                 template?: Types.PageTemplateIdent;
                 dpInit: string | RegExp; // ''
@@ -318,11 +317,11 @@ export type PageBaseConfig = (
                     Required<Pick<typePageItem.PageItemDataItemsOptions, 'modeScr'>>*/
 
                 //    mediaNamespace: string;
-                config: undefined | screensaverDataItemOptions;
+                config: screensaverDataItemOptions;
             }
       )
     | ({
-          card: PageTypeCards;
+          //card: PageTypeCards;
           uniqueID: string;
           template: Types.PageTemplateIdent;
           dpInit: string | RegExp;
@@ -435,6 +434,9 @@ export type cardPowerDataItems = {
 
 export type cardGridDataItemOptions = {
     card: 'cardGrid' | 'cardGrid2';
+    cardRole?: CardRole;
+    scrollType?: 'page';
+    filterType?: 'true' | 'false';
     data: ChangeTypeOfKeys<PageGridBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardGridDataItems = {
@@ -445,7 +447,8 @@ export type cardGridDataItems = {
 export type cardEntitiesDataItemOptions = {
     card: 'cardEntities';
     cardRole?: CardRole;
-    scrolltype?: 'page';
+    scrollType?: 'page';
+    filterType?: 'true' | 'false';
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardEntitiesDataItems = {
