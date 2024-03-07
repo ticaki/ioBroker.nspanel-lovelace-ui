@@ -291,6 +291,31 @@ const pageGridOverview = {
         },
         setNavi: { type: "const", constVal: "///RelaisOption" }
       }
+    },
+    {
+      role: "",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "information-variant" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Relais" },
+          false: void 0
+        },
+        setNavi: { type: "const", constVal: "///DeviceOption" }
+      }
     }
   ],
   items: void 0
@@ -539,6 +564,125 @@ const RelaisOption = {
   ],
   items: void 0
 };
+const DeviceOption = {
+  //type: 'sonstiges',
+  //card: 'cardEntities',
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///DeviceOption",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "DeviceOption"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "information-outline" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "information-variant" },
+            color: { type: "const", constVal: Color.Gray }
+          }
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: "cmd/tasmotaVersion"
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Tasmota-Version" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internal",
+            dp: "cmd/tasmotaVersion"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "information-outline" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "information-variant" },
+            color: { type: "const", constVal: Color.Gray }
+          }
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: "cmd/displayVersion"
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "TFT-Version" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internal",
+            dp: "cmd/displayVersion"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "information-outline" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "information-variant" },
+            color: { type: "const", constVal: Color.Gray }
+          }
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: "cmd/modelVersion"
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "HW-Nspanel-Version" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internal",
+            dp: "cmd/modelVersion"
+          },
+          false: void 0
+        }
+      }
+    }
+  ],
+  items: void 0
+};
 const systemTemplates = [
   popupWelcome,
   popupNotification,
@@ -550,7 +694,8 @@ const systemTemplates = [
   AdapterNotConnectedDetail,
   AdapterUpdateDetail,
   ScreensaverOptions,
-  RelaisOption
+  RelaisOption,
+  DeviceOption
 ];
 const systemNavigation = [
   {
@@ -614,6 +759,14 @@ const systemNavigation = [
     name: "///RelaisOption",
     //main ist die erste Seite
     page: "///RelaisOption",
+    left: { double: "///Overview" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///DeviceOption",
+    //main ist die erste Seite
+    page: "///DeviceOption",
     left: { double: "///Overview" }
     // Die 4 bezieht sich auf den name: 4
     //right: { single: 'abfall1', double: 'main' },

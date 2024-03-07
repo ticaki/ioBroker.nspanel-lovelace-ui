@@ -5,6 +5,8 @@ import * as Panel from './panel';
 import { genericStateObjects } from '../const/definition';
 import { SystemNotifications } from '../classes/system-notifications';
 import { getInternalDefaults } from '../const/tools';
+import axios from 'axios';
+import { TasmotaOnlineResponse } from '../types/types';
 
 export class Controller extends Library.BaseClass {
     mqttClient: MQTT.MQTTClientClass;
@@ -203,6 +205,7 @@ export class Controller extends Library.BaseClass {
         this.panels = newPanels;
         this.minuteLoop();
         this.dateUpdateLoop();
+        await this.getTasmotaVersion();
     }
     async delete(): Promise<void> {
         if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
@@ -214,5 +217,25 @@ export class Controller extends Library.BaseClass {
     async notificationToPanel(): Promise<void> {
         if (!this.panels) return;
         this.statesControler.setInternalState('///Notifications', true, true);
+    }
+
+    async getTasmotaVersion(): Promise<void> {
+        const urlString: string = 'https://api.github.com/repositories/80286288/releases/latest';
+        try {
+            const response = await axios(urlString, { headers: { 'User-Agent': 'ioBroker' } });
+
+            if (response && response.status === 200) {
+                const data = response.data as TasmotaOnlineResponse;
+
+                const TasmotaTagName = data.tag_name; // Filter JSON by "tag_name" and write to variable
+                const TasmotaVersionOnline = TasmotaTagName.replace(/v/i, ''); // Filter unnecessary "v" from variable and write to release variable
+                for (const p of this.panels) {
+                    if (p) {
+                        p.info.tasmota.onlineVersion = TasmotaVersionOnline;
+                        await p.writeInfo();
+                    }
+                }
+            }
+        } catch (error) {}
     }
 }

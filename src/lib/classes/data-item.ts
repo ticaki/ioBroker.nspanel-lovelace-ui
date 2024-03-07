@@ -281,7 +281,7 @@ export class Dataitem extends BaseClass {
     async setStateFlip(): Promise<void> {
         const value = await this.getBoolean();
         this.log.debug(String(value));
-        switch (this.trueType()) {
+        switch (this.type()) {
             case 'boolean':
                 await this.setStateAsync(!value);
                 break;

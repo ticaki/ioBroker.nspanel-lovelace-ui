@@ -87,6 +87,8 @@ export class Panel extends BaseClass {
             currentPage: '',
         },
         tasmota: {
+            firmwareversion: '',
+            onlineVersion: '',
             net: {
                 ip: '',
                 gateway: '',
@@ -233,6 +235,27 @@ export class Panel extends BaseClass {
     start = async (): Promise<void> => {
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
         this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/tasmotaVersion`,
+            '',
+            true,
+            getInternalDefaults('string', 'text'),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/displayVersion`,
+            '',
+            true,
+            getInternalDefaults('string', 'text'),
+            this.onInternalCommand,
+        );
+        await this.statesControler.setInternalState(
+            `${this.name}/cmd/modelVersion`,
+            '',
+            true,
+            getInternalDefaults('string', 'text'),
+            this.onInternalCommand,
+        );
         await this.statesControler.setInternalState(
             `${this.name}/cmd/popupNotification`,
             JSON.stringify({}),
@@ -603,6 +626,7 @@ export class Panel extends BaseClass {
                             hostname: data.StatusNET.Hostname,
                             mac: data.StatusNET.Mac,
                         };
+                        this.info.tasmota.firmwareversion = data.StatusFWR.Version;
                         this.info.tasmota.uptime = data.StatusSTS.Uptime;
                         this.info.tasmota.wifi = {
                             ssid: data.StatusSTS.Wifi.SSId,
@@ -756,9 +780,17 @@ export class Panel extends BaseClass {
         return this.pages[index] ?? null;
     }
 
+    async writeInfo(): Promise<void> {
+        await this.library.writeFromJson(
+            `panels.${this.name}.info`,
+            'panel.panels.info',
+            genericStateObjects,
+            this.info,
+        );
+    }
     /**
      *  Handle incoming messages from panel
-     * @param event incoming event...
+     * @param event incoming event....
      * @returns
      */
     async HandleIncomingMessage(event: Types.IncomingEvent): Promise<void> {
@@ -775,12 +807,7 @@ export class Panel extends BaseClass {
                 this.info.nspanel.displayVersion = parseInt(event.id);
                 this.info.nspanel.model = event.action;
 
-                await this.library.writeFromJson(
-                    `panels.${this.name}.info`,
-                    'panel.panels.info',
-                    genericStateObjects,
-                    this.info,
-                );
+                await this.writeInfo();
 
                 this.restartLoops();
                 this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(1));
@@ -993,6 +1020,15 @@ export class Panel extends BaseClass {
                     if (val) return JSON.stringify(val);
                 }
                 return null;
+            }
+            case 'tasmotaVersion': {
+                return this.info.tasmota.firmwareversion;
+            }
+            case 'displayVersion': {
+                return this.info.nspanel.displayVersion;
+            }
+            case 'modelVersion': {
+                return this.info.nspanel.model;
             }
         }
         return null;

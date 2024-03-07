@@ -265,6 +265,32 @@ const pageGridOverview: PageBaseConfig = {
                 setNavi: { type: 'const', constVal: '///RelaisOption' },
             },
         },
+        {
+            role: '',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'information-variant' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Relais' },
+                    false: undefined,
+                },
+                setNavi: { type: 'const', constVal: '///DeviceOption' },
+            },
+        },
     ],
     items: undefined,
 };
@@ -519,6 +545,129 @@ const RelaisOption: PageBaseConfig = {
     items: undefined,
 };
 
+const DeviceOption: PageBaseConfig = {
+    //type: 'sonstiges',
+    //card: 'cardEntities',
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: '///DeviceOption',
+    useColor: false,
+    config: {
+        card: 'cardEntities',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'DeviceOption',
+            },
+        },
+    },
+    pageItems: [
+        {
+            role: '',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'information-outline' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'information-variant' },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: 'cmd/tasmotaVersion',
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Tasmota-Version' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internal',
+                        dp: 'cmd/tasmotaVersion',
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: '',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'information-outline' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'information-variant' },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: 'cmd/displayVersion',
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'TFT-Version' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internal',
+                        dp: 'cmd/displayVersion',
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: '',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'information-outline' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'information-variant' },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: 'cmd/modelVersion',
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'HW-Nspanel-Version' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internal',
+                        dp: 'cmd/modelVersion',
+                    },
+                    false: undefined,
+                },
+            },
+        },
+    ],
+    items: undefined,
+};
+
 export const systemTemplates: PageBaseConfig[] = [
     popupWelcome,
     popupNotification,
@@ -531,6 +680,7 @@ export const systemTemplates: PageBaseConfig[] = [
     AdapterUpdateDetail,
     ScreensaverOptions,
     RelaisOption,
+    DeviceOption,
 ];
 export const systemNavigation: NavigationItemConfig[] = [
     {
@@ -579,6 +729,12 @@ export const systemNavigation: NavigationItemConfig[] = [
     {
         name: '///RelaisOption', //main ist die erste Seite
         page: '///RelaisOption',
+        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
+        //right: { single: 'abfall1', double: 'main' },
+    },
+    {
+        name: '///DeviceOption', //main ist die erste Seite
+        page: '///DeviceOption',
         left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
         //right: { single: 'abfall1', double: 'main' },
     },

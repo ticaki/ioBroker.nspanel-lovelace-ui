@@ -371,7 +371,30 @@ export const genericStateObjects: {
                         },
                         native: {},
                     },
-
+                    firmwareversion: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.firmwareversion',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    onlineVersion: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.onlineVersion',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
                     uptime: {
                         _id: '',
                         type: 'state',

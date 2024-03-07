@@ -37,6 +37,7 @@ var Panel = __toESM(require("./panel"));
 var import_definition = require("../const/definition");
 var import_system_notifications = require("../classes/system-notifications");
 var import_tools = require("../const/tools");
+var import_axios = __toESM(require("axios"));
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
@@ -229,6 +230,7 @@ class Controller extends Library.BaseClass {
     this.panels = newPanels;
     this.minuteLoop();
     this.dateUpdateLoop();
+    await this.getTasmotaVersion();
   }
   async delete() {
     if (this.minuteLoopTimeout)
@@ -243,6 +245,24 @@ class Controller extends Library.BaseClass {
     if (!this.panels)
       return;
     this.statesControler.setInternalState("///Notifications", true, true);
+  }
+  async getTasmotaVersion() {
+    const urlString = "https://api.github.com/repositories/80286288/releases/latest";
+    try {
+      const response = await (0, import_axios.default)(urlString, { headers: { "User-Agent": "ioBroker" } });
+      if (response && response.status === 200) {
+        const data = response.data;
+        const TasmotaTagName = data.tag_name;
+        const TasmotaVersionOnline = TasmotaTagName.replace(/v/i, "");
+        for (const p of this.panels) {
+          if (p) {
+            p.info.tasmota.onlineVersion = TasmotaVersionOnline;
+            await p.writeInfo();
+          }
+        }
+      }
+    } catch (error) {
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

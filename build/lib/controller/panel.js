@@ -93,6 +93,8 @@ class Panel extends import_library.BaseClass {
       currentPage: ""
     },
     tasmota: {
+      firmwareversion: "",
+      onlineVersion: "",
       net: {
         ip: "",
         gateway: "",
@@ -224,6 +226,27 @@ class Panel extends import_library.BaseClass {
   start = async () => {
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
     this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/tasmotaVersion`,
+      "",
+      true,
+      (0, import_tools.getInternalDefaults)("string", "text"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/displayVersion`,
+      "",
+      true,
+      (0, import_tools.getInternalDefaults)("string", "text"),
+      this.onInternalCommand
+    );
+    await this.statesControler.setInternalState(
+      `${this.name}/cmd/modelVersion`,
+      "",
+      true,
+      (0, import_tools.getInternalDefaults)("string", "text"),
+      this.onInternalCommand
+    );
     await this.statesControler.setInternalState(
       `${this.name}/cmd/popupNotification`,
       JSON.stringify({}),
@@ -588,6 +611,7 @@ class Panel extends import_library.BaseClass {
               hostname: data.StatusNET.Hostname,
               mac: data.StatusNET.Mac
             };
+            this.info.tasmota.firmwareversion = data.StatusFWR.Version;
             this.info.tasmota.uptime = data.StatusSTS.Uptime;
             this.info.tasmota.wifi = {
               ssid: data.StatusSTS.Wifi.SSId,
@@ -734,9 +758,17 @@ class Panel extends import_library.BaseClass {
     const index = this.pages.findIndex((a) => a && a.name && a.name === uniqueID);
     return (_a = this.pages[index]) != null ? _a : null;
   }
+  async writeInfo() {
+    await this.library.writeFromJson(
+      `panels.${this.name}.info`,
+      "panel.panels.info",
+      import_definition.genericStateObjects,
+      this.info
+    );
+  }
   /**
    *  Handle incoming messages from panel
-   * @param event incoming event...
+   * @param event incoming event....
    * @returns
    */
   async HandleIncomingMessage(event) {
@@ -753,12 +785,7 @@ class Panel extends import_library.BaseClass {
         this.isOnline = true;
         this.info.nspanel.displayVersion = parseInt(event.id);
         this.info.nspanel.model = event.action;
-        await this.library.writeFromJson(
-          `panels.${this.name}.info`,
-          "panel.panels.info",
-          import_definition.genericStateObjects,
-          this.info
-        );
+        await this.writeInfo();
         this.restartLoops();
         this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(1));
         this.navigation.resetPosition();
@@ -960,6 +987,15 @@ class Panel extends import_library.BaseClass {
             return JSON.stringify(val);
         }
         return null;
+      }
+      case "tasmotaVersion": {
+        return this.info.tasmota.firmwareversion;
+      }
+      case "displayVersion": {
+        return this.info.nspanel.displayVersion;
+      }
+      case "modelVersion": {
+        return this.info.nspanel.model;
       }
     }
     return null;
