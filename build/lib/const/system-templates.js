@@ -119,14 +119,14 @@ const pageAdapterInformation = {
   //card: 'cardEntities',
   dpInit: "",
   alwaysOn: "none",
-  uniqueID: "///adapter-info",
+  uniqueID: "///Adapter-Info",
   useColor: false,
   config: {
     card: "cardEntities",
     data: {
       headline: {
         type: "const",
-        constVal: "Adapter-Information"
+        constVal: "Adapter-Info."
       }
     }
   },
@@ -225,7 +225,7 @@ const pageGridOverview = {
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "power" },
+            value: { type: "const", constVal: "folder-alert-outline" },
             color: { type: "const", constVal: Color.Yellow }
           },
           false: void 0
@@ -240,7 +240,57 @@ const pageGridOverview = {
           true: { type: "const", constVal: "Adapter" },
           false: void 0
         },
-        setNavi: { type: "const", constVal: "///adapter-info" }
+        setNavi: { type: "const", constVal: "///Adapter-Info" }
+      }
+    },
+    {
+      role: "",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "monitor" },
+            color: { type: "const", constVal: Color.Red }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Display" },
+          false: void 0
+        },
+        setNavi: { type: "const", constVal: "///ScreensaverOptions" }
+      }
+    },
+    {
+      role: "",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "power" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Relais" },
+          false: void 0
+        },
+        setNavi: { type: "const", constVal: "///RelaisOption" }
       }
     }
   ],
@@ -311,6 +361,185 @@ const AdapterUpdateDetail = {
   pageItems: [],
   items: void 0
 };
+const ScreensaverOptions = {
+  //type: 'sonstiges',
+  //card: 'cardEntities',
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///ScreensaverOptions",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "ScreensaverOptions"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "text.list",
+      type: "button",
+      template: "button.iconLeftSize",
+      dpInit: ""
+    },
+    {
+      role: "text.list",
+      type: "button",
+      template: "button.iconRightSize",
+      dpInit: ""
+    },
+    {
+      role: "",
+      type: "number",
+      data: {
+        entity1: {
+          value: { type: "internal", dp: "cmd/screensaverTimeout" },
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 90 }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "clock-time-twelve-outline" },
+            color: { type: "const", constVal: Color.White }
+          },
+          false: void 0
+        },
+        text: { true: { type: "const", constVal: "screensaverTimeout" }, false: void 0 }
+      }
+    },
+    {
+      role: "",
+      type: "number",
+      data: {
+        entity1: {
+          value: { type: "internal", dp: "cmd/dimStandby" },
+          factor: { type: "const", constVal: 1 / 10 },
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 10 }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "clock-time-twelve-outline" },
+            color: { type: "const", constVal: Color.White }
+          },
+          false: void 0
+        },
+        text: { true: { type: "const", constVal: "dimStandby" }, false: void 0 }
+      }
+    },
+    {
+      role: "",
+      type: "number",
+      data: {
+        entity1: {
+          value: { type: "internal", dp: "cmd/dimActive" },
+          factor: { type: "const", constVal: 1 / 10 },
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 10 }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "clock-time-twelve-outline" },
+            color: { type: "const", constVal: Color.White }
+          },
+          false: void 0
+        },
+        text: { true: { type: "const", constVal: "dimActive" }, false: void 0 }
+      }
+    }
+  ],
+  items: void 0
+};
+const RelaisOption = {
+  //type: 'sonstiges',
+  //card: 'cardEntities',
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///RelaisOption",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "RelaisOption"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "",
+      type: "button",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "numeric-2-circle-outline" },
+            color: { type: "const", constVal: Color.Gray }
+          },
+          false: {
+            value: { type: "const", constVal: "numeric-1-circle" },
+            color: { type: "const", constVal: Color.Yellow }
+          }
+        },
+        entity1: {
+          value: {
+            type: "internal",
+            dp: "cmd/detachLeft"
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "HW-Button left" },
+          false: void 0
+        },
+        text1: {
+          true: { type: "const", constVal: "decoupled" },
+          false: { type: "const", constVal: "coupled" }
+        },
+        setValue1: {
+          type: "internal",
+          dp: "cmd/detachLeft"
+        }
+      }
+    },
+    {
+      role: "",
+      type: "button",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "numeric-2-circle-outline" },
+            color: { type: "const", constVal: Color.Gray }
+          },
+          false: {
+            value: { type: "const", constVal: "numeric-1-circle" },
+            color: { type: "const", constVal: Color.Yellow }
+          }
+        },
+        entity1: {
+          value: {
+            type: "internal",
+            dp: "cmd/detachRight"
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "HW-Button right" },
+          false: void 0
+        },
+        text1: {
+          true: { type: "const", constVal: "decoupled" },
+          false: { type: "const", constVal: "coupled" }
+        },
+        setValue1: {
+          type: "internal",
+          dp: "cmd/detachRight"
+        }
+      }
+    }
+  ],
+  items: void 0
+};
 const systemTemplates = [
   popupWelcome,
   popupNotification,
@@ -320,7 +549,9 @@ const systemTemplates = [
   pageGridOverview,
   AdapterStoppedDetail,
   AdapterNotConnectedDetail,
-  AdapterUpdateDetail
+  AdapterUpdateDetail,
+  ScreensaverOptions,
+  RelaisOption
 ];
 const systemNavigation = [
   {
@@ -335,14 +566,15 @@ const systemNavigation = [
     name: "///Overview",
     //main ist die erste Seite
     page: "///Overview",
-    right: { double: "main" }
+    right: { double: "main" },
     // Die 4 bezieht sich auf den name: 4
+    optional: "notifications"
     //right: { single: 'abfall1', double: 'main' },
   },
   {
-    name: "///adapter-info",
+    name: "///Adapter-Info",
     //main ist die erste Seite
-    page: "///adapter-info",
+    page: "///Adapter-Info",
     left: { double: "///Overview" }
     // Die 4 bezieht sich auf den name: 4
     //right: { single: 'abfall1', double: 'main' },
@@ -351,7 +583,7 @@ const systemNavigation = [
     name: "///AdapterStoppedDetail",
     //main ist die erste Seite
     page: "///AdapterStoppedDetail",
-    left: { double: "///adapter-info" }
+    left: { double: "///Adapter-Info" }
     // Die 4 bezieht sich auf den name: 4
     //right: { single: 'abfall1', double: 'main' },
   },
@@ -359,7 +591,7 @@ const systemNavigation = [
     name: "///AdapterNotConnectedDetail",
     //main ist die erste Seite
     page: "///AdapterNotConnectedDetail",
-    left: { double: "///adapter-info" }
+    left: { double: "///Adapter-Info" }
     // Die 4 bezieht sich auf den name: 4
     //right: { single: 'abfall1', double: 'main' },
   },
@@ -367,7 +599,23 @@ const systemNavigation = [
     name: "///AdapterUpdate",
     //main ist die erste Seite
     page: "///AdapterUpdate",
-    left: { double: "///adapter-info" }
+    left: { double: "///Adapter-Info" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///ScreensaverOptions",
+    //main ist die erste Seite
+    page: "///ScreensaverOptions",
+    left: { double: "///Overview" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///RelaisOption",
+    //main ist die erste Seite
+    page: "///RelaisOption",
+    left: { double: "///Overview" }
     // Die 4 bezieht sich auf den name: 4
     //right: { single: 'abfall1', double: 'main' },
   }

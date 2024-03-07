@@ -33,5 +33,13 @@
     "sunriseToken": "Lever du soleil",
     "confirm": "meilleur",
     "nextF": "près",
-    "Notification": "Benachrichtigung"
+    "Notification": "Benachrichtigung",
+    "dimActive": "Luminosité active",
+    "dimStandby": "Luminosité en veille",
+    "screensaverTimeout": "Temps d'économiseur d'écran",
+    "IconLeft": "Icône à gauche",
+    "IconRight": "Icône à droite",
+    "ScreensaverOptions": "Économiseur d'écran",
+    "Overview": "Aperçu",
+    "Display": "Afficher"
 }

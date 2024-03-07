@@ -33,5 +33,13 @@
     "sunriseToken": "Nascer do sol",
     "confirm": "bestätigen",
     "nextF": "mais próximo",
-    "Notification": "Benachrichtigung"
+    "Notification": "Benachrichtigung",
+    "dimActive": "Brilho ativo",
+    "dimStandby": "Espera de brilho",
+    "screensaverTimeout": "Tempo de proteção de tela",
+    "IconLeft": "Ícone à esquerda",
+    "IconRight": "Ícone à direita",
+    "ScreensaverOptions": "Protetor de tela",
+    "Overview": "Visão geral",
+    "Display": "Mostrar"
 }

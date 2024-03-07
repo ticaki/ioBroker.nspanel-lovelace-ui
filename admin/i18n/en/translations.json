@@ -34,4 +34,12 @@
     "confirm": "bestätigen",
     "nextF": "nächste",
     "Notification" : "Benachrichtigung",
+    "dimActive": "Brightness active",
+    "dimStandby":"Brightness standby",
+    "screensaverTimeout": "Screensaver time",
+    "IconLeft": "Icon left",
+    "IconRight": "Icon right",
+    "ScreensaverOptions": "Screensaver",
+    "Overview": "Overview",
+    "Display": "Display"
 }

@@ -33,5 +33,13 @@
     "sunriseToken": "wschód słońca",
     "confirm": "bestätigen",
     "nextF": "nachste",
-    "Notification": "Benachrichtigung"
+    "Notification": "Benachrichtigung",
+    "dimActive": "Jasność aktywna",
+    "dimStandby": "Tryb gotowości jasności",
+    "screensaverTimeout": "Czas wygaszacza ekranu",
+    "IconLeft": "Ikona lewa",
+    "IconRight": "Ikona prawa",
+    "ScreensaverOptions": "Wygaszacz ekranu",
+    "Overview": "Przegląd",
+    "Display": "Wyświetlacz"
 }

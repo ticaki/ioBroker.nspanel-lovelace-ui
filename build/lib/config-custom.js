@@ -5121,8 +5121,7 @@ const Testconfig = [
         page: "abfall1",
         left: { single: "alarm1" },
         // Die 4 bezieht sich auf den name: 4
-        right: { single: "unlock1", double: "main" },
-        optional: "notifications"
+        right: { single: "unlock1", double: "main" }
       },
       {
         name: "unlock1",

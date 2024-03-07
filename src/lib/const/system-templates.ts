@@ -87,14 +87,14 @@ const pageAdapterInformation: PageBaseConfig = {
     //card: 'cardEntities',
     dpInit: '',
     alwaysOn: 'none',
-    uniqueID: '///adapter-info',
+    uniqueID: '///Adapter-Info',
     useColor: false,
     config: {
         card: 'cardEntities',
         data: {
             headline: {
                 type: 'const',
-                constVal: 'Adapter-Information',
+                constVal: 'Adapter-Info.',
             },
         },
     },
@@ -196,7 +196,7 @@ const pageGridOverview: PageBaseConfig = {
             data: {
                 icon: {
                     true: {
-                        value: { type: 'const', constVal: 'power' },
+                        value: { type: 'const', constVal: 'folder-alert-outline' },
                         color: { type: 'const', constVal: Color.Yellow },
                     },
                     false: undefined,
@@ -211,7 +211,59 @@ const pageGridOverview: PageBaseConfig = {
                     true: { type: 'const', constVal: 'Adapter' },
                     false: undefined,
                 },
-                setNavi: { type: 'const', constVal: '///adapter-info' },
+                setNavi: { type: 'const', constVal: '///Adapter-Info' },
+            },
+        },
+        {
+            role: '',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'monitor' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Display' },
+                    false: undefined,
+                },
+                setNavi: { type: 'const', constVal: '///ScreensaverOptions' },
+            },
+        },
+        {
+            role: '',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'power' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Relais' },
+                    false: undefined,
+                },
+                setNavi: { type: 'const', constVal: '///RelaisOption' },
             },
         },
     ],
@@ -285,6 +337,189 @@ const AdapterUpdateDetail: PageBaseConfig = {
     items: undefined,
 };
 
+const ScreensaverOptions: PageBaseConfig = {
+    //type: 'sonstiges',
+    //card: 'cardEntities',
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: '///ScreensaverOptions',
+    useColor: false,
+    config: {
+        card: 'cardEntities',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'ScreensaverOptions',
+            },
+        },
+    },
+    pageItems: [
+        {
+            role: 'text.list',
+            type: 'button',
+            template: 'button.iconLeftSize',
+            dpInit: '',
+        },
+        {
+            role: 'text.list',
+            type: 'button',
+            template: 'button.iconRightSize',
+            dpInit: '',
+        },
+        {
+            role: '',
+            type: 'number',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/screensaverTimeout' },
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 90 },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'screensaverTimeout' }, false: undefined },
+            },
+        },
+        {
+            role: '',
+            type: 'number',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/dimStandby' },
+                    factor: { type: 'const', constVal: 1 / 10 },
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 10 },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'dimStandby' }, false: undefined },
+            },
+        },
+        {
+            role: '',
+            type: 'number',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/dimActive' },
+                    factor: { type: 'const', constVal: 1 / 10 },
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 10 },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'dimActive' }, false: undefined },
+            },
+        },
+    ],
+    items: undefined,
+};
+
+const RelaisOption: PageBaseConfig = {
+    //type: 'sonstiges',
+    //card: 'cardEntities',
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: '///RelaisOption',
+    useColor: false,
+    config: {
+        card: 'cardEntities',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'RelaisOption',
+            },
+        },
+    },
+    pageItems: [
+        {
+            role: '',
+            type: 'button',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'numeric-2-circle-outline' },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'numeric-1-circle' },
+                        color: { type: 'const', constVal: Color.Yellow },
+                    },
+                },
+                entity1: {
+                    value: {
+                        type: 'internal',
+                        dp: 'cmd/detachLeft',
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'HW-Button left' },
+                    false: undefined,
+                },
+                text1: {
+                    true: { type: 'const', constVal: 'decoupled' },
+                    false: { type: 'const', constVal: 'coupled' },
+                },
+                setValue1: {
+                    type: 'internal',
+                    dp: 'cmd/detachLeft',
+                },
+            },
+        },
+        {
+            role: '',
+            type: 'button',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'numeric-2-circle-outline' },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'numeric-1-circle' },
+                        color: { type: 'const', constVal: Color.Yellow },
+                    },
+                },
+                entity1: {
+                    value: {
+                        type: 'internal',
+                        dp: 'cmd/detachRight',
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'HW-Button right' },
+                    false: undefined,
+                },
+                text1: {
+                    true: { type: 'const', constVal: 'decoupled' },
+                    false: { type: 'const', constVal: 'coupled' },
+                },
+                setValue1: {
+                    type: 'internal',
+                    dp: 'cmd/detachRight',
+                },
+            },
+        },
+    ],
+    items: undefined,
+};
+
 export const systemTemplates: PageBaseConfig[] = [
     popupWelcome,
     popupNotification,
@@ -295,6 +530,8 @@ export const systemTemplates: PageBaseConfig[] = [
     AdapterStoppedDetail,
     AdapterNotConnectedDetail,
     AdapterUpdateDetail,
+    ScreensaverOptions,
+    RelaisOption,
 ];
 export const systemNavigation: NavigationItemConfig[] = [
     {
@@ -307,30 +544,43 @@ export const systemNavigation: NavigationItemConfig[] = [
         name: '///Overview', //main ist die erste Seite
         page: '///Overview',
         right: { double: 'main' }, // Die 4 bezieht sich auf den name: 4
+        optional: 'notifications',
         //right: { single: 'abfall1', double: 'main' },
     },
     {
-        name: '///adapter-info', //main ist die erste Seite
-        page: '///adapter-info',
+        name: '///Adapter-Info', //main ist die erste Seite
+        page: '///Adapter-Info',
         left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
         //right: { single: 'abfall1', double: 'main' },
     },
     {
         name: '///AdapterStoppedDetail', //main ist die erste Seite
         page: '///AdapterStoppedDetail',
-        left: { double: '///adapter-info' }, // Die 4 bezieht sich auf den name: 4
+        left: { double: '///Adapter-Info' }, // Die 4 bezieht sich auf den name: 4
         //right: { single: 'abfall1', double: 'main' },
     },
     {
         name: '///AdapterNotConnectedDetail', //main ist die erste Seite
         page: '///AdapterNotConnectedDetail',
-        left: { double: '///adapter-info' }, // Die 4 bezieht sich auf den name: 4
+        left: { double: '///Adapter-Info' }, // Die 4 bezieht sich auf den name: 4
         //right: { single: 'abfall1', double: 'main' },
     },
     {
         name: '///AdapterUpdate', //main ist die erste Seite
         page: '///AdapterUpdate',
-        left: { double: '///adapter-info' }, // Die 4 bezieht sich auf den name: 4
+        left: { double: '///Adapter-Info' }, // Die 4 bezieht sich auf den name: 4
+        //right: { single: 'abfall1', double: 'main' },
+    },
+    {
+        name: '///ScreensaverOptions', //main ist die erste Seite
+        page: '///ScreensaverOptions',
+        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
+        //right: { single: 'abfall1', double: 'main' },
+    },
+    {
+        name: '///RelaisOption', //main ist die erste Seite
+        page: '///RelaisOption',
+        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
         //right: { single: 'abfall1', double: 'main' },
     },
 ];

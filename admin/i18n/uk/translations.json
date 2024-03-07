@@ -33,5 +33,13 @@
     "sunriseToken": "Схід сонця",
     "confirm": "bestätigen",
     "nextF": "nächste",
-    "Notification": "Benachrichtigung"
+    "Notification": "Benachrichtigung",
+    "dimActive": "Яскравість активна",
+    "dimStandby": "Режим очікування яскравості",
+    "screensaverTimeout": "Час заставки",
+    "IconLeft": "Піктограма зліва",
+    "IconRight": "Значок справа",
+    "ScreensaverOptions": "Заставка",
+    "Overview": "Огляд",
+    "Display": "Дисплей"
 }

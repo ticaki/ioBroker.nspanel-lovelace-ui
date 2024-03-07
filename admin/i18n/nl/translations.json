@@ -33,5 +33,13 @@
     "sunriseToken": "zonsopkomst",
     "confirm": "bestätigen",
     "nextF": "volgende",
-    "Notification": "Benachrichtigung"
+    "Notification": "Benachrichtigung",
+    "dimActive": "Helderheid actief",
+    "dimStandby": "Helderheid stand-by",
+    "screensaverTimeout": "Screensaver-tijd",
+    "IconLeft": "Icoon links",
+    "IconRight": "Icoon rechts",
+    "ScreensaverOptions": "Screensaver",
+    "Overview": "Overzicht",
+    "Display": "Weergave"
 }

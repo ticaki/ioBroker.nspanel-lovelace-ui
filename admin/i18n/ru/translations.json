@@ -33,5 +33,13 @@
     "sunriseToken": "Восход",
     "confirm": "Bestätigen",
     "nextF": "ночь",
-    "Notification": "Бенахрихтигунг"
+    "Notification": "Бенахрихтигунг",
+    "dimActive": "Яркость активна",
+    "dimStandby": "Яркость в режиме ожидания",
+    "screensaverTimeout": "Время заставки",
+    "IconLeft": "Значок слева",
+    "IconRight": "Значок справа",
+    "ScreensaverOptions": "Заставка",
+    "Overview": "Обзор",
+    "Display": "Отображать"
 }

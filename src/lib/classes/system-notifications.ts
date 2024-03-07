@@ -151,7 +151,7 @@ export class SystemNotifications extends BaseClass {
                         this.log.error('Error while clear notification');
                     }
             }
-            this.notifications[index].cleared = true;
+            if (this.notifications[index]) this.notifications[index].cleared = true;
             await this.writeConfig();
         }
     }

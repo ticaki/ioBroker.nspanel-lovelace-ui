@@ -33,5 +33,13 @@
     "sunriseToken": "Amanecer",
     "confirm": "mejor",
     "nextF": "nächste",
-    "Notification": "Benachrichtigung"
+    "Notification": "Benachrichtigung",
+    "dimActive": "Brillo activo",
+    "dimStandby": "Brillo en espera",
+    "screensaverTimeout": "tiempo del salvapantallas",
+    "IconLeft": "Icono a la izquierda",
+    "IconRight": "Icono a la derecha",
+    "ScreensaverOptions": "Protector de pantalla",
+    "Overview": "Descripción general",
+    "Display": "Mostrar"
 }

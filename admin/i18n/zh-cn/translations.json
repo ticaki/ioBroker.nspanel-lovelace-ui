@@ -33,5 +33,13 @@
     "sunriseToken": "日出",
     "confirm": "最好的",
     "nextF": "纳希斯特",
-    "Notification": "行为准则"
+    "Notification": "行为准则",
+    "dimActive": "亮度活跃",
+    "dimStandby": "亮度待机",
+    "screensaverTimeout": "屏保时间",
+    "IconLeft": "图标向左",
+    "IconRight": "图标右",
+    "ScreensaverOptions": "屏幕保护程序",
+    "Overview": "概述",
+    "Display": "展示"
 }

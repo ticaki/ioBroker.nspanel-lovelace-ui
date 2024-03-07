@@ -33,5 +33,13 @@
     "sunriseToken": "Alba",
     "confirm": "bestätigen",
     "nextF": "prossimo",
-    "Notification": "Benachrichtigung"
+    "Notification": "Benachrichtigung",
+    "dimActive": "Luminosità attiva",
+    "dimStandby": "Standby luminosità",
+    "screensaverTimeout": "Tempo di salvaschermo",
+    "IconLeft": "Icona a sinistra",
+    "IconRight": "Icona a destra",
+    "ScreensaverOptions": "Salvaschermo",
+    "Overview": "Panoramica",
+    "Display": "Schermo"
 }
