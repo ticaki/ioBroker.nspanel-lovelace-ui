@@ -57,17 +57,12 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
             },
         },
         {
-            template: 'generic.shutter',
-            dpInit: '0_userdata.0.shutter_test',
-            data: {
-                icon: {
-                    true: {
-                        value: { type: 'const', constVal: 'window-open' },
-                        color: { type: 'const', constVal: 'aqua', role: 'level.color.name' },
-                    },
-                    false: null,
-                },
-            },
+            template: 'button.service.adapter.noconnection',
+            dpInit: '',
+        },
+        {
+            template: 'button.service.adapter.stopped',
+            dpInit: '',
         },
         {
             role: 'rgb',
@@ -421,7 +416,7 @@ const pageEntitiesTest3: pages.PageBaseConfig = {
     uniqueID: 'entities3',
     config: {
         card: 'cardEntities',
-        cardRole: 'adapter',
+        cardRole: 'AdapterConnection',
         scrollType: 'page',
         filterType: 'true',
         data: {
@@ -1894,9 +1889,6 @@ const pageGridTest1: pages.PageBaseConfig = {
                         value: { type: 'const', constVal: 'fan' },
                         color: { type: 'const', constVal: Color.Red },
                     },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
                 },
                 entity1: {
                     value: {
@@ -5207,72 +5199,74 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             {
                 name: 'main', //main ist die erste Seite
                 page: 'entities1',
-                left: { single: '7' }, // Die 4 bezieht sich auf den name: 4
-                right: { single: 'abfall1', double: '2' },
+                left: { single: 'grid3' }, // Die 4 bezieht sich auf den name: 4
+                right: { single: '///service', double: '2' },
             },
             {
-                name: '5', //main ist die erste Seite
+                name: 'alarm1', //main ist die erste Seite
                 page: 'alarm1',
-                left: { single: '4' }, // Die 4 bezieht sich auf den name: 4
-                right: { single: '6', double: 'main' },
+                left: { single: '///service' }, // Die 4 bezieht sich auf den name: 4
+                right: { single: 'abfall1', double: 'main' },
             },
             {
                 name: 'abfall1', //main ist die erste Seite
                 page: 'abfall1',
-                left: { single: 'main' }, // Die 4 bezieht sich auf den name: 4
+                left: { single: 'alarm1' }, // Die 4 bezieht sich auf den name: 4
                 right: { single: 'unlock1', double: 'main' },
                 optional: 'notifications',
             },
             {
                 name: 'unlock1',
                 page: 'unlock1',
+                left: { double: 'abfall1' }, // Die 4 bezieht sich auf den name: 4
+                right: { double: 'entities3' },
             },
             {
                 name: 'entities3', //main ist die erste Seite
                 page: 'entities3',
-                left: { double: 'abfall1' }, // Die 4 bezieht sich auf den name: 4
+                left: { double: 'unlock1' }, // Die 4 bezieht sich auf den name: 4
                 right: { double: 'entities2' },
             },
             {
                 name: 'entities2', //main ist die erste Seite
                 page: 'entities2',
-                left: { single: 'main' }, // Die 4 bezieht sich auf den name: 4
-                right: { single: '1', double: 'main' },
+                left: { single: 'entities3' }, // Die 4 bezieht sich auf den name: 4
+                right: { single: 'power1', double: 'main' },
             },
             {
-                name: '6',
+                name: 'power1',
                 page: 'power1',
-                left: { single: '5' }, // Die 4 bezieht sich auf den name: 4
-                right: { single: '7', double: 'main' },
+                left: { single: 'entities2' }, // Die 4 bezieht sich auf den name: 4
+                right: { single: 'grid4', double: 'main' },
             },
             {
-                name: '7', //main ist die erste Seite
+                name: 'grid4', //main ist die erste Seite
                 page: 'grid4',
-                left: { single: '6' }, // Die 4 bezieht sich auf den name: 4
-                right: { single: 'main', double: 'main' },
+                left: { single: 'power1' }, // Die 4 bezieht sich auf den name: 4
+                right: { single: 'grid1', double: 'main' },
             },
             {
-                name: '1',
-                left: { single: 'main' }, // Die 0 bezieht sich auf den name: 0
-                right: { single: '2' },
+                name: 'grid1',
+                left: { single: 'grid4' }, // Die 0 bezieht sich auf den name: 0
+                right: { single: 'grid2' },
                 page: 'grid1', // das grid1 bezieht sich auf die uniqueID oben in pages
             },
             {
-                name: '2',
-                left: { single: '1' },
-                right: { single: '3' },
+                name: 'grid2',
+                left: { single: 'grid1' },
+                right: { single: 'media3' },
                 page: 'grid2',
             },
             {
-                name: '3',
-                left: { single: '2' },
-                right: { single: '4', double: 'main' },
+                name: 'media3',
+                left: { single: 'grid2' },
+                right: { single: 'grid3', double: 'main' },
                 page: 'media3',
             },
             {
-                name: '4',
-                left: { single: '3', double: '1' },
-                right: { single: '5', double: '2' },
+                name: 'grid3',
+                left: { single: 'media3', double: '1' },
+                right: { single: 'main', double: '2' },
                 page: 'grid3',
             },
         ],
