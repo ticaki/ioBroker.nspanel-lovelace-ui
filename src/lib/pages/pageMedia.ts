@@ -288,6 +288,11 @@ export class PageMedia extends Page {
     onStateTrigger = async (): Promise<void> => {
         await this.update();
     };
+    async reset(): Promise<void> {
+        this.step = 0;
+        this.headlinePos = 0;
+        this.titelPos = 0;
+    }
     async onButtonEvent(event: IncomingEvent): Promise<void> {
         if (!this.getVisibility() || this.sleep) return;
         //if (event.mode !== 'media') return;

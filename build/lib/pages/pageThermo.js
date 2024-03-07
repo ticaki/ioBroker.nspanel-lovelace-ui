@@ -250,6 +250,9 @@ class PageThermo extends import_Page.Page {
   async onStateTrigger() {
     await this.update();
   }
+  async reset() {
+    this.step = 1;
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

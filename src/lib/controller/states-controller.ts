@@ -72,6 +72,9 @@ export class BaseClassTriggerd extends BaseClass {
 
         if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
     }
+
+    async reset(): Promise<void> {}
+
     readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseClassTriggerd): Promise<boolean> => {
         if ((!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger)) || this.unload)
             return false;

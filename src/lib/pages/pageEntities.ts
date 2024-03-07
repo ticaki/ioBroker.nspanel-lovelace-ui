@@ -234,4 +234,7 @@ export class PageEntities extends Page {
 
         return getPayload(left, right);
     }
+    async reset(): Promise<void> {
+        this.step = 0;
+    }
 }

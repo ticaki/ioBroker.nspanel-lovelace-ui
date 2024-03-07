@@ -297,6 +297,11 @@ class PageMedia extends import_Page2.Page {
   onStateTrigger = async () => {
     await this.update();
   };
+  async reset() {
+    this.step = 0;
+    this.headlinePos = 0;
+    this.titelPos = 0;
+  }
   async onButtonEvent(event) {
     if (!this.getVisibility() || this.sleep)
       return;

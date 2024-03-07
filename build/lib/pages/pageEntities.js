@@ -235,6 +235,9 @@ class PageEntities extends import_Page.Page {
       );
     return (0, import_tools.getPayload)(left, right);
   }
+  async reset() {
+    this.step = 0;
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

@@ -252,4 +252,7 @@ export class PageThermo extends Page {
     protected async onStateTrigger(): Promise<void> {
         await this.update();
     }
+    async reset(): Promise<void> {
+        this.step = 1;
+    }
 }

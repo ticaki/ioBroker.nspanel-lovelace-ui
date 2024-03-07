@@ -166,4 +166,7 @@ export class PageGrid extends Page {
 
         return getPayload(left, right);
     }
+    async reset(): Promise<void> {
+        this.step = 0;
+    }
 }

@@ -828,6 +828,7 @@ export class Panel extends BaseClass {
             case 'sleepReached': {
                 await this.setActivePage(this.screenSaver);
                 this.navigation.resetPosition();
+                this.pages.forEach((a) => a && a.reset());
                 break;
             }
             case 'pageOpenDetail': {
