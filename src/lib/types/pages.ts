@@ -3,7 +3,7 @@ import * as Color from '../const/Color';
 import * as typePageItem from './type-pageItem';
 import * as Types from './types';
 
-export type CardRole = 'AdapterConnection' | 'AdapterStopped';
+export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates';
 export type PageTypeCards =
     | 'cardChart'
     | 'cardLChart'
@@ -23,18 +23,6 @@ export type PageTypeCards =
     | 'popupNotify'
     | 'popupNotify2'; // besonders, interne Card zum verwalten von pageItems
 
-/*export type PageType =
-    | Types.PageChart
-    | Types.PageEntities
-    | Types.PageGrid
-    | Types.PageGrid2
-    | Types.PageThermo
-    | Types.PageMedia
-    | Types.PageUnlock
-    | Types.PageQR
-    | Types.PageAlarm
-    | Types.PagePower;
-*/
 export type StateRole =
     | 'value.power'
     | 'button.play'
@@ -523,7 +511,7 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     ? Obj extends Color.RGB | Types.IconScaleElement | Types.DataItemsOptions
         ? N
         : {
-              [K in keyof Obj]: ChangeTypeOfKeys<Obj[K], N>;
+              [K in keyof Obj]?: ChangeTypeOfKeys<Obj[K], N>;
           }
     : N;
 
@@ -569,10 +557,12 @@ type PageMediaBaseConfig = {
 
 type PageGridBaseConfig = {
     headline: string;
+    list: string;
 };
 
 type PageEntitiesBaseConfig = {
     headline: string;
+    list?: string;
 };
 
 type PageGridPowerConfig = {

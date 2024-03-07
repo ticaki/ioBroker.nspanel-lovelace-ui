@@ -144,6 +144,39 @@ const pageAdapterInformation = {
       data: {
         setNavi: { type: "const", constVal: "///AdapterStoppedDetail" }
       }
+    },
+    {
+      role: "",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "home" },
+            color: { type: "const", constVal: Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "fan" },
+            color: { type: "const", constVal: Color.Blue }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "admin.0.info.updatesNumber",
+            read: "return val != 0"
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Updates" },
+          false: void 0
+        },
+        text1: {
+          true: { type: "state", dp: "admin.0.info.updatesNumber" },
+          false: { type: "const", constVal: "0" }
+        },
+        setNavi: { type: "const", constVal: "///AdapterUpdate" }
+      }
     }
   ],
   items: void 0
@@ -253,6 +286,31 @@ const AdapterStoppedDetail = {
   pageItems: [],
   items: void 0
 };
+const AdapterUpdateDetail = {
+  dpInit: "admin.0.",
+  alwaysOn: "none",
+  uniqueID: "///AdapterUpdate",
+  config: {
+    card: "cardEntities",
+    cardRole: "AdapterUpdates",
+    scrollType: "page",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Adapter update"
+      },
+      list: {
+        mode: "auto",
+        type: "state",
+        dp: "",
+        regexp: /\.info\.updatesJson$/,
+        role: ""
+      }
+    }
+  },
+  pageItems: [],
+  items: void 0
+};
 const systemTemplates = [
   popupWelcome,
   popupNotification,
@@ -261,7 +319,8 @@ const systemTemplates = [
   pageServiceUnlock,
   pageGridOverview,
   AdapterStoppedDetail,
-  AdapterNotConnectedDetail
+  AdapterNotConnectedDetail,
+  AdapterUpdateDetail
 ];
 const systemNavigation = [
   {
@@ -300,6 +359,14 @@ const systemNavigation = [
     name: "///AdapterNotConnectedDetail",
     //main ist die erste Seite
     page: "///AdapterNotConnectedDetail",
+    left: { double: "///adapter-info" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///AdapterUpdate",
+    //main ist die erste Seite
+    page: "///AdapterUpdate",
     left: { double: "///adapter-info" }
     // Die 4 bezieht sich auf den name: 4
     //right: { single: 'abfall1', double: 'main' },

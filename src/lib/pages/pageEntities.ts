@@ -16,7 +16,6 @@ const PageEntitiesMessageDefault: pages.PageEntitiesMessage = {
 
 export class PageEntities extends Page {
     config: pages.cardEntitiesDataItemOptions;
-    items: pages.PageBaseConfig['items'];
     private maxItems: number = 4;
     private step: number = 0;
     private headlinePos: number = 0;
@@ -24,6 +23,7 @@ export class PageEntities extends Page {
     private nextArrow: boolean = false;
     private lastNavClick: number = 0;
     tempItems: (PageItem | undefined)[] | undefined;
+    items: pages.PageBaseConfig['items'];
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
@@ -122,7 +122,7 @@ export class PageEntities extends Page {
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
             if (this.config.card === 'cardEntities') {
-                const temp = await handleCardRole(this.adapter, this.config.cardRole);
+                const temp = await handleCardRole(this.adapter, this.config.cardRole, this);
                 if (temp) this.pageItemConfig = temp;
             }
         }

@@ -140,7 +140,7 @@ export const buttonTemplates: Partial<Record<TemplateIdent, PageItemOptionsTempl
                 value: { type: 'internal', dp: '///AdapterNoConnectionBoolean' },
             },
             text: {
-                true: { type: 'const', constVal: 'not connected' },
+                true: { type: 'const', constVal: 'Not connected' },
                 false: { type: 'const', constVal: 'all connected' },
             },
             text1: { true: { type: 'internal', dp: '///AdapterNoConnection' }, false: undefined },
@@ -170,7 +170,7 @@ export const buttonTemplates: Partial<Record<TemplateIdent, PageItemOptionsTempl
                 value: { type: 'internal', dp: '///AdapterStoppedBoolean' },
             },
             text: {
-                true: { type: 'const', constVal: 'stopped' },
+                true: { type: 'const', constVal: 'Stopped' },
                 false: undefined,
             },
             text1: { true: { type: 'internal', dp: '///AdapterStopped' }, false: undefined },

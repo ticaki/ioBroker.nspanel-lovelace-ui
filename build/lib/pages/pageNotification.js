@@ -37,12 +37,12 @@ var import_tools = require("../const/tools");
 var pages = __toESM(require("../types/pages"));
 class PageNotify extends import_Page.Page {
   config;
-  items;
   lastpage = [];
   step = 0;
   headlinePos = 0;
   rotationTimeout;
   tempItem;
+  items;
   constructor(config, options) {
     super(config, options);
     this.config = options.config;

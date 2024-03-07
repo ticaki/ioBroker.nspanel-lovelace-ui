@@ -14,12 +14,12 @@ import { PageItem } from './pageItem';
 
 export class PageNotify extends Page {
     config: pages.PageBaseConfig['config'];
-    items: pages.PageBaseConfig['items'];
     private lastpage: Page[] = [];
     private step: number = 0;
     private headlinePos: number = 0;
     private rotationTimeout: ioBroker.Timeout | undefined;
     tempItem: PageItem | undefined;
+    items: pages.PageBaseConfig['items'];
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);

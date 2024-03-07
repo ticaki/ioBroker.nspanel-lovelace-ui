@@ -129,7 +129,7 @@ export class Panel extends BaseClass {
 
         let scsFound = 0;
         for (let a = 0; a < options.pages.length; a++) {
-            let pageConfig = options.pages[a];
+            let pageConfig = options.pages[a] ? Page.getPage(options.pages[a], this) : options.pages[a];
 
             if (!pageConfig || !pageConfig.config) continue;
             const pmconfig = {

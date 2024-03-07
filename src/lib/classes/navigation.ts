@@ -183,12 +183,12 @@ export class Navigation extends BaseClass {
             if (i && i[d] && i[d].single !== undefined) {
                 const index = i[d].single;
                 this.setPageByIndex(index);
-                this.log.debug(`Navigation single click with target ${i[d].single} not work.`);
+                this.log.debug(`Navigation single click with target ${i[d].single} work.`);
                 return;
             } else if (i && i[d] && i[d].double !== undefined) {
                 const index = i[d].double;
                 this.setPageByIndex(index);
-                this.log.debug(`Navigation single click (use double target) with target ${i[d].double} not work.`);
+                this.log.debug(`Navigation single click (use double target) with target ${i[d].double} work.`);
                 return;
             }
             this.log.debug('Navigation single click not work.');
@@ -276,6 +276,10 @@ export class Navigation extends BaseClass {
         else if (side === 'right') return navigationString2;
         return getPayload(navigationString, navigationString2);
     }
+
+    /**
+     *
+     */
     resetPosition(): void {
         const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
         if (index !== -1 && this.database[index]) {

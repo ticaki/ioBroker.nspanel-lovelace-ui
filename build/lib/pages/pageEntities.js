@@ -34,7 +34,6 @@ const PageEntitiesMessageDefault = {
 };
 class PageEntities extends import_Page.Page {
   config;
-  items;
   maxItems = 4;
   step = 0;
   headlinePos = 0;
@@ -42,6 +41,7 @@ class PageEntities extends import_Page.Page {
   nextArrow = false;
   lastNavClick = 0;
   tempItems;
+  items;
   constructor(config, options) {
     super(config, options);
     if (!options.config || options.config.card !== "cardEntities") {
@@ -120,7 +120,7 @@ class PageEntities extends import_Page.Page {
   async onVisibilityChange(val) {
     if (val) {
       if (this.config.card === "cardEntities") {
-        const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole);
+        const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole, this);
         if (temp)
           this.pageItemConfig = temp;
       }

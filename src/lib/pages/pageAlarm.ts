@@ -30,13 +30,13 @@ const alarmStates: pages.AlarmStates[] = ['disarmed', 'armed', 'arming', 'pendin
  * untested
  */
 export class PageAlarm extends Page {
-    items: pages.PageBaseConfig['items'];
     private step: number = 1;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
     private status: pages.AlarmStates = 'armed';
     private alarmType: string = 'alarm';
+    items: pages.PageBaseConfig['items'];
 
     async setMode(m: pages.AlarmButtonEvents): Promise<void> {
         this.library.writedp(

@@ -173,12 +173,12 @@ class Navigation extends import_library.BaseClass {
       if (i && i[d] && i[d].single !== void 0) {
         const index = i[d].single;
         this.setPageByIndex(index);
-        this.log.debug(`Navigation single click with target ${i[d].single} not work.`);
+        this.log.debug(`Navigation single click with target ${i[d].single} work.`);
         return;
       } else if (i && i[d] && i[d].double !== void 0) {
         const index = i[d].double;
         this.setPageByIndex(index);
-        this.log.debug(`Navigation single click (use double target) with target ${i[d].double} not work.`);
+        this.log.debug(`Navigation single click (use double target) with target ${i[d].double} work.`);
         return;
       }
       this.log.debug("Navigation single click not work.");
@@ -258,6 +258,9 @@ class Navigation extends import_library.BaseClass {
       return navigationString2;
     return (0, import_tools.getPayload)(navigationString, navigationString2);
   }
+  /**
+   *
+   */
   resetPosition() {
     const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
     if (index !== -1 && this.database[index]) {

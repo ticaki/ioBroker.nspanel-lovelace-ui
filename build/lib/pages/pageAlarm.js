@@ -57,13 +57,13 @@ const PageAlarmMessageDefault = {
 };
 const alarmStates = ["disarmed", "armed", "arming", "pending", "triggered"];
 class PageAlarm extends import_Page.Page {
-  items;
   step = 1;
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
   status = "armed";
   alarmType = "alarm";
+  items;
   async setMode(m) {
     this.library.writedp(
       `panels.${this.panel.name}.alarm.${this.name}.mode`,

@@ -22,7 +22,7 @@ __export(data_collection_functions_exports, {
 });
 module.exports = __toCommonJS(data_collection_functions_exports);
 var import_Color = require("../const/Color");
-async function handleCardRole(adapter, cardRole) {
+async function handleCardRole(adapter, cardRole, page) {
   if (!cardRole)
     return null;
   switch (cardRole) {
@@ -84,6 +84,64 @@ async function handleCardRole(adapter, cardRole) {
         result.push(pi);
       }
       return result;
+    }
+    case "AdapterUpdates": {
+      if (!page || page.card !== "cardEntities" || !("items" in page) || !page.items || page.items.card !== "cardEntities")
+        return null;
+      if (!page.items.data.list)
+        return null;
+      const value = await page.items.data.list.getObject();
+      if (value && page.items.data.list.options.type !== "const") {
+        const dp = page.items.data.list.options.dp;
+        const result = [];
+        for (const a in value) {
+          const pi = {
+            role: "",
+            type: "text",
+            dpInit: "",
+            data: {
+              icon: {
+                true: {
+                  value: { type: "const", constVal: "checkbox-intermediate" },
+                  color: { type: "const", constVal: import_Color.Green }
+                },
+                false: {
+                  value: { type: "const", constVal: "checkbox-intermediate" },
+                  color: { type: "const", constVal: import_Color.Red }
+                }
+              },
+              entity1: {
+                value: {
+                  type: "triggered",
+                  dp,
+                  read: `return !!val`
+                }
+              },
+              text: {
+                true: {
+                  type: "const",
+                  constVal: a
+                },
+                false: void 0
+              },
+              text1: {
+                true: {
+                  type: "state",
+                  dp,
+                  read: `if (!val || !val.startsWith('{') || !val.endsWith('}')) return '';
+                                    const v = JSON.parse(val)
+                                    return (
+                                        v.${a} ? ('v' + v.${a}.installedVersion.trim() + "\\r\\nv" + (v.${a}.availableVersion.trim() + '  ' )) : 'done'
+                                    );`
+                },
+                false: void 0
+              }
+            }
+          };
+          result.push(pi);
+        }
+        return result;
+      }
     }
   }
   return null;

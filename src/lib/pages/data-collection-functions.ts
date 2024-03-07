@@ -1,11 +1,14 @@
+import { Page } from '../classes/Page';
 import { AdapterClassDefinition } from '../classes/library';
 import { Green, Red, Yellow } from '../const/Color';
 import { CardRole } from '../types/pages';
 import { PageItemDataItemsOptions } from '../types/type-pageItem';
+import { PageEntities } from './pageEntities';
 
 export async function handleCardRole(
     adapter: AdapterClassDefinition,
     cardRole: CardRole | undefined,
+    page?: Page | PageEntities,
 ): Promise<PageItemDataItemsOptions[] | null> {
     if (!cardRole) return null;
     switch (cardRole) {
@@ -73,6 +76,71 @@ export async function handleCardRole(
                 result.push(pi);
             }
             return result;
+        }
+        case 'AdapterUpdates': {
+            if (
+                !page ||
+                page.card !== 'cardEntities' ||
+                !('items' in page) ||
+                !page.items ||
+                page.items.card !== 'cardEntities'
+            )
+                return null;
+            if (!page.items.data.list) return null;
+            const value = (await page.items.data.list.getObject()) as any;
+            if (value && page.items.data.list.options.type !== 'const') {
+                const dp = page.items.data.list.options.dp;
+                const result = [];
+                for (const a in value) {
+                    const pi: PageItemDataItemsOptions = {
+                        role: '',
+                        type: 'text',
+                        dpInit: '',
+
+                        data: {
+                            icon: {
+                                true: {
+                                    value: { type: 'const', constVal: 'checkbox-intermediate' },
+                                    color: { type: 'const', constVal: Green },
+                                },
+                                false: {
+                                    value: { type: 'const', constVal: 'checkbox-intermediate' },
+                                    color: { type: 'const', constVal: Red },
+                                },
+                            },
+                            entity1: {
+                                value: {
+                                    type: 'triggered',
+                                    dp: dp,
+                                    read: `return !!val`,
+                                },
+                            },
+                            text: {
+                                true: {
+                                    type: 'const',
+                                    constVal: a,
+                                },
+                                false: undefined,
+                            },
+                            text1: {
+                                true: {
+                                    type: 'state',
+                                    dp: dp,
+                                    read: `if (!val || !val.startsWith('{') || !val.endsWith('}')) return '';
+                                    const v = JSON.parse(val)
+                                    return (
+                                        v.${a} ? ('v' + v.${a}.installedVersion.trim() + "\\r\\nv" + (v.${a}.availableVersion.trim() + '  ' )) : 'done'
+                                    );`,
+                                },
+
+                                false: undefined,
+                            },
+                        },
+                    };
+                    result.push(pi);
+                }
+                return result;
+            }
         }
     }
     return null;

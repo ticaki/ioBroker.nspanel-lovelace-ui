@@ -71,7 +71,6 @@ const PagePowerMessageDefault: pages.PagePowerMessage = {
  */
 export class PagePower extends Page {
     items: pages.PageBaseConfig['items'];
-
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
         if (options.config && options.config.card == 'cardPower') this.config = options.config;
