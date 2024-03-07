@@ -53,7 +53,7 @@ type panelConfigTop = {
 };
 
 export class Panel extends BaseClass {
-    private minuteLoopTimeout: ioBroker.Timeout | undefined;
+    private loopTimeout: ioBroker.Timeout | undefined;
     private pages: (Page | undefined)[] = [];
     private _activePage: Page | undefined = undefined;
     private screenSaver: Screensaver | undefined;
@@ -604,6 +604,7 @@ export class Panel extends BaseClass {
                     case 'stat/STATUS0': {
                         const data = JSON.parse(message) as Types.STATUS0;
                         this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
+                        const i = this.InitDone;
                         if (!this.InitDone) {
                             await this.start();
                             this.InitDone = true;
@@ -633,12 +634,14 @@ export class Panel extends BaseClass {
                             rssi: data.StatusSTS.Wifi.RSSI,
                             downtime: data.StatusSTS.Wifi.Downtime,
                         };
-                        await this.library.writeFromJson(
-                            `panels.${this.name}.info.tasmota`,
-                            'panel.panels.info.tasmota',
-                            genericStateObjects,
-                            this.info.tasmota,
-                        );
+                        if (!i)
+                            await this.library.writeFromJson(
+                                `panels.${this.name}.info.tasmota`,
+                                'panel.panels.info.tasmota',
+                                genericStateObjects,
+                                this.info.tasmota,
+                            );
+                        else await this.writeInfo();
                     }
                 }
             }
@@ -745,20 +748,19 @@ export class Panel extends BaseClass {
     }
 
     restartLoops(): void {
-        if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
-        this.minuteLoop();
+        if (this.loopTimeout) this.adapter.clearTimeout(this.loopTimeout);
+        this.loop();
     }
     /**
      * Do panel work always at full minute
      * @returns void
      */
-    minuteLoop = (): void => {
+    loop = (): void => {
         if (this.unload) return;
-        //this.sendToPanel(`time~${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`);
         this.sendToTasmota(this.topic + '/cmnd/STATUS0', '');
         this.pages = this.pages.filter((a) => a && !a.unload);
         const t = 300000 + Math.random() * 30000 - 15000;
-        this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, t);
+        this.loopTimeout = this.adapter.setTimeout(this.loop, t);
     };
 
     async delete(): Promise<void> {
@@ -771,7 +773,7 @@ export class Panel extends BaseClass {
         for (const a of this.pages) if (a) await a.delete();
         this.isOnline = false;
         this.persistentPageItems = {};
-        if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
+        if (this.loopTimeout) this.adapter.clearTimeout(this.loopTimeout);
     }
 
     getPagebyUniqueID(uniqueID: string): Page | null {
@@ -1022,7 +1024,7 @@ export class Panel extends BaseClass {
                 return null;
             }
             case 'tasmotaVersion': {
-                return this.info.tasmota.firmwareversion;
+                return this.info.tasmota.firmwareversion + '\r\n' + this.info.tasmota.onlineVersion;
             }
             case 'displayVersion': {
                 return this.info.nspanel.displayVersion;

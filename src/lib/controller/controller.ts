@@ -8,13 +8,15 @@ import { getInternalDefaults } from '../const/tools';
 import axios from 'axios';
 import { TasmotaOnlineResponse } from '../types/types';
 
+axios.defaults.timeout = 10000;
+
 export class Controller extends Library.BaseClass {
     mqttClient: MQTT.MQTTClientClass;
     statesControler: StatesControler;
     panels: Panel.Panel[] = [];
     private minuteLoopTimeout: ioBroker.Timeout | undefined;
     private dateUpdateTimeout: ioBroker.Timeout | undefined;
-
+    private dailyIntervalTimeout: ioBroker.Interval | undefined;
     private dataCache: Record<string, { time: number; data: any }> = {};
     systemNotification: SystemNotifications;
 
@@ -206,10 +208,12 @@ export class Controller extends Library.BaseClass {
         this.minuteLoop();
         this.dateUpdateLoop();
         await this.getTasmotaVersion();
+        this.dailyIntervalTimeout = this.adapter.setInterval(this.dailyInterval, 24 * 60 * 60 * 1000);
     }
     async delete(): Promise<void> {
         if (this.minuteLoopTimeout) this.adapter.clearTimeout(this.minuteLoopTimeout);
         if (this.dateUpdateTimeout) this.adapter.clearTimeout(this.dateUpdateTimeout);
+        if (this.dailyIntervalTimeout) this.adapter.clearInterval(this.dailyIntervalTimeout);
         await super.delete();
         for (const a of this.panels) await a.delete();
     }
@@ -218,6 +222,10 @@ export class Controller extends Library.BaseClass {
         if (!this.panels) return;
         this.statesControler.setInternalState('///Notifications', true, true);
     }
+
+    dailyInterval = (): void => {
+        this.getTasmotaVersion();
+    };
 
     async getTasmotaVersion(): Promise<void> {
         const urlString: string = 'https://api.github.com/repositories/80286288/releases/latest';
@@ -232,7 +240,6 @@ export class Controller extends Library.BaseClass {
                 for (const p of this.panels) {
                     if (p) {
                         p.info.tasmota.onlineVersion = TasmotaVersionOnline;
-                        await p.writeInfo();
                     }
                 }
             }

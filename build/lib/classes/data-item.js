@@ -298,7 +298,7 @@ class Dataitem extends import_library.BaseClass {
   async setStateFlip() {
     const value = await this.getBoolean();
     this.log.debug(String(value));
-    switch (this.type()) {
+    switch (this.type) {
       case "boolean":
         await this.setStateAsync(!value);
         break;

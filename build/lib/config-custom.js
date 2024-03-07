@@ -3224,7 +3224,7 @@ const pageThermoTest = {
   alwaysOn: "none",
   pageItems: [
     {
-      role: "indicator",
+      role: "",
       type: "button",
       dpInit: "",
       data: {
@@ -3251,8 +3251,8 @@ const pageThermoTest = {
         },
         entity1: {
           value: {
-            type: "const",
-            constVal: true
+            type: "triggered",
+            dp: "0_userdata.0.example_state"
           },
           decimal: void 0,
           factor: void 0,
@@ -5184,8 +5184,14 @@ const Testconfig = [
       {
         name: "grid3",
         left: { single: "media3", double: "1" },
-        right: { single: "main", double: "2" },
+        right: { single: "thermo1", double: "2" },
         page: "grid3"
+      },
+      {
+        name: "thermo1",
+        left: { single: "grid3", double: "1" },
+        right: { single: "main", double: "2" },
+        page: "thermo1"
       }
     ],
     topic: "nspanel/ns_panel2",

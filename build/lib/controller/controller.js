@@ -38,12 +38,14 @@ var import_definition = require("../const/definition");
 var import_system_notifications = require("../classes/system-notifications");
 var import_tools = require("../const/tools");
 var import_axios = __toESM(require("axios"));
+import_axios.default.defaults.timeout = 1e4;
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
   panels = [];
   minuteLoopTimeout;
   dateUpdateTimeout;
+  dailyIntervalTimeout;
   dataCache = {};
   systemNotification;
   constructor(adapter, options) {
@@ -231,12 +233,15 @@ class Controller extends Library.BaseClass {
     this.minuteLoop();
     this.dateUpdateLoop();
     await this.getTasmotaVersion();
+    this.dailyIntervalTimeout = this.adapter.setInterval(this.dailyInterval, 24 * 60 * 60 * 1e3);
   }
   async delete() {
     if (this.minuteLoopTimeout)
       this.adapter.clearTimeout(this.minuteLoopTimeout);
     if (this.dateUpdateTimeout)
       this.adapter.clearTimeout(this.dateUpdateTimeout);
+    if (this.dailyIntervalTimeout)
+      this.adapter.clearInterval(this.dailyIntervalTimeout);
     await super.delete();
     for (const a of this.panels)
       await a.delete();
@@ -246,6 +251,9 @@ class Controller extends Library.BaseClass {
       return;
     this.statesControler.setInternalState("///Notifications", true, true);
   }
+  dailyInterval = () => {
+    this.getTasmotaVersion();
+  };
   async getTasmotaVersion() {
     const urlString = "https://api.github.com/repositories/80286288/releases/latest";
     try {
@@ -257,7 +265,6 @@ class Controller extends Library.BaseClass {
         for (const p of this.panels) {
           if (p) {
             p.info.tasmota.onlineVersion = TasmotaVersionOnline;
-            await p.writeInfo();
           }
         }
       }

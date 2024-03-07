@@ -265,6 +265,7 @@ const pageGridOverview = {
           false: void 0
         },
         setNavi: { type: "const", constVal: "///ScreensaverOptions" }
+        //confirm: { type: 'const', constVal: 'test' },
       }
     },
     {

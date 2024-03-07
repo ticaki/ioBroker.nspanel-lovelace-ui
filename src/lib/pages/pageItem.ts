@@ -22,6 +22,7 @@ export class PageItem extends BaseClassTriggerd {
     parent: Page | undefined;
     tempData: any = undefined; // use this to save some data while object is active
     tempInterval: ioBroker.Interval | undefined;
+    confirmClick: number | null = 0;
     constructor(
         config: Omit<PageItemInterface, 'pageItemsConfig'>,
         options: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined,
@@ -388,7 +389,12 @@ export class PageItem extends BaseClassTriggerd {
                     message.displayName = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.text, value)) ?? '',
                     );
-
+                    if (this.confirmClick === null) {
+                        if (this.parent && this.parent.card === 'cardEntities')
+                            message.optionalValue =
+                                (item.confirm && (await item.confirm.getString())) ?? message.optionalValue;
+                        this.confirmClick = Date.now();
+                    } else this.confirmClick = 0;
                     message.icon = await tools.getIconEntryValue(item.icon, value, 'home');
                     message.iconColor = await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOn);
                     return tools.getPayload(
@@ -1074,6 +1080,18 @@ export class PageItem extends BaseClassTriggerd {
                 if (entry.type === 'button') {
                     if (entry.role === 'indicator') break;
                     const item = entry.data;
+                    if (item.confirm) {
+                        if (this.confirmClick === 0) {
+                            this.confirmClick = null;
+                            this.parent && this.parent.update();
+                            return true;
+                        } else if (this.confirmClick === null || this.confirmClick - 300 > Date.now()) {
+                            return true;
+                        } else {
+                            this.confirmClick = 0;
+                            this.parent && this.parent.update();
+                        }
+                    }
                     let value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
                     if (value !== null) {
                         this.panel.navigation.setTargetPageByName(value);

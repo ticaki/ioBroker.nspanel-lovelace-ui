@@ -237,6 +237,7 @@ const pageGridOverview: PageBaseConfig = {
                     false: undefined,
                 },
                 setNavi: { type: 'const', constVal: '///ScreensaverOptions' },
+                //confirm: { type: 'const', constVal: 'test' },
             },
         },
         {

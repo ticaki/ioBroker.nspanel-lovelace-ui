@@ -265,7 +265,7 @@ export type PageItemNumberDataItems = {
 
 export type PageItemButton = Pick<
     PageItemBase,
-    'setValue1' | 'setValue2' | 'text' | 'text1' | 'icon' | 'color' | 'entity1' | 'setNavi'
+    'setValue1' | 'setValue2' | 'text' | 'text1' | 'icon' | 'color' | 'entity1' | 'setNavi' | 'confirm'
 >;
 export type PageItemButtonDataItemsOptions = {
     type: 'button';
@@ -382,6 +382,7 @@ export type PageItemBase = {
     valueList?: number;
     valueList2?: number;
     setNavi?: number;
+    confirm?: string;
     setList?: number;
     maxValue1?: number;
     minValue1?: number;

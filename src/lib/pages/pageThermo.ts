@@ -249,4 +249,7 @@ export class PageThermo extends Page {
             String(message.btDetail),
         );
     }
+    protected async onStateTrigger(): Promise<void> {
+        await this.update();
+    }
 }
