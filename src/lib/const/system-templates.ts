@@ -82,7 +82,7 @@ const popupNotification2: PageBaseConfig = {
     pageItems: [],
     items: undefined,
 };
-const pageAdapterInformation: PageBaseConfig = {
+const AdapterInformation: PageBaseConfig = {
     //type: 'sonstiges',
     //card: 'cardEntities',
     dpInit: '',
@@ -121,11 +121,11 @@ const pageAdapterInformation: PageBaseConfig = {
             data: {
                 icon: {
                     true: {
-                        value: { type: 'const', constVal: 'home' },
+                        value: { type: 'const', constVal: 'bell-badge-outline' },
                         color: { type: 'const', constVal: Color.Green },
                     },
                     false: {
-                        value: { type: 'const', constVal: 'fan' },
+                        value: { type: 'const', constVal: 'bell-outlline' },
                         color: { type: 'const', constVal: Color.Blue },
                     },
                 },
@@ -150,7 +150,7 @@ const pageAdapterInformation: PageBaseConfig = {
     ],
     items: undefined,
 };
-const pageServiceUnlock: PageBaseConfig = {
+const ServiceUnlock: PageBaseConfig = {
     uniqueID: '///unlock',
     alwaysOn: 'always',
     dpInit: '',
@@ -172,7 +172,7 @@ const pageServiceUnlock: PageBaseConfig = {
     },
 };
 
-const pageGridOverview: PageBaseConfig = {
+const ServiceOverview: PageBaseConfig = {
     dpInit: '',
     alwaysOn: 'none',
     uniqueID: '///Overview',
@@ -669,13 +669,16 @@ const DeviceOption: PageBaseConfig = {
     items: undefined,
 };
 
-export const systemTemplates: PageBaseConfig[] = [
+/**
+ * all pages from system
+ */
+export const systemPages: PageBaseConfig[] = [
     popupWelcome,
     popupNotification,
     popupNotification2,
-    pageAdapterInformation,
-    pageServiceUnlock,
-    pageGridOverview,
+    AdapterInformation,
+    ServiceUnlock,
+    ServiceOverview,
     AdapterStoppedDetail,
     AdapterNotConnectedDetail,
     AdapterUpdateDetail,

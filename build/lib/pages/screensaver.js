@@ -151,7 +151,6 @@ class Screensaver extends import_Page.Page {
     this.step = -1;
     if (v) {
       await this.sendType();
-      await this.update();
       this.rotationLoop();
     } else {
       if (this.timoutRotation)
@@ -173,7 +172,7 @@ class Screensaver extends import_Page.Page {
     );
   };
   /**
-   *
+   * ..
    * @param _dp
    * @param from
    * @returns

@@ -6,7 +6,7 @@ import { Dataitem } from '../classes/data-item';
 import { AdapterClassDefinition, BaseClass } from '../classes/library';
 import { PageItem } from '../pages/pageItem';
 import { PageItemDataItemsOptions } from '../types/type-pageItem';
-import { DataItemsOptions } from '../types/types';
+import { DataItemsOptions, nsPanelState, nsPanelStateVal } from '../types/types';
 import { Controller } from './controller';
 import { Panel } from './panel';
 import { PanelSend } from './panel-message';
@@ -191,7 +191,10 @@ export class BaseClassPage extends BaseClassTriggerd {
         this.pageItemConfig = pageItemsConfig;
     }
 }
-type getInternalFunctionType = (id: string, state: ioBroker.State | undefined) => Promise<ioBroker.StateValue>;
+type getInternalFunctionType = (
+    id: string,
+    state: ioBroker.State | nsPanelState | undefined,
+) => Promise<nsPanelStateVal>;
 /**
  * Verwendet um Lesezugriffe auf die States umzusetzten, die im NSPanel ververwendet werden.
  * Adapter eigenen States sind verboten
@@ -200,7 +203,7 @@ type getInternalFunctionType = (id: string, state: ioBroker.State | undefined) =
 export class StatesControler extends BaseClass {
     private triggerDB: {
         [key: string]: {
-            state: ioBroker.State;
+            state: nsPanelState;
             to: BaseClassTriggerd[];
             ts: number;
             subscribed: boolean[];
@@ -358,7 +361,7 @@ export class StatesControler extends BaseClass {
         }
     }
 
-    async getStateVal(id: string): Promise<ioBroker.StateValue | null> {
+    async getStateVal(id: string): Promise<nsPanelState['val'] | null> {
         const state = await this.getState(id, 'now');
         if (state) {
             return state.val ?? null;
@@ -374,7 +377,7 @@ export class StatesControler extends BaseClass {
         id: string,
         response: 'now' | 'medium' = 'medium',
         internal: boolean = false,
-    ): Promise<ioBroker.State | null | undefined> {
+    ): Promise<nsPanelState | null | undefined> {
         let timespan = this.timespan;
         if (response === 'now') timespan = 10;
         else timespan = 1000;
@@ -382,7 +385,7 @@ export class StatesControler extends BaseClass {
             this.triggerDB[id] !== undefined &&
             (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some((a) => a))
         ) {
-            let state: ioBroker.State | null = null;
+            let state: nsPanelState | null = null;
             const f = this.triggerDB[id].f;
             if (f) {
                 state = {
@@ -444,7 +447,7 @@ export class StatesControler extends BaseClass {
      * @param dp internal/external
      * @param state iobroker state
      */
-    async onStateChange(dp: string, state: ioBroker.State | null | undefined): Promise<void> {
+    async onStateChange(dp: string, state: nsPanelState | ioBroker.State | null | undefined): Promise<void> {
         if (dp && state) {
             if (this.triggerDB[dp] && this.triggerDB[dp].state) {
                 this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
@@ -473,27 +476,35 @@ export class StatesControler extends BaseClass {
                     });
                 }
             }
-            if (dp.startsWith(this.adapter.namespace)) {
-                const id = dp.replace(this.adapter.namespace + '.', '');
-                const libState = this.library.readdb(id);
-                if (libState) {
-                    this.library.setdb(id, { ...libState, val: state.val, ts: state.ts, ack: state.ack });
-                }
+            if (state.val === null || state.val === undefined || typeof state.val !== 'object') {
+                if (dp.startsWith(this.adapter.namespace)) {
+                    const id = dp.replace(this.adapter.namespace + '.', '');
+                    const libState = this.library.readdb(id);
+                    if (libState) {
+                        this.library.setdb(id, {
+                            ...libState,
+                            val: state.val,
+                            ts: state.ts,
+                            ack: state.ack,
+                        });
+                    }
 
-                if (
-                    libState &&
-                    libState.obj &&
-                    libState.obj.common &&
-                    libState.obj.common.write &&
-                    this.adapter.controller
-                ) {
-                    for (const panel of this.adapter.controller.panels) {
-                        await panel.onStateChange(id, state);
+                    if (
+                        libState &&
+                        libState.obj &&
+                        libState.obj.common &&
+                        libState.obj.common.write &&
+                        this.adapter.controller
+                    ) {
+                        for (const panel of this.adapter.controller.panels) {
+                            await panel.onStateChange(id, state);
+                        }
                     }
                 }
+                if (dp.startsWith('system.host'))
+                    this.adapter.controller &&
+                        (await this.adapter.controller.systemNotification.onStateChange(dp, state as ioBroker.State));
             }
-            if (dp.startsWith('system.host'))
-                this.adapter.controller && (await this.adapter.controller.systemNotification.onStateChange(dp, state));
         }
     }
     async setStateAsync(item: Dataitem, val: ioBroker.StateValue, writeable: boolean): Promise<void> {
@@ -526,7 +537,7 @@ export class StatesControler extends BaseClass {
      */
     public async setInternalState(
         id: string,
-        val: ioBroker.StateValue,
+        val: nsPanelStateVal,
         ack: boolean = false,
         common: ioBroker.StateCommon | undefined = undefined,
         func: getInternalFunctionType | undefined = undefined,

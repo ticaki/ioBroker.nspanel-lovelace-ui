@@ -11,7 +11,7 @@ import {
     getValueEntryString,
 } from '../const/tools';
 import * as pages from '../types/pages';
-import { IncomingEvent } from '../types/types';
+import { IncomingEvent, nsPanelState } from '../types/types';
 
 const PagePowerMessageDefault: pages.PagePowerMessage = {
     event: 'entityUpd',
@@ -103,7 +103,7 @@ export class PagePower extends Page {
         await super.init();
     }
 
-    onInternalCommand = async (id: string, _state: ioBroker.State | undefined): Promise<ioBroker.StateValue> => {
+    onInternalCommand = async (id: string, _state: nsPanelState | undefined): Promise<ioBroker.StateValue> => {
         if (!id.startsWith('///' + this.name)) return null;
         const token = id.split('/').pop();
         if (token === 'powerSum') {

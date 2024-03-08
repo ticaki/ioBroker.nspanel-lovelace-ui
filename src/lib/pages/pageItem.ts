@@ -381,13 +381,15 @@ export class PageItem extends BaseClassTriggerd {
                      * Alles was einen Druckfläche sein kann. D
                      */
                     const item = entry.data;
-                    const value = await tools.getValueEntryBoolean(item.entity1);
+                    let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1, false);
+                    if (value === null) value = await tools.getValueEntryBoolean(item.entity1);
+                    if (value === null) value = true;
                     message.optionalValue = value ?? true ? '1' : '0';
                     if (this.parent && this.parent.card === 'cardEntities')
                         message.optionalValue =
-                            (await tools.getEntryTextOnOff(item.text1, value)) ?? message.optionalValue;
+                            (await tools.getEntryTextOnOff(item.text1, !!value)) ?? message.optionalValue;
                     message.displayName = this.library.getTranslation(
-                        (await tools.getEntryTextOnOff(item.text, value)) ?? '',
+                        (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
                     );
                     if (this.confirmClick === null) {
                         if (this.parent && this.parent.card === 'cardEntities')

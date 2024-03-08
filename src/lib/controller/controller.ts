@@ -6,7 +6,7 @@ import { genericStateObjects } from '../const/definition';
 import { SystemNotifications } from '../classes/system-notifications';
 import { getInternalDefaults } from '../const/tools';
 import axios from 'axios';
-import { TasmotaOnlineResponse } from '../types/types';
+import { TasmotaOnlineResponse, nsPanelState, nsPanelStateVal } from '../types/types';
 
 axios.defaults.timeout = 10000;
 
@@ -69,7 +69,7 @@ export class Controller extends Library.BaseClass {
      * @param _state
      * @returns
      */
-    onInternalCommand = async (id: string, _state: ioBroker.State | undefined): Promise<ioBroker.StateValue> => {
+    onInternalCommand = async (id: string, _state: nsPanelState | undefined): Promise<nsPanelStateVal> => {
         if (!id.startsWith('///')) return null;
         const token = id.split('///').pop();
         switch (token) {

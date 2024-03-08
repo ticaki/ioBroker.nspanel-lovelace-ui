@@ -18,37 +18,16 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var definition_exports = {};
 __export(definition_exports, {
-  AliasPath: () => AliasPath,
-  Debug: () => Debug,
   Defaults: () => Defaults,
-  NSPanelReceiveTopic: () => NSPanelReceiveTopic,
-  NSPanelSendTopic: () => NSPanelSendTopic,
-  NSPanel_Alarm_Path: () => NSPanel_Alarm_Path,
-  NSPanel_Path: () => NSPanel_Path,
+  InternalStates: () => InternalStates,
   ReiveTopicAppendix: () => ReiveTopicAppendix,
   ScreenSaverConst: () => ScreenSaverConst,
   SendTopicAppendix: () => SendTopicAppendix,
-  autoCreateAlias: () => autoCreateAlias,
-  berry_driver_version: () => berry_driver_version,
-  defaultBackgroundColorParam: () => defaultBackgroundColorParam,
   defaultChannel: () => defaultChannel,
-  defaultColorParam: () => defaultColorParam,
-  defaultOffColorParam: () => defaultOffColorParam,
-  defaultOnColorParam: () => defaultOnColorParam,
-  desired_display_firmware_version: () => desired_display_firmware_version,
   genericStateObjects: () => genericStateObjects,
-  scriptVersion: () => scriptVersion,
-  tasmotaOtaUrl: () => tasmotaOtaUrl,
-  tasmotaOtaVersion: () => tasmotaOtaVersion,
-  tasmota_web_admin_password: () => tasmota_web_admin_password,
-  tasmota_web_admin_user: () => tasmota_web_admin_user,
-  tft_version: () => tft_version,
-  weatherAdapterInstance: () => weatherAdapterInstance,
-  weatherEntityPath: () => weatherEntityPath,
-  weatherScreensaverTempMinMax: () => weatherScreensaverTempMinMax
+  tasmotaOtaUrl: () => tasmotaOtaUrl
 });
 module.exports = __toCommonJS(definition_exports);
-var import_Color = require("./Color");
 const defaultChannel = {
   _id: "",
   type: "channel",
@@ -263,7 +242,7 @@ const genericStateObjects = {
           _id: "",
           type: "channel",
           common: {
-            name: "StateObjects.info"
+            name: "Information"
           },
           native: {}
         },
@@ -406,20 +385,20 @@ const genericStateObjects = {
             },
             native: {}
           },
-          wifi: {
+          sts: {
             _channel: {
               _id: "",
               type: "channel",
               common: {
-                name: "StateObjects.wifi"
+                name: "sts"
               },
               native: {}
             },
-            ssid: {
+            Time: {
               _id: "",
               type: "state",
               common: {
-                name: "StateObjects.ssid",
+                name: "Time",
                 type: "string",
                 role: "text",
                 read: true,
@@ -427,11 +406,11 @@ const genericStateObjects = {
               },
               native: {}
             },
-            rssi: {
+            Uptime: {
               _id: "",
               type: "state",
               common: {
-                name: "StateObjects.rssi",
+                name: "Uptime",
                 type: "string",
                 role: "text",
                 read: true,
@@ -439,17 +418,253 @@ const genericStateObjects = {
               },
               native: {}
             },
-            downtime: {
+            UptimeSec: {
               _id: "",
               type: "state",
               common: {
-                name: "StateObjects.downtime",
+                name: "UptimeSec",
+                type: "number",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            Heap: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "Heap",
+                type: "number",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            SleepMode: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "SleepMode",
                 type: "string",
                 role: "text",
                 read: true,
                 write: false
               },
               native: {}
+            },
+            Sleep: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "Sleep",
+                type: "number",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            LoadAvg: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "LoadAvg",
+                type: "number",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            MqttCount: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "MqttCount",
+                type: "number",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            Berry: {
+              _channel: {
+                _id: "",
+                type: "channel",
+                common: {
+                  name: "Berry"
+                },
+                native: {}
+              },
+              HeapUsed: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "HeapUsed",
+                  type: "number",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              Objects: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "Objects",
+                  type: "number",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              }
+            },
+            POWER1: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "POWER1",
+                type: "string",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            POWER2: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "POWER2",
+                type: "string",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            Wifi: {
+              _channel: {
+                _id: "",
+                type: "channel",
+                common: {
+                  name: "Wifi"
+                },
+                native: {}
+              },
+              AP: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "AP",
+                  type: "number",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              SSId: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "SSId",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              BSSId: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "BSSId",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              Channel: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "Channel",
+                  type: "number",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              Mode: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "Mode",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              RSSI: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "RSSI",
+                  type: "number",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              Signal: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "Signal",
+                  type: "number",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              LinkCount: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "LinkCount",
+                  type: "number",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              Downtime: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "Downtime",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              }
             }
           },
           net: {
@@ -457,15 +672,15 @@ const genericStateObjects = {
               _id: "",
               type: "channel",
               common: {
-                name: "StateObjects.net"
+                name: "net"
               },
               native: {}
             },
-            ip: {
+            IPAddress: {
               _id: "",
               type: "state",
               common: {
-                name: "StateObjects.ip",
+                name: "IPAddress",
                 type: "string",
                 role: "text",
                 read: true,
@@ -473,11 +688,11 @@ const genericStateObjects = {
               },
               native: {}
             },
-            gateway: {
+            Gateway: {
               _id: "",
               type: "state",
               common: {
-                name: "StateObjects.gateway",
+                name: "Gateway",
                 type: "string",
                 role: "text",
                 read: true,
@@ -485,11 +700,11 @@ const genericStateObjects = {
               },
               native: {}
             },
-            dnsserver: {
+            DNSServer1: {
               _id: "",
               type: "state",
               common: {
-                name: "StateObjects.dnsserver",
+                name: "DNSServer1",
                 type: "string",
                 role: "text",
                 read: true,
@@ -497,11 +712,11 @@ const genericStateObjects = {
               },
               native: {}
             },
-            subnetmask: {
+            DNSServer2: {
               _id: "",
               type: "state",
               common: {
-                name: "StateObjects.subnetmask",
+                name: "DNSServer2",
                 type: "string",
                 role: "text",
                 read: true,
@@ -509,11 +724,11 @@ const genericStateObjects = {
               },
               native: {}
             },
-            hostname: {
+            Subnetmask: {
               _id: "",
               type: "state",
               common: {
-                name: "StateObjects.hostname",
+                name: "Subnetmask",
                 type: "string",
                 role: "text",
                 read: true,
@@ -521,12 +736,214 @@ const genericStateObjects = {
               },
               native: {}
             },
-            mac: {
+            Hostname: {
               _id: "",
               type: "state",
               common: {
-                name: "StateObjects.mac",
+                name: "Hostname",
                 type: "string",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            Mac: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "Mac",
+                type: "string",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            IP6Global: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "IP6Global",
+                type: "string",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            IP6Local: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "IP6Local",
+                type: "string",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            Ethernet: {
+              _channel: {
+                _id: "",
+                type: "channel",
+                common: {
+                  name: "Ethernet"
+                },
+                native: {}
+              },
+              Hostname: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "Hostname",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              IPAddress: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "IPAddress",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              Gateway: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "Gateway",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              Subnetmask: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "Subnetmask",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              DNSServer1: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "DNSServer1",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              DNSServer2: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "DNSServer2",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              Mac: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "Mac",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              IP6Global: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "IP6Global",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              },
+              IP6Local: {
+                _id: "",
+                type: "state",
+                common: {
+                  name: "IP6Local",
+                  type: "string",
+                  role: "text",
+                  read: true,
+                  write: false
+                },
+                native: {}
+              }
+            },
+            Webserver: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "Webserver",
+                type: "number",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            HTTP_API: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "HTTP_API",
+                type: "number",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            WifiConfig: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "WifiConfig",
+                type: "number",
+                role: "text",
+                read: true,
+                write: false
+              },
+              native: {}
+            },
+            WifiPower: {
+              _id: "",
+              type: "state",
+              common: {
+                name: "WifiPower",
+                type: "number",
                 role: "text",
                 read: true,
                 write: false
@@ -610,27 +1027,232 @@ const Defaults = {
     native: {}
   }
 };
-const Debug = false;
-const NSPanelReceiveTopic = "mqtt.0.SmartHome.NSPanel_1.tele.RESULT";
-const NSPanelSendTopic = "mqtt.0.SmartHome.NSPanel_1.cmnd.CustomSend";
-const tasmota_web_admin_user = "admin";
-const tasmota_web_admin_password = "";
-const tasmotaOtaVersion = "tasmota32-DE.bin";
-const NSPanel_Path = "0_userdata.0.NSPanel.1.";
-const NSPanel_Alarm_Path = "0_userdata.0.NSPanel.";
-const weatherAdapterInstance = "accuweather.0.";
-const weatherScreensaverTempMinMax = "MinMax";
-const weatherEntityPath = "alias.0.Wetter";
-const autoCreateAlias = true;
-const AliasPath = "alias.0." + NSPanel_Path.substring(13, NSPanel_Path.length);
-const defaultOffColorParam = import_Color.Off;
-const defaultOnColorParam = import_Color.On;
-const defaultColorParam = import_Color.Off;
-const defaultBackgroundColorParam = import_Color.HMIDark;
-const scriptVersion = "v4.3.3.33";
-const tft_version = "v4.3.3";
-const desired_display_firmware_version = 53;
-const berry_driver_version = 9;
+const InternalStates = {
+  panel: {
+    "cmd/power2": {
+      val: false,
+      ack: true,
+      common: {
+        name: "power2",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      },
+      noTrigger: true
+    },
+    "cmd/power1": {
+      val: false,
+      ack: true,
+      common: {
+        name: "power1",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      },
+      noTrigger: true
+    },
+    "cmd/bigIconRight": {
+      val: true,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/detachLeft": {
+      val: true,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/detachRight": {
+      val: true,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/bigIconLeft": {
+      val: true,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/dimActive": {
+      val: 0,
+      ack: true,
+      common: {
+        name: "",
+        type: "number",
+        role: "value",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/dimStandby": {
+      val: 0,
+      ack: true,
+      common: {
+        name: "",
+        type: "number",
+        role: "value",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/screensaverTimeout": {
+      val: 0,
+      ack: true,
+      common: {
+        name: "",
+        type: "number",
+        role: "value",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/NotificationCleared2": {
+      val: false,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "button",
+        read: false,
+        write: true
+      }
+    },
+    "cmd/NotificationNext2": {
+      val: false,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "button",
+        read: false,
+        write: true
+      }
+    },
+    "cmd/popupNotification2": {
+      val: JSON.stringify({}),
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "json",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/NotificationCleared": {
+      val: false,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "button",
+        read: false,
+        write: true
+      }
+    },
+    "cmd/NotificationNext": {
+      val: false,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "button",
+        read: false,
+        write: true
+      }
+    },
+    "info/NotificationCounter": {
+      val: JSON.stringify({}),
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "json",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/popupNotification": {
+      val: JSON.stringify({}),
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "json",
+        read: true,
+        write: true
+      }
+    },
+    "info/modelVersion": {
+      val: "",
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "text",
+        read: true,
+        write: false
+      }
+    },
+    "info/displayVersion": {
+      val: "",
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "text",
+        read: true,
+        write: false
+      }
+    },
+    "info/tasmotaVersion": {
+      val: "",
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "text",
+        read: true,
+        write: false
+      }
+    },
+    "info/Tasmota": {
+      val: "",
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "json",
+        read: true,
+        write: false
+      }
+    }
+  }
+};
 const tasmotaOtaUrl = "http://ota.tasmota.com/tasmota32/release/";
 const ScreenSaverConst = {
   standard: {
@@ -716,33 +1338,13 @@ const ReiveTopicAppendix = "/tele/RESULT";
 const SendTopicAppendix = "/cmnd/CustomSend";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  AliasPath,
-  Debug,
   Defaults,
-  NSPanelReceiveTopic,
-  NSPanelSendTopic,
-  NSPanel_Alarm_Path,
-  NSPanel_Path,
+  InternalStates,
   ReiveTopicAppendix,
   ScreenSaverConst,
   SendTopicAppendix,
-  autoCreateAlias,
-  berry_driver_version,
-  defaultBackgroundColorParam,
   defaultChannel,
-  defaultColorParam,
-  defaultOffColorParam,
-  defaultOnColorParam,
-  desired_display_firmware_version,
   genericStateObjects,
-  scriptVersion,
-  tasmotaOtaUrl,
-  tasmotaOtaVersion,
-  tasmota_web_admin_password,
-  tasmota_web_admin_user,
-  tft_version,
-  weatherAdapterInstance,
-  weatherEntityPath,
-  weatherScreensaverTempMinMax
+  tasmotaOtaUrl
 });
 //# sourceMappingURL=definition.js.map

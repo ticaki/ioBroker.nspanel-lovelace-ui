@@ -139,7 +139,7 @@ export class Screensaver extends Page {
         this.step = -1;
         if (v) {
             await this.sendType();
-            await this.update();
+            //await this.update();
             this.rotationLoop();
         } else {
             if (this.timoutRotation) this.adapter.clearTimeout(this.timoutRotation);
@@ -161,7 +161,7 @@ export class Screensaver extends Page {
     };
 
     /**
-     *
+     * ..
      * @param _dp
      * @param from
      * @returns

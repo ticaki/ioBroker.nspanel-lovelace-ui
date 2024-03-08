@@ -66,6 +66,34 @@ export function isEventMethod(F: string | EventMethod): F is EventMethod {
     }
 }
 
+export type InternalStatesObject = {
+    val: ioBroker.StateValue;
+    ack: boolean;
+    common: ioBroker.StateCommon;
+    noTrigger?: boolean;
+};
+export type PanelInternalCommand =
+    | 'cmd/power2'
+    | 'cmd/power1'
+    | 'cmd/bigIconRight'
+    | 'cmd/detachLeft'
+    | 'cmd/detachRight'
+    | 'cmd/bigIconLeft'
+    | 'cmd/dimActive'
+    | 'cmd/dimStandby'
+    | 'cmd/screensaverTimeout'
+    | 'cmd/NotificationCleared2'
+    | 'cmd/NotificationNext2'
+    | 'cmd/popupNotification2'
+    | 'cmd/NotificationCleared'
+    | 'cmd/NotificationNext'
+    | 'info/NotificationCounter'
+    | 'cmd/popupNotification'
+    | 'info/modelVersion'
+    | 'info/displayVersion'
+    | 'info/tasmotaVersion'
+    | 'info/Tasmota';
+
 export function isPopupType(F: PopupType | any): F is PopupType {
     switch (F as PopupType) {
         case 'popupFan':
@@ -83,6 +111,8 @@ export function isPopupType(F: PopupType | any): F is PopupType {
     }
 }
 
+export type nsPanelState = ioBroker.State | (Omit<ioBroker.State, 'val'> & { val: nsPanelStateVal });
+export type nsPanelStateVal = ioBroker.State['val'] | Record<string | number, any>;
 export type EventMethod =
     | 'startup'
     | 'sleepReached'
@@ -561,16 +591,9 @@ export type PanelInfo = {
     tasmota: {
         firmwareversion: string;
         onlineVersion: string;
-        net: {
-            ip: string;
-            gateway: string;
-            dnsserver: string;
-            subnetmask: string;
-            hostname: string;
-            mac: string;
-        };
+        net: STATUS0['StatusNET'];
         uptime: string;
-        wifi: { ssid: string; rssi: number; downtime: string };
+        sts: STATUS0['StatusSTS'];
     };
 };
 

@@ -343,12 +343,16 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         }
         case "button": {
           const item = entry.data;
-          const value = await tools.getValueEntryBoolean(item.entity1);
+          let value = await tools.getValueEntryNumber(item.entity1, false);
+          if (value === null)
+            value = await tools.getValueEntryBoolean(item.entity1);
+          if (value === null)
+            value = true;
           message.optionalValue = (value != null ? value : true) ? "1" : "0";
           if (this.parent && this.parent.card === "cardEntities")
-            message.optionalValue = (_D = await tools.getEntryTextOnOff(item.text1, value)) != null ? _D : message.optionalValue;
+            message.optionalValue = (_D = await tools.getEntryTextOnOff(item.text1, !!value)) != null ? _D : message.optionalValue;
           message.displayName = this.library.getTranslation(
-            (_E = await tools.getEntryTextOnOff(item.text, value)) != null ? _E : ""
+            (_E = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _E : ""
           );
           if (this.confirmClick === null) {
             if (this.parent && this.parent.card === "cardEntities")

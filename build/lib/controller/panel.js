@@ -44,7 +44,6 @@ var import_navigation = require("../classes/navigation");
 var import_pageThermo = require("../pages/pageThermo");
 var import_pagePower = require("../pages/pagePower");
 var import_pageEntities = require("../pages/pageEntities");
-var import_tools = require("../const/tools");
 var import_pageNotification = require("../pages/pageNotification");
 var import_system_templates = require("../const/system-templates");
 var import_pageAlarm = require("../pages/pageAlarm");
@@ -96,15 +95,59 @@ class Panel extends import_library.BaseClass {
       firmwareversion: "",
       onlineVersion: "",
       net: {
-        ip: "",
-        gateway: "",
-        dnsserver: "",
-        subnetmask: "",
-        hostname: "",
-        mac: ""
+        Hostname: "",
+        IPAddress: "",
+        Gateway: "",
+        Subnetmask: "",
+        DNSServer1: "",
+        DNSServer2: "",
+        Mac: "",
+        IP6Global: "",
+        IP6Local: "",
+        Ethernet: {
+          Hostname: "",
+          IPAddress: "",
+          Gateway: "",
+          Subnetmask: "",
+          DNSServer1: "",
+          DNSServer2: "",
+          Mac: "",
+          IP6Global: "",
+          IP6Local: ""
+        },
+        Webserver: 0,
+        HTTP_API: 0,
+        WifiConfig: 0,
+        WifiPower: 0
       },
       uptime: "",
-      wifi: { ssid: "", rssi: 0, downtime: "" }
+      sts: {
+        Time: "",
+        Uptime: "",
+        UptimeSec: 0,
+        Heap: 0,
+        SleepMode: "",
+        Sleep: 0,
+        LoadAvg: 0,
+        MqttCount: 0,
+        Berry: {
+          HeapUsed: 0,
+          Objects: 0
+        },
+        POWER1: "",
+        POWER2: "",
+        Wifi: {
+          AP: 0,
+          SSId: "",
+          BSSId: "",
+          Channel: 0,
+          Mode: "",
+          RSSI: 0,
+          Signal: 0,
+          LinkCount: 0,
+          Downtime: ""
+        }
+      }
     }
   };
   friendlyName = "";
@@ -129,7 +172,7 @@ class Panel extends import_library.BaseClass {
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     this.statesControler = options.controller.statesControler;
     this.dimMode = { low: (_b = options.dimLow) != null ? _b : 70, high: (_c = options.dimHigh) != null ? _c : 90 };
-    options.pages = options.pages.concat(import_system_templates.systemTemplates);
+    options.pages = options.pages.concat(import_system_templates.systemPages);
     options.navigation = options.navigation.concat(import_system_templates.systemNavigation);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
@@ -226,139 +269,16 @@ class Panel extends import_library.BaseClass {
   start = async () => {
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
     this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/tasmotaVersion`,
-      "",
-      true,
-      (0, import_tools.getInternalDefaults)("string", "text"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/displayVersion`,
-      "",
-      true,
-      (0, import_tools.getInternalDefaults)("string", "text"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/modelVersion`,
-      "",
-      true,
-      (0, import_tools.getInternalDefaults)("string", "text"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/popupNotification`,
-      JSON.stringify({}),
-      true,
-      (0, import_tools.getInternalDefaults)("string", "json"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/info/NotificationCounter`,
-      JSON.stringify({}),
-      true,
-      (0, import_tools.getInternalDefaults)("string", "json"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/NotificationNext`,
-      false,
-      true,
-      (0, import_tools.getInternalDefaults)("boolean", "button"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/NotificationCleared`,
-      false,
-      true,
-      (0, import_tools.getInternalDefaults)("boolean", "button"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/popupNotification2`,
-      JSON.stringify({}),
-      true,
-      (0, import_tools.getInternalDefaults)("string", "json"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/NotificationNext2`,
-      false,
-      true,
-      (0, import_tools.getInternalDefaults)("boolean", "button"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/NotificationCleared2`,
-      false,
-      true,
-      (0, import_tools.getInternalDefaults)("boolean", "button"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/screensaverTimeout`,
-      this.timeout,
-      true,
-      (0, import_tools.getInternalDefaults)("number", "value"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/dimStandby`,
-      this.timeout,
-      true,
-      (0, import_tools.getInternalDefaults)("number", "value"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/dimActive`,
-      this.timeout,
-      true,
-      (0, import_tools.getInternalDefaults)("number", "value"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/bigIconLeft`,
-      true,
-      true,
-      (0, import_tools.getInternalDefaults)("boolean", "indicator"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/detachRight`,
-      true,
-      true,
-      (0, import_tools.getInternalDefaults)("boolean", "switch"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/detachLeft`,
-      true,
-      true,
-      (0, import_tools.getInternalDefaults)("boolean", "switch"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(
-      `${this.name}/cmd/bigIconRight`,
-      true,
-      true,
-      (0, import_tools.getInternalDefaults)("boolean", "indicator"),
-      this.onInternalCommand
-    );
-    await this.statesControler.setInternalState(`${this.name}/cmd/power1`, false, true, {
-      name: "power1",
-      type: "boolean",
-      write: false,
-      read: true,
-      role: "value"
-    });
-    await this.statesControler.setInternalState(`${this.name}/cmd/power2`, false, true, {
-      name: "power1",
-      type: "boolean",
-      write: false,
-      read: true,
-      role: "value"
-    });
+    for (const id in import_definition.InternalStates.panel) {
+      const obj = import_definition.InternalStates.panel[id];
+      await this.statesControler.setInternalState(
+        `${this.name}/${id}`,
+        obj.val,
+        obj.ack,
+        obj.common,
+        obj.noTrigger ? void 0 : this.onInternalCommand
+      );
+    }
     import_definition.genericStateObjects.panel.panels._channel.common.name = this.friendlyName;
     await this.library.writedp(`panels.${this.name}`, void 0, import_definition.genericStateObjects.panel.panels._channel);
     await this.library.writedp(
@@ -538,6 +458,7 @@ class Panel extends import_library.BaseClass {
         s,
         import_definition.genericStateObjects.panel.panels.info.nspanel.isOnline
       );
+      this.restartLoops();
       if (s) {
         this.log.info("is online!");
       } else {
@@ -604,21 +525,10 @@ class Panel extends import_library.BaseClass {
               message,
               import_definition.genericStateObjects.panel.panels.info.status
             );
-            this.info.tasmota.net = {
-              ip: data.StatusNET.IPAddress,
-              gateway: data.StatusNET.Gateway,
-              dnsserver: data.StatusNET.DNSServer1,
-              subnetmask: data.StatusNET.Subnetmask,
-              hostname: data.StatusNET.Hostname,
-              mac: data.StatusNET.Mac
-            };
+            this.info.tasmota.net = data.StatusNET;
             this.info.tasmota.firmwareversion = data.StatusFWR.Version;
             this.info.tasmota.uptime = data.StatusSTS.Uptime;
-            this.info.tasmota.wifi = {
-              ssid: data.StatusSTS.Wifi.SSId,
-              rssi: data.StatusSTS.Wifi.RSSI,
-              downtime: data.StatusSTS.Wifi.Downtime
-            };
+            this.info.tasmota.sts = data.StatusSTS;
             if (!i)
               await this.library.writeFromJson(
                 `panels.${this.name}.info.tasmota`,
@@ -737,7 +647,11 @@ class Panel extends import_library.BaseClass {
       return;
     this.sendToTasmota(this.topic + "/cmnd/STATUS0", "");
     this.pages = this.pages.filter((a) => a && !a.unload);
-    const t = 3e5 + Math.random() * 3e4 - 15e3;
+    let t = 3e5 + Math.random() * 3e4 - 15e3;
+    if (!this.isOnline) {
+      t = 6e4;
+      this.sendToPanel("pageType~pageStartup", { retain: true });
+    }
     this.loopTimeout = this.adapter.setTimeout(this.loop, t);
   };
   async delete() {
@@ -790,7 +704,6 @@ class Panel extends import_library.BaseClass {
         this.info.nspanel.displayVersion = parseInt(event.id);
         this.info.nspanel.model = event.action;
         await this.writeInfo();
-        this.restartLoops();
         this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(1));
         this.navigation.resetPosition();
         const i = this.pages.findIndex((a) => a && a.name === "///WelcomePopup");
@@ -864,30 +777,30 @@ class Panel extends import_library.BaseClass {
   onInternalCommand = async (id, state) => {
     if (!id.startsWith(this.name))
       return null;
-    const token = id.split("/").pop();
+    const token = id.replace(this.name + "/", "");
     if (state && !state.ack && state.val !== null) {
       switch (token) {
-        case "power1": {
+        case "cmd/power1": {
           this.sendToTasmota(this.topic + "/cmnd/POWER1", state.val ? "ON" : "OFF");
           break;
         }
-        case "power2": {
+        case "cmd/power2": {
           this.sendToTasmota(this.topic + "/cmnd/POWER2", state.val ? "ON" : "OFF");
           break;
         }
-        case `detachRight`: {
+        case `cmd/detachRight`: {
           this.detach.right = !!state.val;
           this.library.writedp(`panels.${this.name}.cmd.detachRight`, this.detach.right);
           this.sendRules();
           break;
         }
-        case "detachLeft": {
+        case "cmd/detachLeft": {
           this.detach.left = !!state.val;
           this.library.writedp(`panels.${this.name}.cmd.detachLeft`, this.detach.left);
           this.sendRules();
           break;
         }
-        case "bigIconLeft": {
+        case "cmd/bigIconLeft": {
           this.info.nspanel.bigIconLeft = !!state.val;
           this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
           this.library.writeFromJson(
@@ -898,7 +811,7 @@ class Panel extends import_library.BaseClass {
           );
           break;
         }
-        case "bigIconRight": {
+        case "cmd/bigIconRight": {
           this.info.nspanel.bigIconRight = !!state.val;
           this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
           this.library.writeFromJson(
@@ -909,7 +822,7 @@ class Panel extends import_library.BaseClass {
           );
           break;
         }
-        case "screensaverTimeout": {
+        case "cmd/screensaverTimeout": {
           if (typeof state.val !== "boolean") {
             const val = parseInt(String(state.val));
             this.timeout = val;
@@ -919,26 +832,26 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
-        case "dimStandby": {
+        case "cmd/dimStandby": {
           const val = parseInt(String(state.val));
           this.dimMode.low = val;
           this.sendDimmode();
           this.library.writedp(`panels.${this.name}.cmd.dimStandby`, this.dimMode.low);
           break;
         }
-        case "dimActive": {
+        case "cmd/dimActive": {
           const val = parseInt(String(state.val));
           this.dimMode.high = val;
           this.sendDimmode();
           this.library.writedp(`panels.${this.name}.cmd.dimActive`, this.dimMode.high);
           break;
         }
-        case "NotificationCleared2":
-        case "NotificationCleared": {
+        case "cmd/NotificationCleared2":
+        case "cmd/NotificationCleared": {
           await this.controller.systemNotification.clearNotification(this.notifyIndex);
         }
-        case "NotificationNext2":
-        case "NotificationNext": {
+        case "cmd/NotificationNext2":
+        case "cmd/NotificationNext": {
           this.notifyIndex = this.controller.systemNotification.getNotificationIndex(++this.notifyIndex);
           if (this.notifyIndex !== -1) {
             const val = this.controller.systemNotification.getNotification(this.notifyIndex);
@@ -963,29 +876,29 @@ class Panel extends import_library.BaseClass {
       this.statesControler.setInternalState(id, state.val, true);
     }
     switch (token) {
-      case "bigIconLeft": {
+      case "cmd/bigIconLeft": {
         return this.info.nspanel.bigIconLeft;
       }
-      case "bigIconRight": {
+      case "cmd/bigIconRight": {
         return this.info.nspanel.bigIconRight;
       }
-      case "screensaverTimeout": {
+      case "cmd/screensaverTimeout": {
         return this.timeout;
       }
-      case "dimStandby": {
+      case "cmd/dimStandby": {
         return this.dimMode.low;
       }
-      case "dimActive": {
+      case "cmd/dimActive": {
         return this.dimMode.high;
       }
-      case "detachLeft": {
+      case "cmd/detachLeft": {
         return this.detach.left;
       }
-      case "detachRight": {
+      case "cmd/detachRight": {
         return this.detach.right;
       }
-      case "popupNotification2":
-      case "popupNotification": {
+      case "cmd/popupNotification2":
+      case "cmd/popupNotification": {
         if (this.notifyIndex !== -1) {
           const val = this.controller.systemNotification.getNotification(this.notifyIndex);
           if (val)
@@ -993,20 +906,23 @@ class Panel extends import_library.BaseClass {
         }
         return null;
       }
-      case "tasmotaVersion": {
+      case "info/tasmotaVersion": {
         return this.info.tasmota.firmwareversion + "\r\n" + this.info.tasmota.onlineVersion;
       }
-      case "displayVersion": {
+      case "info/displayVersion": {
         return this.info.nspanel.displayVersion;
       }
-      case "modelVersion": {
+      case "info/modelVersion": {
         return this.info.nspanel.model;
+      }
+      case "info/Tasmota": {
+        return this.info.tasmota;
       }
     }
     return null;
   };
   /**
-   *
+   * Convert incoming string to event msg object
    * @param msg
    * @returns
    */

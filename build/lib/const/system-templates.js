@@ -29,7 +29,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var system_templates_exports = {};
 __export(system_templates_exports, {
   systemNavigation: () => systemNavigation,
-  systemTemplates: () => systemTemplates
+  systemPages: () => systemPages
 });
 module.exports = __toCommonJS(system_templates_exports);
 var Color = __toESM(require("./Color"));
@@ -114,7 +114,7 @@ const popupNotification2 = {
   pageItems: [],
   items: void 0
 };
-const pageAdapterInformation = {
+const AdapterInformation = {
   //type: 'sonstiges',
   //card: 'cardEntities',
   dpInit: "",
@@ -152,11 +152,11 @@ const pageAdapterInformation = {
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "home" },
+            value: { type: "const", constVal: "bell-badge-outline" },
             color: { type: "const", constVal: Color.Green }
           },
           false: {
-            value: { type: "const", constVal: "fan" },
+            value: { type: "const", constVal: "bell-outlline" },
             color: { type: "const", constVal: Color.Blue }
           }
         },
@@ -181,7 +181,7 @@ const pageAdapterInformation = {
   ],
   items: void 0
 };
-const pageServiceUnlock = {
+const ServiceUnlock = {
   uniqueID: "///unlock",
   alwaysOn: "always",
   dpInit: "",
@@ -202,7 +202,7 @@ const pageServiceUnlock = {
     }
   }
 };
-const pageGridOverview = {
+const ServiceOverview = {
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///Overview",
@@ -684,13 +684,13 @@ const DeviceOption = {
   ],
   items: void 0
 };
-const systemTemplates = [
+const systemPages = [
   popupWelcome,
   popupNotification,
   popupNotification2,
-  pageAdapterInformation,
-  pageServiceUnlock,
-  pageGridOverview,
+  AdapterInformation,
+  ServiceUnlock,
+  ServiceOverview,
   AdapterStoppedDetail,
   AdapterNotConnectedDetail,
   AdapterUpdateDetail,
@@ -776,6 +776,6 @@ const systemNavigation = [
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   systemNavigation,
-  systemTemplates
+  systemPages
 });
 //# sourceMappingURL=system-templates.js.map

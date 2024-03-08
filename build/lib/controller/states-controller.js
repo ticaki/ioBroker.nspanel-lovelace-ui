@@ -450,20 +450,27 @@ class StatesControler extends import_library.BaseClass {
           });
         }
       }
-      if (dp.startsWith(this.adapter.namespace)) {
-        const id = dp.replace(this.adapter.namespace + ".", "");
-        const libState = this.library.readdb(id);
-        if (libState) {
-          this.library.setdb(id, { ...libState, val: state.val, ts: state.ts, ack: state.ack });
-        }
-        if (libState && libState.obj && libState.obj.common && libState.obj.common.write && this.adapter.controller) {
-          for (const panel of this.adapter.controller.panels) {
-            await panel.onStateChange(id, state);
+      if (state.val === null || state.val === void 0 || typeof state.val !== "object") {
+        if (dp.startsWith(this.adapter.namespace)) {
+          const id = dp.replace(this.adapter.namespace + ".", "");
+          const libState = this.library.readdb(id);
+          if (libState) {
+            this.library.setdb(id, {
+              ...libState,
+              val: state.val,
+              ts: state.ts,
+              ack: state.ack
+            });
+          }
+          if (libState && libState.obj && libState.obj.common && libState.obj.common.write && this.adapter.controller) {
+            for (const panel of this.adapter.controller.panels) {
+              await panel.onStateChange(id, state);
+            }
           }
         }
+        if (dp.startsWith("system.host"))
+          this.adapter.controller && await this.adapter.controller.systemNotification.onStateChange(dp, state);
       }
-      if (dp.startsWith("system.host"))
-        this.adapter.controller && await this.adapter.controller.systemNotification.onStateChange(dp, state);
     }
   }
   async setStateAsync(item, val, writeable) {

@@ -94,7 +94,7 @@ export class PageThermo extends Page {
                     const temp = pageItems[a];
                     if (temp) {
                         const arr = (await temp.getPageItemPayload()).split('~');
-                        message.options[b] = getPayload(arr[2], arr[3], arr[5] == '1' ? '1' : '0', arr[1]);
+                        message.options[b] = getPayload(arr[2], arr[3], arr[5] == '1' ? '1' : '1', arr[1]);
                     } else getPayload('', '', '', '');
                 }
 
