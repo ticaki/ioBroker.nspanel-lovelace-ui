@@ -51,11 +51,11 @@ const pageEntitiesTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: import_Color.Color.Blue }
+            color: { type: "const", constVal: "Color.activated" }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: import_Color.Color.Red }
+            color: { type: "const", constVal: "Color.deactivated" }
           },
           scale: void 0,
           maxBri: void 0,

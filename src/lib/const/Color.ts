@@ -20,6 +20,7 @@ export interface ColorThemenInterface {
     attention: RGB;
     info: RGB;
 }
+
 export class Color {
     static readonly HMIOff: RGB = { r: 68, g: 115, b: 158 }; // Blue-Off - Original Entity Off
     static readonly HMIOn: RGB = { r: 3, g: 169, b: 244 }; // Blue-On
@@ -107,6 +108,15 @@ export class Color {
     static readonly swSunny: RGB = { r: 255, g: 255, b: 0 };
     static readonly swWindy: RGB = { r: 150, g: 150, b: 150 };
 
+    static good: RGB;
+    static bad: RGB;
+    static true: RGB;
+    static false: RGB;
+    static activated: RGB;
+    static deactivated: RGB;
+    static attention: RGB;
+    static info: RGB;
+
     static currentTheme: ColorThemenInterface = {
         good: Color.Green,
         bad: Color.Red,
@@ -118,8 +128,19 @@ export class Color {
         info: Color.White,
     };
 
-    static getColor(s: keyof ColorThemenInterface): RGB {
-        return Color.currentTheme[s];
+    /**
+     * set color theme...
+     * @param s
+     */
+    static setTheme(s: ColorThemenInterface): void {
+        Color.good = s.good;
+        Color.bad = s.bad;
+        Color.true = s.true;
+        Color.false = s.false;
+        Color.activated = s.activated;
+        Color.deactivated = s.deactivated;
+        Color.attention = s.attention;
+        Color.info = s.info;
     }
 
     static rgb_dec565(rgb: RGB): number {

@@ -38,6 +38,7 @@ var import_definition = require("../const/definition");
 var import_system_notifications = require("../classes/system-notifications");
 var import_tools = require("../const/tools");
 var import_axios = __toESM(require("axios"));
+var import_Color = require("../const/Color");
 import_axios.default.defaults.timeout = 1e4;
 class Controller extends Library.BaseClass {
   mqttClient;
@@ -50,6 +51,7 @@ class Controller extends Library.BaseClass {
   systemNotification;
   constructor(adapter, options) {
     super(adapter, options.name);
+    import_Color.Color.setTheme(import_Color.Color.currentTheme);
     this.adapter.controller = this;
     this.mqttClient = options.mqttClient;
     this.statesControler = new import_states_controller.StatesControler(this.adapter);

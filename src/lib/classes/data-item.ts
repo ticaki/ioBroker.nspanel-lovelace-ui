@@ -153,6 +153,41 @@ export class Dataitem extends BaseClass {
                             this.options.role === 'level.color.rgb'
                         ) {
                             return Color.ConvertWithColordtoRgb(value);
+                        } else if (value.startsWith('Color.')) {
+                            switch (value) {
+                                case 'Color.good': {
+                                    return Color.good;
+                                    break;
+                                }
+                                case 'Color.bad': {
+                                    return Color.bad;
+                                    break;
+                                }
+                                case 'Color.true': {
+                                    return Color.true;
+                                    break;
+                                }
+                                case 'Color.false': {
+                                    return Color.false;
+                                    break;
+                                }
+                                case 'Color.activated': {
+                                    return Color.activated;
+                                    break;
+                                }
+                                case 'Color.deactivated': {
+                                    return Color.deactivated;
+                                    break;
+                                }
+                                case 'Color.attention': {
+                                    return Color.attention;
+                                    break;
+                                }
+                                case 'Color.info': {
+                                    return Color.info;
+                                    break;
+                                }
+                            }
                         }
                     }
                 }

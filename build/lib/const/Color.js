@@ -121,6 +121,14 @@ class Color {
   static swSnowyRainy = { r: 150, g: 150, b: 255 };
   static swSunny = { r: 255, g: 255, b: 0 };
   static swWindy = { r: 150, g: 150, b: 150 };
+  static good;
+  static bad;
+  static true;
+  static false;
+  static activated;
+  static deactivated;
+  static attention;
+  static info;
   static currentTheme = {
     good: Color.Green,
     bad: Color.Red,
@@ -131,8 +139,19 @@ class Color {
     attention: Color.Cyan,
     info: Color.White
   };
-  static getColor(s) {
-    return Color.currentTheme[s];
+  /**
+   * set color theme...
+   * @param s
+   */
+  static setTheme(s) {
+    Color.good = s.good;
+    Color.bad = s.bad;
+    Color.true = s.true;
+    Color.false = s.false;
+    Color.activated = s.activated;
+    Color.deactivated = s.deactivated;
+    Color.attention = s.attention;
+    Color.info = s.info;
   }
   static rgb_dec565(rgb) {
     return rgb.r >> 3 << 11 | rgb.g >> 2 << 5 | rgb.b >> 3;

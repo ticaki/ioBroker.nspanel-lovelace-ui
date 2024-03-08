@@ -7,6 +7,7 @@ import { SystemNotifications } from '../classes/system-notifications';
 import { getInternalDefaults } from '../const/tools';
 import axios from 'axios';
 import { TasmotaOnlineResponse, nsPanelState, nsPanelStateVal } from '../types/types';
+import { Color } from '../const/Color';
 
 axios.defaults.timeout = 10000;
 
@@ -25,6 +26,7 @@ export class Controller extends Library.BaseClass {
         options: { mqttClient: MQTT.MQTTClientClass; name: string; panels: Partial<Panel.panelConfigPartial>[] },
     ) {
         super(adapter, options.name);
+        Color.setTheme(Color.currentTheme);
         this.adapter.controller = this;
         this.mqttClient = options.mqttClient;
         this.statesControler = new StatesControler(this.adapter);

@@ -12,11 +12,11 @@ export const lightTemplates: Partial<Record<TemplateIdent, PageItemOptionsTempla
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lightbulb' },
-                    color: { type: 'const', constVal: Color.getColor('activated') },
+                    color: { type: 'const', constVal: Color.activated },
                 },
                 false: {
                     value: { type: 'const', constVal: 'lightbulb-outline' },
-                    color: { type: 'const', constVal: Color.getColor('deactivated') },
+                    color: { type: 'const', constVal: Color.deactivated },
                 },
                 scale: undefined,
                 maxBri: undefined,

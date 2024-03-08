@@ -126,13 +126,13 @@ export const buttonTemplates: Partial<Record<TemplateIdent, PageItemOptionsTempl
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'checkbox-intermediate' },
-                    color: { type: 'const', constVal: Color.Yellow },
+                    color: { type: 'const', constVal: 'Color.bad' },
                     text: { value: { type: 'internal', dp: '///AdapterNoConnection' } },
                 },
 
                 false: {
                     value: { type: 'const', constVal: 'checkbox-marked-outline' },
-                    color: { type: 'const', constVal: Color.Green },
+                    color: { type: 'const', constVal: 'Color.good' },
                     text: { value: { type: 'internal', dp: '///AdapterNoConnection' } },
                 },
             },
