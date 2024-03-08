@@ -1,5 +1,5 @@
 import { Page, PageInterface } from '../classes/Page';
-import { White } from '../const/Color';
+import { Color } from '../const/Color';
 import {
     getIconEntryColor,
     getIconEntryValue,
@@ -78,17 +78,17 @@ export class PageNotify extends Page {
             if (value === null) value = (await getValueEntryBoolean(data.entity1)) ?? true;
 
             message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? '';
-            message.hColor = await getIconEntryColor(data.colorHeadline, value, White);
+            message.hColor = await getIconEntryColor(data.colorHeadline, value, Color.White);
 
             message.blText = (data.buttonLeft && (await data.buttonLeft.getTranslatedString())) ?? '';
-            message.blColor = await getIconEntryColor(data.colorButtonLeft, value, White);
+            message.blColor = await getIconEntryColor(data.colorButtonLeft, value, Color.White);
 
             message.brText = (data.buttonRight && (await data.buttonRight.getTranslatedString())) ?? '';
-            message.brColor = await getIconEntryColor(data.colorButtonRight, value, White);
+            message.brColor = await getIconEntryColor(data.colorButtonRight, value, Color.White);
 
             message.text = (data.text && (await data.text.getTranslatedString())) ?? '';
 
-            message.textColor = await getIconEntryColor(data.colorText, value, White);
+            message.textColor = await getIconEntryColor(data.colorText, value, Color.White);
 
             const placeholder = (data.optionalValue && (await data.optionalValue.getObject())) ?? null;
             if (placeholder && pages.isPlaceholderType(placeholder)) {
@@ -143,7 +143,7 @@ export class PageNotify extends Page {
             const data = items.data;
             message.fontSet = (data.textSize && (await data.textSize.getString())) ?? '';
             message.icon = await getIconEntryValue(data.icon, value, '');
-            message.iconColor = await getIconEntryColor(data.icon, value, White);
+            message.iconColor = await getIconEntryColor(data.icon, value, Color.White);
             this.sendToPanel(this.getMessage2(message));
             return;
         }

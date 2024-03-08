@@ -13,7 +13,7 @@ import {
 } from '../types/type-pageItem';
 import { Library } from '../classes/library';
 import { RGB } from '../const/Color';
-import * as Color from './Color';
+import { Color } from '../const/Color';
 import { Icons } from './icon_mapping';
 import { ChangeTypeOfKeys } from '../types/pages';
 import { IconScaleElement, isIconScaleElement, isPartialIconScaleElement, isValueDateFormat } from '../types/types';

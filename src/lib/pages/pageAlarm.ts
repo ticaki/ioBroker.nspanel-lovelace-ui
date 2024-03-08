@@ -1,5 +1,5 @@
 import { Page, PageInterface } from '../classes/Page';
-import { Green, rgb_dec565 } from '../const/Color';
+import { Color } from '../const/Color';
 import { genericStateObjects } from '../const/definition';
 import { Icons } from '../const/icon_mapping';
 import { getPayload } from '../const/tools';
@@ -163,17 +163,17 @@ export class PageAlarm extends Page {
                 message.flashing = 'disable'; //flashing*
             } else if (this.status == 'disarmed') {
                 message.icon = Icons.GetIcon('shield-off'); //icon*~*
-                message.iconColor = String(rgb_dec565(Green)); //iconcolor*~*
+                message.iconColor = String(Color.rgb_dec565(Color.Green)); //iconcolor*~*
                 message.numpad = 'enable'; //numpadStatus*~*
                 message.flashing = 'disable'; //flashing*
             } else if (this.status == 'arming' || this.status == 'pending') {
                 message.icon = Icons.GetIcon('shield'); //icon*~*
-                message.iconColor = String(rgb_dec565({ r: 243, g: 179, b: 0 })); //iconcolor*~*
+                message.iconColor = String(Color.rgb_dec565({ r: 243, g: 179, b: 0 })); //iconcolor*~*
                 message.numpad = 'disable'; //numpadStatus*~*
                 message.flashing = 'enable'; //flashing*
             } else if (this.status == 'triggered') {
                 message.icon = Icons.GetIcon('bell-ring'); //icon*~*
-                message.iconColor = String(rgb_dec565({ r: 223, g: 76, b: 30 })); //iconcolor*~*
+                message.iconColor = String(Color.rgb_dec565({ r: 223, g: 76, b: 30 })); //iconcolor*~*
                 message.numpad = 'enable'; //numpadStatus*~*
                 message.flashing = 'enable'; //flashing*
             }
@@ -187,7 +187,7 @@ export class PageAlarm extends Page {
             message.button4 = '';
             message.status4 = '';
             message.icon = Icons.GetIcon('lock-remove'); //icon*~*
-            message.iconColor = String(rgb_dec565({ r: 223, g: 76, b: 30 })); //iconcolor*~*
+            message.iconColor = String(Color.rgb_dec565({ r: 223, g: 76, b: 30 })); //iconcolor*~*
             message.numpad = 'enable'; //numpadStatus*~*
             message.flashing = 'enable'; //flashing*
         }

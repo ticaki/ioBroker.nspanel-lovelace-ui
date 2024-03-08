@@ -1,5 +1,5 @@
 import { Page, PageInterface } from '../classes/Page';
-import { White } from '../const/Color';
+import { Color } from '../const/Color';
 import {
     deepAssign,
     getEntryTextOnOff,
@@ -137,7 +137,7 @@ export class PagePower extends Page {
         message.navigation = this.getNavigation();
 
         message.homeIcon = await getIconEntryValue(data.homeIcon, true, '');
-        message.homeColor = await getIconEntryColor(data.homeIcon, true, White);
+        message.homeColor = await getIconEntryColor(data.homeIcon, true, Color.White);
         message.homeValueTop = (await getValueEntryString(data.homeValueTop)) ?? '';
         message.homeValueBot = (await getValueEntryString(data.homeValueBot)) ?? '';
 
@@ -169,7 +169,7 @@ export class PagePower extends Page {
         if (value === null) return undefined;
 
         message.icon = (await getIconEntryValue(item.icon, value >= 0, '')) ?? undefined;
-        message.iconColor = (await getIconEntryColor(item.icon, value, White)) ?? undefined;
+        message.iconColor = (await getIconEntryColor(item.icon, value, Color.White)) ?? undefined;
         message.name = (await getEntryTextOnOff(item.text, value >= 0)) ?? undefined;
         message.speed = (await getScaledNumber(item.speed)) ?? undefined;
         message.value = (await getValueEntryString(item.value, value)) ?? undefined;

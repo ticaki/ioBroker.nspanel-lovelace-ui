@@ -905,6 +905,9 @@ export class Panel extends BaseClass {
                     });
                     break;
                 }
+                case 'cmd/TasmotaRestart': {
+                    break;
+                }
             }
             this.statesControler.setInternalState(id, state.val, true);
         }

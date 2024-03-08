@@ -1250,6 +1250,17 @@ const InternalStates = {
         read: true,
         write: false
       }
+    },
+    "cmd/TasmotaRestart": {
+      val: "",
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "switch",
+        read: false,
+        write: true
+      }
     }
   }
 };

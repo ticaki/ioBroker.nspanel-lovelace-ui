@@ -1,4 +1,4 @@
-import * as Color from '../const/Color';
+import { Color } from '../const/Color';
 import { PageItemOptionsTemplate } from '../types/type-pageItem';
 import { TemplateIdent } from '../types/types';
 

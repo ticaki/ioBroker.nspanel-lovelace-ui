@@ -1,9 +1,7 @@
 "use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -17,21 +15,13 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var button_exports = {};
 __export(button_exports, {
   buttonTemplates: () => buttonTemplates
 });
 module.exports = __toCommonJS(button_exports);
-var Color = __toESM(require("../const/Color"));
+var import_Color = require("../const/Color");
 const buttonTemplates = {
   "button.iconLeftSize": {
     role: "text.list",
@@ -41,11 +31,11 @@ const buttonTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "size-m" },
-          color: { type: "const", constVal: Color.Yellow }
+          color: { type: "const", constVal: import_Color.Color.Yellow }
         },
         false: {
           value: void 0,
-          color: { type: "const", constVal: Color.Green }
+          color: { type: "const", constVal: import_Color.Color.Green }
         }
       },
       entity1: {
@@ -76,11 +66,11 @@ const buttonTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "size-m" },
-          color: { type: "const", constVal: Color.Yellow }
+          color: { type: "const", constVal: import_Color.Color.Yellow }
         },
         false: {
           value: void 0,
-          color: { type: "const", constVal: Color.Green }
+          color: { type: "const", constVal: import_Color.Color.Green }
         }
       },
       entity1: {
@@ -111,11 +101,11 @@ const buttonTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "power-plug" },
-          color: { type: "const", constVal: Color.Green }
+          color: { type: "const", constVal: import_Color.Color.Green }
         },
         false: {
           value: { type: "const", constVal: "power-plug-off-outline" },
-          color: { type: "const", constVal: Color.Gray }
+          color: { type: "const", constVal: import_Color.Color.Gray }
         }
       },
       entity1: {
@@ -152,12 +142,12 @@ const buttonTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "checkbox-intermediate" },
-          color: { type: "const", constVal: Color.Yellow },
+          color: { type: "const", constVal: import_Color.Color.Yellow },
           text: { value: { type: "internal", dp: "///AdapterNoConnection" } }
         },
         false: {
           value: { type: "const", constVal: "checkbox-marked-outline" },
-          color: { type: "const", constVal: Color.Green },
+          color: { type: "const", constVal: import_Color.Color.Green },
           text: { value: { type: "internal", dp: "///AdapterNoConnection" } }
         }
       },
@@ -179,12 +169,12 @@ const buttonTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "checkbox-intermediate" },
-          color: { type: "const", constVal: Color.Red },
+          color: { type: "const", constVal: import_Color.Color.Red },
           text: { value: { type: "internal", dp: "///AdapterStopped" } }
         },
         false: {
           value: { type: "const", constVal: "checkbox-marked-outline" },
-          color: { type: "const", constVal: Color.Green },
+          color: { type: "const", constVal: import_Color.Color.Green },
           text: { value: { type: "internal", dp: "///AdapterStopped" } }
         }
       },

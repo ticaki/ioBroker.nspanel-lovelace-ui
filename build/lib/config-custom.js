@@ -1,9 +1,7 @@
 "use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -17,14 +15,6 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var config_custom_exports = {};
 __export(config_custom_exports, {
@@ -35,7 +25,7 @@ __export(config_custom_exports, {
   popupTest2: () => popupTest2
 });
 module.exports = __toCommonJS(config_custom_exports);
-var Color = __toESM(require("./const/Color"));
+var import_Color = require("./const/Color");
 const pageEntitiesTest1 = {
   //type: 'sonstiges',
   //card: 'cardEntities',
@@ -61,11 +51,11 @@ const pageEntitiesTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -109,11 +99,11 @@ const pageEntitiesTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "lightbulb" },
-            color: { type: "const", constVal: Color.Yellow }
+            color: { type: "const", constVal: import_Color.Color.Yellow }
           },
           false: {
             value: { type: "const", constVal: "lightbulb-outline" },
-            color: { type: "const", constVal: Color.HMIOff }
+            color: { type: "const", constVal: import_Color.Color.HMIOff }
           },
           scale: void 0,
           maxBri: void 0,
@@ -179,11 +169,11 @@ const pageEntitiesTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -235,11 +225,11 @@ const pageEntitiesTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -288,11 +278,11 @@ const pageEntitiesTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "lightbulb" },
-            color: { type: "const", constVal: Color.Yellow }
+            color: { type: "const", constVal: import_Color.Color.Yellow }
           },
           false: {
             value: { type: "const", constVal: "lightbulb-outline" },
-            color: { type: "const", constVal: Color.HMIOff }
+            color: { type: "const", constVal: import_Color.Color.HMIOff }
           },
           scale: void 0,
           maxBri: void 0,
@@ -358,11 +348,11 @@ const pageEntitiesTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -420,13 +410,13 @@ const popupTest2 = {
     data: {
       entity1: { value: { type: "state", dp: "0_userdata.0.example_state" } },
       headline: { type: "const", constVal: "welcomeHToken" },
-      colorHeadline: { true: { color: { type: "const", constVal: Color.White } } },
+      colorHeadline: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       buttonLeft: { type: "const", constVal: "" },
-      colorButtonLeft: { true: { color: { type: "const", constVal: Color.White } } },
+      colorButtonLeft: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       buttonRight: { type: "const", constVal: "" },
-      colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
+      colorButtonRight: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       text: { type: "const", constVal: "Text Test ${pl}" },
-      colorText: { true: { color: { type: "const", constVal: Color.White } } },
+      colorText: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       timeout: { type: "const", constVal: 0 },
       // {placeholder: {text: '' oder dp: ''}}
       optionalValue: { type: "const", constVal: { pl: { text: "das ist ein placeholder" } } },
@@ -548,7 +538,7 @@ const pageEntitiesTest2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },
-            color: { type: "const", constVal: Color.White }
+            color: { type: "const", constVal: import_Color.Color.White }
           },
           false: void 0
         },
@@ -833,18 +823,18 @@ const pageMediaTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0
         },
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -881,18 +871,18 @@ const pageMediaTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0
         },
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -929,7 +919,7 @@ const pageMediaTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -937,11 +927,11 @@ const pageMediaTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -970,7 +960,7 @@ const pageMediaTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -978,11 +968,11 @@ const pageMediaTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1011,7 +1001,7 @@ const pageMediaTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -1019,11 +1009,11 @@ const pageMediaTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1052,7 +1042,7 @@ const pageMediaTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -1060,11 +1050,11 @@ const pageMediaTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1093,7 +1083,7 @@ const pageMediaTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -1101,11 +1091,11 @@ const pageMediaTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1300,18 +1290,18 @@ const pageMediaTest2 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0
         },
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1348,7 +1338,7 @@ const pageMediaTest2 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -1356,11 +1346,11 @@ const pageMediaTest2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1389,7 +1379,7 @@ const pageMediaTest2 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -1397,11 +1387,11 @@ const pageMediaTest2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1430,7 +1420,7 @@ const pageMediaTest2 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -1438,11 +1428,11 @@ const pageMediaTest2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1471,7 +1461,7 @@ const pageMediaTest2 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -1479,11 +1469,11 @@ const pageMediaTest2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1512,7 +1502,7 @@ const pageMediaTest2 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -1520,11 +1510,11 @@ const pageMediaTest2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1581,11 +1571,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1620,11 +1610,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "window-shutter-open" },
-            color: { type: "const", constVal: Color.Yellow }
+            color: { type: "const", constVal: import_Color.Color.Yellow }
           },
           false: {
             value: { type: "const", constVal: "window-shutter" },
-            color: { type: "const", constVal: Color.HMIOff }
+            color: { type: "const", constVal: import_Color.Color.HMIOff }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1709,11 +1699,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "lightbulb" },
-            color: { type: "const", constVal: Color.Yellow }
+            color: { type: "const", constVal: import_Color.Color.Yellow }
           },
           false: {
             value: { type: "const", constVal: "lightbulb-outline" },
-            color: { type: "const", constVal: Color.HMIOff }
+            color: { type: "const", constVal: import_Color.Color.HMIOff }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1779,7 +1769,7 @@ const pageGridTest1 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -1788,11 +1778,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1829,7 +1819,7 @@ const pageGridTest1 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -1837,11 +1827,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "music" },
-            color: { type: "const", constVal: Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.Gray }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1875,11 +1865,11 @@ const pageGridTest1 = {
           true: {
             value: { type: "const", constVal: "home" },
             text: { value: { type: "const", constVal: "22.2" }, textSize: { type: "const", constVal: 3 } },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           }
         },
         entity1: {
@@ -1909,11 +1899,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -1948,11 +1938,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "window-shutter-open" },
-            color: { type: "const", constVal: Color.Yellow }
+            color: { type: "const", constVal: import_Color.Color.Yellow }
           },
           false: {
             value: { type: "const", constVal: "window-shutter" },
-            color: { type: "const", constVal: Color.HMIOff }
+            color: { type: "const", constVal: import_Color.Color.HMIOff }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2037,11 +2027,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "lightbulb" },
-            color: { type: "const", constVal: Color.Yellow }
+            color: { type: "const", constVal: import_Color.Color.Yellow }
           },
           false: {
             value: { type: "const", constVal: "lightbulb-outline" },
-            color: { type: "const", constVal: Color.HMIOff }
+            color: { type: "const", constVal: import_Color.Color.HMIOff }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2107,7 +2097,7 @@ const pageGridTest1 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -2116,11 +2106,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2157,7 +2147,7 @@ const pageGridTest1 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -2165,11 +2155,11 @@ const pageGridTest1 = {
         icon: {
           true: {
             value: { type: "const", constVal: "music" },
-            color: { type: "const", constVal: Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.Gray }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2203,11 +2193,11 @@ const pageGridTest1 = {
           true: {
             value: { type: "const", constVal: "home" },
             text: { value: { type: "const", constVal: "22.2" }, textSize: { type: "const", constVal: 3 } },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2261,11 +2251,11 @@ const pageGridTest2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2298,7 +2288,7 @@ const pageGridTest2 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -2306,11 +2296,11 @@ const pageGridTest2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "account" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2339,11 +2329,11 @@ const pageGridTest2 = {
         icon: {
           true: {
             value: { type: "const", constVal: "timer" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           false: {
             value: void 0,
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2401,11 +2391,11 @@ const pageGridTest5 = {
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2440,11 +2430,11 @@ const pageGridTest5 = {
         icon: {
           true: {
             value: { type: "const", constVal: "window-shutter-open" },
-            color: { type: "const", constVal: Color.Yellow }
+            color: { type: "const", constVal: import_Color.Color.Yellow }
           },
           false: {
             value: { type: "const", constVal: "window-shutter" },
-            color: { type: "const", constVal: Color.HMIOff }
+            color: { type: "const", constVal: import_Color.Color.HMIOff }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2529,11 +2519,11 @@ const pageGridTest5 = {
         icon: {
           true: {
             value: { type: "const", constVal: "lightbulb" },
-            color: { type: "const", constVal: Color.Yellow }
+            color: { type: "const", constVal: import_Color.Color.Yellow }
           },
           false: {
             value: { type: "const", constVal: "lightbulb-outline" },
-            color: { type: "const", constVal: Color.HMIOff }
+            color: { type: "const", constVal: import_Color.Color.HMIOff }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2599,7 +2589,7 @@ const pageGridTest5 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -2608,11 +2598,11 @@ const pageGridTest5 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2649,7 +2639,7 @@ const pageGridTest5 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -2657,11 +2647,11 @@ const pageGridTest5 = {
         icon: {
           true: {
             value: { type: "const", constVal: "music" },
-            color: { type: "const", constVal: Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.Gray }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2695,11 +2685,11 @@ const pageGridTest5 = {
           true: {
             value: { type: "const", constVal: "home" },
             text: { value: { type: "const", constVal: "22.2" } },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2753,7 +2743,7 @@ const pageGridTest4 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -2761,11 +2751,11 @@ const pageGridTest4 = {
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2802,7 +2792,7 @@ const pageGridTest4 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -2810,11 +2800,11 @@ const pageGridTest4 = {
         icon: {
           true: {
             value: { type: "const", constVal: "account" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2863,7 +2853,7 @@ const pageGrid2Test3 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -2871,11 +2861,11 @@ const pageGrid2Test3 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2912,7 +2902,7 @@ const pageGrid2Test3 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -2920,11 +2910,11 @@ const pageGrid2Test3 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -2953,7 +2943,7 @@ const pageGrid2Test3 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -2961,11 +2951,11 @@ const pageGrid2Test3 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3002,7 +2992,7 @@ const pageGrid2Test3 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3010,11 +3000,11 @@ const pageGrid2Test3 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3043,7 +3033,7 @@ const pageGrid2Test3 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3051,11 +3041,11 @@ const pageGrid2Test3 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3092,7 +3082,7 @@ const pageGrid2Test3 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3100,11 +3090,11 @@ const pageGrid2Test3 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3133,7 +3123,7 @@ const pageGrid2Test3 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3141,11 +3131,11 @@ const pageGrid2Test3 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3182,7 +3172,7 @@ const pageGrid2Test3 = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3190,11 +3180,11 @@ const pageGrid2Test3 = {
         icon: {
           true: {
             value: { type: "const", constVal: "home" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3231,7 +3221,7 @@ const pageThermoTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3239,11 +3229,11 @@ const pageThermoTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-right" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3384,7 +3374,7 @@ const pageThermoTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3392,11 +3382,11 @@ const pageThermoTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "arrow-up" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3425,7 +3415,7 @@ const pageThermoTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3433,11 +3423,11 @@ const pageThermoTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3463,7 +3453,7 @@ const pageThermoTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3471,11 +3461,11 @@ const pageThermoTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3501,7 +3491,7 @@ const pageThermoTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3509,11 +3499,11 @@ const pageThermoTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3539,7 +3529,7 @@ const pageThermoTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3547,11 +3537,11 @@ const pageThermoTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3577,7 +3567,7 @@ const pageThermoTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3585,11 +3575,11 @@ const pageThermoTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3615,7 +3605,7 @@ const pageThermoTest = {
         color: {
           true: {
             type: "const",
-            constVal: Color.HMIOn
+            constVal: import_Color.Color.HMIOn
           },
           false: void 0,
           scale: void 0
@@ -3623,11 +3613,11 @@ const pageThermoTest = {
         icon: {
           true: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           },
           false: {
             value: { type: "const", constVal: "fan" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           scale: void 0,
           maxBri: void 0,
@@ -3755,12 +3745,12 @@ const popupTest = {
       headline: { type: "const", constVal: "test" },
       colorHeadline: { true: { color: { type: "const", constVal: "#F80000" } } },
       buttonLeft: { type: "const", constVal: "test" },
-      colorButtonLeft: { true: { color: { type: "const", constVal: Color.Green } } },
+      colorButtonLeft: { true: { color: { type: "const", constVal: import_Color.Color.Green } } },
       buttonRight: { type: "const", constVal: "test" },
-      colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
+      colorButtonRight: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       text: { type: "const", constVal: "Text Test ${pl}" },
       //text: { type: 'state', dp: '0_userdata.0.NSPanel.Flur.popupNotify.popupNotifyText' },
-      colorText: { true: { color: { type: "const", constVal: Color.White } } },
+      colorText: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       timeout: { type: "const", constVal: 4 },
       // {placeholder: {text: '' oder dp: ''}} im Text muss dann ${dieserKeyStehtImText} stehen
       // optionalValue: { type: 'const', constVal: { dieserKeyStehtImText: { text: 'das ist ein placeholder' } } },
@@ -4252,14 +4242,14 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.MSYellow
+              constVal: import_Color.Color.MSYellow
             }
           },
           false: {
             value: void 0,
             color: {
               type: "const",
-              constVal: Color.MSYellow
+              constVal: import_Color.Color.MSYellow
             }
           },
           scale: void 0,
@@ -4323,7 +4313,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.MSRed
+              constVal: import_Color.Color.MSRed
             }
           },
           false: {
@@ -4333,7 +4323,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.MSGreen
+              constVal: import_Color.Color.MSGreen
             }
           },
           scale: {
@@ -4400,7 +4390,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.MSRed
+              constVal: import_Color.Color.MSRed
             }
           },
           false: {
@@ -4410,7 +4400,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.MSGreen
+              constVal: import_Color.Color.MSGreen
             }
           },
           scale: {
@@ -4521,7 +4511,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.MSRed
+              constVal: import_Color.Color.MSRed
             }
           },
           false: {
@@ -4531,7 +4521,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.Green
+              constVal: import_Color.Color.Green
             }
           },
           scale: {
@@ -4584,7 +4574,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.MSRed
+              constVal: import_Color.Color.MSRed
             }
           },
           false: {
@@ -4594,7 +4584,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.MSGreen
+              constVal: import_Color.Color.MSGreen
             }
           },
           scale: {
@@ -4645,7 +4635,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.MSGreen
+              constVal: import_Color.Color.MSGreen
             }
           },
           false: {
@@ -4655,7 +4645,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.MSRed
+              constVal: import_Color.Color.MSRed
             }
           },
           scale: {
@@ -4971,7 +4961,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.Yellow
+              constVal: import_Color.Color.Yellow
             }
           },
           false: {
@@ -4981,7 +4971,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.HMIOff
+              constVal: import_Color.Color.HMIOff
             }
           },
           scale: void 0,
@@ -5014,7 +5004,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.Yellow
+              constVal: import_Color.Color.Yellow
             }
           },
           false: {
@@ -5024,7 +5014,7 @@ const pageScreensaverTest = {
             },
             color: {
               type: "const",
-              constVal: Color.HMIOff
+              constVal: import_Color.Color.HMIOff
             }
           }
         }

@@ -1,6 +1,6 @@
 import { NavigationItemConfig } from '../classes/navigation';
 import { PageBaseConfig } from '../types/pages';
-import * as Color from './Color';
+import { Color } from '../const/Color';
 
 const popupWelcome: PageBaseConfig = {
     dpInit: '',
@@ -286,10 +286,36 @@ const ServiceOverview: PageBaseConfig = {
                     },
                 },
                 text: {
-                    true: { type: 'const', constVal: 'Relais' },
+                    true: { type: 'const', constVal: 'Device' },
                     false: undefined,
                 },
                 setNavi: { type: 'const', constVal: '///DeviceOption' },
+            },
+        },
+        {
+            role: '',
+            type: 'button',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'wifi' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Network' },
+                    false: undefined,
+                },
+                setNavi: { type: 'const', constVal: '///NetworkOption' },
             },
         },
     ],
@@ -547,8 +573,6 @@ const RelaisOption: PageBaseConfig = {
 };
 
 const DeviceOption: PageBaseConfig = {
-    //type: 'sonstiges',
-    //card: 'cardEntities',
     dpInit: '',
     alwaysOn: 'none',
     uniqueID: '///DeviceOption',
@@ -669,6 +693,283 @@ const DeviceOption: PageBaseConfig = {
     items: undefined,
 };
 
+const NetworkOption: PageBaseConfig = {
+    //type: 'sonstiges',
+    //card: 'cardEntities',
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: '///NetworkOption',
+    useColor: false,
+    config: {
+        card: 'cardEntities',
+        data: {
+            headline: {
+                type: 'const',
+                constVal: 'Network',
+            },
+        },
+    },
+    pageItems: [
+        {
+            role: 'textNotIcon',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        text: { value: { type: 'const', constVal: '1' } },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Hostname' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internalState',
+                        dp: 'info/Tasmota',
+                        read: `return val ? val.net.Hostname : '';`,
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'textNotIcon',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        text: { value: { type: 'const', constVal: '2' } },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'IP' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internalState',
+                        dp: 'info/Tasmota',
+                        read: `return val ? val.net.IPAddress : '';`,
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'textNotIcon',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        text: { value: { type: 'const', constVal: '3' } },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'DNS' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internalState',
+                        dp: 'info/Tasmota',
+                        read: `return val ? val.net.DNSServer1 : '';`,
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'textNotIcon',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        text: { value: { type: 'const', constVal: '4' } },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Mac' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internalState',
+                        dp: 'info/Tasmota',
+                        read: `return val ? val.net.Mac : '';`,
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'textNotIcon',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        text: { value: { type: 'const', constVal: '5' } },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Wifi-SSId' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internalState',
+                        dp: 'info/Tasmota',
+                        read: `return val ? val.sts.Wifi.SSId : '';`,
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'textNotIcon',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        text: { value: { type: 'const', constVal: '6' } },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'RSSI' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internalState',
+                        dp: 'info/Tasmota',
+                        read: `return val ? val.sts.Wifi.RSSI : '';`,
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'textNotIcon',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        text: { value: { type: 'const', constVal: '7' } },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Signal' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internalState',
+                        dp: 'info/Tasmota',
+                        read: `return val ? val.sts.Wifi.Signal + ' db' : '';`,
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: 'textNotIcon',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        text: { value: { type: 'const', constVal: '8' } },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Wifi-Downtime' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internalState',
+                        dp: 'info/Tasmota',
+                        read: `return val ? val.sts.Wifi.Downtime : '';`,
+                    },
+                    false: undefined,
+                },
+            },
+        },
+    ],
+    items: undefined,
+};
+
 /**
  * all pages from system
  */
@@ -685,6 +986,7 @@ export const systemPages: PageBaseConfig[] = [
     ScreensaverOptions,
     RelaisOption,
     DeviceOption,
+    NetworkOption,
 ];
 export const systemNavigation: NavigationItemConfig[] = [
     {
@@ -739,6 +1041,12 @@ export const systemNavigation: NavigationItemConfig[] = [
     {
         name: '///DeviceOption', //main ist die erste Seite
         page: '///DeviceOption',
+        left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
+        //right: { single: 'abfall1', double: 'main' },
+    },
+    {
+        name: '///NetworkOption', //main ist die erste Seite
+        page: '///NetworkOption',
         left: { double: '///Overview' }, // Die 4 bezieht sich auf den name: 4
         //right: { single: 'abfall1', double: 'main' },
     },

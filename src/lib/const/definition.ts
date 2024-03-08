@@ -1283,6 +1283,17 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
                 write: false,
             },
         },
+        'cmd/TasmotaRestart': {
+            val: '',
+            ack: true,
+            common: {
+                name: '',
+                type: 'boolean',
+                role: 'switch',
+                read: false,
+                write: true,
+            },
+        },
     },
 };
 

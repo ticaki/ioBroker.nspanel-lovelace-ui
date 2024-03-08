@@ -1,4 +1,4 @@
-import * as Color from '../const/Color';
+import { Color } from '../const/Color';
 import { PageBaseConfigTemplate } from '../types/pages';
 import { PageTemplateIdent } from '../types/types';
 

@@ -1,5 +1,5 @@
 import * as pages from './types/pages';
-import * as Color from './const/Color';
+import { Color } from './const/Color';
 import { panelConfigPartial } from './controller/panel';
 
 const pageEntitiesTest1: pages.PageBaseConfig = {
@@ -3263,7 +3263,7 @@ const pageThermoTest: pages.PageBaseConfig = {
     alwaysOn: 'none',
     pageItems: [
         {
-            role: 'indicator',
+            role: '',
             type: 'button',
             dpInit: '',
             data: {
@@ -3290,8 +3290,8 @@ const pageThermoTest: pages.PageBaseConfig = {
                 },
                 entity1: {
                     value: {
-                        type: 'const',
-                        constVal: true,
+                        type: 'triggered',
+                        dp: '0_userdata.0.example_state',
                     },
                     decimal: undefined,
                     factor: undefined,
@@ -5213,7 +5213,6 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
                 page: 'abfall1',
                 left: { single: 'alarm1' }, // Die 4 bezieht sich auf den name: 4
                 right: { single: 'unlock1', double: 'main' },
-                optional: 'notifications',
             },
             {
                 name: 'unlock1',
@@ -5266,8 +5265,14 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             {
                 name: 'grid3',
                 left: { single: 'media3', double: '1' },
-                right: { single: 'main', double: '2' },
+                right: { single: 'thermo1', double: '2' },
                 page: 'grid3',
+            },
+            {
+                name: 'thermo1',
+                left: { single: 'grid3', double: '1' },
+                right: { single: 'main', double: '2' },
+                page: 'thermo1',
             },
         ],
         topic: 'nspanel/ns_panel2',

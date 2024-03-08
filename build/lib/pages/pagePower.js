@@ -141,7 +141,7 @@ class PagePower extends import_Page.Page {
     );
     message.navigation = this.getNavigation();
     message.homeIcon = await (0, import_tools.getIconEntryValue)(data.homeIcon, true, "");
-    message.homeColor = await (0, import_tools.getIconEntryColor)(data.homeIcon, true, import_Color.White);
+    message.homeColor = await (0, import_tools.getIconEntryColor)(data.homeIcon, true, import_Color.Color.White);
     message.homeValueTop = (_b = await (0, import_tools.getValueEntryString)(data.homeValueTop)) != null ? _b : "";
     message.homeValueBot = (_c = await (0, import_tools.getValueEntryString)(data.homeValueBot)) != null ? _c : "";
     message.leftTop = await this.getElementUpdate(data.leftTop);
@@ -167,7 +167,7 @@ class PagePower extends import_Page.Page {
     if (value === null)
       return void 0;
     message.icon = (_a = await (0, import_tools.getIconEntryValue)(item.icon, value >= 0, "")) != null ? _a : void 0;
-    message.iconColor = (_b = await (0, import_tools.getIconEntryColor)(item.icon, value, import_Color.White)) != null ? _b : void 0;
+    message.iconColor = (_b = await (0, import_tools.getIconEntryColor)(item.icon, value, import_Color.Color.White)) != null ? _b : void 0;
     message.name = (_c = await (0, import_tools.getEntryTextOnOff)(item.text, value >= 0)) != null ? _c : void 0;
     message.speed = (_d = await (0, import_tools.getScaledNumber)(item.speed)) != null ? _d : void 0;
     message.value = (_e = await (0, import_tools.getValueEntryString)(item.value, value)) != null ? _e : void 0;

@@ -31,14 +31,14 @@ __export(pageItem_exports, {
   PageItem: () => PageItem
 });
 module.exports = __toCommonJS(pageItem_exports);
-var Color = __toESM(require("../const/Color"));
+var import_Color = require("../const/Color");
 var typePageItem = __toESM(require("../types/type-pageItem"));
 var tools = __toESM(require("../const/tools"));
 var import_states_controller = require("../controller/states-controller");
 var import_icon_mapping = require("../const/icon_mapping");
 class PageItem extends import_states_controller.BaseClassTriggerd {
-  defaultOnColor = Color.White;
-  defaultOffColor = Color.Blue;
+  defaultOnColor = import_Color.Color.White;
+  defaultOffColor = import_Color.Color.Blue;
   config;
   dataItems;
   panel;
@@ -169,13 +169,13 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           let rgb = (_c = (_b = await tools.getRGBfromRGBThree(item)) != null ? _b : item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _c : null;
           const nhue = (_d = item.hue && await item.hue.getNumber()) != null ? _d : null;
           if (rgb === null && nhue)
-            rgb = (_e = Color.hsv2RGB(nhue, 1, 1)) != null ? _e : null;
+            rgb = (_e = import_Color.Color.hsv2RGB(nhue, 1, 1)) != null ? _e : null;
           message.icon = await tools.getIconEntryValue(item.icon, v, "", "");
           const colorMode = !item.colorMode ? "none" : await item.colorMode.getBoolean() ? "hue" : "ct";
           message.iconColor = (_g = (_f = colorMode === "hue" ? await tools.GetIconColor(
             rgb != null ? rgb : void 0,
             dimmer !== null ? dimmer > 5 ? dimmer : 5 : v
-          ) : await tools.getTemperaturColorFromValue(item.ct, dimmer != null ? dimmer : 100)) != null ? _f : await tools.getIconEntryColor(item.icon, dimmer != null ? dimmer : v, Color.Yellow)) != null ? _g : "";
+          ) : await tools.getTemperaturColorFromValue(item.ct, dimmer != null ? dimmer : 100)) != null ? _f : await tools.getIconEntryColor(item.icon, dimmer != null ? dimmer : v, import_Color.Color.Yellow)) != null ? _g : "";
           if (v) {
             message.optionalValue = "1";
           } else {
@@ -196,7 +196,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             break;
           }
           message.icon = await tools.getIconEntryValue(item.icon, value < 40, "window-open");
-          message.iconColor = await tools.getIconEntryColor(item.icon, value, Color.White);
+          message.iconColor = await tools.getIconEntryColor(item.icon, value, import_Color.Color.White);
           const optionalValue = item.valueList ? await item.valueList.getObject() : [
             "arrow-up",
             //up
@@ -233,7 +233,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               (_m = await tools.getEntryTextOnOff(item.text, true)) != null ? _m : ""
             );
             message.icon = (_n = await tools.getIconEntryValue(item.icon, true, "")) != null ? _n : "";
-            message.iconColor = (_o = await tools.getIconEntryColor(item.icon, true, Color.HMIOn)) != null ? _o : "";
+            message.iconColor = (_o = await tools.getIconEntryColor(item.icon, true, import_Color.Color.HMIOn)) != null ? _o : "";
             const min = (_p = item.entity1 && item.entity1.minScale && await item.entity1.minScale.getNumber()) != null ? _p : 0;
             const max = (_q = item.entity1 && item.entity1.maxScale && await item.entity1.maxScale.getNumber()) != null ? _q : 100;
             return tools.getPayload(
@@ -329,7 +329,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 )) != null ? _B : "";
               }
             }
-            message.iconColor = (_C = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _C : "";
+            message.iconColor = (_C = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _C : "";
             return tools.getPayload(
               message.type,
               message.intNameEntity,
@@ -361,7 +361,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           } else
             this.confirmClick = 0;
           message.icon = await tools.getIconEntryValue(item.icon, value, "home");
-          message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, Color.HMIOn);
+          message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
           return tools.getPayload(
             "button",
             message.intNameEntity,
@@ -377,7 +377,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           message.type = "input_sel";
           const value = (_G = await tools.getValueEntryNumber(item.entityInSel)) != null ? _G : await tools.getValueEntryBoolean(item.entityInSel);
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
-          message.iconColor = (_H = await tools.getIconEntryColor(item.icon, value != null ? value : true, Color.HMIOff)) != null ? _H : Color.HMIOn;
+          message.iconColor = (_H = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOff)) != null ? _H : import_Color.Color.HMIOn;
           message.displayName = this.library.getTranslation(
             (_J = (_I = await tools.getEntryTextOnOff(item.headline, true)) != null ? _I : message.displayName) != null ? _J : ""
           );
@@ -397,7 +397,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               (_N = (_M = await tools.getEntryTextOnOff(item.headline, true)) != null ? _M : message.displayName) != null ? _N : ""
             );
             message.icon = (_O = await tools.getIconEntryValue(item.icon, value, "")) != null ? _O : "";
-            message.iconColor = (_P = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _P : "";
+            message.iconColor = (_P = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _P : "";
             return tools.getPayload(
               message.type,
               message.intNameEntity,
@@ -421,7 +421,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                   { minute: "2-digit", second: "2-digit" }
                 );
               }
-              message.iconColor = await tools.getIconEntryColor(item.icon, value, Color.White);
+              message.iconColor = await tools.getIconEntryColor(item.icon, value, import_Color.Color.White);
               message.icon = await tools.getIconEntryValue(item.icon, true, "gesture-tap-button");
               message.optionalValue = this.library.getTranslation(
                 (_S = await tools.getEntryTextOnOff(item.text, value !== 0)) != null ? _S : opt
@@ -489,7 +489,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           type: "insel",
           entityName: "",
           headline: "",
-          textColor: String(Color.rgb_dec565(Color.White)),
+          textColor: String(import_Color.Color.rgb_dec565(import_Color.Color.White)),
           currentState: "",
           list: ""
         };
@@ -661,7 +661,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               item.dimmer.minScale;
               if (item.dimmer.minScale != void 0 && item.dimmer.maxScale) {
                 message.slider1Pos = Math.trunc(
-                  Color.scale(
+                  import_Color.Color.scale(
                     dimmer,
                     await item.dimmer.minScale.getNumber(),
                     await item.dimmer.maxScale.getNumber(),
@@ -678,7 +678,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.slidersColor = (_c = await tools.getIconEntryColor(
               item.icon,
               message.slider1Pos === void 0 || message.slider1Pos === "disable" ? null : (_b = message.slider1Pos) != null ? _b : message.buttonState === true,
-              Color.White
+              import_Color.Color.White
             )) != null ? _c : "disable";
             let rgb = null;
             switch (this.config.role) {
@@ -690,7 +690,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               case "hue": {
                 const nhue = (_d = item.hue && await item.hue.getNumber()) != null ? _d : null;
                 if (nhue)
-                  rgb = (_e = Color.hsv2RGB(nhue, 1, 1)) != null ? _e : null;
+                  rgb = (_e = import_Color.Color.hsv2RGB(nhue, 1, 1)) != null ? _e : null;
                 break;
               }
               case "rgbSingle": {
@@ -750,7 +750,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             break;
           const value = (_m = await tools.getValueEntryBoolean(item.entity1)) != null ? _m : null;
           message.icon = (_n = await tools.getIconEntryValue(item.icon, value, "")) != null ? _n : "";
-          message.iconColor = (_o = await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) != null ? _o : "";
+          message.iconColor = (_o = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _o : "";
           message.slider1 = String((_p = await tools.getScaledNumber(item.speed)) != null ? _p : "");
           message.slider1Max = String(
             (_q = item.speed && item.speed.maxScale && await item.speed.maxScale.getNumber()) != null ? _q : "100"
@@ -780,7 +780,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         if (!(message.type === "insel"))
           return null;
         const value = (_v = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _v : true;
-        message.textColor = await tools.getEntryColor(item.color, value, Color.White);
+        message.textColor = await tools.getEntryColor(item.color, value, import_Color.Color.White);
         message.currentState = mode === "popupThermo" ? this.library.getTranslation((_w = item.headline && await item.headline.getString()) != null ? _w : "") : "entity2" in item ? (_x = await tools.getValueEntryString(item.entity2)) != null ? _x : "" : "";
         message.headline = this.library.getTranslation(
           (_y = item.headline && await item.headline.getString()) != null ? _y : ""
@@ -792,7 +792,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           "valueList2" in item ? item.valueList2 : void 0
         );
         if (sList !== void 0 && sList.list !== void 0 && sList.value !== void 0) {
-          message.textColor = await tools.getEntryColor(item.color, !!value, Color.White);
+          message.textColor = await tools.getEntryColor(item.color, !!value, import_Color.Color.White);
           if (sList.list.length > 0) {
             sList.list.splice(48);
             message.list = Array.isArray(sList.list) ? sList.list.map((a) => tools.formatInSelText(a)).join("?") : "";
@@ -979,8 +979,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         break;
       case "button": {
         if (entry.type === "button") {
-          if (entry.role === "indicator")
+          if (entry.role === "indicator") {
+            if (this.parent && this.parent.card === "cardThermo")
+              this.parent.update();
             break;
+          }
           const item = entry.data;
           if (item.confirm) {
             if (this.confirmClick === 0) {
@@ -1063,25 +1066,25 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               case "ct":
                 break;
               case "hue":
-                await tools.setHuefromRGB(item, Color.resultToRgb(value));
+                await tools.setHuefromRGB(item, import_Color.Color.resultToRgb(value));
                 break;
               case "rgbSingle": {
-                const rgb = Color.resultToRgb(value);
+                const rgb = import_Color.Color.resultToRgb(value);
                 await tools.setRGBThreefromRGB(item, rgb);
                 break;
               }
               case "rgb": {
-                const rgb = Color.resultToRgb(value);
-                if (Color.isRGB(rgb)) {
+                const rgb = import_Color.Color.resultToRgb(value);
+                if (import_Color.Color.isRGB(rgb)) {
                   item.color && item.color.true && await item.color.true.setStateAsync(JSON.stringify(rgb));
                 }
                 break;
               }
               case "rgb.hex": {
-                const rgb = Color.resultToRgb(value);
-                if (Color.isRGB(rgb)) {
+                const rgb = import_Color.Color.resultToRgb(value);
+                if (import_Color.Color.isRGB(rgb)) {
                   item.color && item.color.true && await item.color.true.setStateAsync(
-                    Color.ConvertRGBtoHex(rgb.r, rgb.g, rgb.b)
+                    import_Color.Color.ConvertRGBtoHex(rgb.r, rgb.g, rgb.b)
                   );
                 }
                 break;

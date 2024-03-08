@@ -1,6 +1,6 @@
 import { Panel } from '../controller/panel';
 import { AdapterClassDefinition, BaseClass } from './library';
-import { rgb_dec565, White } from '../const/Color';
+import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { Page } from './Page';
 import { getPayload } from '../const/tools';
@@ -225,7 +225,7 @@ export class Navigation extends BaseClass {
                     item.left.double !== undefined
                         ? Icons.GetIcon('arrow-left-bold')
                         : Icons.GetIcon('arrow-top-left-bold-outline'),
-                    String(rgb_dec565(White)),
+                    String(Color.rgb_dec565(Color.White)),
                     '',
                     '',
                 );
@@ -234,7 +234,7 @@ export class Navigation extends BaseClass {
                     'button',
                     'bUp',
                     Icons.GetIcon('arrow-up-bold'),
-                    String(rgb_dec565(White)),
+                    String(Color.rgb_dec565(Color.White)),
                     '',
                     '',
                 );
@@ -255,7 +255,7 @@ export class Navigation extends BaseClass {
                     item.left.double === undefined
                         ? Icons.GetIcon('arrow-right-bold')
                         : Icons.GetIcon('arrow-top-right-bold-outline'),
-                    String(rgb_dec565(White)),
+                    String(Color.rgb_dec565(Color.White)),
                     '',
                     '',
                 );
@@ -264,7 +264,7 @@ export class Navigation extends BaseClass {
                     'button',
                     'bHome',
                     Icons.GetIcon('home'),
-                    String(rgb_dec565(White)),
+                    String(Color.rgb_dec565(Color.White)),
                     '',
                     '',
                 );

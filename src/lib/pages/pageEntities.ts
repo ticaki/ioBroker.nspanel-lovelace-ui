@@ -1,5 +1,5 @@
 import { Page, PageInterface } from '../classes/Page';
-import { HMIOn, rgb_dec565 } from '../const/Color';
+import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadArray } from '../const/tools';
 import * as pages from '../types/pages';
@@ -172,14 +172,21 @@ export class PageEntities extends Page {
             right = this.panel.navigation.buildNavigationString('right');
         }
         if (!left)
-            left = getPayload('button', 'bSubPrev', Icons.GetIcon('arrow-up-bold'), String(rgb_dec565(HMIOn)), '', '');
+            left = getPayload(
+                'button',
+                'bSubPrev',
+                Icons.GetIcon('arrow-up-bold'),
+                String(Color.rgb_dec565(Color.HMIOn)),
+                '',
+                '',
+            );
 
         if (!right)
             right = getPayload(
                 'button',
                 'bSubNext',
                 Icons.GetIcon('arrow-down-bold'),
-                String(rgb_dec565(HMIOn)),
+                String(Color.rgb_dec565(Color.HMIOn)),
                 '',
                 '',
             );
@@ -217,7 +224,7 @@ export class PageEntities extends Page {
                 'button',
                 'bSubPrev',
                 Icons.GetIcon('arrow-up-bold-outline'),
-                String(rgb_dec565(HMIOn)),
+                String(Color.rgb_dec565(Color.HMIOn)),
                 '',
                 '',
             );
@@ -227,7 +234,7 @@ export class PageEntities extends Page {
                 'button',
                 'bSubNext',
                 Icons.GetIcon('arrow-down-bold-outline'),
-                String(rgb_dec565(HMIOn)),
+                String(Color.rgb_dec565(Color.HMIOn)),
                 '',
                 '',
             );

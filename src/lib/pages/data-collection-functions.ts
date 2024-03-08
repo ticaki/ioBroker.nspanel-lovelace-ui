@@ -1,6 +1,6 @@
 import { Page } from '../classes/Page';
 import { AdapterClassDefinition } from '../classes/library';
-import { Green, Red, Yellow } from '../const/Color';
+import { Color } from '../const/Color';
 import { CardRole } from '../types/pages';
 import { PageItemDataItemsOptions } from '../types/type-pageItem';
 import { PageEntities } from './pageEntities';
@@ -44,11 +44,14 @@ export async function handleCardRole(
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'checkbox-intermediate' },
-                                color: { type: 'const', constVal: Green },
+                                color: { type: 'const', constVal: Color.Green },
                             },
                             false: {
                                 value: { type: 'const', constVal: 'checkbox-intermediate' },
-                                color: { type: 'const', constVal: cardRole === 'AdapterConnection' ? Yellow : Red },
+                                color: {
+                                    type: 'const',
+                                    constVal: cardRole === 'AdapterConnection' ? Color.Yellow : Color.Red,
+                                },
                             },
                             scale: undefined,
                             maxBri: undefined,
@@ -101,11 +104,11 @@ export async function handleCardRole(
                             icon: {
                                 true: {
                                     value: { type: 'const', constVal: 'checkbox-intermediate' },
-                                    color: { type: 'const', constVal: Green },
+                                    color: { type: 'const', constVal: Color.Green },
                                 },
                                 false: {
                                     value: { type: 'const', constVal: 'checkbox-intermediate' },
-                                    color: { type: 'const', constVal: Red },
+                                    color: { type: 'const', constVal: Color.Red },
                                 },
                             },
                             entity1: {

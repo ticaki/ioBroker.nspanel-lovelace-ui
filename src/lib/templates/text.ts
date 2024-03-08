@@ -1,5 +1,5 @@
 import { PageItemOptionsTemplate } from '../types/type-pageItem';
-import * as Color from '../const/Color';
+import { Color } from '../const/Color';
 import { TemplateIdent } from '../types/types';
 
 export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplate>> = {

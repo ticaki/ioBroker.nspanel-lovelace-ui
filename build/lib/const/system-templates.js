@@ -1,9 +1,7 @@
 "use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -17,14 +15,6 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var system_templates_exports = {};
 __export(system_templates_exports, {
@@ -32,7 +22,7 @@ __export(system_templates_exports, {
   systemPages: () => systemPages
 });
 module.exports = __toCommonJS(system_templates_exports);
-var Color = __toESM(require("./Color"));
+var import_Color = require("../const/Color");
 const popupWelcome = {
   dpInit: "",
   alwaysOn: "none",
@@ -42,14 +32,14 @@ const popupWelcome = {
     data: {
       entity1: { value: { type: "state", dp: "0_userdata.0.example_state" } },
       headline: { type: "const", constVal: "welcomeHToken" },
-      colorHeadline: { true: { color: { type: "const", constVal: Color.Green } } },
+      colorHeadline: { true: { color: { type: "const", constVal: import_Color.Color.Green } } },
       buttonLeft: { type: "const", constVal: "" },
-      colorButtonLeft: { true: { color: { type: "const", constVal: Color.White } } },
+      colorButtonLeft: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       buttonRight: { type: "const", constVal: "" },
-      colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
+      colorButtonRight: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       text: { type: "const", constVal: "welcomeTToken" },
       // text: { type: 'const', constVal: 'Text Test ${pl}' },
-      colorText: { true: { color: { type: "const", constVal: Color.White } } },
+      colorText: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       timeout: { type: "const", constVal: 3 }
       // {placeholder: {text: '' oder dp: ''}} im Text muss dann ${dieserKeyStehtImText} stehen
       // optionalValue: { type: 'const', constVal: { dieserKeyStehtImText: { text: 'das ist ein placeholder' } } },
@@ -69,14 +59,14 @@ const popupNotification = {
     data: {
       entity1: { value: { type: "internal", dp: "cmd/popupNotification", read: "return true" } },
       headline: { type: "internal", dp: "cmd/popupNotification", read: "return JSON.parse(val).headline" },
-      colorHeadline: { true: { color: { type: "const", constVal: Color.Green } } },
+      colorHeadline: { true: { color: { type: "const", constVal: import_Color.Color.Green } } },
       buttonLeft: { type: "const", constVal: "nextF" },
-      colorButtonLeft: { true: { color: { type: "const", constVal: Color.White } } },
+      colorButtonLeft: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       buttonRight: { type: "const", constVal: "ok" },
-      colorButtonRight: { true: { color: { type: "const", constVal: Color.White } } },
+      colorButtonRight: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       text: { type: "internal", dp: "cmd/popupNotification", read: "return JSON.parse(val).text" },
       // text: { type: 'const', constVal: 'Text Test ${pl}' },
-      colorText: { true: { color: { type: "const", constVal: Color.White } } },
+      colorText: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       timeout: { type: "const", constVal: 0 },
       // {placeholder: {text: '' oder dp: ''}}
       // optionalValue: { type: 'const', constVal: { pl: { text: 'das ist ein placeholder' } } },
@@ -97,14 +87,14 @@ const popupNotification2 = {
     data: {
       entity1: { value: { type: "internal", dp: "cmd/popupNotification2", read: "return true" } },
       headline: { type: "internal", dp: "cmd/popupNotification2", read: "return JSON.parse(val).headline" },
-      colorHeadline: { true: { color: { type: "const", constVal: Color.Green } } },
+      colorHeadline: { true: { color: { type: "const", constVal: import_Color.Color.Green } } },
       buttonLeft: { type: "const", constVal: "nextF" },
-      colorButtonLeft: { true: { color: { type: "const", constVal: Color.White } } },
+      colorButtonLeft: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       buttonRight: { type: "const", constVal: "ok" },
-      colorButtonRight: { true: { color: { type: "const", constVal: Color.Green } } },
+      colorButtonRight: { true: { color: { type: "const", constVal: import_Color.Color.Green } } },
       text: { type: "internal", dp: "cmd/popupNotification2", read: "return JSON.parse(val).text" },
       // text: { type: 'const', constVal: 'Text Test ${pl}' },
-      colorText: { true: { color: { type: "const", constVal: Color.White } } },
+      colorText: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
       timeout: { type: "const", constVal: 0 },
       setValue1: { type: "internalState", dp: "cmd/NotificationCleared2" },
       setValue2: { type: "internalState", dp: "cmd/NotificationNext2" },
@@ -153,11 +143,11 @@ const AdapterInformation = {
         icon: {
           true: {
             value: { type: "const", constVal: "bell-badge-outline" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "bell-outlline" },
-            color: { type: "const", constVal: Color.Blue }
+            color: { type: "const", constVal: import_Color.Color.Blue }
           }
         },
         entity1: {
@@ -225,7 +215,7 @@ const ServiceOverview = {
         icon: {
           true: {
             value: { type: "const", constVal: "folder-alert-outline" },
-            color: { type: "const", constVal: Color.Yellow }
+            color: { type: "const", constVal: import_Color.Color.Yellow }
           },
           false: void 0
         },
@@ -250,7 +240,7 @@ const ServiceOverview = {
         icon: {
           true: {
             value: { type: "const", constVal: "monitor" },
-            color: { type: "const", constVal: Color.Red }
+            color: { type: "const", constVal: import_Color.Color.Red }
           },
           false: void 0
         },
@@ -276,7 +266,7 @@ const ServiceOverview = {
         icon: {
           true: {
             value: { type: "const", constVal: "power" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: void 0
         },
@@ -301,7 +291,7 @@ const ServiceOverview = {
         icon: {
           true: {
             value: { type: "const", constVal: "information-variant" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: void 0
         },
@@ -312,10 +302,35 @@ const ServiceOverview = {
           }
         },
         text: {
-          true: { type: "const", constVal: "Relais" },
+          true: { type: "const", constVal: "Device" },
           false: void 0
         },
         setNavi: { type: "const", constVal: "///DeviceOption" }
+      }
+    },
+    {
+      role: "",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "wifi" },
+            color: { type: "const", constVal: import_Color.Color.Green }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Network" },
+          false: void 0
+        },
+        setNavi: { type: "const", constVal: "///NetworkOption" }
       }
     }
   ],
@@ -427,7 +442,7 @@ const ScreensaverOptions = {
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },
-            color: { type: "const", constVal: Color.White }
+            color: { type: "const", constVal: import_Color.Color.White }
           },
           false: void 0
         },
@@ -447,7 +462,7 @@ const ScreensaverOptions = {
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },
-            color: { type: "const", constVal: Color.White }
+            color: { type: "const", constVal: import_Color.Color.White }
           },
           false: void 0
         },
@@ -467,7 +482,7 @@ const ScreensaverOptions = {
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },
-            color: { type: "const", constVal: Color.White }
+            color: { type: "const", constVal: import_Color.Color.White }
           },
           false: void 0
         },
@@ -501,11 +516,11 @@ const RelaisOption = {
         icon: {
           true: {
             value: { type: "const", constVal: "numeric-2-circle-outline" },
-            color: { type: "const", constVal: Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.Gray }
           },
           false: {
             value: { type: "const", constVal: "numeric-1-circle" },
-            color: { type: "const", constVal: Color.Yellow }
+            color: { type: "const", constVal: import_Color.Color.Yellow }
           }
         },
         entity1: {
@@ -535,11 +550,11 @@ const RelaisOption = {
         icon: {
           true: {
             value: { type: "const", constVal: "numeric-2-circle-outline" },
-            color: { type: "const", constVal: Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.Gray }
           },
           false: {
             value: { type: "const", constVal: "numeric-1-circle" },
-            color: { type: "const", constVal: Color.Yellow }
+            color: { type: "const", constVal: import_Color.Color.Yellow }
           }
         },
         entity1: {
@@ -566,8 +581,6 @@ const RelaisOption = {
   items: void 0
 };
 const DeviceOption = {
-  //type: 'sonstiges',
-  //card: 'cardEntities',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "///DeviceOption",
@@ -589,11 +602,11 @@ const DeviceOption = {
         icon: {
           true: {
             value: { type: "const", constVal: "information-outline" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "information-variant" },
-            color: { type: "const", constVal: Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.Gray }
           }
         },
         entity1: {
@@ -622,11 +635,11 @@ const DeviceOption = {
         icon: {
           true: {
             value: { type: "const", constVal: "information-outline" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "information-variant" },
-            color: { type: "const", constVal: Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.Gray }
           }
         },
         entity1: {
@@ -655,11 +668,11 @@ const DeviceOption = {
         icon: {
           true: {
             value: { type: "const", constVal: "information-outline" },
-            color: { type: "const", constVal: Color.Green }
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
           false: {
             value: { type: "const", constVal: "information-variant" },
-            color: { type: "const", constVal: Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.Gray }
           }
         },
         entity1: {
@@ -684,6 +697,274 @@ const DeviceOption = {
   ],
   items: void 0
 };
+const NetworkOption = {
+  //type: 'sonstiges',
+  //card: 'cardEntities',
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///NetworkOption",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "Network"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "textNotIcon",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            text: { value: { type: "const", constVal: "1" } },
+            color: { type: "const", constVal: import_Color.Color.Gray }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Hostname" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internalState",
+            dp: "info/Tasmota",
+            read: `return val ? val.net.Hostname : '';`
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "textNotIcon",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            text: { value: { type: "const", constVal: "2" } },
+            color: { type: "const", constVal: import_Color.Color.Gray }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "IP" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internalState",
+            dp: "info/Tasmota",
+            read: `return val ? val.net.IPAddress : '';`
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "textNotIcon",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            text: { value: { type: "const", constVal: "3" } },
+            color: { type: "const", constVal: import_Color.Color.Gray }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "DNS" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internalState",
+            dp: "info/Tasmota",
+            read: `return val ? val.net.DNSServer1 : '';`
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "textNotIcon",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            text: { value: { type: "const", constVal: "4" } },
+            color: { type: "const", constVal: import_Color.Color.Gray }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Mac" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internalState",
+            dp: "info/Tasmota",
+            read: `return val ? val.net.Mac : '';`
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "textNotIcon",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            text: { value: { type: "const", constVal: "5" } },
+            color: { type: "const", constVal: import_Color.Color.Gray }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Wifi-SSId" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internalState",
+            dp: "info/Tasmota",
+            read: `return val ? val.sts.Wifi.SSId : '';`
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "textNotIcon",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            text: { value: { type: "const", constVal: "6" } },
+            color: { type: "const", constVal: import_Color.Color.Gray }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "RSSI" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internalState",
+            dp: "info/Tasmota",
+            read: `return val ? val.sts.Wifi.RSSI : '';`
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "textNotIcon",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            text: { value: { type: "const", constVal: "7" } },
+            color: { type: "const", constVal: import_Color.Color.Gray }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Signal" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internalState",
+            dp: "info/Tasmota",
+            read: `return val ? val.sts.Wifi.Signal + ' db' : '';`
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "textNotIcon",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            text: { value: { type: "const", constVal: "8" } },
+            color: { type: "const", constVal: import_Color.Color.Gray }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Wifi-Downtime" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internalState",
+            dp: "info/Tasmota",
+            read: `return val ? val.sts.Wifi.Downtime : '';`
+          },
+          false: void 0
+        }
+      }
+    }
+  ],
+  items: void 0
+};
 const systemPages = [
   popupWelcome,
   popupNotification,
@@ -696,7 +977,8 @@ const systemPages = [
   AdapterUpdateDetail,
   ScreensaverOptions,
   RelaisOption,
-  DeviceOption
+  DeviceOption,
+  NetworkOption
 ];
 const systemNavigation = [
   {
@@ -768,6 +1050,14 @@ const systemNavigation = [
     name: "///DeviceOption",
     //main ist die erste Seite
     page: "///DeviceOption",
+    left: { double: "///Overview" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///NetworkOption",
+    //main ist die erste Seite
+    page: "///NetworkOption",
     left: { double: "///Overview" }
     // Die 4 bezieht sich auf den name: 4
     //right: { single: 'abfall1', double: 'main' },

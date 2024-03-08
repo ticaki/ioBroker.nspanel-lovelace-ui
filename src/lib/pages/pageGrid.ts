@@ -3,7 +3,7 @@ import { getPayload, getPayloadArray } from '../const/tools';
 import * as pages from '../types/pages';
 import { IncomingEvent } from '../types/types';
 import { PageItem } from './pageItem';
-import { HMIOn, rgb_dec565 } from '../const/Color';
+import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 
 const PageGridMessageDefault: pages.PageGridMessage = {
@@ -149,7 +149,7 @@ export class PageGrid extends Page {
                 'button',
                 'bSubPrev',
                 Icons.GetIcon('arrow-left-bold'),
-                String(rgb_dec565(HMIOn)),
+                String(Color.rgb_dec565(Color.HMIOn)),
                 '',
                 '',
             );
@@ -159,7 +159,7 @@ export class PageGrid extends Page {
                 'button',
                 'bSubNext',
                 Icons.GetIcon('arrow-right-bold'),
-                String(rgb_dec565(HMIOn)),
+                String(Color.rgb_dec565(Color.HMIOn)),
                 '',
                 '',
             );

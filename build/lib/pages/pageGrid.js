@@ -149,7 +149,7 @@ class PageGrid extends import_Page.Page {
         "button",
         "bSubPrev",
         import_icon_mapping.Icons.GetIcon("arrow-left-bold"),
-        String((0, import_Color.rgb_dec565)(import_Color.HMIOn)),
+        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
         "",
         ""
       );
@@ -158,7 +158,7 @@ class PageGrid extends import_Page.Page {
         "button",
         "bSubNext",
         import_icon_mapping.Icons.GetIcon("arrow-right-bold"),
-        String((0, import_Color.rgb_dec565)(import_Color.HMIOn)),
+        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
         "",
         ""
       );

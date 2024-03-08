@@ -31,11 +31,11 @@ const lightTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "lightbulb" },
-          color: { type: "const", constVal: import_Color.Yellow }
+          color: { type: "const", constVal: import_Color.Color.getColor("activated") }
         },
         false: {
           value: { type: "const", constVal: "lightbulb-outline" },
-          color: { type: "const", constVal: import_Color.HMIOff }
+          color: { type: "const", constVal: import_Color.Color.getColor("deactivated") }
         },
         scale: void 0,
         maxBri: void 0,

@@ -1,9 +1,7 @@
 "use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -17,21 +15,13 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var text_exports = {};
 __export(text_exports, {
   textTemplates: () => textTemplates
 });
 module.exports = __toCommonJS(text_exports);
-var Color = __toESM(require("../const/Color"));
+var import_Color = require("../const/Color");
 const textTemplates = {
   "text.window.isOpen": {
     role: "text",
@@ -41,11 +31,11 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "window-open-variant" },
-          color: { type: "const", constVal: Color.Cyan }
+          color: { type: "const", constVal: import_Color.Color.Cyan }
         },
         false: {
           value: { type: "const", constVal: "window-closed-variant" },
-          color: { type: "const", constVal: Color.Green }
+          color: { type: "const", constVal: import_Color.Color.Green }
         }
       },
       entity1: {
@@ -74,11 +64,11 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "window-open-variant" },
-          color: { type: "const", constVal: Color.Cyan }
+          color: { type: "const", constVal: import_Color.Color.Cyan }
         },
         false: {
           value: { type: "const", constVal: "window-closed-variant" },
-          color: { type: "const", constVal: Color.Green }
+          color: { type: "const", constVal: import_Color.Color.Green }
         }
       },
       entity1: {
@@ -117,11 +107,11 @@ const textTemplates = {
               read: "return Math.round(val*10)/10"
             }
           },
-          color: { type: "const", constVal: Color.Red }
+          color: { type: "const", constVal: import_Color.Color.Red }
         },
         false: {
           value: { type: "const", constVal: "temperature-celsius" },
-          color: { type: "const", constVal: Color.Blue }
+          color: { type: "const", constVal: import_Color.Color.Blue }
         },
         scale: { type: "const", constVal: { min: 0, max: 30 } }
       },
@@ -199,7 +189,7 @@ const textTemplates = {
           },
           color: {
             type: "const",
-            constVal: Color.Green
+            constVal: import_Color.Color.Green
           }
         },
         false: {
@@ -228,7 +218,7 @@ const textTemplates = {
           },
           color: {
             type: "const",
-            constVal: Color.Red
+            constVal: import_Color.Color.Red
           }
         },
         scale: { type: "const", constVal: { val_min: 10, val_max: 50, log10: "max" } }
@@ -382,11 +372,11 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "battery-outline" },
-          color: { type: "const", constVal: Color.Red }
+          color: { type: "const", constVal: import_Color.Color.Red }
         },
         false: {
           value: { type: "const", constVal: "battery" },
-          color: { type: "const", constVal: Color.Green }
+          color: { type: "const", constVal: import_Color.Color.Green }
         }
       },
       entity1: {

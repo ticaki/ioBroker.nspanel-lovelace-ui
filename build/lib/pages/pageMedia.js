@@ -1,9 +1,7 @@
 "use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -17,14 +15,6 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageMedia_exports = {};
 __export(pageMedia_exports, {
@@ -33,7 +23,7 @@ __export(pageMedia_exports, {
 });
 module.exports = __toCommonJS(pageMedia_exports);
 var import_data_item = require("../classes/data-item");
-var Color = __toESM(require("../const/Color"));
+var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_Page = require("../classes/Page");
 var import_Page2 = require("../classes/Page");
@@ -44,9 +34,9 @@ const PageMediaMessageDefault = {
   navigation: "~~~~~~~~~",
   id: "",
   name: "",
-  titelColor: String(Color.rgb_dec565(Color.White)),
+  titelColor: String(import_Color.Color.rgb_dec565(import_Color.Color.White)),
   artist: "",
-  artistColor: String(Color.rgb_dec565(Color.White)),
+  artistColor: String(import_Color.Color.rgb_dec565(import_Color.Color.White)),
   volume: "",
   iconplaypause: "",
   onoffbuttonColor: "",

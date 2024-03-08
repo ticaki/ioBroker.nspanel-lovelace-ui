@@ -1,9 +1,7 @@
 "use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -17,21 +15,13 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var card_exports = {};
 __export(card_exports, {
   cardTemplates: () => cardTemplates
 });
 module.exports = __toCommonJS(card_exports);
-var Color = __toESM(require("../const/Color"));
+var import_Color = require("../const/Color");
 const cardTemplates = {
   "entities.waste-calendar": {
     // Abfallkalender
@@ -315,14 +305,14 @@ const cardTemplates = {
           color: {
             true: {
               type: "const",
-              constVal: Color.HMIOn
+              constVal: import_Color.Color.HMIOn
             },
             false: void 0
           },
           icon: {
             true: {
               value: { type: "const", constVal: "playlist-music" },
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             }
           },
           entityInSel: {
@@ -368,14 +358,14 @@ const cardTemplates = {
           color: {
             true: {
               type: "const",
-              constVal: Color.HMIOn
+              constVal: import_Color.Color.HMIOn
             },
             false: void 0
           },
           icon: {
             true: {
               value: { type: "const", constVal: "playlist-play" },
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             }
           },
           entityInSel: {
@@ -425,18 +415,18 @@ const cardTemplates = {
           color: {
             true: {
               type: "const",
-              constVal: Color.HMIOn
+              constVal: import_Color.Color.HMIOn
             },
             false: void 0
           },
           icon: {
             true: {
               value: { type: "const", constVal: "home" },
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             },
             false: {
               value: { type: "const", constVal: "fan" },
-              color: { type: "const", constVal: Color.Red }
+              color: { type: "const", constVal: import_Color.Color.Red }
             },
             scale: void 0,
             maxBri: void 0,
@@ -470,7 +460,7 @@ const cardTemplates = {
           color: {
             true: {
               type: "const",
-              constVal: Color.HMIOn
+              constVal: import_Color.Color.HMIOn
             },
             false: void 0,
             scale: void 0
@@ -478,11 +468,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "home" },
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             },
             false: {
               value: { type: "const", constVal: "fan" },
-              color: { type: "const", constVal: Color.Red }
+              color: { type: "const", constVal: import_Color.Color.Red }
             },
             scale: void 0,
             maxBri: void 0,
@@ -508,7 +498,7 @@ const cardTemplates = {
           color: {
             true: {
               type: "const",
-              constVal: Color.HMIOn
+              constVal: import_Color.Color.HMIOn
             },
             false: void 0,
             scale: void 0
@@ -516,11 +506,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "home" },
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             },
             false: {
               value: { type: "const", constVal: "fan" },
-              color: { type: "const", constVal: Color.Red }
+              color: { type: "const", constVal: import_Color.Color.Red }
             },
             scale: void 0,
             maxBri: void 0,
@@ -546,7 +536,7 @@ const cardTemplates = {
           color: {
             true: {
               type: "const",
-              constVal: Color.HMIOn
+              constVal: import_Color.Color.HMIOn
             },
             false: void 0,
             scale: void 0
@@ -554,11 +544,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "home" },
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             },
             false: {
               value: { type: "const", constVal: "fan" },
-              color: { type: "const", constVal: Color.Red }
+              color: { type: "const", constVal: import_Color.Color.Red }
             },
             scale: void 0,
             maxBri: void 0,
@@ -584,7 +574,7 @@ const cardTemplates = {
           color: {
             true: {
               type: "const",
-              constVal: Color.HMIOn
+              constVal: import_Color.Color.HMIOn
             },
             false: void 0,
             scale: void 0
@@ -592,11 +582,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "home" },
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             },
             false: {
               value: { type: "const", constVal: "fan" },
-              color: { type: "const", constVal: Color.Red }
+              color: { type: "const", constVal: import_Color.Color.Red }
             },
             scale: void 0,
             maxBri: void 0,
@@ -622,7 +612,7 @@ const cardTemplates = {
           color: {
             true: {
               type: "const",
-              constVal: Color.HMIOn
+              constVal: import_Color.Color.HMIOn
             },
             false: void 0,
             scale: void 0
@@ -630,11 +620,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "home" },
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             },
             false: {
               value: { type: "const", constVal: "fan" },
-              color: { type: "const", constVal: Color.Red }
+              color: { type: "const", constVal: import_Color.Color.Red }
             },
             scale: void 0,
             maxBri: void 0,
@@ -679,12 +669,12 @@ const cardTemplates = {
             true: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.0\.Mode$/ },
               //value: { type:'const', constVal: ' bus'},
-              color: { type: "const", constVal: Color.Red }
+              color: { type: "const", constVal: import_Color.Color.Red }
             },
             false: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.0\.Mode$/ },
               //value: { type:'const', constVal: ' bus'},
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             }
           },
           entity1: {
@@ -729,12 +719,12 @@ const cardTemplates = {
             true: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.1\.Mode$/ },
               //value: { type:'const', constVal: ' bus'},
-              color: { type: "const", constVal: Color.Red }
+              color: { type: "const", constVal: import_Color.Color.Red }
             },
             false: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.1\.Mode$/ },
               //value: { type:'const', constVal: ' bus'},
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             }
           },
           entity1: {
@@ -779,12 +769,12 @@ const cardTemplates = {
             true: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.2\.Mode$/ },
               //value: { type:'const', constVal: ' bus'},
-              color: { type: "const", constVal: Color.Red }
+              color: { type: "const", constVal: import_Color.Color.Red }
             },
             false: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.2\.Mode$/ },
               //value: { type:'const', constVal: ' bus'},
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             }
           },
           entity1: {
@@ -829,12 +819,12 @@ const cardTemplates = {
             true: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.3\.Mode$/ },
               //value: { type:'const', constVal: ' bus'},
-              color: { type: "const", constVal: Color.Red }
+              color: { type: "const", constVal: import_Color.Color.Red }
             },
             false: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.3\.Mode$/ },
               //value: { type:'const', constVal: ' bus'},
-              color: { type: "const", constVal: Color.Green }
+              color: { type: "const", constVal: import_Color.Color.Green }
             }
           },
           entity1: {

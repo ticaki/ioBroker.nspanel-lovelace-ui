@@ -1,5 +1,5 @@
 //import * as Color from '../const/Color';
-import { HMIOff, Yellow } from '../const/Color';
+import { Color } from '../const/Color';
 import { PageItemOptionsTemplate } from '../types/type-pageItem';
 import { TemplateIdent } from '../types/types';
 
@@ -12,11 +12,11 @@ export const lightTemplates: Partial<Record<TemplateIdent, PageItemOptionsTempla
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lightbulb' },
-                    color: { type: 'const', constVal: Yellow },
+                    color: { type: 'const', constVal: Color.getColor('activated') },
                 },
                 false: {
                     value: { type: 'const', constVal: 'lightbulb-outline' },
-                    color: { type: 'const', constVal: HMIOff },
+                    color: { type: 'const', constVal: Color.getColor('deactivated') },
                 },
                 scale: undefined,
                 maxBri: undefined,

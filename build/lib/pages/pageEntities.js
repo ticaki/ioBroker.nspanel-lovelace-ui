@@ -175,13 +175,20 @@ class PageEntities extends import_Page.Page {
       right = this.panel.navigation.buildNavigationString("right");
     }
     if (!left)
-      left = (0, import_tools.getPayload)("button", "bSubPrev", import_icon_mapping.Icons.GetIcon("arrow-up-bold"), String((0, import_Color.rgb_dec565)(import_Color.HMIOn)), "", "");
+      left = (0, import_tools.getPayload)(
+        "button",
+        "bSubPrev",
+        import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
+        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
+        "",
+        ""
+      );
     if (!right)
       right = (0, import_tools.getPayload)(
         "button",
         "bSubNext",
         import_icon_mapping.Icons.GetIcon("arrow-down-bold"),
-        String((0, import_Color.rgb_dec565)(import_Color.HMIOn)),
+        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
         "",
         ""
       );
@@ -220,7 +227,7 @@ class PageEntities extends import_Page.Page {
         "button",
         "bSubPrev",
         import_icon_mapping.Icons.GetIcon("arrow-up-bold-outline"),
-        String((0, import_Color.rgb_dec565)(import_Color.HMIOn)),
+        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
         "",
         ""
       );
@@ -229,7 +236,7 @@ class PageEntities extends import_Page.Page {
         "button",
         "bSubNext",
         import_icon_mapping.Icons.GetIcon("arrow-down-bold-outline"),
-        String((0, import_Color.rgb_dec565)(import_Color.HMIOn)),
+        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
         "",
         ""
       );

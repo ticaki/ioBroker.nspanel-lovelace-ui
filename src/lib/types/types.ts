@@ -92,7 +92,8 @@ export type PanelInternalCommand =
     | 'info/modelVersion'
     | 'info/displayVersion'
     | 'info/tasmotaVersion'
-    | 'info/Tasmota';
+    | 'info/Tasmota'
+    | 'cmd/TasmotaRestart';
 
 export function isPopupType(F: PopupType | any): F is PopupType {
     switch (F as PopupType) {

@@ -172,17 +172,17 @@ class PageAlarm extends import_Page.Page {
         message.flashing = "disable";
       } else if (this.status == "disarmed") {
         message.icon = import_icon_mapping.Icons.GetIcon("shield-off");
-        message.iconColor = String((0, import_Color.rgb_dec565)(import_Color.Green));
+        message.iconColor = String(import_Color.Color.rgb_dec565(import_Color.Color.Green));
         message.numpad = "enable";
         message.flashing = "disable";
       } else if (this.status == "arming" || this.status == "pending") {
         message.icon = import_icon_mapping.Icons.GetIcon("shield");
-        message.iconColor = String((0, import_Color.rgb_dec565)({ r: 243, g: 179, b: 0 }));
+        message.iconColor = String(import_Color.Color.rgb_dec565({ r: 243, g: 179, b: 0 }));
         message.numpad = "disable";
         message.flashing = "enable";
       } else if (this.status == "triggered") {
         message.icon = import_icon_mapping.Icons.GetIcon("bell-ring");
-        message.iconColor = String((0, import_Color.rgb_dec565)({ r: 223, g: 76, b: 30 }));
+        message.iconColor = String(import_Color.Color.rgb_dec565({ r: 223, g: 76, b: 30 }));
         message.numpad = "enable";
         message.flashing = "enable";
       }
@@ -196,7 +196,7 @@ class PageAlarm extends import_Page.Page {
       message.button4 = "";
       message.status4 = "";
       message.icon = import_icon_mapping.Icons.GetIcon("lock-remove");
-      message.iconColor = String((0, import_Color.rgb_dec565)({ r: 223, g: 76, b: 30 }));
+      message.iconColor = String(import_Color.Color.rgb_dec565({ r: 223, g: 76, b: 30 }));
       message.numpad = "enable";
       message.flashing = "enable";
     }

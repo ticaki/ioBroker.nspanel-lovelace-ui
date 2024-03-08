@@ -32,7 +32,7 @@ __export(data_item_exports, {
   isDataItem: () => isDataItem
 });
 module.exports = __toCommonJS(data_item_exports);
-var Color = __toESM(require("../const/Color"));
+var import_Color = require("../const/Color");
 var import_library = require("./library");
 var NSPanel = __toESM(require("../types/types"));
 class Dataitem extends import_library.BaseClass {
@@ -147,7 +147,7 @@ class Dataitem extends import_library.BaseClass {
       if (this.options.type !== "const" && this.options.read) {
         try {
           if (typeof this.options.read === "string")
-            state.val = new Function("val", "Color", `${this.options.read}`)(state.val, Color);
+            state.val = new Function("val", "Color", `${this.options.read}`)(state.val, import_Color.Color);
           else
             state.val = this.options.read(state.val);
         } catch (e) {
@@ -171,18 +171,18 @@ class Dataitem extends import_library.BaseClass {
           if (typeof value === "string") {
             value = value.trim();
             if (value.startsWith("#")) {
-              const v = Color.ConvertWithColordtoRgb(value);
-              if (Color.isRGB(v))
+              const v = import_Color.Color.ConvertWithColordtoRgb(value);
+              if (import_Color.Color.isRGB(v))
                 return v;
             } else if (this.options.role === "level.color.name" || this.options.role === "level.color.rgb") {
-              return Color.ConvertWithColordtoRgb(value);
+              return import_Color.Color.ConvertWithColordtoRgb(value);
             }
           }
         }
       } else if (typeof state.val === "object") {
         return state.val;
       } else if (typeof state.val === "number") {
-        return Color.decToRgb(state.val);
+        return import_Color.Color.decToRgb(state.val);
       }
     }
     return null;
@@ -190,7 +190,7 @@ class Dataitem extends import_library.BaseClass {
   async getRGBValue() {
     const value = await this.getObject();
     if (value) {
-      if (Color.isRGB(value))
+      if (import_Color.Color.isRGB(value))
         return value;
       if (typeof value == "object" && "red" in value && "blue" in value && "green" in value) {
         return { r: value.red, g: value.green, b: value.blue };
@@ -209,7 +209,7 @@ class Dataitem extends import_library.BaseClass {
   async getRGBDec() {
     const value = await this.getRGBValue();
     if (value) {
-      return String(Color.rgb_dec565(value));
+      return String(import_Color.Color.rgb_dec565(value));
     }
     return null;
   }
@@ -243,7 +243,7 @@ class Dataitem extends import_library.BaseClass {
     if (result && (typeof result.val === "number" || typeof result.val === "string" && result.val && !isNaN(parseInt(result.val)))) {
       let val = parseFloat(String(result.val));
       if (this.options.scale !== void 0) {
-        val = Math.trunc(Color.scale(val, this.options.scale.max, this.options.scale.min, 0, 100));
+        val = Math.trunc(import_Color.Color.scale(val, this.options.scale.max, this.options.scale.min, 0, 100));
       }
       return val;
     }
@@ -322,7 +322,7 @@ class Dataitem extends import_library.BaseClass {
       this.options.constVal = val;
     } else {
       if (this.options.write)
-        val = new Function("val", "Color", `${this.options.write}`)(val, Color);
+        val = new Function("val", "Color", `${this.options.write}`)(val, import_Color.Color);
       await this.stateDB.setStateAsync(this, val, this._writeable);
     }
   }

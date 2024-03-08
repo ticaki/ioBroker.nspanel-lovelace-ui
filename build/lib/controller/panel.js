@@ -872,6 +872,9 @@ class Panel extends import_library.BaseClass {
           });
           break;
         }
+        case "cmd/TasmotaRestart": {
+          break;
+        }
       }
       this.statesControler.setInternalState(id, state.val, true);
     }

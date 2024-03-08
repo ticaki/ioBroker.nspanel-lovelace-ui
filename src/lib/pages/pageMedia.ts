@@ -1,5 +1,5 @@
 import { Dataitem, isDataItem } from '../classes/data-item';
-import * as Color from '../const/Color';
+import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { ColorEntryType } from '../types/type-pageItem';
 import * as pages from '../types/pages';

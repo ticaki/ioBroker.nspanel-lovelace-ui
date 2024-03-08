@@ -1,9 +1,7 @@
 "use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -17,21 +15,13 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var shutter_exports = {};
 __export(shutter_exports, {
   shutterTemplates: () => shutterTemplates
 });
 module.exports = __toCommonJS(shutter_exports);
-var Color = __toESM(require("../const/Color"));
+var import_Color = require("../const/Color");
 const shutterTemplates = {
   "generic.shutter": {
     /**
@@ -44,11 +34,11 @@ const shutterTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "window-shutter-open" },
-          color: { type: "const", constVal: Color.Yellow }
+          color: { type: "const", constVal: import_Color.Color.Yellow }
         },
         false: {
           value: { type: "const", constVal: "window-shutter" },
-          color: { type: "const", constVal: Color.HMIOff }
+          color: { type: "const", constVal: import_Color.Color.HMIOff }
         },
         scale: void 0,
         maxBri: void 0,
@@ -186,11 +176,11 @@ const shutterTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "window-shutter-open" },
-          color: { type: "const", constVal: Color.Green }
+          color: { type: "const", constVal: import_Color.Color.Green }
         },
         false: {
           value: { type: "const", constVal: "window-shutter" },
-          color: { type: "const", constVal: Color.HMIOff }
+          color: { type: "const", constVal: import_Color.Color.HMIOff }
         }
       },
       text: {

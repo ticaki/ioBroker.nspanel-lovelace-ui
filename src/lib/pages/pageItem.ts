@@ -1,4 +1,4 @@
-import * as Color from '../const/Color';
+import { Color } from '../const/Color';
 import { Page, PageItemInterface } from '../classes/Page';
 import * as typePageItem from '../types/type-pageItem';
 import * as tools from '../const/tools';
@@ -1080,7 +1080,10 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             case 'button': {
                 if (entry.type === 'button') {
-                    if (entry.role === 'indicator') break;
+                    if (entry.role === 'indicator') {
+                        if (this.parent && this.parent.card === 'cardThermo') this.parent.update();
+                        break;
+                    }
                     const item = entry.data;
                     if (item.confirm) {
                         if (this.confirmClick === 0) {
