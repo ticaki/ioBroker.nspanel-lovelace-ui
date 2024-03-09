@@ -463,8 +463,8 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
                 },
             },
             text: {
-                true: { type: 'const', constVal: 'SunriseToken' },
-                false: { type: 'const', constVal: 'SunsetToken' },
+                true: { type: 'const', constVal: 'sunriseToken' },
+                false: { type: 'const', constVal: 'sunsetToken' },
             },
             text1: undefined,
         },

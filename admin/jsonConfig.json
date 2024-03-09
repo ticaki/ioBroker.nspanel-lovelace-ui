@@ -60,6 +60,12 @@
                     "type": "password",
                     "label": "Pin",
                     "newLine": true
+                },
+                "logUnknownTokens": {
+                    "type": "checkbox",
+                    "label": "logUnknownTokens",
+                    "default": false,
+                    "newLine": true
                 }
             }
         }/*,

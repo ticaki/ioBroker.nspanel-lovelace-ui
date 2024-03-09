@@ -477,8 +477,8 @@ const textTemplates = {
         }
       },
       text: {
-        true: { type: "const", constVal: "SunriseToken" },
-        false: { type: "const", constVal: "SunsetToken" }
+        true: { type: "const", constVal: "sunriseToken" },
+        false: { type: "const", constVal: "sunsetToken" }
       },
       text1: void 0
     }

@@ -103,6 +103,8 @@ class Library extends BaseClass {
   stateDataBase = {};
   forbiddenDirs = [];
   translation = {};
+  unknownTokens = {};
+  unknownTokensInterval;
   defaults = {
     updateStateOnChangeOnly: true
   };
@@ -112,9 +114,14 @@ class Library extends BaseClass {
   }
   async init() {
     await this.checkLanguage();
+    if (this.adapter.config.logUnknownTokens) {
+      this.unknownTokensInterval = this.adapter.setInterval(() => {
+        this.log.info(`Unknown tokens: ${JSON.stringify(this.unknownTokens)}`);
+      }, 6e4);
+    }
   }
   /**
-   * Write/create from a Json with defined keys, the associated states and channels
+   * Write/create from a Json with defined keys, the associated states and channels.
    * @param prefix iobroker datapoint prefix where to write
    * @param objNode Entry point into the definition json.
    * @param def the definition json
@@ -418,6 +425,8 @@ class Library extends BaseClass {
     return this.stateDataBase[dp];
   }
   async memberDeleteAsync(data) {
+    if (this.unknownTokensInterval)
+      this.adapter.clearInterval(this.unknownTokensInterval);
     for (const d of data)
       await d.delete();
   }
@@ -540,6 +549,8 @@ class Library extends BaseClass {
       return "";
     if (this.translation[key] !== void 0)
       return this.translation[key];
+    if (this.adapter.config.logUnknownTokens)
+      this.unknownTokens[key] = "";
     return key;
   }
   existTranslation(key) {
@@ -554,11 +565,16 @@ class Library extends BaseClass {
         if (i[key] !== void 0)
           result[l] = i[key];
       } catch (error) {
+        if (this.adapter.config.logUnknownTokens)
+          this.unknownTokens[key] = "";
         return key;
       }
     }
-    if (result["en"] == void 0)
+    if (result["en"] == void 0) {
+      if (this.adapter.config.logUnknownTokens)
+        this.unknownTokens[key] = "";
       return key;
+    }
     return result;
   }
   async checkLanguage() {

@@ -25,6 +25,7 @@ declare global {
             pw9: string;
             pw0: string;
             onlyStartFromSystemConfig: boolean;
+            logUnknownTokens: boolean;
         }
     }
 }

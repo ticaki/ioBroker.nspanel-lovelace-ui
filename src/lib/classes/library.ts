@@ -20,7 +20,7 @@ type LibraryStateValJson = {
 // Generic library module and base classes, do not insert specific adapter code here.
 
 /**
- * Base class with this.log function
+ * Base class with this.log function.
  */
 export class BaseClass {
     unload: boolean = false;
@@ -28,6 +28,7 @@ export class BaseClass {
     adapter: AdapterClassDefinition;
     library: Library;
     name: string = ``;
+
     constructor(adapter: AdapterClassDefinition, name: string = '') {
         this.name = name;
         this.log = new CustomLog(adapter, this.name);
@@ -70,6 +71,8 @@ export class Library extends BaseClass {
     private stateDataBase: { [key: string]: LibraryStateVal } = {};
     private forbiddenDirs: string[] = [];
     private translation: { [key: string]: string } = {};
+    private unknownTokens: Record<string, string> = {};
+    private unknownTokensInterval: ioBroker.Interval | undefined;
     defaults = {
         updateStateOnChangeOnly: true,
     };
@@ -81,10 +84,15 @@ export class Library extends BaseClass {
 
     async init(): Promise<void> {
         await this.checkLanguage();
+        if (this.adapter.config.logUnknownTokens) {
+            this.unknownTokensInterval = this.adapter.setInterval(() => {
+                this.log.info(`Unknown tokens: ${JSON.stringify(this.unknownTokens)}`);
+            }, 60000);
+        }
     }
 
     /**
-     * Write/create from a Json with defined keys, the associated states and channels
+     * Write/create from a Json with defined keys, the associated states and channels.
      * @param prefix iobroker datapoint prefix where to write
      * @param objNode Entry point into the definition json.
      * @param def the definition json
@@ -439,6 +447,7 @@ export class Library extends BaseClass {
     }
 
     async memberDeleteAsync(data: any[]): Promise<void> {
+        if (this.unknownTokensInterval) this.adapter.clearInterval(this.unknownTokensInterval);
         for (const d of data) await d.delete();
     }
 
@@ -555,6 +564,7 @@ export class Library extends BaseClass {
     getTranslation(key: string | null | undefined): string {
         if (!key) return '';
         if (this.translation[key] !== undefined) return this.translation[key];
+        if (this.adapter.config.logUnknownTokens) this.unknownTokens[key] = '';
         return key;
     }
     existTranslation(key: string): boolean {
@@ -569,10 +579,14 @@ export class Library extends BaseClass {
                 const i = await import(`../../admin/i18n/${l}/translations.json`);
                 if (i[key] !== undefined) result[l] = i[key];
             } catch (error) {
+                if (this.adapter.config.logUnknownTokens) this.unknownTokens[key] = '';
                 return key;
             }
         }
-        if (result['en'] == undefined) return key;
+        if (result['en'] == undefined) {
+            if (this.adapter.config.logUnknownTokens) this.unknownTokens[key] = '';
+            return key;
+        }
         return result as ioBroker.StringOrTranslated;
     }
 
