@@ -142,12 +142,12 @@ const buttonTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "checkbox-intermediate" },
-          color: { type: "const", constVal: "Color.bad" },
+          color: { type: "const", constVal: import_Color.Color.bad },
           text: { value: { type: "internal", dp: "///AdapterNoConnection" } }
         },
         false: {
           value: { type: "const", constVal: "checkbox-marked-outline" },
-          color: { type: "const", constVal: "Color.good" },
+          color: { type: "const", constVal: import_Color.Color.good },
           text: { value: { type: "internal", dp: "///AdapterNoConnection" } }
         }
       },
