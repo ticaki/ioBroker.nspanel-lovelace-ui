@@ -56,6 +56,7 @@ class Dataitem extends import_library.BaseClass {
     this.parent = parent;
     switch (this.options.type) {
       case "const":
+        this.options.constVal = import_Color.Color.getColorFromDefault(this.options.constVal);
         this.setTypeFromValue(this.options.constVal);
         break;
       case "state":
@@ -176,41 +177,6 @@ class Dataitem extends import_library.BaseClass {
                 return v;
             } else if (this.options.role === "level.color.name" || this.options.role === "level.color.rgb") {
               return import_Color.Color.ConvertWithColordtoRgb(value);
-            } else if (value.startsWith("Color.")) {
-              switch (value) {
-                case "Color.good": {
-                  return import_Color.Color.good;
-                  break;
-                }
-                case "Color.bad": {
-                  return import_Color.Color.bad;
-                  break;
-                }
-                case "Color.true": {
-                  return import_Color.Color.true;
-                  break;
-                }
-                case "Color.false": {
-                  return import_Color.Color.false;
-                  break;
-                }
-                case "Color.activated": {
-                  return import_Color.Color.activated;
-                  break;
-                }
-                case "Color.deactivated": {
-                  return import_Color.Color.deactivated;
-                  break;
-                }
-                case "Color.attention": {
-                  return import_Color.Color.attention;
-                  break;
-                }
-                case "Color.info": {
-                  return import_Color.Color.info;
-                  break;
-                }
-              }
             }
           }
         }

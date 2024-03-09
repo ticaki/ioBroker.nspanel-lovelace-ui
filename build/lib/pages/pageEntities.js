@@ -21,32 +21,27 @@ __export(pageEntities_exports, {
   PageEntities: () => PageEntities
 });
 module.exports = __toCommonJS(pageEntities_exports);
-var import_Page = require("../classes/Page");
-var import_Color = require("../const/Color");
-var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
 var import_data_collection_functions = require("./data-collection-functions");
+var import_pageMenu = require("./pageMenu");
 const PageEntitiesMessageDefault = {
   event: "entityUpd",
   headline: "Page Entities",
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
   options: ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"]
 };
-class PageEntities extends import_Page.Page {
+class PageEntities extends import_pageMenu.PageMenu {
   config;
-  maxItems = 4;
-  step = 0;
-  headlinePos = 0;
-  titelPos = 0;
-  nextArrow = false;
-  lastNavClick = 0;
-  tempItems;
   items;
   constructor(config, options) {
     super(config, options);
     if (!options.config || options.config.card !== "cardEntities") {
       throw new Error("wrong card, should never happen");
     }
+    this.iconLeftP = "arrow-up-bold-outline";
+    this.iconLeft = "arrow-up-bold";
+    this.iconRightP = "arrow-down-bold-outline";
+    this.iconRight = "arrow-down-bold";
     this.config = options.config;
     if (options.items && options.items.card == "cardEntities")
       this.items = options.items;
@@ -68,40 +63,8 @@ class PageEntities extends import_Page.Page {
     if (!this.visibility)
       return;
     const message = {};
-    message.options = [];
-    if (this.pageItems) {
-      if (this.config && this.config.card == "cardEntities") {
-        if (this.config.scrollType === "page") {
-          let maxItems = this.maxItems;
-          let a = 0;
-          if (this.pageItems.length > maxItems) {
-            a = maxItems * this.step;
-            maxItems = a + maxItems;
-          }
-          let b = 0;
-          let pageItems = this.pageItems;
-          if (this.config.filterType === "true" || this.config.filterType === "false") {
-            this.tempItems = [];
-            const testIt = this.config.filterType === "true";
-            for (const a2 of this.pageItems) {
-              if (a2 && a2.dataItems && a2.dataItems.data && "entity1" in a2.dataItems.data && a2.dataItems.data.entity1 && a2.dataItems.data.entity1.value && testIt === await a2.dataItems.data.entity1.value.getBoolean())
-                this.tempItems.push(a2);
-            }
-            pageItems = this.tempItems;
-          }
-          for (; a < maxItems; a++) {
-            const temp = pageItems[a];
-            message.options[b++] = temp ? await temp.getPageItemPayload() : "~~~~~";
-          }
-        } else {
-          let a = this.step;
-          for (; a < this.maxItems + this.step; a++) {
-            const temp = this.pageItems[a];
-            message.options[a - this.step] = temp ? await temp.getPageItemPayload() : "~~~~~";
-          }
-        }
-      }
-    }
+    const arr = (await this.getOptions([])).slice(0, 4);
+    message.options = arr;
     message.headline = this.library.getTranslation(
       (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
     );
@@ -126,124 +89,6 @@ class PageEntities extends import_Page.Page {
       }
     }
     await super.onVisibilityChange(val);
-  }
-  goLeft() {
-    if (!this.config || this.config.card !== "cardEntities")
-      return;
-    if (this.config.scrollType === "page") {
-      this.goLeftP();
-      return;
-    }
-    if (--this.step < 0 && Date.now() - this.lastNavClick > 300) {
-      this.step = 0;
-      this.panel.navigation.goLeft();
-    } else
-      this.update();
-    this.lastNavClick = Date.now();
-  }
-  goRight() {
-    if (!this.config || this.config.card !== "cardEntities")
-      return;
-    if (this.config.scrollType === "page") {
-      this.goRightP();
-      return;
-    }
-    const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-    if (++this.step + this.maxItems > length && Date.now() - this.lastNavClick > 300) {
-      this.step--;
-      this.panel.navigation.goRight();
-    } else
-      this.update();
-    this.lastNavClick = Date.now();
-  }
-  getNavigation() {
-    if (!this.config || this.config.card !== "cardEntities")
-      return "";
-    if (this.config.scrollType === "page") {
-      return this.getNavigationP();
-    }
-    const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-    if (this.maxItems >= length) {
-      return super.getNavigation();
-    }
-    let left = "";
-    let right = "";
-    if (this.step <= 0) {
-      left = this.panel.navigation.buildNavigationString("left");
-    }
-    if (this.step + this.maxItems >= length) {
-      right = this.panel.navigation.buildNavigationString("right");
-    }
-    if (!left)
-      left = (0, import_tools.getPayload)(
-        "button",
-        "bSubPrev",
-        import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
-        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
-        "",
-        ""
-      );
-    if (!right)
-      right = (0, import_tools.getPayload)(
-        "button",
-        "bSubNext",
-        import_icon_mapping.Icons.GetIcon("arrow-down-bold"),
-        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
-        "",
-        ""
-      );
-    return (0, import_tools.getPayload)(left, right);
-  }
-  goLeftP() {
-    if (--this.step < 0) {
-      this.step = 0;
-      this.panel.navigation.goLeft();
-    } else
-      this.update();
-  }
-  goRightP() {
-    const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-    if (++this.step * this.maxItems >= length) {
-      this.step--;
-      this.panel.navigation.goRight();
-    } else
-      this.update();
-  }
-  getNavigationP() {
-    const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-    if (this.maxItems >= length) {
-      return super.getNavigation();
-    }
-    let left = "";
-    let right = "";
-    if (this.step <= 0) {
-      left = this.panel.navigation.buildNavigationString("left");
-    }
-    if ((this.step + 1) * this.maxItems >= length) {
-      right = this.panel.navigation.buildNavigationString("right");
-    }
-    if (!left)
-      left = (0, import_tools.getPayload)(
-        "button",
-        "bSubPrev",
-        import_icon_mapping.Icons.GetIcon("arrow-up-bold-outline"),
-        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
-        "",
-        ""
-      );
-    if (!right)
-      right = (0, import_tools.getPayload)(
-        "button",
-        "bSubNext",
-        import_icon_mapping.Icons.GetIcon("arrow-down-bold-outline"),
-        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
-        "",
-        ""
-      );
-    return (0, import_tools.getPayload)(left, right);
-  }
-  async reset() {
-    this.step = 0;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

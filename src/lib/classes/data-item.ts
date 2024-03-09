@@ -24,6 +24,7 @@ export class Dataitem extends BaseClass {
         this.parent = parent;
         switch (this.options.type) {
             case 'const':
+                this.options.constVal = Color.getColorFromDefault(this.options.constVal);
                 this.setTypeFromValue(this.options.constVal);
                 break;
             case 'state':
@@ -153,41 +154,6 @@ export class Dataitem extends BaseClass {
                             this.options.role === 'level.color.rgb'
                         ) {
                             return Color.ConvertWithColordtoRgb(value);
-                        } else if (value.startsWith('Color.')) {
-                            switch (value) {
-                                case 'Color.good': {
-                                    return Color.good;
-                                    break;
-                                }
-                                case 'Color.bad': {
-                                    return Color.bad;
-                                    break;
-                                }
-                                case 'Color.true': {
-                                    return Color.true;
-                                    break;
-                                }
-                                case 'Color.false': {
-                                    return Color.false;
-                                    break;
-                                }
-                                case 'Color.activated': {
-                                    return Color.activated;
-                                    break;
-                                }
-                                case 'Color.deactivated': {
-                                    return Color.deactivated;
-                                    break;
-                                }
-                                case 'Color.attention': {
-                                    return Color.attention;
-                                    break;
-                                }
-                                case 'Color.info': {
-                                    return Color.info;
-                                    break;
-                                }
-                            }
                         }
                     }
                 }

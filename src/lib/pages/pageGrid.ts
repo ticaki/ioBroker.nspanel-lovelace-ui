@@ -1,10 +1,8 @@
-import { Page, PageInterface } from '../classes/Page';
+import { PageInterface } from '../classes/Page';
 import { getPayload, getPayloadArray } from '../const/tools';
 import * as pages from '../types/pages';
 import { IncomingEvent } from '../types/types';
-import { PageItem } from './pageItem';
-import { Color } from '../const/Color';
-import { Icons } from '../const/icon_mapping';
+import { PageMenu } from './pageMenu';
 
 const PageGridMessageDefault: pages.PageGridMessage = {
     event: 'entityUpd',
@@ -18,19 +16,18 @@ const PageGrid2MessageDefault: pages.PageGridMessage = {
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
     options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
 };
-export class PageGrid extends Page {
+export class PageGrid extends PageMenu {
     config: pages.PageBaseConfig['config'];
     items: pages.PageBaseConfig['items'];
-    private maxItems: number;
-    private step: number = 0;
-    private headlinePos: number = 0;
-    private titelPos: number = 0;
-    private nextArrow: boolean = false;
-    tempItems: (PageItem | undefined)[] | undefined;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
         this.config = options.config;
+        this.iconLeftP = 'arrow-left-bold-outline';
+        this.iconLeft = 'arrow-up-bold';
+        this.iconRightP = 'arrow-right-bold-outline';
+        this.iconRight = 'arrow-down-bold';
+
         if (options.items && (options.items.card == 'cardGrid' || options.items.card == 'cardGrid2'))
             this.items = options.items;
         this.maxItems = this.card === 'cardGrid' ? 6 : 8;
@@ -62,40 +59,9 @@ export class PageGrid extends Page {
         message.options = [];
         if (!this.items || (this.items.card !== 'cardGrid' && this.items.card !== 'cardGrid2')) return;
         if (!this.config || (this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')) return;
-        if (this.pageItems) {
-            let maxItems = this.maxItems;
-            let a = 0;
-            if (this.pageItems.length > maxItems) {
-                a = maxItems * this.step;
-                maxItems = a + maxItems;
-            }
-            let pageItems = this.pageItems;
-            /**
-             * Live update von gefilterten Adaptern.
-             */
-            if (this.config.filterType === 'true' || this.config.filterType === 'false') {
-                this.tempItems = [];
-                const testIt = this.config.filterType === 'true';
-                for (const a of this.pageItems) {
-                    if (
-                        a &&
-                        a.dataItems &&
-                        a.dataItems.data &&
-                        'entity1' in a.dataItems.data &&
-                        a.dataItems.data.entity1 &&
-                        a.dataItems.data.entity1.value &&
-                        testIt === !!(await a.dataItems.data.entity1.value.getBoolean())
-                    )
-                        this.tempItems.push(a);
-                }
-                pageItems = this.tempItems;
-            }
-            let b = 0;
-            for (; a < maxItems; a++) {
-                const temp = pageItems[a];
-                message.options[b++] = temp ? await temp.getPageItemPayload() : '~~~~~';
-            }
-        }
+        const arr = (await this.getOptions([])).slice(0, 8);
+        message.options = arr as typeof message.options;
+
         message.headline = this.library.getTranslation(
             (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
         );
@@ -117,56 +83,5 @@ export class PageGrid extends Page {
         //if (event.page && event.id && this.pageItems) {
         //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
         //}
-    }
-    goLeft(): void {
-        if (--this.step < 0) {
-            this.step = 0;
-            this.panel.navigation.goLeft();
-        } else this.update();
-    }
-    goRight(): void {
-        const length = this.pageItems ? this.pageItems.length : 0;
-        if (++this.step * this.maxItems >= length) {
-            this.step--;
-            this.panel.navigation.goRight();
-        } else this.update();
-    }
-    protected getNavigation(): string {
-        const length = this.pageItems ? this.pageItems.length : 0;
-        if (this.maxItems >= length) {
-            return super.getNavigation();
-        }
-        let left = '';
-        let right = '';
-        if (this.step <= 0) {
-            left = this.panel.navigation.buildNavigationString('left');
-        }
-        if ((this.step + 1) * this.maxItems >= length) {
-            right = this.panel.navigation.buildNavigationString('right');
-        }
-        if (!left)
-            left = getPayload(
-                'button',
-                'bSubPrev',
-                Icons.GetIcon('arrow-left-bold'),
-                String(Color.rgb_dec565(Color.HMIOn)),
-                '',
-                '',
-            );
-
-        if (!right)
-            right = getPayload(
-                'button',
-                'bSubNext',
-                Icons.GetIcon('arrow-right-bold'),
-                String(Color.rgb_dec565(Color.HMIOn)),
-                '',
-                '',
-            );
-
-        return getPayload(left, right);
-    }
-    async reset(): Promise<void> {
-        this.step = 0;
     }
 }

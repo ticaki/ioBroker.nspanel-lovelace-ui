@@ -263,8 +263,8 @@ class Panel extends import_library.BaseClass {
   init = async () => {
     this.controller.mqttClient.subscript(this.topic + "/tele/#", this.onMessage);
     this.controller.mqttClient.subscript(this.topic + "/stat/#", this.onMessage);
-    this.sendToTasmota(this.topic + "/cmnd/STATUS0", "");
     this.isOnline = false;
+    this.restartLoops();
   };
   start = async () => {
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
@@ -398,7 +398,6 @@ class Panel extends import_library.BaseClass {
     this.sendToTasmota(this.topic + "/cmnd/POWER1", "");
     this.sendToTasmota(this.topic + "/cmnd/POWER2", "");
     this.sendRules();
-    this.sendToPanel("pageType~pageStartup", { retain: true });
   };
   sendToPanelClass = () => {
   };
@@ -458,12 +457,12 @@ class Panel extends import_library.BaseClass {
         s,
         import_definition.genericStateObjects.panel.panels.info.nspanel.isOnline
       );
-      this.restartLoops();
       if (s) {
         this.log.info("is online!");
       } else {
         this.log.warn("is offline!");
       }
+      this.restartLoops();
     }
     this._isOnline = s;
   }
@@ -649,7 +648,7 @@ class Panel extends import_library.BaseClass {
     this.pages = this.pages.filter((a) => a && !a.unload);
     let t = 3e5 + Math.random() * 3e4 - 15e3;
     if (!this.isOnline) {
-      t = 6e4;
+      t = 15e3;
       this.sendToPanel("pageType~pageStartup", { retain: true });
     }
     this.loopTimeout = this.adapter.setTimeout(this.loop, t);
@@ -690,13 +689,17 @@ class Panel extends import_library.BaseClass {
    * @returns
    */
   async HandleIncomingMessage(event) {
-    if (!this.InitDone)
+    if (this.InitDone === false) {
+      this.isOnline = false;
       return;
+    }
     if (!event.method)
       return;
     if (this._activePage && this._activePage.card !== "cardAlarm")
       this.log.debug("Receive message:" + JSON.stringify(event));
-    if (!this.screenSaver || this.isOnline === false && event.method !== "startup")
+    if (!this.screenSaver)
+      return;
+    if (this.isOnline === false && event.method !== "startup")
       return;
     switch (event.method) {
       case "startup": {
@@ -711,9 +714,10 @@ class Panel extends import_library.BaseClass {
         if (popup)
           await this.setActivePage(popup);
         if (this.screenSaver) {
-          this.screenSaver.HandleDate();
-          this.screenSaver.HandleTime();
+          await this.screenSaver.HandleDate();
+          await this.screenSaver.HandleTime();
         }
+        this.log.info("Panel startup finished!");
         break;
       }
       case "sleepReached": {
@@ -873,6 +877,9 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cmd/TasmotaRestart": {
+          this.sendToTasmota(this.topic + "/cmnd/Restart", "1");
+          this.log.info("Restart Tasmota!");
+          this.isOnline = false;
           break;
         }
       }

@@ -21,10 +21,8 @@ __export(pageGrid_exports, {
   PageGrid: () => PageGrid
 });
 module.exports = __toCommonJS(pageGrid_exports);
-var import_Page = require("../classes/Page");
 var import_tools = require("../const/tools");
-var import_Color = require("../const/Color");
-var import_icon_mapping = require("../const/icon_mapping");
+var import_pageMenu = require("./pageMenu");
 const PageGridMessageDefault = {
   event: "entityUpd",
   headline: "Page Grid",
@@ -37,18 +35,16 @@ const PageGrid2MessageDefault = {
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
   options: ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"]
 };
-class PageGrid extends import_Page.Page {
+class PageGrid extends import_pageMenu.PageMenu {
   config;
   items;
-  maxItems;
-  step = 0;
-  headlinePos = 0;
-  titelPos = 0;
-  nextArrow = false;
-  tempItems;
   constructor(config, options) {
     super(config, options);
     this.config = options.config;
+    this.iconLeftP = "arrow-left-bold-outline";
+    this.iconLeft = "arrow-up-bold";
+    this.iconRightP = "arrow-right-bold-outline";
+    this.iconRight = "arrow-down-bold";
     if (options.items && (options.items.card == "cardGrid" || options.items.card == "cardGrid2"))
       this.items = options.items;
     this.maxItems = this.card === "cardGrid" ? 6 : 8;
@@ -75,29 +71,8 @@ class PageGrid extends import_Page.Page {
       return;
     if (!this.config || this.config.card !== "cardGrid" && this.config.card !== "cardGrid2")
       return;
-    if (this.pageItems) {
-      let maxItems = this.maxItems;
-      let a = 0;
-      if (this.pageItems.length > maxItems) {
-        a = maxItems * this.step;
-        maxItems = a + maxItems;
-      }
-      let pageItems = this.pageItems;
-      if (this.config.filterType === "true" || this.config.filterType === "false") {
-        this.tempItems = [];
-        const testIt = this.config.filterType === "true";
-        for (const a2 of this.pageItems) {
-          if (a2 && a2.dataItems && a2.dataItems.data && "entity1" in a2.dataItems.data && a2.dataItems.data.entity1 && a2.dataItems.data.entity1.value && testIt === !!await a2.dataItems.data.entity1.value.getBoolean())
-            this.tempItems.push(a2);
-        }
-        pageItems = this.tempItems;
-      }
-      let b = 0;
-      for (; a < maxItems; a++) {
-        const temp = pageItems[a];
-        message.options[b++] = temp ? await temp.getPageItemPayload() : "~~~~~";
-      }
-    }
+    const arr = (await this.getOptions([])).slice(0, 8);
+    message.options = arr;
     message.headline = this.library.getTranslation(
       (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
     );
@@ -115,57 +90,6 @@ class PageGrid extends import_Page.Page {
     await this.update();
   }
   async onButtonEvent(_event) {
-  }
-  goLeft() {
-    if (--this.step < 0) {
-      this.step = 0;
-      this.panel.navigation.goLeft();
-    } else
-      this.update();
-  }
-  goRight() {
-    const length = this.pageItems ? this.pageItems.length : 0;
-    if (++this.step * this.maxItems >= length) {
-      this.step--;
-      this.panel.navigation.goRight();
-    } else
-      this.update();
-  }
-  getNavigation() {
-    const length = this.pageItems ? this.pageItems.length : 0;
-    if (this.maxItems >= length) {
-      return super.getNavigation();
-    }
-    let left = "";
-    let right = "";
-    if (this.step <= 0) {
-      left = this.panel.navigation.buildNavigationString("left");
-    }
-    if ((this.step + 1) * this.maxItems >= length) {
-      right = this.panel.navigation.buildNavigationString("right");
-    }
-    if (!left)
-      left = (0, import_tools.getPayload)(
-        "button",
-        "bSubPrev",
-        import_icon_mapping.Icons.GetIcon("arrow-left-bold"),
-        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
-        "",
-        ""
-      );
-    if (!right)
-      right = (0, import_tools.getPayload)(
-        "button",
-        "bSubNext",
-        import_icon_mapping.Icons.GetIcon("arrow-right-bold"),
-        String(import_Color.Color.rgb_dec565(import_Color.Color.HMIOn)),
-        "",
-        ""
-      );
-    return (0, import_tools.getPayload)(left, right);
-  }
-  async reset() {
-    this.step = 0;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

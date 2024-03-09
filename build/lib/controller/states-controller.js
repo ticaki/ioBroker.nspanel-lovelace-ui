@@ -220,7 +220,6 @@ class StatesControler extends import_library.BaseClass {
       const removeIndex = [];
       for (const i in entry.to) {
         if (entry.to[i].unload) {
-          this.log.debug("Unload element:  " + entry.to[i].name);
           removeIndex.push(Number(i));
         }
       }

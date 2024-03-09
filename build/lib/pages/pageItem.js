@@ -48,7 +48,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   tempData = void 0;
   // use this to save some data while object is active
   tempInterval;
-  confirmClick = 0;
+  confirmClick = "lock";
   constructor(config, options) {
     super({ ...config });
     this.panel = config.panel;
@@ -354,12 +354,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           message.displayName = this.library.getTranslation(
             (_E = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _E : ""
           );
-          if (this.confirmClick === null) {
-            if (this.parent && this.parent.card === "cardEntities")
-              message.optionalValue = (_F = item.confirm && await item.confirm.getString()) != null ? _F : message.optionalValue;
-            this.confirmClick = Date.now();
-          } else
-            this.confirmClick = 0;
+          if (item.confirm) {
+            if (this.confirmClick === "unlock") {
+              if (this.parent && this.parent.card === "cardEntities")
+                message.optionalValue = (_F = await item.confirm.getString()) != null ? _F : message.optionalValue;
+              this.confirmClick = Date.now();
+            } else
+              this.confirmClick = "lock";
+          }
           message.icon = await tools.getIconEntryValue(item.icon, value, "home");
           message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
           return tools.getPayload(
@@ -986,14 +988,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           }
           const item = entry.data;
           if (item.confirm) {
-            if (this.confirmClick === 0) {
-              this.confirmClick = null;
+            if (this.confirmClick === "lock") {
+              this.confirmClick = "unlock";
               this.parent && this.parent.update();
               return true;
-            } else if (this.confirmClick === null || this.confirmClick - 300 > Date.now()) {
+            } else if (this.confirmClick === "unlock" || this.confirmClick - 300 > Date.now()) {
               return true;
             } else {
-              this.confirmClick = 0;
+              this.confirmClick = "lock";
               this.parent && this.parent.update();
             }
           }

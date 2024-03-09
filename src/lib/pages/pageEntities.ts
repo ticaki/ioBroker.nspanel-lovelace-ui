@@ -1,11 +1,9 @@
-import { Page, PageInterface } from '../classes/Page';
-import { Color } from '../const/Color';
-import { Icons } from '../const/icon_mapping';
+import { PageInterface } from '../classes/Page';
 import { getPayload, getPayloadArray } from '../const/tools';
 import * as pages from '../types/pages';
 import { IncomingEvent } from '../types/types';
 import { handleCardRole } from './data-collection-functions';
-import { PageItem } from './pageItem';
+import { PageMenu } from './pageMenu';
 
 const PageEntitiesMessageDefault: pages.PageEntitiesMessage = {
     event: 'entityUpd',
@@ -14,15 +12,8 @@ const PageEntitiesMessageDefault: pages.PageEntitiesMessage = {
     options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
 };
 
-export class PageEntities extends Page {
+export class PageEntities extends PageMenu {
     config: pages.cardEntitiesDataItemOptions;
-    private maxItems: number = 4;
-    private step: number = 0;
-    private headlinePos: number = 0;
-    private titelPos: number = 0;
-    private nextArrow: boolean = false;
-    private lastNavClick: number = 0;
-    tempItems: (PageItem | undefined)[] | undefined;
     items: pages.PageBaseConfig['items'];
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
@@ -30,6 +21,11 @@ export class PageEntities extends Page {
         if (!options.config || options.config.card !== 'cardEntities') {
             throw new Error('wrong card, should never happen');
         }
+        this.iconLeftP = 'arrow-up-bold-outline';
+        this.iconLeft = 'arrow-up-bold';
+        this.iconRightP = 'arrow-down-bold-outline';
+        this.iconRight = 'arrow-down-bold';
+
         this.config = options.config;
         if (options.items && options.items.card == 'cardEntities') this.items = options.items;
         this.minUpdateInterval = 2000;
@@ -57,52 +53,9 @@ export class PageEntities extends Page {
     public async update(): Promise<void> {
         if (!this.visibility) return;
         const message: Partial<pages.PageEntitiesMessage> = {};
-        message.options = [];
-        if (this.pageItems) {
-            if (this.config && this.config.card == 'cardEntities') {
-                if (this.config.scrollType === 'page') {
-                    let maxItems = this.maxItems;
-                    let a = 0;
-                    if (this.pageItems.length > maxItems) {
-                        a = maxItems * this.step;
-                        maxItems = a + maxItems;
-                    }
-                    let b = 0;
-                    let pageItems = this.pageItems;
+        const arr = (await this.getOptions([])).slice(0, 4);
+        message.options = arr as typeof message.options;
 
-                    /**
-                     * Live update von gefilterten Adaptern.
-                     */
-                    if (this.config.filterType === 'true' || this.config.filterType === 'false') {
-                        this.tempItems = [];
-                        const testIt = this.config.filterType === 'true';
-                        for (const a of this.pageItems) {
-                            if (
-                                a &&
-                                a.dataItems &&
-                                a.dataItems.data &&
-                                'entity1' in a.dataItems.data &&
-                                a.dataItems.data.entity1 &&
-                                a.dataItems.data.entity1.value &&
-                                testIt === (await a.dataItems.data.entity1.value.getBoolean())
-                            )
-                                this.tempItems.push(a);
-                        }
-                        pageItems = this.tempItems;
-                    }
-                    for (; a < maxItems; a++) {
-                        const temp = pageItems[a];
-                        message.options[b++] = temp ? await temp.getPageItemPayload() : '~~~~~';
-                    }
-                } else {
-                    let a = this.step;
-                    for (; a < this.maxItems + this.step; a++) {
-                        const temp = this.pageItems[a];
-                        message.options[a - this.step] = temp ? await temp.getPageItemPayload() : '~~~~~';
-                    }
-                }
-            }
-        }
         message.headline = this.library.getTranslation(
             (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
         );
@@ -127,121 +80,5 @@ export class PageEntities extends Page {
             }
         }
         await super.onVisibilityChange(val);
-    }
-
-    goLeft(): void {
-        if (!this.config || this.config.card !== 'cardEntities') return;
-        if (this.config.scrollType === 'page') {
-            this.goLeftP();
-            return;
-        }
-        if (--this.step < 0 && Date.now() - this.lastNavClick > 300) {
-            this.step = 0;
-            this.panel.navigation.goLeft();
-        } else this.update();
-        this.lastNavClick = Date.now();
-    }
-    goRight(): void {
-        if (!this.config || this.config.card !== 'cardEntities') return;
-        if (this.config.scrollType === 'page') {
-            this.goRightP();
-            return;
-        }
-        const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-        if (++this.step + this.maxItems > length && Date.now() - this.lastNavClick > 300) {
-            this.step--;
-            this.panel.navigation.goRight();
-        } else this.update();
-        this.lastNavClick = Date.now();
-    }
-    protected getNavigation(): string {
-        if (!this.config || this.config.card !== 'cardEntities') return '';
-        if (this.config.scrollType === 'page') {
-            return this.getNavigationP();
-        }
-        const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-        if (this.maxItems >= length) {
-            return super.getNavigation();
-        }
-        let left = '';
-        let right = '';
-        if (this.step <= 0) {
-            left = this.panel.navigation.buildNavigationString('left');
-        }
-        if (this.step + this.maxItems >= length) {
-            right = this.panel.navigation.buildNavigationString('right');
-        }
-        if (!left)
-            left = getPayload(
-                'button',
-                'bSubPrev',
-                Icons.GetIcon('arrow-up-bold'),
-                String(Color.rgb_dec565(Color.HMIOn)),
-                '',
-                '',
-            );
-
-        if (!right)
-            right = getPayload(
-                'button',
-                'bSubNext',
-                Icons.GetIcon('arrow-down-bold'),
-                String(Color.rgb_dec565(Color.HMIOn)),
-                '',
-                '',
-            );
-
-        return getPayload(left, right);
-    }
-    goLeftP(): void {
-        if (--this.step < 0) {
-            this.step = 0;
-            this.panel.navigation.goLeft();
-        } else this.update();
-    }
-    goRightP(): void {
-        const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-        if (++this.step * this.maxItems >= length) {
-            this.step--;
-            this.panel.navigation.goRight();
-        } else this.update();
-    }
-    protected getNavigationP(): string {
-        const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-        if (this.maxItems >= length) {
-            return super.getNavigation();
-        }
-        let left = '';
-        let right = '';
-        if (this.step <= 0) {
-            left = this.panel.navigation.buildNavigationString('left');
-        }
-        if ((this.step + 1) * this.maxItems >= length) {
-            right = this.panel.navigation.buildNavigationString('right');
-        }
-        if (!left)
-            left = getPayload(
-                'button',
-                'bSubPrev',
-                Icons.GetIcon('arrow-up-bold-outline'),
-                String(Color.rgb_dec565(Color.HMIOn)),
-                '',
-                '',
-            );
-
-        if (!right)
-            right = getPayload(
-                'button',
-                'bSubNext',
-                Icons.GetIcon('arrow-down-bold-outline'),
-                String(Color.rgb_dec565(Color.HMIOn)),
-                '',
-                '',
-            );
-
-        return getPayload(left, right);
-    }
-    async reset(): Promise<void> {
-        this.step = 0;
     }
 }

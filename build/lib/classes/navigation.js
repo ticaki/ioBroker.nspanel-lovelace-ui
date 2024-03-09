@@ -56,6 +56,7 @@ class Navigation extends import_library.BaseClass {
     this.navigationConfig = config.navigationConfig;
   }
   init() {
+    this.database = [];
     let b = 1;
     let serviceLeft = "";
     let serviceRight = "";

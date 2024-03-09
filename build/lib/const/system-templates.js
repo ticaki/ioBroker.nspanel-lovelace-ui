@@ -597,6 +597,44 @@ const DeviceOption = {
   pageItems: [
     {
       role: "",
+      type: "button",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "information-outline" },
+            color: { type: "const", constVal: import_Color.Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "information-variant" },
+            color: { type: "const", constVal: import_Color.Color.Gray }
+          }
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Tasmota-Restart" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "const",
+            constVal: "restart"
+          },
+          false: void 0
+        },
+        confirm: { type: "const", constVal: "sure?" },
+        setValue2: {
+          type: "internal",
+          dp: "cmd/TasmotaRestart"
+        }
+      }
+    },
+    {
+      role: "",
       type: "text",
       data: {
         icon: {
@@ -622,7 +660,7 @@ const DeviceOption = {
         text1: {
           true: {
             type: "internal",
-            dp: "cmd/tasmotaVersion"
+            dp: "info/tasmotaVersion"
           },
           false: void 0
         }
@@ -655,7 +693,7 @@ const DeviceOption = {
         text1: {
           true: {
             type: "internal",
-            dp: "cmd/displayVersion"
+            dp: "info/displayVersion"
           },
           false: void 0
         }
@@ -688,7 +726,7 @@ const DeviceOption = {
         text1: {
           true: {
             type: "internal",
-            dp: "cmd/modelVersion"
+            dp: "info/modelVersion"
           },
           false: void 0
         }
@@ -711,7 +749,8 @@ const NetworkOption = {
         type: "const",
         constVal: "Network"
       }
-    }
+    },
+    scrollType: "page"
   },
   pageItems: [
     {

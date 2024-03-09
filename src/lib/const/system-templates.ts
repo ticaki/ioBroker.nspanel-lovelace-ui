@@ -589,6 +589,45 @@ const DeviceOption: PageBaseConfig = {
     pageItems: [
         {
             role: '',
+            type: 'button',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'information-outline' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'information-variant' },
+                        color: { type: 'const', constVal: Color.Gray },
+                    },
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Tasmota-Restart' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'const',
+                        constVal: 'restart',
+                    },
+                    false: undefined,
+                },
+                confirm: { type: 'const', constVal: 'sure?' },
+                setValue2: {
+                    type: 'internal',
+                    dp: 'cmd/TasmotaRestart',
+                },
+            },
+        },
+        {
+            role: '',
             type: 'text',
 
             data: {
@@ -615,7 +654,7 @@ const DeviceOption: PageBaseConfig = {
                 text1: {
                     true: {
                         type: 'internal',
-                        dp: 'cmd/tasmotaVersion',
+                        dp: 'info/tasmotaVersion',
                     },
                     false: undefined,
                 },
@@ -649,7 +688,7 @@ const DeviceOption: PageBaseConfig = {
                 text1: {
                     true: {
                         type: 'internal',
-                        dp: 'cmd/displayVersion',
+                        dp: 'info/displayVersion',
                     },
                     false: undefined,
                 },
@@ -683,7 +722,7 @@ const DeviceOption: PageBaseConfig = {
                 text1: {
                     true: {
                         type: 'internal',
-                        dp: 'cmd/modelVersion',
+                        dp: 'info/modelVersion',
                     },
                     false: undefined,
                 },
@@ -708,6 +747,7 @@ const NetworkOption: PageBaseConfig = {
                 constVal: 'Network',
             },
         },
+        scrollType: 'page',
     },
     pageItems: [
         {

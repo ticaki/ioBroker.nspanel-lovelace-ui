@@ -272,8 +272,8 @@ export class Panel extends BaseClass {
     init = async (): Promise<void> => {
         this.controller.mqttClient.subscript(this.topic + '/tele/#', this.onMessage);
         this.controller.mqttClient.subscript(this.topic + '/stat/#', this.onMessage);
-        this.sendToTasmota(this.topic + '/cmnd/STATUS0', '');
         this.isOnline = false;
+        this.restartLoops();
     };
     start = async (): Promise<void> => {
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
@@ -413,7 +413,6 @@ export class Panel extends BaseClass {
         this.sendToTasmota(this.topic + '/cmnd/POWER1', '');
         this.sendToTasmota(this.topic + '/cmnd/POWER2', '');
         this.sendRules();
-        this.sendToPanel('pageType~pageStartup', { retain: true });
     };
 
     private sendToPanelClass: (payload: string, opt?: IClientPublishOptions) => void = () => {};
@@ -470,12 +469,12 @@ export class Panel extends BaseClass {
                 s,
                 genericStateObjects.panel.panels.info.nspanel.isOnline,
             );
-            this.restartLoops();
             if (s) {
                 this.log.info('is online!');
             } else {
                 this.log.warn('is offline!');
             }
+            this.restartLoops();
         }
         this._isOnline = s;
     }
@@ -672,7 +671,7 @@ export class Panel extends BaseClass {
         this.pages = this.pages.filter((a) => a && !a.unload);
         let t = 300000 + Math.random() * 30000 - 15000;
         if (!this.isOnline) {
-            t = 60000;
+            t = 15000;
             this.sendToPanel('pageType~pageStartup', { retain: true });
         }
         this.loopTimeout = this.adapter.setTimeout(this.loop, t);
@@ -711,12 +710,17 @@ export class Panel extends BaseClass {
      * @returns
      */
     async HandleIncomingMessage(event: Types.IncomingEvent): Promise<void> {
-        if (!this.InitDone) return;
+        if (this.InitDone === false) {
+            this.isOnline = false;
+            return;
+        }
         if (!event.method) return;
         if (this._activePage && this._activePage.card !== 'cardAlarm')
             this.log.debug('Receive message:' + JSON.stringify(event));
 
-        if (!this.screenSaver || (this.isOnline === false && event.method !== 'startup')) return;
+        if (!this.screenSaver) return;
+        if (this.isOnline === false && event.method !== 'startup') return;
+
         switch (event.method) {
             case 'startup': {
                 this.isOnline = true;
@@ -728,15 +732,15 @@ export class Panel extends BaseClass {
 
                 this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(1));
                 this.navigation.resetPosition();
-                //const page = this.navigation.getCurrentPage();
-                //await this.setActivePage(page);
+
                 const i = this.pages.findIndex((a) => a && a.name === '///WelcomePopup');
                 const popup = i !== -1 ? this.pages[i] : undefined;
                 if (popup) await this.setActivePage(popup);
                 if (this.screenSaver) {
-                    this.screenSaver.HandleDate();
-                    this.screenSaver.HandleTime();
+                    await this.screenSaver.HandleDate();
+                    await this.screenSaver.HandleTime();
                 }
+                this.log.info('Panel startup finished!');
                 break;
             }
             case 'sleepReached': {
@@ -760,9 +764,6 @@ export class Panel extends BaseClass {
                 if (event.id == 'screensaver') {
                     this.navigation.resetPosition();
                     await this.navigation.setCurrentPage();
-                    /*if (this.controller.systemNotification.getNotificationIndex(this.notifyIndex) !== -1) {
-                        await this.statesControler.setInternalState(`${this.name}/cmd/NotificationNext2`, true, false);
-                    }*/
                 } else if (event.action === 'bExit' && event.id !== 'popupNotify') {
                     await this.setActivePage(true);
                 } else {
@@ -906,6 +907,9 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cmd/TasmotaRestart': {
+                    this.sendToTasmota(this.topic + '/cmnd/Restart', '1');
+                    this.log.info('Restart Tasmota!');
+                    this.isOnline = false;
                     break;
                 }
             }

@@ -108,15 +108,38 @@ export class Color {
     static readonly swSunny: RGB = { r: 255, g: 255, b: 0 };
     static readonly swWindy: RGB = { r: 150, g: 150, b: 150 };
 
-    static good: RGB;
-    static bad: RGB;
-    static true: RGB;
-    static false: RGB;
-    static activated: RGB;
-    static deactivated: RGB;
-    static attention: RGB;
-    static info: RGB;
+    static good: RGB | string = 'default.color.from.start.good';
+    static bad: RGB | string = 'default.color.from.start.bad';
+    static true: RGB | string = 'default.color.from.start.true';
+    static false: RGB | string = 'default.color.from.start.false';
+    static activated: RGB | string = 'default.color.from.start.activated';
+    static deactivated: RGB | string = 'default.color.from.start.deactivated';
+    static attention: RGB | string = 'default.color.from.start.attention';
+    static info: RGB | string = 'default.color.from.start.info';
 
+    static getColorFromDefault(s: any): RGB | string {
+        if (typeof s === 'string') {
+            switch (s) {
+                case 'default.color.from.start.good':
+                    return Color.good;
+                case 'default.color.from.start.bad':
+                    return Color.bad;
+                case 'default.color.from.start.true':
+                    return Color.true;
+                case 'default.color.from.start.false':
+                    return Color.false;
+                case 'default.color.from.start.activated':
+                    return Color.activated;
+                case 'default.color.from.start.deactivated':
+                    return Color.deactivated;
+                case 'default.color.from.start.attention':
+                    return Color.attention;
+                case 'default.color.from.start.info':
+                    return Color.info;
+            }
+        }
+        return s;
+    }
     static currentTheme: ColorThemenInterface = {
         good: Color.Green,
         bad: Color.Red,

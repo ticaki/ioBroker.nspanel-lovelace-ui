@@ -121,14 +121,37 @@ class Color {
   static swSnowyRainy = { r: 150, g: 150, b: 255 };
   static swSunny = { r: 255, g: 255, b: 0 };
   static swWindy = { r: 150, g: 150, b: 150 };
-  static good;
-  static bad;
-  static true;
-  static false;
-  static activated;
-  static deactivated;
-  static attention;
-  static info;
+  static good = "default.color.from.start.good";
+  static bad = "default.color.from.start.bad";
+  static true = "default.color.from.start.true";
+  static false = "default.color.from.start.false";
+  static activated = "default.color.from.start.activated";
+  static deactivated = "default.color.from.start.deactivated";
+  static attention = "default.color.from.start.attention";
+  static info = "default.color.from.start.info";
+  static getColorFromDefault(s) {
+    if (typeof s === "string") {
+      switch (s) {
+        case "default.color.from.start.good":
+          return Color.good;
+        case "default.color.from.start.bad":
+          return Color.bad;
+        case "default.color.from.start.true":
+          return Color.true;
+        case "default.color.from.start.false":
+          return Color.false;
+        case "default.color.from.start.activated":
+          return Color.activated;
+        case "default.color.from.start.deactivated":
+          return Color.deactivated;
+        case "default.color.from.start.attention":
+          return Color.attention;
+        case "default.color.from.start.info":
+          return Color.info;
+      }
+    }
+    return s;
+  }
   static currentTheme = {
     good: Color.Green,
     bad: Color.Red,

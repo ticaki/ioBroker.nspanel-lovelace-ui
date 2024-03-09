@@ -70,6 +70,7 @@ export class Navigation extends BaseClass {
     }
 
     init(): void {
+        this.database = [];
         let b = 1;
         let serviceLeft: string = '';
         let serviceRight: string = '';

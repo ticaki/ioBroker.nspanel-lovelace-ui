@@ -56,10 +56,7 @@ const pageEntitiesTest1 = {
           false: {
             value: { type: "const", constVal: "fan" },
             color: { type: "const", constVal: "Color.deactivated" }
-          },
-          scale: void 0,
-          maxBri: void 0,
-          minBri: void 0
+          }
         },
         entity1: {
           value: {
