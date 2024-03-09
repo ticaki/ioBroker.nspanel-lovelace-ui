@@ -29,6 +29,7 @@ const cardTemplates = {
     card: "cardEntities",
     alwaysOn: "none",
     useColor: false,
+    items: void 0,
     config: {
       card: "cardEntities",
       data: {
@@ -131,8 +132,7 @@ const cardTemplates = {
           }
         }
       }
-    ],
-    items: void 0
+    ]
   },
   "media.spotify-premium": {
     //cardMedia
@@ -651,6 +651,7 @@ const cardTemplates = {
     card: "cardEntities",
     alwaysOn: "none",
     useColor: false,
+    items: void 0,
     config: {
       card: "cardEntities",
       data: {
@@ -861,8 +862,767 @@ const cardTemplates = {
           }
         }
       }
-    ],
-    items: void 0
+    ]
+  },
+  "thermo.hmip.valve": {
+    adapter: "hmip.0",
+    card: "cardThermo",
+    alwaysOn: "none",
+    useColor: false,
+    items: void 0,
+    config: {
+      card: "cardThermo",
+      data: {
+        headline: { mode: "auto", role: "", type: "state", dp: "", regexp: /\.info\.label$/ },
+        mixed1: {
+          value: { type: "const", constVal: "aktuell" }
+        },
+        mixed2: {
+          value: {
+            mode: "auto",
+            role: "value.temperature",
+            type: "triggered",
+            dp: "",
+            regexp: /\.channels\.1\.valveActualTemperature$/
+          },
+          factor: { type: "const", constVal: 1 },
+          decimal: { type: "const", constVal: 1 },
+          unit: { type: "const", constVal: "\xB0C" }
+        },
+        mixed3: {
+          value: { type: "const", constVal: "valve" }
+        },
+        mixed4: {
+          value: {
+            mode: "auto",
+            role: "value",
+            type: "triggered",
+            dp: "",
+            regexp: /\.valvePosition$/
+          },
+          factor: { type: "const", constVal: 1 },
+          decimal: { type: "const", constVal: 0 },
+          unit: { type: "const", constVal: "%" }
+        },
+        minTemp: {
+          mode: "auto",
+          role: "value",
+          type: "state",
+          dp: "",
+          regexp: /\.minTemperature$/
+        },
+        maxTemp: {
+          mode: "auto",
+          role: "value",
+          type: "state",
+          dp: "",
+          regexp: /\.maxTemperature$/
+        },
+        tempStep: { type: "const", constVal: "5" },
+        unit: { type: "const", constVal: "\xB0C" },
+        set1: {
+          mode: "auto",
+          type: "state",
+          dp: "",
+          regexp: /\.setPointTemperature$/,
+          role: ""
+        }
+      }
+    },
+    pageItems: [
+      //Automatic
+      {
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "alpha-a-circle" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            },
+            false: {
+              value: { type: "const", constVal: "alpha-a-circle-outline" },
+              color: { type: "const", constVal: import_Color.Color.Gray }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.controlMode$/,
+              read: `return val == 'AUTOMATIC' ? true : false`,
+              forceType: "boolean"
+            }
+          },
+          setValue1: {
+            mode: "auto",
+            role: "",
+            type: "state",
+            dp: "",
+            regexp: /\.controlMode$/,
+            write: `return val != true ? 'AUTOMATIC' : 'MANUAL'`
+          }
+        }
+      },
+      //Manual
+      {
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "alpha-m-circle" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            },
+            false: {
+              value: { type: "const", constVal: "alpha-m-circle-outline" },
+              color: { type: "const", constVal: import_Color.Color.Gray }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.controlMode$/,
+              read: `return val == 'MANUAL' ? true : false`
+            }
+          },
+          setValue1: {
+            mode: "auto",
+            role: "",
+            type: "state",
+            dp: "",
+            regexp: /\.controlMode$/,
+            write: `return val = true ? 'MANUAL' : 'AUTOMATIC'`
+          }
+        }
+      },
+      //Boost
+      {
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "fast-forward-60" },
+              color: { type: "const", constVal: import_Color.Color.Yellow }
+            },
+            false: {
+              value: { type: "const", constVal: "fast-forward-60" },
+              color: { type: "const", constVal: import_Color.Color.Gray }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.boostMode$/
+            }
+          },
+          setValue1: { mode: "auto", type: "state", role: "switch", dp: "", regexp: /\.boostMode$/ }
+        }
+      },
+      //Fenster
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "window-open-variant" },
+              color: { type: "const", constVal: import_Color.Color.MSRed }
+            },
+            false: {
+              value: { type: "const", constVal: "window-closed-variant" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.windowOpen$/
+            }
+          }
+        }
+      },
+      //Party
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "party-popper" },
+              color: { type: "const", constVal: import_Color.Color.Cyan }
+            },
+            false: {
+              value: { type: "const", constVal: "party-popper" },
+              color: { type: "const", constVal: import_Color.Color.Gray }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.partyMode$/
+            }
+          }
+        }
+      },
+      //Feuchte
+      {
+        role: "text",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "water-percent" },
+              color: { type: "const", constVal: import_Color.Color.Green }
+            },
+            false: {
+              value: { type: "const", constVal: "water-percent" },
+              color: { type: "const", constVal: import_Color.Color.Red }
+            },
+            scale: { type: "const", constVal: { val_min: 0, val_max: 100, val_best: 60 } }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.humidity$/
+            }
+          }
+        }
+      },
+      //Batterie
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "battery-low" },
+              color: { type: "const", constVal: import_Color.Color.MSRed }
+            },
+            false: {
+              value: { type: "const", constVal: "battery-high" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.lowBat$/
+            }
+          }
+        }
+      },
+      //Wartung UPDATE
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          color: {
+            true: {
+              type: "const",
+              constVal: import_Color.Color.HMIOn
+            },
+            false: void 0,
+            scale: void 0
+          },
+          icon: {
+            true: {
+              value: { type: "const", constVal: "account-wrench" },
+              color: { type: "const", constVal: import_Color.Color.Yellow }
+            },
+            false: {
+              value: { type: "const", constVal: "account-wrench" },
+              color: { type: "const", constVal: import_Color.Color.Gray }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.updateState$/,
+              forceType: "boolean",
+              read: `return val !== 'UP_TO_DATE' ? true : false `
+            }
+          }
+        }
+      },
+      //Empfang - Verbindung
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "wifi-off" },
+              color: { type: "const", constVal: import_Color.Color.MSRed }
+            },
+            false: {
+              value: { type: "const", constVal: "wifi" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.unreach$/
+            }
+          }
+        }
+      },
+      //Fehler dutyCycle
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          color: {
+            true: {
+              type: "const",
+              constVal: import_Color.Color.HMIOn
+            },
+            false: void 0,
+            scale: void 0
+          },
+          icon: {
+            true: {
+              value: { type: "const", constVal: "alert-circle" },
+              color: { type: "const", constVal: import_Color.Color.MSRed }
+            },
+            false: {
+              value: { type: "const", constVal: "alert-circle-outline" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            },
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.dutyCycle$/
+            }
+          }
+        }
+      }
+    ]
+  },
+  "thermo.hmip.wallthermostat": {
+    adapter: "hmip.0",
+    card: "cardThermo",
+    alwaysOn: "none",
+    useColor: false,
+    items: void 0,
+    config: {
+      card: "cardThermo",
+      data: {
+        headline: { mode: "auto", role: "", type: "state", dp: "", regexp: /\.info\.label$/ },
+        mixed1: {
+          value: { type: "const", constVal: "aktuell" }
+        },
+        mixed2: {
+          value: {
+            mode: "auto",
+            role: "value.temperature",
+            type: "triggered",
+            dp: "",
+            regexp: /\.actualTemperature$/
+          },
+          factor: { type: "const", constVal: 1 },
+          decimal: { type: "const", constVal: 1 },
+          unit: { type: "const", constVal: "\xB0C" }
+        },
+        mixed3: {
+          value: { type: "const", constVal: "valve" }
+        },
+        mixed4: {
+          value: {
+            mode: "auto",
+            role: "value",
+            type: "triggered",
+            dp: "",
+            regexp: /\.valvePosition$/
+          },
+          factor: { type: "const", constVal: 1 },
+          decimal: { type: "const", constVal: 0 },
+          unit: { type: "const", constVal: "%" }
+        },
+        minTemp: {
+          mode: "auto",
+          role: "value",
+          type: "state",
+          dp: "",
+          regexp: /\.minTemperature$/
+        },
+        maxTemp: {
+          mode: "auto",
+          role: "value",
+          type: "state",
+          dp: "",
+          regexp: /\.maxTemperature$/
+        },
+        tempStep: { type: "const", constVal: "5" },
+        unit: { type: "const", constVal: "\xB0C" },
+        set1: {
+          mode: "auto",
+          type: "state",
+          dp: "",
+          regexp: /\.setPointTemperature$/,
+          role: ""
+        }
+      }
+    },
+    pageItems: [
+      //Automatic
+      {
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "alpha-a-circle" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            },
+            false: {
+              value: { type: "const", constVal: "alpha-a-circle-outline" },
+              color: { type: "const", constVal: import_Color.Color.Gray }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.controlMode$/,
+              read: `return val == 'AUTOMATIC' ? true : false`,
+              forceType: "boolean"
+            }
+          },
+          setValue1: {
+            mode: "auto",
+            role: "",
+            type: "state",
+            dp: "",
+            regexp: /\.controlMode$/,
+            write: `return val != true ? 'AUTOMATIC' : 'MANUAL'`
+          }
+        }
+      },
+      //Manual
+      {
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "alpha-m-circle" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            },
+            false: {
+              value: { type: "const", constVal: "alpha-m-circle-outline" },
+              color: { type: "const", constVal: import_Color.Color.Gray }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.controlMode$/,
+              read: `return val == 'MANUAL' ? true : false`
+            }
+          },
+          setValue1: {
+            mode: "auto",
+            role: "",
+            type: "state",
+            dp: "",
+            regexp: /\.controlMode$/,
+            write: `return val = true ? 'MANUAL' : 'AUTOMATIC'`
+          }
+        }
+      },
+      //Boost
+      {
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "fast-forward-60" },
+              color: { type: "const", constVal: import_Color.Color.Yellow }
+            },
+            false: {
+              value: { type: "const", constVal: "fast-forward-60" },
+              color: { type: "const", constVal: import_Color.Color.Gray }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.boostMode$/
+            }
+          },
+          setValue1: { mode: "auto", type: "state", role: "switch", dp: "", regexp: /\.boostMode$/ }
+        }
+      },
+      //Fenster
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "window-open-variant" },
+              color: { type: "const", constVal: import_Color.Color.MSRed }
+            },
+            false: {
+              value: { type: "const", constVal: "window-closed-variant" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.windowOpen$/
+            }
+          }
+        }
+      },
+      //Party
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "party-popper" },
+              color: { type: "const", constVal: import_Color.Color.Cyan }
+            },
+            false: {
+              value: { type: "const", constVal: "party-popper" },
+              color: { type: "const", constVal: import_Color.Color.Gray }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.partyMode$/
+            }
+          }
+        }
+      },
+      //Feuchte
+      {
+        role: "text",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "water-percent" },
+              color: { type: "const", constVal: import_Color.Color.Green }
+            },
+            false: {
+              value: { type: "const", constVal: "water-percent" },
+              color: { type: "const", constVal: import_Color.Color.Red }
+            },
+            scale: { type: "const", constVal: { val_min: 0, val_max: 100, val_best: 60 } }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.humidity$/
+            }
+          }
+        }
+      },
+      //Batterie
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "battery-low" },
+              color: { type: "const", constVal: import_Color.Color.MSRed }
+            },
+            false: {
+              value: { type: "const", constVal: "battery-high" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.lowBat$/
+            }
+          }
+        }
+      },
+      //Wartung UPDATE
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          color: {
+            true: {
+              type: "const",
+              constVal: import_Color.Color.HMIOn
+            },
+            false: void 0,
+            scale: void 0
+          },
+          icon: {
+            true: {
+              value: { type: "const", constVal: "account-wrench" },
+              color: { type: "const", constVal: import_Color.Color.Yellow }
+            },
+            false: {
+              value: { type: "const", constVal: "account-wrench" },
+              color: { type: "const", constVal: import_Color.Color.Gray }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.updateState$/,
+              forceType: "boolean",
+              read: `return val !== 'UP_TO_DATE' ? true : false `
+            }
+          }
+        }
+      },
+      //Empfang - Verbindung
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "wifi-off" },
+              color: { type: "const", constVal: import_Color.Color.MSRed }
+            },
+            false: {
+              value: { type: "const", constVal: "wifi" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            }
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.unreach$/
+            }
+          }
+        }
+      },
+      //Fehler dutyCycle
+      {
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          color: {
+            true: {
+              type: "const",
+              constVal: import_Color.Color.HMIOn
+            },
+            false: void 0,
+            scale: void 0
+          },
+          icon: {
+            true: {
+              value: { type: "const", constVal: "alert-circle" },
+              color: { type: "const", constVal: import_Color.Color.MSRed }
+            },
+            false: {
+              value: { type: "const", constVal: "alert-circle-outline" },
+              color: { type: "const", constVal: import_Color.Color.MSGreen }
+            },
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
+          },
+          entity1: {
+            value: {
+              mode: "auto",
+              role: "",
+              type: "triggered",
+              dp: "",
+              regexp: /\.dutyCycle$/
+            }
+          }
+        }
+      }
+    ]
   }
 };
 // Annotate the CommonJS export names for ESM import in node:
