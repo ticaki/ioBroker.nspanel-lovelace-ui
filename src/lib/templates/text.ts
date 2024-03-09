@@ -1,8 +1,7 @@
-import { PageItemOptionsTemplate } from '../types/type-pageItem';
 import { Color } from '../const/Color';
-import { TemplateIdent } from '../types/types';
+import { TemplateItems } from '../types/types';
 
-export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplate>> = {
+export const textTemplates: TemplateItems = {
     'text.window.isOpen': {
         role: 'text',
         adapter: '',

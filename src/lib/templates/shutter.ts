@@ -1,8 +1,7 @@
 import { Color } from '../const/Color';
-import { PageItemOptionsTemplate } from '../types/type-pageItem';
-import { TemplateIdent } from '../types/types';
+import { TemplateItems } from '../types/types';
 
-export const shutterTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplate>> = {
+export const shutterTemplates: TemplateItems = {
     'generic.shutter': {
         /**
          * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.

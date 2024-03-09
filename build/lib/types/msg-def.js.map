@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../src/lib/types/msg-def.ts"],
-  "sourcesContent": ["export type MessageWeatherUpdate = 'icon' | 'iconColor' | 'displayName' | 'optionalValue'; // 'type' | 'intNameEntity' |  ignored\nexport type MessageStatusUpdate = 'icon1' | 'icon1Color' | 'icon2' | 'icon2Color' | 'icon1Font' | 'icon2Font';\n"],
-  "mappings": ";;;;;;;;;;;;;;AAAA;AAAA;",
-  "names": []
-}

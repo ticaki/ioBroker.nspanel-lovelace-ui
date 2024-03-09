@@ -8,6 +8,8 @@ import * as pages from './pages';
  * card.adapter?.aufgabe?.gerät?
  */
 
+export type TemplateItems = Partial<Record<TemplateIdent, typePageItem.PageItemOptionsTemplate>>;
+
 export type PageTemplateIdent =
     | 'entities.waste-calendar'
     | 'media.spotify-premium'

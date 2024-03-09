@@ -1,9 +1,8 @@
 //import * as Color from '../const/Color';
 import { Color } from '../const/Color';
-import { PageItemOptionsTemplate } from '../types/type-pageItem';
-import { TemplateIdent } from '../types/types';
+import { TemplateItems } from '../types/types';
 
-export const lightTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplate>> = {
+export const lightTemplates: TemplateItems = {
     'light.shelly.rgbw2': {
         role: 'rgbSingle',
         type: 'light',

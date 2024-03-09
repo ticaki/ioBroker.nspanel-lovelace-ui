@@ -1,8 +1,7 @@
 import { Color } from '../const/Color';
-import { PageItemOptionsTemplate } from '../types/type-pageItem';
-import { TemplateIdent } from '../types/types';
+import { TemplateItems } from '../types/types';
 
-export const buttonTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplate>> = {
+export const buttonTemplates: TemplateItems = {
     'button.iconLeftSize': {
         role: 'text.list',
         type: 'button',
