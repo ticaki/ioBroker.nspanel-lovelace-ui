@@ -8,7 +8,12 @@ import * as pages from './pages';
  * card.adapter?.aufgabe?.gerät?
  */
 
-export type PageTemplateIdent = 'entities.waste-calendar' | 'media.spotify-premium' | 'entities.departure-timetable';
+export type PageTemplateIdent =
+    | 'entities.waste-calendar'
+    | 'media.spotify-premium'
+    | 'entities.departure-timetable'
+    | 'thermo.hmip.valve'
+    | 'thermo.hmip.wallthermostat';
 
 export type TemplateIdent =
     | 'generic.shutter'
