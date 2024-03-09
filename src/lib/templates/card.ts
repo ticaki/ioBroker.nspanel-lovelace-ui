@@ -647,6 +647,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
         items: undefined,
         config: {
             card: 'cardEntities',
+            //scrollType: 'page',
             data: {
                 headline: {
                     type: 'const',
@@ -655,6 +656,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
             },
         },
         pageItems: [
+            //Abfahrt 1
             {
                 role: 'text.list',
                 type: 'text',
@@ -705,6 +707,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     },
                 },
             },
+            //Abfahrt 2
             {
                 role: 'text.list',
                 type: 'text',
@@ -755,6 +758,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     },
                 },
             },
+            //Abfahrt 3
             {
                 role: 'text.list',
                 type: 'text',
@@ -805,6 +809,58 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     },
                 },
             },
+            //Abfahrt 4
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.DepartureDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.4\.Departure$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.Direction$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.4\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Abfahrt 5
             {
                 role: 'text.list',
                 type: 'text',
@@ -855,6 +911,261 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     },
                 },
             },
+            //Abfahrt 6
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.5\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.5\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.5\.DepartureDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.5\.Departure$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.5\.Direction$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.5\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Abfahrt 7
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.6\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.6\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.6\.DepartureDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.6\.Departure$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.6\.Direction$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.6\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Abfahrt 8
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.7\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.7\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.7\.DepartureDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.7\.Departure$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.7\.Direction$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.7\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Abfahrt 9
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.8\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.8\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.8\.DepartureDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.8\.Departure$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.8\.Direction$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.8\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Abfahrt 10
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.9\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.9\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.9\.DepartureDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.9\.Departure$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.9\.Direction$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.9\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
         ],
     },
     'thermo.hmip.valve': {
@@ -868,7 +1179,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
             data: {
                 headline: { mode: 'auto', role: '', type: 'state', dp: '', regexp: /\.info\.label$/ },
                 mixed1: {
-                    value: { type: 'const', constVal: 'aktuell' },
+                    value: { type: 'const', constVal: 'actualtemp' },
                 },
                 mixed2: {
                     value: {
@@ -883,7 +1194,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     unit: { type: 'const', constVal: '°C' },
                 },
                 mixed3: {
-                    value: { type: 'const', constVal: 'valve' },
+                    value: { type: 'const', constVal: 'valveposition' },
                 },
                 mixed4: {
                     value: {
@@ -932,11 +1243,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'alpha-a-circle' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.activated },
                         },
                         false: {
                             value: { type: 'const', constVal: 'alpha-a-circle-outline' },
-                            color: { type: 'const', constVal: Color.Gray },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
                     },
                     entity1: {
@@ -969,11 +1280,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'alpha-m-circle' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.activated },
                         },
                         false: {
                             value: { type: 'const', constVal: 'alpha-m-circle-outline' },
-                            color: { type: 'const', constVal: Color.Gray },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
                     },
                     entity1: {
@@ -1005,11 +1316,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'fast-forward-60' },
-                            color: { type: 'const', constVal: Color.Yellow },
+                            color: { type: 'const', constVal: Color.activated },
                         },
                         false: {
                             value: { type: 'const', constVal: 'fast-forward-60' },
-                            color: { type: 'const', constVal: Color.Gray },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
                     },
                     entity1: {
@@ -1033,11 +1344,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'window-open-variant' },
-                            color: { type: 'const', constVal: Color.MSRed },
+                            color: { type: 'const', constVal: Color.open },
                         },
                         false: {
                             value: { type: 'const', constVal: 'window-closed-variant' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.close },
                         },
                     },
                     entity1: {
@@ -1060,11 +1371,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'party-popper' },
-                            color: { type: 'const', constVal: Color.Cyan },
+                            color: { type: 'const', constVal: Color.activated },
                         },
                         false: {
                             value: { type: 'const', constVal: 'party-popper' },
-                            color: { type: 'const', constVal: Color.Gray },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
                     },
                     entity1: {
@@ -1087,11 +1398,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'water-percent' },
-                            color: { type: 'const', constVal: Color.Green },
+                            color: { type: 'const', constVal: Color.good },
                         },
                         false: {
                             value: { type: 'const', constVal: 'water-percent' },
-                            color: { type: 'const', constVal: Color.Red },
+                            color: { type: 'const', constVal: Color.bad },
                         },
                         scale: { type: 'const', constVal: { val_min: 0, val_max: 100, val_best: 60 } },
                     },
@@ -1115,11 +1426,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'battery-low' },
-                            color: { type: 'const', constVal: Color.MSRed },
+                            color: { type: 'const', constVal: Color.bad },
                         },
                         false: {
                             value: { type: 'const', constVal: 'battery-high' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.good },
                         },
                     },
                     entity1: {
@@ -1139,22 +1450,14 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                 type: 'button',
                 dpInit: '',
                 data: {
-                    color: {
-                        true: {
-                            type: 'const',
-                            constVal: Color.HMIOn,
-                        },
-                        false: undefined,
-                        scale: undefined,
-                    },
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'account-wrench' },
-                            color: { type: 'const', constVal: Color.Yellow },
+                            color: { type: 'const', constVal: Color.true },
                         },
                         false: {
                             value: { type: 'const', constVal: 'account-wrench' },
-                            color: { type: 'const', constVal: Color.Gray },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
                     },
                     entity1: {
@@ -1179,11 +1482,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'wifi-off' },
-                            color: { type: 'const', constVal: Color.MSRed },
+                            color: { type: 'const', constVal: Color.bad },
                         },
                         false: {
                             value: { type: 'const', constVal: 'wifi' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.good },
                         },
                     },
                     entity1: {
@@ -1203,26 +1506,15 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                 type: 'button',
                 dpInit: '',
                 data: {
-                    color: {
-                        true: {
-                            type: 'const',
-                            constVal: Color.HMIOn,
-                        },
-                        false: undefined,
-                        scale: undefined,
-                    },
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'alert-circle' },
-                            color: { type: 'const', constVal: Color.MSRed },
+                            color: { type: 'const', constVal: Color.bad },
                         },
                         false: {
                             value: { type: 'const', constVal: 'alert-circle-outline' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
-                        scale: undefined,
-                        maxBri: undefined,
-                        minBri: undefined,
                     },
                     entity1: {
                         value: {
@@ -1248,7 +1540,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
             data: {
                 headline: { mode: 'auto', role: '', type: 'state', dp: '', regexp: /\.info\.label$/ },
                 mixed1: {
-                    value: { type: 'const', constVal: 'aktuell' },
+                    value: { type: 'const', constVal: 'actualtemp' },
                 },
                 mixed2: {
                     value: {
@@ -1263,7 +1555,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     unit: { type: 'const', constVal: '°C' },
                 },
                 mixed3: {
-                    value: { type: 'const', constVal: 'valve' },
+                    value: { type: 'const', constVal: 'valveposition' },
                 },
                 mixed4: {
                     value: {
@@ -1312,11 +1604,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'alpha-a-circle' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.activated },
                         },
                         false: {
                             value: { type: 'const', constVal: 'alpha-a-circle-outline' },
-                            color: { type: 'const', constVal: Color.Gray },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
                     },
                     entity1: {
@@ -1349,11 +1641,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'alpha-m-circle' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.activated },
                         },
                         false: {
                             value: { type: 'const', constVal: 'alpha-m-circle-outline' },
-                            color: { type: 'const', constVal: Color.Gray },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
                     },
                     entity1: {
@@ -1385,11 +1677,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'fast-forward-60' },
-                            color: { type: 'const', constVal: Color.Yellow },
+                            color: { type: 'const', constVal: Color.activated },
                         },
                         false: {
                             value: { type: 'const', constVal: 'fast-forward-60' },
-                            color: { type: 'const', constVal: Color.Gray },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
                     },
                     entity1: {
@@ -1413,11 +1705,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'window-open-variant' },
-                            color: { type: 'const', constVal: Color.MSRed },
+                            color: { type: 'const', constVal: Color.open },
                         },
                         false: {
                             value: { type: 'const', constVal: 'window-closed-variant' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.close },
                         },
                     },
                     entity1: {
@@ -1440,11 +1732,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'party-popper' },
-                            color: { type: 'const', constVal: Color.Cyan },
+                            color: { type: 'const', constVal: Color.activated },
                         },
                         false: {
                             value: { type: 'const', constVal: 'party-popper' },
-                            color: { type: 'const', constVal: Color.Gray },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
                     },
                     entity1: {
@@ -1467,11 +1759,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'water-percent' },
-                            color: { type: 'const', constVal: Color.Green },
+                            color: { type: 'const', constVal: Color.good },
                         },
                         false: {
                             value: { type: 'const', constVal: 'water-percent' },
-                            color: { type: 'const', constVal: Color.Red },
+                            color: { type: 'const', constVal: Color.bad },
                         },
                         scale: { type: 'const', constVal: { val_min: 0, val_max: 100, val_best: 60 } },
                     },
@@ -1495,11 +1787,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'battery-low' },
-                            color: { type: 'const', constVal: Color.MSRed },
+                            color: { type: 'const', constVal: Color.bad },
                         },
                         false: {
                             value: { type: 'const', constVal: 'battery-high' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.good },
                         },
                     },
                     entity1: {
@@ -1519,22 +1811,14 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                 type: 'button',
                 dpInit: '',
                 data: {
-                    color: {
-                        true: {
-                            type: 'const',
-                            constVal: Color.HMIOn,
-                        },
-                        false: undefined,
-                        scale: undefined,
-                    },
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'account-wrench' },
-                            color: { type: 'const', constVal: Color.Yellow },
+                            color: { type: 'const', constVal: Color.true },
                         },
                         false: {
                             value: { type: 'const', constVal: 'account-wrench' },
-                            color: { type: 'const', constVal: Color.Gray },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
                     },
                     entity1: {
@@ -1559,11 +1843,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'wifi-off' },
-                            color: { type: 'const', constVal: Color.MSRed },
+                            color: { type: 'const', constVal: Color.bad },
                         },
                         false: {
                             value: { type: 'const', constVal: 'wifi' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.good },
                         },
                     },
                     entity1: {
@@ -1583,26 +1867,15 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                 type: 'button',
                 dpInit: '',
                 data: {
-                    color: {
-                        true: {
-                            type: 'const',
-                            constVal: Color.HMIOn,
-                        },
-                        false: undefined,
-                        scale: undefined,
-                    },
                     icon: {
                         true: {
                             value: { type: 'const', constVal: 'alert-circle' },
-                            color: { type: 'const', constVal: Color.MSRed },
+                            color: { type: 'const', constVal: Color.bad },
                         },
                         false: {
                             value: { type: 'const', constVal: 'alert-circle-outline' },
-                            color: { type: 'const', constVal: Color.MSGreen },
+                            color: { type: 'const', constVal: Color.deactivated },
                         },
-                        scale: undefined,
-                        maxBri: undefined,
-                        minBri: undefined,
                     },
                     entity1: {
                         value: {
