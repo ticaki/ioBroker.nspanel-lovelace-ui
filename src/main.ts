@@ -48,7 +48,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                 return;
             }
             this.log.warn('No configuration use dev test config!');
-            this.config.Testconfig2 = Testconfig;
+            let testconfig = Testconfig;
+            try {
+                const path: string = './lib/config-custom.js';
+                testconfig = (await import(path)).Testconfig;
+            } catch (e) {}
+            this.config.Testconfig2 = testconfig;
         }
         if (
             !this.config.Testconfig2 ||

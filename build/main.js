@@ -59,7 +59,13 @@ class NspanelLovelaceUi extends utils.Adapter {
         return;
       }
       this.log.warn("No configuration use dev test config!");
-      this.config.Testconfig2 = import_config.Testconfig;
+      let testconfig = import_config.Testconfig;
+      try {
+        const path = "./lib/config-custom.js";
+        testconfig = (await Promise.resolve().then(() => __toESM(require(path)))).Testconfig;
+      } catch (e) {
+      }
+      this.config.Testconfig2 = testconfig;
     }
     if (!this.config.Testconfig2 || !Array.isArray(this.config.Testconfig2) || !this.config.Testconfig2[0] || !this.config.Testconfig2[0].pages) {
       this.log.warn("Adapter on hold, user restart needed!");
