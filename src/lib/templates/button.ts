@@ -12,11 +12,11 @@ export const buttonTemplates: Partial<Record<TemplateIdent, PageItemOptionsTempl
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'size-m' },
-                    color: { type: 'const', constVal: Color.Yellow },
+                    color: { type: 'const', constVal: Color.option1 },
                 },
                 false: {
                     value: undefined,
-                    color: { type: 'const', constVal: Color.Green },
+                    color: { type: 'const', constVal: Color.option2 },
                 },
             },
             entity1: {
@@ -84,11 +84,11 @@ export const buttonTemplates: Partial<Record<TemplateIdent, PageItemOptionsTempl
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'power-plug' },
-                    color: { type: 'const', constVal: Color.Green },
+                    color: { type: 'const', constVal: Color.On },
                 },
                 false: {
                     value: { type: 'const', constVal: 'power-plug-off-outline' },
-                    color: { type: 'const', constVal: Color.Gray },
+                    color: { type: 'const', constVal: Color.Off },
                 },
             },
             entity1: {
@@ -156,13 +156,13 @@ export const buttonTemplates: Partial<Record<TemplateIdent, PageItemOptionsTempl
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'checkbox-intermediate' },
-                    color: { type: 'const', constVal: Color.Red },
+                    color: { type: 'const', constVal: Color.bad },
                     text: { value: { type: 'internal', dp: '///AdapterStopped' } },
                 },
 
                 false: {
                     value: { type: 'const', constVal: 'checkbox-marked-outline' },
-                    color: { type: 'const', constVal: Color.Green },
+                    color: { type: 'const', constVal: Color.good },
                     text: { value: { type: 'internal', dp: '///AdapterStopped' } },
                 },
             },

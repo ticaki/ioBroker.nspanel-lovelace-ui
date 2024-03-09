@@ -31,11 +31,11 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "window-open-variant" },
-          color: { type: "const", constVal: import_Color.Color.Cyan }
+          color: { type: "const", constVal: import_Color.Color.open }
         },
         false: {
           value: { type: "const", constVal: "window-closed-variant" },
-          color: { type: "const", constVal: import_Color.Color.Green }
+          color: { type: "const", constVal: import_Color.Color.close }
         }
       },
       entity1: {

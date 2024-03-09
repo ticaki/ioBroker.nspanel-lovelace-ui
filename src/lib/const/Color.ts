@@ -19,9 +19,41 @@ export interface ColorThemenInterface {
     deactivated: RGB;
     attention: RGB;
     info: RGB;
+    option1: RGB;
+    option2: RGB;
+    option3: RGB;
+    option4: RGB;
+    open: RGB;
+    close: RGB;
 }
 
-export class Color {
+/**
+ * check if Color has all propertys of ColorThemenInterface
+ * @param k just a key
+ * @returns
+ */
+export function test(k: keyof ColorThemenInterface): any {
+    return Color[k];
+}
+class ColorBase {
+    constructor() {}
+    static good: RGB | string = 'default.color.from.start.good';
+    static bad: RGB | string = 'default.color.from.start.bad';
+    static true: RGB | string = 'default.color.from.start.true';
+    static false: RGB | string = 'default.color.from.start.false';
+    static activated: RGB | string = 'default.color.from.start.activated';
+    static deactivated: RGB | string = 'default.color.from.start.deactivated';
+    static attention: RGB | string = 'default.color.from.start.attention';
+    static info: RGB | string = 'default.color.from.start.info';
+    static option1: RGB | string = 'default.color.from.start.option1';
+    static option2: RGB | string = 'default.color.from.start.option2';
+    static option3: RGB | string = 'default.color.from.start.option3';
+    static option4: RGB | string = 'default.color.from.start.option3';
+    static open: RGB | string = 'default.color.from.start.open';
+    static close: RGB | string = 'default.color.from.start.close';
+}
+
+export class Color extends ColorBase {
     static readonly HMIOff: RGB = { r: 68, g: 115, b: 158 }; // Blue-Off - Original Entity Off
     static readonly HMIOn: RGB = { r: 3, g: 169, b: 244 }; // Blue-On
     static readonly HMIDark: RGB = { r: 29, g: 29, b: 29 }; // Original Background Color
@@ -108,15 +140,6 @@ export class Color {
     static readonly swSunny: RGB = { r: 255, g: 255, b: 0 };
     static readonly swWindy: RGB = { r: 150, g: 150, b: 150 };
 
-    static good: RGB | string = 'default.color.from.start.good';
-    static bad: RGB | string = 'default.color.from.start.bad';
-    static true: RGB | string = 'default.color.from.start.true';
-    static false: RGB | string = 'default.color.from.start.false';
-    static activated: RGB | string = 'default.color.from.start.activated';
-    static deactivated: RGB | string = 'default.color.from.start.deactivated';
-    static attention: RGB | string = 'default.color.from.start.attention';
-    static info: RGB | string = 'default.color.from.start.info';
-
     static getColorFromDefault(s: any): RGB | string {
         if (typeof s === 'string') {
             switch (s) {
@@ -136,6 +159,14 @@ export class Color {
                     return Color.attention;
                 case 'default.color.from.start.info':
                     return Color.info;
+                case 'default.color.from.start.option1':
+                    return Color.option1;
+                case 'default.color.from.start.option2':
+                    return Color.option2;
+                case 'default.color.from.start.option3':
+                    return Color.option3;
+                case 'default.color.from.start.option4':
+                    return Color.option4;
             }
         }
         return s;
@@ -149,6 +180,12 @@ export class Color {
         deactivated: Color.Gray,
         attention: Color.Cyan,
         info: Color.White,
+        option1: Color.Yellow,
+        option2: Color.MSYellow,
+        option3: Color.MSRed,
+        option4: Color.MSGreen,
+        open: Color.Red,
+        close: Color.Green,
     };
 
     /**
@@ -156,14 +193,7 @@ export class Color {
      * @param s
      */
     static setTheme(s: ColorThemenInterface): void {
-        Color.good = s.good;
-        Color.bad = s.bad;
-        Color.true = s.true;
-        Color.false = s.false;
-        Color.activated = s.activated;
-        Color.deactivated = s.deactivated;
-        Color.attention = s.attention;
-        Color.info = s.info;
+        for (const a in s) Color.currentTheme[a as keyof ColorThemenInterface] = s[a as keyof ColorThemenInterface];
     }
 
     static rgb_dec565(rgb: RGB): number {

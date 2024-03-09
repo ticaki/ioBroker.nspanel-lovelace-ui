@@ -34,11 +34,11 @@ const shutterTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "window-shutter-open" },
-          color: { type: "const", constVal: import_Color.Color.Yellow }
+          color: { type: "const", constVal: import_Color.Color.open }
         },
         false: {
           value: { type: "const", constVal: "window-shutter" },
-          color: { type: "const", constVal: import_Color.Color.HMIOff }
+          color: { type: "const", constVal: import_Color.Color.close }
         },
         scale: void 0,
         maxBri: void 0,
@@ -176,11 +176,11 @@ const shutterTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "window-shutter-open" },
-          color: { type: "const", constVal: import_Color.Color.Green }
+          color: { type: "const", constVal: import_Color.Color.On }
         },
         false: {
           value: { type: "const", constVal: "window-shutter" },
-          color: { type: "const", constVal: import_Color.Color.HMIOff }
+          color: { type: "const", constVal: import_Color.Color.Off }
         }
       },
       text: {

@@ -18,7 +18,7 @@ import { PagePower } from '../pages/pagePower';
 import { PageItem } from '../pages/pageItem';
 import { PageEntities } from '../pages/pageEntities';
 import { PageNotify } from '../pages/pageNotification';
-import { systemNavigation, systemPages } from '../const/system-templates';
+import { systemNavigation, systemPages } from '../templates/system-templates';
 import { PageAlarm } from '../pages/pageAlarm';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {

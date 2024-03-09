@@ -14,11 +14,11 @@ export const shutterTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemp
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'window-shutter-open' },
-                    color: { type: 'const', constVal: Color.Yellow },
+                    color: { type: 'const', constVal: Color.open },
                 },
                 false: {
                     value: { type: 'const', constVal: 'window-shutter' },
-                    color: { type: 'const', constVal: Color.HMIOff },
+                    color: { type: 'const', constVal: Color.close },
                 },
                 scale: undefined,
                 maxBri: undefined,
@@ -159,11 +159,11 @@ export const shutterTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemp
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'window-shutter-open' },
-                    color: { type: 'const', constVal: Color.Green },
+                    color: { type: 'const', constVal: Color.On },
                 },
                 false: {
                     value: { type: 'const', constVal: 'window-shutter' },
-                    color: { type: 'const', constVal: Color.HMIOff },
+                    color: { type: 'const', constVal: Color.Off },
                 },
             },
             text: {

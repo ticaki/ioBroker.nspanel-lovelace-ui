@@ -31,11 +31,11 @@ const buttonTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "size-m" },
-          color: { type: "const", constVal: import_Color.Color.Yellow }
+          color: { type: "const", constVal: import_Color.Color.option1 }
         },
         false: {
           value: void 0,
-          color: { type: "const", constVal: import_Color.Color.Green }
+          color: { type: "const", constVal: import_Color.Color.option2 }
         }
       },
       entity1: {
@@ -101,11 +101,11 @@ const buttonTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "power-plug" },
-          color: { type: "const", constVal: import_Color.Color.Green }
+          color: { type: "const", constVal: import_Color.Color.On }
         },
         false: {
           value: { type: "const", constVal: "power-plug-off-outline" },
-          color: { type: "const", constVal: import_Color.Color.Gray }
+          color: { type: "const", constVal: import_Color.Color.Off }
         }
       },
       entity1: {
@@ -169,12 +169,12 @@ const buttonTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "checkbox-intermediate" },
-          color: { type: "const", constVal: import_Color.Color.Red },
+          color: { type: "const", constVal: import_Color.Color.bad },
           text: { value: { type: "internal", dp: "///AdapterStopped" } }
         },
         false: {
           value: { type: "const", constVal: "checkbox-marked-outline" },
-          color: { type: "const", constVal: import_Color.Color.Green },
+          color: { type: "const", constVal: import_Color.Color.good },
           text: { value: { type: "internal", dp: "///AdapterStopped" } }
         }
       },

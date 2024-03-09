@@ -50,7 +50,7 @@ export async function handleCardRole(
                                 value: { type: 'const', constVal: 'checkbox-intermediate' },
                                 color: {
                                     type: 'const',
-                                    constVal: cardRole === 'AdapterConnection' ? Color.Yellow : Color.Red,
+                                    constVal: cardRole === 'AdapterConnection' ? Color.good : Color.bad,
                                 },
                             },
                             scale: undefined,
@@ -104,11 +104,11 @@ export async function handleCardRole(
                             icon: {
                                 true: {
                                     value: { type: 'const', constVal: 'checkbox-intermediate' },
-                                    color: { type: 'const', constVal: Color.Green },
+                                    color: { type: 'const', constVal: Color.good },
                                 },
                                 false: {
                                     value: { type: 'const', constVal: 'checkbox-intermediate' },
-                                    color: { type: 'const', constVal: Color.Red },
+                                    color: { type: 'const', constVal: Color.bad },
                                 },
                             },
                             entity1: {

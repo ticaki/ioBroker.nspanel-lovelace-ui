@@ -28,14 +28,36 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var Color_exports = {};
 __export(Color_exports, {
-  Color: () => Color
+  Color: () => Color,
+  test: () => test
 });
 module.exports = __toCommonJS(Color_exports);
 var import_colord = require("colord");
 var import_names = __toESM(require("colord/plugins/names"));
 var import_mix = __toESM(require("colord/plugins/mix"));
 (0, import_colord.extend)([import_names.default, import_mix.default]);
-class Color {
+function test(k) {
+  return Color[k];
+}
+class ColorBase {
+  constructor() {
+  }
+  static good = "default.color.from.start.good";
+  static bad = "default.color.from.start.bad";
+  static true = "default.color.from.start.true";
+  static false = "default.color.from.start.false";
+  static activated = "default.color.from.start.activated";
+  static deactivated = "default.color.from.start.deactivated";
+  static attention = "default.color.from.start.attention";
+  static info = "default.color.from.start.info";
+  static option1 = "default.color.from.start.option1";
+  static option2 = "default.color.from.start.option2";
+  static option3 = "default.color.from.start.option3";
+  static option4 = "default.color.from.start.option3";
+  static open = "default.color.from.start.open";
+  static close = "default.color.from.start.close";
+}
+class Color extends ColorBase {
   static HMIOff = { r: 68, g: 115, b: 158 };
   // Blue-Off - Original Entity Off
   static HMIOn = { r: 3, g: 169, b: 244 };
@@ -121,14 +143,6 @@ class Color {
   static swSnowyRainy = { r: 150, g: 150, b: 255 };
   static swSunny = { r: 255, g: 255, b: 0 };
   static swWindy = { r: 150, g: 150, b: 150 };
-  static good = "default.color.from.start.good";
-  static bad = "default.color.from.start.bad";
-  static true = "default.color.from.start.true";
-  static false = "default.color.from.start.false";
-  static activated = "default.color.from.start.activated";
-  static deactivated = "default.color.from.start.deactivated";
-  static attention = "default.color.from.start.attention";
-  static info = "default.color.from.start.info";
   static getColorFromDefault(s) {
     if (typeof s === "string") {
       switch (s) {
@@ -148,6 +162,14 @@ class Color {
           return Color.attention;
         case "default.color.from.start.info":
           return Color.info;
+        case "default.color.from.start.option1":
+          return Color.option1;
+        case "default.color.from.start.option2":
+          return Color.option2;
+        case "default.color.from.start.option3":
+          return Color.option3;
+        case "default.color.from.start.option4":
+          return Color.option4;
       }
     }
     return s;
@@ -160,21 +182,21 @@ class Color {
     activated: Color.Yellow,
     deactivated: Color.Gray,
     attention: Color.Cyan,
-    info: Color.White
+    info: Color.White,
+    option1: Color.Yellow,
+    option2: Color.MSYellow,
+    option3: Color.MSRed,
+    option4: Color.MSGreen,
+    open: Color.Red,
+    close: Color.Green
   };
   /**
    * set color theme...
    * @param s
    */
   static setTheme(s) {
-    Color.good = s.good;
-    Color.bad = s.bad;
-    Color.true = s.true;
-    Color.false = s.false;
-    Color.activated = s.activated;
-    Color.deactivated = s.deactivated;
-    Color.attention = s.attention;
-    Color.info = s.info;
+    for (const a in s)
+      Color.currentTheme[a] = s[a];
   }
   static rgb_dec565(rgb) {
     return rgb.r >> 3 << 11 | rgb.g >> 2 << 5 | rgb.b >> 3;
@@ -498,6 +520,7 @@ class Color {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Color
+  Color,
+  test
 });
 //# sourceMappingURL=Color.js.map

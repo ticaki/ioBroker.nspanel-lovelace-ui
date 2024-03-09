@@ -11,11 +11,11 @@ export const textTemplates: Partial<Record<TemplateIdent, PageItemOptionsTemplat
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'window-open-variant' },
-                    color: { type: 'const', constVal: Color.Cyan },
+                    color: { type: 'const', constVal: Color.open },
                 },
                 false: {
                     value: { type: 'const', constVal: 'window-closed-variant' },
-                    color: { type: 'const', constVal: Color.Green },
+                    color: { type: 'const', constVal: Color.close },
                 },
             },
             entity1: {

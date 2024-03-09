@@ -515,6 +515,13 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
           }
     : N;
 
+export type ChangeTypeOfKeysGeneric<Obj, N> = Obj extends object
+    ? Obj extends Color.RGB
+        ? N
+        : {
+              [K in keyof Obj]: ChangeTypeOfKeysGeneric<Obj[K], N>;
+          }
+    : N;
 /*export type DeepPartial<Obj, N> = Obj extends
     | object
     | listItem
