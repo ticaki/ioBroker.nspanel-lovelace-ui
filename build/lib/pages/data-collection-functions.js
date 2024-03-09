@@ -61,7 +61,7 @@ async function handleCardRole(adapter, cardRole, page) {
                 value: { type: "const", constVal: "checkbox-intermediate" },
                 color: {
                   type: "const",
-                  constVal: cardRole === "AdapterConnection" ? import_Color.Color.Yellow : import_Color.Color.Red
+                  constVal: cardRole === "AdapterConnection" ? import_Color.Color.good : import_Color.Color.bad
                 }
               },
               scale: void 0,
@@ -106,11 +106,11 @@ async function handleCardRole(adapter, cardRole, page) {
               icon: {
                 true: {
                   value: { type: "const", constVal: "checkbox-intermediate" },
-                  color: { type: "const", constVal: import_Color.Color.Green }
+                  color: { type: "const", constVal: import_Color.Color.good }
                 },
                 false: {
                   value: { type: "const", constVal: "checkbox-intermediate" },
-                  color: { type: "const", constVal: import_Color.Color.Red }
+                  color: { type: "const", constVal: import_Color.Color.bad }
                 }
               },
               entity1: {

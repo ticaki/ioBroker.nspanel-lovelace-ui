@@ -45,7 +45,7 @@ var import_pageThermo = require("../pages/pageThermo");
 var import_pagePower = require("../pages/pagePower");
 var import_pageEntities = require("../pages/pageEntities");
 var import_pageNotification = require("../pages/pageNotification");
-var import_system_templates = require("../const/system-templates");
+var import_system_templates = require("../templates/system-templates");
 var import_pageAlarm = require("../pages/pageAlarm");
 const DefaultOptions = {
   format: {

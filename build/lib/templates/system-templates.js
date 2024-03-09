@@ -760,7 +760,7 @@ const NetworkOption = {
         icon: {
           true: {
             text: { value: { type: "const", constVal: "1" } },
-            color: { type: "const", constVal: import_Color.Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
         },
@@ -791,7 +791,7 @@ const NetworkOption = {
         icon: {
           true: {
             text: { value: { type: "const", constVal: "2" } },
-            color: { type: "const", constVal: import_Color.Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
         },
@@ -822,7 +822,7 @@ const NetworkOption = {
         icon: {
           true: {
             text: { value: { type: "const", constVal: "3" } },
-            color: { type: "const", constVal: import_Color.Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
         },
@@ -853,7 +853,7 @@ const NetworkOption = {
         icon: {
           true: {
             text: { value: { type: "const", constVal: "4" } },
-            color: { type: "const", constVal: import_Color.Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
         },
@@ -884,7 +884,7 @@ const NetworkOption = {
         icon: {
           true: {
             text: { value: { type: "const", constVal: "5" } },
-            color: { type: "const", constVal: import_Color.Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
         },
@@ -915,7 +915,7 @@ const NetworkOption = {
         icon: {
           true: {
             text: { value: { type: "const", constVal: "6" } },
-            color: { type: "const", constVal: import_Color.Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
         },
@@ -946,7 +946,7 @@ const NetworkOption = {
         icon: {
           true: {
             text: { value: { type: "const", constVal: "7" } },
-            color: { type: "const", constVal: import_Color.Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
         },
@@ -977,7 +977,7 @@ const NetworkOption = {
         icon: {
           true: {
             text: { value: { type: "const", constVal: "8" } },
-            color: { type: "const", constVal: import_Color.Color.Gray }
+            color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
         },
