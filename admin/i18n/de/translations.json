@@ -41,5 +41,8 @@
     "IconRight": "Symbol rechts",
     "ScreensaverOptions": "Bildschirmschoner",
     "Overview": "Überblick",
-    "Display": "Anzeige"
+    "Display": "Anzeige",
+    "valveposition": "Ventilposition",
+    "actualtemp": "Aktuelle Temp"
 }
+

@@ -41,5 +41,7 @@
     "IconRight": "Icon right",
     "ScreensaverOptions": "Screensaver",
     "Overview": "Overview",
-    "Display": "Display"
+    "Display": "Display",
+    "valveposition": "Valveposition",
+    "actualtemp": "Actual Temp"
 }
