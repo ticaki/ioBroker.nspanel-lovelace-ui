@@ -193,7 +193,7 @@ export class Color extends ColorBase {
      * @param s
      */
     static setTheme(s: ColorThemenInterface): void {
-        for (const a in s) Color.currentTheme[a as keyof ColorThemenInterface] = s[a as keyof ColorThemenInterface];
+        for (const a in s) Color[a as keyof ColorThemenInterface] = s[a as keyof ColorThemenInterface];
     }
 
     static rgb_dec565(rgb: RGB): number {

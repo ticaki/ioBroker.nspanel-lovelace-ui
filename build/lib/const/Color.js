@@ -196,7 +196,7 @@ class Color extends ColorBase {
    */
   static setTheme(s) {
     for (const a in s)
-      Color.currentTheme[a] = s[a];
+      Color[a] = s[a];
   }
   static rgb_dec565(rgb) {
     return rgb.r >> 3 << 11 | rgb.g >> 2 << 5 | rgb.b >> 3;
