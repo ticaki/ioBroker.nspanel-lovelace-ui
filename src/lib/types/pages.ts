@@ -72,7 +72,7 @@ export type StateRole =
     | 'value.battery'
     | 'indicator.lowbat'
     | 'value'
-    | ''
+    | 'level.temperature'
     | 'level.value'
     | 'date'
     | 'date.sunrise.forecast.0'
