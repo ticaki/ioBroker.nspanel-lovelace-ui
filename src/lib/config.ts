@@ -28,15 +28,12 @@ const pageEntitiesTest1: pages.PageBaseConfig = {
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'arrow-up' },
-                        color: { type: 'const', constVal: Color.Blue },
+                        color: { type: 'const', constVal: 'Color.activated' },
                     },
                     false: {
                         value: { type: 'const', constVal: 'fan' },
-                        color: { type: 'const', constVal: Color.Red },
+                        color: { type: 'const', constVal: 'Color.deactivated' },
                     },
-                    scale: undefined,
-                    maxBri: undefined,
-                    minBri: undefined,
                 },
                 entity1: {
                     value: {

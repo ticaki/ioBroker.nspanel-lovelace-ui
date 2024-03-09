@@ -25,7 +25,7 @@ var utils = __toESM(require("@iobroker/adapter-core"));
 var import_library = require("./lib/classes/library");
 var import_register = require("source-map-support/register");
 var MQTT = __toESM(require("./lib/classes/mqtt"));
-var import_config_custom = require("./lib/config-custom");
+var import_config = require("./lib/config");
 var import_controller = require("./lib/controller/controller");
 var import_icon_mapping = require("./lib/const/icon_mapping");
 var import_definition = require("./lib/const/definition");
@@ -59,7 +59,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         return;
       }
       this.log.warn("No configuration use dev test config!");
-      this.config.Testconfig2 = import_config_custom.Testconfig;
+      this.config.Testconfig2 = import_config.Testconfig;
     }
     if (!this.config.Testconfig2 || !Array.isArray(this.config.Testconfig2) || !this.config.Testconfig2[0] || !this.config.Testconfig2[0].pages) {
       this.log.warn("Adapter on hold, user restart needed!");
