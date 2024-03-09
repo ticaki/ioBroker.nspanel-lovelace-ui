@@ -40,23 +40,24 @@ class PageMenu extends import_Page.Page {
   async getOptions(result) {
     if (this.pageItems) {
       if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardGrid" || this.config.card === "cardGrid2")) {
-        let maxItems = this.maxItems;
-        let a = 0;
-        if (this.pageItems.length > maxItems) {
-          a = maxItems * this.step;
-          maxItems = a + maxItems;
-        }
-        let b = 0;
         let pageItems = this.pageItems;
         if (this.config.filterType === "true" || this.config.filterType === "false") {
           this.tempItems = [];
           const testIt = this.config.filterType === "true";
-          for (const a2 of this.pageItems) {
-            if (a2 && a2.dataItems && a2.dataItems.data && "entity1" in a2.dataItems.data && a2.dataItems.data.entity1 && a2.dataItems.data.entity1.value && testIt === await a2.dataItems.data.entity1.value.getBoolean())
-              this.tempItems.push(a2);
+          for (const p of this.pageItems) {
+            if (p && p.dataItems && p.dataItems.data && "entity1" in p.dataItems.data && p.dataItems.data.entity1 && p.dataItems.data.entity1.value && testIt === await p.dataItems.data.entity1.value.getBoolean())
+              this.tempItems.push(p);
           }
           pageItems = this.tempItems;
         }
+        const isEntities = this.config.card === "cardEntities";
+        let maxItems = this.maxItems;
+        let a = 0;
+        if (this.pageItems.length > maxItems) {
+          a = isEntities ? maxItems : maxItems / 2 * this.step;
+          maxItems = a + maxItems;
+        }
+        let b = 0;
         if (this.config.scrollType === "page") {
           for (; a < maxItems; a++) {
             const temp = pageItems[a];

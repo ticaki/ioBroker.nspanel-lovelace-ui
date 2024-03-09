@@ -44,7 +44,7 @@ export async function handleCardRole(
                         icon: {
                             true: {
                                 value: { type: 'const', constVal: 'checkbox-intermediate' },
-                                color: { type: 'const', constVal: Color.Green },
+                                color: { type: 'const', constVal: Color.good },
                             },
                             false: {
                                 value: { type: 'const', constVal: 'checkbox-intermediate' },

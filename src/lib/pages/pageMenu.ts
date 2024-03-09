@@ -27,35 +27,36 @@ export class PageMenu extends Page {
                     this.config.card === 'cardGrid' ||
                     this.config.card === 'cardGrid2')
             ) {
-                let maxItems = this.maxItems;
-                let a = 0;
-                if (this.pageItems.length > maxItems) {
-                    a = maxItems * this.step;
-                    maxItems = a + maxItems;
-                }
-                let b = 0;
-                let pageItems = this.pageItems;
-
                 /**
                  * Live update von gefilterten Adaptern.
                  */
+                let pageItems = this.pageItems;
                 if (this.config.filterType === 'true' || this.config.filterType === 'false') {
                     this.tempItems = [];
                     const testIt = this.config.filterType === 'true';
-                    for (const a of this.pageItems) {
+                    for (const p of this.pageItems) {
                         if (
-                            a &&
-                            a.dataItems &&
-                            a.dataItems.data &&
-                            'entity1' in a.dataItems.data &&
-                            a.dataItems.data.entity1 &&
-                            a.dataItems.data.entity1.value &&
-                            testIt === (await a.dataItems.data.entity1.value.getBoolean())
+                            p &&
+                            p.dataItems &&
+                            p.dataItems.data &&
+                            'entity1' in p.dataItems.data &&
+                            p.dataItems.data.entity1 &&
+                            p.dataItems.data.entity1.value &&
+                            testIt === (await p.dataItems.data.entity1.value.getBoolean())
                         )
-                            this.tempItems.push(a);
+                            this.tempItems.push(p);
                     }
                     pageItems = this.tempItems;
                 }
+                const isEntities = this.config.card === 'cardEntities';
+                let maxItems = this.maxItems;
+                let a = 0;
+                if (this.pageItems.length > maxItems) {
+                    a = isEntities ? maxItems : (maxItems / 2) * this.step;
+                    maxItems = a + maxItems;
+                }
+                let b = 0;
+
                 if (this.config.scrollType === 'page') {
                     for (; a < maxItems; a++) {
                         const temp = pageItems[a];

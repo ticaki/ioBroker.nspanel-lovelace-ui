@@ -55,7 +55,7 @@ async function handleCardRole(adapter, cardRole, page) {
             icon: {
               true: {
                 value: { type: "const", constVal: "checkbox-intermediate" },
-                color: { type: "const", constVal: import_Color.Color.Green }
+                color: { type: "const", constVal: import_Color.Color.good }
               },
               false: {
                 value: { type: "const", constVal: "checkbox-intermediate" },
