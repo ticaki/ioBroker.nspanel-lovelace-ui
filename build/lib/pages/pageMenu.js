@@ -54,7 +54,7 @@ class PageMenu extends import_Page.Page {
         let maxItems = this.maxItems;
         let a = 0;
         if (this.pageItems.length > maxItems) {
-          a = isEntities ? maxItems : maxItems / 2 * this.step;
+          a = (isEntities ? maxItems : maxItems / 2) * this.step;
           maxItems = a + maxItems;
         }
         let b = 0;

@@ -48,11 +48,12 @@ export class PageMenu extends Page {
                     }
                     pageItems = this.tempItems;
                 }
+
                 const isEntities = this.config.card === 'cardEntities';
                 let maxItems = this.maxItems;
                 let a = 0;
                 if (this.pageItems.length > maxItems) {
-                    a = isEntities ? maxItems : (maxItems / 2) * this.step;
+                    a = (isEntities ? maxItems : maxItems / 2) * this.step;
                     maxItems = a + maxItems;
                 }
                 let b = 0;
