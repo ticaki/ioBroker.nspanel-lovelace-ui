@@ -654,6 +654,7 @@ const cardTemplates = {
     items: void 0,
     config: {
       card: "cardEntities",
+      //scrollType: 'page',
       data: {
         headline: {
           type: "const",
@@ -662,6 +663,7 @@ const cardTemplates = {
       }
     },
     pageItems: [
+      //Abfahrt 1
       {
         role: "text.list",
         type: "text",
@@ -712,6 +714,7 @@ const cardTemplates = {
           }
         }
       },
+      //Abfahrt 2
       {
         role: "text.list",
         type: "text",
@@ -762,6 +765,7 @@ const cardTemplates = {
           }
         }
       },
+      //Abfahrt 3
       {
         role: "text.list",
         type: "text",
@@ -812,6 +816,58 @@ const cardTemplates = {
           }
         }
       },
+      //Abfahrt 4
+      {
+        role: "text.list",
+        type: "text",
+        data: {
+          icon: {
+            true: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Red }
+            },
+            false: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Green }
+            }
+          },
+          entity1: {
+            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.DepartureDelayed$/ }
+          },
+          entity2: {
+            value: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.4\.Departure$/,
+              read: "return val === 0 ? null : val"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          },
+          text: {
+            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.Direction$/ },
+            false: void 0
+          },
+          text1: {
+            true: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.4\.DeparturePlanned$/,
+              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+            },
+            false: void 0
+          }
+        }
+      },
+      //Abfahrt 5
       {
         role: "text.list",
         type: "text",
@@ -861,6 +917,261 @@ const cardTemplates = {
             false: void 0
           }
         }
+      },
+      //Abfahrt 6
+      {
+        role: "text.list",
+        type: "text",
+        data: {
+          icon: {
+            true: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.5\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Red }
+            },
+            false: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.5\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Green }
+            }
+          },
+          entity1: {
+            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.5\.DepartureDelayed$/ }
+          },
+          entity2: {
+            value: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.5\.Departure$/,
+              read: "return val === 0 ? null : val"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          },
+          text: {
+            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.5\.Direction$/ },
+            false: void 0
+          },
+          text1: {
+            true: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.5\.DeparturePlanned$/,
+              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+            },
+            false: void 0
+          }
+        }
+      },
+      //Abfahrt 7
+      {
+        role: "text.list",
+        type: "text",
+        data: {
+          icon: {
+            true: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.6\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Red }
+            },
+            false: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.6\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Green }
+            }
+          },
+          entity1: {
+            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.6\.DepartureDelayed$/ }
+          },
+          entity2: {
+            value: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.6\.Departure$/,
+              read: "return val === 0 ? null : val"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          },
+          text: {
+            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.6\.Direction$/ },
+            false: void 0
+          },
+          text1: {
+            true: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.6\.DeparturePlanned$/,
+              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+            },
+            false: void 0
+          }
+        }
+      },
+      //Abfahrt 8
+      {
+        role: "text.list",
+        type: "text",
+        data: {
+          icon: {
+            true: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.7\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Red }
+            },
+            false: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.7\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Green }
+            }
+          },
+          entity1: {
+            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.7\.DepartureDelayed$/ }
+          },
+          entity2: {
+            value: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.7\.Departure$/,
+              read: "return val === 0 ? null : val"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          },
+          text: {
+            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.7\.Direction$/ },
+            false: void 0
+          },
+          text1: {
+            true: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.7\.DeparturePlanned$/,
+              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+            },
+            false: void 0
+          }
+        }
+      },
+      //Abfahrt 9
+      {
+        role: "text.list",
+        type: "text",
+        data: {
+          icon: {
+            true: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.8\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Red }
+            },
+            false: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.8\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Green }
+            }
+          },
+          entity1: {
+            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.8\.DepartureDelayed$/ }
+          },
+          entity2: {
+            value: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.8\.Departure$/,
+              read: "return val === 0 ? null : val"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          },
+          text: {
+            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.8\.Direction$/ },
+            false: void 0
+          },
+          text1: {
+            true: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.8\.DeparturePlanned$/,
+              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+            },
+            false: void 0
+          }
+        }
+      },
+      //Abfahrt 10
+      {
+        role: "text.list",
+        type: "text",
+        data: {
+          icon: {
+            true: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.9\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Red }
+            },
+            false: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.9\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Green }
+            }
+          },
+          entity1: {
+            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.9\.DepartureDelayed$/ }
+          },
+          entity2: {
+            value: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.9\.Departure$/,
+              read: "return val === 0 ? null : val"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          },
+          text: {
+            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.9\.Direction$/ },
+            false: void 0
+          },
+          text1: {
+            true: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.9\.DeparturePlanned$/,
+              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+            },
+            false: void 0
+          }
+        }
       }
     ]
   },
@@ -875,7 +1186,7 @@ const cardTemplates = {
       data: {
         headline: { mode: "auto", role: "", type: "state", dp: "", regexp: /\.info\.label$/ },
         mixed1: {
-          value: { type: "const", constVal: "aktuell" }
+          value: { type: "const", constVal: "actualtemp" }
         },
         mixed2: {
           value: {
@@ -890,7 +1201,7 @@ const cardTemplates = {
           unit: { type: "const", constVal: "\xB0C" }
         },
         mixed3: {
-          value: { type: "const", constVal: "valve" }
+          value: { type: "const", constVal: "valveposition" }
         },
         mixed4: {
           value: {
@@ -939,11 +1250,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "alpha-a-circle" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
+              color: { type: "const", constVal: import_Color.Color.activated }
             },
             false: {
               value: { type: "const", constVal: "alpha-a-circle-outline" },
-              color: { type: "const", constVal: import_Color.Color.Gray }
+              color: { type: "const", constVal: import_Color.Color.deactivated }
             }
           },
           entity1: {
@@ -976,11 +1287,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "alpha-m-circle" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
+              color: { type: "const", constVal: import_Color.Color.activated }
             },
             false: {
               value: { type: "const", constVal: "alpha-m-circle-outline" },
-              color: { type: "const", constVal: import_Color.Color.Gray }
+              color: { type: "const", constVal: import_Color.Color.deactivated }
             }
           },
           entity1: {
@@ -1012,11 +1323,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "fast-forward-60" },
-              color: { type: "const", constVal: import_Color.Color.Yellow }
+              color: { type: "const", constVal: import_Color.Color.activated }
             },
             false: {
               value: { type: "const", constVal: "fast-forward-60" },
-              color: { type: "const", constVal: import_Color.Color.Gray }
+              color: { type: "const", constVal: import_Color.Color.deactivated }
             }
           },
           entity1: {
@@ -1040,11 +1351,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "window-open-variant" },
-              color: { type: "const", constVal: import_Color.Color.MSRed }
+              color: { type: "const", constVal: import_Color.Color.open }
             },
             false: {
               value: { type: "const", constVal: "window-closed-variant" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
+              color: { type: "const", constVal: import_Color.Color.close }
             }
           },
           entity1: {
@@ -1067,11 +1378,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "party-popper" },
-              color: { type: "const", constVal: import_Color.Color.Cyan }
+              color: { type: "const", constVal: import_Color.Color.activated }
             },
             false: {
               value: { type: "const", constVal: "party-popper" },
-              color: { type: "const", constVal: import_Color.Color.Gray }
+              color: { type: "const", constVal: import_Color.Color.deactivated }
             }
           },
           entity1: {
@@ -1094,11 +1405,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "water-percent" },
-              color: { type: "const", constVal: import_Color.Color.Green }
+              color: { type: "const", constVal: import_Color.Color.good }
             },
             false: {
               value: { type: "const", constVal: "water-percent" },
-              color: { type: "const", constVal: import_Color.Color.Red }
+              color: { type: "const", constVal: import_Color.Color.bad }
             },
             scale: { type: "const", constVal: { val_min: 0, val_max: 100, val_best: 60 } }
           },
@@ -1122,11 +1433,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "battery-low" },
-              color: { type: "const", constVal: import_Color.Color.MSRed }
+              color: { type: "const", constVal: import_Color.Color.bad }
             },
             false: {
               value: { type: "const", constVal: "battery-high" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
+              color: { type: "const", constVal: import_Color.Color.good }
             }
           },
           entity1: {
@@ -1146,22 +1457,14 @@ const cardTemplates = {
         type: "button",
         dpInit: "",
         data: {
-          color: {
-            true: {
-              type: "const",
-              constVal: import_Color.Color.HMIOn
-            },
-            false: void 0,
-            scale: void 0
-          },
           icon: {
             true: {
               value: { type: "const", constVal: "account-wrench" },
-              color: { type: "const", constVal: import_Color.Color.Yellow }
+              color: { type: "const", constVal: import_Color.Color.true }
             },
             false: {
               value: { type: "const", constVal: "account-wrench" },
-              color: { type: "const", constVal: import_Color.Color.Gray }
+              color: { type: "const", constVal: import_Color.Color.deactivated }
             }
           },
           entity1: {
@@ -1186,11 +1489,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "wifi-off" },
-              color: { type: "const", constVal: import_Color.Color.MSRed }
+              color: { type: "const", constVal: import_Color.Color.bad }
             },
             false: {
               value: { type: "const", constVal: "wifi" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
+              color: { type: "const", constVal: import_Color.Color.good }
             }
           },
           entity1: {
@@ -1210,26 +1513,15 @@ const cardTemplates = {
         type: "button",
         dpInit: "",
         data: {
-          color: {
-            true: {
-              type: "const",
-              constVal: import_Color.Color.HMIOn
-            },
-            false: void 0,
-            scale: void 0
-          },
           icon: {
             true: {
               value: { type: "const", constVal: "alert-circle" },
-              color: { type: "const", constVal: import_Color.Color.MSRed }
+              color: { type: "const", constVal: import_Color.Color.bad }
             },
             false: {
               value: { type: "const", constVal: "alert-circle-outline" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
-            },
-            scale: void 0,
-            maxBri: void 0,
-            minBri: void 0
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
           },
           entity1: {
             value: {
@@ -1255,7 +1547,7 @@ const cardTemplates = {
       data: {
         headline: { mode: "auto", role: "", type: "state", dp: "", regexp: /\.info\.label$/ },
         mixed1: {
-          value: { type: "const", constVal: "aktuell" }
+          value: { type: "const", constVal: "actualtemp" }
         },
         mixed2: {
           value: {
@@ -1270,7 +1562,7 @@ const cardTemplates = {
           unit: { type: "const", constVal: "\xB0C" }
         },
         mixed3: {
-          value: { type: "const", constVal: "valve" }
+          value: { type: "const", constVal: "valveposition" }
         },
         mixed4: {
           value: {
@@ -1319,11 +1611,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "alpha-a-circle" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
+              color: { type: "const", constVal: import_Color.Color.activated }
             },
             false: {
               value: { type: "const", constVal: "alpha-a-circle-outline" },
-              color: { type: "const", constVal: import_Color.Color.Gray }
+              color: { type: "const", constVal: import_Color.Color.deactivated }
             }
           },
           entity1: {
@@ -1356,11 +1648,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "alpha-m-circle" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
+              color: { type: "const", constVal: import_Color.Color.activated }
             },
             false: {
               value: { type: "const", constVal: "alpha-m-circle-outline" },
-              color: { type: "const", constVal: import_Color.Color.Gray }
+              color: { type: "const", constVal: import_Color.Color.deactivated }
             }
           },
           entity1: {
@@ -1392,11 +1684,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "fast-forward-60" },
-              color: { type: "const", constVal: import_Color.Color.Yellow }
+              color: { type: "const", constVal: import_Color.Color.activated }
             },
             false: {
               value: { type: "const", constVal: "fast-forward-60" },
-              color: { type: "const", constVal: import_Color.Color.Gray }
+              color: { type: "const", constVal: import_Color.Color.deactivated }
             }
           },
           entity1: {
@@ -1420,11 +1712,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "window-open-variant" },
-              color: { type: "const", constVal: import_Color.Color.MSRed }
+              color: { type: "const", constVal: import_Color.Color.open }
             },
             false: {
               value: { type: "const", constVal: "window-closed-variant" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
+              color: { type: "const", constVal: import_Color.Color.close }
             }
           },
           entity1: {
@@ -1447,11 +1739,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "party-popper" },
-              color: { type: "const", constVal: import_Color.Color.Cyan }
+              color: { type: "const", constVal: import_Color.Color.activated }
             },
             false: {
               value: { type: "const", constVal: "party-popper" },
-              color: { type: "const", constVal: import_Color.Color.Gray }
+              color: { type: "const", constVal: import_Color.Color.deactivated }
             }
           },
           entity1: {
@@ -1474,11 +1766,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "water-percent" },
-              color: { type: "const", constVal: import_Color.Color.Green }
+              color: { type: "const", constVal: import_Color.Color.good }
             },
             false: {
               value: { type: "const", constVal: "water-percent" },
-              color: { type: "const", constVal: import_Color.Color.Red }
+              color: { type: "const", constVal: import_Color.Color.bad }
             },
             scale: { type: "const", constVal: { val_min: 0, val_max: 100, val_best: 60 } }
           },
@@ -1502,11 +1794,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "battery-low" },
-              color: { type: "const", constVal: import_Color.Color.MSRed }
+              color: { type: "const", constVal: import_Color.Color.bad }
             },
             false: {
               value: { type: "const", constVal: "battery-high" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
+              color: { type: "const", constVal: import_Color.Color.good }
             }
           },
           entity1: {
@@ -1526,22 +1818,14 @@ const cardTemplates = {
         type: "button",
         dpInit: "",
         data: {
-          color: {
-            true: {
-              type: "const",
-              constVal: import_Color.Color.HMIOn
-            },
-            false: void 0,
-            scale: void 0
-          },
           icon: {
             true: {
               value: { type: "const", constVal: "account-wrench" },
-              color: { type: "const", constVal: import_Color.Color.Yellow }
+              color: { type: "const", constVal: import_Color.Color.true }
             },
             false: {
               value: { type: "const", constVal: "account-wrench" },
-              color: { type: "const", constVal: import_Color.Color.Gray }
+              color: { type: "const", constVal: import_Color.Color.deactivated }
             }
           },
           entity1: {
@@ -1566,11 +1850,11 @@ const cardTemplates = {
           icon: {
             true: {
               value: { type: "const", constVal: "wifi-off" },
-              color: { type: "const", constVal: import_Color.Color.MSRed }
+              color: { type: "const", constVal: import_Color.Color.bad }
             },
             false: {
               value: { type: "const", constVal: "wifi" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
+              color: { type: "const", constVal: import_Color.Color.good }
             }
           },
           entity1: {
@@ -1590,26 +1874,15 @@ const cardTemplates = {
         type: "button",
         dpInit: "",
         data: {
-          color: {
-            true: {
-              type: "const",
-              constVal: import_Color.Color.HMIOn
-            },
-            false: void 0,
-            scale: void 0
-          },
           icon: {
             true: {
               value: { type: "const", constVal: "alert-circle" },
-              color: { type: "const", constVal: import_Color.Color.MSRed }
+              color: { type: "const", constVal: import_Color.Color.bad }
             },
             false: {
               value: { type: "const", constVal: "alert-circle-outline" },
-              color: { type: "const", constVal: import_Color.Color.MSGreen }
-            },
-            scale: void 0,
-            maxBri: void 0,
-            minBri: void 0
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
           },
           entity1: {
             value: {

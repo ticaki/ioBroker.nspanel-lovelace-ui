@@ -98,21 +98,23 @@ export class PageMenu extends Page {
             (this.config.card !== 'cardEntities' && this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')
         )
             return;
-        if (this.doubleClick) {
-            this.adapter.clearTimeout(this.doubleClick);
-            this.doubleClick = undefined;
-            if (this.lastdirection == 'right') {
-                this.panel.navigation.goLeft();
-                return;
-            } else {
-            }
-        } else if (!single) {
-            this.lastdirection = 'left';
-            this.doubleClick = this.adapter.setTimeout(() => {
-                this.goLeft(true);
+        if (!single) {
+            if (this.doubleClick) {
+                this.adapter.clearTimeout(this.doubleClick);
                 this.doubleClick = undefined;
-            }, 400);
-            return;
+                if (this.lastdirection == 'right') {
+                    this.panel.navigation.goLeft();
+                    return;
+                } else {
+                }
+            } else {
+                this.lastdirection = 'left';
+                this.doubleClick = this.adapter.setTimeout(() => {
+                    this.goLeft(true);
+                    this.doubleClick = undefined;
+                }, 400);
+                return;
+            }
         }
 
         if (--this.step < 0) {
@@ -126,21 +128,23 @@ export class PageMenu extends Page {
             (this.config.card !== 'cardEntities' && this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')
         )
             return;
-        if (this.doubleClick) {
-            this.adapter.clearTimeout(this.doubleClick);
-            this.doubleClick = undefined;
-            if (this.lastdirection == 'right') {
-                this.panel.navigation.goRight();
-                return;
-            } else {
-            }
-        } else if (!single) {
-            this.lastdirection = 'right';
-            this.doubleClick = this.adapter.setTimeout(() => {
+        if (!single) {
+            if (this.doubleClick) {
+                this.adapter.clearTimeout(this.doubleClick);
                 this.doubleClick = undefined;
-                this.goRight(true);
-            }, 400);
-            return;
+                if (this.lastdirection == 'right') {
+                    this.panel.navigation.goRight();
+                    return;
+                } else {
+                }
+            } else {
+                this.lastdirection = 'right';
+                this.doubleClick = this.adapter.setTimeout(() => {
+                    this.doubleClick = undefined;
+                    this.goRight(true);
+                }, 400);
+                return;
+            }
         }
         const pageScroll = this.config.scrollType === 'page';
 

@@ -89,21 +89,23 @@ class PageMenu extends import_Page.Page {
   goLeft(single = false) {
     if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2")
       return;
-    if (this.doubleClick) {
-      this.adapter.clearTimeout(this.doubleClick);
-      this.doubleClick = void 0;
-      if (this.lastdirection == "right") {
-        this.panel.navigation.goLeft();
-        return;
-      } else {
-      }
-    } else if (!single) {
-      this.lastdirection = "left";
-      this.doubleClick = this.adapter.setTimeout(() => {
-        this.goLeft(true);
+    if (!single) {
+      if (this.doubleClick) {
+        this.adapter.clearTimeout(this.doubleClick);
         this.doubleClick = void 0;
-      }, 400);
-      return;
+        if (this.lastdirection == "right") {
+          this.panel.navigation.goLeft();
+          return;
+        } else {
+        }
+      } else {
+        this.lastdirection = "left";
+        this.doubleClick = this.adapter.setTimeout(() => {
+          this.goLeft(true);
+          this.doubleClick = void 0;
+        }, 400);
+        return;
+      }
     }
     if (--this.step < 0) {
       this.step = 0;
@@ -114,21 +116,23 @@ class PageMenu extends import_Page.Page {
   goRight(single = false) {
     if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2")
       return;
-    if (this.doubleClick) {
-      this.adapter.clearTimeout(this.doubleClick);
-      this.doubleClick = void 0;
-      if (this.lastdirection == "right") {
-        this.panel.navigation.goRight();
-        return;
-      } else {
-      }
-    } else if (!single) {
-      this.lastdirection = "right";
-      this.doubleClick = this.adapter.setTimeout(() => {
+    if (!single) {
+      if (this.doubleClick) {
+        this.adapter.clearTimeout(this.doubleClick);
         this.doubleClick = void 0;
-        this.goRight(true);
-      }, 400);
-      return;
+        if (this.lastdirection == "right") {
+          this.panel.navigation.goRight();
+          return;
+        } else {
+        }
+      } else {
+        this.lastdirection = "right";
+        this.doubleClick = this.adapter.setTimeout(() => {
+          this.doubleClick = void 0;
+          this.goRight(true);
+        }, 400);
+        return;
+      }
     }
     const pageScroll = this.config.scrollType === "page";
     const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;

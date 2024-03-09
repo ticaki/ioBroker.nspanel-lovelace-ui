@@ -165,7 +165,7 @@ export class Navigation extends BaseClass {
                 const index = i[d].double;
                 this.setPageByIndex(index);
             }
-            this.log.debug('Navigation double click not work.');
+            this.log.debug('Navigation double click work.');
             // erster Klick und check obs ein Ziel für den 2. Klick gibt.
         } else if (!single && i && i[d] && i[d].double) {
             this.doubleClickTimeout = this.adapter.setTimeout(
