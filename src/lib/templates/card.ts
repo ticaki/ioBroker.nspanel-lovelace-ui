@@ -647,7 +647,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
         items: undefined,
         config: {
             card: 'cardEntities',
-            //scrollType: 'page',
+            scrollType: 'page',
             data: {
                 headline: {
                     type: 'const',
@@ -816,57 +816,6 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                 data: {
                     icon: {
                         true: {
-                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.Mode$/ },
-                            //value: { type:'const', constVal: ' bus'},
-                            color: { type: 'const', constVal: Color.Red },
-                        },
-                        false: {
-                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.Mode$/ },
-                            //value: { type:'const', constVal: ' bus'},
-                            color: { type: 'const', constVal: Color.Green },
-                        },
-                    },
-                    entity1: {
-                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.DepartureDelayed$/ },
-                    },
-                    entity2: {
-                        value: {
-                            role: 'date',
-                            mode: 'auto',
-                            type: 'state',
-                            dp: '',
-                            regexp: /\.4\.Departure$/,
-                            read: 'return val === 0 ? null : val',
-                        },
-                        dateFormat: {
-                            type: 'const',
-                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
-                        },
-                    },
-                    text: {
-                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.Direction$/ },
-                        false: undefined,
-                    },
-                    text1: {
-                        true: {
-                            role: 'date',
-                            mode: 'auto',
-                            type: 'state',
-                            dp: '',
-                            regexp: /\.4\.DeparturePlanned$/,
-                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
-                        },
-                        false: undefined,
-                    },
-                },
-            },
-            //Abfahrt 5
-            {
-                role: 'text.list',
-                type: 'text',
-                data: {
-                    icon: {
-                        true: {
                             value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.3\.Mode$/ },
                             //value: { type:'const', constVal: ' bus'},
                             color: { type: 'const', constVal: Color.Red },
@@ -905,6 +854,57 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                             type: 'state',
                             dp: '',
                             regexp: /\.3\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Abfahrt 5
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.Mode$/ },
+                            //value: { type:'const', constVal: ' bus'},
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.DepartureDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.4\.Departure$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.4\.Direction$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.4\.DeparturePlanned$/,
                             read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
                         },
                         false: undefined,
