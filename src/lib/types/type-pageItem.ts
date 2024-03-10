@@ -1,5 +1,5 @@
 import * as dataItem from '../classes/data-item';
-import * as Color from '../const/Color';
+import { RGB } from '../const/Color';
 import * as pages from './pages';
 import * as Types from './types';
 
@@ -8,11 +8,11 @@ export type PageLightItem = {
     bri: PageItemMinMaxValue;
     ct: PageItemMinMaxValue;
     hue: PageItemMinMaxValue; //0-360
-    rgb: Color.RGB;
+    rgb: RGB;
 };
 
 type PageItemMinMaxValue = { min: number; max: number };
-export type PageItemColorSwitch = { on: Color.RGB; off: Color.RGB };
+export type PageItemColorSwitch = { on: RGB; off: RGB };
 
 export type IconBoolean = Record<Types.BooleanUnion, string | undefined>;
 export type ThisCardMessageTypes = 'input_sel' | 'button';
@@ -413,10 +413,8 @@ export type PageTypeUnionTemplate = {
     type: Types.SerialTypePageElements;
     data: {
         headline?: string | undefined;
-        color?: Color.RGB | undefined;
-        icon?:
-            | { true: { value: string; color: Color.RGB | null }; false: { value: string; color: Color.RGB | null } }
-            | undefined;
+        color?: RGB | undefined;
+        icon?: { true: { value: string; color: RGB | null }; false: { value: string; color: RGB | null } } | undefined;
         text?: { true: string; false: string } | undefined;
         entity1: true | undefined | 'invert' | '';
         entity2?: true | undefined | 'invert';
@@ -454,10 +452,10 @@ export type PageItemUnion = {
     data: PageItemBase;
 };
 
-export type ColorEntryType = Record<Types.BooleanUnion, Color.RGB | undefined> & { scale?: Types.IconScaleElement };
+export type ColorEntryType = Record<Types.BooleanUnion, RGB | undefined> & { scale?: Types.IconScaleElement };
 
 export type ColorEntryTypeNew =
-    | (Partial<Record<Types.BooleanUnion, { color: Color.RGB }>> & {
+    | (Partial<Record<Types.BooleanUnion, { color: RGB }>> & {
           scale?: Types.IconScaleElement | undefined;
           maxBri?: string;
           minBri?: string;

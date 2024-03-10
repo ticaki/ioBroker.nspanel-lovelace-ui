@@ -1,5 +1,5 @@
 import * as dataItem from '../classes/data-item';
-import * as Color from '../const/Color';
+import { RGB } from '../const/Color';
 import * as typePageItem from './type-pageItem';
 import * as pages from './pages';
 
@@ -273,10 +273,10 @@ export type Config = {
         indicatorEntity: ScreenSaverElement[];
         mrIconEntity: [ScreenSaverElement, ScreenSaverElement];
     };
-    defaultColor: Color.RGB;
-    defaultOnColor: Color.RGB;
-    defaultOffColor: Color.RGB;
-    defaultBackgroundColor: Color.RGB;
+    defaultColor: RGB;
+    defaultOnColor: RGB;
+    defaultOffColor: RGB;
+    defaultBackgroundColor: RGB;
 };
 export type leftScreensaverEntityType =
     | [ScreenSaverElementWithUndefined, ScreenSaverElementWithUndefined, ScreenSaverElementWithUndefined]
@@ -354,7 +354,7 @@ type DataItemsOptionsCustom = {
 type DataItemsOptionsConst = {
     type: 'const';
     role?: pages.StateRole;
-    constVal: StateValue | AllIcons | Color.RGB | pages.placeholderType | IconScaleElement;
+    constVal: StateValue | AllIcons | RGB | pages.placeholderType | IconScaleElement;
     state?: State | null; // use just inside of class
     forceType?: 'string' | 'number' | 'boolean'; // force a type
 };

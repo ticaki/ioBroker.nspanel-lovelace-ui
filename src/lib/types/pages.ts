@@ -1,5 +1,5 @@
 import * as dataItem from '../classes/data-item';
-import * as Color from '../const/Color';
+import { RGB } from '../const/Color';
 import * as typePageItem from './type-pageItem';
 import * as Types from './types';
 
@@ -483,7 +483,7 @@ export type ChangeDeepPartial<Obj> = Obj extends
     | typePageItem.IconEntryType
     | typePageItem.ScaledNumberType
     | PageGridPowerConfigElement
-    | Color.RGB
+    | RGB
     | typePageItem.ColorEntryType
     | PageMediaBaseConfig
     | Types.SerialTypePageElements
@@ -504,11 +504,11 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     | typePageItem.IconEntryType
     | typePageItem.ScaledNumberType
     | PageGridPowerConfigElement
-    | Color.RGB
+    | RGB
     | typePageItem.ColorEntryType
     | PageMediaBaseConfig
     | Types.SerialTypePageElements
-    ? Obj extends Color.RGB | Types.IconScaleElement | Types.DataItemsOptions
+    ? Obj extends RGB | Types.IconScaleElement | Types.DataItemsOptions
         ? N
         : {
               [K in keyof Obj]?: ChangeTypeOfKeys<Obj[K], N>;
@@ -516,7 +516,7 @@ export type ChangeTypeOfKeys<Obj, N> = Obj extends
     : N;
 
 export type ChangeTypeOfKeysGeneric<Obj, N> = Obj extends object
-    ? Obj extends Color.RGB
+    ? Obj extends RGB
         ? N
         : {
               [K in keyof Obj]: ChangeTypeOfKeysGeneric<Obj[K], N>;
