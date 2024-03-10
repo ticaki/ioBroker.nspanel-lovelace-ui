@@ -608,17 +608,22 @@ class StatesControler extends import_library.BaseClass {
       if (typeof enums === "string") {
         enums = [enums];
       }
-      let r = [];
+      let r;
       for (const e of enums) {
         const regexp = (0, import_tools.getRegExp)(e);
+        let t = [];
         for (const a in tempObjectDB.enums) {
           if (!regexp && a.includes(e) || regexp && a.match(regexp) !== null) {
             if (tempObjectDB.enums[a] && tempObjectDB.enums[a].common && tempObjectDB.enums[a].common.members)
-              r = r.concat(tempObjectDB.enums[a].common.members);
+              t = t.concat(tempObjectDB.enums[a].common.members);
           }
         }
+        if (!r)
+          r = t;
+        else
+          r = r.filter((a) => t.indexOf(a) !== -1);
       }
-      result.keys = result.keys.filter((a) => r.some((b) => a.startsWith(b)));
+      result.keys = result.keys.filter((a) => r && r.some((b) => a.startsWith(b)));
     }
     return result;
   }
