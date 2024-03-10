@@ -103,7 +103,7 @@ class PageMenu extends import_Page.Page {
         this.doubleClick = this.adapter.setTimeout(() => {
           this.goLeft(true);
           this.doubleClick = void 0;
-        }, 400);
+        }, this.adapter.config.doubleClickTime);
         return;
       }
     }
@@ -130,7 +130,7 @@ class PageMenu extends import_Page.Page {
         this.doubleClick = this.adapter.setTimeout(() => {
           this.doubleClick = void 0;
           this.goRight(true);
-        }, 400);
+        }, this.adapter.config.doubleClickTime);
         return;
       }
     }

@@ -66,6 +66,14 @@
                     "label": "logUnknownTokens",
                     "default": false,
                     "newLine": true
+                },
+                "doubleClickTime": {
+                    "type": "number",
+                    "label": "doubleClickTime",
+                    "default": 350,
+                    "min": 1,
+                    "max": 2000,
+                    "newLine": true
                 }
             }
         }/*,

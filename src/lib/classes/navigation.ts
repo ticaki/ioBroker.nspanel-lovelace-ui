@@ -43,7 +43,6 @@ export class Navigation extends BaseClass {
     panel: Panel;
     private database: NavigationItem[] = [];
     private navigationConfig: NavigationItemConfig[];
-    doubleClickDelay: number = 400;
     private mainPage = 'main';
     private doubleClickTimeout: ioBroker.Timeout | undefined;
     private _currentItem: number = 0;
@@ -172,7 +171,7 @@ export class Navigation extends BaseClass {
                 (...arg: any): void => {
                     this.go(arg[0], arg[1]);
                 },
-                this.doubleClickDelay,
+                this.adapter.config.doubleClickTime,
                 d,
                 true,
             );
@@ -309,5 +308,9 @@ export class Navigation extends BaseClass {
             page = this.database[index];
         }
         if (page) await this.setPageByIndex(page.index);
+    }
+    async delete(): Promise<void> {
+        await super.delete();
+        if (this.doubleClickTimeout) this.adapter.clearTimeout(this.doubleClickTimeout);
     }
 }

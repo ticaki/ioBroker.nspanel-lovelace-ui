@@ -112,7 +112,7 @@ export class PageMenu extends Page {
                 this.doubleClick = this.adapter.setTimeout(() => {
                     this.goLeft(true);
                     this.doubleClick = undefined;
-                }, 400);
+                }, this.adapter.config.doubleClickTime);
                 return;
             }
         }
@@ -142,7 +142,7 @@ export class PageMenu extends Page {
                 this.doubleClick = this.adapter.setTimeout(() => {
                     this.doubleClick = undefined;
                     this.goRight(true);
-                }, 400);
+                }, this.adapter.config.doubleClickTime);
                 return;
             }
         }

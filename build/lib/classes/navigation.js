@@ -30,7 +30,6 @@ class Navigation extends import_library.BaseClass {
   panel;
   database = [];
   navigationConfig;
-  doubleClickDelay = 400;
   mainPage = "main";
   doubleClickTimeout;
   _currentItem = 0;
@@ -163,7 +162,7 @@ class Navigation extends import_library.BaseClass {
         (...arg) => {
           this.go(arg[0], arg[1]);
         },
-        this.doubleClickDelay,
+        this.adapter.config.doubleClickTime,
         d,
         true
       );
@@ -291,6 +290,11 @@ class Navigation extends import_library.BaseClass {
     }
     if (page)
       await this.setPageByIndex(page.index);
+  }
+  async delete() {
+    await super.delete();
+    if (this.doubleClickTimeout)
+      this.adapter.clearTimeout(this.doubleClickTimeout);
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

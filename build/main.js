@@ -78,6 +78,8 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.log.warn("Invalid configuration stopped!");
       return;
     }
+    if (this.config.doubleClickTime === void 0 || typeof this.config.doubleClickTime !== "number" || !(this.config.doubleClickTime > 0))
+      this.config.doubleClickTime = 400;
     this.setTimeout(async () => {
       await this.library.init();
       const states = await this.getStatesAsync("*");

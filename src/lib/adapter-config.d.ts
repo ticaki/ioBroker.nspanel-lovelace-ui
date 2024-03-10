@@ -26,6 +26,7 @@ declare global {
             pw0: string;
             onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;
+            doubleClickTime: number;
         }
     }
 }

@@ -71,6 +71,13 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.warn('Invalid configuration stopped!');
             return;
         }
+
+        if (
+            this.config.doubleClickTime === undefined ||
+            typeof this.config.doubleClickTime !== 'number' ||
+            !(this.config.doubleClickTime > 0)
+        )
+            this.config.doubleClickTime = 400;
         //this.log.debug(JSON.stringify(this.config.Testconfig2[0].dpInit))
 
         //this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
