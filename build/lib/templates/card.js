@@ -654,7 +654,7 @@ const cardTemplates = {
     items: void 0,
     config: {
       card: "cardEntities",
-      //scrollType: 'page',
+      scrollType: "page",
       data: {
         headline: {
           type: "const",
@@ -823,57 +823,6 @@ const cardTemplates = {
         data: {
           icon: {
             true: {
-              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.Mode$/ },
-              //value: { type:'const', constVal: ' bus'},
-              color: { type: "const", constVal: import_Color.Color.Red }
-            },
-            false: {
-              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.Mode$/ },
-              //value: { type:'const', constVal: ' bus'},
-              color: { type: "const", constVal: import_Color.Color.Green }
-            }
-          },
-          entity1: {
-            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.DepartureDelayed$/ }
-          },
-          entity2: {
-            value: {
-              role: "date",
-              mode: "auto",
-              type: "state",
-              dp: "",
-              regexp: /\.4\.Departure$/,
-              read: "return val === 0 ? null : val"
-            },
-            dateFormat: {
-              type: "const",
-              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
-            }
-          },
-          text: {
-            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.Direction$/ },
-            false: void 0
-          },
-          text1: {
-            true: {
-              role: "date",
-              mode: "auto",
-              type: "state",
-              dp: "",
-              regexp: /\.4\.DeparturePlanned$/,
-              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
-            },
-            false: void 0
-          }
-        }
-      },
-      //Abfahrt 5
-      {
-        role: "text.list",
-        type: "text",
-        data: {
-          icon: {
-            true: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.3\.Mode$/ },
               //value: { type:'const', constVal: ' bus'},
               color: { type: "const", constVal: import_Color.Color.Red }
@@ -912,6 +861,57 @@ const cardTemplates = {
               type: "state",
               dp: "",
               regexp: /\.3\.DeparturePlanned$/,
+              read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+            },
+            false: void 0
+          }
+        }
+      },
+      //Abfahrt 5
+      {
+        role: "text.list",
+        type: "text",
+        data: {
+          icon: {
+            true: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Red }
+            },
+            false: {
+              value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.Mode$/ },
+              //value: { type:'const', constVal: ' bus'},
+              color: { type: "const", constVal: import_Color.Color.Green }
+            }
+          },
+          entity1: {
+            value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.DepartureDelayed$/ }
+          },
+          entity2: {
+            value: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.4\.Departure$/,
+              read: "return val === 0 ? null : val"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          },
+          text: {
+            true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.4\.Direction$/ },
+            false: void 0
+          },
+          text1: {
+            true: {
+              role: "date",
+              mode: "auto",
+              type: "state",
+              dp: "",
+              regexp: /\.4\.DeparturePlanned$/,
               read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
             },
             false: void 0
