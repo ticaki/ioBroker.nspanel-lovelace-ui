@@ -519,7 +519,7 @@ class StatesControler extends import_library.BaseClass {
       f && await f(id, this.triggerDB[id].state);
       return true;
     } else if (common) {
-      this.log.warn(`No warning, just info. add internal state ${id} with ${JSON.stringify(common)}`);
+      this.log.debug(`Add internal state ${id} with ${JSON.stringify(common)}`);
       this.triggerDB[id] = {
         state: { ts: Date.now(), val: null, ack, from: "", lc: Date.now() },
         to: [],

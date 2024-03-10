@@ -560,7 +560,7 @@ export class StatesControler extends BaseClass {
 
             return true;
         } else if (common) {
-            this.log.warn(`No warning, just info. add internal state ${id} with ${JSON.stringify(common)}`);
+            this.log.debug(`Add internal state ${id} with ${JSON.stringify(common)}`);
             this.triggerDB[id] = {
                 state: { ts: Date.now(), val: null, ack: ack, from: '', lc: Date.now() },
                 to: [],
