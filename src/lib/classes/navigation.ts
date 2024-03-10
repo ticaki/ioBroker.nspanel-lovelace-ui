@@ -222,7 +222,7 @@ export class Navigation extends BaseClass {
                 navigationString = getPayload(
                     'button',
                     'bSubPrev',
-                    item.left.double !== undefined
+                    item.left.double === undefined
                         ? Icons.GetIcon('arrow-left-bold')
                         : Icons.GetIcon('arrow-top-left-bold-outline'),
                     String(Color.rgb_dec565(Color.White)),
@@ -252,7 +252,7 @@ export class Navigation extends BaseClass {
                 navigationString2 = getPayload(
                     'button',
                     'bSubNext',
-                    item.left.double === undefined
+                    item.right.double === undefined
                         ? Icons.GetIcon('arrow-right-bold')
                         : Icons.GetIcon('arrow-top-right-bold-outline'),
                     String(Color.rgb_dec565(Color.White)),
