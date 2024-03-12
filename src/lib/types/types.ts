@@ -13,7 +13,8 @@ export type TemplateItems = Partial<Record<TemplateIdent, typePageItem.PageItemO
 export type PageTemplateIdent =
     | 'entities.waste-calendar'
     | 'media.spotify-premium'
-    | 'entities.departure-timetable'
+    | 'entities.fahrplan.departure-timetable'
+    | 'entities.fahrplan.routes'
     | 'thermo.hmip.valve'
     | 'thermo.hmip.wallthermostat';
 
@@ -37,7 +38,7 @@ export type TemplateIdent =
     | 'button.esphome.powerplug'
     | 'button.service.adapter.stopped'
     | 'button.service.adapter.noconnection'
-    | ''
+    | 'text.fahrplan.departure'
     | ''
     | ''
     | ''
