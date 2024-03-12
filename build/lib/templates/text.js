@@ -531,7 +531,7 @@ const textTemplates = {
             mode: "auto",
             role: "",
             type: "triggered",
-            regexp: /accuweather\.[0-9]+\.Summary\.WeatherIcon_/,
+            regexp: /^accuweather\.[0-9]+\.Summary\.WeatherIcon_/,
             dp: "",
             read: `{
                                 switch (val) {
@@ -707,6 +707,55 @@ const textTemplates = {
           type: "triggered",
           dp: "",
           regexp: /^accuweather\.[0-9]+\.Summary\.DayOfWeek_/
+        },
+        false: void 0
+      }
+    }
+  },
+  "text.fahrplan.departure": {
+    role: "text.list",
+    type: "text",
+    adapter: "fahrplan",
+    data: {
+      icon: {
+        true: {
+          value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.Mode$/ },
+          color: { type: "const", constVal: import_Color.Color.Red }
+        },
+        false: {
+          value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.Mode$/ },
+          color: { type: "const", constVal: import_Color.Color.Green }
+        }
+      },
+      entity1: {
+        value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.DepartureDelayed$/ }
+      },
+      entity2: {
+        value: {
+          role: "date",
+          mode: "auto",
+          type: "state",
+          dp: "",
+          regexp: /\.Departure$/,
+          read: "return val === 0 ? null : val"
+        },
+        dateFormat: {
+          type: "const",
+          constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+        }
+      },
+      text: {
+        true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.Direction$/ },
+        false: void 0
+      },
+      text1: {
+        true: {
+          role: "date",
+          mode: "auto",
+          type: "state",
+          dp: "",
+          regexp: /\.DeparturePlanned$/,
+          read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
         },
         false: void 0
       }

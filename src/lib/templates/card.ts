@@ -638,7 +638,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
         ],
         useColor: false,
     },
-    'entities.departure-timetable': {
+    'entities.fahrplan.departure-timetable': {
         //Anzeigetafel Fahrplan
         adapter: 'fahrplan.0',
         card: 'cardEntities',
@@ -657,6 +657,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
         },
         pageItems: [
             //Abfahrt 1
+            //{ template: 'text.fahrplan.departure', dpInit: '/.0/' },
             {
                 role: 'text.list',
                 type: 'text',
@@ -1160,6 +1161,466 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                             type: 'state',
                             dp: '',
                             regexp: /\.9\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+        ],
+    },
+    'entities.fahrplan.routes': {
+        //Route Fahrplan
+        adapter: 'fahrplan.0',
+        card: 'cardEntities',
+        alwaysOn: 'none',
+        useColor: false,
+        items: undefined,
+        config: {
+            card: 'cardEntities',
+            scrollType: 'page',
+            data: {
+                headline: {
+                    type: 'const',
+                    constVal: 'route',
+                },
+            },
+        },
+        pageItems: [
+            //Abfahrt
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: {
+                                role: 'state',
+                                mode: 'auto',
+                                type: 'state',
+                                dp: '',
+                                regexp: /\.0\.0\.Line\.Mode$/,
+                            },
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: {
+                                role: 'state',
+                                mode: 'auto',
+                                type: 'state',
+                                dp: '',
+                                regexp: /\.0\.0\.Line\.Mode$/,
+                            },
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.0\.DepartureDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.0\.Departure$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.StationFrom\.Name$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.0\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Ankunft
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'clock-alert-outline' },
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: '' },
+                            //color: { type: 'const', constVal: Color.Red },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.0\.ArrivalDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.0\.Arrival$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.StationTo\.Name$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.0\.ArrivalPlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Abfahrt
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: {
+                                role: 'state',
+                                mode: 'auto',
+                                type: 'state',
+                                dp: '',
+                                regexp: /\.1\.0\.Line\.Mode$/,
+                            },
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: {
+                                role: 'state',
+                                mode: 'auto',
+                                type: 'state',
+                                dp: '',
+                                regexp: /\.1\.0\.Line\.Mode$/,
+                            },
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.1\.DepartureDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.1\.Departure$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.StationFrom\.Name$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.1\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Ankunft
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'clock-alert-outline' },
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: '' },
+                            //color: { type: 'const', constVal: Color.Red },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.1\.ArrivalDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.1\.Arrival$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.StationTo\.Name$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.1\.ArrivalPlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Abfahrt
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: {
+                                role: 'state',
+                                mode: 'auto',
+                                type: 'state',
+                                dp: '',
+                                regexp: /\.2\.0\.Line\.Mode$/,
+                            },
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: {
+                                role: 'state',
+                                mode: 'auto',
+                                type: 'state',
+                                dp: '',
+                                regexp: /\.2\.0\.Line\.Mode$/,
+                            },
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.2\.DepartureDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.2\.Departure$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.StationFrom\.Name$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.2\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Ankunft
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'clock-alert-outline' },
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: '' },
+                            //color: { type: 'const', constVal: Color.Red },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.2\.ArrivalDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.2\.Arrival$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.StationTo\.Name$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.2\.ArrivalPlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Abfahrt
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: {
+                                role: 'state',
+                                mode: 'auto',
+                                type: 'state',
+                                dp: '',
+                                regexp: /\.3\.0\.Line\.Mode$/,
+                            },
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: {
+                                role: 'state',
+                                mode: 'auto',
+                                type: 'state',
+                                dp: '',
+                                regexp: /\.3\.0\.Line\.Mode$/,
+                            },
+                            color: { type: 'const', constVal: Color.Green },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.3\.DepartureDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.3\.Departure$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.StationFrom\.Name$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.3\.DeparturePlanned$/,
+                            read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                        },
+                        false: undefined,
+                    },
+                },
+            },
+            //Ankunft
+            {
+                role: 'text.list',
+                type: 'text',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'clock-alert-outline' },
+                            color: { type: 'const', constVal: Color.Red },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: '' },
+                            //color: { type: 'const', constVal: Color.Red },
+                        },
+                    },
+                    entity1: {
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.3\.ArrivalDelayed$/ },
+                    },
+                    entity2: {
+                        value: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.3\.Arrival$/,
+                            read: 'return val === 0 ? null : val',
+                        },
+                        dateFormat: {
+                            type: 'const',
+                            constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                        },
+                    },
+                    text: {
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.StationTo\.Name$/ },
+                        false: undefined,
+                    },
+                    text1: {
+                        true: {
+                            role: 'date',
+                            mode: 'auto',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.3\.ArrivalPlanned$/,
                             read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
                         },
                         false: undefined,
