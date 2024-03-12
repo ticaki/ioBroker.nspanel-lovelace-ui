@@ -7590,6 +7590,7 @@ export type NavigationItemConfig = {
         double?: string;
     };
     page: string;
+    optional?: string;
 } | null;
 
 export type NavigationItem = {
