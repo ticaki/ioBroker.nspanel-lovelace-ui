@@ -511,6 +511,7 @@ class StatesControler extends import_library.BaseClass {
       const f = this.triggerDB[id].f;
       const newState = {
         ...this.triggerDB[id].state,
+        // if ack and function take value of function otherwise val
         val: ack && f ? (_a = await f(id, void 0)) != null ? _a : val : val,
         ack,
         ts: Date.now()

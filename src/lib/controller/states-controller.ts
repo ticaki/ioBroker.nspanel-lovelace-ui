@@ -547,18 +547,21 @@ export class StatesControler extends BaseClass {
 
             const newState = {
                 ...this.triggerDB[id].state,
+                // if ack and function take value of function otherwise val
                 val: ack && f ? (await f(id, undefined)) ?? val : val,
                 ack: ack,
                 ts: Date.now(),
             };
 
-            // use this to active pages
+            // use this to trigger pages
             await this.onStateChange(id, newState);
 
-            // here we trigger the state action
+            // here we trigger the state command
             f && (await f(id, this.triggerDB[id].state));
 
             return true;
+
+            // create the db entry
         } else if (common) {
             this.log.debug(`Add internal state ${id} with ${JSON.stringify(common)}`);
             this.triggerDB[id] = {
