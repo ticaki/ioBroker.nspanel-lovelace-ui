@@ -176,8 +176,6 @@ export class Color extends ColorBase {
 /***************************************************************************************************************/
 /***************************************************************************************************************/
 /***************************************************************************************************************/
-
-
 const pageEntitiesTest1: pages.PageBaseConfig = {
     //type: 'sonstiges',
     //card: 'cardEntities',
@@ -5346,6 +5344,13 @@ const pageScreensaverTest: pages.PageBaseConfig = {
         },
     ],
 };
+
+const pageFahrplanRoutes: pages.PageBaseConfig = {
+    card: 'cardEntities',
+    dpInit: 'fahrplan.0.0',
+    uniqueID: 'fahrplanrouten',
+    template: 'entities.fahrplan.routes',
+};
 export const Testconfig: Partial<panelConfigPartial>[] = [
     {
         pages: [
@@ -5366,6 +5371,7 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
             pageEntitiesTest3,
             popupTest,
             pageUnlockTest,
+            pageFahrplanRoutes,
         ],
         // override by password.ts
         navigation: [
@@ -5394,8 +5400,8 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
                 right: { double: 'entities3' },
             },
             {
-                name: 'entities3', //main ist die erste Seite
-                page: 'entities3',
+                name: 'fahrplanrouten', //main ist die erste Seite
+                page: 'fahrplanrouten',
                 left: { double: 'unlock1' }, // Die 4 bezieht sich auf den name: 4
                 right: { double: 'entities2' },
             },
@@ -5462,7 +5468,6 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
         dimHigh: 90,
     },
 ];
-
 /**
  * command for javascript adapter
  * sendTo('nspanel-lovelace-ui.0', 'config', Testconfig)
@@ -6867,7 +6872,8 @@ namespace Types {
         | 'media.spotify-premium'
         | 'entities.departure-timetable'
         | 'thermo.hmip.valve'
-        | 'thermo.hmip.wallthermostat';
+        | 'thermo.hmip.wallthermostat'
+        | 'entities.fahrplan.routes';
     
     export type TemplateIdent =
         | 'generic.shutter'

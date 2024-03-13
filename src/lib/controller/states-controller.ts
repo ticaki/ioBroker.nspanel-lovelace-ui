@@ -718,7 +718,9 @@ export class StatesControler extends BaseClass {
                                 (!d.regexp || id.match(d.regexp) !== null)
                             ) {
                                 if (found) {
-                                    this.log.warn(`Found more as 1 state for role ${role} in ${dpInit} with ${d.dp}`);
+                                    this.log.warn(
+                                        `Found more as 1 state for role ${role} in ${dpInit} with ${d.dp.toString()}`,
+                                    );
                                     break;
                                 }
                                 d.dp = id;
@@ -730,7 +732,9 @@ export class StatesControler extends BaseClass {
                     }
                     if (!found) {
                         data[i] = undefined;
-                        this.log.warn(`No state found for role ${JSON.stringify(d.role)} in ${dpInit} with ${d.dp}`);
+                        this.log.warn(
+                            `No state found for role ${JSON.stringify(d.role)} in ${dpInit.toString()} with with ${d.dp.toString()}`,
+                        );
                     }
                 }
             }

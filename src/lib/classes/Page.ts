@@ -22,7 +22,7 @@ export type PageInterface = BaseClassTriggerdInterface & {
     id: string;
 };
 
-//interface Page extends BaseClass | PageConfig
+//interface Page extends BaseClass | PageConfig..
 export type PageConfigAll = pages.PageBaseConfig;
 
 export class Page extends BaseClassPage {
