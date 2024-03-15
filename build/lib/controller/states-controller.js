@@ -655,7 +655,7 @@ class StatesControler extends import_library.BaseClass {
               if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp)) && (role === "" || obj.common.role === role) && (!d.regexp || id.match(d.regexp) !== null)) {
                 if (found) {
                   this.log.warn(
-                    `Found more as 1 state for role ${role} in ${dpInit} with ${d.dp.toString()}`
+                    `Found more as 1 state for role ${role} in ${dpInit} with .dp: ${d.dp ? d.dp.toString() : "empty"} and .regexp: ${d.regexp ? d.regexp.toString() : "empty"}`
                   );
                   break;
                 }
@@ -670,7 +670,7 @@ class StatesControler extends import_library.BaseClass {
           if (!found) {
             data[i] = void 0;
             this.log.warn(
-              `No state found for role ${JSON.stringify(d.role)} in ${dpInit.toString()} with with ${d.dp.toString()}`
+              `No state found for role ${JSON.stringify(d.role)} in ${dpInit.toString()} with with .dp: ${d.dp ? d.dp.toString() : "empty"} and .regexp: ${d.regexp ? d.regexp.toString() : "empty"}`
             );
           }
         }

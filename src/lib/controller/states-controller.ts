@@ -719,7 +719,9 @@ export class StatesControler extends BaseClass {
                             ) {
                                 if (found) {
                                     this.log.warn(
-                                        `Found more as 1 state for role ${role} in ${dpInit} with ${d.dp.toString()}`,
+                                        `Found more as 1 state for role ${role} in ${dpInit} with .dp: ${
+                                            d.dp ? d.dp.toString() : 'empty'
+                                        } and .regexp: ${d.regexp ? d.regexp.toString() : 'empty'}`,
                                     );
                                     break;
                                 }
@@ -733,7 +735,9 @@ export class StatesControler extends BaseClass {
                     if (!found) {
                         data[i] = undefined;
                         this.log.warn(
-                            `No state found for role ${JSON.stringify(d.role)} in ${dpInit.toString()} with with ${d.dp.toString()}`,
+                            `No state found for role ${JSON.stringify(d.role)} in ${dpInit.toString()} with with .dp: ${
+                                d.dp ? d.dp.toString() : 'empty'
+                            } and .regexp: ${d.regexp ? d.regexp.toString() : 'empty'}`,
                         );
                     }
                 }
