@@ -39,7 +39,6 @@ class BaseClassTriggerd extends import_library.BaseClass {
   alwaysOnState;
   lastMessage = "";
   panel;
-  responseTime = 1e10;
   neverDeactivateTrigger = false;
   sleep = true;
   parent = void 0;
@@ -579,10 +578,10 @@ class StatesControler extends import_library.BaseClass {
     return StatesControler.TempObjectDB;
   }
   /**
-   * Filterfunktion umso genauere Filter um so weniger Ressourcen werden verbraucht.
+   * Filterfunktion umso genauer die Filter um so weniger Ressourcen werden verbraucht.
    * @param dpInit string RegExp oder '' für aus; string wird mit include verwendet.
    * @param enums string, string[], RegExp als String übergeben oder ein String der mit include verwenden wird.
-   * @returns 2 arrays keys: gefilterten keys und data: alle Objekte...
+   * @returns 2 arrays keys: gefilterte keys und data: alle Objekte...
    */
   async getFilteredObjects(dpInit, enums) {
     const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);

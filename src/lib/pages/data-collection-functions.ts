@@ -29,14 +29,18 @@ export async function handleCardRole(
                 let n = obj.common.titleLang && obj.common.titleLang[adapter.library.getLocalLanguage()];
                 n = n ? n : obj.common.titleLang && obj.common.titleLang['en'];
                 n = n ? n : obj.common.name;
-                const state = await adapter.getForeignStateAsync(
+                // ignore this
+                if (item.id.split('.').slice(2).join('.') === adapter.namespace) continue;
+
+                const stateID =
                     cardRole === 'AdapterConnection'
                         ? `${item.id.split('.').slice(2).join('.')}.info.connection`
-                        : `${item.id}.alive`,
-                );
-                if (!state) continue;
+                        : `${item.id}.alive`;
+                const stateObj = await adapter.getForeignObjectAsync(stateID);
+                if (!stateObj || !stateObj.common || stateObj.common.type !== 'boolean') continue;
+
                 const pi: PageItemDataItemsOptions = {
-                    role: 'text.list',
+                    role: '',
                     type: 'text',
                     dpInit: '',
 
@@ -60,10 +64,7 @@ export async function handleCardRole(
                         entity1: {
                             value: {
                                 type: 'triggered',
-                                dp:
-                                    cardRole === 'AdapterConnection'
-                                        ? `${item.id.split('.').slice(2).join('.')}.info.connection`
-                                        : `${item.id}.alive`,
+                                dp: stateID,
                             },
                         },
                         text: {

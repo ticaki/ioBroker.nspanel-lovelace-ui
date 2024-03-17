@@ -39,7 +39,6 @@ export class BaseClassTriggerd extends BaseClass {
     private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
     public panel: Panel;
-    private responseTime: number = 10000000000;
     neverDeactivateTrigger: boolean = false;
     sleep: boolean = true;
     parent: BaseClassTriggerd | undefined = undefined;
@@ -629,10 +628,10 @@ export class StatesControler extends BaseClass {
         return StatesControler.TempObjectDB;
     }
     /**
-     * Filterfunktion umso genauere Filter um so weniger Ressourcen werden verbraucht.
+     * Filterfunktion umso genauer die Filter um so weniger Ressourcen werden verbraucht.
      * @param dpInit string RegExp oder '' für aus; string wird mit include verwendet.
      * @param enums string, string[], RegExp als String übergeben oder ein String der mit include verwenden wird.
-     * @returns 2 arrays keys: gefilterten keys und data: alle Objekte...
+     * @returns 2 arrays keys: gefilterte keys und data: alle Objekte...
      */
     async getFilteredObjects(dpInit: string | RegExp, enums?: string | string[]): Promise<typeof result> {
         const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
