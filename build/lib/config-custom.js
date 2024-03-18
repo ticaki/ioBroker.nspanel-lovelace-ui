@@ -5070,6 +5070,121 @@ const pageFahrplanRoutes = {
   template: "entities.fahrplan.routes"
 };
 const Testconfig = [
+  /* {
+      pages: [
+          pageGridTest4,
+          pageEntitiesTest1,
+          pagePowerTest1,
+          pageThermoTest,
+          pageGridTest1,
+          pageGrid2Test3,
+          pageGridTest2,
+          pageScreensaverTest,
+          //pageMediaTest,
+          pageEntitiesTest2,
+          pageAbfall,
+          pageGridTest5,
+          pageMediaTest3,
+          pageAlarmTest,
+          pageEntitiesTest3,
+          popupTest,
+          pageUnlockTest,
+          pageFahrplanRoutes,
+      ],
+      // override by password.ts
+      navigation: [
+          {
+              name: 'main', //main ist die erste Seite
+              page: 'entities1',
+              left: { single: 'grid3' }, // Die 4 bezieht sich auf den name: 4
+              right: { single: '///service' },
+          },
+          {
+              name: 'alarm1', //main ist die erste Seite
+              page: 'alarm1',
+              left: { single: '///service' }, // Die 4 bezieht sich auf den name: 4
+              right: { single: 'abfall1', double: 'main' },
+          },
+          {
+              name: 'abfall1', //main ist die erste Seite
+              page: 'abfall1',
+              left: { single: 'alarm1' }, // Die 4 bezieht sich auf den name: 4
+              right: { single: 'unlock1', double: 'main' },
+          },
+          {
+              name: 'unlock1',
+              page: 'unlock1',
+              left: { double: 'abfall1' }, // Die 4 bezieht sich auf den name: 4
+              right: { double: 'entities3' },
+          },
+          {
+              name: 'fahrplanrouten', //main ist die erste Seite
+              page: 'fahrplanrouten',
+              left: { double: 'unlock1' }, // Die 4 bezieht sich auf den name: 4
+              right: { double: 'entities2' },
+          },
+          {
+              name: 'entities2', //main ist die erste Seite
+              page: 'entities2',
+              left: { single: 'entities3' }, // Die 4 bezieht sich auf den name: 4
+              right: { single: 'power1', double: 'main' },
+          },
+          {
+              name: 'power1',
+              page: 'power1',
+              left: { single: 'entities2' }, // Die 4 bezieht sich auf den name: 4
+              right: { single: 'grid4', double: 'main' },
+          },
+          {
+              name: 'grid4', //main ist die erste Seite
+              page: 'grid4',
+              left: { single: 'power1' }, // Die 4 bezieht sich auf den name: 4
+              right: { single: 'grid1', double: 'main' },
+          },
+          {
+              name: 'grid1',
+              left: { single: 'grid4' }, // Die 0 bezieht sich auf den name: 0
+              right: { single: 'grid2' },
+              page: 'grid1', // das grid1 bezieht sich auf die uniqueID oben in pages
+          },
+          {
+              name: 'grid2',
+              left: { single: 'grid1' },
+              right: { single: 'media3' },
+              page: 'grid2',
+          },
+          {
+              name: 'media3',
+              left: { single: 'grid2' },
+              right: { single: 'grid3', double: 'main' },
+              page: 'media3',
+          },
+          {
+              name: 'grid3',
+              left: { single: 'media3', double: '1' },
+              right: { single: 'thermo1', double: '2' },
+              page: 'grid3',
+          },
+          {
+              name: 'thermo1',
+              left: { single: 'grid3', double: '1' },
+              right: { single: 'main', double: '2' },
+              page: 'thermo1',
+          },
+      ],
+      topic: 'nspanel/ns_panel4',
+      name: 'Scheibtisch',
+      config: {
+          // dat hier hat noch keine bedeutung glaube ich :)
+          momentLocale: '',
+          locale: 'de-DE',
+          iconBig1: false,
+          iconBig2: false,
+      },
+      timeout: 15, // dat kommt vom Admin
+      dimLow: 20,
+      dimHigh: 90,
+  },*/
   {
     pages: [
       pageGridTest4,

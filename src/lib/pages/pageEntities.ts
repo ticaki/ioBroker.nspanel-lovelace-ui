@@ -71,14 +71,4 @@ export class PageEntities extends PageMenu {
         await this.update();
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {}
-
-    protected async onVisibilityChange(val: boolean): Promise<void> {
-        if (val) {
-            if (this.config.card === 'cardEntities') {
-                const temp = await handleCardRole(this.adapter, this.config.cardRole, this);
-                if (temp) this.pageItemConfig = temp;
-            }
-        }
-        await super.onVisibilityChange(val);
-    }
 }

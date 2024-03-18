@@ -59,6 +59,7 @@ class Controller extends Library.BaseClass {
       if (panelConfig === void 0)
         continue;
       panelConfig.controller = this;
+      this.adapter.log.info(`Create panel ${panelConfig.name} with topic ${panelConfig.topic}`);
       const panel = new Panel.Panel(adapter, panelConfig);
       this.panels.push(panel);
     }
@@ -72,7 +73,7 @@ class Controller extends Library.BaseClass {
     this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
   };
   /**
-   * Update Date every hour.
+   * Update Date every hour....
    * @returns
    */
   dateUpdateLoop = async () => {
@@ -121,6 +122,8 @@ class Controller extends Library.BaseClass {
         } else {
           list = this.dataCache[token].data[`system#view.instance`];
         }
+        if (!list || !list.token)
+          return null;
         let total = 0;
         let withProblems = 0;
         for (const item of list.rows) {

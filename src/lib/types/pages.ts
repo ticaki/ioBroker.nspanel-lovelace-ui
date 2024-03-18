@@ -215,6 +215,7 @@ export function isButtonActionType(F: string | Types.ButtonActionType): F is Typ
         case 'A4':
         case 'D1':
         case 'U1':
+        case 'eu':
             return true;
         default:
             console.info(F + ' is not isButtonActionType!');
@@ -287,7 +288,8 @@ export type PageBaseConfig = (
                     | cardAlarmDataItemOptions
                     | cardNotifyDataItemOptions
                     | cardNotify2DataItemOptions
-                    | cardQRDataItemOptions;
+                    | cardQRDataItemOptions
+                    | cardChartDataItemOptions;
             }
           | {
                 //    type: PlayerType;
@@ -325,7 +327,8 @@ export type PageBaseConfig = (
         | cardAlarmDataItems
         | cardNotifyDataItems
         | cardNotify2DataItems
-        | cardQRDataItems;
+        | cardQRDataItems
+        | cardChartDataItems;
 };
 type PageNotifyConfig = {
     headline: string;
@@ -369,6 +372,24 @@ export type cardNotify2DataItemOptions = {
 export type cardNotify2DataItems = {
     card: 'popupNotify2';
     data: ChangeTypeOfKeys<PageNotify2Config, dataItem.Dataitem | undefined>;
+};
+
+type PageChartConfig = {
+    headline: string;
+    text: string;
+    color: typePageItem.ColorEntryTypeNew;
+    ticks: string;
+    value: string;
+    entity1: typePageItem.ValueEntryType;
+};
+
+export type cardChartDataItemOptions = {
+    card: 'cardChart';
+    data: ChangeTypeOfKeys<PageChartConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardChartDataItems = {
+    card: 'cardChart';
+    data: ChangeTypeOfKeys<PageChartConfig, dataItem.Dataitem | undefined>;
 };
 
 type PageAlarmPowerConfig = {
@@ -704,6 +725,15 @@ export type PageQRMessage = {
     options: [string?, string?];
 };
 
+export type PageChartMessage = {
+    event: 'entityUpd';
+    headline: string;
+    navigation: string;
+    color: string;
+    text: string;
+    ticks: string[];
+    value: string;
+};
 export type PagePowerMessageItem = {
     icon: string;
     iconColor: string;

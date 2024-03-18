@@ -107,9 +107,9 @@ class NspanelLovelaceUi extends utils.Adapter {
         return;
       const testconfig = structuredClone(this.config.Testconfig2);
       let counter = 0;
-      const names = [];
       for (const a of testconfig) {
         if (a && a.pages) {
+          const names = [];
           for (const p of a.pages) {
             counter++;
             if (!("uniqueID" in p))

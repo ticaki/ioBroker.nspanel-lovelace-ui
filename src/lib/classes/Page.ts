@@ -209,7 +209,7 @@ export class Page extends BaseClassPage {
     }
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
-            await this.createPageItems();
+            if (!this.pageItems || this.pageItems.length === 0) await this.createPageItems();
             await this.sendType();
             await this.update();
         } else {
@@ -235,6 +235,15 @@ export class Page extends BaseClassPage {
         );
     }
 
+    /**
+     * TODO rewrite
+     * @param id
+     * @param popup
+     * @param action
+     * @param value
+     * @param _event
+     * @returns
+     */
     public async onPopupRequest(
         id: number | string,
         popup: PopupType | undefined,
@@ -250,6 +259,7 @@ export class Page extends BaseClassPage {
         if (action && value !== undefined && (await item.onCommand(action, value))) {
             return;
         } else if (isPopupType(popup) && action !== 'bExit') {
+            this.panel.lastCard = '';
             msg = await item.GeneratePopup(popup);
         }
         if (msg !== null) {

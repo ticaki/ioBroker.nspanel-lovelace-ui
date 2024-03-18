@@ -181,7 +181,8 @@ class Page extends import_states_controller.BaseClassPage {
   }
   async onVisibilityChange(val) {
     if (val) {
-      await this.createPageItems();
+      if (!this.pageItems || this.pageItems.length === 0)
+        await this.createPageItems();
       await this.sendType();
       await this.update();
     } else {
@@ -205,6 +206,15 @@ class Page extends import_states_controller.BaseClassPage {
       `<- instance of [${Object.getPrototypeOf(this)}] update() is not defined or call super.onStateTrigger()`
     );
   }
+  /**
+   * TODO rewrite
+   * @param id
+   * @param popup
+   * @param action
+   * @param value
+   * @param _event
+   * @returns
+   */
   async onPopupRequest(id, popup, action, value, _event = null) {
     if (!this.pageItems)
       return;
@@ -216,6 +226,7 @@ class Page extends import_states_controller.BaseClassPage {
     if (action && value !== void 0 && await item.onCommand(action, value)) {
       return;
     } else if ((0, import_types.isPopupType)(popup) && action !== "bExit") {
+      this.panel.lastCard = "";
       msg = await item.GeneratePopup(popup);
     }
     if (msg !== null) {

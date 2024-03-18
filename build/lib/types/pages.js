@@ -109,6 +109,7 @@ function isButtonActionType(F) {
     case "A4":
     case "D1":
     case "U1":
+    case "eu":
       return true;
     default:
       console.info(F + " is not isButtonActionType!");

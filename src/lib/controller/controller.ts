@@ -34,6 +34,7 @@ export class Controller extends Library.BaseClass {
         for (const panelConfig of options.panels) {
             if (panelConfig === undefined) continue;
             panelConfig.controller = this;
+            this.adapter.log.info(`Create panel ${panelConfig.name} with topic ${panelConfig.topic}`);
             const panel = new Panel.Panel(adapter, panelConfig as Panel.panelConfigPartial);
             this.panels.push(panel);
         }
@@ -48,7 +49,7 @@ export class Controller extends Library.BaseClass {
     };
 
     /**
-     * Update Date every hour.
+     * Update Date every hour....
      * @returns
      */
     dateUpdateLoop = async (): Promise<void> => {
@@ -96,6 +97,7 @@ export class Controller extends Library.BaseClass {
                 } else {
                     list = this.dataCache[token].data[`system#view.instance`];
                 }
+                if (!list || !list.token) return null;
 
                 let total = 0;
                 let withProblems = 0;

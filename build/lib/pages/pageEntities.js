@@ -22,7 +22,6 @@ __export(pageEntities_exports, {
 });
 module.exports = __toCommonJS(pageEntities_exports);
 var import_tools = require("../const/tools");
-var import_data_collection_functions = require("./data-collection-functions");
 var import_pageMenu = require("./pageMenu");
 const PageEntitiesMessageDefault = {
   event: "entityUpd",
@@ -79,16 +78,6 @@ class PageEntities extends import_pageMenu.PageMenu {
     await this.update();
   }
   async onButtonEvent(_event) {
-  }
-  async onVisibilityChange(val) {
-    if (val) {
-      if (this.config.card === "cardEntities") {
-        const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole, this);
-        if (temp)
-          this.pageItemConfig = temp;
-      }
-    }
-    await super.onVisibilityChange(val);
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

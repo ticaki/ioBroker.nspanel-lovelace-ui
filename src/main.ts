@@ -117,9 +117,9 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (!this.mqttClient) return;
             const testconfig = structuredClone(this.config.Testconfig2);
             let counter = 0;
-            const names: string[] = [];
             for (const a of testconfig) {
                 if (a && a.pages) {
+                    const names: string[] = [];
                     for (const p of a.pages) {
                         counter++;
                         if (!('uniqueID' in p)) continue;
