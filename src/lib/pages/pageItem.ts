@@ -182,7 +182,7 @@ export class PageItem extends BaseClassTriggerd {
                         (colorMode === 'hue'
                             ? await tools.GetIconColor(
                                   rgb ?? undefined,
-                                  dimmer !== null ? (dimmer > 5 ? dimmer : 5) : v,
+                                  dimmer !== null ? (dimmer > 10 ? dimmer : 10) : v,
                               )
                             : await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ??
                         (await tools.getIconEntryColor(item.icon, dimmer ?? v, Color.Yellow)) ??
@@ -701,8 +701,8 @@ export class PageItem extends BaseClassTriggerd {
                     case 'dimmer':
                     case 'hue':
                     case 'ct':
+                    case 'rgbThree':
                     case 'rgbSingle':
-                    case 'rgb':
                     case 'rgb.hex':
                     default: {
                         message.type = '2Sliders';
@@ -749,11 +749,11 @@ export class PageItem extends BaseClassTriggerd {
                                 if (nhue) rgb = Color.hsv2RGB(nhue, 1, 1) ?? null;
                                 break;
                             }
-                            case 'rgbSingle': {
+                            case 'rgbThree': {
                                 rgb = (await tools.getRGBfromRGBThree(item)) ?? null;
                                 break;
                             }
-                            case 'rgb': {
+                            case 'rgbSingle': {
                                 rgb = (item.color && item.color.true && (await item.color.true.getRGBValue())) ?? null;
                                 break;
                             }
@@ -1169,12 +1169,12 @@ export class PageItem extends BaseClassTriggerd {
                             case 'hue':
                                 await tools.setHuefromRGB(item, Color.resultToRgb(value));
                                 break;
-                            case 'rgbSingle': {
+                            case 'rgbThree': {
                                 const rgb = Color.resultToRgb(value);
                                 await tools.setRGBThreefromRGB(item, rgb);
                                 break;
                             }
-                            case 'rgb': {
+                            case 'rgbSingle': {
                                 const rgb = Color.resultToRgb(value);
                                 if (Color.isRGB(rgb)) {
                                     item.color &&
@@ -1436,36 +1436,6 @@ export class PageItem extends BaseClassTriggerd {
             default: {
                 return false;
             }
-            /*let rgb = null;
-                        switch (this.config.role) {
-                            case 'socket':
-                            case 'light':
-                            case 'dimmer':
-                            case 'ct':
-                                break;
-                            case 'hue':
-                                rgb = (await tools.getDecfromHue(item)) ?? null;
-                                break;
-                            case 'rgbSingle':
-                            case 'rgb':
-                                rgb = (await tools.getDecfromRGBThree(item)) ?? null;
-                                break;
-                        }
-                        if (rgb !== null) {
-                            message.hueMode = true;
-                            message.slidersColor = rgb;
-                        } else {
-                            message.slider2Pos = 'disable';
-                        }
-
-                        if (rgb === null) {
-                            if (item.ct && item.ct.value) {
-                                const ct = await tools.getValueEntryNumber(item.ct);
-                                if (ct) {
-                                    message.slider2Pos = Math.trunc(ct);
-                                }
-                            }
-                        }*/
         }
         return true;
     }

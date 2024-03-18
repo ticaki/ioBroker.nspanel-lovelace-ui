@@ -85,14 +85,17 @@ const pageEntitiesTest1 = {
       dpInit: ""
     },
     {
-      role: "rgb",
+      role: "rgbThree",
       type: "light",
       dpInit: "",
       data: {
-        color: {
-          true: { type: "triggered", dp: "0_userdata.0.RGB" },
-          false: void 0
-        },
+        /*color: {
+            true: { type: 'triggered', dp: '0_userdata.0.RGB' },
+            false: undefined,
+        },*/
+        Red: { type: "triggered", dp: "0_userdata.0.Red" },
+        Blue: { type: "triggered", dp: "0_userdata.0.Blue" },
+        Green: { type: "triggered", dp: "0_userdata.0.Green" },
         icon: {
           true: {
             value: { type: "const", constVal: "lightbulb" },
@@ -121,6 +124,10 @@ const pageEntitiesTest1 = {
           unit: void 0
         },
         entityInSel: void 0,
+        headline: {
+          type: "const",
+          constVal: "Licht"
+        },
         text1: {
           true: {
             type: "const",
@@ -264,7 +271,7 @@ const pageEntitiesTest1 = {
       }
     },
     {
-      role: "rgb",
+      role: "rgbSingle",
       type: "light",
       dpInit: "",
       data: {
@@ -1600,7 +1607,7 @@ const pageGridTest1 = {
       /**
        * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
        */
-      role: "rgb",
+      role: "rgbSingle",
       type: "shutter",
       dpInit: "",
       data: {
@@ -1685,7 +1692,7 @@ const pageGridTest1 = {
       }
     },
     {
-      role: "rgb",
+      role: "rgbSingle",
       type: "light",
       dpInit: "",
       data: {
@@ -1928,7 +1935,7 @@ const pageGridTest1 = {
       /**
        * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
        */
-      role: "rgb",
+      role: "rgbSingle",
       type: "shutter",
       dpInit: "",
       data: {
@@ -2013,7 +2020,7 @@ const pageGridTest1 = {
       }
     },
     {
-      role: "rgb",
+      role: "rgbSingle",
       type: "light",
       dpInit: "",
       data: {
@@ -2420,7 +2427,7 @@ const pageGridTest5 = {
       /**
        * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
        */
-      role: "rgb",
+      role: "rgbSingle",
       type: "shutter",
       dpInit: "",
       data: {
@@ -2505,7 +2512,7 @@ const pageGridTest5 = {
       }
     },
     {
-      role: "rgb",
+      role: "rgbSingle",
       type: "light",
       dpInit: "",
       data: {

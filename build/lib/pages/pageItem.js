@@ -174,7 +174,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           const colorMode = !item.colorMode ? "none" : await item.colorMode.getBoolean() ? "hue" : "ct";
           message.iconColor = (_g = (_f = colorMode === "hue" ? await tools.GetIconColor(
             rgb != null ? rgb : void 0,
-            dimmer !== null ? dimmer > 5 ? dimmer : 5 : v
+            dimmer !== null ? dimmer > 10 ? dimmer : 10 : v
           ) : await tools.getTemperaturColorFromValue(item.ct, dimmer != null ? dimmer : 100)) != null ? _f : await tools.getIconEntryColor(item.icon, dimmer != null ? dimmer : v, import_Color.Color.Yellow)) != null ? _g : "";
           if (v) {
             message.optionalValue = "1";
@@ -649,8 +649,8 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           case "dimmer":
           case "hue":
           case "ct":
+          case "rgbThree":
           case "rgbSingle":
-          case "rgb":
           case "rgb.hex":
           default: {
             message.type = "2Sliders";
@@ -695,11 +695,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                   rgb = (_e = import_Color.Color.hsv2RGB(nhue, 1, 1)) != null ? _e : null;
                 break;
               }
-              case "rgbSingle": {
+              case "rgbThree": {
                 rgb = (_f = await tools.getRGBfromRGBThree(item)) != null ? _f : null;
                 break;
               }
-              case "rgb": {
+              case "rgbSingle": {
                 rgb = (_g = item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _g : null;
                 break;
               }
@@ -1070,12 +1070,12 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               case "hue":
                 await tools.setHuefromRGB(item, import_Color.Color.resultToRgb(value));
                 break;
-              case "rgbSingle": {
+              case "rgbThree": {
                 const rgb = import_Color.Color.resultToRgb(value);
                 await tools.setRGBThreefromRGB(item, rgb);
                 break;
               }
-              case "rgb": {
+              case "rgbSingle": {
                 const rgb = import_Color.Color.resultToRgb(value);
                 if (import_Color.Color.isRGB(rgb)) {
                   item.color && item.color.true && await item.color.true.setStateAsync(JSON.stringify(rgb));
