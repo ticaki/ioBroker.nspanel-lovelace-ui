@@ -2,7 +2,6 @@ import { PageInterface } from '../classes/Page';
 import { getPayload, getPayloadArray } from '../const/tools';
 import * as pages from '../types/pages';
 import { IncomingEvent } from '../types/types';
-import { handleCardRole } from './data-collection-functions';
 import { PageMenu } from './pageMenu';
 
 const PageEntitiesMessageDefault: pages.PageEntitiesMessage = {
