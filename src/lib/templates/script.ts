@@ -10,11 +10,11 @@ export const scriptTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'power-socket-de' },
-                    color: { type: 'const', constVal: Color.true },
+                    color: { type: 'const', constVal: Color.On },
                 },
                 false: {
                     value: { type: 'const', constVal: 'power-soket-de' },
-                    color: { type: 'const', constVal: Color.false },
+                    color: { type: 'const', constVal: Color.Off },
                 },
             },
             entity1: {
@@ -23,7 +23,7 @@ export const scriptTemplates: TemplateItems = {
                     mode: 'auto',
                     role: '',
                     dp: '',
-                    regexp: /\.ACTUAL/,
+                    regexp: /\.SET/,
                 },
             },
             text: {
@@ -45,11 +45,11 @@ export const scriptTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lightbulb' },
-                    color: { type: 'const', constVal: Color.true },
+                    color: { type: 'const', constVal: Color.On },
                 },
                 false: {
                     value: { type: 'const', constVal: 'lightbulb-outline' },
-                    color: { type: 'const', constVal: Color.false },
+                    color: { type: 'const', constVal: Color.Off },
                 },
             },
             entity1: {
@@ -58,7 +58,7 @@ export const scriptTemplates: TemplateItems = {
                     mode: 'auto',
                     role: '',
                     dp: '',
-                    regexp: /\.ON_ACTUAL/,
+                    regexp: /\.SET/,
                 },
             },
             text: {
@@ -69,7 +69,7 @@ export const scriptTemplates: TemplateItems = {
                 true: { type: 'const', constVal: 'on' },
                 false: { type: 'const', constVal: 'off' },
             },
-            setValue1: { type: 'state', mode: 'auto', role: '', dp: '', regexp: /\.ON_SET/ },
+            setValue1: { type: 'state', mode: 'auto', role: '', dp: '', regexp: /\.SET/ },
         },
     },
     'script.hue': {

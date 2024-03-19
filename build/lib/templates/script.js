@@ -31,11 +31,11 @@ const scriptTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "power-socket-de" },
-          color: { type: "const", constVal: import_Color.Color.true }
+          color: { type: "const", constVal: import_Color.Color.On }
         },
         false: {
           value: { type: "const", constVal: "power-soket-de" },
-          color: { type: "const", constVal: import_Color.Color.false }
+          color: { type: "const", constVal: import_Color.Color.Off }
         }
       },
       entity1: {
@@ -44,7 +44,7 @@ const scriptTemplates = {
           mode: "auto",
           role: "",
           dp: "",
-          regexp: /\.ACTUAL/
+          regexp: /\.SET/
         }
       },
       text: {
@@ -66,11 +66,11 @@ const scriptTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "lightbulb" },
-          color: { type: "const", constVal: import_Color.Color.true }
+          color: { type: "const", constVal: import_Color.Color.On }
         },
         false: {
           value: { type: "const", constVal: "lightbulb-outline" },
-          color: { type: "const", constVal: import_Color.Color.false }
+          color: { type: "const", constVal: import_Color.Color.Off }
         }
       },
       entity1: {
@@ -79,7 +79,7 @@ const scriptTemplates = {
           mode: "auto",
           role: "",
           dp: "",
-          regexp: /\.ON_ACTUAL/
+          regexp: /\.SET/
         }
       },
       text: {
@@ -90,7 +90,7 @@ const scriptTemplates = {
         true: { type: "const", constVal: "on" },
         false: { type: "const", constVal: "off" }
       },
-      setValue1: { type: "state", mode: "auto", role: "", dp: "", regexp: /\.ON_SET/ }
+      setValue1: { type: "state", mode: "auto", role: "", dp: "", regexp: /\.SET/ }
     }
   },
   "script.hue": {

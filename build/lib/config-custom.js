@@ -1369,24 +1369,16 @@ const pageGridTest = {
       dpInit: "alias.0.Licht.testCT"
     },
     {
-      template: "script.rgb",
-      dpInit: "alias.0.Licht.RGB"
+      template: "script.light",
+      dpInit: "alias.0.Licht.test_light_socket"
     },
     {
-      template: "script.rgbSingle",
-      dpInit: "alias.0.Licht.rgbSingle"
-    },
-    {
-      template: "script.rgbSingleHEX",
-      dpInit: "alias.0.Licht.rgbSingle"
+      template: "script.socket",
+      dpInit: "alias.0.Licht.test_light_socket"
     },
     {
       template: "script.dimmer",
       dpInit: "alias.0.Licht.testdimmer"
-    },
-    {
-      template: "script.hue",
-      dpInit: "alias.0.Licht.testHue"
     }
   ]
 };
