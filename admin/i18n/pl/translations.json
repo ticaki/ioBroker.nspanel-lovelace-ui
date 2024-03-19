@@ -41,5 +41,8 @@
     "IconRight": "Ikona prawa",
     "ScreensaverOptions": "Wygaszacz ekranu",
     "Overview": "Przegląd",
-    "Display": "Wyświetlacz"
+    "Display": "Wyświetlacz",
+    "brightness": "Jasność",
+    "valveposition": "Pozycja zaworów",
+    "actualtemp": "Rzeczywista temperatura"
 }

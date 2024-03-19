@@ -133,14 +133,14 @@ export const scriptTemplates: TemplateItems = {
             text1: {
                 true: {
                     type: 'const',
-                    constVal: 'Colour brightness',
+                    constVal: 'brightness',
                 },
                 false: undefined,
             },
             text2: {
                 true: {
                     type: 'const',
-                    constVal: 'brightness',
+                    constVal: 'Colour brightness',
                 },
                 false: undefined,
             },
@@ -217,14 +217,14 @@ export const scriptTemplates: TemplateItems = {
             text1: {
                 true: {
                     type: 'const',
-                    constVal: 'Colour brightness',
+                    constVal: 'brightness',
                 },
                 false: undefined,
             },
             text2: {
                 true: {
                     type: 'const',
-                    constVal: 'brightness',
+                    constVal: 'Colour brightness',
                 },
                 false: undefined,
             },
@@ -301,14 +301,14 @@ export const scriptTemplates: TemplateItems = {
             text1: {
                 true: {
                     type: 'const',
-                    constVal: 'Colour brightness',
+                    constVal: 'brightness',
                 },
                 false: undefined,
             },
             text2: {
                 true: {
                     type: 'const',
-                    constVal: 'brightness',
+                    constVal: 'Colour brightness',
                 },
                 false: undefined,
             },
@@ -396,14 +396,14 @@ export const scriptTemplates: TemplateItems = {
             text1: {
                 true: {
                     type: 'const',
-                    constVal: 'Colour brightness',
+                    constVal: 'brightness',
                 },
                 false: undefined,
             },
             text2: {
                 true: {
                     type: 'const',
-                    constVal: 'brightness',
+                    constVal: 'Colour brightness',
                 },
                 false: undefined,
             },
@@ -470,21 +470,14 @@ export const scriptTemplates: TemplateItems = {
             text1: {
                 true: {
                     type: 'const',
-                    constVal: 'Colour brightness',
+                    constVal: 'brightness',
                 },
                 false: undefined,
             },
             text2: {
                 true: {
                     type: 'const',
-                    constVal: 'White brightness',
-                },
-                false: undefined,
-            },
-            text3: {
-                true: {
-                    type: 'const',
-                    constVal: 'Color',
+                    constVal: 'Colour brightness',
                 },
                 false: undefined,
             },
@@ -532,7 +525,7 @@ export const scriptTemplates: TemplateItems = {
                 factor: undefined,
                 unit: undefined,
             },
-            text2: {
+            text1: {
                 true: {
                     type: 'const',
                     constVal: 'brightness',
@@ -650,6 +643,7 @@ export const scriptTemplates: TemplateItems = {
                 factor: undefined,
                 unit: undefined,
             },
+            // unten
             text1: {
                 true: {
                     type: 'const',
@@ -657,6 +651,7 @@ export const scriptTemplates: TemplateItems = {
                 },
                 false: undefined,
             },
+            // mitte
             text2: {
                 true: {
                     type: 'const',
@@ -664,6 +659,7 @@ export const scriptTemplates: TemplateItems = {
                 },
                 false: undefined,
             },
+            // oben
             text3: {
                 true: {
                     type: 'const',

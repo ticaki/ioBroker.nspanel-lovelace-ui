@@ -41,5 +41,8 @@
     "IconRight": "Icona a destra",
     "ScreensaverOptions": "Salvaschermo",
     "Overview": "Panoramica",
-    "Display": "Schermo"
+    "Display": "Schermo",
+    "brightness": "Luminosità",
+    "valveposition": "Posizione della valvola",
+    "actualtemp": "Temp. effettiva"
 }

@@ -41,5 +41,8 @@
     "IconRight": "Ícone à direita",
     "ScreensaverOptions": "Protetor de tela",
     "Overview": "Visão geral",
-    "Display": "Mostrar"
+    "Display": "Mostrar",
+    "brightness": "Brilho",
+    "valveposition": "Posição da válvula",
+    "actualtemp": "Temperatura real"
 }

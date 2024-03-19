@@ -154,14 +154,14 @@ const scriptTemplates = {
       text1: {
         true: {
           type: "const",
-          constVal: "Colour brightness"
+          constVal: "brightness"
         },
         false: void 0
       },
       text2: {
         true: {
           type: "const",
-          constVal: "brightness"
+          constVal: "Colour brightness"
         },
         false: void 0
       },
@@ -238,14 +238,14 @@ const scriptTemplates = {
       text1: {
         true: {
           type: "const",
-          constVal: "Colour brightness"
+          constVal: "brightness"
         },
         false: void 0
       },
       text2: {
         true: {
           type: "const",
-          constVal: "brightness"
+          constVal: "Colour brightness"
         },
         false: void 0
       },
@@ -322,14 +322,14 @@ const scriptTemplates = {
       text1: {
         true: {
           type: "const",
-          constVal: "Colour brightness"
+          constVal: "brightness"
         },
         false: void 0
       },
       text2: {
         true: {
           type: "const",
-          constVal: "brightness"
+          constVal: "Colour brightness"
         },
         false: void 0
       },
@@ -417,14 +417,14 @@ const scriptTemplates = {
       text1: {
         true: {
           type: "const",
-          constVal: "Colour brightness"
+          constVal: "brightness"
         },
         false: void 0
       },
       text2: {
         true: {
           type: "const",
-          constVal: "brightness"
+          constVal: "Colour brightness"
         },
         false: void 0
       },
@@ -491,21 +491,14 @@ const scriptTemplates = {
       text1: {
         true: {
           type: "const",
-          constVal: "Colour brightness"
+          constVal: "brightness"
         },
         false: void 0
       },
       text2: {
         true: {
           type: "const",
-          constVal: "White brightness"
-        },
-        false: void 0
-      },
-      text3: {
-        true: {
-          type: "const",
-          constVal: "Color"
+          constVal: "Colour brightness"
         },
         false: void 0
       }
@@ -553,7 +546,7 @@ const scriptTemplates = {
         factor: void 0,
         unit: void 0
       },
-      text2: {
+      text1: {
         true: {
           type: "const",
           constVal: "brightness"

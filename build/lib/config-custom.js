@@ -1382,7 +1382,7 @@ const pageGridTest = {
     },
     {
       template: "script.dimmer",
-      dpInit: "alias.0.Licht.rgbSingle"
+      dpInit: "alias.0.Licht.testdimmer"
     },
     {
       template: "script.hue",

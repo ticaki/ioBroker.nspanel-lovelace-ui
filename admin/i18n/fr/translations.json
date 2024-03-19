@@ -41,5 +41,8 @@
     "IconRight": "Icône à droite",
     "ScreensaverOptions": "Économiseur d'écran",
     "Overview": "Aperçu",
-    "Display": "Afficher"
+    "Display": "Afficher",
+    "brightness": "Luminosité",
+    "valveposition": "Position de la vanne",
+    "actualtemp": "Température réelle"
 }

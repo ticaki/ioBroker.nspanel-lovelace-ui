@@ -41,5 +41,8 @@
     "IconRight": "Значок справа",
     "ScreensaverOptions": "Заставка",
     "Overview": "Обзор",
-    "Display": "Отображать"
+    "Display": "Отображать",
+    "brightness": "Яркость",
+    "valveposition": "Положение клапана",
+    "actualtemp": "Фактическая температура"
 }

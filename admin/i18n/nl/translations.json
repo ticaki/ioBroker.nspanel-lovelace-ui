@@ -41,5 +41,8 @@
     "IconRight": "Icoon rechts",
     "ScreensaverOptions": "Screensaver",
     "Overview": "Overzicht",
-    "Display": "Weergave"
+    "Display": "Weergave",
+    "brightness": "Helderheid",
+    "valveposition": "Kleppositie",
+    "actualtemp": "Werkelijke temperatuur"
 }

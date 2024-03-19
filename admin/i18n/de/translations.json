@@ -8,6 +8,7 @@
     "Colour brightness": "Farbhelligkeit",
     "Color brightness": "Farbhelligkeit",
     "White brightness": "Weißhelligkeit",
+    "brightness": "Helligkeit",
     "Color": "Farbe",
     "Shutter position": "Rollladensteuerung",
     "open": "öffnen",
@@ -45,4 +46,3 @@
     "valveposition": "Ventilposition",
     "actualtemp": "Aktuelle Temp"
 }
-

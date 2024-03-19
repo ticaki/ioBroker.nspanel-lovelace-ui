@@ -41,5 +41,8 @@
     "IconRight": "Значок справа",
     "ScreensaverOptions": "Заставка",
     "Overview": "Огляд",
-    "Display": "Дисплей"
+    "Display": "Дисплей",
+    "brightness": "Яскравість",
+    "valveposition": "Положення клапана",
+    "actualtemp": "Фактична темп"
 }
