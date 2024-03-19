@@ -41,5 +41,10 @@
     "IconRight": "Icoon rechts",
     "ScreensaverOptions": "Screensaver",
     "Overview": "Overzicht",
-    "Display": "Weergave"
+    "Display": "Weergave",
+    "Brightness": "Helderheid",
+    "valveposition": "Kleppositie",
+    "actualtemp": "Werkelijke temperatuur",
+    "Colour temperature": "Kleur temperatuur",
+    "Color temperature": "Kleurtemperatuur"
 }

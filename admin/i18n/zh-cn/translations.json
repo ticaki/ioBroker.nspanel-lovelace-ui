@@ -41,5 +41,10 @@
     "IconRight": "图标右",
     "ScreensaverOptions": "屏幕保护程序",
     "Overview": "概述",
-    "Display": "展示"
+    "Display": "展示",
+    "Brightness": "亮度",
+    "valveposition": "阀门位置",
+    "actualtemp": "实际温度",
+    "Colour temperature": "色温",
+    "Color temperature": "色温"
 }

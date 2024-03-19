@@ -41,5 +41,10 @@
     "IconRight": "Значок справа",
     "ScreensaverOptions": "Заставка",
     "Overview": "Обзор",
-    "Display": "Отображать"
+    "Display": "Отображать",
+    "Brightness": "Яркость",
+    "valveposition": "Положение клапана",
+    "actualtemp": "Фактическая температура",
+    "Colour temperature": "Цветовая температура",
+    "Color temperature": "Цветовая температура"
 }

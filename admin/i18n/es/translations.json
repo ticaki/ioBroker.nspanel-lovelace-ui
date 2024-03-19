@@ -41,5 +41,10 @@
     "IconRight": "Icono a la derecha",
     "ScreensaverOptions": "Protector de pantalla",
     "Overview": "Descripción general",
-    "Display": "Mostrar"
+    "Display": "Mostrar",
+    "Brightness": "Brillo",
+    "valveposition": "Posición de la válvula",
+    "actualtemp": "Temperatura real",
+    "Colour temperature": "Temperatura del color",
+    "Color temperature": "Temperatura del color"
 }
