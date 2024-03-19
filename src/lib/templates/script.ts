@@ -1,7 +1,7 @@
 import { Color } from '../const/Color';
 import { TemplateItems } from '../types/types';
 
-export const scrpitTemplates: TemplateItems = {
+export const scriptTemplates: TemplateItems = {
     'script.socket': {
         role: '',
         adapter: '',
@@ -322,7 +322,7 @@ export const scrpitTemplates: TemplateItems = {
         },
     },
     'script.rgb': {
-        role: 'rgb',
+        role: 'rgbThree',
         adapter: '',
         type: 'light',
         data: {
