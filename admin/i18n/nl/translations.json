@@ -42,7 +42,9 @@
     "ScreensaverOptions": "Screensaver",
     "Overview": "Overzicht",
     "Display": "Weergave",
-    "brightness": "Helderheid",
+    "Brightness": "Helderheid",
     "valveposition": "Kleppositie",
-    "actualtemp": "Werkelijke temperatuur"
+    "actualtemp": "Werkelijke temperatuur",
+    "Colour temperature": "Kleur temperatuur",
+    "Color temperature": "Kleurtemperatuur"
 }

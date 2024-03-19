@@ -133,14 +133,14 @@ export const scriptTemplates: TemplateItems = {
             text1: {
                 true: {
                     type: 'const',
-                    constVal: 'brightness',
+                    constVal: 'Brightness',
                 },
                 false: undefined,
             },
             text2: {
                 true: {
                     type: 'const',
-                    constVal: 'Colour brightness',
+                    constVal: 'Colour temperature',
                 },
                 false: undefined,
             },
@@ -217,14 +217,14 @@ export const scriptTemplates: TemplateItems = {
             text1: {
                 true: {
                     type: 'const',
-                    constVal: 'brightness',
+                    constVal: 'Brightness',
                 },
                 false: undefined,
             },
             text2: {
                 true: {
                     type: 'const',
-                    constVal: 'Colour brightness',
+                    constVal: 'Colour temperature',
                 },
                 false: undefined,
             },
@@ -301,14 +301,14 @@ export const scriptTemplates: TemplateItems = {
             text1: {
                 true: {
                     type: 'const',
-                    constVal: 'brightness',
+                    constVal: 'Brightness',
                 },
                 false: undefined,
             },
             text2: {
                 true: {
                     type: 'const',
-                    constVal: 'Colour brightness',
+                    constVal: 'Colour temperature',
                 },
                 false: undefined,
             },
@@ -396,14 +396,14 @@ export const scriptTemplates: TemplateItems = {
             text1: {
                 true: {
                     type: 'const',
-                    constVal: 'brightness',
+                    constVal: 'Brightness',
                 },
                 false: undefined,
             },
             text2: {
                 true: {
                     type: 'const',
-                    constVal: 'Colour brightness',
+                    constVal: 'Colour temperature',
                 },
                 false: undefined,
             },
@@ -470,14 +470,14 @@ export const scriptTemplates: TemplateItems = {
             text1: {
                 true: {
                     type: 'const',
-                    constVal: 'brightness',
+                    constVal: 'Brightness',
                 },
                 false: undefined,
             },
             text2: {
                 true: {
                     type: 'const',
-                    constVal: 'Colour brightness',
+                    constVal: 'Colour temperature',
                 },
                 false: undefined,
             },
@@ -527,7 +527,7 @@ export const scriptTemplates: TemplateItems = {
             text1: {
                 true: {
                     type: 'const',
-                    constVal: 'brightness',
+                    constVal: 'Brightness',
                 },
                 false: undefined,
             },

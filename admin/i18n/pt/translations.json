@@ -42,7 +42,9 @@
     "ScreensaverOptions": "Protetor de tela",
     "Overview": "Visão geral",
     "Display": "Mostrar",
-    "brightness": "Brilho",
+    "Brightness": "Brilho",
     "valveposition": "Posição da válvula",
-    "actualtemp": "Temperatura real"
+    "actualtemp": "Temperatura real",
+    "Colour temperature": "Temperatura de cor",
+    "Color temperature": "Temperatura de cor"
 }

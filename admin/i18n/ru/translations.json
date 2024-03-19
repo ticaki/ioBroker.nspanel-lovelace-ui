@@ -42,7 +42,9 @@
     "ScreensaverOptions": "Заставка",
     "Overview": "Обзор",
     "Display": "Отображать",
-    "brightness": "Яркость",
+    "Brightness": "Яркость",
     "valveposition": "Положение клапана",
-    "actualtemp": "Фактическая температура"
+    "actualtemp": "Фактическая температура",
+    "Colour temperature": "Цветовая температура",
+    "Color temperature": "Цветовая температура"
 }

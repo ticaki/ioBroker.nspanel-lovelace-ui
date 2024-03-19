@@ -42,7 +42,9 @@
     "ScreensaverOptions": "Économiseur d'écran",
     "Overview": "Aperçu",
     "Display": "Afficher",
-    "brightness": "Luminosité",
+    "Brightness": "Luminosité",
     "valveposition": "Position de la vanne",
-    "actualtemp": "Température réelle"
+    "actualtemp": "Température réelle",
+    "Colour temperature": "Température de couleur",
+    "Color temperature": "Température de couleur"
 }

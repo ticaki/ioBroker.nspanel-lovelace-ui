@@ -42,7 +42,9 @@
     "ScreensaverOptions": "Заставка",
     "Overview": "Огляд",
     "Display": "Дисплей",
-    "brightness": "Яскравість",
+    "Brightness": "Яскравість",
     "valveposition": "Положення клапана",
-    "actualtemp": "Фактична темп"
+    "actualtemp": "Фактична темп",
+    "Colour temperature": "Колірна температура",
+    "Color temperature": "Колірна температура"
 }

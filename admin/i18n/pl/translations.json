@@ -42,7 +42,9 @@
     "ScreensaverOptions": "Wygaszacz ekranu",
     "Overview": "Przegląd",
     "Display": "Wyświetlacz",
-    "brightness": "Jasność",
+    "Brightness": "Jasność",
     "valveposition": "Pozycja zaworów",
-    "actualtemp": "Rzeczywista temperatura"
+    "actualtemp": "Rzeczywista temperatura",
+    "Colour temperature": "Temperatura barwowa",
+    "Color temperature": "Temperatura koloru"
 }
