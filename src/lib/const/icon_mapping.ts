@@ -6911,6 +6911,7 @@ export class Icons {
             return Icons.iconMap.get(val)!;
         } else {
             if (Icons.adapter) Icons.adapter.log.debug(`${val} is not a icon!`);
+            //else console.log(`${val} is not a icon!`);
         }
         return '';
     }

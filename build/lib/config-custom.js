@@ -618,7 +618,7 @@ const pageGridLicht1 = {
       }
     },
     {
-      role: "text.list",
+      role: "",
       type: "button",
       dpInit: "",
       data: {
