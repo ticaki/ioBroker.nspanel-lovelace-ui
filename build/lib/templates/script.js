@@ -447,11 +447,11 @@ const scriptTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "lightbulb" },
-          color: { type: "const", constVal: import_Color.Color.activated }
+          color: { type: "const", constVal: import_Color.Color.On }
         },
         false: {
           value: { type: "const", constVal: "lightbulb-outline" },
-          color: { type: "const", constVal: import_Color.Color.deactivated }
+          color: { type: "const", constVal: import_Color.Color.Off }
         },
         scale: void 0,
         maxBri: void 0,
@@ -514,11 +514,11 @@ const scriptTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "lightbulb" },
-          color: { type: "const", constVal: import_Color.Color.activated }
+          color: { type: "const", constVal: import_Color.Color.On }
         },
         false: {
           value: { type: "const", constVal: "lightbulb-outline" },
-          color: { type: "const", constVal: import_Color.Color.deactivated }
+          color: { type: "const", constVal: import_Color.Color.Off }
         },
         scale: void 0,
         maxBri: void 0,

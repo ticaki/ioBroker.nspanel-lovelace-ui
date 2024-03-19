@@ -426,11 +426,11 @@ export const scriptTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lightbulb' },
-                    color: { type: 'const', constVal: Color.activated },
+                    color: { type: 'const', constVal: Color.On },
                 },
                 false: {
                     value: { type: 'const', constVal: 'lightbulb-outline' },
-                    color: { type: 'const', constVal: Color.deactivated },
+                    color: { type: 'const', constVal: Color.Off },
                 },
                 scale: undefined,
                 maxBri: undefined,
@@ -493,11 +493,11 @@ export const scriptTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lightbulb' },
-                    color: { type: 'const', constVal: Color.activated },
+                    color: { type: 'const', constVal: Color.On },
                 },
                 false: {
                     value: { type: 'const', constVal: 'lightbulb-outline' },
-                    color: { type: 'const', constVal: Color.deactivated },
+                    color: { type: 'const', constVal: Color.Off },
                 },
                 scale: undefined,
                 maxBri: undefined,
