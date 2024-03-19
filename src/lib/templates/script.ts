@@ -13,7 +13,7 @@ export const scriptTemplates: TemplateItems = {
                     color: { type: 'const', constVal: Color.On },
                 },
                 false: {
-                    value: { type: 'const', constVal: 'power-soket-de' },
+                    value: { type: 'const', constVal: 'power-socket-de' },
                     color: { type: 'const', constVal: Color.Off },
                 },
             },
@@ -23,7 +23,7 @@ export const scriptTemplates: TemplateItems = {
                     mode: 'auto',
                     role: '',
                     dp: '',
-                    regexp: /\.SET/,
+                    regexp: /\.ACTUAL/,
                 },
             },
             text: {
@@ -58,7 +58,7 @@ export const scriptTemplates: TemplateItems = {
                     mode: 'auto',
                     role: '',
                     dp: '',
-                    regexp: /\.SET/,
+                    regexp: /\.ON_ACTUAL/,
                 },
             },
             text: {
@@ -78,7 +78,7 @@ export const scriptTemplates: TemplateItems = {
         type: 'light',
         data: {
             headline: { type: 'const', constVal: 'HUE Light' },
-            colorMode: { type: 'const', constVal: 'hue' },
+            colorMode: { type: 'const', constVal: true },
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lightbulb' },
@@ -159,7 +159,7 @@ export const scriptTemplates: TemplateItems = {
         type: 'light',
         data: {
             headline: { type: 'const', constVal: 'RGB_Single Light' },
-            colorMode: { type: 'const', constVal: 'none' },
+            colorMode: { type: 'const', constVal: true },
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lightbulb' },
@@ -243,7 +243,7 @@ export const scriptTemplates: TemplateItems = {
         type: 'light',
         data: {
             headline: { type: 'const', constVal: 'RGB_Single Light' },
-            colorMode: { type: 'const', constVal: 'none' },
+            colorMode: { type: 'const', constVal: true },
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lightbulb' },
@@ -327,7 +327,7 @@ export const scriptTemplates: TemplateItems = {
         type: 'light',
         data: {
             headline: { type: 'const', constVal: 'RGB Light' },
-            colorMode: { type: 'const', constVal: 'none' },
+            colorMode: { type: 'const', constVal: true },
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lightbulb' },
@@ -422,7 +422,7 @@ export const scriptTemplates: TemplateItems = {
         type: 'light',
         data: {
             headline: { type: 'const', constVal: 'CT Light' },
-            colorMode: { type: 'const', constVal: 'ct' },
+            colorMode: { type: 'const', constVal: false },
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lightbulb' },
@@ -489,7 +489,6 @@ export const scriptTemplates: TemplateItems = {
         type: 'light',
         data: {
             headline: { type: 'const', constVal: 'dimmer Light' },
-            colorMode: { type: 'const', constVal: 'none' },
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lightbulb' },
