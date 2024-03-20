@@ -6910,7 +6910,7 @@ export class Icons {
         if (Icons.iconMap.has(val)) {
             return Icons.iconMap.get(val)!;
         } else {
-            if (Icons.adapter) Icons.adapter.log.debug(`${val} is not a icon!`);
+            if (Icons.adapter) Icons.adapter.log.warn(`${val} is not a icon!`);
             //else console.log(`${val} is not a icon!`);
         }
         return '';

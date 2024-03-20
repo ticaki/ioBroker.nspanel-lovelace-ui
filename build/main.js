@@ -51,7 +51,6 @@ class NspanelLovelaceUi extends utils.Adapter {
    * Is called when databases are connected and adapter received configuration...
    */
   async onReady() {
-    import_icon_mapping.Icons.adapter = this;
     this.library = new import_library.Library(this);
     if (!this.config.Testconfig2) {
       if (this.config.onlyStartFromSystemConfig) {
@@ -81,6 +80,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     if (this.config.doubleClickTime === void 0 || typeof this.config.doubleClickTime !== "number" || !(this.config.doubleClickTime > 0))
       this.config.doubleClickTime = 400;
     this.setTimeout(async () => {
+      import_icon_mapping.Icons.adapter = this;
       await this.library.init();
       const states = await this.getStatesAsync("*");
       await this.library.initStates(states);

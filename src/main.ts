@@ -40,7 +40,6 @@ class NspanelLovelaceUi extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration...
      */
     private async onReady(): Promise<void> {
-        Icons.adapter = this;
         this.library = new Library(this);
         if (!this.config.Testconfig2) {
             if (this.config.onlyStartFromSystemConfig) {
@@ -83,6 +82,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         //this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
         this.setTimeout(async () => {
             //check config
+            Icons.adapter = this;
 
             await this.library.init();
             const states = await this.getStatesAsync('*');
