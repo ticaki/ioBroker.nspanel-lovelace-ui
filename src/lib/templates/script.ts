@@ -649,7 +649,10 @@ export const scriptTemplates: TemplateItems = {
                     value: { type: 'const', constVal: 'waterprocent' },
                     color: { type: 'const', constVal: Color.Green },
                 },
-                scale: { val_min: 0, val_max: 100, val_best: 60 },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 0, val_max: 100, val_best: 60 },
+                },
                 maxBri: undefined,
                 minBri: undefined,
             },
@@ -665,6 +668,43 @@ export const scriptTemplates: TemplateItems = {
             },
             text: {
                 true: { type: 'const', constVal: 'humidity' },
+                false: undefined,
+            },
+        },
+    },
+    'script.temperature': {
+        role: '',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'thermometer' },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'thermometer' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 0, val_max: 40, val_best: 25 },
+                },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+                unit: { type: 'const', constVal: '°C' },
+            },
+            text: {
+                true: { type: 'const', constVal: 'temperature' },
                 false: undefined,
             },
         },
