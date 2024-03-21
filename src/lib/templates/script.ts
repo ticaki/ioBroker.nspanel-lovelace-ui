@@ -533,6 +533,182 @@ export const scriptTemplates: TemplateItems = {
             },
         },
     },
+    'script.gate': {
+        role: '',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'garage' },
+                    color: { type: 'const', constVal: Color.open },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'garage-open' },
+                    color: { type: 'const', constVal: Color.close },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Garage' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'open' },
+                false: { type: 'const', constVal: 'closed' },
+            },
+        },
+    },
+    'script.door': {
+        role: '',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'door-open' },
+                    color: { type: 'const', constVal: Color.open },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'door-closed' },
+                    color: { type: 'const', constVal: Color.close },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'door' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'open' },
+                false: { type: 'const', constVal: 'closed' },
+            },
+        },
+    },
+    'script.motion': {
+        role: '',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'motion-sensor' },
+                    color: { type: 'const', constVal: Color.On },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'motion-sensor' },
+                    color: { type: 'const', constVal: Color.Off },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'motion' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'On' },
+                false: { type: 'const', constVal: 'Off' },
+            },
+        },
+    },
+    'script.humidity': {
+        role: '',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'waterprocent' },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'waterprocent' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 0, val_max: 100, val_best: 60 },
+                },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+                unit: { type: 'const', constVal: '%' },
+            },
+            text: {
+                true: { type: 'const', constVal: 'humidity' },
+                false: undefined,
+            },
+        },
+    },
+    'script.temperature': {
+        role: '',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'thermometer' },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'thermometer' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 0, val_max: 40, val_best: 25 },
+                },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+                unit: { type: 'const', constVal: '°C' },
+            },
+            text: {
+                true: { type: 'const', constVal: 'temperature' },
+                false: undefined,
+            },
+        },
+    },
 };
 /* Standardvorlage Licht
     'script.Standard': {
