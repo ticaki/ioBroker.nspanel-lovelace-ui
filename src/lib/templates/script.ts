@@ -709,6 +709,37 @@ export const scriptTemplates: TemplateItems = {
             },
         },
     },
+    'script.lock': {
+        role: '',
+        adapter: '',
+        type: 'button',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'lock' },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'lock-open-variant' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Lock' },
+                false: { type: 'const', constVal: 'Unlock' },
+            },
+            setValue1: { type: 'state', mode: 'auto', role: '', dp: '', regexp: /\.SET/ },
+        },
+    },
 };
 /* Standardvorlage Licht
     'script.Standard': {
