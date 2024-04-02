@@ -717,11 +717,11 @@ export const scriptTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'lock' },
-                    color: { type: 'const', constVal: Color.Red },
+                    color: { type: 'const', constVal: Color.MSGreen },
                 },
                 false: {
                     value: { type: 'const', constVal: 'lock-open-variant' },
-                    color: { type: 'const', constVal: Color.Green },
+                    color: { type: 'const', constVal: Color.MSRed },
                 },
             },
             entity1: {
@@ -734,8 +734,12 @@ export const scriptTemplates: TemplateItems = {
                 },
             },
             text: {
-                true: { type: 'const', constVal: 'Lock' },
-                false: { type: 'const', constVal: 'Unlock' },
+                true: { type: 'const', constVal: 'lock' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'lock' },
+                false: { type: 'const', constVal: 'unlock' },
             },
             setValue1: { type: 'state', mode: 'auto', role: '', dp: '', regexp: /\.SET/ },
         },
