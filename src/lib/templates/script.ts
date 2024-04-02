@@ -764,10 +764,94 @@ export const scriptTemplates: TemplateItems = {
                     dp: '',
                     regexp: /\.ACTUAL/,
                 },
+                set: {
+                    type: 'state',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.SET/,
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'value' },
+                false: undefined,
+            },
+        },
+    },
+    // Mute sollte icon true/false steuern; Actual/Set Wert vom Slider Test offen
+    'script.volume': {
+        role: '',
+        adapter: '',
+        type: 'number',
+        data: {
+            icon: {
+                true: {
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: '',
+                        dp: '',
+                        regexp: /\.ACTUAL/,
+                        read: 'return val > 0 && val <= 33 ? volume-low : val > 33 && <= 66 ? volume-medium : volume-high ',
+                    },
+                    color: { type: 'const', constVal: Color.Yellow },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'volume-mute' },
+                    color: { type: 'const', constVal: Color.HMIOff },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+                set: {
+                    type: 'state',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.SET/,
+                },
             },
             text: {
                 true: { type: 'const', constVal: 'volume' },
                 false: undefined,
+            },
+        },
+    },
+    'script.warning': {
+        role: '2values',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'alert-outline' },
+                    color: { type: 'triggered', mode: 'auto', role: '', dp: '', regexp: /\.LEVEL/ },
+                },
+                false: undefined,
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.TITLE/,
+                },
+            },
+            entity2: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.INFO/,
+                },
             },
         },
     },
