@@ -58,7 +58,7 @@ export type TemplateIdent =
     | 'script.humidity'
     | 'script.temperature'
     | 'script.lock'
-    | ''
+    | 'script.slider'
     | ''
     | ''
     | ''

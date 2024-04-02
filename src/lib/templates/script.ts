@@ -744,6 +744,33 @@ export const scriptTemplates: TemplateItems = {
             setValue1: { type: 'state', mode: 'auto', role: '', dp: '', regexp: /\.SET/ },
         },
     },
+    'script.slider': {
+        role: '',
+        adapter: '',
+        type: 'number',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'plus-minus-variant' },
+                    color: { type: 'const', constVal: Color.HMIOff },
+                },
+                false: undefined,
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'volume' },
+                false: undefined,
+            },
+        },
+    },
 };
 /* Standardvorlage Licht
     'script.Standard': {
