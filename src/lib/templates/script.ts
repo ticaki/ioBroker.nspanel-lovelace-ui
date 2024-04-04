@@ -540,11 +540,11 @@ export const scriptTemplates: TemplateItems = {
         data: {
             icon: {
                 true: {
-                    value: { type: 'const', constVal: 'garage' },
+                    value: { type: 'const', constVal: 'garage-open' },
                     color: { type: 'const', constVal: Color.open },
                 },
                 false: {
-                    value: { type: 'const', constVal: 'garage-open' },
+                    value: { type: 'const', constVal: 'garage' },
                     color: { type: 'const', constVal: Color.close },
                 },
             },
@@ -642,12 +642,12 @@ export const scriptTemplates: TemplateItems = {
         data: {
             icon: {
                 true: {
-                    value: { type: 'const', constVal: 'waterprocent' },
-                    color: { type: 'const', constVal: Color.Red },
+                    value: { type: 'const', constVal: 'water-percent' },
+                    color: { type: 'const', constVal: Color.Green },
                 },
                 false: {
-                    value: { type: 'const', constVal: 'waterprocent' },
-                    color: { type: 'const', constVal: Color.Green },
+                    value: { type: 'const', constVal: 'wwater-percent' },
+                    color: { type: 'const', constVal: Color.Red },
                 },
                 scale: {
                     type: 'const',
@@ -657,6 +657,15 @@ export const scriptTemplates: TemplateItems = {
                 minBri: undefined,
             },
             entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+            },
+            entity2: {
                 value: {
                     type: 'triggered',
                     mode: 'auto',
@@ -680,11 +689,11 @@ export const scriptTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'thermometer' },
-                    color: { type: 'const', constVal: Color.Red },
+                    color: { type: 'const', constVal: Color.Green },
                 },
                 false: {
                     value: { type: 'const', constVal: 'thermometer' },
-                    color: { type: 'const', constVal: Color.Green },
+                    color: { type: 'const', constVal: Color.Red },
                 },
                 scale: {
                     type: 'const',
@@ -701,10 +710,187 @@ export const scriptTemplates: TemplateItems = {
                     dp: '',
                     regexp: /\.ACTUAL/,
                 },
+            },
+            entity2: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
                 unit: { type: 'const', constVal: '°C' },
             },
             text: {
                 true: { type: 'const', constVal: 'temperature' },
+                false: undefined,
+            },
+        },
+    },
+    'script.lock': {
+        role: '',
+        adapter: '',
+        type: 'button',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'lock' },
+                    color: { type: 'const', constVal: Color.MSGreen },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'lock-open-variant' },
+                    color: { type: 'const', constVal: Color.MSRed },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'lock' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'lock' },
+                false: { type: 'const', constVal: 'unlock' },
+            },
+            setValue1: { type: 'state', mode: 'auto', role: '', dp: '', regexp: /\.SET/ },
+        },
+    },
+    'script.slider': {
+        role: '',
+        adapter: '',
+        type: 'number',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'plus-minus-variant' },
+                    color: { type: 'const', constVal: Color.HMIOff },
+                },
+                false: undefined,
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+                set: {
+                    type: 'state',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.SET/,
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'value' },
+                false: undefined,
+            },
+        },
+    },
+    // Mute sollte icon true/false steuern
+    'script.volume': {
+        role: '',
+        adapter: '',
+        type: 'number',
+        data: {
+            icon: {
+                true: {
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: '',
+                        dp: '',
+                        regexp: /\.ACTUAL/,
+                        read: `const v = Math.round(val / 10)
+                        switch (v) {
+                            case 0:
+                                return 'volume-mute';
+                            case 1:
+                            case 2:
+                            case 3:
+                                return 'volume-low'
+                            case 4:
+                            case 5:
+                            case 6:
+                                return 'volume-medium'
+                            case 7:
+                            case 8:
+                            case 9:
+                            case 10:
+                            default:
+                                return 'volume-high';}`,
+                    },
+                    color: { type: 'const', constVal: Color.Yellow },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'volume-mute' },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+                set: {
+                    type: 'state',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.SET/,
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'volume' },
+                false: undefined,
+            },
+        },
+    },
+    'script.warning': {
+        role: '',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'alert-outline' },
+                    color: { type: 'triggered', mode: 'auto', role: '', dp: '', regexp: /\.LEVEL/ },
+                },
+                false: undefined,
+            },
+            entity1: {
+                value: { type: 'const', constVal: true },
+            },
+            text: {
+                true: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.TITLE/,
+                },
+                false: undefined,
+            },
+            text1: {
+                true: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.INFO/,
+                },
                 false: undefined,
             },
         },

@@ -553,6 +553,368 @@ const scriptTemplates = {
         false: void 0
       }
     }
+  },
+  "script.gate": {
+    role: "",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "garage-open" },
+          color: { type: "const", constVal: import_Color.Color.open }
+        },
+        false: {
+          value: { type: "const", constVal: "garage" },
+          color: { type: "const", constVal: import_Color.Color.close }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.ACTUAL/
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "Garage" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "open" },
+        false: { type: "const", constVal: "closed" }
+      }
+    }
+  },
+  "script.door": {
+    role: "",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "door-open" },
+          color: { type: "const", constVal: import_Color.Color.open }
+        },
+        false: {
+          value: { type: "const", constVal: "door-closed" },
+          color: { type: "const", constVal: import_Color.Color.close }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.ACTUAL/
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "door" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "open" },
+        false: { type: "const", constVal: "closed" }
+      }
+    }
+  },
+  "script.motion": {
+    role: "",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "motion-sensor" },
+          color: { type: "const", constVal: import_Color.Color.On }
+        },
+        false: {
+          value: { type: "const", constVal: "motion-sensor" },
+          color: { type: "const", constVal: import_Color.Color.Off }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.ACTUAL/
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "motion" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "On" },
+        false: { type: "const", constVal: "Off" }
+      }
+    }
+  },
+  "script.humidity": {
+    role: "",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "water-percent" },
+          color: { type: "const", constVal: import_Color.Color.Green }
+        },
+        false: {
+          value: { type: "const", constVal: "wwater-percent" },
+          color: { type: "const", constVal: import_Color.Color.Red }
+        },
+        scale: {
+          type: "const",
+          constVal: { val_min: 0, val_max: 100, val_best: 60 }
+        },
+        maxBri: void 0,
+        minBri: void 0
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.ACTUAL/
+        }
+      },
+      entity2: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.ACTUAL/
+        },
+        unit: { type: "const", constVal: "%" }
+      },
+      text: {
+        true: { type: "const", constVal: "humidity" },
+        false: void 0
+      }
+    }
+  },
+  "script.temperature": {
+    role: "",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "thermometer" },
+          color: { type: "const", constVal: import_Color.Color.Green }
+        },
+        false: {
+          value: { type: "const", constVal: "thermometer" },
+          color: { type: "const", constVal: import_Color.Color.Red }
+        },
+        scale: {
+          type: "const",
+          constVal: { val_min: 0, val_max: 40, val_best: 25 }
+        },
+        maxBri: void 0,
+        minBri: void 0
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.ACTUAL/
+        }
+      },
+      entity2: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.ACTUAL/
+        },
+        unit: { type: "const", constVal: "\xB0C" }
+      },
+      text: {
+        true: { type: "const", constVal: "temperature" },
+        false: void 0
+      }
+    }
+  },
+  "script.lock": {
+    role: "",
+    adapter: "",
+    type: "button",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "lock" },
+          color: { type: "const", constVal: import_Color.Color.MSGreen }
+        },
+        false: {
+          value: { type: "const", constVal: "lock-open-variant" },
+          color: { type: "const", constVal: import_Color.Color.MSRed }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.ACTUAL/
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "lock" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "lock" },
+        false: { type: "const", constVal: "unlock" }
+      },
+      setValue1: { type: "state", mode: "auto", role: "", dp: "", regexp: /\.SET/ }
+    }
+  },
+  "script.slider": {
+    role: "",
+    adapter: "",
+    type: "number",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "plus-minus-variant" },
+          color: { type: "const", constVal: import_Color.Color.HMIOff }
+        },
+        false: void 0
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.ACTUAL/
+        },
+        set: {
+          type: "state",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.SET/
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "value" },
+        false: void 0
+      }
+    }
+  },
+  // Mute sollte icon true/false steuern
+  "script.volume": {
+    role: "",
+    adapter: "",
+    type: "number",
+    data: {
+      icon: {
+        true: {
+          value: {
+            type: "triggered",
+            mode: "auto",
+            role: "",
+            dp: "",
+            regexp: /\.ACTUAL/,
+            read: `const v = Math.round(val / 10)
+                        switch (v) {
+                            case 0:
+                                return 'volume-mute';
+                            case 1:
+                            case 2:
+                            case 3:
+                                return 'volume-low'
+                            case 4:
+                            case 5:
+                            case 6:
+                                return 'volume-medium'
+                            case 7:
+                            case 8:
+                            case 9:
+                            case 10:
+                            default:
+                                return 'volume-high';}`
+          },
+          color: { type: "const", constVal: import_Color.Color.Yellow }
+        },
+        false: {
+          value: { type: "const", constVal: "volume-mute" },
+          color: { type: "const", constVal: import_Color.Color.Red }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.ACTUAL/
+        },
+        set: {
+          type: "state",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.SET/
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "volume" },
+        false: void 0
+      }
+    }
+  },
+  "script.warning": {
+    role: "",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "alert-outline" },
+          color: { type: "triggered", mode: "auto", role: "", dp: "", regexp: /\.LEVEL/ }
+        },
+        false: void 0
+      },
+      entity1: {
+        value: { type: "const", constVal: true }
+      },
+      text: {
+        true: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.TITLE/
+        },
+        false: void 0
+      },
+      text1: {
+        true: {
+          type: "triggered",
+          mode: "auto",
+          role: "",
+          dp: "",
+          regexp: /\.INFO/
+        },
+        false: void 0
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:
