@@ -540,11 +540,11 @@ export const scriptTemplates: TemplateItems = {
         data: {
             icon: {
                 true: {
-                    value: { type: 'const', constVal: 'garage' },
+                    value: { type: 'const', constVal: 'garage-open' },
                     color: { type: 'const', constVal: Color.open },
                 },
                 false: {
-                    value: { type: 'const', constVal: 'garage-open' },
+                    value: { type: 'const', constVal: 'garage' },
                     color: { type: 'const', constVal: Color.close },
                 },
             },
@@ -642,12 +642,12 @@ export const scriptTemplates: TemplateItems = {
         data: {
             icon: {
                 true: {
-                    value: { type: 'const', constVal: 'waterprocent' },
-                    color: { type: 'const', constVal: Color.Red },
+                    value: { type: 'const', constVal: 'water-percent' },
+                    color: { type: 'const', constVal: Color.Green },
                 },
                 false: {
-                    value: { type: 'const', constVal: 'waterprocent' },
-                    color: { type: 'const', constVal: Color.Green },
+                    value: { type: 'const', constVal: 'wwater-percent' },
+                    color: { type: 'const', constVal: Color.Red },
                 },
                 scale: {
                     type: 'const',
@@ -657,6 +657,15 @@ export const scriptTemplates: TemplateItems = {
                 minBri: undefined,
             },
             entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+            },
+            entity2: {
                 value: {
                     type: 'triggered',
                     mode: 'auto',
@@ -680,11 +689,11 @@ export const scriptTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'thermometer' },
-                    color: { type: 'const', constVal: Color.Red },
+                    color: { type: 'const', constVal: Color.Green },
                 },
                 false: {
                     value: { type: 'const', constVal: 'thermometer' },
-                    color: { type: 'const', constVal: Color.Green },
+                    color: { type: 'const', constVal: Color.Red },
                 },
                 scale: {
                     type: 'const',
@@ -694,6 +703,15 @@ export const scriptTemplates: TemplateItems = {
                 minBri: undefined,
             },
             entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: '',
+                    dp: '',
+                    regexp: /\.ACTUAL/,
+                },
+            },
+            entity2: {
                 value: {
                     type: 'triggered',
                     mode: 'auto',
@@ -778,7 +796,7 @@ export const scriptTemplates: TemplateItems = {
             },
         },
     },
-    // Mute sollte icon true/false steuern; Actual/Set Wert vom Slider Test offen
+    // Mute sollte icon true/false steuern
     'script.volume': {
         role: '',
         adapter: '',
@@ -792,13 +810,30 @@ export const scriptTemplates: TemplateItems = {
                         role: '',
                         dp: '',
                         regexp: /\.ACTUAL/,
-                        read: 'return val > 0 && val <= 33 ? volume-low : val > 33 && <= 66 ? volume-medium : volume-high ',
+                        read: `const v = Math.round(val / 10)
+                        switch (v) {
+                            case 0:
+                                return 'volume-mute';
+                            case 1:
+                            case 2:
+                            case 3:
+                                return 'volume-low'
+                            case 4:
+                            case 5:
+                            case 6:
+                                return 'volume-medium'
+                            case 7:
+                            case 8:
+                            case 9:
+                            case 10:
+                            default:
+                                return 'volume-high';}`,
                     },
                     color: { type: 'const', constVal: Color.Yellow },
                 },
                 false: {
                     value: { type: 'const', constVal: 'volume-mute' },
-                    color: { type: 'const', constVal: Color.HMIOff },
+                    color: { type: 'const', constVal: Color.Red },
                 },
             },
             entity1: {
@@ -824,7 +859,7 @@ export const scriptTemplates: TemplateItems = {
         },
     },
     'script.warning': {
-        role: '2values',
+        role: '',
         adapter: '',
         type: 'text',
         data: {
@@ -836,22 +871,27 @@ export const scriptTemplates: TemplateItems = {
                 false: undefined,
             },
             entity1: {
-                value: {
+                value: { type: 'const', constVal: true },
+            },
+            text: {
+                true: {
                     type: 'triggered',
                     mode: 'auto',
                     role: '',
                     dp: '',
                     regexp: /\.TITLE/,
                 },
+                false: undefined,
             },
-            entity2: {
-                value: {
+            text1: {
+                true: {
                     type: 'triggered',
                     mode: 'auto',
                     role: '',
                     dp: '',
                     regexp: /\.INFO/,
                 },
+                false: undefined,
             },
         },
     },
