@@ -133,7 +133,7 @@ export async function handleCardRole(
                                     read: `if (!val || !val.startsWith('{') || !val.endsWith('}')) return '';
                                     const v = JSON.parse(val)
                                     return (
-                                        v.${a} ? ('v' + v.${a}.installedVersion.trim() + "\\r\\nv" + (v.${a}.availableVersion.trim() + '  ' )) : 'done'
+                                        v['${a}'] ? ('v' + v['${a}'].installedVersion.trim() + "\\r\\nv" + (v['${a}'].availableVersion.trim() + '  ' )) : 'done'
                                     );`,
                                 },
 
