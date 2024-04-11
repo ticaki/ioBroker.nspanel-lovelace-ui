@@ -5814,7 +5814,7 @@ namespace pages {
             | cardNotify2DataItems
             | cardQRDataItems
             | cardChartDataItems
-            | cardLChartDataItem;
+            | cardLChartDataItems;
     };
     type PageNotifyConfig = {
         headline: string;
