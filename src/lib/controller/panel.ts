@@ -20,6 +20,8 @@ import { PageEntities } from '../pages/pageEntities';
 import { PageNotify } from '../pages/pageNotification';
 import { systemNavigation, systemPages } from '../templates/system-templates';
 import { PageAlarm } from '../pages/pageAlarm';
+import { PageChart } from '../pages/pageChart';
+import { PageLChart } from '../pages/pageLChart';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -188,12 +190,16 @@ export class Panel extends BaseClass {
                 dpInit: pageConfig.dpInit,
             };
             switch (pageConfig.config.card) {
-                //case 'cardChart': {
-                //    break;
-                //}
-                //case 'cardLChart': {
-                //    break;
-                //}
+                case 'cardChart': {
+                    pageConfig = Page.getPage(pageConfig, this);
+                    this.pages[a] = new PageChart(pmconfig, pageConfig);
+                    break;
+                }
+                case 'cardLChart': {
+                    pageConfig = Page.getPage(pageConfig, this);
+                    this.pages[a] = new PageLChart(pmconfig, pageConfig);
+                    break;
+                }
                 case 'cardEntities': {
                     pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageEntities(pmconfig, pageConfig);

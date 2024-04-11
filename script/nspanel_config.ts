@@ -5468,49 +5468,6 @@ export const Testconfig: Partial<panelConfigPartial>[] = [
         dimHigh: 90,
     },
 ];
-/**
- * command for javascript adapter
- * sendTo('nspanel-lovelace-ui.0', 'config', Testconfig)
- */
-
-/*
-// pageType~popupNotify
-export const welcomePopupPayload =
-    'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
-    '  Einen schönen Tag           ' +
-    '     wünschen dir               ' +
-    ' Armilar, TT-Tom, ticaki      ' +
-    '   & Kuckuckmann~2000~3~1~~2000';
-
-/*
-   SendToPanel({ payload:'pageType~popupNotify'});
-                    SendToPanel({ payload:'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
-                        '  Einen schönen Tag           '+
-                        '     wünschen dir               ' +
-                        ' Armilar, TT-Tom, ticaki      ' +
-                        '   & Kuckuckmann~2000~3~1~~2000'});*/
-
-/**
- * command for javascript adapter
- * sendTo('nspanel-lovelace-ui.0', 'config', Testconfig)
- */
-
-/*
-// pageType~popupNotify
-export const welcomePopupPayload =
-    'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
-    '  Einen schönen Tag           ' +
-    '     wünschen dir               ' +
-    ' Armilar, TT-Tom, ticaki      ' +
-    '   & Kuckuckmann~2000~3~1~~2000';
-
-/*
-   SendToPanel({ payload:'pageType~popupNotify'});
-                    SendToPanel({ payload:'entityUpdateDetail~ -~Willkommen zum NSPanel~63488~~2000~~2000~' +
-                        '  Einen schönen Tag           '+
-                        '     wünschen dir               ' +
-                        ' Armilar, TT-Tom, ticaki      ' +
-                        '   & Kuckuckmann~2000~3~1~~2000'});*/
 
 sendTo('nspanel-lovelace-ui.0', 'config', Testconfig);
 
@@ -5815,7 +5772,9 @@ namespace pages {
                         | cardAlarmDataItemOptions
                         | cardNotifyDataItemOptions
                         | cardNotify2DataItemOptions
-                        | cardQRDataItemOptions;
+                        | cardQRDataItemOptions
+                        | cardChartDataItemOptions
+                        | cardLChartDataItemOptions;
                 }
               | {
                     //    type: PlayerType;
@@ -5853,7 +5812,9 @@ namespace pages {
             | cardAlarmDataItems
             | cardNotifyDataItems
             | cardNotify2DataItems
-            | cardQRDataItems;
+            | cardQRDataItems
+            | cardChartDataItems
+            | cardLChartDataItem;
     };
     type PageNotifyConfig = {
         headline: string;
@@ -5899,6 +5860,42 @@ namespace pages {
         data: ChangeTypeOfKeys<PageNotify2Config, dataItem.Dataitem | undefined>;
     };
     
+    type PageChartConfig = {
+        headline: string;
+        text: string;
+        color: typePageItem.ColorEntryTypeNew;
+        ticks: string;
+        value: string;
+        entity1: typePageItem.ValueEntryType;
+    };
+    
+    export type cardChartDataItemOptions = {
+        card: 'cardChart';
+        data: ChangeTypeOfKeys<PageChartConfig, Types.DataItemsOptions | undefined>;
+    };
+    export type cardChartDataItems = {
+        card: 'cardChart';
+        data: ChangeTypeOfKeys<PageChartConfig, dataItem.Dataitem | undefined>;
+    };
+    
+    type PageLChartConfig = {
+        headline: string;
+        text: string;
+        color: typePageItem.ColorEntryTypeNew;
+        ticks: string;
+        value: string;
+        entity1: typePageItem.ValueEntryType;
+    };
+    
+    export type cardLChartDataItemOptions = {
+        card: 'cardLChart';
+        data: ChangeTypeOfKeys<PageLChartConfig, Types.DataItemsOptions | undefined>;
+    };
+    export type cardLChartDataItems = {
+        card: 'cardLChart';
+        data: ChangeTypeOfKeys<PageLChartConfig, dataItem.Dataitem | undefined>;
+    };
+
     type PageAlarmPowerConfig = {
         alarmType?: string; //alarm unlock
         headline: string;
@@ -6230,6 +6227,16 @@ namespace pages {
         navigation: string;
         textQR: string;
         options: [string?, string?];
+    };
+    
+    export type PageChartMessage = {
+        event: 'entityUpd';
+        headline: string;
+        navigation: string;
+        color: string;
+        text: string;
+        ticks: string[];
+        value: string;
     };
     
     export type PagePowerMessageItem = {
