@@ -23,7 +23,6 @@ __export(config_custom_exports, {
 module.exports = __toCommonJS(config_custom_exports);
 var import_Color = require("./const/Color");
 const pageGridMain = {
-  //type: 'sonstiges',
   dpInit: "",
   alwaysOn: "none",
   uniqueID: "main",
@@ -1459,6 +1458,38 @@ const pageEntitiesTest = {
     }
   ]
 };
+const pageChartTest = {
+  uniqueID: "uidChart",
+  alwaysOn: "always",
+  dpInit: "",
+  pageItems: [],
+  config: {
+    card: "cardChart",
+    data: {
+      headline: { type: "const", constVal: "Testchart" },
+      color: { true: { color: { type: "const", constVal: import_Color.Color.Yellow } } },
+      value: { type: "triggered", dp: "0_userdata.0.Charts.Heizung.Werte" },
+      ticks: { type: "triggered", dp: "0_userdata.0.Charts.Heizung.Scale" },
+      text: { type: "const", constVal: "Waerme kWh" }
+    }
+  }
+};
+const pageLChartTest = {
+  uniqueID: "uidLChart",
+  alwaysOn: "always",
+  dpInit: "",
+  pageItems: [],
+  config: {
+    card: "cardLChart",
+    data: {
+      headline: { type: "const", constVal: "TestLchart" },
+      color: { true: { color: { type: "const", constVal: import_Color.Color.Yellow } } },
+      value: { type: "triggered", dp: "0_userdata.0.Charts.AussenTemp.Werte" },
+      //ticks: { type: 'triggered', dp: '0_userdata.0.Charts.AussenTemp.Scale' },
+      text: { type: "const", constVal: "Temperatur \xB0C" }
+    }
+  }
+};
 const pagenEntitiesAdapter = {
   dpInit: "",
   alwaysOn: "none",
@@ -2584,7 +2615,9 @@ const Testconfig = [
       popupTest,
       pageThermo,
       pageGridTest,
-      pageEntitiesTest
+      pageEntitiesTest,
+      pageChartTest,
+      pageLChartTest
     ],
     // override by password.ts
     navigation: [
@@ -2592,7 +2625,7 @@ const Testconfig = [
         name: "main",
         //main ist die erste Seite
         page: "main",
-        left: { single: "10" },
+        left: { single: "31" },
         // arrow-top-left-bold-outline
         right: { single: "1" },
         //
@@ -2693,8 +2726,20 @@ const Testconfig = [
       {
         name: "10",
         left: { single: "9" },
-        right: { single: "main" },
+        right: { single: "30" },
         page: "testEntities"
+      },
+      {
+        name: "30",
+        left: { single: "10" },
+        right: { single: "31" },
+        page: "uidChart"
+      },
+      {
+        name: "31",
+        left: { single: "30" },
+        right: { single: "main" },
+        page: "uidLChart"
       }
     ],
     topic: "SmartHome/NSPanel_1",

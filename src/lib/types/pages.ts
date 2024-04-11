@@ -288,7 +288,8 @@ export type PageBaseConfig = (
                     | cardNotifyDataItemOptions
                     | cardNotify2DataItemOptions
                     | cardQRDataItemOptions
-                    | cardChartDataItemOptions;
+                    | cardChartDataItemOptions
+                    | cardLChartDataItemOptions;
             }
           | {
                 //    type: PlayerType;
@@ -327,7 +328,8 @@ export type PageBaseConfig = (
         | cardNotifyDataItems
         | cardNotify2DataItems
         | cardQRDataItems
-        | cardChartDataItems;
+        | cardChartDataItems
+        | cardLChartDataItems;
 };
 type PageNotifyConfig = {
     headline: string;
@@ -389,6 +391,24 @@ export type cardChartDataItemOptions = {
 export type cardChartDataItems = {
     card: 'cardChart';
     data: ChangeTypeOfKeys<PageChartConfig, dataItem.Dataitem | undefined>;
+};
+
+type PageLChartConfig = {
+    headline: string;
+    text: string;
+    color: typePageItem.ColorEntryTypeNew;
+    ticks: string;
+    value: string;
+    entity1: typePageItem.ValueEntryType;
+};
+
+export type cardLChartDataItemOptions = {
+    card: 'cardLChart';
+    data: ChangeTypeOfKeys<PageLChartConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardLChartDataItems = {
+    card: 'cardLChart';
+    data: ChangeTypeOfKeys<PageLChartConfig, dataItem.Dataitem | undefined>;
 };
 
 type PageAlarmPowerConfig = {
@@ -733,6 +753,7 @@ export type PageChartMessage = {
     ticks: string[];
     value: string;
 };
+
 export type PagePowerMessageItem = {
     icon: string;
     iconColor: string;
