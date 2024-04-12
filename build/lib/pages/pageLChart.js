@@ -105,7 +105,6 @@ class PageLChart extends import_Page.Page {
       result.ticks.join(":"),
       result.value
     );
-    return "";
   }
   async onStateTrigger(_id) {
     this.adapter.setTimeout(() => this.update(), 50);

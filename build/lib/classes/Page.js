@@ -183,7 +183,8 @@ class Page extends import_states_controller.BaseClassPage {
     if (val) {
       if (!this.pageItems || this.pageItems.length === 0)
         await this.createPageItems();
-      await this.sendType();
+      if (this.card !== "cardLChart")
+        await this.sendType();
       await this.update();
     } else {
       if (this.pageItems) {

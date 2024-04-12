@@ -117,7 +117,6 @@ export class PageLChart extends Page {
             result.ticks.join(':'),
             result.value,
         );
-        return '';
     }
 
     protected async onStateTrigger(_id: string): Promise<void> {
