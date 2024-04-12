@@ -5814,7 +5814,7 @@ namespace pages {
             | cardNotify2DataItems
             | cardQRDataItems
             | cardChartDataItems
-            | cardLChartDataItem;
+            | cardLChartDataItems;
     };
     type PageNotifyConfig = {
         headline: string;
@@ -6877,7 +6877,7 @@ namespace Types {
     export type PageTemplateIdent =
         | 'entities.waste-calendar'
         | 'media.spotify-premium'
-        | 'entities.departure-timetable'
+        | 'entities.fahrplan.departure-timetable'
         | 'thermo.hmip.valve'
         | 'thermo.hmip.wallthermostat'
         | 'entities.fahrplan.routes';
