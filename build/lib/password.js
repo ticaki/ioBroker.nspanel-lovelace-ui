@@ -22,12 +22,12 @@ __export(password_exports, {
 });
 module.exports = __toCommonJS(password_exports);
 const mqttconfigPrivat = {
-  ip: "192.168.178.121",
-  port: 1883,
-  username: "iobroker",
-  password: "iobDev",
-  name: "B\xFCro",
-  topic: "SmartHome/NSPanel_1"
+  mqttPassword: "",
+  mqttUsername: "mqttuser",
+  mqttIp: "mqtt.kiemen.com",
+  mqttPort: 1883,
+  topic: "nspanel/ns_panel2",
+  name: "Wohnzimmer"
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
