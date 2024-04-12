@@ -210,7 +210,7 @@ export class Page extends BaseClassPage {
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
             if (!this.pageItems || this.pageItems.length === 0) await this.createPageItems();
-            if (this.card !== 'cardLChart') await this.sendType();
+            if (this.card !== 'cardLChart' && this.card !== 'cardChart') await this.sendType();
             await this.update();
         } else {
             if (this.pageItems) {

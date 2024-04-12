@@ -55,6 +55,8 @@ class PageChart extends import_Page.Page {
     var _a, _b, _c;
     if (!this.visibility)
       return;
+    this.panel.lastCard = "";
+    this.sendType();
     const message = {};
     const items = this.items;
     if (!items || items.card !== "cardChart")

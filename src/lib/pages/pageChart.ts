@@ -64,6 +64,8 @@ export class PageChart extends Page {
      */
     public async update(): Promise<void> {
         if (!this.visibility) return;
+        this.panel.lastCard = '';
+        this.sendType();
         const message: Partial<pages.PageChartMessage> = {};
         const items = this.items;
         if (!items || items.card !== 'cardChart') return;
