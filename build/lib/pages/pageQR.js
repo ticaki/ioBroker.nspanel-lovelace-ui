@@ -30,27 +30,27 @@ const PageQRMessageDefault = {
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
   textQR: "",
   //textQR
-  type1: "",
+  type1: "text",
   //type -> text or switch
-  internalName1: "",
+  internalName1: "ssid",
   //internalName
-  iconId1: "",
+  iconId1: import_icon_mapping.Icons.GetIcon("wifi"),
   //iconId
-  iconColor1: "",
+  iconColor1: "65535",
   //iconColor
-  displayName1: "",
+  displayName1: "SSId",
   //displayName
   optionalValue1: "",
   //optionalValue
-  type2: "",
+  type2: "text",
   //type2 -> text or switch
-  internalName2: "",
+  internalName2: "pwd",
   //internalName2
-  iconId2: "",
+  iconId2: import_icon_mapping.Icons.GetIcon("key"),
   //iconId2
-  iconColor2: "",
+  iconColor2: "65535",
   //iconColor2
-  displayName2: "",
+  displayName2: "Password",
   //displayName2
   optionalValue2: ""
   //optionalvalue2
@@ -107,21 +107,11 @@ class PageQR extends import_Page.Page {
         message.optionalValue2 = tempstr[w].slice(2);
       }
     }
-    message.type1 = "text";
-    message.internalName1 = "ssid";
-    message.iconId1 = import_icon_mapping.Icons.GetIcon("wifi");
-    message.iconColor1 = "65535";
-    message.displayName1 = "SSId";
-    message.type2 = "text";
-    message.internalName2 = "pwd";
-    message.iconId2 = import_icon_mapping.Icons.GetIcon("key");
-    message.iconColor2 = "65535";
-    message.displayName2 = "Password";
     if (data.pwdHidden && await data.pwdHidden.getBoolean()) {
       message.type2 = "switch";
       message.iconColor2 = "65535";
       message.iconId2 = "";
-      message.displayName2 = "Wlan enebeld";
+      message.displayName2 = "Wlan enabled";
       message.internalName2 = "switch";
       message.optionalValue2 = "0";
     }

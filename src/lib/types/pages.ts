@@ -436,11 +436,6 @@ export type cardAlarmDataItems = {
 type PageQRConfig = {
     headline: string;
     qrcode: typePageItem.TextEntryType;
-    //ssid?: string;
-    //encryption?: string;
-    //password?: string;
-    //hidden?: string;
-    //icon?: typePageItem.IconEntryType;
     pwdHidden: boolean;
 };
 export type cardQRDataItemOptions = {
