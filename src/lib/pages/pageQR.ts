@@ -94,11 +94,18 @@ export class PageQR extends Page {
 
         if (data.pwdHidden && (await data.pwdHidden.getBoolean())) {
             message.type2 = 'switch';
-            message.iconColor2 = '65535';
+            message.iconColor1 =
+                data.setSwitch && data.setSwitch.setValue1 && (await data.setSwitch.setValue1.getBoolean())
+                    ? '7490'
+                    : '53248';
             message.iconId2 = '';
-            message.displayName2 = 'Wlan enabled';
+            message.displayName2 =
+                data.setSwitch && data.setSwitch.setValue1 && (await data.setSwitch.setValue1.getBoolean())
+                    ? 'Wlan enabled'
+                    : 'Wlan disabled';
             message.internalName2 = 'switch';
-            message.optionalValue2 = '0';
+            message.optionalValue2 =
+                data.setSwitch && data.setSwitch.setValue1 && (await data.setSwitch.setValue1.getBoolean()) ? '1' : '0';
         }
 
         this.sendToPanel(this.getMessage(message));

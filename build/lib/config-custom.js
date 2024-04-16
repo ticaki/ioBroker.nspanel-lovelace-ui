@@ -1500,7 +1500,10 @@ const pageQRTest = {
     data: {
       headline: { type: "const", constVal: "Gast WLAN" },
       qrcode: { true: { type: "state", dp: "0_userdata.0.GaesteWlan.data" }, false: void 0 },
-      pwdHidden: { type: "const", constVal: true }
+      pwdHidden: { type: "const", constVal: true },
+      setSwitch: {
+        setValue1: { type: "triggered", dp: "0_userdata.0.GaesteWlan.switch" }
+      }
     }
   }
 };
