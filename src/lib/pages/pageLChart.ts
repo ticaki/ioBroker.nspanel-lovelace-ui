@@ -4,24 +4,15 @@ import { getEntryTextOnOff, getIconEntryColor, getPayload } from '../const/tools
 import * as pages from '../types/pages';
 import { IncomingEvent } from '../types/types';
 
-/*const PageAlarmMessageDefault: pages.PageAlarmMessage = {
+const PageLChartMessageDefault: pages.PageChartMessage = {
     event: 'entityUpd',
-    headline: 'Page Grid',
-    intNameEntity: '',
+    headline: 'Page L - Chart',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
-    button1: '',
-    status1: '',
-    button2: '',
-    status2: '',
-    button3: '',
-    status3: '',
-    button4: '',
-    status4: '',
-    icon: '',
-    iconColor: '',
-    numpad: 'disable',
-    flashing: 'disable',
-};*/
+    color: '', //Balkenfarbe
+    text: '', //Bezeichnung y Achse
+    ticks: [], //Werte y Achse
+    value: '', //Werte x Achse
+};
 
 /**
  * untested
@@ -98,15 +89,7 @@ export class PageLChart extends Page {
     }
 
     private getMessage(_message: Partial<pages.PageChartMessage>): string {
-        let result: pages.PageChartMessage = {
-            event: 'entityUpd',
-            headline: 'Page Chart',
-            navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
-            color: '',
-            text: '',
-            ticks: [],
-            value: '',
-        };
+        let result: pages.PageChartMessage = PageLChartMessageDefault;
         result = Object.assign(result, _message) as pages.PageChartMessage;
         return getPayload(
             'entityUpd',

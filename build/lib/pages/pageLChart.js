@@ -24,6 +24,19 @@ module.exports = __toCommonJS(pageLChart_exports);
 var import_Page = require("../classes/Page");
 var import_Color = require("../const/Color");
 var import_tools = require("../const/tools");
+const PageLChartMessageDefault = {
+  event: "entityUpd",
+  headline: "Page L - Chart",
+  navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
+  color: "",
+  //Balkenfarbe
+  text: "",
+  //Bezeichnung y Achse
+  ticks: [],
+  //Werte y Achse
+  value: ""
+  //Werte x Achse
+};
 class PageLChart extends import_Page.Page {
   items;
   step = 1;
@@ -86,15 +99,7 @@ class PageLChart extends import_Page.Page {
     this.sendToPanel(this.getMessage(message));
   }
   getMessage(_message) {
-    let result = {
-      event: "entityUpd",
-      headline: "Page Chart",
-      navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
-      color: "",
-      text: "",
-      ticks: [],
-      value: ""
-    };
+    let result = PageLChartMessageDefault;
     result = Object.assign(result, _message);
     return (0, import_tools.getPayload)(
       "entityUpd",

@@ -19,9 +19,9 @@ export type PageTypeCards =
     | 'screensaver'
     | 'screensaver2'
     | 'cardBurnRec'
-    | 'cardItemSpecial'
+    | 'cardItemSpecial' // besonders, interne Card zum verwalten von pageItems
     | 'popupNotify'
-    | 'popupNotify2'; // besonders, interne Card zum verwalten von pageItems
+    | 'popupNotify2';
 
 export type StateRole =
     | 'value.power'
@@ -435,12 +435,13 @@ export type cardAlarmDataItems = {
 
 type PageQRConfig = {
     headline: string;
-    entity1: typePageItem.ValueEntryType;
-    ssid: string;
-    encryption: string;
-    password: string;
-    hidden: string;
-    icon: typePageItem.IconEntryType;
+    qrcode: typePageItem.TextEntryType;
+    //ssid?: string;
+    //encryption?: string;
+    //password?: string;
+    //hidden?: string;
+    //icon?: typePageItem.IconEntryType;
+    pwdHidden: boolean;
 };
 export type cardQRDataItemOptions = {
     card: 'cardQR';
@@ -741,7 +742,18 @@ export type PageQRMessage = {
     headline: string;
     navigation: string;
     textQR: string;
-    options: [string?, string?];
+    type1: string;
+    internalName1: string;
+    iconId1: string;
+    iconColor1: string;
+    displayName1: string;
+    optionalValue1: string;
+    type2: string;
+    internalName2: string;
+    iconId2: string;
+    iconColor2: string;
+    displayName2: string;
+    optionalValue2: string;
 };
 
 export type PageChartMessage = {
