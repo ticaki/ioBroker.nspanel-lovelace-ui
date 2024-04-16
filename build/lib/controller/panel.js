@@ -49,6 +49,7 @@ var import_system_templates = require("../templates/system-templates");
 var import_pageAlarm = require("../pages/pageAlarm");
 var import_pageChart = require("../pages/pageChart");
 var import_pageLChart = require("../pages/pageLChart");
+var import_pageQR = require("../pages/pageQR");
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -224,6 +225,8 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cardQR": {
+          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          this.pages[a] = new import_pageQR.PageQR(pmconfig, pageConfig);
           break;
         }
         case "cardAlarm": {
