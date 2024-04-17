@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageQR_exports = {};
 __export(pageQR_exports, {
@@ -24,6 +34,7 @@ module.exports = __toCommonJS(pageQR_exports);
 var import_Page = require("../classes/Page");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
+var pages = __toESM(require("../types/pages"));
 const PageQRMessageDefault = {
   event: "entityUpd",
   headline: "Page QR",
@@ -84,7 +95,7 @@ class PageQR extends import_Page.Page {
    * @returns
    */
   async update() {
-    var _a, _b;
+    var _a;
     if (!this.visibility)
       return;
     const message = {};
@@ -94,7 +105,7 @@ class PageQR extends import_Page.Page {
     const data = items.data;
     message.headline = (_a = data.headline && await data.headline.getTranslatedString()) != null ? _a : this.name;
     message.navigation = this.getNavigation();
-    message.textQR = (_b = data.qrcode && data.qrcode.true && await data.qrcode.true.getString()) != null ? _b : "WIFI:T:undefined;S:undefined;P:undefined;H:undefined;";
+    message.textQR = data.qrcode && data.qrcode.true && await data.qrcode.true.getString() || "WIFI:T:undefined;S:undefined;P:undefined;H:undefined;";
     const tempstr = message.textQR.split(";");
     for (let w = 0; w < tempstr.length - 1; w++) {
       if (tempstr[w].substring(5, 6) == "T") {
@@ -148,6 +159,16 @@ class PageQR extends import_Page.Page {
    * @returns
    */
   async onButtonEvent(_event) {
+    const button = _event.action;
+    const value = _event.opt;
+    if (!this.items || this.items.card !== "cardQR")
+      return;
+    this.log.info(`button: ${button} value ${value}`);
+    if (pages.isQRButtonEvent(button)) {
+      if (this.items.data.setSwitch && this.items.data.setSwitch.setValue1) {
+        this.items.data.setSwitch.setValue1.setStateFlip();
+      }
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

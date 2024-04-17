@@ -73,7 +73,7 @@ export class PageQR extends Page {
         message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? this.name;
         message.navigation = this.getNavigation();
         message.textQR =
-            (data.qrcode && data.qrcode.true && (await data.qrcode.true.getString())) ??
+            (data.qrcode && data.qrcode.true && (await data.qrcode.true.getString())) ||
             'WIFI:T:undefined;S:undefined;P:undefined;H:undefined;';
         const tempstr = message.textQR.split(';');
         for (let w = 0; w < tempstr.length - 1; w++) {
@@ -143,8 +143,14 @@ export class PageQR extends Page {
      * @returns
      */
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
-        //if (event.page && event.id && this.pageItems) {
-        //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
-        //}
+        const button = _event.action;
+        const value = _event.opt;
+        if (!this.items || this.items.card !== 'cardQR') return;
+        this.log.info(`button: ${button} value ${value}`);
+        if (pages.isQRButtonEvent(button)) {
+            if (this.items.data.setSwitch && this.items.data.setSwitch.setValue1) {
+                this.items.data.setSwitch.setValue1.setStateFlip();
+            }
+        }
     }
 }

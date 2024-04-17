@@ -23,6 +23,7 @@ __export(pages_exports, {
   isClosingBehavior: () => isClosingBehavior,
   isColorEntryType: () => isColorEntryType,
   isPlaceholderType: () => isPlaceholderType,
+  isQRButtonEvent: () => isQRButtonEvent,
   isStateRole: () => isStateRole
 });
 module.exports = __toCommonJS(pages_exports);
@@ -122,6 +123,9 @@ function isAlarmButtonEvent(F) {
 function isClosingBehavior(F) {
   return ["both", "yes", "no", "none"].indexOf(F) !== -1;
 }
+function isQRButtonEvent(F) {
+  return ["OnOff"].indexOf(F) !== -1;
+}
 function isColorEntryType(F) {
   if ("true" in F && "false" in F && "scale" in F)
     return true;
@@ -150,6 +154,7 @@ function isPlaceholderType(F) {
   isClosingBehavior,
   isColorEntryType,
   isPlaceholderType,
+  isQRButtonEvent,
   isStateRole
 });
 //# sourceMappingURL=pages.js.map

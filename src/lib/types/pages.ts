@@ -447,6 +447,10 @@ export type cardQRDataItems = {
     card: 'cardQR';
     data: ChangeTypeOfKeys<PageQRConfig, dataItem.Dataitem | undefined>;
 };
+export type QRButtonEvent = 'OnOff';
+export function isQRButtonEvent(F: any): F is QRButtonEvent {
+    return ['OnOff'].indexOf(F) !== -1;
+}
 
 export type cardPowerDataItemOptions = {
     card: 'cardPower';
