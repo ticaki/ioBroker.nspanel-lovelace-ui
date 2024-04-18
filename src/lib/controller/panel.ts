@@ -22,6 +22,7 @@ import { systemNavigation, systemPages } from '../templates/system-templates';
 import { PageAlarm } from '../pages/pageAlarm';
 import { PageChart } from '../pages/pageChart';
 import { PageLChart } from '../pages/pageLChart';
+import { PageQR } from '../pages/pageQR';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -224,6 +225,8 @@ export class Panel extends BaseClass {
                 }
 
                 case 'cardQR': {
+                    pageConfig = Page.getPage(pageConfig, this);
+                    this.pages[a] = new PageQR(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardAlarm': {
