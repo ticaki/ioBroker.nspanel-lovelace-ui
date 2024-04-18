@@ -34,7 +34,7 @@
     "@iobroker/adapter-core": "^3.0.4",
     "aedes": "^0.51.0",
     "aedes-persistence-level": "^8.0.1",
-    "axios": "^1.6.4",
+    "axios": "^1.6.8",
     "colord": "^2.9.3",
     "dayjs": "^1.11.10",
     "level": "^8.0.0",
