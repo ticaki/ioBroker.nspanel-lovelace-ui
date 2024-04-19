@@ -32,38 +32,37 @@ __export(pageQR_exports, {
 });
 module.exports = __toCommonJS(pageQR_exports);
 var import_Page = require("../classes/Page");
-var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
 var pages = __toESM(require("../types/pages"));
 const PageQRMessageDefault = {
   event: "entityUpd",
   headline: "Page QR",
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
-  textQR: "",
+  textQR: "~",
   //textQR
-  type1: "text",
+  type1: "disabled",
   //type -> text or switch
-  internalName1: "ssid",
+  internalName1: "~",
   //internalName
-  iconId1: import_icon_mapping.Icons.GetIcon("wifi"),
+  iconId1: "~",
   //iconId
-  iconColor1: "65535",
+  iconColor1: "~",
   //iconColor
-  displayName1: "SSId",
+  displayName1: "~",
   //displayName
-  optionalValue1: "",
+  optionalValue1: "~",
   //optionalValue
-  type2: "text",
+  type2: "disabled",
   //type2 -> text or switch
-  internalName2: "pwd",
+  internalName2: "~",
   //internalName2
-  iconId2: import_icon_mapping.Icons.GetIcon("key"),
+  iconId2: "~",
   //iconId2
-  iconColor2: "65535",
+  iconColor2: "~",
   //iconColor2
-  displayName2: "Password",
+  displayName2: "~",
   //displayName2
-  optionalValue2: ""
+  optionalValue2: "~"
   //optionalvalue2
 };
 class PageQR extends import_Page.Page {
@@ -72,11 +71,16 @@ class PageQR extends import_Page.Page {
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
-  status = "armed";
+  qrType = "";
   constructor(config, options) {
+    if (config.card !== "cardQR")
+      return;
     super(config, options);
     if (options.config && options.config.card == "cardQR")
       this.config = options.config;
+    else
+      throw new Error("Missing config!");
+    this.qrType = options.config.qrType;
     this.minUpdateInterval = 1e3;
   }
   async init() {
@@ -86,8 +90,9 @@ class PageQR extends import_Page.Page {
       tempConfig,
       this
     );
+    if (tempItem)
+      tempItem.card = "cardQR";
     this.items = tempItem;
-    this.items.card = "cardQR";
     await super.init();
   }
   /**
@@ -99,32 +104,57 @@ class PageQR extends import_Page.Page {
     if (!this.visibility)
       return;
     const message = {};
-    const items = this.items;
-    if (!items || items.card !== "cardQR")
-      return;
-    const data = items.data;
-    message.headline = (_a = data.headline && await data.headline.getTranslatedString()) != null ? _a : this.name;
-    message.navigation = this.getNavigation();
-    message.textQR = data.qrcode && data.qrcode.true && await data.qrcode.true.getString() || "WIFI:T:undefined;S:undefined;P:undefined;H:undefined;";
-    const tempstr = message.textQR.split(";");
-    for (let w = 0; w < tempstr.length - 1; w++) {
-      if (tempstr[w].substring(5, 6) == "T") {
-        tempstr[w].slice(7) == "undefined" ? this.log.warn("Adjust data (T) for the QR page under data. Follow the instructions in the wiki.") : "";
+    if (this.items) {
+      const items = this.items;
+      message.headline = this.library.getTranslation(
+        (_a = items.data.headline && await items.data.headline.getString()) != null ? _a : ""
+      );
+      message.navigation = this.getNavigation();
+      if (this.pageItems) {
+        const pageItems = this.pageItems.filter((a) => a && a.dataItems);
+        this.log.info(`qrType = ${this.qrType}`);
+        switch (this.qrType) {
+          case "wifi":
+            if (pageItems.length != 2)
+              throw new Error("Bad config for WIFI!");
+            message.textQR = `WIFI:`;
+            break;
+          case "url":
+            if (pageItems.length != 1)
+              throw new Error("Bad config for URL!");
+            message.textQR = `URL:https://forum.iobroker.net/topic/58170/sonoff-nspanel-mit-lovelace-ui`;
+            break;
+          default:
+            break;
+        }
+        for (let a = 0; a < pageItems.length; a++) {
+          const temp = pageItems[a];
+          if (temp) {
+            const arr = (await temp.getPageItemPayload()).split("~");
+            this.log.info(`0: ${arr[0]} 1: ${arr[1]} 2: ${arr[2]} 3: ${arr[3]} 4: ${arr[4]} 5: ${arr[5]}`);
+            switch (a) {
+              case 0:
+                message.type1 = arr[0];
+                message.displayName1 = arr[4];
+                message.internalName1 = arr[1];
+                message.iconId1 = arr[2];
+                message.iconColor1 = arr[3];
+                message.optionalValue1 = arr[5];
+                break;
+              case 1:
+                message.type2 = arr[0] == "button" ? "switch" : "text";
+                message.displayName2 = arr[4];
+                message.internalName2 = arr[1];
+                message.iconId2 = arr[2];
+                message.iconColor2 = arr[3];
+                message.optionalValue2 = arr[5];
+                break;
+              default:
+                break;
+            }
+          }
+        }
       }
-      if (tempstr[w].substring(0, 1) == "S") {
-        tempstr[w].slice(2) == "undefined" ? this.log.warn("Adjust data (S) for the QR page under data. Follow the instructions in the wiki.") : message.optionalValue1 = tempstr[w].slice(2);
-      }
-      if (tempstr[w].substring(0, 1) == "P") {
-        message.optionalValue2 = tempstr[w].slice(2);
-      }
-    }
-    if (data.pwdHidden && await data.pwdHidden.getBoolean()) {
-      message.type2 = "switch";
-      message.iconColor1 = data.setSwitch && data.setSwitch.setValue1 && await data.setSwitch.setValue1.getBoolean() ? "7490" : "53248";
-      message.iconId2 = "";
-      message.displayName2 = data.setSwitch && data.setSwitch.setValue1 && await data.setSwitch.setValue1.getBoolean() ? "Wlan enabled" : "Wlan disabled";
-      message.internalName2 = "switch";
-      message.optionalValue2 = data.setSwitch && data.setSwitch.setValue1 && await data.setSwitch.setValue1.getBoolean() ? "1" : "0";
     }
     this.sendToPanel(this.getMessage(message));
   }
@@ -165,9 +195,6 @@ class PageQR extends import_Page.Page {
       return;
     this.log.info(`button: ${button} value ${value}`);
     if (pages.isQRButtonEvent(button)) {
-      if (this.items.data.setSwitch && this.items.data.setSwitch.setValue1) {
-        this.items.data.setSwitch.setValue1.setStateFlip();
-      }
     }
   }
 }
