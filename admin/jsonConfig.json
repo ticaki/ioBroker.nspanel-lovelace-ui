@@ -76,6 +76,50 @@
                     "newLine": true
                 }
             }
+        },
+        "pageQR":{
+            "type": "panel",
+            "label": "Page QR",
+            "items": {
+                "checkwifi":{
+                    "type": "checkbox",
+                    "label": "WiFi",
+                    "default": false
+                },
+                "checkurl":{
+                    "type": "checkbox",
+                    "label": "URL",
+                    "default": false,
+                    "newLine": true
+                },
+                "pageQRwlantype":{
+                    "type": "text",
+                    "label": "Verschlüssselung",
+                    "hidden": "data.checkwifi"
+                },
+                "pageQRssid":{
+                    "type": "text",
+                    "label": "SSID",
+                    "hidden": "data.checkwifi"
+                },
+                "pageQRpwd":{
+                    "type": "password",
+                    "label": "Password",
+                    "hidden": "data.checkwifi"
+                },
+                "pageQRwlanhidden":{
+                    "type": "checkbox",
+                    "label": "verstecktes Wlan",
+                    "default": false,
+                    "newLine": true
+                },
+                "pageQRurl":{
+                    "type": "text",
+                    "label": "URL",
+                    "hidden": "data.checkurl",
+                    "newLine": true
+                }
+            }
         }/*,
         "screensaver": {
             "type": "panel",

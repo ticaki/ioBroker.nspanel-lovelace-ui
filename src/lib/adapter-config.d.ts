@@ -27,6 +27,11 @@ declare global {
             onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;
             doubleClickTime: number;
+            pageQRwlantype: string;
+            pageQRssid: string;
+            pageQRpwd: string;
+            pageQRwlanhidden: boolean;
+            pageQRurl: string;
         }
     }
 }
