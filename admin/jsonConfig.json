@@ -84,39 +84,42 @@
                 "checkwifi":{
                     "type": "checkbox",
                     "label": "WiFi",
-                    "default": false
+                    "default": false,
+                    "disabled": "data.checkurl"
                 },
                 "checkurl":{
                     "type": "checkbox",
                     "label": "URL",
                     "default": false,
-                    "newLine": true
+                    "disabled": "data.checkwifi"
                 },
                 "pageQRwlantype":{
                     "type": "text",
                     "label": "Verschlüssselung",
-                    "hidden": "data.checkwifi"
+                    "hidden": "!data.checkwifi",
+                    "newLine": true
                 },
                 "pageQRssid":{
                     "type": "text",
                     "label": "SSID",
-                    "hidden": "data.checkwifi"
+                    "hidden": "!data.checkwifi"
                 },
                 "pageQRpwd":{
                     "type": "password",
                     "label": "Password",
-                    "hidden": "data.checkwifi"
+                    "hidden": "!data.checkwifi"
                 },
                 "pageQRwlanhidden":{
                     "type": "checkbox",
                     "label": "verstecktes Wlan",
-                    "default": false,
-                    "newLine": true
+                    "hidden": "!data.checkwifi",
+                    "default": false
                 },
                 "pageQRurl":{
                     "type": "text",
                     "label": "URL",
-                    "hidden": "data.checkurl",
+                    "default": "https://",
+                    "hidden": "!data.checkurl",
                     "newLine": true
                 }
             }
