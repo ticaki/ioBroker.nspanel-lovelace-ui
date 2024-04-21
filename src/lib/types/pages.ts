@@ -239,6 +239,7 @@ export type PageBaseConfigTemplate =
               | cardThermoDataItemOptions
               | cardEntitiesDataItemOptions
               | cardAlarmDataItemOptions
+              | cardQRDataItemOptions
               | screensaverDataItemOptions
               | cardNotifyDataItemOptions
               | cardNotify2DataItemOptions;
@@ -433,19 +434,16 @@ export type cardAlarmDataItems = {
     data: ChangeTypeOfKeys<PageAlarmPowerConfig, dataItem.Dataitem | undefined>;
 };
 
-type PageQRConfig = {
+type PageQRBaseConfig = {
     headline: string;
-    qrcode: typePageItem.TextEntryType;
-    pwdHidden: boolean;
-    setSwitch?: typePageItem.PageItemButton;
 };
 export type cardQRDataItemOptions = {
     card: 'cardQR';
-    data: ChangeTypeOfKeys<PageQRConfig, Types.DataItemsOptions | undefined>;
+    data: ChangeTypeOfKeys<PageQRBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardQRDataItems = {
     card: 'cardQR';
-    data: ChangeTypeOfKeys<PageQRConfig, dataItem.Dataitem | undefined>;
+    data: ChangeTypeOfKeys<PageQRBaseConfig, dataItem.Dataitem | undefined>;
 };
 export type QRButtonEvent = 'OnOff';
 export function isQRButtonEvent(F: any): F is QRButtonEvent {

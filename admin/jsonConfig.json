@@ -76,6 +76,51 @@
                     "newLine": true
                 }
             }
+        },
+        "pageQR":{
+            "type": "panel",
+            "label": "Page QR",
+            "items": {
+                "pageQRselType":{
+                    "type": "select",
+                    "label": "QR Typ",
+                    "options": [
+                        {"label": "none", "value": 0},
+                        {"label": "Wifi", "value": 1},
+                        {"label": "URL", "value": 2}
+
+                    ]
+                },
+                "pageQRwlantype":{
+                    "type": "text",
+                    "label": "Verschlüssselung",
+                    "hidden": "data.pageQRselType !== 1",
+                    "newLine": true
+                },
+                "pageQRssid":{
+                    "type": "text",
+                    "label": "SSID",
+                    "hidden": "data.pageQRselType !== 1"
+                },
+                "pageQRpwd":{
+                    "type": "password",
+                    "label": "Password",
+                    "hidden": "data.pageQRselType !== 1"
+                },
+                "pageQRwlanhidden":{
+                    "type": "checkbox",
+                    "label": "verstecktes Wlan",
+                    "hidden": "data.pageQRselType !== 1",
+                    "default": false
+                },
+                "pageQRurl":{
+                    "type": "text",
+                    "label": "URL",
+                    "default": "https://",
+                    "hidden": "data.pageQRselType !== 2",
+                    "newLine": true
+                }
+            }
         }/*,
         "screensaver": {
             "type": "panel",

@@ -23,10 +23,8 @@ __export(config_custom_exports, {
 module.exports = __toCommonJS(config_custom_exports);
 var import_Color = require("./const/Color");
 const pageGridMain = {
-  dpInit: "",
   alwaysOn: "none",
   uniqueID: "main",
-  useColor: false,
   config: {
     card: "cardGrid",
     data: {
@@ -178,8 +176,7 @@ const pageGridMain = {
         }
       }
     }
-  ],
-  items: void 0
+  ]
 };
 const pageGridTueren = {
   //type: 'sonstiges',
@@ -1492,20 +1489,80 @@ const pageLChartTest = {
 };
 const pageQRTest = {
   uniqueID: "uidQR",
-  alwaysOn: "none",
+  alwaysOn: "always",
   dpInit: "",
-  pageItems: [],
   config: {
     card: "cardQR",
     data: {
-      headline: { type: "const", constVal: "Gast WLAN" },
-      qrcode: { true: { type: "state", dp: "0_userdata.0.GaesteWlan.data" }, false: void 0 },
-      pwdHidden: { type: "const", constVal: true },
-      setSwitch: {
-        setValue1: { type: "triggered", dp: "0_userdata.0.GaesteWlan.switch" }
+      headline: { type: "const", constVal: "Gast WLAN" }
+    }
+  },
+  pageItems: [
+    {
+      role: "",
+      type: "text",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "wifi" },
+            color: { type: "const", constVal: import_Color.Color.Red }
+          },
+          false: {
+            value: { type: "const", constVal: "wifi" },
+            color: { type: "const", constVal: import_Color.Color.Green }
+          }
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: false
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "SSID"
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "key" },
+            color: { type: "const", constVal: import_Color.Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "key" },
+            color: { type: "const", constVal: import_Color.Color.Red }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.GaesteWlan.switch"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Wlan enabled"
+          },
+          false: {
+            type: "const",
+            constVal: "Wlan disabled"
+          }
+        },
+        setValue1: { type: "state", dp: "alias.0.GaesteWlan.switch" }
       }
     }
-  }
+  ]
 };
 const pagenEntitiesAdapter = {
   dpInit: "",

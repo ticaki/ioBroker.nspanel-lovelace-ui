@@ -32,51 +32,49 @@ __export(pageQR_exports, {
 });
 module.exports = __toCommonJS(pageQR_exports);
 var import_Page = require("../classes/Page");
-var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
 var pages = __toESM(require("../types/pages"));
 const PageQRMessageDefault = {
   event: "entityUpd",
   headline: "Page QR",
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
-  textQR: "",
+  textQR: "disabled",
   //textQR
-  type1: "text",
+  type1: "disabled",
   //type -> text or switch
-  internalName1: "ssid",
+  internalName1: "~",
   //internalName
-  iconId1: import_icon_mapping.Icons.GetIcon("wifi"),
+  iconId1: "~",
   //iconId
-  iconColor1: "65535",
+  iconColor1: "~",
   //iconColor
-  displayName1: "SSId",
+  displayName1: "~",
   //displayName
-  optionalValue1: "",
+  optionalValue1: "~",
   //optionalValue
-  type2: "text",
+  type2: "disabled",
   //type2 -> text or switch
-  internalName2: "pwd",
+  internalName2: "~",
   //internalName2
-  iconId2: import_icon_mapping.Icons.GetIcon("key"),
+  iconId2: "~",
   //iconId2
-  iconColor2: "65535",
+  iconColor2: "~",
   //iconColor2
-  displayName2: "Password",
+  displayName2: "~",
   //displayName2
-  optionalValue2: ""
+  optionalValue2: "~"
   //optionalvalue2
 };
 class PageQR extends import_Page.Page {
   items;
-  step = 1;
-  headlinePos = 0;
-  titelPos = 0;
-  nextArrow = false;
-  status = "armed";
   constructor(config, options) {
+    if (config.card !== "cardQR")
+      return;
     super(config, options);
     if (options.config && options.config.card == "cardQR")
       this.config = options.config;
+    else
+      throw new Error("Missing config!");
     this.minUpdateInterval = 1e3;
   }
   async init() {
@@ -86,8 +84,9 @@ class PageQR extends import_Page.Page {
       tempConfig,
       this
     );
+    if (tempItem)
+      tempItem.card = "cardQR";
     this.items = tempItem;
-    this.items.card = "cardQR";
     await super.init();
   }
   /**
@@ -99,33 +98,64 @@ class PageQR extends import_Page.Page {
     if (!this.visibility)
       return;
     const message = {};
-    const items = this.items;
-    if (!items || items.card !== "cardQR")
-      return;
-    const data = items.data;
-    message.headline = (_a = data.headline && await data.headline.getTranslatedString()) != null ? _a : this.name;
-    message.navigation = this.getNavigation();
-    message.textQR = data.qrcode && data.qrcode.true && await data.qrcode.true.getString() || "WIFI:T:undefined;S:undefined;P:undefined;H:undefined;";
-    const tempstr = message.textQR.split(";");
-    for (let w = 0; w < tempstr.length - 1; w++) {
-      if (tempstr[w].substring(5, 6) == "T") {
-        tempstr[w].slice(7) == "undefined" ? this.log.warn("Adjust data (T) for the QR page under data. Follow the instructions in the wiki.") : "";
+    if (this.items) {
+      const items = this.items;
+      message.headline = this.library.getTranslation(
+        (_a = items.data.headline && await items.data.headline.getString()) != null ? _a : ""
+      );
+      message.navigation = this.getNavigation();
+      this.log.debug(`qrType Number from Admin-Page = ${this.adapter.config.pageQRselType}`);
+      switch (this.adapter.config.pageQRselType) {
+        case 1:
+          this.log.debug(`qrType = wifi`);
+          message.textQR = `WIFI:T:${this.adapter.config.pageQRwlantype};S:${this.adapter.config.pageQRssid};P:${this.adapter.config.pageQRpwd};H:${this.adapter.config.pageQRwlanhidden};`;
+          message.optionalValue1 = this.adapter.config.pageQRssid;
+          break;
+        case 2:
+          this.log.debug(`qrType = url`);
+          message.textQR = `URL:${this.adapter.config.pageQRurl}`;
+          message.optionalValue1 = this.adapter.config.pageQRurl;
+          break;
+        default:
+          this.log.debug(`qrType = none`);
+          this.sendToPanel(this.getMessage(message));
+          return;
+          break;
       }
-      if (tempstr[w].substring(0, 1) == "S") {
-        tempstr[w].slice(2) == "undefined" ? this.log.warn("Adjust data (S) for the QR page under data. Follow the instructions in the wiki.") : message.optionalValue1 = tempstr[w].slice(2);
-      }
-      if (tempstr[w].substring(0, 1) == "P") {
-        message.optionalValue2 = tempstr[w].slice(2);
+      if (this.pageItems) {
+        const pageItems = this.pageItems.filter((a) => a && a.dataItems);
+        if (pageItems.length > 2)
+          this.log.warn(`Bad config -> too many page items`);
+        for (let a = 0; a < pageItems.length; a++) {
+          const temp = pageItems[a];
+          if (temp) {
+            const arr = (await temp.getPageItemPayload()).split("~");
+            this.log.debug(`0: ${arr[0]} 1: ${arr[1]} 2: ${arr[2]} 3: ${arr[3]} 4: ${arr[4]} 5: ${arr[5]}`);
+            switch (a) {
+              case 0:
+                message.type1 = arr[0];
+                message.displayName1 = arr[4];
+                message.internalName1 = arr[1];
+                message.iconId1 = arr[2];
+                message.iconColor1 = arr[3];
+                break;
+              case 1:
+                message.type2 = arr[0] == "button" ? "switch" : "text";
+                message.displayName2 = arr[4];
+                message.internalName2 = arr[1];
+                message.iconId2 = arr[2];
+                message.iconColor2 = arr[3];
+                message.optionalValue2 = arr[0] == "button" ? arr[5] : this.adapter.config.pageQRpwd;
+                break;
+              default:
+                break;
+            }
+          }
+        }
       }
     }
-    if (data.pwdHidden && await data.pwdHidden.getBoolean()) {
-      message.type2 = "switch";
-      message.iconColor1 = data.setSwitch && data.setSwitch.setValue1 && await data.setSwitch.setValue1.getBoolean() ? "7490" : "53248";
-      message.iconId2 = "";
-      message.displayName2 = data.setSwitch && data.setSwitch.setValue1 && await data.setSwitch.setValue1.getBoolean() ? "Wlan enabled" : "Wlan disabled";
-      message.internalName2 = "switch";
-      message.optionalValue2 = data.setSwitch && data.setSwitch.setValue1 && await data.setSwitch.setValue1.getBoolean() ? "1" : "0";
-    }
+    if (message.textQR)
+      this.log.debug(message.textQR);
     this.sendToPanel(this.getMessage(message));
   }
   getMessage(_message) {
@@ -165,8 +195,10 @@ class PageQR extends import_Page.Page {
       return;
     this.log.info(`button: ${button} value ${value}`);
     if (pages.isQRButtonEvent(button)) {
-      if (this.items.data.setSwitch && this.items.data.setSwitch.setValue1) {
-        this.items.data.setSwitch.setValue1.setStateFlip();
+      if (this.adapter.config.pageQRselType == 1) {
+        if (this.pageItems && this.pageItems[_event.id]) {
+          this.pageItems[_event.id].onCommand("button", value);
+        }
       }
     }
   }
