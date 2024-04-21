@@ -81,45 +81,43 @@
             "type": "panel",
             "label": "Page QR",
             "items": {
-                "checkwifi":{
-                    "type": "checkbox",
-                    "label": "WiFi",
-                    "default": false,
-                    "disabled": "data.checkurl"
-                },
-                "checkurl":{
-                    "type": "checkbox",
-                    "label": "URL",
-                    "default": false,
-                    "disabled": "data.checkwifi"
+                "pageQRselType":{
+                    "type": "select",
+                    "label": "QR Typ",
+                    "options": [
+                        {"label": "none", "value": 0},
+                        {"label": "Wifi", "value": 1},
+                        {"label": "URL", "value": 2}
+
+                    ]
                 },
                 "pageQRwlantype":{
                     "type": "text",
                     "label": "Verschlüssselung",
-                    "hidden": "!data.checkwifi",
+                    "hidden": "data.pageQRselType !== 1",
                     "newLine": true
                 },
                 "pageQRssid":{
                     "type": "text",
                     "label": "SSID",
-                    "hidden": "!data.checkwifi"
+                    "hidden": "data.pageQRselType !== 1"
                 },
                 "pageQRpwd":{
                     "type": "password",
                     "label": "Password",
-                    "hidden": "!data.checkwifi"
+                    "hidden": "data.pageQRselType !== 1"
                 },
                 "pageQRwlanhidden":{
                     "type": "checkbox",
                     "label": "verstecktes Wlan",
-                    "hidden": "!data.checkwifi",
+                    "hidden": "data.pageQRselType !== 1",
                     "default": false
                 },
                 "pageQRurl":{
                     "type": "text",
                     "label": "URL",
                     "default": "https://",
-                    "hidden": "!data.checkurl",
+                    "hidden": "data.pageQRselType !== 2",
                     "newLine": true
                 }
             }

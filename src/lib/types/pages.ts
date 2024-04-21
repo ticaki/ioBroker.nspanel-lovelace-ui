@@ -439,12 +439,10 @@ type PageQRBaseConfig = {
 };
 export type cardQRDataItemOptions = {
     card: 'cardQR';
-    qrType: 'wifi' | 'url';
     data: ChangeTypeOfKeys<PageQRBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardQRDataItems = {
     card: 'cardQR';
-    qrType: 'wifi' | 'url';
     data: ChangeTypeOfKeys<PageQRBaseConfig, dataItem.Dataitem | undefined>;
 };
 export type QRButtonEvent = 'OnOff';

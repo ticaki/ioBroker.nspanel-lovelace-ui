@@ -1493,7 +1493,6 @@ const pageQRTest = {
   dpInit: "",
   config: {
     card: "cardQR",
-    qrType: "url",
     data: {
       headline: { type: "const", constVal: "Gast WLAN" }
     }
@@ -1526,51 +1525,43 @@ const pageQRTest = {
             constVal: "SSID"
           },
           false: void 0
-        },
-        text1: {
-          true: { type: "const", constVal: "GastWlan" },
-          false: void 0
         }
       }
+    },
+    {
+      role: "",
+      type: "button",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "key" },
+            color: { type: "const", constVal: import_Color.Color.Green }
+          },
+          false: {
+            value: { type: "const", constVal: "key" },
+            color: { type: "const", constVal: import_Color.Color.Red }
+          }
+        },
+        entity1: {
+          value: {
+            type: "triggered",
+            dp: "alias.0.GaesteWlan.switch"
+          }
+        },
+        text: {
+          true: {
+            type: "const",
+            constVal: "Wlan enabled"
+          },
+          false: {
+            type: "const",
+            constVal: "Wlan disabled"
+          }
+        },
+        setValue1: { type: "state", dp: "alias.0.GaesteWlan.switch" }
+      }
     }
-    /*{
-                role: '',
-                type: 'button',
-                dpInit: '',
-    
-                data: {
-                    icon: {
-                        true: {
-                            value: { type: 'const', constVal: 'wifi' },
-                            color: { type: 'const', constVal: Color.Green },
-                        },
-                        false: {
-                            value: { type: 'const', constVal: 'wifi' },
-                            color: { type: 'const', constVal: Color.Red },
-                        },
-                    },
-                    entity1: {
-                        value: {
-                            type: 'const',
-                            constVal: false,
-                        },
-                    },
-                    text: {
-                        true: {
-                            type: 'const',
-                            constVal: 'Wlan enabled',
-                        },
-                        false: {
-                            type: 'const',
-                            constVal: 'Wlan disabled',
-                        },
-                    },
-                    text1: {
-                        true: { type: 'const', constVal: 'GastPwd' },
-                        false: undefined,
-                    },
-                },
-            },*/
   ]
 };
 const pagenEntitiesAdapter = {

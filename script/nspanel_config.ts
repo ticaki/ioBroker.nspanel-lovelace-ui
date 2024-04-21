@@ -5920,9 +5920,6 @@ namespace pages {
     
     type PageQRConfig = {
         headline: string;
-        qrcode: typePageItem.TextEntryType;
-        pwdHidden: boolean;
-        setSwitch?: typePageItem.PageItemButton;
     };
     export type cardQRDataItemOptions = {
         card: 'cardQR';
