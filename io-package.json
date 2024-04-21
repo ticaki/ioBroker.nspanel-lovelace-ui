@@ -164,6 +164,7 @@
   "protectedNative": [
     "mqttPassword",
     "pageQRssid",
+    "pageQRpwd",
     "pw1",
     "pw2",
     "pw3",
@@ -178,6 +179,7 @@
   "encryptedNative": [
     "mqttPassword",
     "pageQRssid",
+    "pageQRpwd",
     "pw1",
     "pw2",
     "pw3",
