@@ -170,7 +170,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             callback();
         }
     }
-
+    //test
     // If you need to react to object changes, uncomment the following block and the corresponding line in the constructor.
     // You also need to subscribe to the objects with `this.subscribeObjects`, similar to `this.subscribeStates`.
     // /**
