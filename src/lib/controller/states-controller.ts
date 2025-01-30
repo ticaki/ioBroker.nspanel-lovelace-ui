@@ -1,21 +1,22 @@
 // BaseClass extends
 
-import { IClientPublishOptions } from 'mqtt';
-import { PageInterface } from '../classes/Page';
+import type { IClientPublishOptions } from 'mqtt';
+import type { PageInterface } from '../classes/Page';
 import { Dataitem } from '../classes/data-item';
-import { AdapterClassDefinition, BaseClass } from '../classes/library';
-import { PageItem } from '../pages/pageItem';
-import { PageItemDataItemsOptions } from '../types/type-pageItem';
-import { DataItemsOptions, nsPanelState, nsPanelStateVal } from '../types/types';
-import { Controller } from './controller';
-import { Panel } from './panel';
-import { PanelSend } from './panel-message';
+import { BaseClass } from '../classes/library';
+import type { PageItem } from '../pages/pageItem';
+import type { PageItemDataItemsOptions } from '../types/type-pageItem';
+import type { DataItemsOptions, nsPanelState, nsPanelStateVal } from '../types/types';
+import type { Controller } from './controller';
+import type { Panel } from './panel';
+import type { PanelSend } from './panel-message';
 import { genericStateObjects } from '../const/definition';
 import { getRegExp } from '../const/tools';
+import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 
 export interface BaseClassTriggerdInterface {
     name: string;
-    adapter: AdapterClassDefinition;
+    adapter: NspanelLovelaceUi;
     panelSend: PanelSend;
     alwaysOn?: 'none' | 'always' | 'action';
     panel: Panel;
@@ -50,7 +51,9 @@ export class BaseClassTriggerd extends BaseClass {
         payload: string,
         opt?: IClientPublishOptions,
     ) => {
-        if (payload == this.lastMessage) return;
+        if (payload == this.lastMessage) {
+            return;
+        }
         this.lastMessage = payload;
 
         this.sendToPanelClass(payload, opt);
@@ -63,49 +66,61 @@ export class BaseClassTriggerd extends BaseClass {
     constructor(card: BaseClassTriggerdInterface) {
         super(card.adapter, card.name);
         this.minUpdateInterval = 500;
-        if (!this.adapter.controller) throw new Error('No controller! bye bye');
+        if (!this.adapter.controller) {
+            throw new Error('No controller! bye bye');
+        }
         this.controller = this.adapter.controller;
         this.panelSend = card.panelSend;
         this.alwaysOn = card.alwaysOn ?? 'none';
         this.panel = card.panel;
 
-        if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = card.panelSend.addMessage;
+        if (typeof this.panelSend.addMessage === 'function') {
+            this.sendToPanelClass = card.panelSend.addMessage;
+        }
     }
 
     async reset(): Promise<void> {}
 
     readonly onStateTriggerSuperDoNotOverride = async (dp: string, from: BaseClassTriggerd): Promise<boolean> => {
-        if ((!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger)) || this.unload)
+        if ((!this.visibility && !(this.neverDeactivateTrigger || from.neverDeactivateTrigger)) || this.unload) {
             return false;
-        if (this.sleep && !this.neverDeactivateTrigger) return false;
-        if (this.waitForTimeout) return false;
+        }
+        if (this.sleep && !this.neverDeactivateTrigger) {
+            return false;
+        }
+        if (this.waitForTimeout) {
+            return false;
+        }
         if (this.updateTimeout) {
             this.doUpdate = true;
             return false;
-        } else {
-            this.waitForTimeout = this.adapter.setTimeout(() => {
-                this.waitForTimeout = undefined;
-                this.onStateTrigger(dp, from);
-                if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
-                if (this.alwaysOn === 'action') {
-                    this.alwaysOnState = this.adapter.setTimeout(
-                        () => {
-                            this.panel.sendScreeensaverTimeout(this.panel.timeout);
-                        },
-                        this.panel.timeout * 1000 || 5000,
-                    );
-                }
-            }, 20);
-            this.updateTimeout = this.adapter.setTimeout(async () => {
-                if (this.unload) return;
-                this.updateTimeout = undefined;
-                if (this.doUpdate) {
-                    this.doUpdate = false;
-                    await this.onStateTrigger(dp, from);
-                }
-            }, this.minUpdateInterval);
-            return true;
         }
+        this.waitForTimeout = this.adapter.setTimeout(async () => {
+            this.waitForTimeout = undefined;
+            await this.onStateTrigger(dp, from);
+            if (this.alwaysOnState) {
+                this.adapter.clearTimeout(this.alwaysOnState);
+            }
+            if (this.alwaysOn === 'action') {
+                this.alwaysOnState = this.adapter.setTimeout(
+                    () => {
+                        this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                    },
+                    this.panel.timeout * 1000 || 5000,
+                );
+            }
+        }, 20);
+        this.updateTimeout = this.adapter.setTimeout(async () => {
+            if (this.unload) {
+                return;
+            }
+            this.updateTimeout = undefined;
+            if (this.doUpdate) {
+                this.doUpdate = false;
+                await this.onStateTrigger(dp, from);
+            }
+        }, this.minUpdateInterval);
+        return true;
     };
     protected async onStateTrigger(_dp: string, _from: BaseClassTriggerd): Promise<void> {
         this.adapter.log.warn(
@@ -123,8 +138,12 @@ export class BaseClassTriggerd extends BaseClass {
         await this.setVisibility(false);
         this.parent = undefined;
         await super.delete();
-        if (this.waitForTimeout) this.adapter.clearTimeout(this.waitForTimeout);
-        if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
+        if (this.waitForTimeout) {
+            this.adapter.clearTimeout(this.waitForTimeout);
+        }
+        if (this.alwaysOnState) {
+            this.adapter.clearTimeout(this.alwaysOnState);
+        }
         await this.stopTriggerTimeout();
     }
     getVisibility = (): boolean => {
@@ -134,43 +153,53 @@ export class BaseClassTriggerd extends BaseClass {
         if (v !== this.visibility || force) {
             this.visibility = v;
             if (this.visibility) {
-                if (this.unload) return;
+                if (this.unload) {
+                    return;
+                }
 
                 if (this.alwaysOn != 'none') {
                     if (this.alwaysOn === 'action') {
                         this.alwaysOnState = this.adapter.setTimeout(
                             async () => {
-                                await this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                                this.panel.sendScreeensaverTimeout(this.panel.timeout);
                             },
                             this.panel.timeout * 2 * 1000 || 5000,
                         );
                     } else {
-                        await this.panel.sendScreeensaverTimeout(0);
+                        this.panel.sendScreeensaverTimeout(0);
                     }
-                } else this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                } else {
+                    this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                }
                 this.log.debug(`Switch page to visible${force ? ' (forced)' : ''}!`);
                 this.resetLastMessage();
                 this.controller && (await this.controller.statesControler.activateTrigger(this));
 
                 this.panel.info.nspanel.currentPage = this.name;
-                this.library.writedp(
+                await this.library.writedp(
                     `panels.${this.panel.name}.info.nspanel.currentPage`,
                     this.name,
                     genericStateObjects.panel.panels.info.nspanel.currentPage,
                 );
             } else {
-                if (this.alwaysOnState) this.adapter.clearTimeout(this.alwaysOnState);
+                if (this.alwaysOnState) {
+                    this.adapter.clearTimeout(this.alwaysOnState);
+                }
                 this.log.debug(`Switch page to invisible${force ? ' (forced)' : ''}!`);
                 if (!this.neverDeactivateTrigger) {
-                    this.stopTriggerTimeout();
+                    await this.stopTriggerTimeout();
                     this.controller && (await this.controller.statesControler.deactivateTrigger(this));
                 }
             }
             await this.onVisibilityChange(v);
-        } else this.visibility = v;
+        } else {
+            this.visibility = v;
+        }
     };
     /**
      * Event when visibility is on Change.
+     *
+     * @param val
      */
     protected async onVisibilityChange(val: boolean): Promise<void> {
         val;
@@ -221,12 +250,14 @@ export class StatesControler extends BaseClass {
 
     timespan: number;
 
-    constructor(adapter: AdapterClassDefinition, name: string = '', timespan: number = 15000) {
+    constructor(adapter: NspanelLovelaceUi, name: string = '', timespan: number = 15000) {
         super(adapter, name || 'StatesDB');
         this.timespan = timespan;
         this.deletePageInterval = this.adapter.setInterval(this.deletePageLoop, 60000);
         this.intervalObjectDatabase = this.adapter.setInterval(() => {
-            if (this.unload) return;
+            if (this.unload) {
+                return;
+            }
             this.intervalObjectDatabase = undefined;
             this.objectDatabase = {};
         }, 1800000);
@@ -236,8 +267,8 @@ export class StatesControler extends BaseClass {
         for (const id in this.triggerDB) {
             const entry = this.triggerDB[id];
             const removeIndex = [];
-            for (const i in entry.to) {
-                if (entry.to[i].unload) {
+            for (const i of entry.to) {
+                if (i.unload) {
                     //this.log.debug('Unload element:  ' + entry.to[i].name);
                     removeIndex.push(Number(i));
                 }
@@ -251,7 +282,9 @@ export class StatesControler extends BaseClass {
                     }
                 }
             }
-            if (entry.to.length === 0 && !entry.internal) removeId.push(id);
+            if (entry.to.length === 0 && !entry.internal) {
+                removeId.push(id);
+            }
         }
 
         for (const id of removeId) {
@@ -261,15 +294,27 @@ export class StatesControler extends BaseClass {
 
     async delete(): Promise<void> {
         await super.delete();
-        if (StatesControler.tempObjectDBTimeout) this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
-        if (this.intervalObjectDatabase) this.adapter.clearInterval(this.intervalObjectDatabase);
-        if (StatesControler.tempObjectDBTimeout) this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
-        if (this.deletePageInterval) this.adapter.clearInterval(this.deletePageInterval);
+        if (StatesControler.tempObjectDBTimeout) {
+            this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
+        }
+        if (this.intervalObjectDatabase) {
+            this.adapter.clearInterval(this.intervalObjectDatabase);
+        }
+        if (StatesControler.tempObjectDBTimeout) {
+            this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
+        }
+        if (this.deletePageInterval) {
+            this.adapter.clearInterval(this.deletePageInterval);
+        }
     }
     /**
      * Set a subscript to an foreignState and write current state/value to db
+     *
      * @param id state id
      * @param from the page that handle the trigger
+     * @param internal
+     * @param trigger
+     * @param change
      */
     async setTrigger(
         id: string,
@@ -284,13 +329,14 @@ export class StatesControler extends BaseClass {
             //throw new Error(`Id: ${id} refers to the adapter's own namespace, this is not allowed!`);
         }
         if (this.triggerDB[id] !== undefined) {
-            const index = this.triggerDB[id].to.findIndex((a) => a == from);
+            const index = this.triggerDB[id].to.findIndex(a => a == from);
             if (index === -1) {
                 this.triggerDB[id].to.push(from);
                 this.triggerDB[id].subscribed.push(false);
                 this.triggerDB[id].triggerAllowed.push(trigger);
                 this.triggerDB[id].change.push(change ? change : 'ne');
             } else {
+                //nothing
             }
         } else if (internal) {
             this.log.error('setInternal Trigger too early');
@@ -300,7 +346,9 @@ export class StatesControler extends BaseClass {
                 // erstelle keinen trigger für das gleiche parent doppelt..
                 await this.adapter.subscribeForeignStatesAsync(id);
                 const obj = await this.getObjectAsync(id);
-                if (!obj || !obj.common || obj.type !== 'state') throw new Error('Got invalid object for ' + id);
+                if (!obj || !obj.common || obj.type !== 'state') {
+                    throw new Error(`Got invalid object for ${id}`);
+                }
                 this.triggerDB[id] = {
                     state,
                     to: [from],
@@ -320,17 +368,26 @@ export class StatesControler extends BaseClass {
 
     /**
      * Activate the triggers of a page. First subscribes to the state.
+     *
      * @param to Page
      */
     async activateTrigger(to: BaseClassTriggerd | undefined): Promise<void> {
-        if (!to) return;
+        if (!to) {
+            return;
+        }
         for (const id in this.triggerDB) {
             const entry = this.triggerDB[id];
             const index = entry.to.indexOf(to);
-            if (index === -1) continue;
-            if (entry.subscribed[index]) continue;
-            if (!entry.triggerAllowed[index]) continue;
-            if (!entry.subscribed.some((a) => a)) {
+            if (index === -1) {
+                continue;
+            }
+            if (entry.subscribed[index]) {
+                continue;
+            }
+            if (!entry.triggerAllowed[index]) {
+                continue;
+            }
+            if (!entry.subscribed.some(a => a)) {
                 await this.adapter.subscribeForeignStatesAsync(id);
                 const state = await this.adapter.getForeignStateAsync(id);
                 if (state) {
@@ -343,18 +400,27 @@ export class StatesControler extends BaseClass {
 
     /**
      * Deactivate the triggers of a page. Last unsubscribes to the state.
+     *
      * @param to Page
      */
     async deactivateTrigger(to: BaseClassTriggerd): Promise<void> {
         for (const id in this.triggerDB) {
-            if (to.neverDeactivateTrigger) continue;
+            if (to.neverDeactivateTrigger) {
+                continue;
+            }
             const entry = this.triggerDB[id];
-            if (entry.internal) continue;
+            if (entry.internal) {
+                continue;
+            }
             const index = entry.to.indexOf(to);
-            if (index === -1) continue;
-            if (!entry.subscribed[index]) continue;
+            if (index === -1) {
+                continue;
+            }
+            if (!entry.subscribed[index]) {
+                continue;
+            }
             entry.subscribed[index] = false;
-            if (!entry.subscribed.some((a) => a)) {
+            if (!entry.subscribed.some(a => a)) {
                 await this.adapter.unsubscribeForeignStatesAsync(id);
             }
         }
@@ -369,7 +435,10 @@ export class StatesControler extends BaseClass {
     }
     /**
      * Read a state from DB or js-controller
+     *
      * @param id state id with namespace
+     * @param response
+     * @param internal
      * @returns
      */
     async getState(
@@ -378,11 +447,14 @@ export class StatesControler extends BaseClass {
         internal: boolean = false,
     ): Promise<nsPanelState | null | undefined> {
         let timespan = this.timespan;
-        if (response === 'now') timespan = 10;
-        else timespan = 1000;
+        if (response === 'now') {
+            timespan = 10;
+        } else {
+            timespan = 1000;
+        }
         if (
             this.triggerDB[id] !== undefined &&
-            (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some((a) => a))
+            (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some(a => a))
         ) {
             let state: nsPanelState | null = null;
             const f = this.triggerDB[id].f;
@@ -400,13 +472,17 @@ export class StatesControler extends BaseClass {
                 return this.stateDB[id].state;
             }
         }
-        if (id.includes('/')) internal = true;
+        if (id.includes('/')) {
+            internal = true;
+        }
         if (!internal) {
             const state = await this.adapter.getForeignStateAsync(id);
             if (state) {
                 if (!this.stateDB[id]) {
                     const obj = await this.getObjectAsync(id);
-                    if (!obj || !obj.common || obj.type !== 'state') throw new Error('Got invalid object for ' + id);
+                    if (!obj || !obj.common || obj.type !== 'state') {
+                        throw new Error(`Got invalid object for ${id}`);
+                    }
                     this.stateDB[id] = { state: state, ts: Date.now(), common: obj.common };
                 } else {
                     this.stateDB[id].state = state;
@@ -419,8 +495,12 @@ export class StatesControler extends BaseClass {
     }
 
     getType(id: string): ioBroker.CommonType | undefined {
-        if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) return this.triggerDB[id].common!.type;
-        if (this.stateDB[id] !== undefined) return this.stateDB[id].common.type;
+        if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) {
+            return this.triggerDB[id].common.type;
+        }
+        if (this.stateDB[id] !== undefined) {
+            return this.stateDB[id].common.type;
+        }
         return undefined;
     }
 
@@ -428,11 +508,18 @@ export class StatesControler extends BaseClass {
         let j: string | string[] | Record<string, string> | undefined = undefined;
         if (force) {
             const obj = await this.adapter.getObjectAsync(id);
-            if (obj && obj.common && obj.common.states) j = obj.common.state;
-        } else if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) j = this.triggerDB[id].common.states;
-        else if (this.stateDB[id] !== undefined && this.stateDB[id].common) j = this.stateDB[id].common.states;
+            if (obj && obj.common && obj.common.states) {
+                j = obj.common.state;
+            }
+        } else if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) {
+            j = this.triggerDB[id].common.states;
+        } else if (this.stateDB[id] !== undefined && this.stateDB[id].common) {
+            j = this.stateDB[id].common.states;
+        }
 
-        if (!j || typeof j === 'string') return undefined;
+        if (!j || typeof j === 'string') {
+            return undefined;
+        }
         if (Array.isArray(j)) {
             const a: Record<string, string> = {};
             j.forEach((e, i) => (a[String(i)] = e));
@@ -443,6 +530,7 @@ export class StatesControler extends BaseClass {
 
     /**
      * Check if the trigger should trigger other classes. dont check if object has a active subscription. this is done in next step with visible & neverDeactiveTrigger
+     *
      * @param dp internal/external
      * @param state iobroker state
      */
@@ -454,7 +542,8 @@ export class StatesControler extends BaseClass {
                 const oldState = { val: this.triggerDB[dp].state.val, ack: this.triggerDB[dp].state.ack };
                 this.triggerDB[dp].state = state;
                 if (state.ack || this.triggerDB[dp].internal || dp.startsWith('0_userdata.0')) {
-                    await this.triggerDB[dp].to.forEach(async (c, i) => {
+                    for (let i = 0; i < this.triggerDB[dp].to.length; i++) {
+                        const c = this.triggerDB[dp].to[i];
                         if (
                             oldState.val !== state.val ||
                             oldState.ack !== state.ack ||
@@ -463,8 +552,9 @@ export class StatesControler extends BaseClass {
                             if (
                                 (!c.neverDeactivateTrigger && !this.triggerDB[dp].subscribed[i]) ||
                                 !this.triggerDB[dp].triggerAllowed[i]
-                            )
+                            ) {
                                 return;
+                            }
                             if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
                                 c.parent.onStateTriggerSuperDoNotOverride &&
                                     (await c.parent.onStateTriggerSuperDoNotOverride(dp, c));
@@ -472,12 +562,12 @@ export class StatesControler extends BaseClass {
                                 c.onStateTriggerSuperDoNotOverride && (await c.onStateTriggerSuperDoNotOverride(dp, c));
                             }
                         }
-                    });
+                    }
                 }
             }
             if (state.val === null || state.val === undefined || typeof state.val !== 'object') {
                 if (dp.startsWith(this.adapter.namespace)) {
-                    const id = dp.replace(this.adapter.namespace + '.', '');
+                    const id = dp.replace(`${this.adapter.namespace}.`, '');
                     const libState = this.library.readdb(id);
                     if (libState) {
                         this.library.setdb(id, {
@@ -500,9 +590,10 @@ export class StatesControler extends BaseClass {
                         }
                     }
                 }
-                if (dp.startsWith('system.host'))
+                if (dp.startsWith('system.host')) {
                     this.adapter.controller &&
                         (await this.adapter.controller.systemNotification.onStateChange(dp, state as ioBroker.State));
+                }
             }
         }
     }
@@ -511,12 +602,21 @@ export class StatesControler extends BaseClass {
             if (item.options.dp) {
                 const ack = item.options.dp.startsWith(this.adapter.namespace);
                 this.log.debug(`setStateAsync(${item.options.dp}, ${val}, ${ack})`);
-                if (item.trueType() === 'number' && typeof val === 'string') val = parseFloat(val);
-                else if (item.trueType() === 'number' && typeof val === 'boolean') val = val ? 1 : 0;
-                else if (item.trueType() === 'boolean') val = !!val;
-                if (item.trueType() === 'string') val = String(val);
-                if (writeable) await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
-                else this.log.error(`Forbidden write attempts on a read-only state! id: ${item.options.dp}`);
+                if (item.trueType() === 'number' && typeof val === 'string') {
+                    val = parseFloat(val);
+                } else if (item.trueType() === 'number' && typeof val === 'boolean') {
+                    val = val ? 1 : 0;
+                } else if (item.trueType() === 'boolean') {
+                    val = !!val;
+                }
+                if (item.trueType() === 'string') {
+                    val = String(val);
+                }
+                if (writeable) {
+                    await this.adapter.setForeignStateAsync(item.options.dp, val, ack);
+                } else {
+                    this.log.error(`Forbidden write attempts on a read-only state! id: ${item.options.dp}`);
+                }
             }
         } else if (item.options.type === 'internal' || item.options.type === 'internalState') {
             if (this.triggerDB[item.options.dp]) {
@@ -527,6 +627,7 @@ export class StatesControler extends BaseClass {
 
     /**
      * Set a internal state and trigger
+     *
      * @param id something like 'cmd/blabla'
      * @param val Value
      * @param ack false use value/ true use func
@@ -547,7 +648,7 @@ export class StatesControler extends BaseClass {
             const newState = {
                 ...this.triggerDB[id].state,
                 // if ack and function take value of function otherwise val
-                val: ack && f ? (await f(id, undefined)) ?? val : val,
+                val: ack && f ? ((await f(id, undefined)) ?? val) : val,
                 ack: ack,
                 ts: Date.now(),
             };
@@ -580,16 +681,20 @@ export class StatesControler extends BaseClass {
 
     /**
      * Create dataitems from a json (deep)
+     *
      * @param data Json with configuration to create dataitems
      * @param parent Page etc.
+     * @param target
      * @returns then json with values dataitem or undefined
      */
     async createDataItems(data: any, parent: any, target: any = {}): Promise<any> {
         for (const i in data) {
             const d = data[i];
-            if (d === undefined) continue;
+            if (d === undefined) {
+                continue;
+            }
             if (typeof d === 'object' && !('type' in d)) {
-                target[i] = await this.createDataItems(d, parent, target[i] ?? Array.isArray(d) ? [] : {});
+                target[i] = await this.createDataItems(d, parent, (target[i] ?? Array.isArray(d)) ? [] : {});
             } else if (typeof d === 'object' && 'type' in d) {
                 target[i] =
                     data[i] !== undefined
@@ -616,11 +721,15 @@ export class StatesControler extends BaseClass {
         enums: undefined,
     };
     static tempObjectDBTimeout: ioBroker.Timeout | undefined;
-    static getTempObjectDB(adapter: AdapterClassDefinition): typeof StatesControler.TempObjectDB {
-        if (StatesControler.tempObjectDBTimeout) adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
+    static getTempObjectDB(adapter: NspanelLovelaceUi): typeof StatesControler.TempObjectDB {
+        if (StatesControler.tempObjectDBTimeout) {
+            adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
+        }
 
         StatesControler.tempObjectDBTimeout = adapter.setTimeout(() => {
-            if (adapter.unload) return;
+            if (adapter.unload) {
+                return;
+            }
             StatesControler.tempObjectDBTimeout = undefined;
             StatesControler.TempObjectDB = { data: undefined, keys: [], enums: undefined };
         }, 60000);
@@ -629,6 +738,7 @@ export class StatesControler extends BaseClass {
     }
     /**
      * Filterfunktion umso genauer die Filter um so weniger Ressourcen werden verbraucht.
+     *
      * @param dpInit string RegExp oder '' für aus; string wird mit include verwendet.
      * @param enums string, string[], RegExp als String übergeben oder ein String der mit include verwenden wird.
      * @returns 2 arrays keys: gefilterte keys und data: alle Objekte...
@@ -637,7 +747,9 @@ export class StatesControler extends BaseClass {
         const tempObjectDB = StatesControler.getTempObjectDB(this.adapter);
         if (!tempObjectDB.data) {
             tempObjectDB.data = await this.adapter.getForeignObjectsAsync(`*`);
-            if (!tempObjectDB.data) throw new Error('getObjects fail. Critical Error!');
+            if (!tempObjectDB.data) {
+                throw new Error('getObjects fail. Critical Error!');
+            }
             tempObjectDB.keys = Object.keys(tempObjectDB.data);
             const temp = await this.adapter.getEnumsAsync(['rooms', 'functions']);
             tempObjectDB.enums = Object.assign(temp['enum.rooms'], temp['enum.functions']);
@@ -648,9 +760,9 @@ export class StatesControler extends BaseClass {
         };
         if (dpInit) {
             if (typeof dpInit !== 'string') {
-                result.keys = tempObjectDB.keys.filter((a) => a.match(dpInit) !== null);
+                result.keys = tempObjectDB.keys.filter(a => a.match(dpInit) !== null);
             } else {
-                result.keys = tempObjectDB.keys.filter((a) => a.includes(dpInit));
+                result.keys = tempObjectDB.keys.filter(a => a.includes(dpInit));
             }
         }
         if (enums && tempObjectDB.enums) {
@@ -667,14 +779,18 @@ export class StatesControler extends BaseClass {
                             tempObjectDB.enums[a] &&
                             tempObjectDB.enums[a].common &&
                             tempObjectDB.enums[a].common.members
-                        )
+                        ) {
                             t = t.concat(tempObjectDB.enums[a].common.members!);
+                        }
                     }
                 }
-                if (!r) r = t;
-                else r = r.filter((a) => t.indexOf(a) !== -1);
+                if (!r) {
+                    r = t;
+                } else {
+                    r = r.filter(a => t.indexOf(a) !== -1);
+                }
             }
-            result.keys = result.keys.filter((a) => r && r.some((b) => a.startsWith(b)));
+            result.keys = result.keys.filter(a => r && r.some(b => a.startsWith(b)));
         }
         return result;
     }
@@ -684,23 +800,28 @@ export class StatesControler extends BaseClass {
         appendix?: string,
         enums?: string | string[],
     ): Promise<any> {
-        if (dpInit === '' && enums === undefined) return data;
+        if (dpInit === '' && enums === undefined) {
+            return data;
+        }
         const tempObjectDB = await this.getFilteredObjects(dpInit, enums);
         if (tempObjectDB.data) {
             for (const i in data) {
                 const t = data[i];
-                if (t === undefined) continue;
+                if (t === undefined) {
+                    continue;
+                }
                 if (typeof t === 'object' && !('type' in t)) {
                     data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix, enums);
                 } else if (typeof t === 'object' && 'type' in t) {
                     const d = t as DataItemsOptions;
                     let found = false;
-                    if ((d.type !== 'triggered' && d.type !== 'state') || !d.mode || d.mode !== 'auto') continue;
+                    if ((d.type !== 'triggered' && d.type !== 'state') || !d.mode || d.mode !== 'auto') {
+                        continue;
+                    }
 
                     for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
-                        if (false) {
-                            //throw new Error(`${d.dp} has a unkowned role ${d.role}`);
-                        }
+                        //throw new Error(`${d.dp} has a unkowned role ${d.role}`);
+
                         if (tempObjectDB.keys.length === 0) {
                             this.log.warn(`Dont find states for ${dpInit}!`);
                         }
@@ -729,7 +850,9 @@ export class StatesControler extends BaseClass {
                                 found = true;
                             }
                         }
-                        if (found) break;
+                        if (found) {
+                            break;
+                        }
                     }
                     if (!found) {
                         data[i] = undefined;
@@ -746,8 +869,9 @@ export class StatesControler extends BaseClass {
     }
 
     async getObjectAsync(id: string): Promise<ioBroker.Object | null> {
-        if (this.objectDatabase[id] !== undefined) return this.objectDatabase[id];
-        else if (this.triggerDB[id] !== undefined && this.triggerDB[id].internal) {
+        if (this.objectDatabase[id] !== undefined) {
+            return this.objectDatabase[id];
+        } else if (this.triggerDB[id] !== undefined && this.triggerDB[id].internal) {
             return { _id: '', type: 'state', common: this.triggerDB[id].common, native: {} };
         }
         const obj = await this.adapter.getForeignObjectAsync(id);

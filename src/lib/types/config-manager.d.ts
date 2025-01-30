@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 declare namespace ConfigManager {
     interface DeviceState {
         /**

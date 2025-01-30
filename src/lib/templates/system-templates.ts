@@ -1,5 +1,5 @@
-import { NavigationItemConfig } from '../classes/navigation';
-import { PageBaseConfig } from '../types/pages';
+import type { NavigationItemConfig } from '../classes/navigation';
+import type { PageBaseConfig } from '../types/pages';
 import { Color } from '../const/Color';
 
 const popupWelcome: PageBaseConfig = {

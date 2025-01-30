@@ -49,9 +49,11 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.warn('No configuration use dev test config!');
             let testconfig = Testconfig;
             try {
-                const path: string = './lib/config-custom.js';
+                const path = './lib/config-custom.js';
                 testconfig = (await import(path)).Testconfig;
-            } catch (e) {}
+            } catch {
+                // nothing
+            }
             this.config.Testconfig2 = testconfig;
         }
         if (
@@ -66,7 +68,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         try {
             this.config.Testconfig2[0].pages![0] = this.config.Testconfig2[0].pages![0];
             this.config.Testconfig2[0].timeout = this.config.timeout;
-        } catch (e) {
+        } catch {
             this.log.warn('Invalid configuration stopped!');
             return;
         }
@@ -75,8 +77,9 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.config.doubleClickTime === undefined ||
             typeof this.config.doubleClickTime !== 'number' ||
             !(this.config.doubleClickTime > 0)
-        )
+        ) {
             this.config.doubleClickTime = 400;
+        }
         //this.log.debug(JSON.stringify(this.config.Testconfig2[0].dpInit))
 
         //this.config.Testconfig2[0].pages[1].dpInit = this.config.mediaid;
@@ -90,8 +93,9 @@ class NspanelLovelaceUi extends utils.Adapter {
 
             // set all .info.nspanel.isOnline to false
             for (const id in states) {
-                if (id.endsWith('.info.nspanel.isOnline'))
+                if (id.endsWith('.info.nspanel.isOnline')) {
                     await this.library.writedp(id, false, genericStateObjects.panel.panels.info.nspanel.isOnline);
+                }
             }
             this.log.debug('Check configuration!');
             if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
@@ -111,10 +115,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.config.mqttUsername,
                 this.config.mqttPassword,
                 (topic, message) => {
-                    this.log.debug(topic + ' ' + message);
+                    this.log.debug(`${topic} ${message}`);
                 },
             );
-            if (!this.mqttClient) return;
+            if (!this.mqttClient) {
+                return;
+            }
             const testconfig = structuredClone(this.config.Testconfig2);
             let counter = 0;
             for (const a of testconfig) {
@@ -122,20 +128,26 @@ class NspanelLovelaceUi extends utils.Adapter {
                     const names: string[] = [];
                     for (const p of a.pages) {
                         counter++;
-                        if (!('uniqueID' in p)) continue;
-                        if (p.card === 'screensaver' || p.card === 'screensaver2') {
-                            p.uniqueID = '#' + p.uniqueID;
+                        if (!('uniqueID' in p)) {
+                            continue;
                         }
-                        if (names.indexOf(p.uniqueID) !== -1) throw new Error(`uniqueID ${p.uniqueID} is double!`);
+                        if (p.card === 'screensaver' || p.card === 'screensaver2') {
+                            p.uniqueID = `#${p.uniqueID}`;
+                        }
+                        if (names.indexOf(p.uniqueID) !== -1) {
+                            throw new Error(`uniqueID ${p.uniqueID} is double!`);
+                        }
                         names.push(p.uniqueID);
                     }
                 }
             }
-            if (counter === 0) return;
+            if (counter === 0) {
+                return;
+            }
             //testconfig[0].name = this.config.name;
             //testconfig[0].topic = this.config.topic;
             const mem = process.memoryUsage().heapUsed / 1024;
-            this.log.debug(String(mem + 'k'));
+            this.log.debug(String(`${mem}k`));
             this.controller = new Controller(this, {
                 mqttClient: this.mqttClient,
                 name: 'controller',
@@ -144,10 +156,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             await this.controller.init();
             setInterval(() => {
                 this.log.debug(
-                    Math.trunc(mem) +
-                        'k/' +
-                        String(Math.trunc(process.memoryUsage().heapUsed / 1024)) +
-                        'k Start/Jetzt: ',
+                    `${Math.trunc(mem)}k/${String(Math.trunc(process.memoryUsage().heapUsed / 1024))}k Start/Jetzt: `,
                 );
             }, 60000);
         }, 2500);
@@ -155,6 +164,8 @@ class NspanelLovelaceUi extends utils.Adapter {
 
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances.
+     *
+     * @param callback
      */
     private async onUnload(callback: () => void): Promise<void> {
         try {
@@ -164,9 +175,11 @@ class NspanelLovelaceUi extends utils.Adapter {
             // clearTimeout(timeout2);
             // ...
             // clearInterval(interval1);
-            if (this.controller) await this.controller.delete;
+            if (this.controller) {
+                this.controller.delete;
+            }
             callback();
-        } catch (e) {
+        } catch {
             callback();
         }
     }
@@ -188,11 +201,14 @@ class NspanelLovelaceUi extends utils.Adapter {
 
     /**
      * Is called if a subscribed state changes
+     *
+     * @param id
+     * @param state
      */
     private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
         if (state) {
             if (this.controller) {
-                this.controller.statesControler.onStateChange(id, state);
+                await this.controller.statesControler.onStateChange(id, state);
             }
         } else {
             // The state was deleted
@@ -211,31 +227,35 @@ class NspanelLovelaceUi extends utils.Adapter {
                 // e.g. send email or pushover or whatever
                 this.log.info(JSON.stringify(obj));
                 if (obj.command == 'config') {
-                    const obj1 = await this.getForeignObjectAsync('system.adapter.' + this.namespace);
+                    const obj1 = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
                     if (
                         obj1 &&
                         obj1.native &&
                         JSON.stringify(obj1.native.Testconfig2) !== JSON.stringify(obj.message)
                     ) {
                         obj1.native.Testconfig2 = obj.message;
-                        await this.setForeignObjectAsync('system.adapter.' + this.namespace, obj1);
+                        await this.setForeignObjectAsync(`system.adapter.${this.namespace}`, obj1);
                     }
                 } else if (obj.command == 'updateCustom') {
                     if (obj.message && obj.message.state) {
                         const state = await this.getForeignObjectAsync(obj.message.state);
                         if (state && state.common && state.common.custom && state.common.custom[this.namespace]) {
-                            this.log.debug('updateCustom ' + JSON.stringify(state.common.custom[this.namespace]));
+                            this.log.debug(`updateCustom ${JSON.stringify(state.common.custom[this.namespace])}`);
                         }
                     }
                 }
                 // Send response in callback if required
-                if (obj.callback) this.sendTo(obj.from, obj.command, [], obj.callback);
+                if (obj.callback) {
+                    this.sendTo(obj.from, obj.command, [], obj.callback);
+                }
             }
         }
     }
 
     async writeStateExternalAsync(dp: string, val: ioBroker.StateValue): Promise<void> {
-        if (dp.startsWith(this.namespace)) return;
+        if (dp.startsWith(this.namespace)) {
+            return;
+        }
         await this.setForeignStateAsync(dp, val, false);
     }
 }

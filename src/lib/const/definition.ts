@@ -1,4 +1,4 @@
-import {
+import type {
     InternalStatesObject,
     NSpanelModel,
     PanelInfo,
@@ -1297,7 +1297,7 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
     },
 };
 
-export const tasmotaOtaUrl: string = 'http://ota.tasmota.com/tasmota32/release/';
+export const tasmotaOtaUrl = 'http://ota.tasmota.com/tasmota32/release/';
 
 export const ScreenSaverConst: Record<
     ScreensaverModeType,

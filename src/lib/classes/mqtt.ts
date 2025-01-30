@@ -1,13 +1,13 @@
-import mqtt, { IClientPublishOptions } from 'mqtt'; // import namespace "mqtt"
+import mqtt, { type IClientPublishOptions } from 'mqtt'; // import namespace "mqtt"
 import { Level } from 'level';
 
 //@ts-expect-error no types
 import aedesPersistencelevel from 'aedes-persistence-level';
 
-import { AdapterClassDefinition, BaseClass } from './library';
+import { BaseClass, type AdapterClassDefinition } from './library';
 
-import Aedes, { Client } from 'aedes';
-import { Server, createServer } from 'net';
+import Aedes, { type Client } from 'aedes';
+import { createServer, type Server } from 'net';
 import { randomUUID } from 'node:crypto';
 
 export type callbackMessageType = (topic: string, message: string) => void;
@@ -46,9 +46,10 @@ export class MQTTClientClass extends BaseClass {
             this.adapter.setState('info.connection', false, true);
             this.log.debug(`disconnected`);
         });
-        this.client.on('error', (err) => {
+        this.client.on('error', err => {
             this.ready = false;
-            this.log.error(`${err}`);
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+            this.log.error(`${String(err)}`);
         });
 
         this.client.on('close', () => {
@@ -58,13 +59,13 @@ export class MQTTClientClass extends BaseClass {
         });
 
         this.client.on('message', (topic, message) => {
-            const callbacks = this.subscriptDB.filter((i) => {
+            const callbacks = this.subscriptDB.filter(i => {
                 return topic.startsWith(i.topic.replace('/#', ''));
             });
             /*this.log.debug(
                 `Incoming message for ${callbacks.length} subproceses. topic: ${topic} message: ${message}}`,
             );*/
-            callbacks.forEach((c) => c.callback(topic, message.toString()));
+            callbacks.forEach(c => c.callback(topic, message.toString()));
         });
     }
 
@@ -74,13 +75,15 @@ export class MQTTClientClass extends BaseClass {
     }
 
     subscript(topic: string, callback: callbackMessageType): void {
-        if (this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback) !== -1) return;
-        const aNewOne = this.subscriptDB.findIndex((m) => m.topic === topic) === -1;
+        if (this.subscriptDB.findIndex(m => m.topic === topic && m.callback === callback) !== -1) {
+            return;
+        }
+        const aNewOne = this.subscriptDB.findIndex(m => m.topic === topic) === -1;
         this.subscriptDB.push({ topic, callback });
         if (aNewOne) {
             this.log.debug(`subscripe to: ${topic}`);
 
-            this.client.subscribe(topic, (err) => {
+            this.client.subscribe(topic, err => {
                 if (err) {
                     this.log.error(`On subscribe: ${err}`);
                 }
@@ -111,8 +114,11 @@ export class MQTTServerClass extends BaseClass {
             callback: any,
         ) => {
             const confirm = username === un && password == pw!.toString();
-            if (!confirm) this.log.warn(`Login denied client: ${client.id}. User name or password wrong!`);
-            else this.log.info(`Client ${client.id} login successful.`);
+            if (!confirm) {
+                this.log.warn(`Login denied client: ${client.id}. User name or password wrong!`);
+            } else {
+                this.log.info(`Client ${client.id} login successful.`);
+            }
             callback(null, confirm);
         };
     }

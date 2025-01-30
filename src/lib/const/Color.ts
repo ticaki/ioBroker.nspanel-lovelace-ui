@@ -29,6 +29,7 @@ export interface ColorThemenInterface {
 
 /**
  * check if Color has all propertys of ColorThemenInterface
+ *
  * @param k just a key
  * @returns
  */
@@ -190,10 +191,13 @@ export class Color extends ColorBase {
 
     /**
      * set color theme...
+     *
      * @param s
      */
     static setTheme(s: ColorThemenInterface): void {
-        for (const a in s) Color[a as keyof ColorThemenInterface] = s[a as keyof ColorThemenInterface];
+        for (const a in s) {
+            Color[a as keyof ColorThemenInterface] = s[a as keyof ColorThemenInterface];
+        }
     }
 
     static rgb_dec565(rgb: RGB): number {
@@ -220,7 +224,9 @@ export class Color extends ColorBase {
     }
 
     static scale(number: number, inMax: number | null, inMin: number | null, outMin: number, outMax: number): number {
-        if (inMin === null || inMax === null) return number;
+        if (inMin === null || inMax === null) {
+            return number;
+        }
         return outMax + outMin - (((number - inMax) * (outMax - outMin)) / (inMin - inMax) + outMin);
     }
 
@@ -279,8 +285,9 @@ export class Color extends ColorBase {
     }
     /**
      * Convert radians to degrees
+     *
      * @param rad radians to convert, expects rad in range +/- PI per Math.atan2
-     * @returns {number} degrees equivalent of rad
+     * @returns degrees equivalent of rad
      */
     static rad2deg(rad: number): number {
         return (360 + (180 * rad) / Math.PI) % 360;
@@ -288,11 +295,11 @@ export class Color extends ColorBase {
 
     static ColorToHex(color: number): string {
         const hexadecimal: string = color.toString(16);
-        return hexadecimal.length == 1 ? '0' + hexadecimal : hexadecimal;
+        return hexadecimal.length == 1 ? `0${hexadecimal}` : hexadecimal;
     }
 
     static ConvertRGBtoHex(red: number, green: number, blue: number): string {
-        return '#' + Color.ColorToHex(red) + Color.ColorToHex(green) + Color.ColorToHex(blue);
+        return `#${Color.ColorToHex(red)}${Color.ColorToHex(green)}${Color.ColorToHex(blue)}`;
     }
     static ConvertWithColordtoRgb(colorName: string): RGB {
         return colord(colorName).toRgb();
@@ -307,10 +314,11 @@ export class Color extends ColorBase {
 
     /**
      * Convert h,s,v values to r,g,b
+     *
      * @param hue in range [0, 360]
      * @param saturation in range 0 to 1
      * @param value in range 0 to 1
-     * @returns {[number, number, number]} [r, g,b] in range 0 to 255
+     * @returns [r, g,b] in range 0 to 255
      */
     static hsv2rgb(hue: number, saturation: number, value: number): [number, number, number] {
         hue /= 60;
@@ -329,7 +337,7 @@ export class Color extends ColorBase {
                         ? [x, 0, chroma]
                         : [chroma, 0, x];
 
-        return rgb.map((v) => (v + value - chroma) * 255) as [number, number, number];
+        return rgb.map(v => (v + value - chroma) * 255) as [number, number, number];
     }
     static hsv2RGB(hue: number, saturation: number, value: number): RGB {
         const arr = Color.hsv2rgb(hue, saturation, value);
@@ -337,7 +345,9 @@ export class Color extends ColorBase {
     }
 
     static hsvtodec(hue: number | null, saturation: number, value: number): string | null {
-        if (hue === null) return null;
+        if (hue === null) {
+            return null;
+        }
         const result = Color.hsv2rgb(hue, saturation, value);
         return String(Color.rgb_dec565({ r: result[0], g: result[1], b: result[2] }));
     }
@@ -364,7 +374,9 @@ export class Color extends ColorBase {
         }
 
         hue = hue * 60;
-        if (hue < 0) hue = hue + 360;
+        if (hue < 0) {
+            hue = hue + 360;
+        }
 
         return Math.round(hue);
     }
@@ -409,15 +421,15 @@ export class Color extends ColorBase {
         //Calculate the xy values from the XYZ values
         const ciex = (X / (X + Y + Z)).toFixed(4);
         const ciey = (Y / (X + Y + Z)).toFixed(4);
-        const cie = '[' + ciex + ',' + ciey + ']';
+        const cie = `[${ciex},${ciey}]`;
 
         return cie;
     }
-    static isRGB(F: RGB | any): F is RGB {
+    static isRGB(F: any): F is RGB {
         return typeof F == 'object' && 'r' in F && 'b' in F && 'g' in F;
     }
-    static isOldRGB(F: RGB | any): F is RGB {
-        return typeof F == 'object' && 'r' in F && 'b' in F && 'g' in F;
+    static isOldRGB(F: any): F is RGB {
+        return this.isRGB(F);
     }
     /*
 static getBlendedColorfunction(color: RGB | null, percent: number) {

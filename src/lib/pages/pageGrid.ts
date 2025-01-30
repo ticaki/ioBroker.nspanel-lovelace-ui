@@ -1,7 +1,7 @@
-import { PageInterface } from '../classes/Page';
+import type { PageInterface } from '../classes/Page';
 import { getPayload, getPayloadArray } from '../const/tools';
-import * as pages from '../types/pages';
-import { IncomingEvent } from '../types/types';
+import type * as pages from '../types/pages';
+import type { IncomingEvent } from '../types/types';
 import { PageMenu } from './pageMenu';
 
 const PageGridMessageDefault: pages.PageGridMessage = {
@@ -28,8 +28,9 @@ export class PageGrid extends PageMenu {
         this.iconRightP = 'arrow-right-bold-outline';
         this.iconRight = 'arrow-down-bold';
 
-        if (options.items && (options.items.card == 'cardGrid' || options.items.card == 'cardGrid2'))
+        if (options.items && (options.items.card == 'cardGrid' || options.items.card == 'cardGrid2')) {
             this.items = options.items;
+        }
         this.maxItems = this.card === 'cardGrid' ? 6 : 8;
         this.minUpdateInterval = 2000;
     }
@@ -54,11 +55,17 @@ export class PageGrid extends PageMenu {
     }
 
     public async update(): Promise<void> {
-        if (!this.visibility) return;
+        if (!this.visibility) {
+            return;
+        }
         const message: Partial<pages.PageGridMessage> = {};
         message.options = [];
-        if (!this.items || (this.items.card !== 'cardGrid' && this.items.card !== 'cardGrid2')) return;
-        if (!this.config || (this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')) return;
+        if (!this.items || (this.items.card !== 'cardGrid' && this.items.card !== 'cardGrid2')) {
+            return;
+        }
+        if (!this.config || (this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')) {
+            return;
+        }
         const arr = (await this.getOptions([])).slice(0, 8);
         message.options = arr as typeof message.options;
 

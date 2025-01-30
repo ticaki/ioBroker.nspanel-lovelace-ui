@@ -1,21 +1,21 @@
 import { PanelSend } from './panel-message';
 
-import { Screensaver, ScreensaverConfigType } from '../pages/screensaver';
+import { Screensaver, type ScreensaverConfigType } from '../pages/screensaver';
 import * as Types from '../types/types';
 import * as pages from '../types/pages';
-import { Controller } from './controller';
-import { AdapterClassDefinition, BaseClass } from '../classes/library';
-import { callbackMessageType } from '../classes/mqtt';
+import type { Controller } from './controller';
+import { BaseClass, type AdapterClassDefinition } from '../classes/library';
+import type { callbackMessageType } from '../classes/mqtt';
 import { InternalStates, ReiveTopicAppendix, genericStateObjects } from '../const/definition';
-import { Page, PageConfigAll, PageInterface } from '../classes/Page';
+import { Page, type PageConfigAll, type PageInterface } from '../classes/Page';
 import { PageMedia } from '../pages/pageMedia';
-import { IClientPublishOptions } from 'mqtt';
-import { StatesControler } from './states-controller';
+import type { IClientPublishOptions } from 'mqtt';
+import type { StatesControler } from './states-controller';
 import { PageGrid } from '../pages/pageGrid';
-import { Navigation, NavigationConfig } from '../classes/navigation';
+import { Navigation, type NavigationConfig } from '../classes/navigation';
 import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
-import { PageItem } from '../pages/pageItem';
+import type { PageItem } from '../pages/pageItem';
 import { PageEntities } from '../pages/pageEntities';
 import { PageNotify } from '../pages/pageNotification';
 import { systemNavigation, systemPages } from '../templates/system-templates';
@@ -164,9 +164,12 @@ export class Panel extends BaseClass {
         this.format = Object.assign(DefaultOptions.format, options.format);
         this.controller = options.controller;
         this.topic = options.topic;
-        if (typeof this.panelSend.addMessage === 'function') this.sendToPanelClass = this.panelSend.addMessage;
-        if (typeof this.panelSend.addMessageTasmota === 'function')
+        if (typeof this.panelSend.addMessage === 'function') {
+            this.sendToPanelClass = this.panelSend.addMessage;
+        }
+        if (typeof this.panelSend.addMessageTasmota === 'function') {
             this.sendToTasmota = this.panelSend.addMessageTasmota;
+        }
 
         this.statesControler = options.controller.statesControler;
 
@@ -179,7 +182,9 @@ export class Panel extends BaseClass {
         for (let a = 0; a < options.pages.length; a++) {
             let pageConfig = options.pages[a] ? Page.getPage(options.pages[a], this) : options.pages[a];
 
-            if (!pageConfig || !pageConfig.config) continue;
+            if (!pageConfig || !pageConfig.config) {
+                continue;
+            }
             const pmconfig = {
                 card: pageConfig.config.card,
                 panel: this,
@@ -267,7 +272,7 @@ export class Panel extends BaseClass {
         }
         if (scsFound === 0) {
             this.log.error('no screensaver found! Stop!');
-            this.adapter.controller!.delete();
+            void this.adapter.controller!.delete();
             throw new Error('no screensaver found! Stop!');
         }
         const navConfig: NavigationConfig = {
@@ -279,8 +284,8 @@ export class Panel extends BaseClass {
     }
 
     init = async (): Promise<void> => {
-        this.controller.mqttClient.subscript(this.topic + '/tele/#', this.onMessage);
-        this.controller.mqttClient.subscript(this.topic + '/stat/#', this.onMessage);
+        this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
+        this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
         this.isOnline = false;
         this.restartLoops();
     };
@@ -301,14 +306,10 @@ export class Panel extends BaseClass {
 
         genericStateObjects.panel.panels._channel.common.name = this.friendlyName;
         await this.library.writedp(`panels.${this.name}`, undefined, genericStateObjects.panel.panels._channel);
-        await this.library.writedp(
-            `panels.${this.name}.cmd`,
-            undefined === 'ON',
-            genericStateObjects.panel.panels.cmd._channel,
-        );
+        await this.library.writedp(`panels.${this.name}.cmd`, undefined, genericStateObjects.panel.panels.cmd._channel);
         await this.library.writedp(
             `panels.${this.name}.alarm`,
-            undefined === 'ON',
+            undefined,
             genericStateObjects.panel.panels.alarm._channel,
         );
         await this.library.writedp(
@@ -328,15 +329,19 @@ export class Panel extends BaseClass {
         );
 
         let state = this.library.readdb(`panels.${this.name}.cmd.dimStandby`);
-        if (state && state.val) this.dimMode.low = state.val as number;
+        if (state && state.val) {
+            this.dimMode.low = state.val as number;
+        }
         state = this.library.readdb(`panels.${this.name}.cmd.dimActive`);
-        if (state && state.val) this.dimMode.high = state.val as number;
-        this.library.writedp(
+        if (state && state.val) {
+            this.dimMode.high = state.val as number;
+        }
+        await this.library.writedp(
             `panels.${this.name}.cmd.dimStandby`,
             this.dimMode.low,
             genericStateObjects.panel.panels.cmd.dimStandby,
         );
-        this.library.writedp(
+        await this.library.writedp(
             `panels.${this.name}.cmd.dimActive`,
             this.dimMode.high,
             genericStateObjects.panel.panels.cmd.dimActive,
@@ -344,15 +349,19 @@ export class Panel extends BaseClass {
 
         {
             let state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
-            if (state && state.val) this.detach.right = !!state.val;
+            if (state && state.val) {
+                this.detach.right = !!state.val;
+            }
             state = this.library.readdb(`panels.${this.name}.cmd.detachLeft`);
-            if (state && state.val) this.detach.left = !!state.val;
-            this.library.writedp(
+            if (state && state.val) {
+                this.detach.left = !!state.val;
+            }
+            await this.library.writedp(
                 `panels.${this.name}.cmd.detachRight`,
                 this.detach.right,
                 genericStateObjects.panel.panels.cmd.detachRight,
             );
-            this.library.writedp(
+            await this.library.writedp(
                 `panels.${this.name}.cmd.detachLeft`,
                 this.detach.left,
                 genericStateObjects.panel.panels.cmd.detachLeft,
@@ -369,7 +378,7 @@ export class Panel extends BaseClass {
         if (state) {
             this.timeout = parseInt(String(state.val));
         }
-        this.library.writedp(
+        await this.library.writedp(
             `panels.${this.name}.cmd.screensaverTimeout`,
             this.timeout,
             genericStateObjects.panel.panels.cmd.screensaverTimeout,
@@ -385,7 +394,7 @@ export class Panel extends BaseClass {
             genericStateObjects.panel.panels.cmd.mainNavigationPoint.common.states =
                 this.navigation.buildCommonStates();
             const page = this.navigation.getCurrentMainPoint();
-            this.library.writedp(
+            await this.library.writedp(
                 `panels.${this.name}.cmd.mainNavigationPoint`,
                 page,
                 genericStateObjects.panel.panels.cmd.mainNavigationPoint,
@@ -394,19 +403,23 @@ export class Panel extends BaseClass {
         {
             const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
             const scs: Page[] = this.pages.filter(
-                (a) => a && (a.card === 'screensaver' || a.card === 'screensaver2'),
+                a => a && (a.card === 'screensaver' || a.card === 'screensaver2'),
             ) as Page[];
-            const s = scs.filter((a) => currentScreensaver && a.name === currentScreensaver.val);
+            const s = scs.filter(a => currentScreensaver && a.name === currentScreensaver.val);
             if (currentScreensaver && currentScreensaver.val) {
-                if (s && s[0]) this.screenSaver = s[0] as Screensaver;
+                if (s && s[0]) {
+                    this.screenSaver = s[0] as Screensaver;
+                }
             }
 
             const states: Record<string, string> = {};
-            scs.forEach((a) => {
-                if (a) states[a.name] = a.name.slice(1);
+            scs.forEach(a => {
+                if (a) {
+                    states[a.name] = a.name.slice(1);
+                }
             });
             genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;
-            this.library.writedp(
+            await this.library.writedp(
                 `panels.${this.name}.cmd.screenSaver`,
                 this.screenSaver ? this.screenSaver.name : '',
                 genericStateObjects.panel.panels.cmd.screenSaver,
@@ -419,8 +432,8 @@ export class Panel extends BaseClass {
 
         //done with states
 
-        this.sendToTasmota(this.topic + '/cmnd/POWER1', '');
-        this.sendToTasmota(this.topic + '/cmnd/POWER2', '');
+        this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
+        this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
         this.sendRules();
     };
 
@@ -431,8 +444,10 @@ export class Panel extends BaseClass {
     ) => {
         this.sendToPanelClass(payload, opt);
     };
-    async setActivePage(_page?: Page | boolean | undefined, _notSleep?: boolean): Promise<void> {
-        if (_page === undefined) return;
+    async setActivePage(_page?: Page | boolean, _notSleep?: boolean): Promise<void> {
+        if (_page === undefined) {
+            return;
+        }
         let page = this._activePage;
         let sleep = false;
         if (typeof _page === 'boolean') {
@@ -442,29 +457,39 @@ export class Panel extends BaseClass {
             sleep = _notSleep ?? false;
         }
         if (!this._activePage) {
-            if (page === undefined) return;
+            if (page === undefined) {
+                return;
+            }
             page.setLastPage(this._activePage ?? undefined);
             await page.setVisibility(true);
 
             this._activePage = page;
         } else if (sleep !== this._activePage.sleep || page !== this._activePage) {
             if (page != this._activePage) {
-                if (this._activePage) await this._activePage.setVisibility(false);
+                if (this._activePage) {
+                    await this._activePage.setVisibility(false);
+                }
                 if (page) {
                     page.setLastPage(this._activePage ?? undefined);
-                    if (!sleep) await page.setVisibility(true);
+                    if (!sleep) {
+                        await page.setVisibility(true);
+                    }
                     page.sleep = sleep;
                     this._activePage = page;
                 }
             } else if (sleep !== this._activePage.sleep) {
                 page.setLastPage(this._activePage ?? undefined);
-                if (!sleep) await this._activePage.setVisibility(true, true);
+                if (!sleep) {
+                    await this._activePage.setVisibility(true, true);
+                }
                 this._activePage.sleep = sleep;
             }
         }
     }
     getActivePage(): Page {
-        if (!this._activePage) throw new Error(`No active page here, check code!`);
+        if (!this._activePage) {
+            throw new Error(`No active page here, check code!`);
+        }
         return this._activePage;
     }
     get isOnline(): boolean {
@@ -473,7 +498,7 @@ export class Panel extends BaseClass {
     set isOnline(s: boolean) {
         this.info.nspanel.isOnline = s;
         if (s !== this._isOnline) {
-            this.library.writedp(
+            void this.library.writedp(
                 `panels.${this.name}.info.nspanel.isOnline`,
                 s,
                 genericStateObjects.panel.panels.info.nspanel.isOnline,
@@ -498,13 +523,15 @@ export class Panel extends BaseClass {
     }
     onMessage: callbackMessageType = async (topic: string, message: string) => {
         for (const fn of this.reivCallbacks) {
-            if (fn) fn(topic, message);
+            if (fn) {
+                fn(topic, message);
+            }
         }
         if (topic.endsWith(ReiveTopicAppendix)) {
             //this.log.debug(`Receive message ${topic} with ${message}`);
             const event: Types.IncomingEvent | null = this.convertToEvent(message);
             if (event) {
-                this.HandleIncomingMessage(event);
+                await this.HandleIncomingMessage(event);
             }
         } else {
             const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) ||
@@ -513,21 +540,21 @@ export class Panel extends BaseClass {
                 //this.log.debug(`Receive other message ${topic} with ${message}`);
                 switch (command) {
                     case 'stat/POWER2': {
-                        this.library.writedp(
+                        await this.library.writedp(
                             `panels.${this.name}.cmd.power2`,
                             message === 'ON',
                             genericStateObjects.panel.panels.cmd.power2,
                         );
-                        this.statesControler.setInternalState(`${this.name}/cmd/power2`, message === 'ON', true);
+                        await this.statesControler.setInternalState(`${this.name}/cmd/power2`, message === 'ON', true);
                         break;
                     }
                     case 'stat/POWER1': {
-                        this.library.writedp(
+                        await this.library.writedp(
                             `panels.${this.name}.cmd.power1`,
                             message === 'ON',
                             genericStateObjects.panel.panels.cmd.power1,
                         );
-                        this.statesControler.setInternalState(`${this.name}/cmd/power1`, message === 'ON', true);
+                        await this.statesControler.setInternalState(`${this.name}/cmd/power1`, message === 'ON', true);
                         break;
                     }
                     case 'stat/STATUS0': {
@@ -538,12 +565,12 @@ export class Panel extends BaseClass {
                             await this.start();
                             this.InitDone = true;
                         }
-                        this.library.writedp(
+                        await this.library.writedp(
                             `panels.${this.name}.info`,
                             undefined,
                             genericStateObjects.panel.panels.info._channel,
                         );
-                        this.library.writedp(
+                        await this.library.writedp(
                             `panels.${this.name}.info.status`,
                             message,
                             genericStateObjects.panel.panels.info.status,
@@ -553,100 +580,109 @@ export class Panel extends BaseClass {
                         this.info.tasmota.uptime = data.StatusSTS.Uptime;
                         this.info.tasmota.sts = data.StatusSTS;
 
-                        if (!i)
+                        if (!i) {
                             await this.library.writeFromJson(
                                 `panels.${this.name}.info.tasmota`,
                                 'panel.panels.info.tasmota',
                                 genericStateObjects,
                                 this.info.tasmota,
                             );
-                        else await this.writeInfo();
+                        } else {
+                            await this.writeInfo();
+                        }
                     }
                 }
             }
         }
     };
 
-    /**
-     *
-     */
     sendRules(): void {
         this.sendToTasmota(
-            this.topic + '/cmnd/Rule3',
-            'ON CustomSend DO RuleTimer1 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON' +
-                (this.detach.left
+            `${this.topic}/cmnd/Rule3`,
+            `ON CustomSend DO RuleTimer1 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON${
+                this.detach.left
                     ? ` ON Button1#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button1"} ENDON`
-                    : '') +
-                (this.detach.right
+                    : ''
+            }${
+                this.detach.right
                     ? ` ON Button2#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button2"} ENDON`
-                    : ''),
+                    : ''
+            }`,
         );
-        this.sendToTasmota(this.topic + '/cmnd/Rule3', 'ON');
+        this.sendToTasmota(`${this.topic}/cmnd/Rule3`, 'ON');
     }
 
     async onStateChange(id: string, state: Types.nsPanelState): Promise<void> {
-        if (state.ack) return;
+        if (state.ack) {
+            return;
+        }
         if (id.split('.')[1] === this.name) {
             const cmd = id.replace(`panels.${this.name}.cmd.`, '');
             switch (cmd) {
                 case 'power1': {
-                    this.sendToTasmota(this.topic + '/cmnd/POWER1', state.val ? 'ON' : 'OFF');
+                    this.sendToTasmota(`${this.topic}/cmnd/POWER1`, state.val ? 'ON' : 'OFF');
                     break;
                 }
                 case 'power2': {
-                    this.sendToTasmota(this.topic + '/cmnd/POWER2', state.val ? 'ON' : 'OFF');
+                    this.sendToTasmota(`${this.topic}/cmnd/POWER2`, state.val ? 'ON' : 'OFF');
                     break;
                 }
                 case 'mainNavigationPoint': {
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
                     this.navigation.setMainPageByName(state.val ? String(state.val) : 'main');
-                    this.library.writedp(
+                    await this.library.writedp(
                         `panels.${this.name}.cmd.mainNavigationPoint`,
+                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
                         state.val ? String(state.val) : 'main',
                     );
                     break;
                 }
                 case 'goToNavigationPoint': {
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
                     this.navigation.setTargetPageByName(state.val ? String(state.val) : 'main');
                     break;
                 }
                 case 'screensaverTimeout': {
-                    this.statesControler.setInternalState(
+                    await this.statesControler.setInternalState(
                         `${this.name}/cmd/screensaverTimeout`,
+                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
                         parseInt(String(state.val)),
                         false,
                     );
                     break;
                 }
                 case 'dimStandby': {
-                    this.statesControler.setInternalState(
+                    await this.statesControler.setInternalState(
                         `${this.name}/cmd/dimStandby`,
+                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
                         parseInt(String(state.val)),
                         false,
                     );
                     break;
                 }
                 case 'dimActive': {
-                    this.statesControler.setInternalState(
+                    await this.statesControler.setInternalState(
                         `${this.name}/cmd/dimActive`,
+                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
                         parseInt(String(state.val)),
                         false,
                     );
                     break;
                 }
                 case 'detachLeft': {
-                    this.statesControler.setInternalState(`${this.name}/cmd/detachLeft`, !!state.val, false);
+                    await this.statesControler.setInternalState(`${this.name}/cmd/detachLeft`, !!state.val, false);
                     break;
                 }
                 case 'detachRight': {
-                    this.statesControler.setInternalState(`${this.name}/cmd/detachRight`, !!state.val, false);
+                    await this.statesControler.setInternalState(`${this.name}/cmd/detachRight`, !!state.val, false);
                     break;
                 }
                 case 'screenSaver': {
-                    const i = this.pages.findIndex((a) => a && a.name === state.val);
+                    const i = this.pages.findIndex(a => a && a.name === state.val);
                     const s = this.pages[i] as Screensaver;
                     if (s) {
                         this.screenSaver = s;
-                        this.library.writedp(`panels.${this.name}.cmd.screenSaver`, s.name);
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, s.name);
                     }
                 }
             }
@@ -655,6 +691,7 @@ export class Panel extends BaseClass {
 
     /**
      * timeout screensaver after sec
+     *
      * @param sec seconds for timeout
      */
     sendScreeensaverTimeout(sec: number): void {
@@ -663,21 +700,26 @@ export class Panel extends BaseClass {
     }
 
     sendDimmode(): void {
-        this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(1));
+        this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${String(1)}`);
     }
 
     restartLoops(): void {
-        if (this.loopTimeout) this.adapter.clearTimeout(this.loopTimeout);
+        if (this.loopTimeout) {
+            this.adapter.clearTimeout(this.loopTimeout);
+        }
         this.loop();
     }
     /**
      * Do panel work always at full minute
+     *
      * @returns void
      */
     loop = (): void => {
-        if (this.unload) return;
-        this.sendToTasmota(this.topic + '/cmnd/STATUS0', '');
-        this.pages = this.pages.filter((a) => a && !a.unload);
+        if (this.unload) {
+            return;
+        }
+        this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, '');
+        this.pages = this.pages.filter(a => a && !a.unload);
         let t = 300000 + Math.random() * 30000 - 15000;
         if (!this.isOnline) {
             t = 15000;
@@ -693,15 +735,23 @@ export class Panel extends BaseClass {
             false,
             genericStateObjects.panel.panels.info.nspanel.isOnline,
         );
-        for (const a of this.pages) if (a) await a.delete();
+        for (const a of this.pages) {
+            if (a) {
+                await a.delete();
+            }
+        }
         this.isOnline = false;
         this.persistentPageItems = {};
-        if (this.loopTimeout) this.adapter.clearTimeout(this.loopTimeout);
+        if (this.loopTimeout) {
+            this.adapter.clearTimeout(this.loopTimeout);
+        }
     }
 
     getPagebyUniqueID(uniqueID: string): Page | null {
-        if (!uniqueID) return null;
-        const index = this.pages.findIndex((a) => a && a.name && a.name === uniqueID);
+        if (!uniqueID) {
+            return null;
+        }
+        const index = this.pages.findIndex(a => a && a.name && a.name === uniqueID);
         return this.pages[index] ?? null;
     }
 
@@ -715,6 +765,7 @@ export class Panel extends BaseClass {
     }
     /**
      *  Handle incoming messages from panel
+     *
      * @param event incoming event....
      * @returns
      */
@@ -723,12 +774,19 @@ export class Panel extends BaseClass {
             this.isOnline = false;
             return;
         }
-        if (!event.method) return;
-        if (this._activePage && this._activePage.card !== 'cardAlarm')
-            this.log.debug('Receive message:' + JSON.stringify(event));
+        if (!event.method) {
+            return;
+        }
+        if (this._activePage && this._activePage.card !== 'cardAlarm') {
+            this.log.debug(`Receive message:${JSON.stringify(event)}`);
+        }
 
-        if (!this.screenSaver) return;
-        if (this.isOnline === false && event.method !== 'startup') return;
+        if (!this.screenSaver) {
+            return;
+        }
+        if (this.isOnline === false && event.method !== 'startup') {
+            return;
+        }
 
         switch (event.method) {
             case 'startup': {
@@ -739,12 +797,14 @@ export class Panel extends BaseClass {
 
                 await this.writeInfo();
 
-                this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~` + String(1));
+                this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${String(1)}`);
                 this.navigation.resetPosition();
 
-                const i = this.pages.findIndex((a) => a && a.name === '///WelcomePopup');
+                const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
                 const popup = i !== -1 ? this.pages[i] : undefined;
-                if (popup) await this.setActivePage(popup);
+                if (popup) {
+                    await this.setActivePage(popup);
+                }
                 if (this.screenSaver) {
                     await this.screenSaver.HandleDate();
                     await this.screenSaver.HandleTime();
@@ -755,12 +815,12 @@ export class Panel extends BaseClass {
             case 'sleepReached': {
                 await this.setActivePage(this.screenSaver);
                 this.navigation.resetPosition();
-                this.pages.forEach((a) => a && a.reset());
+                this.pages.forEach(a => a && a.reset());
                 break;
             }
             case 'pageOpenDetail': {
                 await this.setActivePage(false);
-                this.getActivePage().onPopupRequest(
+                await this.getActivePage().onPopupRequest(
                     event.id,
                     event.popup as Types.PopupType,
                     event.action,
@@ -780,11 +840,14 @@ export class Panel extends BaseClass {
                         event.action === 'button' &&
                         ['bNext', 'bPrev', 'bUp', 'bHome', 'bSubNext', 'bSubPrev'].indexOf(event.id) != -1
                     ) {
-                        if (['bPrev', 'bUp', 'bSubPrev'].indexOf(event.id) != -1) this.getActivePage().goLeft();
-                        else if (['bNext', 'bHome', 'bSubNext'].indexOf(event.id) != -1) this.getActivePage().goRight();
+                        if (['bPrev', 'bUp', 'bSubPrev'].indexOf(event.id) != -1) {
+                            this.getActivePage().goLeft();
+                        } else if (['bNext', 'bHome', 'bSubNext'].indexOf(event.id) != -1) {
+                            this.getActivePage().goRight();
+                        }
                         break;
                     }
-                    this.getActivePage().onPopupRequest(
+                    await this.getActivePage().onPopupRequest(
                         event.id,
                         event.popup as Types.PopupType,
                         event.action,
@@ -815,36 +878,38 @@ export class Panel extends BaseClass {
     }
 
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
-        if (!id.startsWith(this.name)) return null;
-        const token: Types.PanelInternalCommand = id.replace(this.name + '/', '') as Types.PanelInternalCommand;
+        if (!id.startsWith(this.name)) {
+            return null;
+        }
+        const token: Types.PanelInternalCommand = id.replace(`${this.name}/`, '') as Types.PanelInternalCommand;
         if (state && !state.ack && state.val !== null) {
             switch (token) {
                 case 'cmd/power1': {
-                    this.sendToTasmota(this.topic + '/cmnd/POWER1', state.val ? 'ON' : 'OFF');
+                    this.sendToTasmota(`${this.topic}/cmnd/POWER1`, state.val ? 'ON' : 'OFF');
                     break;
                 }
                 case 'cmd/power2': {
-                    this.sendToTasmota(this.topic + '/cmnd/POWER2', state.val ? 'ON' : 'OFF');
+                    this.sendToTasmota(`${this.topic}/cmnd/POWER2`, state.val ? 'ON' : 'OFF');
                     break;
                 }
                 case `cmd/detachRight`: {
                     this.detach.right = !!state.val;
-                    this.library.writedp(`panels.${this.name}.cmd.detachRight`, this.detach.right);
+                    await this.library.writedp(`panels.${this.name}.cmd.detachRight`, this.detach.right);
                     this.sendRules();
                     break;
                 }
                 case 'cmd/detachLeft': {
                     this.detach.left = !!state.val;
-                    this.library.writedp(`panels.${this.name}.cmd.detachLeft`, this.detach.left);
+                    await this.library.writedp(`panels.${this.name}.cmd.detachLeft`, this.detach.left);
                     this.sendRules();
                     break;
                 }
 
                 case 'cmd/bigIconLeft': {
                     this.info.nspanel.bigIconLeft = !!state.val;
-                    this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
+                    this.screenSaver && (await this.screenSaver.HandleScreensaverStatusIcons());
                     //this.statesControler.setInternalState(`${this.name}/cmd/bigIconLeft`, !!state.val, true);
-                    this.library.writeFromJson(
+                    await this.library.writeFromJson(
                         `panels.${this.name}.info`,
                         'panel.panels.info',
                         genericStateObjects,
@@ -854,9 +919,9 @@ export class Panel extends BaseClass {
                 }
                 case 'cmd/bigIconRight': {
                     this.info.nspanel.bigIconRight = !!state.val;
-                    this.screenSaver && this.screenSaver.HandleScreensaverStatusIcons();
+                    this.screenSaver && (await this.screenSaver.HandleScreensaverStatusIcons());
                     //this.statesControler.setInternalState(`${this.name}/cmd/bigIconRight`, !!state.val, true);
-                    this.library.writeFromJson(
+                    await this.library.writeFromJson(
                         `panels.${this.name}.info`,
                         'panel.panels.info',
                         genericStateObjects,
@@ -866,47 +931,52 @@ export class Panel extends BaseClass {
                 }
                 case 'cmd/screensaverTimeout': {
                     if (typeof state.val !== 'boolean') {
+                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
                         const val = parseInt(String(state.val));
                         this.timeout = val;
                         this.sendScreeensaverTimeout(this.timeout);
-                        this.statesControler.setInternalState(`${this.name}/cmd/screensaverTimeout`, val, true);
-                        this.library.writedp(`panels.${this.name}.cmd.screensaverTimeout`, this.timeout);
+                        await this.statesControler.setInternalState(`${this.name}/cmd/screensaverTimeout`, val, true);
+                        await this.library.writedp(`panels.${this.name}.cmd.screensaverTimeout`, this.timeout);
                     }
                     break;
                 }
                 case 'cmd/dimStandby': {
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
                     const val = parseInt(String(state.val));
                     this.dimMode.low = val;
                     this.sendDimmode();
-                    this.library.writedp(`panels.${this.name}.cmd.dimStandby`, this.dimMode.low);
+                    await this.library.writedp(`panels.${this.name}.cmd.dimStandby`, this.dimMode.low);
                     break;
                 }
                 case 'cmd/dimActive': {
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
                     const val = parseInt(String(state.val));
                     this.dimMode.high = val;
                     this.sendDimmode();
-                    this.library.writedp(`panels.${this.name}.cmd.dimActive`, this.dimMode.high);
+                    await this.library.writedp(`panels.${this.name}.cmd.dimActive`, this.dimMode.high);
                     break;
                 }
                 case 'cmd/NotificationCleared2':
                 case 'cmd/NotificationCleared': {
                     await this.controller.systemNotification.clearNotification(this.notifyIndex);
                 }
+                // eslint-disable-next-line no-fallthrough
                 case 'cmd/NotificationNext2':
                 case 'cmd/NotificationNext': {
                     this.notifyIndex = this.controller.systemNotification.getNotificationIndex(++this.notifyIndex);
 
                     if (this.notifyIndex !== -1) {
                         const val = this.controller.systemNotification.getNotification(this.notifyIndex);
-                        if (val)
+                        if (val) {
                             await this.statesControler.setInternalState(
                                 `${this.name}/cmd/popupNotification${token.endsWith('2') ? '' : '2'}`,
                                 JSON.stringify(val),
                                 false,
                             );
+                        }
                         break;
                     }
-                    this.HandleIncomingMessage({
+                    await this.HandleIncomingMessage({
                         type: 'event',
                         method: 'buttonPress2',
                         id: 'popupNotify',
@@ -916,13 +986,13 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cmd/TasmotaRestart': {
-                    this.sendToTasmota(this.topic + '/cmnd/Restart', '1');
+                    this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
                     this.log.info('Restart Tasmota!');
                     this.isOnline = false;
                     break;
                 }
             }
-            this.statesControler.setInternalState(id, state.val, true);
+            await this.statesControler.setInternalState(id, state.val, true);
         }
         switch (token) {
             case 'cmd/bigIconLeft': {
@@ -950,12 +1020,14 @@ export class Panel extends BaseClass {
             case 'cmd/popupNotification': {
                 if (this.notifyIndex !== -1) {
                     const val = this.controller.systemNotification.getNotification(this.notifyIndex);
-                    if (val) return JSON.stringify(val);
+                    if (val) {
+                        return JSON.stringify(val);
+                    }
                 }
                 return null;
             }
             case 'info/tasmotaVersion': {
-                return this.info.tasmota.firmwareversion + '\r\n' + this.info.tasmota.onlineVersion;
+                return `${this.info.tasmota.firmwareversion}\r\n${this.info.tasmota.onlineVersion}`;
             }
             case 'info/displayVersion': {
                 return this.info.nspanel.displayVersion;
@@ -972,23 +1044,32 @@ export class Panel extends BaseClass {
 
     /**
      * Convert incoming string to event msg object
+     *
      * @param msg
      * @returns
      */
     private convertToEvent(msg: string): Types.IncomingEvent | null {
         try {
             msg = (JSON.parse(msg) || {}).CustomRecv;
-        } catch (e) {
-            this.log.warn('Receive a broken msg from mqtt: ' + msg);
+        } catch {
+            this.log.warn(`Receive a broken msg from mqtt: ${msg}`);
         }
-        if (msg === undefined) return null;
+        if (msg === undefined) {
+            return null;
+        }
         const temp = msg.split(',');
-        if (!Types.isEventType(temp[0])) return null;
-        if (!Types.isEventMethod(temp[1])) return null;
+        if (!Types.isEventType(temp[0])) {
+            return null;
+        }
+        if (!Types.isEventMethod(temp[1])) {
+            return null;
+        }
         let popup: undefined | string = undefined;
-        if (temp[1] === 'pageOpenDetail') popup = temp.splice(2, 1)[0];
+        if (temp[1] === 'pageOpenDetail') {
+            popup = temp.splice(2, 1)[0];
+        }
         const arr = String(temp[2]).split('?');
-        if (arr[3])
+        if (arr[3]) {
             return {
                 type: temp[0],
                 method: temp[1],
@@ -1000,7 +1081,8 @@ export class Panel extends BaseClass {
                 action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
                 opt: temp[4] ?? '',
             };
-        if (arr[2])
+        }
+        if (arr[2]) {
             return {
                 type: temp[0],
                 method: temp[1],
@@ -1011,7 +1093,7 @@ export class Panel extends BaseClass {
                 action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
                 opt: temp[4] ?? '',
             };
-        else if (arr[1])
+        } else if (arr[1]) {
             return {
                 type: temp[0],
                 method: temp[1],
@@ -1021,15 +1103,15 @@ export class Panel extends BaseClass {
                 action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
                 opt: temp[4] ?? '',
             };
-        else
-            return {
-                type: temp[0],
-                method: temp[1],
-                popup: popup,
-                id: arr[0],
-                action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
-                opt: temp[4] ?? '',
-            };
+        }
+        return {
+            type: temp[0],
+            method: temp[1],
+            popup: popup,
+            id: arr[0],
+            action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
+            opt: temp[4] ?? '',
+        };
     }
 
     /*

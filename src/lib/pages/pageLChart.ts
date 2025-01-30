@@ -1,8 +1,8 @@
-import { Page, PageInterface } from '../classes/Page';
+import { Page, type PageInterface } from '../classes/Page';
 import { Color } from '../const/Color';
 import { getEntryTextOnOff, getIconEntryColor, getPayload } from '../const/tools';
-import * as pages from '../types/pages';
-import { IncomingEvent } from '../types/types';
+import type * as pages from '../types/pages';
+import type { IncomingEvent } from '../types/types';
 
 const PageLChartMessageDefault: pages.PageChartMessage = {
     event: 'entityUpd',
@@ -26,7 +26,9 @@ export class PageLChart extends Page {
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
-        if (options.config && options.config.card == 'cardLChart') this.config = options.config;
+        if (options.config && options.config.card == 'cardLChart') {
+            this.config = options.config;
+        }
         this.minUpdateInterval = 1000;
     }
 
@@ -54,12 +56,16 @@ export class PageLChart extends Page {
      * @returns
      */
     public async update(): Promise<void> {
-        if (!this.visibility) return;
+        if (!this.visibility) {
+            return;
+        }
         this.panel.lastCard = '';
         this.sendType();
         const message: Partial<pages.PageChartMessage> = {};
         const items = this.items;
-        if (!items || items.card !== 'cardLChart') return;
+        if (!items || items.card !== 'cardLChart') {
+            return;
+        }
         const data = items.data;
 
         message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? this.name;
@@ -72,9 +78,9 @@ export class PageLChart extends Page {
         if (ticks && Array.isArray(ticks)) {
             message.ticks = ticks;
         } else if (message.value) {
-            const timeValueRegEx = /\~\d+:(\d+)/g;
+            const timeValueRegEx = /~\d+:(\d+)/g;
             const sorted: number[] = [...(message.value.matchAll(timeValueRegEx) || [])]
-                .map((x) => parseFloat(x[1]))
+                .map(x => parseFloat(x[1]))
                 .sort((x, y) => (x < y ? -1 : 1));
             const minValue = sorted[0];
             const maxValue = sorted[sorted.length - 1];
@@ -107,6 +113,7 @@ export class PageLChart extends Page {
     }
     /**
      *a
+     *
      * @param _event
      * @returns
      */

@@ -1,11 +1,10 @@
-import { Dataitem, isDataItem } from '../classes/data-item';
+import { isDataItem, type Dataitem } from '../classes/data-item';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { ColorEntryType } from '../types/type-pageItem';
-import * as pages from '../types/pages';
-import { BooleanUnion, IncomingEvent } from '../types/types';
-import { PageInterface, isMediaButtonActionType } from '../classes/Page';
-import { Page } from '../classes/Page';
+import type { ColorEntryType } from '../types/type-pageItem';
+import type * as pages from '../types/pages';
+import type { BooleanUnion, IncomingEvent } from '../types/types';
+import { Page, isMediaButtonActionType, type PageInterface } from '../classes/Page';
 import { getPayload, getPayloadArray, getScaledNumber, setScaledNumber } from '../const/tools';
 
 const PageMediaMessageDefault: pages.PageMediaMessage = {
@@ -36,7 +35,7 @@ export class PageMedia extends Page {
     private nextArrow: boolean = false;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        if (options && options.pageItems)
+        if (options && options.pageItems) {
             options.pageItems.unshift({
                 type: 'button',
                 dpInit: '',
@@ -51,10 +50,13 @@ export class PageMedia extends Page {
                     entity1: { value: { type: 'const', constVal: true } },
                 },
             });
+        }
         super(config, options);
 
         this.config = options.config;
-        if (this.items && this.items.card === 'cardMedia') this.items = options.items;
+        if (this.items && this.items.card === 'cardMedia') {
+            this.items = options.items;
+        }
         this.minUpdateInterval = 2000;
     }
 
@@ -71,7 +73,9 @@ export class PageMedia extends Page {
             tempConfig,
             this,
         );
-        if (tempItem) tempItem.card = 'cardMedia';
+        if (tempItem) {
+            tempItem.card = 'cardMedia';
+        }
         this.items = tempItem as pages.PageBaseConfig['items'];
         await super.init();
     }
@@ -83,13 +87,19 @@ export class PageMedia extends Page {
         }
     }
     async update(): Promise<void> {
-        if (!this.visibility) return;
+        if (!this.visibility) {
+            return;
+        }
         const item = this.items;
-        if (item === undefined) return;
+        if (item === undefined) {
+            return;
+        }
         const message: Partial<pages.PageMediaMessage> = {};
         // title
         {
-            if (item.card !== 'cardMedia') return;
+            if (item.card !== 'cardMedia') {
+                return;
+            }
             const test: Record<string, string> = {};
             test.bla = 'dd';
             let duration = '0:00',
@@ -133,7 +143,7 @@ export class PageMedia extends Page {
             {
                 const maxSize = 18;
                 if (message.headline.length > maxSize) {
-                    const s = message.headline + '        ';
+                    const s = `${message.headline}        `;
                     this.headlinePos = this.headlinePos % s.length;
                     message.headline = (s + message.headline)
                         .substring(this.headlinePos++ % (message.headline + s).length)
@@ -147,11 +157,11 @@ export class PageMedia extends Page {
                 const v = await item.data.album.getString();
                 if (v !== null) {
                     if (`${v} ${message.name}`.length > maxSize) {
-                        const s = v + '          ';
+                        const s = `${v}          `;
                         this.titelPos = this.titelPos % s.length;
-                        message.name =
-                            v.substring(this.titelPos++ % (`${v} ${message.name}` + s).length).substring(0, 35) +
-                            ` ${message.name}`;
+                        message.name = `${v
+                            .substring(this.titelPos++ % `${v} ${message.name}${s}`.length)
+                            .substring(0, 35)} ${message.name}`;
                     } else {
                         message.name = `${v} ${message.name}`;
                     }
@@ -196,7 +206,7 @@ export class PageMedia extends Page {
             const v = await item.data.mediaState.getString();
             if (v !== null) {
                 message.iconplaypause = !(await this.getMediaState()) ? 'play' : 'pause';
-                if (await item.data.stop) {
+                if (item.data.stop) {
                     message.onoffbuttonColor = v.toUpperCase() !== 'STOP' ? '65535' : '1374';
                 } else {
                     // no stop control so pause is stop
@@ -207,32 +217,39 @@ export class PageMedia extends Page {
 
         if (item.data.title && item.data.title.color) {
             const v = await getValueFromBoolean(item.data.title.color, 'color');
-            if (v !== null) message.titelColor = v;
+            if (v !== null) {
+                message.titelColor = v;
+            }
         }
 
         //Logo
         if (item.data.logo) {
             message.logo = '~~~~~'; //await this.getItemMessageMedia(await this.getToolItem(item.logo, 'logo', 0));
         }
-        {
-        }
+
         const opts: string[] = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
         if (this.pageItems) {
             const localStep = this.pageItems.length > 6 ? 4 : 5;
-            if (this.pageItems.length - 1 <= localStep * (this.step - 1)) this.step = 1;
+            if (this.pageItems.length - 1 <= localStep * (this.step - 1)) {
+                this.step = 1;
+            }
             // arrow is at index [0]
             const maxSteps = localStep * this.step + 1;
             const minStep = localStep * (this.step - 1) + 1;
 
             for (let a = minStep; a < maxSteps; a++) {
                 const temp = this.pageItems[a];
-                if (temp) opts[a - minStep] = await temp.getPageItemPayload();
+                if (temp) {
+                    opts[a - minStep] = await temp.getPageItemPayload();
+                }
             }
 
             if (localStep === 4) {
                 this.nextArrow = true;
                 const temp = this.pageItems[0];
-                if (temp) opts[4] = await temp.getPageItemPayload();
+                if (temp) {
+                    opts[4] = await temp.getPageItemPayload();
+                }
             }
         }
         message.navigation = this.getNavigation();
@@ -244,7 +261,9 @@ export class PageMedia extends Page {
         //this.log.warn(JSON.stringify(this.getMessage(msg)));
     }
     private async getMediaState(): Promise<boolean | null> {
-        if (!this.items || this.items.card !== 'cardMedia') return null;
+        if (!this.items || this.items.card !== 'cardMedia') {
+            return null;
+        }
         const item = this.items.data.mediaState;
         if (item) {
             const v = await item.getString();
@@ -255,7 +274,9 @@ export class PageMedia extends Page {
         return null;
     }
     private async getOnOffState(): Promise<boolean | null> {
-        if (!this.items || this.items.card !== 'cardMedia') return null;
+        if (!this.items || this.items.card !== 'cardMedia') {
+            return null;
+        }
         const item = this.items.data.mediaState;
         if (item) {
             const v = await item.getString();
@@ -294,13 +315,19 @@ export class PageMedia extends Page {
         this.titelPos = 0;
     }
     async onButtonEvent(event: IncomingEvent): Promise<void> {
-        if (!this.getVisibility() || this.sleep) return;
+        if (!this.getVisibility() || this.sleep) {
+            return;
+        }
         //if (event.mode !== 'media') return;
         if (isMediaButtonActionType(event.action)) {
-            this.log.debug('Receive event: ' + JSON.stringify(event));
-        } else return;
+            this.log.debug(`Receive event: ${JSON.stringify(event)}`);
+        } else {
+            return;
+        }
         const items = this.items;
-        if (!items || items.card !== 'cardMedia') return;
+        if (!items || items.card !== 'cardMedia') {
+            return;
+        }
         switch (event.action) {
             case 'media-back': {
                 items.data.backward && (await items.data.backward.setStateTrue());
@@ -308,9 +335,13 @@ export class PageMedia extends Page {
             }
             case 'media-pause': {
                 if (items.data.pause && items.data.play) {
-                    if (await this.getMediaState()) await items.data.pause.setStateTrue();
-                    else await items.data.play.setStateTrue();
+                    if (await this.getMediaState()) {
+                        await items.data.pause.setStateTrue();
+                    } else {
+                        await items.data.play.setStateTrue();
+                    }
                 } else if (items.data.mediaState) {
+                    // nothing
                 }
                 break;
             }
@@ -362,7 +393,9 @@ export class PageMedia extends Page {
             }
             case 'media-OnOff': {
                 if (items.data.stop) {
-                    if (await this.getOnOffState()) await items.data.stop.setStateTrue();
+                    if (await this.getOnOffState()) {
+                        await items.data.stop.setStateTrue();
+                    }
                 }
                 break;
             }
@@ -397,9 +430,8 @@ export async function getValueFromBoolean(
             const colorOff = !value && item.false && (await getValueFromData(item.false, type));
             if (colorOff) {
                 return colorOff;
-            } else {
-                return colorOn || null;
             }
+            return colorOn || null;
         }
     }
     return null;

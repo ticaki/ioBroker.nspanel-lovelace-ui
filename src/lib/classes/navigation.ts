@@ -1,8 +1,8 @@
-import { Panel } from '../controller/panel';
-import { AdapterClassDefinition, BaseClass } from './library';
+import type { Panel } from '../controller/panel';
+import { BaseClass, type AdapterClassDefinition } from './library';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { Page } from './Page';
+import type { Page } from './Page';
 import { getPayload } from '../const/tools';
 import { genericStateObjects } from '../const/definition';
 type optionalActionsType = 'notifications';
@@ -54,11 +54,13 @@ export class Navigation extends BaseClass {
         if (c) {
             const states = this.buildCommonStates();
             genericStateObjects.panel.panels.cmd.goToNavigationPoint.common.states = states;
-            this.library.writedp(
-                `panels.${this.panel.name}.cmd.goToNavigationPoint`,
-                c.name,
-                genericStateObjects.panel.panels.cmd.goToNavigationPoint,
-            );
+            void this.library
+                .writedp(
+                    `panels.${this.panel.name}.cmd.goToNavigationPoint`,
+                    c.name,
+                    genericStateObjects.panel.panels.cmd.goToNavigationPoint,
+                )
+                .catch();
         }
         this._currentItem = value;
     }
@@ -71,15 +73,23 @@ export class Navigation extends BaseClass {
     init(): void {
         this.database = [];
         let b = 1;
-        let serviceLeft: string = '';
-        let serviceRight: string = '';
-        let serviceID: number = -1;
+        let serviceLeft = '';
+        let serviceRight = '';
+        let serviceID = -1;
         for (let a = 0; a < this.navigationConfig.length; a++) {
             const c = this.navigationConfig[a];
-            if (!c) continue;
-            if (c.left && c.left.single === '///service') serviceRight = c.name;
-            if (c.right && c.right.single === '///service') serviceLeft = c.name;
-            if (c.name === '///service') serviceID = a;
+            if (!c) {
+                continue;
+            }
+            if (c.left && c.left.single === '///service') {
+                serviceRight = c.name;
+            }
+            if (c.right && c.right.single === '///service') {
+                serviceLeft = c.name;
+            }
+            if (c.name === '///service') {
+                serviceID = a;
+            }
             const pageID = this.panel.getPagebyUniqueID(c.page);
             this.database[c.name === 'main' ? 0 : b++] =
                 pageID !== null ? { page: pageID, left: {}, right: {}, index: a } : null;
@@ -87,23 +97,33 @@ export class Navigation extends BaseClass {
         if (serviceID !== -1) {
             const c = this.navigationConfig[serviceID];
             if (c) {
-                if (serviceLeft) c.left = { single: serviceLeft };
-                if (serviceRight) c.right = { single: serviceRight };
+                if (serviceLeft) {
+                    c.left = { single: serviceLeft };
+                }
+                if (serviceRight) {
+                    c.right = { single: serviceRight };
+                }
             }
         }
         for (let a = 0; a < this.database.length; a++) {
             const c = this.navigationConfig[a];
             const i = this.database[a];
-            if (!c || !i) continue;
+            if (!c || !i) {
+                continue;
+            }
             for (const k of ['left', 'right']) {
                 const nk = k as 'left' | 'right';
                 const r = c[nk];
-                if (!r) continue;
+                if (!r) {
+                    continue;
+                }
                 for (const k2 of ['single', 'double']) {
                     const nk2 = k2 as 'single' | 'double';
                     const r2 = r[nk2];
-                    if (!r2) continue;
-                    const index = this.navigationConfig.findIndex((a) => a && a.name === r2);
+                    if (!r2) {
+                        continue;
+                    }
+                    const index = this.navigationConfig.findIndex(a => a && a.name === r2);
                     if (index !== -1) {
                         i[nk][nk2] = index;
                     } else {
@@ -125,15 +145,15 @@ export class Navigation extends BaseClass {
     }
 
     setTargetPageByName(n: string): void {
-        const index = this.navigationConfig.findIndex((a) => a && a.name === n);
+        const index = this.navigationConfig.findIndex(a => a && a.name === n);
         if (index !== -1) {
-            this.setPageByIndex(index);
+            void this.setPageByIndex(index);
         } else {
             this.log.warn(`Dont find navigation target for ${n}`);
         }
     }
     setMainPageByName(n: string): void {
-        const index = this.navigationConfig.findIndex((a) => a && a.name === n);
+        const index = this.navigationConfig.findIndex(a => a && a.name === n);
         if (index !== -1 && this.database[index]) {
             this.mainPage = this.navigationConfig[index]!.name;
         } else {
@@ -144,7 +164,9 @@ export class Navigation extends BaseClass {
     buildCommonStates(): Record<string, string> {
         const result: Record<string, string> = {};
         for (const n of this.navigationConfig) {
-            if (n) result[n.name] = n.name;
+            if (n) {
+                result[n.name] = n.name;
+            }
         }
         return result;
     }
@@ -162,7 +184,7 @@ export class Navigation extends BaseClass {
             this.doubleClickTimeout = undefined;
             if (i && i[d] && i[d].double) {
                 const index = i[d].double;
-                this.setPageByIndex(index);
+                void this.setPageByIndex(index);
             }
             this.log.debug('Navigation double click work.');
             // erster Klick und check obs ein Ziel für den 2. Klick gibt.
@@ -182,12 +204,12 @@ export class Navigation extends BaseClass {
             this.doubleClickTimeout = undefined;
             if (i && i[d] && i[d].single !== undefined) {
                 const index = i[d].single;
-                this.setPageByIndex(index);
+                void this.setPageByIndex(index);
                 this.log.debug(`Navigation single click with target ${i[d].single} work.`);
                 return;
             } else if (i && i[d] && i[d].double !== undefined) {
                 const index = i[d].double;
-                this.setPageByIndex(index);
+                void this.setPageByIndex(index);
                 this.log.debug(`Navigation single click (use double target) with target ${i[d].double} work.`);
                 return;
             }
@@ -196,9 +218,13 @@ export class Navigation extends BaseClass {
     }
 
     async optionalActions(item: NavigationItem): Promise<void> {
-        if (!item) return;
+        if (!item) {
+            return;
+        }
         const nItem = this.navigationConfig[item.index];
-        if (!nItem) return;
+        if (!nItem) {
+            return;
+        }
         if (nItem.optional === 'notifications') {
             if (this.panel.controller.systemNotification.getNotificationIndex(this.panel.notifyIndex) !== -1) {
                 await this.panel.statesControler.setInternalState(
@@ -212,7 +238,9 @@ export class Navigation extends BaseClass {
 
     buildNavigationString(side?: 'left' | 'right'): string {
         const item = this.database[this.currentItem];
-        if (!item) return '';
+        if (!item) {
+            return '';
+        }
         let navigationString = '';
         if (!side || side === 'left') {
             if (
@@ -272,30 +300,32 @@ export class Navigation extends BaseClass {
                 navigationString2 = getPayload('', '', '', '', '', '');
             }
         }
-        if (side === 'left') return navigationString;
-        else if (side === 'right') return navigationString2;
+        if (side === 'left') {
+            return navigationString;
+        } else if (side === 'right') {
+            return navigationString2;
+        }
         return getPayload(navigationString, navigationString2);
     }
 
-    /**
-     *
-     */
     resetPosition(): void {
-        const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
+        const index = this.navigationConfig.findIndex(a => a && a.name === this.mainPage);
         if (index !== -1 && this.database[index]) {
             this.currentItem = index;
         }
     }
     getCurrentMainPoint(): string {
-        const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
-        if (index === -1) return 'main';
+        const index = this.navigationConfig.findIndex(a => a && a.name === this.mainPage);
+        if (index === -1) {
+            return 'main';
+        }
         const item = this.navigationConfig[index];
         return item ? item.name : 'main';
     }
     getCurrentPage(): Page {
         const page = this.database[this.currentItem];
         if (page === null || page === undefined) {
-            const index = this.database.findIndex((a) => a && a.page !== null);
+            const index = this.database.findIndex(a => a && a.page !== null);
             return this.database[index]!.page;
         }
         return page.page;
@@ -304,13 +334,17 @@ export class Navigation extends BaseClass {
     async setCurrentPage(): Promise<void> {
         let page = this.database[this.currentItem];
         if (page === null || page === undefined) {
-            const index = this.database.findIndex((a) => a && a.page !== null);
+            const index = this.database.findIndex(a => a && a.page !== null);
             page = this.database[index];
         }
-        if (page) await this.setPageByIndex(page.index);
+        if (page) {
+            await this.setPageByIndex(page.index);
+        }
     }
     async delete(): Promise<void> {
         await super.delete();
-        if (this.doubleClickTimeout) this.adapter.clearTimeout(this.doubleClickTimeout);
+        if (this.doubleClickTimeout) {
+            this.adapter.clearTimeout(this.doubleClickTimeout);
+        }
     }
 }

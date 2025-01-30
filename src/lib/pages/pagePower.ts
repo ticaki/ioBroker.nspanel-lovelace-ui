@@ -1,4 +1,4 @@
-import { Page, PageInterface } from '../classes/Page';
+import { Page, type PageInterface } from '../classes/Page';
 import { Color } from '../const/Color';
 import {
     deepAssign,
@@ -10,8 +10,8 @@ import {
     getValueEntryNumber,
     getValueEntryString,
 } from '../const/tools';
-import * as pages from '../types/pages';
-import { IncomingEvent, nsPanelState } from '../types/types';
+import type * as pages from '../types/pages';
+import type { IncomingEvent, nsPanelState } from '../types/types';
 
 const PagePowerMessageDefault: pages.PagePowerMessage = {
     event: 'entityUpd',
@@ -73,7 +73,9 @@ export class PagePower extends Page {
     items: pages.PageBaseConfig['items'];
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
-        if (options.config && options.config.card == 'cardPower') this.config = options.config;
+        if (options.config && options.config.card == 'cardPower') {
+            this.config = options.config;
+        }
         this.minUpdateInterval = 2000;
     }
 
@@ -104,11 +106,15 @@ export class PagePower extends Page {
     }
 
     onInternalCommand = async (id: string, _state: nsPanelState | undefined): Promise<ioBroker.StateValue> => {
-        if (!id.startsWith('///' + this.name)) return null;
+        if (!id.startsWith(`///${this.name}`)) {
+            return null;
+        }
         const token = id.split('/').pop();
         if (token === 'powerSum') {
             const items = this.items;
-            if (!items || items.card !== 'cardPower') return null;
+            if (!items || items.card !== 'cardPower') {
+                return null;
+            }
             const data = items.data;
             const l1 = await this.getElementSum(data.leftTop, 0);
             const l2 = await this.getElementSum(data.leftMiddle, 0);
@@ -119,17 +125,23 @@ export class PagePower extends Page {
             let sum = l1 + l2 + l3 + r1 + r2 + r3;
             if (items.data.homeValueBot && items.data.homeValueBot.math) {
                 const f = await items.data.homeValueBot.math.getString();
-                if (f) sum = new Function('l1', 'l2', 'l3', 'r1', 'r2', 'r3', 'Math', f)(l1, l2, l3, r1, r2, r3, Math);
+                if (f) {
+                    sum = new Function('l1', 'l2', 'l3', 'r1', 'r2', 'r3', 'Math', f)(l1, l2, l3, r1, r2, r3, Math);
+                }
             }
             return String(sum);
         }
         return null;
     };
     public async update(): Promise<void> {
-        if (!this.visibility) return;
+        if (!this.visibility) {
+            return;
+        }
         const message: Partial<pages.PagePowerMessage> = {};
         const items = this.items;
-        if (!items || items.card !== 'cardPower') return;
+        if (!items || items.card !== 'cardPower') {
+            return;
+        }
         const data = items.data;
         message.headline = this.library.getTranslation(
             (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
@@ -153,7 +165,9 @@ export class PagePower extends Page {
     }
 
     private async getElementSum(item: pages.cardPowerDataItems['data']['leftBottom'], num: number): Promise<number> {
-        if (item === undefined) return num;
+        if (item === undefined) {
+            return num;
+        }
         const value = await getValueEntryNumber(item.value);
         return value !== null ? value + num : num;
     }
@@ -161,12 +175,16 @@ export class PagePower extends Page {
     private async getElementUpdate(
         item: pages.cardPowerDataItems['data']['leftBottom'],
     ): Promise<undefined | Partial<pages.PagePowerMessageItem>> {
-        if (item === undefined) return undefined;
+        if (item === undefined) {
+            return undefined;
+        }
 
         const message: Partial<pages.PagePowerMessageItem> = {};
 
         const value = await getValueEntryNumber(item.value);
-        if (value === null) return undefined;
+        if (value === null) {
+            return undefined;
+        }
 
         message.icon = (await getIconEntryValue(item.icon, value >= 0, '')) ?? undefined;
         message.iconColor = (await getIconEntryColor(item.icon, value, Color.White)) ?? undefined;
@@ -207,7 +225,9 @@ export class PagePower extends Page {
     }
 
     private getMessageItem(i: pages.PagePowerMessageItem | undefined): string {
-        if (!i) return getPayload('', '', '', '', '', '', '');
+        if (!i) {
+            return getPayload('', '', '', '', '', '', '');
+        }
         return getPayload('', '', i.icon ?? '', i.iconColor ?? '', i.name ?? '', i.value ?? '', String(i.speed ?? ''));
     }
     protected async onStateTrigger(): Promise<void> {

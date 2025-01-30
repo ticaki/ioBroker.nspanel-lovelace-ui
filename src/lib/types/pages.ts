@@ -1,7 +1,7 @@
-import * as dataItem from '../classes/data-item';
-import { RGB } from '../const/Color';
-import * as typePageItem from './type-pageItem';
-import * as Types from './types';
+import type * as dataItem from '../classes/data-item';
+import type { RGB } from '../const/Color';
+import type * as typePageItem from './type-pageItem';
+import type * as Types from './types';
 
 export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates';
 export type PageTypeCards =
@@ -25,7 +25,7 @@ export type PageTypeCards =
 
 export const arrayOfAll =
     <T>() =>
-    <U extends T[]>(array: U & ([T] extends [U[number]] ? unknown : 'Invalid') & { 0: T }) =>
+    <U extends T[]>(array: U & ([T] extends [U[number]] ? unknown : 'Invalid') & { 0: T }): U =>
         array;
 
 const arrayOfAllStateRole = arrayOfAll<StateRole>();
@@ -112,14 +112,12 @@ export type StateRole =
     | 'media.elapsed'
     | 'media.mute'
     | 'level.volume'
-    | 'media.album'
     | 'media.playlist'
     | 'button.open.blind'
     | 'button.open'
     | 'button.close.blind'
     | 'button.close'
     | 'button.stop.blind'
-    | 'button.stop'
     | 'button.open.tilt'
     | 'button.stop.tilt'
     | 'button.close.tilt'
@@ -147,21 +145,6 @@ export type StateRole =
     | 'date.sunset.forecast.0'
     | 'date.sunrise.forecast.1'
     | 'date.sunset.forecast.1'
-    | ''
-    | ''
-    | ''
-    | ''
-    | ''
-    | ''
-    | ''
-    | ''
-    | ''
-    | ''
-    | ''
-    | ''
-    | ''
-    | ''
-    | ''
     | '';
 
 export type DeviceRole =
@@ -174,7 +157,6 @@ export type DeviceRole =
     | 'cie'
     | 'rgbThree'
     | 'rgbSingle'
-    | 'ct'
     | 'blind'
     | 'door'
     | 'window'
@@ -188,7 +170,6 @@ export type DeviceRole =
     | 'spotify-playlist'
     | 'timer'
     | 'rgb.hex'
-    | 'text.list'
     | 'indicator'
     | '2values'
     | 'combined'
@@ -199,7 +180,7 @@ export type DeviceRole =
     | 'battery'
     | '4values'; // timer with internal counter
 
-export function isStateRole(F: string | StateRole): F is StateRole {
+export function isStateRole(F: string): F is StateRole {
     switch (F as StateRole) {
         case 'button.play':
         case 'button.pause':
@@ -226,7 +207,7 @@ export function isStateRole(F: string | StateRole): F is StateRole {
             return true;
     }
 }
-export function isButtonActionType(F: string | Types.ButtonActionType): F is Types.ButtonActionType {
+export function isButtonActionType(F: string): F is Types.ButtonActionType {
     switch (F) {
         case 'bExit':
         case 'bUp':
@@ -285,7 +266,7 @@ export function isButtonActionType(F: string | Types.ButtonActionType): F is Typ
         case 'eu':
             return true;
         default:
-            console.info(F + ' is not isButtonActionType!');
+            console.info(`${F} is not isButtonActionType!`);
             return false;
     }
 }
@@ -733,7 +714,9 @@ type PageThermoBaseConfig = {
     color?: string;
 };
 export function isColorEntryType(F: object | typePageItem.ColorEntryType): F is typePageItem.ColorEntryType {
-    if ('true' in F && 'false' in F && 'scale' in F) return true;
+    if ('true' in F && 'false' in F && 'scale' in F) {
+        return true;
+    }
     return false;
 }
 export type PageMediaBaseConfigWrite = {
@@ -930,14 +913,22 @@ export type placeholderType = Record<
 >;
 
 export function isPlaceholderType(F: any): F is placeholderType {
-    if (!F || typeof F !== 'object') return false;
+    if (!F || typeof F !== 'object') {
+        return false;
+    }
     for (const a in F) {
         let count = 0;
-        if (!F[a]) return false;
-        for (const b in F[a]) {
-            if (['text', 'dp'].indexOf(b) !== -1 && F[a][b] !== undefined) count++;
+        if (!F[a]) {
+            return false;
         }
-        if (count !== 1) return false;
+        for (const b in F[a]) {
+            if (['text', 'dp'].indexOf(b) !== -1 && F[a][b] !== undefined) {
+                count++;
+            }
+        }
+        if (count !== 1) {
+            return false;
+        }
     }
     return true;
 }

@@ -1,4 +1,4 @@
-import { Page, PageInterface } from '../classes/Page';
+import { Page, type PageInterface } from '../classes/Page';
 import { Color } from '../const/Color';
 import {
     getIconEntryColor,
@@ -9,8 +9,8 @@ import {
     setTriggeredToState,
 } from '../const/tools';
 import * as pages from '../types/pages';
-import { IncomingEvent } from '../types/types';
-import { PageItem } from './pageItem';
+import type { IncomingEvent } from '../types/types';
+import type { PageItem } from './pageItem';
 
 export class PageNotify extends Page {
     config: pages.PageBaseConfig['config'];
@@ -24,8 +24,9 @@ export class PageNotify extends Page {
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
         this.config = options.config;
-        if (options.items && (options.items.card == 'popupNotify' || options.items.card == 'popupNotify2'))
+        if (options.items && (options.items.card == 'popupNotify' || options.items.card == 'popupNotify2')) {
             this.items = options.items;
+        }
         this.minUpdateInterval = 1000;
         this.neverDeactivateTrigger = true;
     }
@@ -53,13 +54,16 @@ export class PageNotify extends Page {
 
     setLastPage(p: Page | undefined): void {
         if (p !== this) {
-            if (p !== undefined) this.lastpage.push(p);
-            else this.lastpage = [];
+            if (p !== undefined) {
+                this.lastpage.push(p);
+            } else {
+                this.lastpage = [];
+            }
         }
     }
     removeLastPage(_p: Page | undefined): void {
-        this.lastpage = this.lastpage.filter((a) => a !== _p);
-        this.lastpage.forEach((a) => a.removeLastPage(_p));
+        this.lastpage = this.lastpage.filter(a => a !== _p);
+        this.lastpage.forEach(a => a.removeLastPage(_p));
     }
 
     /**
@@ -69,13 +73,17 @@ export class PageNotify extends Page {
     public async update(): Promise<void> {
         const message: Partial<pages.PageNotifyMessage> = {};
         const items = this.items;
-        if (!items) return;
+        if (!items) {
+            return;
+        }
         this.log.debug('update notification page!');
         let value: number | boolean | null = null;
         if (items.card === 'popupNotify' || items.card === 'popupNotify2') {
             const data = items.data;
             value = await getValueEntryNumber(data.entity1);
-            if (value === null) value = (await getValueEntryBoolean(data.entity1)) ?? true;
+            if (value === null) {
+                value = (await getValueEntryBoolean(data.entity1)) ?? true;
+            }
 
             message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? '';
             message.hColor = await getIconEntryColor(data.colorHeadline, value, Color.White);
@@ -95,18 +103,19 @@ export class PageNotify extends Page {
                 for (const key in placeholder) {
                     const target = placeholder[key];
                     let val = (target.dp && (await this.panel.statesControler.getStateVal(target.dp))) ?? '';
-                    if (val === '') val = target.text ?? '';
+                    if (val === '') {
+                        val = target.text ?? '';
+                    }
                     message.headline = message.headline.replaceAll(
-                        '${' + key + '}',
+                        `\${${key}}`,
                         this.library.getTranslation(val as string),
                     );
-                    message.text = message.text.replaceAll(
-                        '${' + key + '}',
-                        this.library.getTranslation(val as string),
-                    );
+                    message.text = message.text.replaceAll(`\${${key}}`, this.library.getTranslation(val as string));
                 }
             }
-            if (message.text) message.text = message.text.replaceAll('\n', '\r\n').replaceAll('/r/n', '\r\n');
+            if (message.text) {
+                message.text = message.text.replaceAll('\n', '\r\n').replaceAll('/r/n', '\r\n');
+            }
             const maxLineCount = 8;
             let lines = 0;
             if (message.text && (lines = message.text.split('\r\n').length) > maxLineCount) {
@@ -116,7 +125,7 @@ export class PageNotify extends Page {
                 this.step = this.step % (lines + 1);
 
                 const currentPos = this.step;
-                const text = message.text + '\r\n' + '\r\n' + message.text;
+                const text = `${message.text}\r\n` + `\r\n${message.text}`;
                 message.text = '';
                 while (test++ < 100) {
                     const pos2 = text.indexOf('\r\n', pos) + 2;
@@ -128,10 +137,14 @@ export class PageNotify extends Page {
                         message.text = message.text + text.slice(pos, pos2);
                     }
                     counter++;
-                    if (counter >= currentPos + maxLineCount) break;
+                    if (counter >= currentPos + maxLineCount) {
+                        break;
+                    }
                     pos = pos2;
                 }
-                if (!this.rotationTimeout) this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3000);
+                if (!this.rotationTimeout) {
+                    this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3000);
+                }
             }
 
             message.timeout = (data.timeout && (await data.timeout.getNumber())) ?? 0;
@@ -184,6 +197,7 @@ export class PageNotify extends Page {
 
     /**
      * Rotate text in view
+     *
      * @returns
      */
     private rotation = async (): Promise<void> => {
@@ -193,19 +207,23 @@ export class PageNotify extends Page {
         }
         this.step++;
         await this.update();
-        this.rotationTimeout = this.adapter.setTimeout(await this.rotation, 1500);
+        this.rotationTimeout = this.adapter.setTimeout(this.rotation, 1500);
     };
     async delete(): Promise<void> {
-        if (this.rotationTimeout) this.adapter.clearTimeout(this.rotationTimeout);
+        if (this.rotationTimeout) {
+            this.adapter.clearTimeout(this.rotationTimeout);
+        }
         this.rotationTimeout = undefined;
         await super.delete();
     }
     protected async onStateTrigger(_dp: string): Promise<void> {
         this.step = 0;
-        if (this.rotationTimeout) this.adapter.clearTimeout(this.rotationTimeout);
+        if (this.rotationTimeout) {
+            this.adapter.clearTimeout(this.rotationTimeout);
+        }
         this.rotationTimeout = undefined;
-        this.log.debug('state triggerd ' + _dp);
-        /*if (_dp.includes('popupNotification'))*/ this.panel.setActivePage(this);
+        this.log.debug(`state triggerd ${_dp}`);
+        /*if (_dp.includes('popupNotification'))*/ await this.panel.setActivePage(this);
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         const data = this.items && this.items.card === 'popupNotify' && this.items.data;
@@ -213,9 +231,14 @@ export class PageNotify extends Page {
         if (data) {
             if (_event.action === 'notifyAction') {
                 if (data.setValue2) {
-                    if (_event.opt === 'yes') data.setValue1 && data.setValue1.setStateTrue();
-                    else data.setValue2 && data.setValue2.setStateTrue();
-                } else data.setValue1 && data.setValue1.setStateAsync(_event.opt === 'yes');
+                    if (_event.opt === 'yes') {
+                        data.setValue1 && (await data.setValue1.setStateTrue());
+                    } else {
+                        data.setValue2 && (await data.setValue2.setStateTrue());
+                    }
+                } else {
+                    data.setValue1 && (await data.setValue1.setStateAsync(_event.opt === 'yes'));
+                }
 
                 const cb = (data.closingBehaviour && (await data.closingBehaviour.getString())) ?? '';
                 if (pages.isClosingBehavior(cb)) {
@@ -235,16 +258,17 @@ export class PageNotify extends Page {
             }
         }
         if (close) {
-            if (this.name.includes('///popupNotification'))
-                this.lastpage = this.lastpage.filter((a) => !a.name.includes('///popupNotification'));
+            if (this.name.includes('///popupNotification')) {
+                this.lastpage = this.lastpage.filter(a => !a.name.includes('///popupNotification'));
+            }
             const p = this.lastpage.pop();
             if (p) {
                 p.removeLastPage(this);
-                this.log.debug('Set active page from popup to ' + p.name);
+                this.log.debug(`Set active page from popup to ${p.name}`);
                 await this.panel.setActivePage(p);
             } else {
                 const page = this.panel.navigation.getCurrentPage();
-                this.log.debug('Set active page from currentpage to ' + page.name);
+                this.log.debug(`Set active page from currentpage to ${page.name}`);
                 await this.panel.setActivePage(page);
             }
         }

@@ -1,16 +1,18 @@
-import { Page } from '../classes/Page';
-import { AdapterClassDefinition } from '../classes/library';
+import type { Page } from '../classes/Page';
+import type { AdapterClassDefinition } from '../classes/library';
 import { Color } from '../const/Color';
-import { CardRole } from '../types/pages';
-import { PageItemDataItemsOptions } from '../types/type-pageItem';
-import { PageEntities } from './pageEntities';
+import type { CardRole } from '../types/pages';
+import type { PageItemDataItemsOptions } from '../types/type-pageItem';
+import type { PageEntities } from './pageEntities';
 
 export async function handleCardRole(
     adapter: AdapterClassDefinition,
     cardRole: CardRole | undefined,
     page?: Page | PageEntities,
 ): Promise<PageItemDataItemsOptions[] | null> {
-    if (!cardRole) return null;
+    if (!cardRole) {
+        return null;
+    }
     switch (cardRole) {
         /**
          * only for enabled adapters
@@ -21,23 +23,31 @@ export async function handleCardRole(
                 startkey: `system.adapter`,
                 endkey: `system.adapter}`,
             });
-            if (!list) return null;
+            if (!list) {
+                return null;
+            }
             const result = [];
             for (const item of list.rows) {
                 const obj = item.value;
-                if (!obj.common.enabled || obj.common.mode !== 'daemon') continue;
+                if (!obj.common.enabled || obj.common.mode !== 'daemon') {
+                    continue;
+                }
                 let n = obj.common.titleLang && obj.common.titleLang[adapter.library.getLocalLanguage()];
-                n = n ? n : obj.common.titleLang && obj.common.titleLang['en'];
+                n = n ? n : obj.common.titleLang && obj.common.titleLang.en;
                 n = n ? n : obj.common.name;
                 // ignore this
-                if (item.id.split('.').slice(2).join('.') === adapter.namespace) continue;
+                if (item.id.split('.').slice(2).join('.') === adapter.namespace) {
+                    continue;
+                }
 
                 const stateID =
                     cardRole === 'AdapterConnection'
                         ? `${item.id.split('.').slice(2).join('.')}.info.connection`
                         : `${item.id}.alive`;
                 const stateObj = await adapter.getForeignObjectAsync(stateID);
-                if (!stateObj || !stateObj.common || stateObj.common.type !== 'boolean') continue;
+                if (!stateObj || !stateObj.common || stateObj.common.type !== 'boolean') {
+                    continue;
+                }
 
                 const pi: PageItemDataItemsOptions = {
                     role: '',
@@ -88,9 +98,12 @@ export async function handleCardRole(
                 !('items' in page) ||
                 !page.items ||
                 page.items.card !== 'cardEntities'
-            )
+            ) {
                 return null;
-            if (!page.items.data.list) return null;
+            }
+            if (!page.items.data.list) {
+                return null;
+            }
             const value = (await page.items.data.list.getObject()) as any;
             if (value && page.items.data.list.options.type !== 'const') {
                 const dp = page.items.data.list.options.dp;

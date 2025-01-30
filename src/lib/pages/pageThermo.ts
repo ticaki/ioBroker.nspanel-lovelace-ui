@@ -1,8 +1,8 @@
-import { Page, PageInterface } from '../classes/Page';
+import { Page, type PageInterface } from '../classes/Page';
 import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadArray, getValueEntryString } from '../const/tools';
-import * as pages from '../types/pages';
-import { ButtonActionType, IncomingEvent, PopupType } from '../types/types';
+import type * as pages from '../types/pages';
+import type { ButtonActionType, IncomingEvent, PopupType } from '../types/types';
 
 const PageThermoMessageDefault: pages.PageThermoMessage = {
     event: 'entityUpd',
@@ -33,7 +33,9 @@ export class PageThermo extends Page {
     private nextArrow: boolean = false;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        if (config.card !== 'cardThermo') return;
+        if (config.card !== 'cardThermo') {
+            return;
+        }
         if (options && options.pageItems) {
             options.pageItems.unshift({
                 type: 'button',
@@ -52,9 +54,14 @@ export class PageThermo extends Page {
             });
         }
         super(config, options);
-        if (options.config && options.config.card == 'cardThermo') this.config = options.config;
-        else throw new Error('Missing config!');
-        if (options.items && options.items.card == 'cardThermo') this.items = options.items;
+        if (options.config && options.config.card == 'cardThermo') {
+            this.config = options.config;
+        } else {
+            throw new Error('Missing config!');
+        }
+        if (options.items && options.items.card == 'cardThermo') {
+            this.items = options.items;
+        }
         this.minUpdateInterval = 2000;
     }
 
@@ -71,21 +78,27 @@ export class PageThermo extends Page {
             tempConfig,
             this,
         );
-        if (tempItem) tempItem.card = 'cardThermo';
+        if (tempItem) {
+            tempItem.card = 'cardThermo';
+        }
         this.items = tempItem as pages.cardThermoDataItems;
         await super.init();
     }
 
     public async update(): Promise<void> {
-        if (!this.visibility) return;
+        if (!this.visibility) {
+            return;
+        }
         const message: Partial<pages.PageThermoMessage> = {};
         message.options = ['~~~', '~~~', '~~~', '~~~', '~~~', '~~~', '~~~', '~~~'];
         if (this.items) {
             const item = this.items;
             if (this.pageItems) {
-                const pageItems = this.pageItems.filter((a) => a && a.dataItems && a.dataItems.type === 'button');
+                const pageItems = this.pageItems.filter(a => a && a.dataItems && a.dataItems.type === 'button');
                 const localStep = pageItems.length > 9 ? 7 : 8;
-                if (pageItems.length - 1 <= localStep * (this.step - 1)) this.step = 1;
+                if (pageItems.length - 1 <= localStep * (this.step - 1)) {
+                    this.step = 1;
+                }
                 // arrow is at index [0]
                 const maxSteps = localStep * this.step + 1;
                 const minStep = localStep * (this.step - 1) + 1;
@@ -95,7 +108,9 @@ export class PageThermo extends Page {
                     if (temp) {
                         const arr = (await temp.getPageItemPayload()).split('~');
                         message.options[b] = getPayload(arr[2], arr[3], arr[5] == '1' ? '1' : '1', arr[1]);
-                    } else getPayload('', '', '', '');
+                    } else {
+                        getPayload('', '', '', '');
+                    }
                 }
 
                 if (localStep === 7) {
@@ -104,7 +119,9 @@ export class PageThermo extends Page {
                     if (temp) {
                         const arr = (await temp.getPageItemPayload()).split('~');
                         message.options[7] = getPayload(arr[2], arr[3], arr[5] == '1' ? '1' : '0', arr[1]);
-                    } else getPayload('', '', '', '');
+                    } else {
+                        getPayload('', '', '', '');
+                    }
                 }
 
                 /*for (let a = 0; a < pageItems.length && a < message.options.length; a++) {
@@ -153,7 +170,7 @@ export class PageThermo extends Page {
             message.status = this.library.getTranslation((await getValueEntryString(item.data.mixed4)) ?? '');
 
             message.btDetail =
-                this.pageItems && this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === 'input_sel')
+                this.pageItems && this.pageItems.some(a => a && a.dataItems && a.dataItems.type === 'input_sel')
                     ? '0'
                     : '1';
             //this.pageItems && this.pageItems.some((a) => a.dataItems && a.dataItems.type === 'input_sel') ? '' : 1;
@@ -165,19 +182,29 @@ export class PageThermo extends Page {
 
     async onButtonEvent(event: IncomingEvent): Promise<void> {
         if (event.action === 'tempUpdHighLow') {
-            if (!this.items) return;
+            if (!this.items) {
+                return;
+            }
             const values = event.opt.split('|');
             const newValLow = parseInt(values[0]) / 10;
             const newValHigh = parseInt(values[1]) / 10;
             const valLow = (this.items && this.items.data.set1 && (await this.items.data.set1.getNumber())) ?? null;
             const valHigh = (this.items && this.items.data.set2 && (await this.items.data.set2.getNumber())) ?? null;
-            if (valLow !== null && newValLow !== valLow) this.items.data.set1!.setStateAsync(newValLow);
-            if (valHigh !== null && newValHigh !== valHigh) await this.items.data.set2!.setStateAsync(newValHigh);
+            if (valLow !== null && newValLow !== valLow) {
+                await this.items.data.set1!.setStateAsync(newValLow);
+            }
+            if (valHigh !== null && newValHigh !== valHigh) {
+                await this.items.data.set2!.setStateAsync(newValHigh);
+            }
         } else if (event.action === 'tempUpd') {
-            if (!this.items) return;
+            if (!this.items) {
+                return;
+            }
             const newValLow = parseInt(event.opt) / 10;
             const valLow = (this.items && this.items.data.set1 && (await this.items.data.set1.getNumber())) ?? null;
-            if (valLow !== null && newValLow !== valLow) await this.items.data.set1!.setStateAsync(newValLow);
+            if (valLow !== null && newValLow !== valLow) {
+                await this.items.data.set1!.setStateAsync(newValLow);
+            }
         } else if (
             event.action === 'hvac_action' &&
             this.pageItems &&
@@ -186,23 +213,28 @@ export class PageThermo extends Page {
             if (this.nextArrow && event.opt.split('?')[1] === '0') {
                 this.step++;
                 await this.update();
-            } else if (await this.pageItems[Number(event.opt.split('?')[1])]!.onCommand('button', '')) return;
+            } else if (await this.pageItems[Number(event.opt.split('?')[1])]!.onCommand('button', '')) {
+                return;
+            }
         }
     }
 
     public async onPopupRequest(
         id: number | string,
         popup: PopupType | undefined,
+
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         action: ButtonActionType | undefined | string,
         value: string | undefined,
         _event: IncomingEvent | null = null,
     ): Promise<void> {
-        if (!this.pageItems || !this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === 'input_sel'))
+        if (!this.pageItems || !this.pageItems.some(a => a && a.dataItems && a.dataItems.type === 'input_sel')) {
             return;
+        }
         const items = this.pageItems; //.filter((a) => a.dataItems && a.dataItems.type === 'input_sel');
         let msg: string | null = null;
         if (popup === 'popupThermo') {
-            const items = this.pageItems.filter((a) => a && a.dataItems && a.dataItems.type === 'input_sel');
+            const items = this.pageItems.filter(a => a && a.dataItems && a.dataItems.type === 'input_sel');
 
             const temp = [];
             const id = this.id;
@@ -214,14 +246,18 @@ export class PageThermo extends Page {
                 i && temp.push(getPayload((await i.GeneratePopup(popup)) ?? '~~~'));
             }
             for (let a = 0; a < 3; a++) {
-                if (temp[a] === undefined) temp[a] = '~~~';
+                if (temp[a] === undefined) {
+                    temp[a] = '~~~';
+                }
             }
             msg = getPayload('entityUpdateDetail', id, icon, color, temp[0], temp[1], temp[2], '');
         } else if (action && action.startsWith('mode') && value !== undefined) {
             const tempid = parseInt(action.split('?')[1]);
             const item = items[tempid];
-            if (!item) return;
-            item.onCommand('mode-insel', value);
+            if (!item) {
+                return;
+            }
+            await item.onCommand('mode-insel', value);
         }
         if (msg !== null) {
             this.sendToPanel(msg);

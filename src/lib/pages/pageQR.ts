@@ -1,7 +1,7 @@
-import { Page, PageInterface } from '../classes/Page';
+import { Page, type PageInterface } from '../classes/Page';
 import { getPayload } from '../const/tools';
 import * as pages from '../types/pages';
-import { IncomingEvent } from '../types/types';
+import type { IncomingEvent } from '../types/types';
 
 const PageQRMessageDefault: pages.PageQRMessage = {
     event: 'entityUpd',
@@ -29,10 +29,15 @@ export class PageQR extends Page {
     items: pages.cardQRDataItems | undefined;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        if (config.card !== 'cardQR') return;
+        if (config.card !== 'cardQR') {
+            return;
+        }
         super(config, options);
-        if (options.config && options.config.card == 'cardQR') this.config = options.config;
-        else throw new Error('Missing config!');
+        if (options.config && options.config.card == 'cardQR') {
+            this.config = options.config;
+        } else {
+            throw new Error('Missing config!');
+        }
         this.minUpdateInterval = 1000;
     }
 
@@ -49,7 +54,9 @@ export class PageQR extends Page {
             tempConfig,
             this,
         );
-        if (tempItem) tempItem.card = 'cardQR';
+        if (tempItem) {
+            tempItem.card = 'cardQR';
+        }
         this.items = tempItem as pages.cardQRDataItems;
         await super.init();
     }
@@ -59,7 +66,9 @@ export class PageQR extends Page {
      * @returns
      */
     public async update(): Promise<void> {
-        if (!this.visibility) return;
+        if (!this.visibility) {
+            return;
+        }
         const message: Partial<pages.PageQRMessage> = {};
 
         if (this.items) {
@@ -90,8 +99,10 @@ export class PageQR extends Page {
             }
 
             if (this.pageItems) {
-                const pageItems = this.pageItems.filter((a) => a && a.dataItems);
-                if (pageItems.length > 2) this.log.warn(`Bad config -> too many page items`);
+                const pageItems = this.pageItems.filter(a => a && a.dataItems);
+                if (pageItems.length > 2) {
+                    this.log.warn(`Bad config -> too many page items`);
+                }
 
                 for (let a = 0; a < pageItems.length; a++) {
                     const temp = pageItems[a];
@@ -121,7 +132,9 @@ export class PageQR extends Page {
                 }
             }
         }
-        if (message.textQR) this.log.debug(message.textQR);
+        if (message.textQR) {
+            this.log.debug(message.textQR);
+        }
         this.sendToPanel(this.getMessage(message));
     }
 
@@ -153,18 +166,21 @@ export class PageQR extends Page {
     }
     /**
      *a
+     *
      * @param _event
      * @returns
      */
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         const button = _event.action;
         const value = _event.opt;
-        if (!this.items || this.items.card !== 'cardQR') return;
+        if (!this.items || this.items.card !== 'cardQR') {
+            return;
+        }
         this.log.info(`action: ${button}, value: ${value}`);
         if (pages.isQRButtonEvent(button)) {
             if (this.adapter.config.pageQRselType == 1) {
                 if (this.pageItems && this.pageItems[_event.id as any]) {
-                    this.pageItems[_event.id as any]!.onCommand('button', value);
+                    await this.pageItems[_event.id as any]!.onCommand('button', value);
                 }
             }
         }

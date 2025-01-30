@@ -1,6 +1,6 @@
 import { insertLinebreak } from '../const/tools';
-import { GetNotificationsResponse, HostId, notification } from '../types/system-notifications';
-import { AdapterClassDefinition, BaseClass } from './library';
+import type { GetNotificationsResponse, HostId, notification } from '../types/system-notifications';
+import { BaseClass, type AdapterClassDefinition } from './library';
 
 export class SystemNotifications extends BaseClass {
     private language: ioBroker.Languages;
@@ -24,7 +24,9 @@ export class SystemNotifications extends BaseClass {
     async delete(): Promise<void> {
         await this.writeConfig();
         await super.delete();
-        if (this.messageTimeout) this.adapter.clearTimeout(this.messageTimeout);
+        if (this.messageTimeout) {
+            this.adapter.clearTimeout(this.messageTimeout);
+        }
         this.messageTimeout = undefined;
     }
     /**
@@ -47,10 +49,13 @@ export class SystemNotifications extends BaseClass {
             endkey: 'system.host.\u9999',
         });
 
-        return res.rows.map((host) => host.id as HostId);
+        return res.rows.map(host => host.id as HostId);
     }
     /**
      * Is called if a subscribed state changes
+     *
+     * @param id
+     * @param _state
      */
     public async onStateChange(id: string, _state: ioBroker.State | null | undefined): Promise<void> {
         if (id.startsWith('system.host')) {
@@ -84,7 +89,7 @@ export class SystemNotifications extends BaseClass {
                 for (const c in sub.categories) {
                     msgs.push({
                         id: `${k}.${c}`,
-                        headline: (hosts.length > 1 ? host + ': ' : '') + sub.categories[c].name[this.language],
+                        headline: (hosts.length > 1 ? `${host}: ` : '') + sub.categories[c].name[this.language],
                         text: sub.categories[c].description[this.language],
                         version: 0,
                         severity: sub.categories[c].severity,
@@ -96,74 +101,94 @@ export class SystemNotifications extends BaseClass {
                     });
                 }
             }
-            this.notifications = this.notifications.filter((a) => {
-                if (!a.scopeid || !a.categoryid || a.host !== host) return true;
-                return msgs.findIndex((b) => b.scopeid === a.scopeid && b.categoryid === a.categoryid) !== -1;
+            this.notifications = this.notifications.filter(a => {
+                if (!a.scopeid || !a.categoryid || a.host !== host) {
+                    return true;
+                }
+                return msgs.findIndex(b => b.scopeid === a.scopeid && b.categoryid === a.categoryid) !== -1;
             });
-            for (const m of msgs) await this.sendNotifications(m);
+            for (const m of msgs) {
+                await this.sendNotifications(m);
+            }
         }
     }
 
     private async sendNotifications(notify: notification): Promise<void> {
         if (
-            this.notifications.some((a) => {
+            this.notifications.some(a => {
                 if (
                     (!a.scopeid && a.id === notify.id && a.ts === notify.ts && a.severity == notify.severity) ||
                     (a.scopeid &&
                         a.scopeid === notify.scopeid &&
                         a.categoryid === notify.scopeid &&
                         a.host === notify.host)
-                )
+                ) {
                     return true;
+                }
             })
-        )
+        ) {
             return;
+        }
         this.notifications.push(notify);
 
-        if (this.messageTimeout) return;
+        if (this.messageTimeout) {
+            return;
+        }
         this.messageTimeout = this.adapter.setTimeout(() => {
             this.notifications.sort((a, b) => {
-                if (a.severity === b.severity) return 0;
-                if (a.severity === 'alert') return 1;
-                if (b.severity === 'alert') return -1;
+                if (a.severity === b.severity) {
+                    return 0;
+                }
+                if (a.severity === 'alert') {
+                    return 1;
+                }
+                if (b.severity === 'alert') {
+                    return -1;
+                }
                 return 0;
             });
-            this.count = this.notifications.filter((a) => !a.cleared).length;
-            if (this.notifications.some((a) => !a.cleared))
+            this.count = this.notifications.filter(a => !a.cleared).length;
+            if (this.notifications.some(a => !a.cleared)) {
                 this.adapter.controller && this.adapter.controller.notificationToPanel();
+            }
         }, 2500);
     }
 
     /**
      * name
+     *
+     * @param index
      */
     public async clearNotification(index: number): Promise<void> {
         if (this.notifications[index] && !this.notifications[index].cleared) {
             if (this.notifications[index].scopeid) {
                 const msg = this.notifications[index];
-                if (msg.host)
+                if (msg.host) {
                     try {
                         await this.adapter.sendToHostAsync(msg.host, 'clearNotifications', {
                             scopeFilter: msg.scopeid ?? null,
                             categoryFilter: msg.categoryid ?? null,
                         });
-                    } catch (e) {
+                    } catch {
                         this.log.error('Error while clear notification');
                     }
+                }
             }
-            if (this.notifications[index]) this.notifications[index].cleared = true;
+            if (this.notifications[index]) {
+                this.notifications[index].cleared = true;
+            }
             await this.writeConfig();
         }
     }
     public getNotification(index: number): { headline: string; text: string } | null {
         if (this.notifications[index]) {
             let currentNotify = 0;
-            this.notifications.forEach((a) => !a.cleared && currentNotify <= index && currentNotify++);
+            this.notifications.forEach(a => !a.cleared && currentNotify <= index && currentNotify++);
             const { headline, text } = this.notifications[index];
             const line = 46;
             return {
                 headline: `${this.library.getTranslation('Notification')} (${currentNotify}/${this.count})`,
-                text: insertLinebreak(headline, line) + '\n' + insertLinebreak(text, line),
+                text: `${insertLinebreak(headline, line)}\n${insertLinebreak(text, line)}`,
             };
         }
         return null;
@@ -174,11 +199,15 @@ export class SystemNotifications extends BaseClass {
      * @returns
      */
     public getNotificationIndex(index: number): number {
-        if (index === -1) index = 0;
+        if (index === -1) {
+            index = 0;
+        }
         const l = this.notifications.length;
         if (index >= 0) {
             for (index; index < l; index++) {
-                if (this.notifications[index] && !this.notifications[index].cleared) break;
+                if (this.notifications[index] && !this.notifications[index].cleared) {
+                    break;
+                }
             }
             if (this.notifications[index] && !this.notifications[index].cleared) {
                 return index;

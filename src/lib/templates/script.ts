@@ -1,5 +1,5 @@
 import { Color } from '../const/Color';
-import { TemplateItems } from '../types/types';
+import type { TemplateItems } from '../types/types';
 
 export const scriptTemplates: TemplateItems = {
     'script.socket': {

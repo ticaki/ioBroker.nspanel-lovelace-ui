@@ -1,7 +1,7 @@
-import * as dataItem from '../classes/data-item';
-import { RGB } from '../const/Color';
-import * as typePageItem from './type-pageItem';
-import * as pages from './pages';
+import type * as dataItem from '../classes/data-item';
+import type { RGB } from '../const/Color';
+import type * as typePageItem from './type-pageItem';
+import type * as pages from './pages';
 
 /**
  * Bitte an folgendes Schema halten
@@ -40,10 +40,6 @@ export type TemplateIdent =
     | 'button.service.adapter.noconnection'
     | 'text.fahrplan.departure'
     | ''
-    | ''
-    | ''
-    | ''
-    | ''
     | 'script.light'
     | 'script.socket'
     | 'script.hue'
@@ -60,14 +56,9 @@ export type TemplateIdent =
     | 'script.lock'
     | 'script.slider'
     | 'script.warning'
-    | 'script.volume'
-    | ''
-    | ''
-    | ''
-    | ''
-    | '';
+    | 'script.volume';
 
-export function isEventMethod(F: string | EventMethod): F is EventMethod {
+export function isEventMethod(F: string): F is EventMethod {
     switch (F as EventMethod) {
         case 'startup':
         case 'sleepReached':
@@ -113,7 +104,7 @@ export type PanelInternalCommand =
     | 'info/Tasmota'
     | 'cmd/TasmotaRestart';
 
-export function isPopupType(F: PopupType | any): F is PopupType {
+export function isPopupType(F: any): F is PopupType {
     switch (F as PopupType) {
         case 'popupFan':
         case 'popupInSel':
@@ -262,7 +253,7 @@ export type DimMode = {
 
 export type ValueDateFormat = { local: string; format: any };
 
-export function isValueDateFormat(F: any | ValueDateFormat): F is ValueDateFormat {
+export function isValueDateFormat(F: any): F is ValueDateFormat {
     return F && typeof F === 'object' && F.local !== undefined && F.format !== undefined;
 }
 
@@ -327,10 +318,10 @@ export type IconScaleElement = {
     log10?: 'max' | 'min';
 };
 
-export function isIconScaleElement(F: any | IconScaleElement): F is IconScaleElement {
+export function isIconScaleElement(F: any): F is IconScaleElement {
     return F && 'val_min' in (F as IconScaleElement) && 'val_max' in (F as IconScaleElement);
 }
-export function isPartialIconScaleElement(F: any | IconScaleElement): F is IconScaleElement {
+export function isPartialIconScaleElement(F: any): F is IconScaleElement {
     return F && ('val_min' in (F as IconScaleElement) || 'val_max' in (F as IconScaleElement));
 }
 
@@ -365,6 +356,7 @@ type DataItemsOptionsCustom = {
 type DataItemsOptionsConst = {
     type: 'const';
     role?: pages.StateRole;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     constVal: StateValue | AllIcons | RGB | pages.placeholderType | IconScaleElement;
     state?: State | null; // use just inside of class
     forceType?: 'string' | 'number' | 'boolean'; // force a type
@@ -409,6 +401,7 @@ type DataItemsOptionsTriggered = (DataItemsOptionsAuto | DataItemsOptionsCustom)
 export type IncomingEvent = {
     type: EventType;
     method: EventMethod;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     action: ButtonActionType | '' | string;
     target?: number;
     page?: number;
@@ -421,12 +414,13 @@ export type IncomingEvent = {
 export type Event = {
     type: EventType;
     method: EventMethod;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     page: any | null;
     data: string[];
     opt: string[];
 };
 export type EventType = 'event';
-export function isEventType(F: string | EventType): F is EventType {
+export function isEventType(F: string): F is EventType {
     return ['event'].indexOf(F) != -1;
 }
 export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced';

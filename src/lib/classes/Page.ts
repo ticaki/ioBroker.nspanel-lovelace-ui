@@ -1,12 +1,18 @@
-import { Panel } from '../controller/panel';
-import { BaseClassPage, BaseClassTriggerdInterface } from '../controller/states-controller';
-import * as pages from '../types/pages';
-import { ButtonActionType, IncomingEvent, PopupType, TemplateIdent, isPopupType } from '../types/types';
+import type { Panel } from '../controller/panel';
+import { BaseClassPage, type BaseClassTriggerdInterface } from '../controller/states-controller';
+import type * as pages from '../types/pages';
+import {
+    isPopupType,
+    type ButtonActionType,
+    type IncomingEvent,
+    type PopupType,
+    type TemplateIdent,
+} from '../types/types';
 import { PageItem } from '../pages/pageItem';
-import { BaseClass } from './library';
+import type { BaseClass } from './library';
 import { cardTemplates } from '../templates/card';
 import { deepAssign, getRegExp } from '../const/tools';
-import { PageItemDataItemsOptions, PageItemOptionsTemplate } from '../types/type-pageItem';
+import type { PageItemDataItemsOptions, PageItemOptionsTemplate } from '../types/type-pageItem';
 import { pageItemTemplates } from '../templates/templateArray';
 
 export type PageItemInterface = BaseClassTriggerdInterface & {
@@ -60,10 +66,14 @@ export class Page extends BaseClassPage {
         if (this.pageItemConfig) {
             for (let a = 0; a < this.pageItemConfig.length; a++) {
                 let options = this.pageItemConfig[a];
-                if (options === undefined) continue;
+                if (options === undefined) {
+                    continue;
+                }
 
                 options = await this.getItemFromTemplate(options);
-                if (!options) continue;
+                if (!options) {
+                    continue;
+                }
 
                 options.dpInit =
                     typeof options.dpInit === 'string' && options.device
@@ -106,7 +116,7 @@ export class Page extends BaseClassPage {
                 : pageItemTemplates[options.template];
             const name = options.template;
             if (!template) {
-                this.log.error('Dont find template ' + options.template);
+                this.log.error(`Dont find template ${options.template}`);
                 return undefined;
             }
             if (
@@ -117,7 +127,7 @@ export class Page extends BaseClassPage {
                 !this.dpInit.includes(template.adapter)
             ) {
                 this.log.error(
-                    'Missing dbInit or dbInit not starts with' + template.adapter + ' for template ' + options.template,
+                    `Missing dbInit or dbInit not starts with${template.adapter} for template ${options.template}`,
                 );
                 return undefined;
             }
@@ -125,7 +135,8 @@ export class Page extends BaseClassPage {
             const newTemplate = structuredClone(template) as Partial<PageItemOptionsTemplate>;
             delete newTemplate.adapter;
             if (options.type && options.type !== template.type) {
-                this.log.error('Type: ' + options.type + 'is not equal with ' + template.type);
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                this.log.error(`Type: ${String(options.type)}is not equal with ${template.type}`);
                 return undefined;
             }
             options.type = template.type;
@@ -141,8 +152,11 @@ export class Page extends BaseClassPage {
                     );
                 }
                 const o = await this.getItemFromTemplate(options, template.template, ++loop);
-                if (o !== undefined) options = o;
-                else this.log.warn(`Dont get a template from ${template.template} for ${name}`);
+                if (o !== undefined) {
+                    options = o;
+                } else {
+                    this.log.warn(`Dont get a template from ${template.template} for ${name}`);
+                }
             }
         }
         return options;
@@ -152,7 +166,9 @@ export class Page extends BaseClassPage {
         this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
     }
     sendType(): void {
-        if (this.panel.lastCard !== this.card) this.sendToPanel(`pageType~${this.card}`);
+        if (this.panel.lastCard !== this.card) {
+            this.sendToPanel(`pageType~${this.card}`);
+        }
         this.panel.lastCard = this.card;
     }
 
@@ -160,7 +176,7 @@ export class Page extends BaseClassPage {
         if ('template' in config && config.template) {
             const template = cardTemplates[config.template];
             if (!template) {
-                that.log.error('dont find template ' + config.template);
+                that.log.error(`dont find template ${config.template}`);
                 return config;
             }
             if (config.dpInit && typeof config.dpInit === 'string') {
@@ -209,8 +225,12 @@ export class Page extends BaseClassPage {
     }
     protected async onVisibilityChange(val: boolean): Promise<void> {
         if (val) {
-            if (!this.pageItems || this.pageItems.length === 0) await this.createPageItems();
-            if (this.card !== 'cardLChart' && this.card !== 'cardChart') await this.sendType();
+            if (!this.pageItems || this.pageItems.length === 0) {
+                await this.createPageItems();
+            }
+            if (this.card !== 'cardLChart' && this.card !== 'cardChart') {
+                this.sendType();
+            }
             await this.update();
         } else {
             if (this.pageItems) {
@@ -237,6 +257,7 @@ export class Page extends BaseClassPage {
 
     /**
      * TODO rewrite
+     *
      * @param id
      * @param popup
      * @param action
@@ -247,14 +268,19 @@ export class Page extends BaseClassPage {
     public async onPopupRequest(
         id: number | string,
         popup: PopupType | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
         action: ButtonActionType | undefined | string,
         value: string | undefined,
         _event: IncomingEvent | null = null,
     ): Promise<void> {
-        if (!this.pageItems) return;
+        if (!this.pageItems) {
+            return;
+        }
         const i = typeof id === 'number' ? id : parseInt(id);
         const item = this.pageItems[i];
-        if (!item) return;
+        if (!item) {
+            return;
+        }
         let msg: string | null = null;
         if (action && value !== undefined && (await item.onCommand(action, value))) {
             return;
@@ -273,7 +299,7 @@ export class Page extends BaseClassPage {
     }
 }
 
-export function isMediaButtonActionType(F: MediaButtonActionType | string): F is MediaButtonActionType {
+export function isMediaButtonActionType(F: string): F is MediaButtonActionType {
     switch (F) {
         case 'media-back':
         case 'media-pause':

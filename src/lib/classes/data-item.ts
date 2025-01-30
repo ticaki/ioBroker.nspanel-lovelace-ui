@@ -1,6 +1,6 @@
-import { Color, RGB } from '../const/Color';
+import { Color, type RGB } from '../const/Color';
 import { BaseClass } from './library';
-import { BaseClassTriggerd, StatesControler } from '../controller/states-controller';
+import type { BaseClassTriggerd, StatesControler } from '../controller/states-controller';
 import * as NSPanel from '../types/types';
 
 export class Dataitem extends BaseClass {
@@ -12,6 +12,7 @@ export class Dataitem extends BaseClass {
     private _writeable: boolean = false;
     /**
      * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
+     *
      * @param adapter this of adapter
      * @param options {NSPanel.DataItemsOptions}
      * @param parent {BaseClassTriggerd}
@@ -34,8 +35,9 @@ export class Dataitem extends BaseClass {
                 break;
             case 'internalState':
             case 'internal': {
-                if (!this.options.dp.startsWith('///'))
-                    this.options.dp = this.parent.panel.name + '/' + this.options.dp;
+                if (!this.options.dp.startsWith('///')) {
+                    this.options.dp = `${this.parent.panel.name}/${this.options.dp}`;
+                }
                 this.type = undefined;
             }
         }
@@ -45,6 +47,7 @@ export class Dataitem extends BaseClass {
     }
     /**
      * Init and check dp is valid
+     *
      * @returns if false value is not valid
      */
     async isValidAndInit(): Promise<boolean> {
@@ -54,8 +57,10 @@ export class Dataitem extends BaseClass {
             case 'state':
             case 'internal':
             case 'internalState':
-            case 'triggered':
-                if (!this.options.dp) return false;
+            case 'triggered': {
+                if (!this.options.dp) {
+                    return false;
+                }
                 this.options.dp = this.options.dp.replace(
                     '${this.namespace}',
                     `${this.adapter.namespace}.panels.${this.parent.panel.name}`,
@@ -69,11 +74,13 @@ export class Dataitem extends BaseClass {
                 this.type = this.type || obj.common.type;
                 this.options.role = obj.common.role;
                 this._writeable = !!obj.common.write;
-                if (this.options.type == 'triggered')
-                    this.stateDB.setTrigger(this.options.dp, this.parent, false, undefined, this.options.change);
-                else if (this.options.type == 'internal') this.stateDB.setTrigger(this.options.dp, this.parent, true);
-                else if (this.options.type == 'internalState')
-                    this.stateDB.setTrigger(this.options.dp, this.parent, true, false);
+                if (this.options.type == 'triggered') {
+                    await this.stateDB.setTrigger(this.options.dp, this.parent, false, undefined, this.options.change);
+                } else if (this.options.type == 'internal') {
+                    await this.stateDB.setTrigger(this.options.dp, this.parent, true);
+                } else if (this.options.type == 'internalState') {
+                    await this.stateDB.setTrigger(this.options.dp, this.parent, true, false);
+                }
                 const value = await this.stateDB.getState(
                     this.options.dp,
                     this.options.type == 'triggered' ||
@@ -83,6 +90,7 @@ export class Dataitem extends BaseClass {
                         : this.options.response,
                 );
                 return value !== null && value !== undefined;
+            }
         }
         return false;
     }
@@ -108,7 +116,7 @@ export class Dataitem extends BaseClass {
     }
 
     trueType(): ioBroker.CommonType | undefined {
-        return 'dp' in this.options ? this.stateDB.getType(this.options.dp) ?? this.type : this.type;
+        return 'dp' in this.options ? (this.stateDB.getType(this.options.dp) ?? this.type) : this.type;
     }
 
     async getCommonStates(force: boolean = false): Promise<Record<string, string> | undefined> {
@@ -121,13 +129,15 @@ export class Dataitem extends BaseClass {
             state = structuredClone(state);
             if (this.options.type !== 'const' && this.options.read) {
                 try {
-                    if (typeof this.options.read === 'string')
+                    if (typeof this.options.read === 'string') {
                         state.val = new Function('val', 'Color', `${this.options.read}`)(state.val, Color);
-                    else state.val = this.options.read(state.val);
+                    } else {
+                        state.val = this.options.read(state.val);
+                    }
                     //this.log.debug(JSON.stringify(state.val));
                 } catch (e) {
                     this.log.error(
-                        `Read for dp: ${this.options.dp} is invalid! read: ${this.options.read} Error: ${e}`,
+                        `Read for dp: ${this.options.dp} is invalid! read: ${String(this.options.read)} Error: ${String(e)}`,
                     );
                 }
             }
@@ -142,13 +152,15 @@ export class Dataitem extends BaseClass {
                 try {
                     const value = JSON.parse(state.val);
                     return value;
-                } catch (e) {
+                } catch {
                     let value = state.val;
                     if (typeof value === 'string') {
                         value = value.trim();
                         if (value.startsWith('#')) {
                             const v = Color.ConvertWithColordtoRgb(value);
-                            if (Color.isRGB(v)) return v;
+                            if (Color.isRGB(v)) {
+                                return v;
+                            }
                         } else if (
                             this.options.role === 'level.color.name' ||
                             this.options.role === 'level.color.rgb'
@@ -169,7 +181,9 @@ export class Dataitem extends BaseClass {
     async getRGBValue(): Promise<RGB | null> {
         const value = await this.getObject();
         if (value) {
-            if (Color.isRGB(value)) return value;
+            if (Color.isRGB(value)) {
+                return value;
+            }
             if (typeof value == 'object' && 'red' in value && 'blue' in value && 'green' in value) {
                 return { r: value.red as number, g: value.green as number, b: value.blue as number };
             }
@@ -179,7 +193,9 @@ export class Dataitem extends BaseClass {
     async getIconScale(): Promise<NSPanel.IconScaleElement | null> {
         const value = await this.getObject();
         if (value) {
-            if (NSPanel.isIconScaleElement(value)) return value;
+            if (NSPanel.isIconScaleElement(value)) {
+                return value;
+            }
         }
         return null;
     }
@@ -193,7 +209,7 @@ export class Dataitem extends BaseClass {
     async getTranslatedString(): Promise<string | null> {
         const val = await this.getString();
         if (val !== null) {
-            return await this.library.getTranslation(val);
+            return this.library.getTranslation(val);
         }
         return null;
     }
@@ -202,16 +218,20 @@ export class Dataitem extends BaseClass {
         const state = await this.getState();
         switch (this.options.type) {
             case 'const':
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
                 return state && state.val !== null ? String(state.val) : null;
             case 'state':
             case 'triggered':
                 if (this.options.substring) {
                     const args = this.options.substring;
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
                     return state && state.val !== null ? String(state.val).substring(args[0], args[1]) : null;
                 }
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
                 return state && state.val !== null ? String(state.val) : null;
             case 'internalState':
             case 'internal':
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
                 return state && state.val !== null ? String(state.val) : null;
         }
         return null;
@@ -264,6 +284,7 @@ export class Dataitem extends BaseClass {
                 break;
             case 'undefined':
                 this.type = undefined;
+                break;
             case 'symbol':
             case 'object':
             case 'function':
@@ -296,21 +317,28 @@ export class Dataitem extends BaseClass {
     }
     /**
      * Set a internal, const or external State
+     *
      * @param val number | boolean | string | null
      * @returns
      */
     async setStateAsync(val: ioBroker.StateValue): Promise<void> {
-        if (val === undefined) return;
+        if (val === undefined) {
+            return;
+        }
         if (this.options.type === 'const') {
             this.options.constVal = val;
         } else {
-            if (this.options.write) val = new Function('val', 'Color', `${this.options.write}`)(val, Color);
+            if (this.options.write) {
+                val = new Function('val', 'Color', `${String(this.options.write)}`)(val, Color);
+            }
             await this.stateDB.setStateAsync(this, val, this._writeable);
         }
     }
 }
 
-export function isDataItem(F: any | Dataitem): F is Dataitem {
-    if (F instanceof Dataitem) return true;
+export function isDataItem(F: any): F is Dataitem {
+    if (F instanceof Dataitem) {
+        return true;
+    }
     return false;
 }

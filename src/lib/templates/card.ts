@@ -1,6 +1,6 @@
 import { Color } from '../const/Color';
-import { PageBaseConfigTemplate } from '../types/pages';
-import { PageTemplateIdent } from '../types/types';
+import type { PageBaseConfigTemplate } from '../types/pages';
+import type { PageTemplateIdent } from '../types/types';
 
 /**
  * Bitte an folgendes Schema halten

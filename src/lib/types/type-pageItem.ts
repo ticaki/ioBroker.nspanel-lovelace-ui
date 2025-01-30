@@ -1,7 +1,7 @@
-import * as dataItem from '../classes/data-item';
-import { RGB } from '../const/Color';
-import * as pages from './pages';
-import * as Types from './types';
+import type * as dataItem from '../classes/data-item';
+import type { RGB } from '../const/Color';
+import type * as pages from './pages';
+import type * as Types from './types';
 
 export type PageLightItem = {
     type: 'light' | 'dimmer' | 'brightnessSlider' | 'hue' | 'rgb';
@@ -26,14 +26,14 @@ export type entityUpdateDetailMessage =
           type: '2Sliders';
           entityName: string;
           icon?: string;
-          slidersColor: string | 'disable';
+          slidersColor: string; // | 'disable';
           buttonState: boolean | 'disable';
           slider1Pos: number | 'disable';
           slider2Pos: number | 'disable';
           hueMode: boolean;
-          hue_translation: string | '';
-          slider2Translation: string | '';
-          slider1Translation: string | '';
+          hue_translation: string; //| '';
+          slider2Translation: string; //| '';
+          slider1Translation: string; //| '';
           popup: boolean;
       }
     | {
@@ -493,7 +493,7 @@ export type ScaledNumberType =
     | undefined;
 export type listCommand = { id: string; value: string; command?: listCommandUnion };
 type listCommandUnion = 'flip';
-export function islistCommandUnion(F: any | listCommandUnion): F is listCommandUnion {
+export function islistCommandUnion(F: any): F is listCommandUnion {
     switch (F as listCommandUnion) {
         case 'flip': {
             return true;

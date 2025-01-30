@@ -1,7 +1,7 @@
-import { PageInterface } from '../classes/Page';
+import type { PageInterface } from '../classes/Page';
 import { getPayload, getPayloadArray } from '../const/tools';
-import * as pages from '../types/pages';
-import { IncomingEvent } from '../types/types';
+import type * as pages from '../types/pages';
+import type { IncomingEvent } from '../types/types';
 import { PageMenu } from './pageMenu';
 
 const PageEntitiesMessageDefault: pages.PageEntitiesMessage = {
@@ -26,7 +26,9 @@ export class PageEntities extends PageMenu {
         this.iconRight = 'arrow-down-bold';
 
         this.config = options.config;
-        if (options.items && options.items.card == 'cardEntities') this.items = options.items;
+        if (options.items && options.items.card == 'cardEntities') {
+            this.items = options.items;
+        }
         this.minUpdateInterval = 2000;
     }
 
@@ -50,7 +52,9 @@ export class PageEntities extends PageMenu {
     }
 
     public async update(): Promise<void> {
-        if (!this.visibility) return;
+        if (!this.visibility) {
+            return;
+        }
         const message: Partial<pages.PageEntitiesMessage> = {};
         const arr = (await this.getOptions([])).slice(0, 4);
         message.options = arr as typeof message.options;

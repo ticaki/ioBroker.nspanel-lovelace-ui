@@ -1,10 +1,10 @@
-import { Page, PageInterface } from '../classes/Page';
+import { Page, type PageInterface } from '../classes/Page';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { getPayload } from '../const/tools';
-import * as pages from '../types/pages';
+import type * as pages from '../types/pages';
 import { handleCardRole } from './data-collection-functions';
-import { PageItem } from './pageItem';
+import type { PageItem } from './pageItem';
 
 export class PageMenu extends Page {
     protected maxItems: number = 4;
@@ -45,8 +45,9 @@ export class PageMenu extends Page {
                             p.dataItems.data.entity1 &&
                             p.dataItems.data.entity1.value &&
                             testIt === (await p.dataItems.data.entity1.value.getBoolean())
-                        )
+                        ) {
                             this.tempItems.push(p);
+                        }
                     }
                     pageItems = this.tempItems;
                 }
@@ -86,7 +87,9 @@ export class PageMenu extends Page {
                     this.config.card === 'cardGrid2')
             ) {
                 const temp = await handleCardRole(this.adapter, this.config.cardRole, this);
-                if (temp) this.pageItemConfig = temp;
+                if (temp) {
+                    this.pageItemConfig = temp;
+                }
             }
         }
         await super.onVisibilityChange(val);
@@ -96,8 +99,9 @@ export class PageMenu extends Page {
         if (
             !this.config ||
             (this.config.card !== 'cardEntities' && this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')
-        )
+        ) {
             return;
+        }
         if (!single) {
             if (this.doubleClick) {
                 this.adapter.clearTimeout(this.doubleClick);
@@ -105,7 +109,6 @@ export class PageMenu extends Page {
                 if (this.lastdirection == 'right') {
                     this.panel.navigation.goLeft();
                     return;
-                } else {
                 }
             } else {
                 this.lastdirection = 'left';
@@ -120,14 +123,17 @@ export class PageMenu extends Page {
         if (--this.step < 0) {
             this.step = 0;
             this.panel.navigation.goLeft();
-        } else this.update();
+        } else {
+            void this.update();
+        }
     }
     goRight(single: boolean = false): void {
         if (
             !this.config ||
             (this.config.card !== 'cardEntities' && this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')
-        )
+        ) {
             return;
+        }
         if (!single) {
             if (this.doubleClick) {
                 this.adapter.clearTimeout(this.doubleClick);
@@ -135,7 +141,6 @@ export class PageMenu extends Page {
                 if (this.lastdirection == 'right') {
                     this.panel.navigation.goRight();
                     return;
-                } else {
                 }
             } else {
                 this.lastdirection = 'right';
@@ -152,14 +157,17 @@ export class PageMenu extends Page {
         if (!pageScroll ? ++this.step + this.maxItems > length : ++this.step * this.maxItems >= length) {
             this.step--;
             this.panel.navigation.goRight();
-        } else this.update();
+        } else {
+            void this.update();
+        }
     }
     protected getNavigation(): string {
         if (
             !this.config ||
             (this.config.card !== 'cardEntities' && this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')
-        )
+        ) {
             return '';
+        }
         const pageScroll = this.config.scrollType === 'page';
         const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
         if (this.maxItems >= length) {
@@ -173,7 +181,7 @@ export class PageMenu extends Page {
         if (!pageScroll ? this.step + this.maxItems >= length : (this.step + 1) * this.maxItems >= length) {
             right = this.panel.navigation.buildNavigationString('right');
         }
-        if (!left)
+        if (!left) {
             left = getPayload(
                 'button',
                 'bSubPrev',
@@ -182,8 +190,9 @@ export class PageMenu extends Page {
                 '',
                 '',
             );
+        }
 
-        if (!right)
+        if (!right) {
             right = getPayload(
                 'button',
                 'bSubNext',
@@ -192,6 +201,7 @@ export class PageMenu extends Page {
                 '',
                 '',
             );
+        }
 
         return getPayload(left, right);
     }

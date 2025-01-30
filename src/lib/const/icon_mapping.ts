@@ -1,4 +1,4 @@
-import { AdapterClassDefinition } from '../classes/library';
+import type { AdapterClassDefinition } from '../classes/library';
 
 export class Icons {
     static adapter: AdapterClassDefinition | undefined;
@@ -6901,26 +6901,31 @@ export class Icons {
         ['zodiac-virgo', ''],
     ]);
 
-    static GetIcon(ma_name: AllIcons | string): string {
+    static GetIcon(ma_name: string): string {
         return Icons.GetIconWithType(ma_name as AllIcons);
     }
     static GetIconWithType(ma_name: AllIcons): string {
-        if (!ma_name) return '';
+        if (!ma_name) {
+            return '';
+        }
         const val = ma_name.trim();
         if (Icons.iconMap.has(val)) {
             return Icons.iconMap.get(val)!;
-        } else {
-            if (Icons.adapter) Icons.adapter.log.warn(`${val} is not a icon!`);
-            //else console.log(`${val} is not a icon!`);
         }
+        if (Icons.adapter) {
+            Icons.adapter.log.warn(`${val} is not a icon!`);
+        }
+        //else console.log(`${val} is not a icon!`);
+
         return '';
     }
     /**
      * Just a dummy
+     *
      * @param F
      * @returns
      */
-    static isIcon(F: string | AllIcons): F is AllIcons {
+    static isIcon(F: string): F is AllIcons {
         return true;
     }
 }
