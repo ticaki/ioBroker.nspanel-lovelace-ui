@@ -16,21 +16,27 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var password_exports = {};
-__export(password_exports, {
-  mqttconfigPrivat: () => mqttconfigPrivat
+var config_manager_const_exports = {};
+__export(config_manager_const_exports, {
+  CustomTemplates: () => CustomTemplates
 });
-module.exports = __toCommonJS(password_exports);
-const mqttconfigPrivat = {
-  mqttPassword: "",
-  mqttUsername: "mqttuser",
-  mqttIp: "mqtt.kiemen.com",
-  mqttPort: 1883,
-  topic: "nspanel/ns_panel2",
-  name: "Wohnzimmer"
-};
+module.exports = __toCommonJS(config_manager_const_exports);
+const CustomTemplates = [
+  {
+    device: "shutter",
+    states: [
+      { "button.open.blind": true },
+      { "button.close.blind": true },
+      { "button.open.tilt": true },
+      { "button.close.tilt": true },
+      { "button.stop.tilt": true },
+      { "button.stop.blind": true },
+      { "level.blind": true }
+    ]
+  }
+];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  mqttconfigPrivat
+  CustomTemplates
 });
-//# sourceMappingURL=password.js.map
+//# sourceMappingURL=config-manager-const.js.map

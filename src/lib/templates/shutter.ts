@@ -6,7 +6,7 @@ export const shutterTemplates: TemplateItems = {
         /**
          * zu 100% geschlossen zu 0% geschlossen read und write mit jeweils 100-val benutzen um das zu 100% geöffnet zu ändern.
          */
-        role: '',
+        role: 'blind',
         type: 'shutter',
         adapter: '',
         data: {

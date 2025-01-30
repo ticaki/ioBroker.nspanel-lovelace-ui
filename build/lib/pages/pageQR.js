@@ -193,7 +193,7 @@ class PageQR extends import_Page.Page {
     const value = _event.opt;
     if (!this.items || this.items.card !== "cardQR")
       return;
-    this.log.info(`button: ${button} value ${value}`);
+    this.log.info(`action: ${button}, value: ${value}`);
     if (pages.isQRButtonEvent(button)) {
       if (this.adapter.config.pageQRselType == 1) {
         if (this.pageItems && this.pageItems[_event.id]) {

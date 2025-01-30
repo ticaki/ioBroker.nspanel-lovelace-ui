@@ -18,15 +18,80 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pages_exports = {};
 __export(pages_exports, {
+  arrayOfAll: () => arrayOfAll,
   isAlarmButtonEvent: () => isAlarmButtonEvent,
   isButtonActionType: () => isButtonActionType,
   isClosingBehavior: () => isClosingBehavior,
   isColorEntryType: () => isColorEntryType,
   isPlaceholderType: () => isPlaceholderType,
   isQRButtonEvent: () => isQRButtonEvent,
-  isStateRole: () => isStateRole
+  isStateRole: () => isStateRole,
+  stateRoleArray: () => stateRoleArray
 });
 module.exports = __toCommonJS(pages_exports);
+const arrayOfAll = () => (array) => array;
+const arrayOfAllStateRole = arrayOfAll();
+const stateRoleArray = arrayOfAllStateRole([
+  "value.power",
+  "button.play",
+  "button.pause",
+  "button.next",
+  "button.prev",
+  "button.stop",
+  "button.volume.up",
+  "button.volume.down",
+  "media.seek",
+  // (common.type=number) %
+  "media.mode.shuffle",
+  //(common.type=number) 0 - none, 1 - all, 2 - one
+  "media.mode.repeat",
+  //(common.type=boolean)
+  "media.state",
+  //['play','stop','pause'] or [0 - pause, 1 - play, 2 - stop] or [true - playing/false - pause]
+  "media.artist",
+  "media.album",
+  "media.title",
+  "media.duration",
+  "media.elapsed.text",
+  "media.elapsed",
+  "media.mute",
+  "level.volume",
+  "media.playlist",
+  "button.open.blind",
+  "button.open",
+  "button.close.blind",
+  "button.close",
+  "button.stop.blind",
+  "button.stop",
+  "button.open.tilt",
+  "button.stop.tilt",
+  "button.close.tilt",
+  "level.tilt",
+  "level.blind",
+  "level.color.name",
+  "state",
+  "level.color.blue",
+  "level.color.red",
+  "level.color.green",
+  "level.color.white",
+  "level.brightness",
+  "switch",
+  "button",
+  "sensor.window",
+  "sensor.open",
+  "value.temperature",
+  "value.battery",
+  "indicator.lowbat",
+  "value",
+  "level.temperature",
+  "level.value",
+  "date",
+  "date.sunrise.forecast.0",
+  "date.sunset.forecast.0",
+  "date.sunrise.forecast.1",
+  "date.sunset.forecast.1",
+  ""
+]);
 function isStateRole(F) {
   switch (F) {
     case "button.play":
@@ -149,12 +214,14 @@ function isPlaceholderType(F) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  arrayOfAll,
   isAlarmButtonEvent,
   isButtonActionType,
   isClosingBehavior,
   isColorEntryType,
   isPlaceholderType,
   isQRButtonEvent,
-  isStateRole
+  isStateRole,
+  stateRoleArray
 });
 //# sourceMappingURL=pages.js.map

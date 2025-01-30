@@ -16,21 +16,20 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var password_exports = {};
-__export(password_exports, {
-  mqttconfigPrivat: () => mqttconfigPrivat
+var config_manager_exports = {};
+__export(config_manager_exports, {
+  ConfigManager: () => ConfigManager
 });
-module.exports = __toCommonJS(password_exports);
-const mqttconfigPrivat = {
-  mqttPassword: "",
-  mqttUsername: "mqttuser",
-  mqttIp: "mqtt.kiemen.com",
-  mqttPort: 1883,
-  topic: "nspanel/ns_panel2",
-  name: "Wohnzimmer"
-};
+module.exports = __toCommonJS(config_manager_exports);
+var import_library = require("../classes/library");
+class ConfigManager extends import_library.BaseClass {
+  //private test: ConfigManager.DeviceState;
+  constructor(adapter) {
+    super(adapter, "config-manager");
+  }
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  mqttconfigPrivat
+  ConfigManager
 });
-//# sourceMappingURL=password.js.map
+//# sourceMappingURL=config-manager.js.map

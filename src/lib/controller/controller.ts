@@ -8,9 +8,13 @@ import { getInternalDefaults } from '../const/tools';
 import axios from 'axios';
 import { TasmotaOnlineResponse, nsPanelState, nsPanelStateVal } from '../types/types';
 import { Color } from '../const/Color';
+import { stateRoleArray } from '../types/pages';
 
 axios.defaults.timeout = 10000;
 
+/**
+ * Controller Class
+ */
 export class Controller extends Library.BaseClass {
     mqttClient: MQTT.MQTTClientClass;
     statesControler: StatesControler;
@@ -31,6 +35,7 @@ export class Controller extends Library.BaseClass {
         this.mqttClient = options.mqttClient;
         this.statesControler = new StatesControler(this.adapter);
 
+        this.adapter.log.info(JSON.stringify(stateRoleArray));
         for (const panelConfig of options.panels) {
             if (panelConfig === undefined) continue;
             panelConfig.controller = this;

@@ -220,6 +220,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                         obj1.native.Testconfig2 = obj.message;
                         await this.setForeignObjectAsync('system.adapter.' + this.namespace, obj1);
                     }
+                } else if (obj.command == 'updateCustom') {
+                    if (obj.message && obj.message.state) {
+                        const state = await this.getForeignObjectAsync(obj.message.state);
+                        if (state && state.common && state.common.custom && state.common.custom[this.namespace]) {
+                            this.log.debug('updateCustom ' + JSON.stringify(state.common.custom[this.namespace]));
+                        }
+                    };;
                 }
                 // Send response in callback if required
                 if (obj.callback) this.sendTo(obj.from, obj.command, [], obj.callback);

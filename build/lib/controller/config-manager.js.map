@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/controller/config-manager.ts"],
+  "sourcesContent": ["import { BaseClass } from '../classes/library';\nimport { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';\n\nexport class ConfigManager extends BaseClass {\n    //private test: ConfigManager.DeviceState;\n\n    constructor(adapter: NspanelLovelaceUi) {\n        super(adapter, 'config-manager');\n    }\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,qBAA0B;AAGnB,MAAM,sBAAsB,yBAAU;AAAA;AAAA,EAGzC,YAAY,SAA4B;AACpC,UAAM,SAAS,gBAAgB;AAAA,EACnC;AACJ;",
+  "names": []
+}

@@ -23,6 +23,74 @@ export type PageTypeCards =
     | 'popupNotify'
     | 'popupNotify2';
 
+export const arrayOfAll =
+    <T>() =>
+    <U extends T[]>(array: U & ([T] extends [U[number]] ? unknown : 'Invalid') & { 0: T }) =>
+        array;
+
+const arrayOfAllStateRole = arrayOfAll<StateRole>();
+
+/**
+ * if u get a error here, u have to add the new stateRole to the type StateRole or visa versa
+ */
+export const stateRoleArray = arrayOfAllStateRole([
+    'value.power',
+    'button.play',
+    'button.pause',
+    'button.next',
+    'button.prev',
+    'button.stop',
+    'button.volume.up',
+    'button.volume.down',
+    'media.seek', // (common.type=number) %
+    'media.mode.shuffle', //(common.type=number) 0 - none, 1 - all, 2 - one
+    'media.mode.repeat', //(common.type=boolean)
+    'media.state', //['play','stop','pause'] or [0 - pause, 1 - play, 2 - stop] or [true - playing/false - pause]
+    'media.artist',
+    'media.album',
+    'media.title',
+    'media.duration',
+    'media.elapsed.text',
+    'media.elapsed',
+    'media.mute',
+    'level.volume',
+    'media.playlist',
+    'button.open.blind',
+    'button.open',
+    'button.close.blind',
+    'button.close',
+    'button.stop.blind',
+    'button.stop',
+    'button.open.tilt',
+    'button.stop.tilt',
+    'button.close.tilt',
+    'level.tilt',
+    'level.blind',
+    'level.color.name',
+    'state',
+    'level.color.blue',
+    'level.color.red',
+    'level.color.green',
+    'level.color.white',
+    'level.brightness',
+    'switch',
+    'button',
+    'sensor.window',
+    'sensor.open',
+    'value.temperature',
+    'value.battery',
+    'indicator.lowbat',
+    'value',
+    'level.temperature',
+    'level.value',
+    'date',
+    'date.sunrise.forecast.0',
+    'date.sunset.forecast.0',
+    'date.sunrise.forecast.1',
+    'date.sunset.forecast.1',
+    '',
+]);
+
 export type StateRole =
     | 'value.power'
     | 'button.play'

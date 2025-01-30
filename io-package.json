@@ -146,7 +146,8 @@
     "connectionType": "local",
     "dataSource": "push",
     "adminUI": {
-      "config": "json"
+      "config": "json",
+      "custom": "json"
     },
     "dependencies": [
       {

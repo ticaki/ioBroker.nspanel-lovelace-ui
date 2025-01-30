@@ -153,6 +153,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       callback();
     }
   }
+  //test
   // If you need to react to object changes, uncomment the following block and the corresponding line in the constructor.
   // You also need to subscribe to the objects with `this.subscribeObjects`, similar to `this.subscribeStates`.
   // /**
@@ -194,6 +195,15 @@ class NspanelLovelaceUi extends utils.Adapter {
             obj1.native.Testconfig2 = obj.message;
             await this.setForeignObjectAsync("system.adapter." + this.namespace, obj1);
           }
+        } else if (obj.command == "updateCustom") {
+          if (obj.message && obj.message.state) {
+            const state = await this.getForeignObjectAsync(obj.message.state);
+            if (state && state.common && state.common.custom && state.common.custom[this.namespace]) {
+              this.log.debug("updateCustom " + JSON.stringify(state.common.custom[this.namespace]));
+            }
+          }
+          ;
+          ;
         }
         if (obj.callback)
           this.sendTo(obj.from, obj.command, [], obj.callback);

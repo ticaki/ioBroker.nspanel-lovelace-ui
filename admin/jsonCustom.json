@@ -1,0 +1,59 @@
+{
+    "i18n": true,
+    "type": "panel",
+    "items": {
+        
+        "general": {
+            "type": "panel",
+            "label": "general0",
+            "items": {
+                "mqttIp0": {
+                    "type": "text",
+                    "label": "mqttIp0",
+                    "newLine": true
+                },
+                "mqttPort0": {
+                    "type": "text",
+                    "label": "mqttPort0",
+                    "newLine": false
+                },
+                "mqttUsername0": {
+                    "type": "text",
+                    "label": "mqttUsername0",
+                    "newLine": true
+                }
+            }
+        },
+        "test1": {
+            "type": "panel",
+            "label": "general1",
+            "items": {
+                "mqttIp1": {
+                    "type": "text",
+                    "label": "mqttIp1",
+                    "newLine": true
+                },
+                "Device": {
+                    "type": "deviceManager",
+                    "label": "device",
+                    "newLine": true
+                },
+                "role": {
+                    "type": "selectSendTo",
+                    "label": "role",
+                    "newLine": true,
+                    "command": "ConfigManager.role",
+                    "jsonData": "{\"role\": \"${data.role}\"}",
+                    "manual": true
+                }
+            }
+        },
+        "_update": {
+            "type": "sendTo",
+            "label": "Update",
+            "command": "updateCustom",
+            "jsonData": "{ \"state\": \"${customObj._id}\" }"
+        }
+    }
+}
+ 
