@@ -65,7 +65,7 @@ class PageAlarm extends import_Page.Page {
   alarmType = "alarm";
   items;
   async setMode(m) {
-    this.library.writedp(
+    await this.library.writedp(
       `panels.${this.panel.name}.alarm.${this.name}.mode`,
       m,
       import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.mode
@@ -92,8 +92,9 @@ class PageAlarm extends import_Page.Page {
   failCount = 0;
   constructor(config, options) {
     super(config, options);
-    if (options.config && options.config.card == "cardAlarm")
+    if (options.config && options.config.card == "cardAlarm") {
       this.config = options.config;
+    }
     this.minUpdateInterval = 500;
     this.neverDeactivateTrigger = true;
   }
@@ -107,7 +108,7 @@ class PageAlarm extends import_Page.Page {
     );
     this.items = tempItem;
     this.items.card = "cardAlarm";
-    this.library.writedp(
+    await this.library.writedp(
       `panels.${this.panel.name}.alarm.${this.name}`,
       void 0,
       import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
@@ -116,17 +117,20 @@ class PageAlarm extends import_Page.Page {
     this.alarmType = (_a = this.items && this.items.data && this.items.data.alarmType && await this.items.data.alarmType.getString()) != null ? _a : "alarm";
     if (this.alarmType === "alarm") {
       const status = await this.getStatus();
-      if (status === "pending")
+      if (status === "pending") {
         await this.setStatus("armed");
-      else if (status === "arming")
+      } else if (status === "arming") {
         await this.setStatus("disarmed");
-      else
+      } else {
         await this.setStatus(this.status);
-    } else
-      this.setStatus("armed");
+      }
+    } else {
+      await this.setStatus("armed");
+    }
     this.pin = (_b = this.items && this.items.data && this.items.data.pin && await this.items.data.pin.getString()) != null ? _b : "";
-    if (this.pin == "-1")
+    if (this.pin == "-1") {
       this.pin = this.adapter.config.pw1 ? this.adapter.config.pw1 : "";
+    }
   }
   /**
    *
@@ -134,12 +138,14 @@ class PageAlarm extends import_Page.Page {
    */
   async update() {
     var _a, _b, _c, _d, _e;
-    if (!this.visibility)
+    if (!this.visibility) {
       return;
+    }
     const message = {};
     const items = this.items;
-    if (!items || items.card !== "cardAlarm")
+    if (!items || items.card !== "cardAlarm") {
       return;
+    }
     const data = items.data;
     await this.getStatus();
     message.intNameEntity = this.id;
@@ -231,15 +237,17 @@ class PageAlarm extends import_Page.Page {
         await this.getStatus();
         const val = await approved.getBoolean();
         if (val) {
-          if (this.status === "pending")
+          if (this.status === "pending") {
             await this.setStatus("disarmed");
-          else if (this.status === "arming")
+          } else if (this.status === "arming") {
             await this.setStatus("armed");
+          }
         } else {
-          if (this.status === "pending")
+          if (this.status === "pending") {
             await this.setStatus("armed");
-          else if (this.status === "arming")
+          } else if (this.status === "arming") {
             await this.setStatus("disarmed");
+          }
         }
         this.adapter.setTimeout(() => this.update(), 50);
       }
@@ -247,6 +255,7 @@ class PageAlarm extends import_Page.Page {
   }
   /**
    *a
+   *
    * @param _event
    * @returns
    */
@@ -254,16 +263,18 @@ class PageAlarm extends import_Page.Page {
     var _a;
     const button = _event.action;
     const value = _event.opt;
-    if (!this.items || this.items.card !== "cardAlarm")
+    if (!this.items || this.items.card !== "cardAlarm") {
       return;
+    }
     const approved = this.items.data && this.items.data.approved;
     if (pages.isAlarmButtonEvent(button)) {
       await this.getStatus();
-      if (this.status === "triggered")
+      if (this.status === "triggered") {
         return;
+      }
       if (this.pin && this.pin != value) {
         if (++this.failCount < 3) {
-          this.log.warn("Wrong pin entered. try " + this.failCount + " of 3");
+          this.log.warn(`Wrong pin entered. try ${this.failCount} of 3`);
         } else {
           this.log.error("Wrong pin entered. locked!");
           await this.setStatus("triggered");
@@ -271,7 +282,7 @@ class PageAlarm extends import_Page.Page {
         this.update;
         return;
       }
-      this.log.debug("Alarm event " + button + " value: " + value);
+      this.log.debug(`Alarm event ${button} value: ${value}`);
       switch (button) {
         case "A1":
         case "A2":
@@ -310,7 +321,7 @@ class PageAlarm extends import_Page.Page {
             this.panel.navigation.setTargetPageByName(value2);
             break;
           }
-          this.setStatus("armed");
+          await this.setStatus("armed");
           break;
         }
       }

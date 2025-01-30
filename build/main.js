@@ -62,7 +62,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       try {
         const path = "./lib/config-custom.js";
         testconfig = (await Promise.resolve().then(() => __toESM(require(path)))).Testconfig;
-      } catch (e) {
+      } catch {
       }
       this.config.Testconfig2 = testconfig;
     }
@@ -73,20 +73,22 @@ class NspanelLovelaceUi extends utils.Adapter {
     try {
       this.config.Testconfig2[0].pages[0] = this.config.Testconfig2[0].pages[0];
       this.config.Testconfig2[0].timeout = this.config.timeout;
-    } catch (e) {
+    } catch {
       this.log.warn("Invalid configuration stopped!");
       return;
     }
-    if (this.config.doubleClickTime === void 0 || typeof this.config.doubleClickTime !== "number" || !(this.config.doubleClickTime > 0))
+    if (this.config.doubleClickTime === void 0 || typeof this.config.doubleClickTime !== "number" || !(this.config.doubleClickTime > 0)) {
       this.config.doubleClickTime = 400;
+    }
     this.setTimeout(async () => {
       import_icon_mapping.Icons.adapter = this;
       await this.library.init();
       const states = await this.getStatesAsync("*");
       await this.library.initStates(states);
       for (const id in states) {
-        if (id.endsWith(".info.nspanel.isOnline"))
+        if (id.endsWith(".info.nspanel.isOnline")) {
           await this.library.writedp(id, false, import_definition.genericStateObjects.panel.panels.info.nspanel.isOnline);
+        }
       }
       this.log.debug("Check configuration!");
       if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
@@ -100,11 +102,12 @@ class NspanelLovelaceUi extends utils.Adapter {
         this.config.mqttUsername,
         this.config.mqttPassword,
         (topic, message) => {
-          this.log.debug(topic + " " + message);
+          this.log.debug(`${topic} ${message}`);
         }
       );
-      if (!this.mqttClient)
+      if (!this.mqttClient) {
         return;
+      }
       const testconfig = structuredClone(this.config.Testconfig2);
       let counter = 0;
       for (const a of testconfig) {
@@ -112,21 +115,24 @@ class NspanelLovelaceUi extends utils.Adapter {
           const names = [];
           for (const p of a.pages) {
             counter++;
-            if (!("uniqueID" in p))
+            if (!("uniqueID" in p)) {
               continue;
-            if (p.card === "screensaver" || p.card === "screensaver2") {
-              p.uniqueID = "#" + p.uniqueID;
             }
-            if (names.indexOf(p.uniqueID) !== -1)
+            if (p.card === "screensaver" || p.card === "screensaver2") {
+              p.uniqueID = `#${p.uniqueID}`;
+            }
+            if (names.indexOf(p.uniqueID) !== -1) {
               throw new Error(`uniqueID ${p.uniqueID} is double!`);
+            }
             names.push(p.uniqueID);
           }
         }
       }
-      if (counter === 0)
+      if (counter === 0) {
         return;
+      }
       const mem = process.memoryUsage().heapUsed / 1024;
-      this.log.debug(String(mem + "k"));
+      this.log.debug(String(`${mem}k`));
       this.controller = new import_controller.Controller(this, {
         mqttClient: this.mqttClient,
         name: "controller",
@@ -135,21 +141,24 @@ class NspanelLovelaceUi extends utils.Adapter {
       await this.controller.init();
       setInterval(() => {
         this.log.debug(
-          Math.trunc(mem) + "k/" + String(Math.trunc(process.memoryUsage().heapUsed / 1024)) + "k Start/Jetzt: "
+          `${Math.trunc(mem)}k/${String(Math.trunc(process.memoryUsage().heapUsed / 1024))}k Start/Jetzt: `
         );
       }, 6e4);
     }, 2500);
   }
   /**
    * Is called when adapter shuts down - callback has to be called under any circumstances.
+   *
+   * @param callback
    */
   async onUnload(callback) {
     try {
       this.unload = true;
-      if (this.controller)
-        await this.controller.delete;
+      if (this.controller) {
+        this.controller.delete;
+      }
       callback();
-    } catch (e) {
+    } catch {
       callback();
     }
   }
@@ -170,11 +179,14 @@ class NspanelLovelaceUi extends utils.Adapter {
   // }
   /**
    * Is called if a subscribed state changes
+   *
+   * @param id
+   * @param state
    */
   async onStateChange(id, state) {
     if (state) {
       if (this.controller) {
-        this.controller.statesControler.onStateChange(id, state);
+        await this.controller.statesControler.onStateChange(id, state);
       }
     } else {
       this.log.info(`state ${id} deleted`);
@@ -190,27 +202,29 @@ class NspanelLovelaceUi extends utils.Adapter {
       if (obj.command) {
         this.log.info(JSON.stringify(obj));
         if (obj.command == "config") {
-          const obj1 = await this.getForeignObjectAsync("system.adapter." + this.namespace);
+          const obj1 = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
           if (obj1 && obj1.native && JSON.stringify(obj1.native.Testconfig2) !== JSON.stringify(obj.message)) {
             obj1.native.Testconfig2 = obj.message;
-            await this.setForeignObjectAsync("system.adapter." + this.namespace, obj1);
+            await this.setForeignObjectAsync(`system.adapter.${this.namespace}`, obj1);
           }
         } else if (obj.command == "updateCustom") {
           if (obj.message && obj.message.state) {
             const state = await this.getForeignObjectAsync(obj.message.state);
             if (state && state.common && state.common.custom && state.common.custom[this.namespace]) {
-              this.log.debug("updateCustom " + JSON.stringify(state.common.custom[this.namespace]));
+              this.log.debug(`updateCustom ${JSON.stringify(state.common.custom[this.namespace])}`);
             }
           }
         }
-        if (obj.callback)
+        if (obj.callback) {
           this.sendTo(obj.from, obj.command, [], obj.callback);
+        }
       }
     }
   }
   async writeStateExternalAsync(dp, val) {
-    if (dp.startsWith(this.namespace))
+    if (dp.startsWith(this.namespace)) {
       return;
+    }
     await this.setForeignStateAsync(dp, val, false);
   }
 }

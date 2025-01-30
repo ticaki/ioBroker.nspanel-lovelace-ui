@@ -42,8 +42,9 @@ class PageEntities extends import_pageMenu.PageMenu {
     this.iconRightP = "arrow-down-bold-outline";
     this.iconRight = "arrow-down-bold";
     this.config = options.config;
-    if (options.items && options.items.card == "cardEntities")
+    if (options.items && options.items.card == "cardEntities") {
       this.items = options.items;
+    }
     this.minUpdateInterval = 2e3;
   }
   async init() {
@@ -59,8 +60,9 @@ class PageEntities extends import_pageMenu.PageMenu {
   }
   async update() {
     var _a;
-    if (!this.visibility)
+    if (!this.visibility) {
       return;
+    }
     const message = {};
     const arr = (await this.getOptions([])).slice(0, 4);
     message.options = arr;

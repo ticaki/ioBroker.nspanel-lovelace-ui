@@ -23,8 +23,9 @@ __export(data_collection_functions_exports, {
 module.exports = __toCommonJS(data_collection_functions_exports);
 var import_Color = require("../const/Color");
 async function handleCardRole(adapter, cardRole, page) {
-  if (!cardRole)
+  if (!cardRole) {
     return null;
+  }
   switch (cardRole) {
     case "AdapterConnection":
     case "AdapterStopped": {
@@ -32,22 +33,26 @@ async function handleCardRole(adapter, cardRole, page) {
         startkey: `system.adapter`,
         endkey: `system.adapter}`
       });
-      if (!list)
+      if (!list) {
         return null;
+      }
       const result = [];
       for (const item of list.rows) {
         const obj = item.value;
-        if (!obj.common.enabled || obj.common.mode !== "daemon")
+        if (!obj.common.enabled || obj.common.mode !== "daemon") {
           continue;
+        }
         let n = obj.common.titleLang && obj.common.titleLang[adapter.library.getLocalLanguage()];
-        n = n ? n : obj.common.titleLang && obj.common.titleLang["en"];
+        n = n ? n : obj.common.titleLang && obj.common.titleLang.en;
         n = n ? n : obj.common.name;
-        if (item.id.split(".").slice(2).join(".") === adapter.namespace)
+        if (item.id.split(".").slice(2).join(".") === adapter.namespace) {
           continue;
+        }
         const stateID = cardRole === "AdapterConnection" ? `${item.id.split(".").slice(2).join(".")}.info.connection` : `${item.id}.alive`;
         const stateObj = await adapter.getForeignObjectAsync(stateID);
-        if (!stateObj || !stateObj.common || stateObj.common.type !== "boolean")
+        if (!stateObj || !stateObj.common || stateObj.common.type !== "boolean") {
           continue;
+        }
         const pi = {
           role: "",
           type: "text",
@@ -90,10 +95,12 @@ async function handleCardRole(adapter, cardRole, page) {
       return result;
     }
     case "AdapterUpdates": {
-      if (!page || page.card !== "cardEntities" || !("items" in page) || !page.items || page.items.card !== "cardEntities")
+      if (!page || page.card !== "cardEntities" || !("items" in page) || !page.items || page.items.card !== "cardEntities") {
         return null;
-      if (!page.items.data.list)
+      }
+      if (!page.items.data.list) {
         return null;
+      }
       const value = await page.items.data.list.getObject();
       if (value && page.items.data.list.options.type !== "const") {
         const dp = page.items.data.list.options.dp;

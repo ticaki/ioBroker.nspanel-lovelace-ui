@@ -80,8 +80,9 @@ class PagePower extends import_Page.Page {
   items;
   constructor(config, options) {
     super(config, options);
-    if (options.config && options.config.card == "cardPower")
+    if (options.config && options.config.card == "cardPower") {
       this.config = options.config;
+    }
     this.minUpdateInterval = 2e3;
   }
   async init() {
@@ -103,13 +104,15 @@ class PagePower extends import_Page.Page {
     await super.init();
   }
   onInternalCommand = async (id, _state) => {
-    if (!id.startsWith("///" + this.name))
+    if (!id.startsWith(`///${this.name}`)) {
       return null;
+    }
     const token = id.split("/").pop();
     if (token === "powerSum") {
       const items = this.items;
-      if (!items || items.card !== "cardPower")
+      if (!items || items.card !== "cardPower") {
         return null;
+      }
       const data = items.data;
       const l1 = await this.getElementSum(data.leftTop, 0);
       const l2 = await this.getElementSum(data.leftMiddle, 0);
@@ -120,8 +123,9 @@ class PagePower extends import_Page.Page {
       let sum = l1 + l2 + l3 + r1 + r2 + r3;
       if (items.data.homeValueBot && items.data.homeValueBot.math) {
         const f = await items.data.homeValueBot.math.getString();
-        if (f)
+        if (f) {
           sum = new Function("l1", "l2", "l3", "r1", "r2", "r3", "Math", f)(l1, l2, l3, r1, r2, r3, Math);
+        }
       }
       return String(sum);
     }
@@ -129,12 +133,14 @@ class PagePower extends import_Page.Page {
   };
   async update() {
     var _a, _b, _c;
-    if (!this.visibility)
+    if (!this.visibility) {
       return;
+    }
     const message = {};
     const items = this.items;
-    if (!items || items.card !== "cardPower")
+    if (!items || items.card !== "cardPower") {
       return;
+    }
     const data = items.data;
     message.headline = this.library.getTranslation(
       (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
@@ -153,19 +159,22 @@ class PagePower extends import_Page.Page {
     this.sendToPanel(this.getMessage(message));
   }
   async getElementSum(item, num) {
-    if (item === void 0)
+    if (item === void 0) {
       return num;
+    }
     const value = await (0, import_tools.getValueEntryNumber)(item.value);
     return value !== null ? value + num : num;
   }
   async getElementUpdate(item) {
     var _a, _b, _c, _d, _e;
-    if (item === void 0)
+    if (item === void 0) {
       return void 0;
+    }
     const message = {};
     const value = await (0, import_tools.getValueEntryNumber)(item.value);
-    if (value === null)
+    if (value === null) {
       return void 0;
+    }
     message.icon = (_a = await (0, import_tools.getIconEntryValue)(item.icon, value >= 0, "")) != null ? _a : void 0;
     message.iconColor = (_b = await (0, import_tools.getIconEntryColor)(item.icon, value, import_Color.Color.White)) != null ? _b : void 0;
     message.name = (_c = await (0, import_tools.getEntryTextOnOff)(item.text, value >= 0)) != null ? _c : void 0;
@@ -204,8 +213,9 @@ class PagePower extends import_Page.Page {
   }
   getMessageItem(i) {
     var _a, _b, _c, _d, _e;
-    if (!i)
+    if (!i) {
       return (0, import_tools.getPayload)("", "", "", "", "", "", "");
+    }
     return (0, import_tools.getPayload)("", "", (_a = i.icon) != null ? _a : "", (_b = i.iconColor) != null ? _b : "", (_c = i.name) != null ? _c : "", (_d = i.value) != null ? _d : "", String((_e = i.speed) != null ? _e : ""));
   }
   async onStateTrigger() {

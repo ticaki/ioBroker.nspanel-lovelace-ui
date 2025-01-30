@@ -41,11 +41,11 @@ class Navigation extends import_library.BaseClass {
     if (c) {
       const states = this.buildCommonStates();
       import_definition.genericStateObjects.panel.panels.cmd.goToNavigationPoint.common.states = states;
-      this.library.writedp(
+      void this.library.writedp(
         `panels.${this.panel.name}.cmd.goToNavigationPoint`,
         c.name,
         import_definition.genericStateObjects.panel.panels.cmd.goToNavigationPoint
-      );
+      ).catch();
     }
     this._currentItem = value;
   }
@@ -62,41 +62,50 @@ class Navigation extends import_library.BaseClass {
     let serviceID = -1;
     for (let a = 0; a < this.navigationConfig.length; a++) {
       const c = this.navigationConfig[a];
-      if (!c)
+      if (!c) {
         continue;
-      if (c.left && c.left.single === "///service")
+      }
+      if (c.left && c.left.single === "///service") {
         serviceRight = c.name;
-      if (c.right && c.right.single === "///service")
+      }
+      if (c.right && c.right.single === "///service") {
         serviceLeft = c.name;
-      if (c.name === "///service")
+      }
+      if (c.name === "///service") {
         serviceID = a;
+      }
       const pageID = this.panel.getPagebyUniqueID(c.page);
       this.database[c.name === "main" ? 0 : b++] = pageID !== null ? { page: pageID, left: {}, right: {}, index: a } : null;
     }
     if (serviceID !== -1) {
       const c = this.navigationConfig[serviceID];
       if (c) {
-        if (serviceLeft)
+        if (serviceLeft) {
           c.left = { single: serviceLeft };
-        if (serviceRight)
+        }
+        if (serviceRight) {
           c.right = { single: serviceRight };
+        }
       }
     }
     for (let a = 0; a < this.database.length; a++) {
       const c = this.navigationConfig[a];
       const i = this.database[a];
-      if (!c || !i)
+      if (!c || !i) {
         continue;
+      }
       for (const k of ["left", "right"]) {
         const nk = k;
         const r = c[nk];
-        if (!r)
+        if (!r) {
           continue;
+        }
         for (const k2 of ["single", "double"]) {
           const nk2 = k2;
           const r2 = r[nk2];
-          if (!r2)
+          if (!r2) {
             continue;
+          }
           const index = this.navigationConfig.findIndex((a2) => a2 && a2.name === r2);
           if (index !== -1) {
             i[nk][nk2] = index;
@@ -120,7 +129,7 @@ class Navigation extends import_library.BaseClass {
   setTargetPageByName(n) {
     const index = this.navigationConfig.findIndex((a) => a && a.name === n);
     if (index !== -1) {
-      this.setPageByIndex(index);
+      void this.setPageByIndex(index);
     } else {
       this.log.warn(`Dont find navigation target for ${n}`);
     }
@@ -136,8 +145,9 @@ class Navigation extends import_library.BaseClass {
   buildCommonStates() {
     const result = {};
     for (const n of this.navigationConfig) {
-      if (n)
+      if (n) {
         result[n.name] = n.name;
+      }
     }
     return result;
   }
@@ -154,7 +164,7 @@ class Navigation extends import_library.BaseClass {
       this.doubleClickTimeout = void 0;
       if (i && i[d] && i[d].double) {
         const index = i[d].double;
-        this.setPageByIndex(index);
+        void this.setPageByIndex(index);
       }
       this.log.debug("Navigation double click work.");
     } else if (!single && i && i[d] && i[d].double) {
@@ -172,12 +182,12 @@ class Navigation extends import_library.BaseClass {
       this.doubleClickTimeout = void 0;
       if (i && i[d] && i[d].single !== void 0) {
         const index = i[d].single;
-        this.setPageByIndex(index);
+        void this.setPageByIndex(index);
         this.log.debug(`Navigation single click with target ${i[d].single} work.`);
         return;
       } else if (i && i[d] && i[d].double !== void 0) {
         const index = i[d].double;
-        this.setPageByIndex(index);
+        void this.setPageByIndex(index);
         this.log.debug(`Navigation single click (use double target) with target ${i[d].double} work.`);
         return;
       }
@@ -185,11 +195,13 @@ class Navigation extends import_library.BaseClass {
     }
   }
   async optionalActions(item) {
-    if (!item)
+    if (!item) {
       return;
+    }
     const nItem = this.navigationConfig[item.index];
-    if (!nItem)
+    if (!nItem) {
       return;
+    }
     if (nItem.optional === "notifications") {
       if (this.panel.controller.systemNotification.getNotificationIndex(this.panel.notifyIndex) !== -1) {
         await this.panel.statesControler.setInternalState(
@@ -202,8 +214,9 @@ class Navigation extends import_library.BaseClass {
   }
   buildNavigationString(side) {
     const item = this.database[this.currentItem];
-    if (!item)
+    if (!item) {
       return "";
+    }
     let navigationString = "";
     if (!side || side === "left") {
       if (item.left.single !== void 0 && (item.left.double === void 0 || this.doubleClickTimeout === void 0)) {
@@ -252,15 +265,13 @@ class Navigation extends import_library.BaseClass {
         navigationString2 = (0, import_tools.getPayload)("", "", "", "", "", "");
       }
     }
-    if (side === "left")
+    if (side === "left") {
       return navigationString;
-    else if (side === "right")
+    } else if (side === "right") {
       return navigationString2;
+    }
     return (0, import_tools.getPayload)(navigationString, navigationString2);
   }
-  /**
-   *
-   */
   resetPosition() {
     const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
     if (index !== -1 && this.database[index]) {
@@ -269,8 +280,9 @@ class Navigation extends import_library.BaseClass {
   }
   getCurrentMainPoint() {
     const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
-    if (index === -1)
+    if (index === -1) {
       return "main";
+    }
     const item = this.navigationConfig[index];
     return item ? item.name : "main";
   }
@@ -288,13 +300,15 @@ class Navigation extends import_library.BaseClass {
       const index = this.database.findIndex((a) => a && a.page !== null);
       page = this.database[index];
     }
-    if (page)
+    if (page) {
       await this.setPageByIndex(page.index);
+    }
   }
   async delete() {
     await super.delete();
-    if (this.doubleClickTimeout)
+    if (this.doubleClickTimeout) {
       this.adapter.clearTimeout(this.doubleClickTimeout);
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

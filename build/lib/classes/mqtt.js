@@ -67,7 +67,7 @@ class MQTTClientClass extends import_library.BaseClass {
     });
     this.client.on("error", (err) => {
       this.ready = false;
-      this.log.error(`${err}`);
+      this.log.error(`${String(err)}`);
     });
     this.client.on("close", () => {
       this.ready = false;
@@ -85,8 +85,9 @@ class MQTTClientClass extends import_library.BaseClass {
     await this.client.publishAsync(topic, message, opt);
   }
   subscript(topic, callback) {
-    if (this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback) !== -1)
+    if (this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback) !== -1) {
       return;
+    }
     const aNewOne = this.subscriptDB.findIndex((m) => m.topic === topic) === -1;
     this.subscriptDB.push({ topic, callback });
     if (aNewOne) {
@@ -115,10 +116,11 @@ class MQTTServerClass extends import_library.BaseClass {
     });
     this.aedes.authenticate = (client, un, pw, callback) => {
       const confirm = username === un && password == pw.toString();
-      if (!confirm)
+      if (!confirm) {
         this.log.warn(`Login denied client: ${client.id}. User name or password wrong!`);
-      else
+      } else {
         this.log.info(`Client ${client.id} login successful.`);
+      }
       callback(null, confirm);
     };
   }

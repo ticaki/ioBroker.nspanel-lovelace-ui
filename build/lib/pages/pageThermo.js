@@ -51,8 +51,9 @@ class PageThermo extends import_Page.Page {
   titelPos = 0;
   nextArrow = false;
   constructor(config, options) {
-    if (config.card !== "cardThermo")
+    if (config.card !== "cardThermo") {
       return;
+    }
     if (options && options.pageItems) {
       options.pageItems.unshift({
         type: "button",
@@ -71,12 +72,14 @@ class PageThermo extends import_Page.Page {
       });
     }
     super(config, options);
-    if (options.config && options.config.card == "cardThermo")
+    if (options.config && options.config.card == "cardThermo") {
       this.config = options.config;
-    else
+    } else {
       throw new Error("Missing config!");
-    if (options.items && options.items.card == "cardThermo")
+    }
+    if (options.items && options.items.card == "cardThermo") {
       this.items = options.items;
+    }
     this.minUpdateInterval = 2e3;
   }
   async init() {
@@ -86,15 +89,17 @@ class PageThermo extends import_Page.Page {
       tempConfig,
       this
     );
-    if (tempItem)
+    if (tempItem) {
       tempItem.card = "cardThermo";
+    }
     this.items = tempItem;
     await super.init();
   }
   async update() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
-    if (!this.visibility)
+    if (!this.visibility) {
       return;
+    }
     const message = {};
     message.options = ["~~~", "~~~", "~~~", "~~~", "~~~", "~~~", "~~~", "~~~"];
     if (this.items) {
@@ -102,8 +107,9 @@ class PageThermo extends import_Page.Page {
       if (this.pageItems) {
         const pageItems = this.pageItems.filter((a) => a && a.dataItems && a.dataItems.type === "button");
         const localStep = pageItems.length > 9 ? 7 : 8;
-        if (pageItems.length - 1 <= localStep * (this.step - 1))
+        if (pageItems.length - 1 <= localStep * (this.step - 1)) {
           this.step = 1;
+        }
         const maxSteps = localStep * this.step + 1;
         const minStep = localStep * (this.step - 1) + 1;
         let b = 0;
@@ -112,8 +118,9 @@ class PageThermo extends import_Page.Page {
           if (temp) {
             const arr = (await temp.getPageItemPayload()).split("~");
             message.options[b] = (0, import_tools.getPayload)(arr[2], arr[3], arr[5] == "1" ? "1" : "1", arr[1]);
-          } else
+          } else {
             (0, import_tools.getPayload)("", "", "", "");
+          }
         }
         if (localStep === 7) {
           this.nextArrow = true;
@@ -121,8 +128,9 @@ class PageThermo extends import_Page.Page {
           if (temp) {
             const arr = (await temp.getPageItemPayload()).split("~");
             message.options[7] = (0, import_tools.getPayload)(arr[2], arr[3], arr[5] == "1" ? "1" : "0", arr[1]);
-          } else
+          } else {
             (0, import_tools.getPayload)("", "", "", "");
+          }
         }
       }
       message.intNameEntity = this.id;
@@ -167,36 +175,43 @@ class PageThermo extends import_Page.Page {
   async onButtonEvent(event) {
     var _a, _b, _c;
     if (event.action === "tempUpdHighLow") {
-      if (!this.items)
+      if (!this.items) {
         return;
+      }
       const values = event.opt.split("|");
       const newValLow = parseInt(values[0]) / 10;
       const newValHigh = parseInt(values[1]) / 10;
       const valLow = (_a = this.items && this.items.data.set1 && await this.items.data.set1.getNumber()) != null ? _a : null;
       const valHigh = (_b = this.items && this.items.data.set2 && await this.items.data.set2.getNumber()) != null ? _b : null;
-      if (valLow !== null && newValLow !== valLow)
-        this.items.data.set1.setStateAsync(newValLow);
-      if (valHigh !== null && newValHigh !== valHigh)
+      if (valLow !== null && newValLow !== valLow) {
+        await this.items.data.set1.setStateAsync(newValLow);
+      }
+      if (valHigh !== null && newValHigh !== valHigh) {
         await this.items.data.set2.setStateAsync(newValHigh);
+      }
     } else if (event.action === "tempUpd") {
-      if (!this.items)
+      if (!this.items) {
         return;
+      }
       const newValLow = parseInt(event.opt) / 10;
       const valLow = (_c = this.items && this.items.data.set1 && await this.items.data.set1.getNumber()) != null ? _c : null;
-      if (valLow !== null && newValLow !== valLow)
+      if (valLow !== null && newValLow !== valLow) {
         await this.items.data.set1.setStateAsync(newValLow);
+      }
     } else if (event.action === "hvac_action" && this.pageItems && this.pageItems[Number(event.opt.split("?")[1])]) {
       if (this.nextArrow && event.opt.split("?")[1] === "0") {
         this.step++;
         await this.update();
-      } else if (await this.pageItems[Number(event.opt.split("?")[1])].onCommand("button", ""))
+      } else if (await this.pageItems[Number(event.opt.split("?")[1])].onCommand("button", "")) {
         return;
+      }
     }
   }
   async onPopupRequest(id, popup, action, value, _event = null) {
     var _a, _b, _c;
-    if (!this.pageItems || !this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === "input_sel"))
+    if (!this.pageItems || !this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === "input_sel")) {
       return;
+    }
     const items = this.pageItems;
     let msg = null;
     if (popup === "popupThermo") {
@@ -211,16 +226,18 @@ class PageThermo extends import_Page.Page {
         i && temp.push((0, import_tools.getPayload)((_c = await i.GeneratePopup(popup)) != null ? _c : "~~~"));
       }
       for (let a = 0; a < 3; a++) {
-        if (temp[a] === void 0)
+        if (temp[a] === void 0) {
           temp[a] = "~~~";
+        }
       }
       msg = (0, import_tools.getPayload)("entityUpdateDetail", id2, icon, color, temp[0], temp[1], temp[2], "");
     } else if (action && action.startsWith("mode") && value !== void 0) {
       const tempid = parseInt(action.split("?")[1]);
       const item = items[tempid];
-      if (!item)
+      if (!item) {
         return;
-      item.onCommand("mode-insel", value);
+      }
+      await item.onCommand("mode-insel", value);
     }
     if (msg !== null) {
       this.sendToPanel(msg);

@@ -42,8 +42,9 @@ class Screensaver extends import_Page.Page {
   rotationTime = 3e5;
   timoutRotation = void 0;
   constructor(config, options) {
-    if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2")
+    if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2") {
       return;
+    }
     switch (options.config.mode) {
       case "standard":
       case "alternate": {
@@ -66,8 +67,9 @@ class Screensaver extends import_Page.Page {
   }
   async getData(places) {
     const config = this.config;
-    if (!config || config.card !== "screensaver" && config.card !== "screensaver2")
+    if (!config || config.card !== "screensaver" && config.card !== "screensaver2") {
       return null;
+    }
     const message = {
       options: {
         indicator: [],
@@ -89,10 +91,12 @@ class Screensaver extends import_Page.Page {
         if (pageItems && pageItems.config && pageItems.config.modeScr) {
           const place = pageItems.config.modeScr;
           const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
-          if (max === 0)
+          if (max === 0) {
             continue;
-          if (places.indexOf(place) === -1)
+          }
+          if (places.indexOf(place) === -1) {
             continue;
+          }
           const arr = options[place] || [];
           arr.push(await pageItems.getPageItemPayload());
           options[place] = arr;
@@ -100,8 +104,9 @@ class Screensaver extends import_Page.Page {
       }
       for (const x in message.options) {
         const place = x;
-        if (places.indexOf(place) === -1)
+        if (places.indexOf(place) === -1) {
           continue;
+        }
         let items = message.options[place];
         if (items) {
           const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
@@ -118,8 +123,9 @@ class Screensaver extends import_Page.Page {
             } else {
               const arr = items[i].split("~");
               arr[0] = "";
-              if (place !== "indicator")
+              if (place !== "indicator") {
                 arr[1] = "";
+              }
               items[i] = tools.getPayloadArray(arr);
             }
           }
@@ -133,10 +139,12 @@ class Screensaver extends import_Page.Page {
       return;
     }
     const message = await this.getData(["left", "bottom", "indicator", "alternate", "favorit"]);
-    if (message === null)
+    if (message === null) {
       return;
-    if (message.options.alternate.length > 0)
+    }
+    if (message.options.alternate.length > 0) {
       message.options.alternate.unshift(tools.getPayload("", "", "", "", "", ""));
+    }
     const arr = message.options.favorit.concat(
       message.options.left,
       message.options.bottom,
@@ -145,27 +153,31 @@ class Screensaver extends import_Page.Page {
     );
     const msg = tools.getPayload("weatherUpdate", tools.getPayloadArray(arr));
     this.sendToPanel(msg);
-    this.HandleScreensaverStatusIcons();
+    await this.HandleScreensaverStatusIcons();
   }
   async onVisibilityChange(v) {
     this.step = -1;
     if (v) {
-      await this.sendType();
-      this.rotationLoop();
+      this.sendType();
+      await this.rotationLoop();
     } else {
-      if (this.timoutRotation)
+      if (this.timoutRotation) {
         this.adapter.clearTimeout(this.timoutRotation);
+      }
     }
   }
   rotationLoop = async () => {
-    if (this.unload)
+    if (this.unload) {
       return;
-    if (!this.visibility)
+    }
+    if (!this.visibility) {
       return;
+    }
     this.step++ > 100;
     await this.update();
-    if (this.rotationTime === 0)
+    if (this.rotationTime === 0) {
       return;
+    }
     this.timoutRotation = this.adapter.setTimeout(
       this.rotationLoop,
       this.rotationTime < 3e3 ? 3e3 : this.rotationTime
@@ -173,14 +185,16 @@ class Screensaver extends import_Page.Page {
   };
   /**
    * ..
+   *
    * @param _dp
    * @param from
    * @returns
    */
   onStateTrigger = async (_dp, from) => {
     const config = this.config;
-    if (!config || config.card !== "screensaver" && config.card !== "screensaver2")
+    if (!config || config.card !== "screensaver" && config.card !== "screensaver2") {
       return;
+    }
     if (from instanceof import_pageItem.PageItem && this.pageItems) {
       const index = parseInt(from.id.split("?")[1]);
       const item = this.pageItems[index];
@@ -201,11 +215,11 @@ class Screensaver extends import_Page.Page {
               break;
             }
             case "time": {
-              this.HandleTime();
+              await this.HandleTime();
               break;
             }
             case "date": {
-              this.HandleDate();
+              await this.HandleDate();
               break;
             }
           }
@@ -215,14 +229,16 @@ class Screensaver extends import_Page.Page {
   };
   async HandleTime() {
     const message = await this.getData(["time"]);
-    if (message === null || !message.options.time[0])
+    if (message === null || !message.options.time[0]) {
       return;
+    }
     this.sendToPanel(`time~${message.options.time[0].split("~")[5]}`);
   }
   async HandleDate() {
     const message = await this.getData(["date"]);
-    if (message === null || !message.options.date[0])
+    if (message === null || !message.options.date[0]) {
       return;
+    }
     this.sendToPanel(`date~${message.options.date[0].split("~")[5]}`);
   }
   async HandleScreensaverStatusIcons() {
@@ -232,8 +248,9 @@ class Screensaver extends import_Page.Page {
       return;
     }
     const message = await this.getData(["mricon"]);
-    if (message === null)
+    if (message === null) {
       return;
+    }
     const mrIcon1 = message.options.mricon[0].split("~");
     const mrIcon2 = message.options.mricon[1].split("~");
     const msgArray = [
@@ -250,9 +267,10 @@ class Screensaver extends import_Page.Page {
   }
   async onButtonEvent(event) {
     if (event.page && event.id && this.pageItems && this.pageItems[event.id]) {
-      if (this.blockButtons)
+      if (this.blockButtons) {
         return;
-      this.pageItems[event.id].onCommand(event.action, event.opt);
+      }
+      await this.pageItems[event.id].onCommand(event.action, event.opt);
       this.blockButtons = this.adapter.setTimeout(() => {
         this.blockButtons = void 0;
       }, 500);
@@ -260,10 +278,12 @@ class Screensaver extends import_Page.Page {
   }
   async delete() {
     await super.delete();
-    if (this.timoutRotation)
+    if (this.timoutRotation) {
       this.adapter.clearTimeout(this.timoutRotation);
-    if (this.blockButtons)
+    }
+    if (this.blockButtons) {
       this.adapter.clearTimeout(this.blockButtons);
+    }
   }
   goLeft() {
   }

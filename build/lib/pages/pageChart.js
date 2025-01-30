@@ -45,8 +45,9 @@ class PageChart extends import_Page.Page {
   nextArrow = false;
   constructor(config, options) {
     super(config, options);
-    if (options.config && options.config.card == "cardChart")
+    if (options.config && options.config.card == "cardChart") {
       this.config = options.config;
+    }
     this.minUpdateInterval = 1e3;
   }
   async init() {
@@ -66,14 +67,16 @@ class PageChart extends import_Page.Page {
    */
   async update() {
     var _a, _b, _c;
-    if (!this.visibility)
+    if (!this.visibility) {
       return;
+    }
     this.panel.lastCard = "";
     this.sendType();
     const message = {};
     const items = this.items;
-    if (!items || items.card !== "cardChart")
+    if (!items || items.card !== "cardChart") {
       return;
+    }
     const data = items.data;
     message.headline = (_a = data.headline && await data.headline.getTranslatedString()) != null ? _a : this.name;
     message.navigation = this.getNavigation();
@@ -85,7 +88,7 @@ class PageChart extends import_Page.Page {
     if (ticks && Array.isArray(ticks)) {
       message.ticks = ticks;
     } else if (message.value) {
-      const timeValueRegEx = /\~\d+:(\d+)/g;
+      const timeValueRegEx = /~\d+:(\d+)/g;
       const sorted = [...message.value.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
       const minValue = sorted[0];
       const maxValue = sorted[sorted.length - 1];
@@ -117,6 +120,7 @@ class PageChart extends import_Page.Page {
   }
   /**
    *a
+   *
    * @param _event
    * @returns
    */

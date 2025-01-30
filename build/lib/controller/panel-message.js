@@ -35,7 +35,7 @@ class PanelSend extends import_library.BaseClass {
   constructor(adapter, config) {
     super(adapter, config.name);
     this.mqttClient = config.mqttClient;
-    this.mqttClient.subscript(config.topic + "/stat/RESULT", this.onMessage);
+    this.mqttClient.subscript(`${config.topic}/stat/RESULT`, this.onMessage);
     this.topic = config.topic + import_definition.SendTopicAppendix;
   }
   set panel(panel) {
@@ -48,66 +48,70 @@ class PanelSend extends import_library.BaseClass {
     const msg = JSON.parse(message);
     if (msg) {
       if (msg.CustomSend === "Done") {
-        if (this.messageTimeout)
+        if (this.messageTimeout) {
           this.adapter.clearTimeout(this.messageTimeout);
+        }
         this.losingMessageCount = 0;
-        const msg2 = this.messageDb.shift();
-        if (false)
-          this.log.debug(`Receive ack for ${JSON.stringify(msg2)}`);
-        this.sendMessageLoop();
+        await this.sendMessageLoop();
       }
     }
   };
   get panel() {
-    if (!this._panel)
+    if (!this._panel) {
       throw new Error("Error P1: Panel undefinied!");
+    }
     return this._panel;
   }
   addMessage = (payload, opt) => {
     this.messageDb.push({ payload, opt });
     if (this.messageTimeout === void 0) {
-      this.sendMessageLoop();
+      void this.sendMessageLoop();
     }
   };
-  sendMessageLoop = () => {
+  sendMessageLoop = async () => {
     const msg = this.messageDb[0];
     if (msg === void 0 || this.unload) {
       this.messageTimeout = void 0;
       return;
     }
     if (this.losingMessageCount++ > 3) {
-      if (this._panel)
+      if (this._panel) {
         this._panel.isOnline = false;
+      }
     }
-    if (this._panel && !this._panel.isOnline)
+    if (this._panel && !this._panel.isOnline) {
       this.messageDb = [];
-    this.addMessageTasmota(this.topic, msg.payload, msg.opt);
+    }
+    await this.addMessageTasmota(this.topic, msg.payload, msg.opt);
     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 1e3);
   };
-  addMessageTasmota = (topic, payload, opt) => {
-    if (this.messageDbTasmota.length > 0 && this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt))
+  addMessageTasmota = async (topic, payload, opt) => {
+    if (this.messageDbTasmota.length > 0 && this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt)) {
       return;
+    }
     this.messageDbTasmota.push({ topic, payload, opt });
     if (this.messageTimeoutTasmota === void 0) {
-      this.sendMessageLoopTasmota();
+      await this.sendMessageLoopTasmota();
     }
   };
-  sendMessageLoopTasmota = () => {
+  sendMessageLoopTasmota = async () => {
     const msg = this.messageDbTasmota.shift();
     if (msg === void 0 || this.unload) {
       this.messageTimeoutTasmota = void 0;
       return;
     }
     this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
-    this.mqttClient.publish(msg.topic, msg.payload, msg.opt);
+    await this.mqttClient.publish(msg.topic, msg.payload, msg.opt);
     this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 20);
   };
   async delete() {
     await super.delete();
-    if (this.messageTimeout)
+    if (this.messageTimeout) {
       this.adapter.clearTimeout(this.messageTimeout);
-    if (this.messageTimeoutTasmota)
+    }
+    if (this.messageTimeoutTasmota) {
       this.adapter.clearTimeout(this.messageTimeoutTasmota);
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

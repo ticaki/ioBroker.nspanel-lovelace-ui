@@ -61,11 +61,13 @@ class Page extends import_states_controller.BaseClassPage {
     if (this.pageItemConfig) {
       for (let a = 0; a < this.pageItemConfig.length; a++) {
         let options = this.pageItemConfig[a];
-        if (options === void 0)
+        if (options === void 0) {
           continue;
+        }
         options = await this.getItemFromTemplate(options);
-        if (!options)
+        if (!options) {
           continue;
+        }
         options.dpInit = typeof options.dpInit === "string" && options.device ? options.dpInit.replace("#\xB0^\xB0#", options.device) : options.dpInit;
         if (options.dpInit && typeof options.dpInit === "string") {
           const reg = (0, import_tools.getRegExp)(options.dpInit);
@@ -90,19 +92,19 @@ class Page extends import_states_controller.BaseClassPage {
       const template = subtemplate ? import_templateArray.pageItemTemplates[subtemplate] : import_templateArray.pageItemTemplates[options.template];
       const name = options.template;
       if (!template) {
-        this.log.error("Dont find template " + options.template);
+        this.log.error(`Dont find template ${options.template}`);
         return void 0;
       }
       if (template.adapter && typeof options.dpInit === "string" && !options.dpInit.includes(template.adapter) && typeof this.dpInit === "string" && !this.dpInit.includes(template.adapter)) {
         this.log.error(
-          "Missing dbInit or dbInit not starts with" + template.adapter + " for template " + options.template
+          `Missing dbInit or dbInit not starts with${template.adapter} for template ${options.template}`
         );
         return void 0;
       }
       const newTemplate = structuredClone(template);
       delete newTemplate.adapter;
       if (options.type && options.type !== template.type) {
-        this.log.error("Type: " + options.type + "is not equal with " + template.type);
+        this.log.error(`Type: ${String(options.type)}is not equal with ${template.type}`);
         return void 0;
       }
       options.type = template.type;
@@ -118,10 +120,11 @@ class Page extends import_states_controller.BaseClassPage {
           );
         }
         const o = await this.getItemFromTemplate(options, template.template, ++loop);
-        if (o !== void 0)
+        if (o !== void 0) {
           options = o;
-        else
+        } else {
           this.log.warn(`Dont get a template from ${template.template} for ${name}`);
+        }
       }
     }
     return options;
@@ -130,15 +133,16 @@ class Page extends import_states_controller.BaseClassPage {
     this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
   }
   sendType() {
-    if (this.panel.lastCard !== this.card)
+    if (this.panel.lastCard !== this.card) {
       this.sendToPanel(`pageType~${this.card}`);
+    }
     this.panel.lastCard = this.card;
   }
   static getPage(config, that) {
     if ("template" in config && config.template) {
       const template = import_card.cardTemplates[config.template];
       if (!template) {
-        that.log.error("dont find template " + config.template);
+        that.log.error(`dont find template ${config.template}`);
         return config;
       }
       if (config.dpInit && typeof config.dpInit === "string") {
@@ -181,10 +185,12 @@ class Page extends import_states_controller.BaseClassPage {
   }
   async onVisibilityChange(val) {
     if (val) {
-      if (!this.pageItems || this.pageItems.length === 0)
+      if (!this.pageItems || this.pageItems.length === 0) {
         await this.createPageItems();
-      if (this.card !== "cardLChart" && this.card !== "cardChart")
-        await this.sendType();
+      }
+      if (this.card !== "cardLChart" && this.card !== "cardChart") {
+        this.sendType();
+      }
       await this.update();
     } else {
       if (this.pageItems) {
@@ -209,6 +215,7 @@ class Page extends import_states_controller.BaseClassPage {
   }
   /**
    * TODO rewrite
+   *
    * @param id
    * @param popup
    * @param action
@@ -217,12 +224,14 @@ class Page extends import_states_controller.BaseClassPage {
    * @returns
    */
   async onPopupRequest(id, popup, action, value, _event = null) {
-    if (!this.pageItems)
+    if (!this.pageItems) {
       return;
+    }
     const i = typeof id === "number" ? id : parseInt(id);
     const item = this.pageItems[i];
-    if (!item)
+    if (!item) {
       return;
+    }
     let msg = null;
     if (action && value !== void 0 && await item.onCommand(action, value)) {
       return;

@@ -26,7 +26,6 @@ var import_data_item = require("../classes/data-item");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_Page = require("../classes/Page");
-var import_Page2 = require("../classes/Page");
 var import_tools = require("../const/tools");
 const PageMediaMessageDefault = {
   event: "entityUpd",
@@ -44,7 +43,7 @@ const PageMediaMessageDefault = {
   logo: "",
   options: ["", "", "", "", ""]
 };
-class PageMedia extends import_Page2.Page {
+class PageMedia extends import_Page.Page {
   config;
   items;
   step = 1;
@@ -52,7 +51,7 @@ class PageMedia extends import_Page2.Page {
   titelPos = 0;
   nextArrow = false;
   constructor(config, options) {
-    if (options && options.pageItems)
+    if (options && options.pageItems) {
       options.pageItems.unshift({
         type: "button",
         dpInit: "",
@@ -67,10 +66,12 @@ class PageMedia extends import_Page2.Page {
           entity1: { value: { type: "const", constVal: true } }
         }
       });
+    }
     super(config, options);
     this.config = options.config;
-    if (this.items && this.items.card === "cardMedia")
+    if (this.items && this.items.card === "cardMedia") {
       this.items = options.items;
+    }
     this.minUpdateInterval = 2e3;
   }
   async init() {
@@ -80,8 +81,9 @@ class PageMedia extends import_Page2.Page {
       tempConfig,
       this
     );
-    if (tempItem)
+    if (tempItem) {
       tempItem.card = "cardMedia";
+    }
     this.items = tempItem;
     await super.init();
   }
@@ -93,15 +95,18 @@ class PageMedia extends import_Page2.Page {
     }
   }
   async update() {
-    if (!this.visibility)
+    if (!this.visibility) {
       return;
+    }
     const item = this.items;
-    if (item === void 0)
+    if (item === void 0) {
       return;
+    }
     const message = {};
     {
-      if (item.card !== "cardMedia")
+      if (item.card !== "cardMedia") {
         return;
+      }
       const test = {};
       test.bla = "dd";
       let duration = "0:00", elapsed = "0:00", title = "unknown";
@@ -140,7 +145,7 @@ class PageMedia extends import_Page2.Page {
       {
         const maxSize2 = 18;
         if (message.headline.length > maxSize2) {
-          const s = message.headline + "        ";
+          const s = `${message.headline}        `;
           this.headlinePos = this.headlinePos % s.length;
           message.headline = (s + message.headline).substring(this.headlinePos++ % (message.headline + s).length).substring(0, 23);
         }
@@ -151,9 +156,9 @@ class PageMedia extends import_Page2.Page {
         const v = await item.data.album.getString();
         if (v !== null) {
           if (`${v} ${message.name}`.length > maxSize) {
-            const s = v + "          ";
+            const s = `${v}          `;
             this.titelPos = this.titelPos % s.length;
-            message.name = v.substring(this.titelPos++ % (`${v} ${message.name}` + s).length).substring(0, 35) + ` ${message.name}`;
+            message.name = `${v.substring(this.titelPos++ % `${v} ${message.name}${s}`.length).substring(0, 35)} ${message.name}`;
           } else {
             message.name = `${v} ${message.name}`;
           }
@@ -198,7 +203,7 @@ class PageMedia extends import_Page2.Page {
       const v = await item.data.mediaState.getString();
       if (v !== null) {
         message.iconplaypause = !await this.getMediaState() ? "play" : "pause";
-        if (await item.data.stop) {
+        if (item.data.stop) {
           message.onoffbuttonColor = v.toUpperCase() !== "STOP" ? "65535" : "1374";
         } else {
           message.onoffbuttonColor = message.iconplaypause !== "pause" ? "65535" : "1374";
@@ -207,31 +212,33 @@ class PageMedia extends import_Page2.Page {
     }
     if (item.data.title && item.data.title.color) {
       const v = await getValueFromBoolean(item.data.title.color, "color");
-      if (v !== null)
+      if (v !== null) {
         message.titelColor = v;
+      }
     }
     if (item.data.logo) {
       message.logo = "~~~~~";
     }
-    {
-    }
     const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
     if (this.pageItems) {
       const localStep = this.pageItems.length > 6 ? 4 : 5;
-      if (this.pageItems.length - 1 <= localStep * (this.step - 1))
+      if (this.pageItems.length - 1 <= localStep * (this.step - 1)) {
         this.step = 1;
+      }
       const maxSteps = localStep * this.step + 1;
       const minStep = localStep * (this.step - 1) + 1;
       for (let a = minStep; a < maxSteps; a++) {
         const temp = this.pageItems[a];
-        if (temp)
+        if (temp) {
           opts[a - minStep] = await temp.getPageItemPayload();
+        }
       }
       if (localStep === 4) {
         this.nextArrow = true;
         const temp = this.pageItems[0];
-        if (temp)
+        if (temp) {
           opts[4] = await temp.getPageItemPayload();
+        }
       }
     }
     message.navigation = this.getNavigation();
@@ -242,8 +249,9 @@ class PageMedia extends import_Page2.Page {
     this.sendToPanel(this.getMessage(msg));
   }
   async getMediaState() {
-    if (!this.items || this.items.card !== "cardMedia")
+    if (!this.items || this.items.card !== "cardMedia") {
       return null;
+    }
     const item = this.items.data.mediaState;
     if (item) {
       const v = await item.getString();
@@ -254,8 +262,9 @@ class PageMedia extends import_Page2.Page {
     return null;
   }
   async getOnOffState() {
-    if (!this.items || this.items.card !== "cardMedia")
+    if (!this.items || this.items.card !== "cardMedia") {
       return null;
+    }
     const item = this.items.data.mediaState;
     if (item) {
       const v = await item.getString();
@@ -293,15 +302,18 @@ class PageMedia extends import_Page2.Page {
     this.titelPos = 0;
   }
   async onButtonEvent(event) {
-    if (!this.getVisibility() || this.sleep)
+    if (!this.getVisibility() || this.sleep) {
       return;
+    }
     if ((0, import_Page.isMediaButtonActionType)(event.action)) {
-      this.log.debug("Receive event: " + JSON.stringify(event));
-    } else
+      this.log.debug(`Receive event: ${JSON.stringify(event)}`);
+    } else {
       return;
+    }
     const items = this.items;
-    if (!items || items.card !== "cardMedia")
+    if (!items || items.card !== "cardMedia") {
       return;
+    }
     switch (event.action) {
       case "media-back": {
         items.data.backward && await items.data.backward.setStateTrue();
@@ -309,10 +321,11 @@ class PageMedia extends import_Page2.Page {
       }
       case "media-pause": {
         if (items.data.pause && items.data.play) {
-          if (await this.getMediaState())
+          if (await this.getMediaState()) {
             await items.data.pause.setStateTrue();
-          else
+          } else {
             await items.data.play.setStateTrue();
+          }
         } else if (items.data.mediaState) {
         }
         break;
@@ -363,8 +376,9 @@ class PageMedia extends import_Page2.Page {
       }
       case "media-OnOff": {
         if (items.data.stop) {
-          if (await this.getOnOffState())
+          if (await this.getOnOffState()) {
             await items.data.stop.setStateTrue();
+          }
         }
         break;
       }
@@ -390,9 +404,8 @@ async function getValueFromBoolean(item, type, value = true) {
       const colorOff = !value && item.false && await getValueFromData(item.false, type);
       if (colorOff) {
         return colorOff;
-      } else {
-        return colorOn || null;
       }
+      return colorOn || null;
     }
   }
   return null;

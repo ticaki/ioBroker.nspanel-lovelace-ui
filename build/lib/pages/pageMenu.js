@@ -47,8 +47,9 @@ class PageMenu extends import_Page.Page {
           this.tempItems = [];
           const testIt = this.config.filterType === "true";
           for (const p of this.pageItems) {
-            if (p && p.dataItems && p.dataItems.data && "entity1" in p.dataItems.data && p.dataItems.data.entity1 && p.dataItems.data.entity1.value && testIt === await p.dataItems.data.entity1.value.getBoolean())
+            if (p && p.dataItems && p.dataItems.data && "entity1" in p.dataItems.data && p.dataItems.data.entity1 && p.dataItems.data.entity1.value && testIt === await p.dataItems.data.entity1.value.getBoolean()) {
               this.tempItems.push(p);
+            }
           }
           pageItems = this.tempItems;
         }
@@ -80,15 +81,17 @@ class PageMenu extends import_Page.Page {
     if (val) {
       if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardGrid" || this.config.card === "cardGrid2")) {
         const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole, this);
-        if (temp)
+        if (temp) {
           this.pageItemConfig = temp;
+        }
       }
     }
     await super.onVisibilityChange(val);
   }
   goLeft(single = false) {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2")
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2") {
       return;
+    }
     if (!single) {
       if (this.doubleClick) {
         this.adapter.clearTimeout(this.doubleClick);
@@ -96,7 +99,6 @@ class PageMenu extends import_Page.Page {
         if (this.lastdirection == "right") {
           this.panel.navigation.goLeft();
           return;
-        } else {
         }
       } else {
         this.lastdirection = "left";
@@ -110,12 +112,14 @@ class PageMenu extends import_Page.Page {
     if (--this.step < 0) {
       this.step = 0;
       this.panel.navigation.goLeft();
-    } else
-      this.update();
+    } else {
+      void this.update();
+    }
   }
   goRight(single = false) {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2")
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2") {
       return;
+    }
     if (!single) {
       if (this.doubleClick) {
         this.adapter.clearTimeout(this.doubleClick);
@@ -123,7 +127,6 @@ class PageMenu extends import_Page.Page {
         if (this.lastdirection == "right") {
           this.panel.navigation.goRight();
           return;
-        } else {
         }
       } else {
         this.lastdirection = "right";
@@ -139,12 +142,14 @@ class PageMenu extends import_Page.Page {
     if (!pageScroll ? ++this.step + this.maxItems > length : ++this.step * this.maxItems >= length) {
       this.step--;
       this.panel.navigation.goRight();
-    } else
-      this.update();
+    } else {
+      void this.update();
+    }
   }
   getNavigation() {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2")
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2") {
       return "";
+    }
     const pageScroll = this.config.scrollType === "page";
     const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
     if (this.maxItems >= length) {
@@ -158,7 +163,7 @@ class PageMenu extends import_Page.Page {
     if (!pageScroll ? this.step + this.maxItems >= length : (this.step + 1) * this.maxItems >= length) {
       right = this.panel.navigation.buildNavigationString("right");
     }
-    if (!left)
+    if (!left) {
       left = (0, import_tools.getPayload)(
         "button",
         "bSubPrev",
@@ -167,7 +172,8 @@ class PageMenu extends import_Page.Page {
         "",
         ""
       );
-    if (!right)
+    }
+    if (!right) {
       right = (0, import_tools.getPayload)(
         "button",
         "bSubNext",
@@ -176,6 +182,7 @@ class PageMenu extends import_Page.Page {
         "",
         ""
       );
+    }
     return (0, import_tools.getPayload)(left, right);
   }
   async reset() {

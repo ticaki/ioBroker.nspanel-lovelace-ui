@@ -46,8 +46,9 @@ class PageNotify extends import_Page.Page {
   constructor(config, options) {
     super(config, options);
     this.config = options.config;
-    if (options.items && (options.items.card == "popupNotify" || options.items.card == "popupNotify2"))
+    if (options.items && (options.items.card == "popupNotify" || options.items.card == "popupNotify2")) {
       this.items = options.items;
+    }
     this.minUpdateInterval = 1e3;
     this.neverDeactivateTrigger = true;
   }
@@ -66,10 +67,11 @@ class PageNotify extends import_Page.Page {
   }
   setLastPage(p) {
     if (p !== this) {
-      if (p !== void 0)
+      if (p !== void 0) {
         this.lastpage.push(p);
-      else
+      } else {
         this.lastpage = [];
+      }
     }
   }
   removeLastPage(_p) {
@@ -84,15 +86,17 @@ class PageNotify extends import_Page.Page {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     const message = {};
     const items = this.items;
-    if (!items)
+    if (!items) {
       return;
+    }
     this.log.debug("update notification page!");
     let value = null;
     if (items.card === "popupNotify" || items.card === "popupNotify2") {
       const data = items.data;
       value = await (0, import_tools.getValueEntryNumber)(data.entity1);
-      if (value === null)
+      if (value === null) {
         value = (_a = await (0, import_tools.getValueEntryBoolean)(data.entity1)) != null ? _a : true;
+      }
       message.headline = (_b = data.headline && await data.headline.getTranslatedString()) != null ? _b : "";
       message.hColor = await (0, import_tools.getIconEntryColor)(data.colorHeadline, value, import_Color.Color.White);
       message.blText = (_c = data.buttonLeft && await data.buttonLeft.getTranslatedString()) != null ? _c : "";
@@ -106,20 +110,19 @@ class PageNotify extends import_Page.Page {
         for (const key in placeholder) {
           const target = placeholder[key];
           let val = (_g = target.dp && await this.panel.statesControler.getStateVal(target.dp)) != null ? _g : "";
-          if (val === "")
+          if (val === "") {
             val = (_h = target.text) != null ? _h : "";
+          }
           message.headline = message.headline.replaceAll(
-            "${" + key + "}",
+            `\${${key}}`,
             this.library.getTranslation(val)
           );
-          message.text = message.text.replaceAll(
-            "${" + key + "}",
-            this.library.getTranslation(val)
-          );
+          message.text = message.text.replaceAll(`\${${key}}`, this.library.getTranslation(val));
         }
       }
-      if (message.text)
+      if (message.text) {
         message.text = message.text.replaceAll("\n", "\r\n").replaceAll("/r/n", "\r\n");
+      }
       const maxLineCount = 8;
       let lines = 0;
       if (message.text && (lines = message.text.split("\r\n").length) > maxLineCount) {
@@ -128,7 +131,9 @@ class PageNotify extends import_Page.Page {
         let pos = 0;
         this.step = this.step % (lines + 1);
         const currentPos = this.step;
-        const text = message.text + "\r\n\r\n" + message.text;
+        const text = `${message.text}\r
+\r
+${message.text}`;
         message.text = "";
         while (test++ < 100) {
           const pos2 = text.indexOf("\r\n", pos) + 2;
@@ -140,12 +145,14 @@ class PageNotify extends import_Page.Page {
             message.text = message.text + text.slice(pos, pos2);
           }
           counter++;
-          if (counter >= currentPos + maxLineCount)
+          if (counter >= currentPos + maxLineCount) {
             break;
+          }
           pos = pos2;
         }
-        if (!this.rotationTimeout)
+        if (!this.rotationTimeout) {
           this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3e3);
+        }
       }
       message.timeout = (_i = data.timeout && await data.timeout.getNumber()) != null ? _i : 0;
     }
@@ -198,6 +205,7 @@ class PageNotify extends import_Page.Page {
   }
   /**
    * Rotate text in view
+   *
    * @returns
    */
   rotation = async () => {
@@ -207,21 +215,23 @@ class PageNotify extends import_Page.Page {
     }
     this.step++;
     await this.update();
-    this.rotationTimeout = this.adapter.setTimeout(await this.rotation, 1500);
+    this.rotationTimeout = this.adapter.setTimeout(this.rotation, 1500);
   };
   async delete() {
-    if (this.rotationTimeout)
+    if (this.rotationTimeout) {
       this.adapter.clearTimeout(this.rotationTimeout);
+    }
     this.rotationTimeout = void 0;
     await super.delete();
   }
   async onStateTrigger(_dp) {
     this.step = 0;
-    if (this.rotationTimeout)
+    if (this.rotationTimeout) {
       this.adapter.clearTimeout(this.rotationTimeout);
+    }
     this.rotationTimeout = void 0;
-    this.log.debug("state triggerd " + _dp);
-    this.panel.setActivePage(this);
+    this.log.debug(`state triggerd ${_dp}`);
+    await this.panel.setActivePage(this);
   }
   async onButtonEvent(_event) {
     var _a;
@@ -230,12 +240,14 @@ class PageNotify extends import_Page.Page {
     if (data) {
       if (_event.action === "notifyAction") {
         if (data.setValue2) {
-          if (_event.opt === "yes")
-            data.setValue1 && data.setValue1.setStateTrue();
-          else
-            data.setValue2 && data.setValue2.setStateTrue();
-        } else
-          data.setValue1 && data.setValue1.setStateAsync(_event.opt === "yes");
+          if (_event.opt === "yes") {
+            data.setValue1 && await data.setValue1.setStateTrue();
+          } else {
+            data.setValue2 && await data.setValue2.setStateTrue();
+          }
+        } else {
+          data.setValue1 && await data.setValue1.setStateAsync(_event.opt === "yes");
+        }
         const cb = (_a = data.closingBehaviour && await data.closingBehaviour.getString()) != null ? _a : "";
         if (pages.isClosingBehavior(cb)) {
           switch (cb) {
@@ -254,16 +266,17 @@ class PageNotify extends import_Page.Page {
       }
     }
     if (close) {
-      if (this.name.includes("///popupNotification"))
+      if (this.name.includes("///popupNotification")) {
         this.lastpage = this.lastpage.filter((a) => !a.name.includes("///popupNotification"));
+      }
       const p = this.lastpage.pop();
       if (p) {
         p.removeLastPage(this);
-        this.log.debug("Set active page from popup to " + p.name);
+        this.log.debug(`Set active page from popup to ${p.name}`);
         await this.panel.setActivePage(p);
       } else {
         const page = this.panel.navigation.getCurrentPage();
-        this.log.debug("Set active page from currentpage to " + page.name);
+        this.log.debug(`Set active page from currentpage to ${page.name}`);
         await this.panel.setActivePage(page);
       }
     }

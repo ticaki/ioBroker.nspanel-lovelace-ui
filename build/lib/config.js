@@ -3798,7 +3798,8 @@ const pageScreensaverTest = {
           true: {
             value: {
               type: "state",
-              /** How to use
+              /**
+               * How to use
                * this run its own this. U dont have accress to variables that no definied for this.
                * Color: in a import of color.ts
                * val: is the incoming value - raw

@@ -44,6 +44,7 @@ class Dataitem extends import_library.BaseClass {
   _writeable = false;
   /**
    * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
+   *
    * @param adapter this of adapter
    * @param options {NSPanel.DataItemsOptions}
    * @param parent {BaseClassTriggerd}
@@ -65,8 +66,9 @@ class Dataitem extends import_library.BaseClass {
         break;
       case "internalState":
       case "internal": {
-        if (!this.options.dp.startsWith("///"))
-          this.options.dp = this.parent.panel.name + "/" + this.options.dp;
+        if (!this.options.dp.startsWith("///")) {
+          this.options.dp = `${this.parent.panel.name}/${this.options.dp}`;
+        }
         this.type = void 0;
       }
     }
@@ -76,6 +78,7 @@ class Dataitem extends import_library.BaseClass {
   }
   /**
    * Init and check dp is valid
+   *
    * @returns if false value is not valid
    */
   async isValidAndInit() {
@@ -85,9 +88,10 @@ class Dataitem extends import_library.BaseClass {
       case "state":
       case "internal":
       case "internalState":
-      case "triggered":
-        if (!this.options.dp)
+      case "triggered": {
+        if (!this.options.dp) {
           return false;
+        }
         this.options.dp = this.options.dp.replace(
           "${this.namespace}",
           `${this.adapter.namespace}.panels.${this.parent.panel.name}`
@@ -100,17 +104,19 @@ class Dataitem extends import_library.BaseClass {
         this.type = this.type || obj.common.type;
         this.options.role = obj.common.role;
         this._writeable = !!obj.common.write;
-        if (this.options.type == "triggered")
-          this.stateDB.setTrigger(this.options.dp, this.parent, false, void 0, this.options.change);
-        else if (this.options.type == "internal")
-          this.stateDB.setTrigger(this.options.dp, this.parent, true);
-        else if (this.options.type == "internalState")
-          this.stateDB.setTrigger(this.options.dp, this.parent, true, false);
+        if (this.options.type == "triggered") {
+          await this.stateDB.setTrigger(this.options.dp, this.parent, false, void 0, this.options.change);
+        } else if (this.options.type == "internal") {
+          await this.stateDB.setTrigger(this.options.dp, this.parent, true);
+        } else if (this.options.type == "internalState") {
+          await this.stateDB.setTrigger(this.options.dp, this.parent, true, false);
+        }
         const value = await this.stateDB.getState(
           this.options.dp,
           this.options.type == "triggered" || this.options.type == "internal" || this.options.type == "internalState" ? "medium" : this.options.response
         );
         return value !== null && value !== void 0;
+      }
     }
     return false;
   }
@@ -147,13 +153,14 @@ class Dataitem extends import_library.BaseClass {
       state = structuredClone(state);
       if (this.options.type !== "const" && this.options.read) {
         try {
-          if (typeof this.options.read === "string")
+          if (typeof this.options.read === "string") {
             state.val = new Function("val", "Color", `${this.options.read}`)(state.val, import_Color.Color);
-          else
+          } else {
             state.val = this.options.read(state.val);
+          }
         } catch (e) {
           this.log.error(
-            `Read for dp: ${this.options.dp} is invalid! read: ${this.options.read} Error: ${e}`
+            `Read for dp: ${this.options.dp} is invalid! read: ${String(this.options.read)} Error: ${String(e)}`
           );
         }
       }
@@ -167,14 +174,15 @@ class Dataitem extends import_library.BaseClass {
         try {
           const value = JSON.parse(state.val);
           return value;
-        } catch (e) {
+        } catch {
           let value = state.val;
           if (typeof value === "string") {
             value = value.trim();
             if (value.startsWith("#")) {
               const v = import_Color.Color.ConvertWithColordtoRgb(value);
-              if (import_Color.Color.isRGB(v))
+              if (import_Color.Color.isRGB(v)) {
                 return v;
+              }
             } else if (this.options.role === "level.color.name" || this.options.role === "level.color.rgb") {
               return import_Color.Color.ConvertWithColordtoRgb(value);
             }
@@ -191,8 +199,9 @@ class Dataitem extends import_library.BaseClass {
   async getRGBValue() {
     const value = await this.getObject();
     if (value) {
-      if (import_Color.Color.isRGB(value))
+      if (import_Color.Color.isRGB(value)) {
         return value;
+      }
       if (typeof value == "object" && "red" in value && "blue" in value && "green" in value) {
         return { r: value.red, g: value.green, b: value.blue };
       }
@@ -202,8 +211,9 @@ class Dataitem extends import_library.BaseClass {
   async getIconScale() {
     const value = await this.getObject();
     if (value) {
-      if (NSPanel.isIconScaleElement(value))
+      if (NSPanel.isIconScaleElement(value)) {
         return value;
+      }
     }
     return null;
   }
@@ -217,7 +227,7 @@ class Dataitem extends import_library.BaseClass {
   async getTranslatedString() {
     const val = await this.getString();
     if (val !== null) {
-      return await this.library.getTranslation(val);
+      return this.library.getTranslation(val);
     }
     return null;
   }
@@ -281,6 +291,7 @@ class Dataitem extends import_library.BaseClass {
         break;
       case "undefined":
         this.type = void 0;
+        break;
       case "symbol":
       case "object":
       case "function":
@@ -313,24 +324,28 @@ class Dataitem extends import_library.BaseClass {
   }
   /**
    * Set a internal, const or external State
+   *
    * @param val number | boolean | string | null
    * @returns
    */
   async setStateAsync(val) {
-    if (val === void 0)
+    if (val === void 0) {
       return;
+    }
     if (this.options.type === "const") {
       this.options.constVal = val;
     } else {
-      if (this.options.write)
-        val = new Function("val", "Color", `${this.options.write}`)(val, import_Color.Color);
+      if (this.options.write) {
+        val = new Function("val", "Color", `${String(this.options.write)}`)(val, import_Color.Color);
+      }
       await this.stateDB.setStateAsync(this, val, this._writeable);
     }
   }
 }
 function isDataItem(F) {
-  if (F instanceof Dataitem)
+  if (F instanceof Dataitem) {
     return true;
+  }
   return false;
 }
 // Annotate the CommonJS export names for ESM import in node:

@@ -192,11 +192,13 @@ class Color extends ColorBase {
   };
   /**
    * set color theme...
+   *
    * @param s
    */
   static setTheme(s) {
-    for (const a in s)
+    for (const a in s) {
       Color[a] = s[a];
+    }
   }
   static rgb_dec565(rgb) {
     return rgb.r >> 3 << 11 | rgb.g >> 2 << 5 | rgb.b >> 3;
@@ -218,8 +220,9 @@ class Color extends ColorBase {
     return result;
   }
   static scale(number, inMax, inMin, outMin, outMax) {
-    if (inMin === null || inMax === null)
+    if (inMin === null || inMax === null) {
       return number;
+    }
     return outMax + outMin - ((number - inMax) * (outMax - outMin) / (inMin - inMax) + outMin);
   }
   static HandleColorScale(valueScaletemp) {
@@ -275,18 +278,19 @@ class Color extends ColorBase {
   }
   /**
    * Convert radians to degrees
+   *
    * @param rad radians to convert, expects rad in range +/- PI per Math.atan2
-   * @returns {number} degrees equivalent of rad
+   * @returns degrees equivalent of rad
    */
   static rad2deg(rad) {
     return (360 + 180 * rad / Math.PI) % 360;
   }
   static ColorToHex(color) {
     const hexadecimal = color.toString(16);
-    return hexadecimal.length == 1 ? "0" + hexadecimal : hexadecimal;
+    return hexadecimal.length == 1 ? `0${hexadecimal}` : hexadecimal;
   }
   static ConvertRGBtoHex(red, green, blue) {
-    return "#" + Color.ColorToHex(red) + Color.ColorToHex(green) + Color.ColorToHex(blue);
+    return `#${Color.ColorToHex(red)}${Color.ColorToHex(green)}${Color.ColorToHex(blue)}`;
   }
   static ConvertWithColordtoRgb(colorName) {
     return (0, import_colord.colord)(colorName).toRgb();
@@ -300,10 +304,11 @@ class Color extends ColorBase {
   }
   /**
    * Convert h,s,v values to r,g,b
+   *
    * @param hue in range [0, 360]
    * @param saturation in range 0 to 1
    * @param value in range 0 to 1
-   * @returns {[number, number, number]} [r, g,b] in range 0 to 255
+   * @returns [r, g,b] in range 0 to 255
    */
   static hsv2rgb(hue, saturation, value) {
     hue /= 60;
@@ -317,8 +322,9 @@ class Color extends ColorBase {
     return { r: arr[0], g: arr[1], b: arr[2] };
   }
   static hsvtodec(hue, saturation, value) {
-    if (hue === null)
+    if (hue === null) {
       return null;
+    }
     const result = Color.hsv2rgb(hue, saturation, value);
     return String(Color.rgb_dec565({ r: result[0], g: result[1], b: result[2] }));
   }
@@ -341,8 +347,9 @@ class Color extends ColorBase {
       hue = 4 + (red - green) / (max - min);
     }
     hue = hue * 60;
-    if (hue < 0)
+    if (hue < 0) {
       hue = hue + 360;
+    }
     return Math.round(hue);
   }
   static pos_to_color(x, y) {
@@ -376,14 +383,14 @@ class Color extends ColorBase {
     const Z = vred * 88e-6 + vgreen * 0.07231 + vblue * 0.986039;
     const ciex = (X / (X + Y + Z)).toFixed(4);
     const ciey = (Y / (X + Y + Z)).toFixed(4);
-    const cie = "[" + ciex + "," + ciey + "]";
+    const cie = `[${ciex},${ciey}]`;
     return cie;
   }
   static isRGB(F) {
     return typeof F == "object" && "r" in F && "b" in F && "g" in F;
   }
   static isOldRGB(F) {
-    return typeof F == "object" && "r" in F && "b" in F && "g" in F;
+    return this.isRGB(F);
   }
   /*
   static getBlendedColorfunction(color: RGB | null, percent: number) {

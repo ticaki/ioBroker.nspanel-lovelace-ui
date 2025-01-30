@@ -475,8 +475,8 @@ export class Library extends BaseClass {
                 stateTyp:
                     stateType !== undefined
                         ? stateType
-                        : this.stateDataBase[dp] !== undefined && this.stateDataBase[dp]!.stateTyp !== undefined
-                          ? this.stateDataBase[dp]!.stateTyp
+                        : this.stateDataBase[dp] !== undefined && this.stateDataBase[dp].stateTyp !== undefined
+                          ? this.stateDataBase[dp].stateTyp
                           : undefined,
                 val: val,
                 ack: ack,
@@ -484,8 +484,8 @@ export class Library extends BaseClass {
                 obj:
                     obj !== undefined
                         ? obj
-                        : this.stateDataBase[dp] !== undefined && this.stateDataBase[dp]!.obj !== undefined
-                          ? this.stateDataBase[dp]!.obj
+                        : this.stateDataBase[dp] !== undefined && this.stateDataBase[dp].obj !== undefined
+                          ? this.stateDataBase[dp].obj
                           : undefined,
                 init: init,
             };

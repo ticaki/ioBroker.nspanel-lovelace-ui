@@ -122,6 +122,7 @@ class Library extends BaseClass {
   }
   /**
    * Write/create from a Json with defined keys, the associated states and channels.
+   *
    * @param prefix iobroker datapoint prefix where to write
    * @param objNode Entry point into the definition json.
    * @param def the definition json
@@ -130,45 +131,51 @@ class Library extends BaseClass {
    * @returns  void
    */
   async writeFromJson(prefix, objNode, def, data, expandTree = false) {
-    if (!def || typeof def !== "object")
+    if (!def || typeof def !== "object") {
       return;
-    if (data === void 0 || ["string", "number", "boolean", "object"].indexOf(typeof data) == -1)
+    }
+    if (data === void 0 || ["string", "number", "boolean", "object"].indexOf(typeof data) == -1) {
       return;
+    }
     const objectDefinition = objNode ? await this.getObjectDefFromJson(`${objNode}`, def, data) : null;
-    if (objectDefinition)
+    if (objectDefinition) {
       objectDefinition.native = {
         ...objectDefinition.native || {},
         objectDefinitionReference: objNode
       };
+    }
     if (typeof data === "object" && data !== null) {
       if (Array.isArray(data)) {
-        if (!objectDefinition)
+        if (!objectDefinition) {
           return;
+        }
         if (objectDefinition.type !== "state" || expandTree) {
           let a = 0;
-          for (const k in data) {
+          for (const k of data) {
             const defChannel = this.getChannelObject(objectDefinition);
             const dp = `${prefix}${`00${a++}`.slice(-2)}`;
             await this.writedp(dp, null, defChannel);
-            await this.writeFromJson(dp, `${objNode}`, def, data[k], expandTree);
+            await this.writeFromJson(dp, `${objNode}`, def, k, expandTree);
           }
         } else {
-          this.writeFromJson(prefix, objNode, def, JSON.stringify(data) || "[]", expandTree);
+          await this.writeFromJson(prefix, objNode, def, JSON.stringify(data) || "[]", expandTree);
         }
       } else {
         if (objectDefinition) {
           const defChannel = this.getChannelObject(objectDefinition);
           await this.writedp(prefix, null, defChannel);
         }
-        if (data === null)
+        if (data === null) {
           return;
+        }
         for (const k in data) {
           await this.writeFromJson(`${prefix}.${k}`, `${objNode}.${k}`, def, data[k], expandTree);
         }
       }
     } else {
-      if (!objectDefinition)
+      if (!objectDefinition) {
         return;
+      }
       await this.writedp(prefix, data, objectDefinition);
     }
   }
@@ -176,6 +183,7 @@ class Library extends BaseClass {
    * Get the ioBroker.Object out of stateDefinition
    *
    * @param key is the deep linking key to the definition
+   * @param def is the definition object
    * @param data  is the definition dataset
    * @returns ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.StateObject
    */
@@ -216,8 +224,9 @@ class Library extends BaseClass {
             break;
         }
       }
-    } else
+    } else {
       result = this.cloneObject(result);
+    }
     return result;
   }
   deepJsonValue(key, data) {
@@ -228,15 +237,16 @@ class Library extends BaseClass {
     let c = 0, s = data;
     while (c < k.length) {
       s = s[k[c++]];
-      if (s === void 0)
+      if (s === void 0) {
         return null;
+      }
     }
     return s;
   }
   /**
    * Get a channel/device definition from property _channel out of a getObjectDefFromJson() result or a default definition.
    *
-   * @param def the data coming from getObjectDefFromJson()
+   * @param definition the definition object
    * @returns ioBroker.ChannelObject | ioBroker.DeviceObject or a default channel obj
    */
   getChannelObject(definition = null) {
@@ -253,10 +263,12 @@ class Library extends BaseClass {
   }
   /**
    * Write/Create the specified data point with value, will only be written if val != oldval and obj.type == state or the data point value in the DB is not undefined. Channel and Devices have an undefined value.
+   *
    * @param dp Data point to be written. Library.clean() is called with it.
    * @param val Value for this data point. Channel vals (old and new) are undefined so they never will be written.
    * @param obj The object definition for this data point (ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.StateObject)
    * @param ack set ack to false if needed - NEVER after u subscript to states)
+   * @param forceWrite write the value even if it is the same as the old value
    * @returns void
    */
   async writedp(dp, val, obj = null, ack = true, forceWrite = false) {
@@ -268,8 +280,9 @@ class Library extends BaseClass {
         throw new Error("writedp try to create a state without object informations.");
       }
       obj._id = `${this.adapter.name}.${this.adapter.instance}.${dp}`;
-      if (typeof obj.common.name == "string")
+      if (typeof obj.common.name == "string") {
         obj.common.name = await this.getTranslationObj(obj.common.name);
+      }
       if (!del) {
         if (obj.common.states) {
           const temp = await this.adapter.getObjectAsync(dp);
@@ -283,8 +296,9 @@ class Library extends BaseClass {
       const stateType = obj && obj.common && obj.common.type;
       node = this.setdb(dp, obj.type, void 0, stateType, true, Date.now(), obj);
     } else if (node.init && obj) {
-      if (typeof obj.common.name == "string")
+      if (typeof obj.common.name == "string") {
         obj.common.name = await this.getTranslationObj(obj.common.name);
+      }
       if (!del) {
         if (obj.common.states) {
           const temp = await this.adapter.getObjectAsync(dp);
@@ -296,30 +310,35 @@ class Library extends BaseClass {
         await this.adapter.extendObjectAsync(dp, obj);
       }
     }
-    if (obj && obj.type !== "state")
+    if (obj && obj.type !== "state") {
       return;
-    if (node && !(node.type === "state" && val === void 0))
+    }
+    if (node && !(node.type === "state" && val === void 0)) {
       this.setdb(dp, node.type, val, node.stateTyp, false);
+    }
     if (node && val !== void 0 && (this.defaults.updateStateOnChangeOnly || node.val != val || forceWrite || !node.ack)) {
       const typ = obj && obj.common && obj.common.type || node.stateTyp;
-      if (typ && typ != typeof val && val !== void 0)
+      if (typ && typ != typeof val && val !== void 0) {
         val = this.convertToType(val, typ);
-      if (!del)
+      }
+      if (!del) {
         await this.adapter.setStateAsync(dp, {
           val,
           ts: Date.now(),
           ack
         });
+      }
     }
   }
   setForbiddenDirs(dirs) {
     this.forbiddenDirs = this.forbiddenDirs.concat(dirs);
   }
   isDirAllowed(dp) {
-    if (dp && dp.split(".").length <= 2)
+    if (dp && dp.split(".").length <= 2) {
       return true;
-    for (const a in this.forbiddenDirs) {
-      if (dp.search(new RegExp(this.forbiddenDirs[a], "g")) != -1) {
+    }
+    for (const a of this.forbiddenDirs) {
+      if (dp.search(new RegExp(a, "g")) != -1) {
         return false;
       }
     }
@@ -337,36 +356,41 @@ class Library extends BaseClass {
   async cleanUpTree(hold, filter, deep) {
     let del = [];
     for (const dp in this.stateDataBase) {
-      if (filter && filter.filter((a) => dp.startsWith(a) || a.startsWith(dp)).length == 0)
+      if (filter && filter.filter((a) => dp.startsWith(a) || a.startsWith(dp)).length == 0) {
         continue;
-      if (hold.filter((a) => dp.startsWith(a) || a.startsWith(dp)).length > 0)
+      }
+      if (hold.filter((a) => dp.startsWith(a) || a.startsWith(dp)).length > 0) {
         continue;
+      }
       delete this.stateDataBase[dp];
       del.push(dp.split(".").slice(0, deep).join("."));
     }
     del = del.filter((item, pos, arr) => {
       return arr.indexOf(item) == pos;
     });
-    for (const a in del) {
-      await this.adapter.delObjectAsync(del[a], { recursive: true });
-      this.log.debug(`Clean up tree delete: ${del[a]}`);
+    for (const a of del) {
+      await this.adapter.delObjectAsync(a, { recursive: true });
+      this.log.debug(`Clean up tree delete: ${a}`);
     }
   }
   /**
    * Remove forbidden chars from datapoint string.
+   *
    * @param string Datapoint string to clean
    * @param lowerCase lowerCase() first param.
    * @param removePoints remove . from dp
    * @returns void
    */
   cleandp(string, lowerCase = false, removePoints = false) {
-    if (!string && typeof string != "string")
+    if (!string && typeof string != "string") {
       return string;
+    }
     string = string.replace(this.adapter.FORBIDDEN_CHARS, "_");
-    if (removePoints)
+    if (removePoints) {
       string = string.replace(/[^0-9A-Za-z_-]/gu, "_");
-    else
-      string = string.replace(/[^0-9A-Za-z\._-]/gu, "_");
+    } else {
+      string = string.replace(/[^0-9A-Za-z._-]/gu, "_");
+    }
     return lowerCase ? string.toLowerCase() : string;
   }
   /* Convert a value to the given type
@@ -375,13 +399,15 @@ class Library extends BaseClass {
    * @returns
    */
   convertToType(value, type) {
-    if (value === null)
+    if (value === null) {
       return null;
+    }
     if (type === "undefined") {
       throw new Error("convertToType type undefined not allowed!");
     }
-    if (value === void 0)
+    if (value === void 0) {
       value = "";
+    }
     const old_type = typeof value;
     let newValue = typeof value == "object" ? JSON.stringify(value) : value;
     if (type !== old_type) {
@@ -425,10 +451,12 @@ class Library extends BaseClass {
     return this.stateDataBase[dp];
   }
   async memberDeleteAsync(data) {
-    if (this.unknownTokensInterval)
+    if (this.unknownTokensInterval) {
       this.adapter.clearInterval(this.unknownTokensInterval);
-    for (const d of data)
+    }
+    for (const d of data) {
       await d.delete();
+    }
   }
   cloneObject(obj) {
     if (typeof obj !== "object") {
@@ -445,18 +473,21 @@ class Library extends BaseClass {
     return JSON.parse(JSON.stringify(obj));
   }
   async fileExistAsync(file) {
-    if (await import_fs.default.existsSync(`./admin/${file}`))
+    if (import_fs.default.existsSync(`./admin/${file}`)) {
       return true;
+    }
     return false;
   }
   /**
    * Initialise the database with the states to prevent unnecessary creation and writing.
+   *
    * @param states States that are to be read into the database during initialisation.
    * @returns void
    */
   async initStates(states) {
-    if (!states)
+    if (!states) {
       return;
+    }
     this.stateDataBase = {};
     const removedChannels = [];
     for (const state in states) {
@@ -475,30 +506,35 @@ class Library extends BaseClass {
           true
         );
       } else {
-        if (!removedChannels.every((a) => !dp.startsWith(a)))
+        if (!removedChannels.every((a) => !dp.startsWith(a))) {
           continue;
+        }
         const channel = dp.split(".").slice(0, 4).join(".");
         removedChannels.push(channel);
         await this.adapter.delObjectAsync(channel, { recursive: true });
-        this.log.debug("Delete channel with dp:" + channel);
+        this.log.debug(`Delete channel with dp:${channel}`);
       }
     }
   }
   /**
    * Resets states that have not been updated in the database in offset time.
+   *
    * @param prefix String with which states begin that are reset.
    * @param offset Time in ms since last update.
+   * @param del Delete the state if it is not updated.
    * @returns void
    */
   async garbageColleting(prefix, offset = 2e3, del = false) {
-    if (!prefix)
+    if (!prefix) {
       return;
+    }
     if (this.stateDataBase) {
       for (const id in this.stateDataBase) {
         if (id.startsWith(prefix)) {
           const state = this.stateDataBase[id];
-          if (!state || state.val == void 0)
+          if (!state || state.val == void 0) {
             continue;
+          }
           if (state.ts < Date.now() - offset) {
             if (del) {
               await this.cleanUpTree([], [id], -1);
@@ -508,14 +544,16 @@ class Library extends BaseClass {
             switch (state.stateTyp) {
               case "string":
                 if (typeof state.val == "string") {
-                  if (state.val.startsWith("{") && state.val.endsWith("}"))
+                  if (state.val.startsWith("{") && state.val.endsWith("}")) {
                     newVal = "{}";
-                  else if (state.val.startsWith("[") && state.val.endsWith("]"))
+                  } else if (state.val.startsWith("[") && state.val.endsWith("]")) {
                     newVal = "[]";
-                  else
+                  } else {
                     newVal = "";
-                } else
+                  }
+                } else {
                   newVal = "";
+                }
                 break;
               case "bigint":
               case "number":
@@ -540,17 +578,21 @@ class Library extends BaseClass {
     }
   }
   getLocalLanguage() {
-    if (this.adapter.language)
+    if (this.adapter.language) {
       return this.adapter.language;
+    }
     return "en";
   }
   getTranslation(key) {
-    if (!key)
+    if (!key) {
       return "";
-    if (this.translation[key] !== void 0)
+    }
+    if (this.translation[key] !== void 0) {
       return this.translation[key];
-    if (this.adapter.config.logUnknownTokens)
+    }
+    if (this.adapter.config.logUnknownTokens) {
       this.unknownTokens[key] = "";
+    }
     return key;
   }
   existTranslation(key) {
@@ -562,17 +604,20 @@ class Library extends BaseClass {
     for (const l of language) {
       try {
         const i = await Promise.resolve().then(() => __toESM(require(`../../admin/i18n/${l}/translations.json`)));
-        if (i[key] !== void 0)
+        if (i[key] !== void 0) {
           result[l] = i[key];
-      } catch (error) {
-        if (this.adapter.config.logUnknownTokens)
+        }
+      } catch {
+        if (this.adapter.config.logUnknownTokens) {
           this.unknownTokens[key] = "";
+        }
         return key;
       }
     }
-    if (result["en"] == void 0) {
-      if (this.adapter.config.logUnknownTokens)
+    if (result.en == void 0) {
+      if (this.adapter.config.logUnknownTokens) {
         this.unknownTokens[key] = "";
+      }
       return key;
     }
     return result;
@@ -580,7 +625,7 @@ class Library extends BaseClass {
   async checkLanguage() {
     try {
       this.translation = await Promise.resolve().then(() => __toESM(require(`../../../admin/i18n/${this.adapter.language}/translations.json`)));
-    } catch (error) {
+    } catch {
       this.log.error(`Language ${this.adapter.language} not exist!`);
     }
   }
@@ -606,31 +651,34 @@ class Library extends BaseClass {
    * @returns Monday first March
    */
   convertSpeakDate(text, noti = "", day = false) {
-    if (!text || typeof text !== `string`)
+    if (!text || typeof text !== `string`) {
       return ``;
+    }
     const b = text.split(`.`);
     if (day) {
       b[0] = b[0].split(" ")[2];
     }
-    return " " + ((/* @__PURE__ */ new Date(`${b[1]}/${b[0]}/${(/* @__PURE__ */ new Date()).getFullYear()}`)).toLocaleString(this.getLocalLanguage(), {
+    return ` ${`${(/* @__PURE__ */ new Date(`${b[1]}/${b[0]}/${(/* @__PURE__ */ new Date()).getFullYear()}`)).toLocaleString(this.getLocalLanguage(), {
       weekday: day ? "long" : void 0,
       day: "numeric",
       month: `long`
-    }) + " ").replace(/([0-9]+\.)/gu, (x) => {
+    })} `.replace(/([0-9]+\.)/gu, (x) => {
       const result = this.getTranslation(x + noti);
-      if (result != x + noti)
+      if (result != x + noti) {
         return result;
+      }
       return this.getTranslation(x);
-    });
+    })}`;
   }
   getLocalTranslation(group, key) {
     try {
       if (group in LocalTranslations) {
         const result = LocalTranslations[group];
-        if (key in result)
+        if (key in result) {
           return result[key]["de-DE"];
+        }
       }
-    } catch (e) {
+    } catch {
       return key;
     }
     return key;

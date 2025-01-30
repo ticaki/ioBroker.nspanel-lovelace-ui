@@ -55,22 +55,25 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.id = config.id;
     this.config = options;
     this.parent = config && config.parent;
-    this.name = this.parent ? this.parent.name + "." + this.id : this.id;
+    this.name = this.parent ? `${this.parent.name}.${this.id}` : this.id;
     this.sleep = false;
     this.enums = options && "enums" in options && options.enums ? options.enums : "";
   }
   static async getPageItem(config, options) {
-    if (options === void 0)
+    if (options === void 0) {
       return void 0;
-    if (config.panel.persistentPageItems[config.id])
+    }
+    if (config.panel.persistentPageItems[config.id]) {
       return config.panel.persistentPageItems[config.id];
+    }
     const p = new PageItem(config, options);
     await p.init();
     return p;
   }
   async init() {
-    if (!this.config)
+    if (!this.config) {
       return;
+    }
     const config = structuredClone(this.config);
     const tempItem = await this.panel.statesControler.createDataItems(
       config.data,
@@ -94,8 +97,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         if (list) {
           for (let a = 0; a < 6; a++) {
             const test = list && list[a] && list[a].id && await this.panel.statesControler.getObjectAsync(list[a].id);
-            if (test && test.common && test.common.write)
+            if (test && test.common && test.common.write) {
               this.tempData[a] = true;
+            }
           }
         }
         if (data.entity1 && data.entity1.value) {
@@ -121,8 +125,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       case "timer": {
         if (this.dataItems.role === "timer" && this.tempData === void 0) {
           this.tempData = { status: "pause", value: 0 };
-          if (!this.panel.persistentPageItems[this.id])
+          if (!this.panel.persistentPageItems[this.id]) {
             this.panel.persistentPageItems[this.id] = this;
+          }
         }
         break;
       }
@@ -168,8 +173,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           const dimmer = (_a = item.dimmer && item.dimmer.value && await item.dimmer.value.getNumber()) != null ? _a : null;
           let rgb = (_c = (_b = await tools.getRGBfromRGBThree(item)) != null ? _b : item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _c : null;
           const nhue = (_d = item.hue && await item.hue.getNumber()) != null ? _d : null;
-          if (rgb === null && nhue)
+          if (rgb === null && nhue) {
             rgb = (_e = import_Color.Color.hsv2RGB(nhue, 1, 1)) != null ? _e : null;
+          }
           message.icon = await tools.getIconEntryValue(item.icon, v, "", "");
           const colorMode = !item.colorMode ? "none" : await item.colorMode.getBoolean() ? "hue" : "ct";
           message.iconColor = (_g = (_f = colorMode === "hue" ? await tools.GetIconColor(
@@ -208,9 +214,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           let optionalValueC = Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === "string") ? [...optionalValue] : ["", "", ""];
           optionalValueC = optionalValueC.splice(0, 3).map((a) => a ? import_icon_mapping.Icons.GetIcon(a) : a);
           optionalValueC.forEach((a, i) => {
-            if (a)
+            if (a) {
               optionalValueC[i + 3] = this.tempData[i] ? "enable" : "disable";
-            else {
+            } else {
               optionalValueC[i] = "";
               optionalValueC[i + 3] = "disable";
             }
@@ -252,10 +258,12 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             const item = entry.data;
             message.type = "text";
             let value = await tools.getValueEntryNumber(item.entity1, false);
-            if (value === null)
+            if (value === null) {
               value = await tools.getValueEntryBoolean(item.entity1);
-            if (value === null)
+            }
+            if (value === null) {
               value = true;
+            }
             switch (entry.role) {
               case "2values": {
                 message.optionalValue = ``;
@@ -265,8 +273,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 const unit2 = item.entity2 && item.entity2.unit && await item.entity2.unit.getString();
                 if (val1 !== null && val2 !== null) {
                   message.optionalValue = String(val1) + (unit1 != null ? unit1 : "") + String(val2) + (unit2 != null ? unit2 : "");
-                  if (typeof value === "number")
+                  if (typeof value === "number") {
                     value = val1 + val2 / 2;
+                  }
                 }
                 break;
               }
@@ -285,10 +294,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                     }
                   }
                 }
-                if (val)
+                if (val) {
                   message.optionalValue = this.library.getTranslation(val);
-                else
+                } else {
                   message.optionalValue = "";
+                }
                 break;
               }
               default: {
@@ -344,23 +354,28 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         case "button": {
           const item = entry.data;
           let value = await tools.getValueEntryNumber(item.entity1, false);
-          if (value === null)
+          if (value === null) {
             value = await tools.getValueEntryBoolean(item.entity1);
-          if (value === null)
+          }
+          if (value === null) {
             value = true;
+          }
           message.optionalValue = (value != null ? value : true) ? "1" : "0";
-          if (this.parent && this.parent.card === "cardEntities")
+          if (this.parent && this.parent.card === "cardEntities") {
             message.optionalValue = (_D = await tools.getEntryTextOnOff(item.text1, !!value)) != null ? _D : message.optionalValue;
+          }
           message.displayName = this.library.getTranslation(
             (_E = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _E : ""
           );
           if (item.confirm) {
             if (this.confirmClick === "unlock") {
-              if (this.parent && this.parent.card === "cardEntities")
+              if (this.parent && this.parent.card === "cardEntities") {
                 message.optionalValue = (_F = await item.confirm.getString()) != null ? _F : message.optionalValue;
+              }
               this.confirmClick = Date.now();
-            } else
+            } else {
               this.confirmClick = "lock";
+            }
           }
           message.icon = await tools.getIconEntryValue(item.icon, value, "home");
           message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
@@ -390,26 +405,28 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           return tools.getItemMesssage(message);
           break;
         }
-        case "fan": {
-          if (entry.type === "fan") {
-            const item = entry.data;
-            message.type = "fan";
-            const value = (_L = await tools.getValueEntryBoolean(item.entity1)) != null ? _L : null;
-            message.displayName = this.library.getTranslation(
-              (_N = (_M = await tools.getEntryTextOnOff(item.headline, true)) != null ? _M : message.displayName) != null ? _N : ""
-            );
-            message.icon = (_O = await tools.getIconEntryValue(item.icon, value, "")) != null ? _O : "";
-            message.iconColor = (_P = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _P : "";
-            return tools.getPayload(
-              message.type,
-              message.intNameEntity,
-              message.icon,
-              message.iconColor,
-              message.displayName,
-              value ? "1" : "0"
-            );
+        case "fan":
+          {
+            if (entry.type === "fan") {
+              const item = entry.data;
+              message.type = "fan";
+              const value = (_L = await tools.getValueEntryBoolean(item.entity1)) != null ? _L : null;
+              message.displayName = this.library.getTranslation(
+                (_N = (_M = await tools.getEntryTextOnOff(item.headline, true)) != null ? _M : message.displayName) != null ? _N : ""
+              );
+              message.icon = (_O = await tools.getIconEntryValue(item.icon, value, "")) != null ? _O : "";
+              message.iconColor = (_P = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _P : "";
+              return tools.getPayload(
+                message.type,
+                message.intNameEntity,
+                message.icon,
+                message.iconColor,
+                message.displayName,
+                value ? "1" : "0"
+              );
+            }
           }
-        }
+          break;
         case "timer": {
           if (entry.type === "timer") {
             const item = entry.data;
@@ -451,8 +468,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   getDetailPayload(message) {
     var _a;
     this.triggerParent = false;
-    if (!message.type)
+    if (!message.type) {
       return "";
+    }
     switch (message.type) {
       case "2Sliders": {
         let result = {
@@ -633,8 +651,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   }
   async GeneratePopup(mode) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L;
-    if (!this.config || !this.dataItems)
+    if (!this.config || !this.dataItems) {
       return null;
+    }
     const entry = this.dataItems;
     let message = {};
     message.entityName = this.id;
@@ -654,8 +673,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           case "rgb.hex":
           default: {
             message.type = "2Sliders";
-            if (message.type !== "2Sliders" || entry.type !== "light")
+            if (message.type !== "2Sliders" || entry.type !== "light") {
               return null;
+            }
             const item = entry.data;
             message.buttonState = (_a = await tools.getValueEntryBoolean(item.entity1)) != null ? _a : "disable";
             const dimmer = item.dimmer && item.dimmer.value && await item.dimmer.value.getNumber();
@@ -675,8 +695,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 message.slider1Pos = dimmer;
               }
             }
-            if (message.buttonState !== "disable")
+            if (message.buttonState !== "disable") {
               message.icon = await tools.getIconEntryValue(item.icon, message.buttonState, "", "");
+            }
             message.slidersColor = (_c = await tools.getIconEntryColor(
               item.icon,
               message.slider1Pos === void 0 || message.slider1Pos === "disable" ? null : (_b = message.slider1Pos) != null ? _b : message.buttonState === true,
@@ -691,8 +712,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 break;
               case "hue": {
                 const nhue = (_d = item.hue && await item.hue.getNumber()) != null ? _d : null;
-                if (nhue)
+                if (nhue) {
                   rgb = (_e = import_Color.Color.hsv2RGB(nhue, 1, 1)) != null ? _e : null;
+                }
                 break;
               }
               case "rgbThree": {
@@ -733,12 +755,15 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.slider1Translation = (_j = item.text1 && item.text1.true && await item.text1.true.getString()) != null ? _j : void 0;
             message.slider2Translation = (_k = item.text2 && item.text2.true && await item.text2.true.getString()) != null ? _k : void 0;
             message.hue_translation = (_l = item.text3 && item.text3.true && await item.text3.true.getString()) != null ? _l : void 0;
-            if (message.slider1Translation !== void 0)
+            if (message.slider1Translation !== void 0) {
               message.slider1Translation = this.library.getTranslation(message.slider1Translation);
-            if (message.slider2Translation !== void 0)
+            }
+            if (message.slider2Translation !== void 0) {
               message.slider2Translation = this.library.getTranslation(message.slider2Translation);
-            if (message.hue_translation !== void 0)
+            }
+            if (message.hue_translation !== void 0) {
               message.hue_translation = this.library.getTranslation(message.hue_translation);
+            }
             break;
           }
         }
@@ -748,8 +773,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         if (entry.type === "fan") {
           const item = entry.data;
           message.type = "popupFan";
-          if (message.type !== "popupFan")
+          if (message.type !== "popupFan") {
             break;
+          }
           const value = (_m = await tools.getValueEntryBoolean(item.entity1)) != null ? _m : null;
           message.icon = (_n = await tools.getIconEntryValue(item.icon, value, "")) != null ? _n : "";
           message.iconColor = (_o = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _o : "";
@@ -766,8 +792,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           );
           let list = (_u = (_t = item.valueList && await item.valueList.getObject()) != null ? _t : item.valueList && await item.valueList.getString()) != null ? _u : "";
           if (list !== null) {
-            if (Array.isArray(list))
+            if (Array.isArray(list)) {
               list = list.join("?");
+            }
           }
           message.modeList = typeof list === "string" ? list : "";
         }
@@ -775,12 +802,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       }
       case "popupThermo":
       case "popupInSel": {
-        if (entry.type !== "input_sel" && entry.type !== "light")
+        if (entry.type !== "input_sel" && entry.type !== "light") {
           break;
+        }
         const item = entry.data;
         message.type = "insel";
-        if (!(message.type === "insel"))
+        if (!(message.type === "insel")) {
           return null;
+        }
         const value = (_v = await tools.getValueEntryBoolean(item.entityInSel)) != null ? _v : true;
         message.textColor = await tools.getEntryColor(item.color, value, import_Color.Color.White);
         message.currentState = mode === "popupThermo" ? this.library.getTranslation((_w = item.headline && await item.headline.getString()) != null ? _w : "") : "entity2" in item ? (_x = await tools.getValueEntryString(item.entity2)) != null ? _x : "" : "";
@@ -799,8 +828,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             sList.list.splice(48);
             message.list = Array.isArray(sList.list) ? sList.list.map((a) => tools.formatInSelText(a)).join("?") : "";
             message.currentState = tools.formatInSelText(this.library.getTranslation(sList.value));
-            if (mode !== "popupThermo")
+            if (mode !== "popupThermo") {
               break;
+            }
             message = { ...message, type: "popupThermo" };
             if (message.type === "popupThermo") {
               message.headline = this.library.getTranslation(
@@ -826,19 +856,23 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           "13"
         ];
         if (list !== null) {
-          if (typeof list === "string")
+          if (typeof list === "string") {
             list = list.split("?");
-          if (Array.isArray(list))
+          }
+          if (Array.isArray(list)) {
             list.splice(48);
-        } else
+          }
+        } else {
           list = [];
+        }
         message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
         if (message.list && message.list.length > 940) {
           message.list = message.list.slice(0, 940);
           this.log.warn("Value list has more as 940 chars!");
         }
-        if (mode !== "popupThermo")
+        if (mode !== "popupThermo") {
           break;
+        }
         message = { ...message, type: "popupThermo" };
         if (message.type === "popupThermo") {
           message.headline = this.library.getTranslation(
@@ -850,20 +884,23 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       case "popupNotify":
         break;
       case "popupShutter": {
-        if (entry.type !== "shutter")
+        if (entry.type !== "shutter") {
           break;
+        }
         const item = entry.data;
         message.type = "popupShutter";
-        if (!(message.type === "popupShutter"))
+        if (!(message.type === "popupShutter")) {
           break;
+        }
         message.text2 = (_F = await tools.getEntryTextOnOff(item.text, true)) != null ? _F : "";
         message.text2 = this.library.getTranslation(message.text2);
         const pos1 = (_G = await tools.getValueEntryNumber(item.entity1)) != null ? _G : "disable";
         const pos2 = (_H = await tools.getValueEntryNumber(item.entity2)) != null ? _H : "disable";
-        if (pos1 !== "disable")
+        if (pos1 !== "disable") {
           message.icon = (_I = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _I : "";
-        else if (pos2 !== "disable")
+        } else if (pos2 !== "disable") {
           message.icon = (_J = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _J : "";
+        }
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
           "arrow-up",
           //up
@@ -881,15 +918,16 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         const arr = [pos1, pos2];
         for (let index = 0; index < arr.length; index++) {
           const pos = arr[index];
-          if (pos == "disable")
+          if (pos == "disable") {
             continue;
+          }
           const i = index * 3;
           let optionalValueC = Array.isArray(optionalValue) && optionalValue.every((a) => typeof a === "string") ? [...optionalValue] : ["", "", ""];
           optionalValueC = optionalValueC.splice(i, 3).map((a) => a ? import_icon_mapping.Icons.GetIcon(a) : a);
           optionalValueC.forEach((a, i2) => {
-            if (a)
+            if (a) {
               optionalValueC[i2 + 3] = this.tempData[i2] ? "enable" : "disable";
-            else {
+            } else {
               optionalValueC[i2] = "";
               optionalValueC[i2 + 3] = "disable";
             }
@@ -919,12 +957,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         break;
       }
       case "popupTimer": {
-        if (entry.type !== "timer")
+        if (entry.type !== "timer") {
           break;
+        }
         const item = entry.data;
         message.type = "popupTimer";
-        if (!(message.type === "popupTimer"))
+        if (!(message.type === "popupTimer")) {
           break;
+        }
         if (this.tempData !== void 0) {
           message.iconColor = await tools.GetIconColor(item.icon, this.tempData.status === "run");
           message.minutes = Math.floor(this.tempData.value / 60).toFixed(0);
@@ -953,51 +993,54 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     return this.getDetailPayload(message);
   }
   getLogname() {
-    return this.parent ? this.parent.name + "." + this.id : this.id;
+    return this.parent ? `${this.parent.name}.${this.id}` : this.id;
   }
   async delete() {
     this.visibility = false;
     await this.controller.statesControler.deactivateTrigger(this);
     if (this.panel.persistentPageItems[this.id]) {
-      if (!this.panel.unload)
+      if (!this.panel.unload) {
         return;
+      }
     }
     await super.delete();
     this.parent = void 0;
   }
   async onCommand(action, value) {
     var _a, _b;
-    if (value === void 0 || this.dataItems === void 0)
+    if (value === void 0 || this.dataItems === void 0) {
       return false;
+    }
     const entry = this.dataItems;
     switch (action) {
       case "mode-preset_modes":
       case "mode-insel":
         {
-          if (!("entityInSel" in entry.data))
+          if (!("entityInSel" in entry.data)) {
             break;
+          }
           await this.setListCommand(entry, value);
         }
         break;
       case "button": {
         if (entry.type === "button") {
           if (entry.role === "indicator") {
-            if (this.parent && this.parent.card === "cardThermo")
-              this.parent.update();
+            if (this.parent && this.parent.card === "cardThermo") {
+              await this.parent.update();
+            }
             break;
           }
           const item = entry.data;
           if (item.confirm) {
             if (this.confirmClick === "lock") {
               this.confirmClick = "unlock";
-              this.parent && this.parent.update();
+              this.parent && await this.parent.update();
               return true;
             } else if (this.confirmClick === "unlock" || this.confirmClick - 300 > Date.now()) {
               return true;
-            } else {
-              this.confirmClick = "lock";
-              this.parent && this.parent.update();
             }
+            this.confirmClick = "lock";
+            this.parent && await this.parent.update();
           }
           let value2 = (_a = item.setNavi && await item.setNavi.getString()) != null ? _a : null;
           if (value2 !== null) {
@@ -1022,8 +1065,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           const item = entry.data;
           if (item && item.dimmer && item.dimmer.value && item.dimmer.value.writeable) {
             const dimmer = await tools.getScaledNumber(item.dimmer);
-            if (dimmer !== null && String(dimmer) != value)
+            if (dimmer !== null && String(dimmer) != value) {
               await tools.setScaledNumber(item.dimmer, parseInt(value));
+            }
           } else {
             this.log.warn("Dimmer is not writeable!");
           }
@@ -1038,8 +1082,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           }
           if (item && item.ct && item.ct.value && item.ct.value.writeable) {
             const ct = await tools.getSliderCTFromValue(item.ct);
-            if (ct !== null && String(ct) != value)
+            if (ct !== null && String(ct) != value) {
               await tools.setSliderCTFromValue(item.ct, parseInt(value));
+            }
           } else {
             this.log.warn("ct is not writeable!");
           }
@@ -1099,26 +1144,29 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         break;
       }
       case "tiltOpen": {
-        if (entry.type !== "shutter")
+        if (entry.type !== "shutter") {
           break;
+        }
         if (entry.data.up2 && entry.data.up2.writeable) {
-          entry.data.up2.setStateTrue();
+          await entry.data.up2.setStateTrue();
           break;
         }
       }
       case "tiltClose": {
-        if (entry.type !== "shutter")
+        if (entry.type !== "shutter") {
           break;
+        }
         if (action === "tiltClose" && entry.data.down2 && entry.data.down2.writeable) {
-          entry.data.down2.setStateTrue();
+          await entry.data.down2.setStateTrue();
           break;
         }
       }
       case "tiltStop": {
-        if (entry.type !== "shutter")
+        if (entry.type !== "shutter") {
           break;
+        }
         if (action === "tiltStop" && entry.data.stop2 && entry.data.stop2.writeable) {
-          entry.data.stop2.setStateTrue();
+          await entry.data.stop2.setStateTrue();
           break;
         }
         const items = entry.data;
@@ -1145,56 +1193,62 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 case "tiltOpen": {
                   if (tools.ifValueEntryIs(items.entity2, "number")) {
                     const value2 = await items.entity2.maxScale.getNumber();
-                    if (value2 !== null)
+                    if (value2 !== null) {
                       await tools.setValueEntry(items.entity2, value2);
+                    }
                   }
                   break;
                 }
                 case "tiltStop": {
                   if (tools.ifValueEntryIs(items.entity2, "number")) {
                     const value2 = await tools.getValueEntryNumber(items.entity2);
-                    if (value2 !== null)
+                    if (value2 !== null) {
                       await tools.setValueEntry(items.entity2, value2);
+                    }
                   }
                   break;
                 }
                 case "tiltClose": {
                   if (tools.ifValueEntryIs(items.entity2, "number")) {
                     const value2 = await items.entity2.minScale.getNumber();
-                    if (value2 !== null)
+                    if (value2 !== null) {
                       await tools.setValueEntry(items.entity2, value2);
+                    }
                   }
                   break;
                 }
               }
             } else if (items.entity2.value.type === "boolean") {
-              if (action !== "tiltStop")
+              if (action !== "tiltStop") {
                 await items.entity2.value.setStateFlip();
+              }
             }
           }
         }
         break;
       }
       case "up": {
-        if (entry.type !== "shutter")
+        if (entry.type !== "shutter") {
           break;
+        }
         if (entry.data.up && entry.data.up.writeable) {
-          entry.data.up.setStateTrue();
+          await entry.data.up.setStateTrue();
           break;
         }
       }
       case "stop": {
-        if (entry.type !== "shutter")
+        if (entry.type !== "shutter") {
           break;
+        }
         if (action === "stop" && entry.data.stop && entry.data.stop.writeable) {
-          entry.data.stop.setStateTrue();
+          await entry.data.stop.setStateTrue();
           break;
         }
       }
       case "down": {
         if (entry.type === "shutter") {
           if (action === "down" && entry.data.down && entry.data.down.writeable) {
-            entry.data.down.setStateTrue();
+            await entry.data.down.setStateTrue();
             break;
           }
           const items = entry.data;
@@ -1221,31 +1275,35 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                   case "up": {
                     if (tools.ifValueEntryIs(items.entity1, "number")) {
                       const value2 = await items.entity1.maxScale.getNumber();
-                      if (value2 !== null)
+                      if (value2 !== null) {
                         await tools.setValueEntry(items.entity1, value2);
+                      }
                     }
                     break;
                   }
                   case "stop": {
                     if (tools.ifValueEntryIs(items.entity1, "number")) {
                       const value2 = await tools.getValueEntryNumber(items.entity1);
-                      if (value2 !== null)
+                      if (value2 !== null) {
                         await tools.setValueEntry(items.entity1, value2);
+                      }
                     }
                     break;
                   }
                   case "down": {
                     if (tools.ifValueEntryIs(items.entity1, "number")) {
                       const value2 = await items.entity1.minScale.getNumber();
-                      if (value2 !== null)
+                      if (value2 !== null) {
                         await tools.setValueEntry(items.entity1, value2);
+                      }
                     }
                     break;
                   }
                 }
               } else if (items.entity1.value.type === "boolean") {
-                if (action !== "stop")
+                if (action !== "stop") {
                   await items.entity1.value.setStateFlip();
+                }
               }
             }
           }
@@ -1255,16 +1313,18 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       case "positionSlider": {
         if (entry.type === "shutter") {
           const items = entry.data;
-          if (tools.ifValueEntryIs(items.entity1, "number"))
+          if (tools.ifValueEntryIs(items.entity1, "number")) {
             await tools.setValueEntry(items.entity1, parseInt(value));
+          }
         }
         break;
       }
       case "tiltSlider": {
         if (entry.type === "shutter") {
           const items = entry.data;
-          if (tools.ifValueEntryIs(items.entity2, "number"))
+          if (tools.ifValueEntryIs(items.entity2, "number")) {
             await tools.setValueEntry(items.entity2, parseInt(value));
+          }
         }
         break;
       }
@@ -1279,33 +1339,39 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         break;
       }
       case "timer-start": {
-        if (this.tempInterval)
+        if (this.tempInterval) {
           this.adapter.clearInterval(this.tempInterval);
+        }
         if (value) {
           this.tempData.value = value.split(":").reduce((p, c, i) => {
             return String(parseInt(p) + parseInt(c) * 60 ** (2 - i));
           });
         } else {
           this.tempData.status = "run";
-          if (this.visibility)
-            this.onStateTrigger();
-          this.tempInterval = this.adapter.setInterval(() => {
-            if (this.unload && this.tempInterval)
+          if (this.visibility) {
+            await this.onStateTrigger();
+          }
+          this.tempInterval = this.adapter.setInterval(async () => {
+            if (this.unload && this.tempInterval) {
               this.adapter.clearInterval(this.tempInterval);
+            }
             if (--this.tempData.value == 0) {
               this.tempData.value = 0;
               this.tempData.status = "stop";
-              this.dataItems && this.dataItems.type == "timer" && this.dataItems.data && this.dataItems.data.setValue1 && this.dataItems.data.setValue1.setStateTrue();
-              if (this.visibility)
-                this.onStateTrigger();
-              if (this.tempInterval)
+              this.dataItems && this.dataItems.type == "timer" && this.dataItems.data && this.dataItems.data.setValue1 && await this.dataItems.data.setValue1.setStateTrue();
+              if (this.visibility) {
+                await this.onStateTrigger();
+              }
+              if (this.tempInterval) {
                 this.adapter.clearInterval(this.tempInterval);
+              }
               this.tempInterval = void 0;
             } else if (this.tempData.value > 0) {
-              if (this.visibility)
-                this.onStateTrigger();
-              else if (this.parent && !this.parent.sleep && this.parent.getVisibility())
-                this.parent.onStateTriggerSuperDoNotOverride("timer", this);
+              if (this.visibility) {
+                await this.onStateTrigger();
+              } else if (this.parent && !this.parent.sleep && this.parent.getVisibility()) {
+                await this.parent.onStateTriggerSuperDoNotOverride("timer", this);
+              }
             }
           }, 1e3);
         }
@@ -1318,20 +1384,24 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         if (this.tempData) {
           this.tempData.value = 0;
           this.tempData.status = "stop";
-          if (this.visibility)
-            this.onStateTrigger();
-          if (this.tempInterval)
+          if (this.visibility) {
+            await this.onStateTrigger();
+          }
+          if (this.tempInterval) {
             this.adapter.clearInterval(this.tempInterval);
+          }
         }
         break;
       }
       case "timer-pause": {
         if (this.tempData) {
           this.tempData.status = "pause";
-          if (this.visibility)
-            this.onStateTrigger();
-          if (this.tempInterval)
+          if (this.visibility) {
+            await this.onStateTrigger();
+          }
+          if (this.tempInterval) {
             this.adapter.clearInterval(this.tempInterval);
+          }
         }
         break;
       }
@@ -1344,23 +1414,25 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   async onStateTrigger() {
     if (this.lastPopupType) {
       if (this.lastPopupType === "popupThermo") {
-        this.parent && this.parent.onPopupRequest(this.id, "popupThermo", "", "", null);
+        this.parent && await this.parent.onPopupRequest(this.id, "popupThermo", "", "", null);
         return;
-      } else {
-        const msg = await this.GeneratePopup(this.lastPopupType);
-        if (msg)
-          this.sendToPanel(msg);
+      }
+      const msg = await this.GeneratePopup(this.lastPopupType);
+      if (msg) {
+        this.sendToPanel(msg);
       }
     }
   }
   async getListCommands(setList) {
-    if (!setList)
+    if (!setList) {
       return null;
+    }
     let list = await setList.getObject();
     if (list === null) {
       const temp = await setList.getString();
-      if (temp === null)
+      if (temp === null) {
         return null;
+      }
       list = temp.split("|").map((a) => {
         const t = a.split("?");
         return typePageItem.islistCommandUnion(t[2]) ? { id: t[0], value: t[1], command: t[2] } : { id: t[0], value: t[1] };
@@ -1377,8 +1449,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
    */
   async setListCommand(entry, value) {
     const item = entry.data;
-    if (!("entityInSel" in item))
+    if (!("entityInSel" in item)) {
       return false;
+    }
     const sList = item.entityInSel && await this.getListFromStates(
       item.entityInSel,
       item.valueList,
@@ -1394,15 +1467,17 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         return true;
       }
     }
-    if (!item.setList)
+    if (!item.setList) {
       return false;
+    }
     const list = await this.getListCommands(item.setList);
     const v = value;
     if (list && list[v]) {
       try {
         const obj = await this.panel.statesControler.getObjectAsync(list[v].id);
-        if (!obj || !obj.common || obj.type !== "state")
+        if (!obj || !obj.common || obj.type !== "state") {
           throw new Error("Dont get obj!");
+        }
         const type = obj.common.type;
         let newValue = null;
         switch (list[v].command) {
@@ -1476,10 +1551,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             list[v].id.startsWith(this.adapter.namespace)
           );
           return true;
-        } else {
-          this.log.error(`Try to set a null value to ${list[v].id}!`);
         }
-      } catch (e) {
+        this.log.error(`Try to set a null value to ${list[v].id}!`);
+      } catch {
         this.log.error(`Id ${list[v].id} is not valid!`);
       }
     }
@@ -1497,8 +1571,8 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             const val = await valueList.getObject();
             if (val) {
               states = {};
-              for (const a in val) {
-                states[parseInt(a) + 1] = val[a].title;
+              for (let a = 0; a < val.length; a++) {
+                states[a + 1] = val[a].title;
               }
               list.value = value != null ? value : void 0;
             }
@@ -1517,7 +1591,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             return {};
           }
           states = {};
-          for (const a in val1) {
+          for (let a = 0; a < val1.length; a++) {
             states[val1[a]] = val2[a];
           }
           break;
@@ -1533,8 +1607,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           list.list.push(this.library.getTranslation(String(states[a])));
           list.states.push(a);
         }
-        if (!list.value)
+        if (!list.value) {
           list.value = states[value];
+        }
       }
     }
     return list;

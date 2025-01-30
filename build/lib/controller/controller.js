@@ -58,8 +58,9 @@ class Controller extends Library.BaseClass {
     this.statesControler = new import_states_controller.StatesControler(this.adapter);
     this.adapter.log.info(JSON.stringify(import_pages.stateRoleArray));
     for (const panelConfig of options.panels) {
-      if (panelConfig === void 0)
+      if (panelConfig === void 0) {
         continue;
+      }
       panelConfig.controller = this;
       this.adapter.log.info(`Create panel ${panelConfig.name} with topic ${panelConfig.topic}`);
       const panel = new Panel.Panel(adapter, panelConfig);
@@ -68,47 +69,53 @@ class Controller extends Library.BaseClass {
     this.systemNotification = new import_system_notifications.SystemNotifications(this.adapter);
   }
   minuteLoop = async () => {
-    if (this.unload)
+    if (this.unload) {
       return;
-    this.statesControler.setInternalState("///time", await this.getCurrentTime(), true);
+    }
+    await this.statesControler.setInternalState("///time", await this.getCurrentTime(), true);
     const diff = 6e4 - Date.now() % 6e4 + 10;
     this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
   };
   /**
    * Update Date every hour....
+   *
    * @returns
    */
   dateUpdateLoop = async () => {
-    if (this.unload)
+    if (this.unload) {
       return;
+    }
     const d = /* @__PURE__ */ new Date();
     d.setDate(d.getDate() + 1);
     d.setHours(0, 0, 1);
     const diff = d.getTime() - Date.now();
-    this.log.debug("Set current Date with time: " + new Date(await this.getCurrentTime()).toString);
-    await this.statesControler.setInternalState("///date", await this.getCurrentTime(), true);
+    this.log.debug(`Set current Date with time: ${new Date(await this.getCurrentTime()).toString()}`);
+    await this.statesControler.setInternalState("///date", this.getCurrentTime(), true);
     this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
   };
   getCurrentTime = async () => {
-    return Date.now();
+    return new Promise((resolve) => resolve(Date.now()));
   };
   /**
    *....
+   *
    * @param id
    * @param _state
    * @returns
    */
   onInternalCommand = async (id, _state) => {
-    if (!id.startsWith("///"))
+    if (!id.startsWith("///")) {
       return null;
+    }
     const token = id.split("///").pop();
     switch (token) {
       case "AdapterStoppedBoolean":
       case "AdapterNoConnectionBoolean":
       case "AdapterNoConnection":
       case "AdapterStopped": {
-        if (this.dataCache[token] && this.dataCache[token].time < Date.now() - 5e3)
+        if (this.dataCache[token] && this.dataCache[token].time < Date.now() - 5e3) {
           delete this.dataCache[token];
+        }
         let save = false;
         if (!this.dataCache[token]) {
           this.dataCache[token] = { time: Date.now(), data: {} };
@@ -124,14 +131,16 @@ class Controller extends Library.BaseClass {
         } else {
           list = this.dataCache[token].data[`system#view.instance`];
         }
-        if (!list || !list.token)
+        if (!list || !list.token) {
           return null;
+        }
         let total = 0;
         let withProblems = 0;
         for (const item of list.rows) {
           const obj = item.value;
-          if (!obj.common.enabled || obj.common.mode !== "daemon")
+          if (!obj.common.enabled || obj.common.mode !== "daemon") {
             continue;
+          }
           if (token === "AdapterStopped" || token === "AdapterStoppedBoolean") {
             let state;
             if (save) {
@@ -142,8 +151,9 @@ class Controller extends Library.BaseClass {
             }
             if (state && !state.val) {
               withProblems++;
-              if (token === "AdapterStoppedBoolean")
+              if (token === "AdapterStoppedBoolean") {
                 return true;
+              }
             }
             total++;
           } else if (token === "AdapterNoConnection" || token === "AdapterNoConnectionBoolean") {
@@ -157,14 +167,16 @@ class Controller extends Library.BaseClass {
             }
             if (state && !state.val) {
               withProblems++;
-              if (token === "AdapterNoConnectionBoolean")
+              if (token === "AdapterNoConnectionBoolean") {
                 return true;
+              }
             }
             total++;
           }
         }
-        if (token === "AdapterNoConnectionBoolean" || token === "AdapterStoppedBoolean")
+        if (token === "AdapterNoConnectionBoolean" || token === "AdapterStoppedBoolean") {
           return false;
+        }
         return `(${withProblems}/${total})`;
       }
     }
@@ -228,7 +240,7 @@ class Controller extends Library.BaseClass {
     const newPanels = [];
     await this.library.writedp(`panels`, void 0, import_definition.genericStateObjects.panel._channel);
     await this.systemNotification.init();
-    for (const panel of this.panels)
+    for (const panel of this.panels) {
       if (await panel.isValid()) {
         newPanels.push(panel);
         await panel.init();
@@ -236,30 +248,36 @@ class Controller extends Library.BaseClass {
         await panel.delete();
         this.log.error(`Panel ${panel.name} has a invalid configuration.`);
       }
+    }
     this.panels = newPanels;
-    this.minuteLoop();
-    this.dateUpdateLoop();
+    void this.minuteLoop();
+    void this.dateUpdateLoop();
     await this.getTasmotaVersion();
     this.dailyIntervalTimeout = this.adapter.setInterval(this.dailyInterval, 24 * 60 * 60 * 1e3);
   }
   async delete() {
-    if (this.minuteLoopTimeout)
+    if (this.minuteLoopTimeout) {
       this.adapter.clearTimeout(this.minuteLoopTimeout);
-    if (this.dateUpdateTimeout)
+    }
+    if (this.dateUpdateTimeout) {
       this.adapter.clearTimeout(this.dateUpdateTimeout);
-    if (this.dailyIntervalTimeout)
+    }
+    if (this.dailyIntervalTimeout) {
       this.adapter.clearInterval(this.dailyIntervalTimeout);
+    }
     await super.delete();
-    for (const a of this.panels)
+    for (const a of this.panels) {
       await a.delete();
+    }
   }
   async notificationToPanel() {
-    if (!this.panels)
+    if (!this.panels) {
       return;
-    this.statesControler.setInternalState("///Notifications", true, true);
+    }
+    await this.statesControler.setInternalState("///Notifications", true, true);
   }
-  dailyInterval = () => {
-    this.getTasmotaVersion();
+  dailyInterval = async () => {
+    await this.getTasmotaVersion();
   };
   async getTasmotaVersion() {
     const urlString = "https://api.github.com/repositories/80286288/releases/latest";
@@ -275,7 +293,7 @@ class Controller extends Library.BaseClass {
           }
         }
       }
-    } catch (error) {
+    } catch {
     }
   }
 }

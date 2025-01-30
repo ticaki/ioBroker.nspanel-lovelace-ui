@@ -6925,19 +6925,21 @@ class Icons {
     return Icons.GetIconWithType(ma_name);
   }
   static GetIconWithType(ma_name) {
-    if (!ma_name)
+    if (!ma_name) {
       return "";
+    }
     const val = ma_name.trim();
     if (Icons.iconMap.has(val)) {
       return Icons.iconMap.get(val);
-    } else {
-      if (Icons.adapter)
-        Icons.adapter.log.warn(`${val} is not a icon!`);
+    }
+    if (Icons.adapter) {
+      Icons.adapter.log.warn(`${val} is not a icon!`);
     }
     return "";
   }
   /**
    * Just a dummy
+   *
    * @param F
    * @returns
    */

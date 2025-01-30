@@ -45,8 +45,9 @@ class PageGrid extends import_pageMenu.PageMenu {
     this.iconLeft = "arrow-up-bold";
     this.iconRightP = "arrow-right-bold-outline";
     this.iconRight = "arrow-down-bold";
-    if (options.items && (options.items.card == "cardGrid" || options.items.card == "cardGrid2"))
+    if (options.items && (options.items.card == "cardGrid" || options.items.card == "cardGrid2")) {
       this.items = options.items;
+    }
     this.maxItems = this.card === "cardGrid" ? 6 : 8;
     this.minUpdateInterval = 2e3;
   }
@@ -63,14 +64,17 @@ class PageGrid extends import_pageMenu.PageMenu {
   }
   async update() {
     var _a;
-    if (!this.visibility)
+    if (!this.visibility) {
       return;
+    }
     const message = {};
     message.options = [];
-    if (!this.items || this.items.card !== "cardGrid" && this.items.card !== "cardGrid2")
+    if (!this.items || this.items.card !== "cardGrid" && this.items.card !== "cardGrid2") {
       return;
-    if (!this.config || this.config.card !== "cardGrid" && this.config.card !== "cardGrid2")
+    }
+    if (!this.config || this.config.card !== "cardGrid" && this.config.card !== "cardGrid2") {
       return;
+    }
     const arr = (await this.getOptions([])).slice(0, 8);
     message.options = arr;
     message.headline = this.library.getTranslation(

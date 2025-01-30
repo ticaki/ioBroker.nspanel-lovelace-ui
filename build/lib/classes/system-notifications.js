@@ -43,8 +43,9 @@ class SystemNotifications extends import_library.BaseClass {
   async delete() {
     await this.writeConfig();
     await super.delete();
-    if (this.messageTimeout)
+    if (this.messageTimeout) {
       this.adapter.clearTimeout(this.messageTimeout);
+    }
     this.messageTimeout = void 0;
   }
   /**
@@ -69,6 +70,9 @@ class SystemNotifications extends import_library.BaseClass {
   }
   /**
    * Is called if a subscribed state changes
+   *
+   * @param id
+   * @param _state
    */
   async onStateChange(id, _state) {
     if (id.startsWith("system.host")) {
@@ -98,7 +102,7 @@ class SystemNotifications extends import_library.BaseClass {
         for (const c in sub.categories) {
           msgs.push({
             id: `${k}.${c}`,
-            headline: (hosts.length > 1 ? host + ": " : "") + sub.categories[c].name[this.language],
+            headline: (hosts.length > 1 ? `${host}: ` : "") + sub.categories[c].name[this.language],
             text: sub.categories[c].description[this.language],
             version: 0,
             severity: sub.categories[c].severity,
@@ -111,58 +115,71 @@ class SystemNotifications extends import_library.BaseClass {
         }
       }
       this.notifications = this.notifications.filter((a) => {
-        if (!a.scopeid || !a.categoryid || a.host !== host)
+        if (!a.scopeid || !a.categoryid || a.host !== host) {
           return true;
+        }
         return msgs.findIndex((b) => b.scopeid === a.scopeid && b.categoryid === a.categoryid) !== -1;
       });
-      for (const m of msgs)
+      for (const m of msgs) {
         await this.sendNotifications(m);
+      }
     }
   }
   async sendNotifications(notify) {
     if (this.notifications.some((a) => {
-      if (!a.scopeid && a.id === notify.id && a.ts === notify.ts && a.severity == notify.severity || a.scopeid && a.scopeid === notify.scopeid && a.categoryid === notify.scopeid && a.host === notify.host)
+      if (!a.scopeid && a.id === notify.id && a.ts === notify.ts && a.severity == notify.severity || a.scopeid && a.scopeid === notify.scopeid && a.categoryid === notify.scopeid && a.host === notify.host) {
         return true;
-    }))
+      }
+    })) {
       return;
+    }
     this.notifications.push(notify);
-    if (this.messageTimeout)
+    if (this.messageTimeout) {
       return;
+    }
     this.messageTimeout = this.adapter.setTimeout(() => {
       this.notifications.sort((a, b) => {
-        if (a.severity === b.severity)
+        if (a.severity === b.severity) {
           return 0;
-        if (a.severity === "alert")
+        }
+        if (a.severity === "alert") {
           return 1;
-        if (b.severity === "alert")
+        }
+        if (b.severity === "alert") {
           return -1;
+        }
         return 0;
       });
       this.count = this.notifications.filter((a) => !a.cleared).length;
-      if (this.notifications.some((a) => !a.cleared))
+      if (this.notifications.some((a) => !a.cleared)) {
         this.adapter.controller && this.adapter.controller.notificationToPanel();
+      }
     }, 2500);
   }
   /**
    * name
+   *
+   * @param index
    */
   async clearNotification(index) {
     var _a, _b;
     if (this.notifications[index] && !this.notifications[index].cleared) {
       if (this.notifications[index].scopeid) {
         const msg = this.notifications[index];
-        if (msg.host)
+        if (msg.host) {
           try {
             await this.adapter.sendToHostAsync(msg.host, "clearNotifications", {
               scopeFilter: (_a = msg.scopeid) != null ? _a : null,
               categoryFilter: (_b = msg.categoryid) != null ? _b : null
             });
-          } catch (e) {
+          } catch {
             this.log.error("Error while clear notification");
           }
+        }
       }
-      if (this.notifications[index])
+      if (this.notifications[index]) {
         this.notifications[index].cleared = true;
+      }
       await this.writeConfig();
     }
   }
@@ -174,7 +191,8 @@ class SystemNotifications extends import_library.BaseClass {
       const line = 46;
       return {
         headline: `${this.library.getTranslation("Notification")} (${currentNotify}/${this.count})`,
-        text: (0, import_tools.insertLinebreak)(headline, line) + "\n" + (0, import_tools.insertLinebreak)(text, line)
+        text: `${(0, import_tools.insertLinebreak)(headline, line)}
+${(0, import_tools.insertLinebreak)(text, line)}`
       };
     }
     return null;
@@ -185,13 +203,15 @@ class SystemNotifications extends import_library.BaseClass {
    * @returns
    */
   getNotificationIndex(index) {
-    if (index === -1)
+    if (index === -1) {
       index = 0;
+    }
     const l = this.notifications.length;
     if (index >= 0) {
       for (index; index < l; index++) {
-        if (this.notifications[index] && !this.notifications[index].cleared)
+        if (this.notifications[index] && !this.notifications[index].cleared) {
           break;
+        }
       }
       if (this.notifications[index] && !this.notifications[index].cleared) {
         return index;

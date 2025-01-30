@@ -68,13 +68,15 @@ const PageQRMessageDefault = {
 class PageQR extends import_Page.Page {
   items;
   constructor(config, options) {
-    if (config.card !== "cardQR")
+    if (config.card !== "cardQR") {
       return;
+    }
     super(config, options);
-    if (options.config && options.config.card == "cardQR")
+    if (options.config && options.config.card == "cardQR") {
       this.config = options.config;
-    else
+    } else {
       throw new Error("Missing config!");
+    }
     this.minUpdateInterval = 1e3;
   }
   async init() {
@@ -84,8 +86,9 @@ class PageQR extends import_Page.Page {
       tempConfig,
       this
     );
-    if (tempItem)
+    if (tempItem) {
       tempItem.card = "cardQR";
+    }
     this.items = tempItem;
     await super.init();
   }
@@ -95,8 +98,9 @@ class PageQR extends import_Page.Page {
    */
   async update() {
     var _a;
-    if (!this.visibility)
+    if (!this.visibility) {
       return;
+    }
     const message = {};
     if (this.items) {
       const items = this.items;
@@ -124,8 +128,9 @@ class PageQR extends import_Page.Page {
       }
       if (this.pageItems) {
         const pageItems = this.pageItems.filter((a) => a && a.dataItems);
-        if (pageItems.length > 2)
+        if (pageItems.length > 2) {
           this.log.warn(`Bad config -> too many page items`);
+        }
         for (let a = 0; a < pageItems.length; a++) {
           const temp = pageItems[a];
           if (temp) {
@@ -154,8 +159,9 @@ class PageQR extends import_Page.Page {
         }
       }
     }
-    if (message.textQR)
+    if (message.textQR) {
       this.log.debug(message.textQR);
+    }
     this.sendToPanel(this.getMessage(message));
   }
   getMessage(_message) {
@@ -185,19 +191,21 @@ class PageQR extends import_Page.Page {
   }
   /**
    *a
+   *
    * @param _event
    * @returns
    */
   async onButtonEvent(_event) {
     const button = _event.action;
     const value = _event.opt;
-    if (!this.items || this.items.card !== "cardQR")
+    if (!this.items || this.items.card !== "cardQR") {
       return;
+    }
     this.log.info(`action: ${button}, value: ${value}`);
     if (pages.isQRButtonEvent(button)) {
       if (this.adapter.config.pageQRselType == 1) {
         if (this.pageItems && this.pageItems[_event.id]) {
-          this.pageItems[_event.id].onCommand("button", value);
+          await this.pageItems[_event.id].onCommand("button", value);
         }
       }
     }

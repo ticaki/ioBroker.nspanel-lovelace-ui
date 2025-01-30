@@ -178,7 +178,7 @@ function isButtonActionType(F) {
     case "eu":
       return true;
     default:
-      console.info(F + " is not isButtonActionType!");
+      console.info(`${F} is not isButtonActionType!`);
       return false;
   }
 }
@@ -192,23 +192,28 @@ function isQRButtonEvent(F) {
   return ["OnOff"].indexOf(F) !== -1;
 }
 function isColorEntryType(F) {
-  if ("true" in F && "false" in F && "scale" in F)
+  if ("true" in F && "false" in F && "scale" in F) {
     return true;
+  }
   return false;
 }
 function isPlaceholderType(F) {
-  if (!F || typeof F !== "object")
+  if (!F || typeof F !== "object") {
     return false;
+  }
   for (const a in F) {
     let count = 0;
-    if (!F[a])
+    if (!F[a]) {
       return false;
-    for (const b in F[a]) {
-      if (["text", "dp"].indexOf(b) !== -1 && F[a][b] !== void 0)
-        count++;
     }
-    if (count !== 1)
+    for (const b in F[a]) {
+      if (["text", "dp"].indexOf(b) !== -1 && F[a][b] !== void 0) {
+        count++;
+      }
+    }
+    if (count !== 1) {
       return false;
+    }
   }
   return true;
 }
