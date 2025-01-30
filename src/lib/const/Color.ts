@@ -31,7 +31,7 @@ export interface ColorThemenInterface {
  * check if Color has all propertys of ColorThemenInterface
  *
  * @param k just a key
- * @returns
+ * @returns any
  */
 export function test(k: keyof ColorThemenInterface): any {
     return Color[k];
@@ -192,7 +192,7 @@ export class Color extends ColorBase {
     /**
      * set color theme...
      *
-     * @param s
+     * @param s ColorThemenInterface
      */
     static setTheme(s: ColorThemenInterface): void {
         for (const a in s) {
@@ -401,11 +401,12 @@ export class Color extends ColorBase {
     }
 
     /**
+     * Convert RGB to CIE 1931
      *
-     * @param red
-     * @param green
-     * @param blue
-     * @returns
+     * @param red red value
+     * @param green green value
+     * @param blue blue value
+     * @returns CIE 1931 color space
      */
     static rgb_to_cie(red: number, green: number, blue: number): string {
         //Apply a gamma correction to the RGB values, which makes the color more vivid and more the like the color displayed on the screen of your device

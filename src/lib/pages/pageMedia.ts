@@ -24,8 +24,10 @@ const PageMediaMessageDefault: pages.PageMediaMessage = {
     options: ['', '', '', '', ''],
 };
 
-//const steps = 4;
-
+/**
+ * Represents a media page in the application.
+ * Extends the base Page class to provide media-specific functionality.
+ */
 export class PageMedia extends Page {
     config: pages.PageBaseConfig['config'];
     items: pages.PageBaseConfig['items'];
@@ -408,7 +410,17 @@ export class PageMedia extends Page {
         }
     }
 }
+
 type _SelectValueFromBoolean = 'color' | 'string';
+
+/**
+ * Retrieves a value based on a boolean condition from a given item.
+ *
+ * @param item - The item from which to retrieve the value. It can be a record of boolean unions, a change type of keys, or a single data item.
+ * @param type - The type of value to select from the boolean condition.
+ * @param [value] - The boolean value to determine which value to retrieve. Defaults to true.
+ * @returns A promise that resolves to the retrieved value as a string, or null if no value is found.
+ */
 export async function getValueFromBoolean(
     item:
         | Record<BooleanUnion, Dataitem | undefined>
@@ -435,6 +447,14 @@ export async function getValueFromBoolean(
     }
     return null;
 }
+
+/**
+ * Retrieves a value from a Dataitem based on the specified type.
+ *
+ * @param item - The data item from which to retrieve the value.
+ * @param type - The type of value to retrieve, either 'string' or 'color'.
+ * @returns A promise that resolves to the retrieved value as a string, or null if no value is found.
+ */
 async function getValueFromData(item: Dataitem, type: _SelectValueFromBoolean): Promise<string | null> {
     switch (type) {
         case 'string': {

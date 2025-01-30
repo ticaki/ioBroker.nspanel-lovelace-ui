@@ -54,8 +54,8 @@ export class SystemNotifications extends BaseClass {
     /**
      * Is called if a subscribed state changes
      *
-     * @param id
-     * @param _state
+     * @param id    The id of the state that changed
+     * @param _state The state object holding the new value and meta information of the state
      */
     public async onStateChange(id: string, _state: ioBroker.State | null | undefined): Promise<void> {
         if (id.startsWith('system.host')) {
@@ -155,9 +155,9 @@ export class SystemNotifications extends BaseClass {
     }
 
     /**
-     * name
+     * Clear a notification
      *
-     * @param index
+     * @param index index of the notification
      */
     public async clearNotification(index: number): Promise<void> {
         if (this.notifications[index] && !this.notifications[index].cleared) {
@@ -194,9 +194,9 @@ export class SystemNotifications extends BaseClass {
         return null;
     }
     /**
+     * Get the index of the next notification
      *
-     * @param index
-     * @returns
+     * @param index index of the notification
      */
     public getNotificationIndex(index: number): number {
         if (index === -1) {

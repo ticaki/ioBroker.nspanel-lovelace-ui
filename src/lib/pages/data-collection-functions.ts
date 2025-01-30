@@ -5,6 +5,33 @@ import type { CardRole } from '../types/pages';
 import type { PageItemDataItemsOptions } from '../types/type-pageItem';
 import type { PageEntities } from './pageEntities';
 
+/**
+ * Handles the role of a card and returns the corresponding page item data options.
+ *
+ * @param adapter - The adapter instance used to interact with the system.
+ * @param cardRole - The role of the card to handle. It can be 'AdapterConnection', 'AdapterStopped', or 'AdapterUpdates'.
+ * @param [page] - The page instance, required for 'AdapterUpdates' role.
+ * @returns A promise that resolves to an array of page item data options or null if no data is found.
+ * @description
+ * This function processes different card roles and retrieves the corresponding data items based on the role.
+ * It supports the following roles:
+ *
+ * - 'AdapterConnection': Retrieves data items for enabled adapters with a 'daemon' mode.
+ * - 'AdapterStopped': Retrieves data items for stopped adapters.
+ * - 'AdapterUpdates': Retrieves data items for adapter updates.
+ *
+ * For 'AdapterConnection' and 'AdapterStopped' roles, the function fetches the list of system instances and filters them based on their enabled state and mode.
+ * It then constructs the page item data options for each adapter instance.
+ *
+ * For the 'AdapterUpdates' role, the function checks if the page is of type 'cardEntities' and retrieves the list of updates from the page's data list.
+ * It then constructs the page item data options for each update.
+ * @example
+ * const adapter = new AdapterClassDefinition();
+ * const cardRole = 'AdapterConnection';
+ * const page = new Page();
+ * const result = await handleCardRole(adapter, cardRole, page);
+ * console.log(result);
+ */
 export async function handleCardRole(
     adapter: AdapterClassDefinition,
     cardRole: CardRole | undefined,

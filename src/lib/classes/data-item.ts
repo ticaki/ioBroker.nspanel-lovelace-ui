@@ -319,7 +319,7 @@ export class Dataitem extends BaseClass {
      * Set a internal, const or external State
      *
      * @param val number | boolean | string | null
-     * @returns
+     * @returns void
      */
     async setStateAsync(val: ioBroker.StateValue): Promise<void> {
         if (val === undefined) {
