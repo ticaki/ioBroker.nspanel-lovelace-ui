@@ -226,7 +226,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         if (state && state.common && state.common.custom && state.common.custom[this.namespace]) {
                             this.log.debug('updateCustom ' + JSON.stringify(state.common.custom[this.namespace]));
                         }
-                    };;
+                    }
                 }
                 // Send response in callback if required
                 if (obj.callback) this.sendTo(obj.from, obj.command, [], obj.callback);
