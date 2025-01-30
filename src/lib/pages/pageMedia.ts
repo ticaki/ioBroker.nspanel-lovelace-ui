@@ -186,8 +186,7 @@ export class PageMedia extends Page {
                 }
                 case 'object':
                 case 'array':
-                case 'mixed':
-                case 'file': {
+                case 'mixed': {
                     value = null;
                     break;
                 }

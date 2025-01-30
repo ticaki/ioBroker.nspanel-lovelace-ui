@@ -49,7 +49,7 @@ export class SystemNotifications extends BaseClass {
             endkey: 'system.host.\u9999',
         });
 
-        return res.rows.map(host => host.id as HostId);
+        return res.rows.map(host => host.id);
     }
     /**
      * Is called if a subscribed state changes
@@ -134,7 +134,7 @@ export class SystemNotifications extends BaseClass {
         if (this.messageTimeout) {
             return;
         }
-        this.messageTimeout = this.adapter.setTimeout(() => {
+        this.messageTimeout = this.adapter.setTimeout(async () => {
             this.notifications.sort((a, b) => {
                 if (a.severity === b.severity) {
                     return 0;
@@ -149,7 +149,7 @@ export class SystemNotifications extends BaseClass {
             });
             this.count = this.notifications.filter(a => !a.cleared).length;
             if (this.notifications.some(a => !a.cleared)) {
-                this.adapter.controller && this.adapter.controller.notificationToPanel();
+                this.adapter.controller && (await this.adapter.controller.notificationToPanel());
             }
         }, 2500);
     }

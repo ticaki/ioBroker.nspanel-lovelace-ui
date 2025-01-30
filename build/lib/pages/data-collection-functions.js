@@ -42,8 +42,8 @@ async function handleCardRole(adapter, cardRole, page) {
         if (!obj.common.enabled || obj.common.mode !== "daemon") {
           continue;
         }
-        let n = obj.common.titleLang && obj.common.titleLang[adapter.library.getLocalLanguage()];
-        n = n ? n : obj.common.titleLang && obj.common.titleLang.en;
+        let n = obj.common.titleLang && typeof obj.common.titleLang == "object" && obj.common.titleLang[adapter.library.getLocalLanguage()];
+        n = n ? n : typeof obj.common.titleLang == "object" && obj.common.titleLang.en;
         n = n ? n : obj.common.name;
         if (item.id.split(".").slice(2).join(".") === adapter.namespace) {
           continue;

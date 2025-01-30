@@ -137,7 +137,7 @@ class SystemNotifications extends import_library.BaseClass {
     if (this.messageTimeout) {
       return;
     }
-    this.messageTimeout = this.adapter.setTimeout(() => {
+    this.messageTimeout = this.adapter.setTimeout(async () => {
       this.notifications.sort((a, b) => {
         if (a.severity === b.severity) {
           return 0;
@@ -152,7 +152,7 @@ class SystemNotifications extends import_library.BaseClass {
       });
       this.count = this.notifications.filter((a) => !a.cleared).length;
       if (this.notifications.some((a) => !a.cleared)) {
-        this.adapter.controller && this.adapter.controller.notificationToPanel();
+        this.adapter.controller && await this.adapter.controller.notificationToPanel();
       }
     }, 2500);
   }
