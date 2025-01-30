@@ -780,7 +780,7 @@ export class StatesControler extends BaseClass {
                             tempObjectDB.enums[a].common &&
                             tempObjectDB.enums[a].common.members
                         ) {
-                            t = t.concat(tempObjectDB.enums[a].common.members!);
+                            t = t.concat(tempObjectDB.enums[a].common.members);
                         }
                     }
                 }
