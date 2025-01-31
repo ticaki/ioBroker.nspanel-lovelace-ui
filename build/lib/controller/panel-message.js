@@ -52,6 +52,10 @@ class PanelSend extends import_library.BaseClass {
           this.adapter.clearTimeout(this.messageTimeout);
         }
         this.losingMessageCount = 0;
+        const msg2 = this.messageDb.shift();
+        if (msg2) {
+          this.log.debug(`Receive ack for ${JSON.stringify(msg2)}`);
+        }
         await this.sendMessageLoop();
       }
     }
@@ -82,16 +86,16 @@ class PanelSend extends import_library.BaseClass {
     if (this._panel && !this._panel.isOnline) {
       this.messageDb = [];
     }
-    await this.addMessageTasmota(this.topic, msg.payload, msg.opt);
+    this.addMessageTasmota(this.topic, msg.payload, msg.opt);
     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 1e3);
   };
-  addMessageTasmota = async (topic, payload, opt) => {
+  addMessageTasmota = (topic, payload, opt) => {
     if (this.messageDbTasmota.length > 0 && this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt)) {
       return;
     }
     this.messageDbTasmota.push({ topic, payload, opt });
     if (this.messageTimeoutTasmota === void 0) {
-      await this.sendMessageLoopTasmota();
+      void this.sendMessageLoopTasmota();
     }
   };
   sendMessageLoopTasmota = async () => {

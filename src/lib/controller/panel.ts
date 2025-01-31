@@ -712,7 +712,6 @@ export class Panel extends BaseClass {
     /**
      * Do panel work always at full minute
      *
-     * @returns void
      */
     loop = (): void => {
         if (this.unload) {

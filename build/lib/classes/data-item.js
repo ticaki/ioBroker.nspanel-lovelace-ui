@@ -326,7 +326,7 @@ class Dataitem extends import_library.BaseClass {
    * Set a internal, const or external State
    *
    * @param val number | boolean | string | null
-   * @returns
+   * @returns void
    */
   async setStateAsync(val) {
     if (val === void 0) {

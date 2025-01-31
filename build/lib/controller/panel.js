@@ -672,7 +672,6 @@ class Panel extends import_library.BaseClass {
   /**
    * Do panel work always at full minute
    *
-   * @returns void
    */
   loop = () => {
     if (this.unload) {

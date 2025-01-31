@@ -193,7 +193,7 @@ class Color extends ColorBase {
   /**
    * set color theme...
    *
-   * @param s
+   * @param s ColorThemenInterface
    */
   static setTheme(s) {
     for (const a in s) {
@@ -368,11 +368,12 @@ class Color extends ColorBase {
     return { r: Math.round(rgb[0]), g: Math.round(rgb[1]), b: Math.round(rgb[2]) };
   }
   /**
+   * Convert RGB to CIE 1931
    *
-   * @param red
-   * @param green
-   * @param blue
-   * @returns
+   * @param red red value
+   * @param green green value
+   * @param blue blue value
+   * @returns CIE 1931 color space
    */
   static rgb_to_cie(red, green, blue) {
     const vred = red > 0.04045 ? Math.pow((red + 0.055) / (1 + 0.055), 2.4) : red / 12.92;

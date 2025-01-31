@@ -57,12 +57,12 @@ class MQTTClientClass extends import_library.BaseClass {
     });
     this.client.on("connect", () => {
       this.log.info(`Connection is active.`);
-      this.adapter.setState("info.connection", true, true);
+      void this.adapter.setState("info.connection", true, true);
       this.ready = true;
     });
     this.client.on("disconnect", () => {
       this.ready = false;
-      this.adapter.setState("info.connection", false, true);
+      void this.adapter.setState("info.connection", false, true);
       this.log.debug(`disconnected`);
     });
     this.client.on("error", (err) => {
@@ -71,7 +71,7 @@ class MQTTClientClass extends import_library.BaseClass {
     });
     this.client.on("close", () => {
       this.ready = false;
-      this.adapter.setState("info.connection", false, true);
+      void this.adapter.setState("info.connection", false, true);
       this.log.info(`Connection is closed.`);
     });
     this.client.on("message", (topic, message) => {

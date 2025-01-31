@@ -71,8 +71,8 @@ class SystemNotifications extends import_library.BaseClass {
   /**
    * Is called if a subscribed state changes
    *
-   * @param id
-   * @param _state
+   * @param id    The id of the state that changed
+   * @param _state The state object holding the new value and meta information of the state
    */
   async onStateChange(id, _state) {
     if (id.startsWith("system.host")) {
@@ -157,9 +157,9 @@ class SystemNotifications extends import_library.BaseClass {
     }, 2500);
   }
   /**
-   * name
+   * Clear a notification
    *
-   * @param index
+   * @param index index of the notification
    */
   async clearNotification(index) {
     var _a, _b;
@@ -198,9 +198,9 @@ ${(0, import_tools.insertLinebreak)(text, line)}`
     return null;
   }
   /**
+   * Get the index of the next notification
    *
-   * @param index
-   * @returns
+   * @param index index of the notification
    */
   getNotificationIndex(index) {
     if (index === -1) {

@@ -149,7 +149,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   /**
    * Is called when adapter shuts down - callback has to be called under any circumstances.
    *
-   * @param callback
+   * @param callback Callback so the adapter can finish what it has to do
    */
   async onUnload(callback) {
     try {
@@ -180,8 +180,8 @@ class NspanelLovelaceUi extends utils.Adapter {
   /**
    * Is called if a subscribed state changes
    *
-   * @param id
-   * @param state
+   * @param id   The id of the state that changed
+   * @param state The state object holding the new value and meta information of the state
    */
   async onStateChange(id, state) {
     if (state) {
