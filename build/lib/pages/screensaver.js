@@ -41,8 +41,12 @@ class Screensaver extends import_Page.Page {
   blockButtons;
   rotationTime = 3e5;
   timoutRotation = void 0;
+  //readonly mode: Types.ScreensaverModeType = 'standard';
   constructor(config, options) {
-    if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2") {
+    if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2" && options.config.card !== "screensaver3") {
+      config.adapter.log.error(
+        `Invalid card for screensaver: ${options ? JSON.stringify(options) : "undefined"}`
+      );
       return;
     }
     switch (options.config.mode) {
@@ -67,7 +71,7 @@ class Screensaver extends import_Page.Page {
   }
   async getData(places) {
     const config = this.config;
-    if (!config || config.card !== "screensaver" && config.card !== "screensaver2") {
+    if (!config || config.card !== "screensaver" && config.card !== "screensaver2" && config.card !== "screensaver3") {
       return null;
     }
     const message = {
@@ -84,11 +88,14 @@ class Screensaver extends import_Page.Page {
     };
     if (this.pageItems) {
       const model = config.model;
-      const layout = config.mode;
+      const layout = this.mode;
       for (let a = 0; a < this.pageItems.length; a++) {
         const pageItems = this.pageItems[a];
         const options = message.options;
         if (pageItems && pageItems.config && pageItems.config.modeScr) {
+          if (pageItems.config.modeScr === "alternate" && this.mode !== "alternate") {
+            continue;
+          }
           const place = pageItems.config.modeScr;
           const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
           if (max === 0) {
@@ -288,6 +295,49 @@ class Screensaver extends import_Page.Page {
   goLeft() {
   }
   goRight() {
+  }
+  get mode() {
+    if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3") {
+      return "standard";
+    }
+    return this.config.mode;
+  }
+  set mode(mode) {
+    if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3") {
+      return;
+    }
+    this.config.mode = mode;
+  }
+  overwriteModel(mode) {
+    switch (mode) {
+      case "standard":
+      case "alternate": {
+        this.card = "screensaver";
+        if (this.config) {
+          this.config.card = "screensaver";
+        }
+        break;
+      }
+      case "advanced": {
+        this.card = "screensaver2";
+        if (this.config) {
+          this.config.card = "screensaver2";
+        }
+        break;
+      }
+      case "easyview": {
+        this.card = "screensaver3";
+        if (this.config) {
+          this.config.card = "screensaver3";
+        }
+        break;
+      }
+      default: {
+        this.log.error(`Invalid mode: ${mode}`);
+        return;
+      }
+    }
+    this.mode = mode;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

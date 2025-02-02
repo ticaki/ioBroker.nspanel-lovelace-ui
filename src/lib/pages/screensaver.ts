@@ -23,8 +23,17 @@ export class Screensaver extends Page {
     private blockButtons: ioBroker.Timeout | undefined;
     private rotationTime: number = 300000;
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
+    //readonly mode: Types.ScreensaverModeType = 'standard';
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        if (!options.config || (options.config.card !== 'screensaver' && options.config.card !== 'screensaver2')) {
+        if (
+            !options.config ||
+            (options.config.card !== 'screensaver' &&
+                options.config.card !== 'screensaver2' &&
+                options.config.card !== 'screensaver3')
+        ) {
+            config.adapter.log.error(
+                `Invalid card for screensaver: ${options ? JSON.stringify(options) : 'undefined'}`,
+            );
             return;
         }
         switch (options.config.mode) {
@@ -55,7 +64,10 @@ export class Screensaver extends Page {
 
     async getData(places: Types.ScreenSaverPlaces[]): Promise<pages.screensaverMessage | null> {
         const config = this.config;
-        if (!config || (config.card !== 'screensaver' && config.card !== 'screensaver2')) {
+        if (
+            !config ||
+            (config.card !== 'screensaver' && config.card !== 'screensaver2' && config.card !== 'screensaver3')
+        ) {
             return null;
         }
         const message: pages.screensaverMessage = {
@@ -73,11 +85,14 @@ export class Screensaver extends Page {
 
         if (this.pageItems) {
             const model = config.model;
-            const layout = config.mode;
+            const layout = this.mode;
             for (let a = 0; a < this.pageItems.length; a++) {
                 const pageItems: PageItem | undefined = this.pageItems[a];
                 const options = message.options;
                 if (pageItems && pageItems.config && pageItems.config.modeScr) {
+                    if (pageItems.config.modeScr === 'alternate' && this.mode !== 'alternate') {
+                        continue;
+                    }
                     const place = pageItems.config.modeScr;
                     const max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
                     if (max === 0) {
@@ -289,4 +304,63 @@ export class Screensaver extends Page {
     }
     goLeft(): void {}
     goRight(): void {}
+
+    get mode(): Types.ScreensaverModeType {
+        if (
+            !this.config ||
+            (this.config.card !== 'screensaver' &&
+                this.config.card !== 'screensaver2' &&
+                this.config.card !== 'screensaver3')
+        ) {
+            return 'standard';
+        }
+        return this.config.mode;
+    }
+    set mode(mode: Types.ScreensaverModeType) {
+        if (
+            !this.config ||
+            (this.config.card !== 'screensaver' &&
+                this.config.card !== 'screensaver2' &&
+                this.config.card !== 'screensaver3')
+        ) {
+            return;
+        }
+        this.config.mode = mode;
+    }
+
+    overwriteModel(mode: Types.ScreensaverModeType): void {
+        switch (mode) {
+            case 'standard':
+            case 'alternate': {
+                // overwrite readonly property
+                (this.card as any) = 'screensaver';
+                if (this.config) {
+                    this.config.card = 'screensaver';
+                }
+                break;
+            }
+            case 'advanced': {
+                // overwrite readonly property
+                (this.card as any) = 'screensaver2';
+                if (this.config) {
+                    this.config.card = 'screensaver2';
+                }
+                break;
+            }
+            case 'easyview': {
+                // overwrite readonly property
+                (this.card as any) = 'screensaver3';
+                if (this.config) {
+                    this.config.card = 'screensaver3';
+                }
+                break;
+            }
+            default: {
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                this.log.error(`Invalid mode: ${mode}`);
+                return;
+            }
+        }
+        this.mode = mode;
+    }
 }

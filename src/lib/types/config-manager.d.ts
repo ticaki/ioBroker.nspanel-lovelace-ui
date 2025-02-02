@@ -58,8 +58,6 @@ declare namespace ConfigManager {
         | 'value.humidity';
 }
 declare namespace ScriptConfig {
-    
-
     export type PopupType =
         | 'popupFan'
         | 'popupInSel'
@@ -427,7 +425,7 @@ declare namespace ScriptConfig {
         setOn?: { dp: string; val: iobJS.StateValue };
         setOff?: { dp: string; val: iobJS.StateValue };
     };
-    
+
     export type Config = {
         tasmotaWebAdminUser?: string;
         tasmotaWebAdminPassword?: string;

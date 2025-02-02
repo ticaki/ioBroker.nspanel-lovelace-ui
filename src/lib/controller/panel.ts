@@ -405,23 +405,32 @@ export class Panel extends BaseClass {
             const scs: Page[] = this.pages.filter(
                 a => a && (a.card === 'screensaver' || a.card === 'screensaver2'),
             ) as Page[];
-            const s = scs.filter(a => currentScreensaver && a.name === currentScreensaver.val);
+            //const s = scs.filter(a => currentScreensaver && a.name === currentScreensaver.val);
             if (currentScreensaver && currentScreensaver.val) {
-                if (s && s[0]) {
-                    this.screenSaver = s[0] as Screensaver;
+                if (scs && scs[0]) {
+                    this.screenSaver = scs[0] as Screensaver;
+                    if (pages.isScreenSaverMode(currentScreensaver.val)) {
+                        this.screenSaver.overwriteModel(currentScreensaver.val);
+                    }
                 }
             }
 
-            const states: Record<string, string> = {};
-            scs.forEach(a => {
+            const states: Record<Types.ScreensaverModeType, string> = {
+                standard: 'Standard',
+                advanced: 'Advanced',
+                alternate: 'Alternate',
+                easyview: 'Easyview',
+            };
+
+            /*  scs.forEach(a => {
                 if (a) {
                     states[a.name] = a.name.slice(1);
                 }
-            });
+            });*/
             genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;
             await this.library.writedp(
                 `panels.${this.name}.cmd.screenSaver`,
-                this.screenSaver ? this.screenSaver.name : '',
+                this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : 'none',
                 genericStateObjects.panel.panels.cmd.screenSaver,
             );
         }
@@ -678,11 +687,17 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'screenSaver': {
-                    const i = this.pages.findIndex(a => a && a.name === state.val);
+                    /*const i = this.pages.findIndex(a => a && a.name === state.val);
                     const s = this.pages[i] as Screensaver;
                     if (s) {
                         this.screenSaver = s;
                         await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, s.name);
+                    }*/
+                    if (typeof state.val === 'string' && pages.isScreenSaverMode(state.val)) {
+                        if (this.screenSaver) {
+                            this.screenSaver.overwriteModel(state.val);
+                            await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, state.val);
+                        }
                     }
                 }
             }

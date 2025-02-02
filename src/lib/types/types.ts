@@ -423,7 +423,7 @@ export type EventType = 'event';
 export function isEventType(F: string): F is EventType {
     return ['event'].indexOf(F) != -1;
 }
-export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced';
+export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced' | 'easyview';
 
 export interface State extends Omit<ioBroker.State, 'val'> {
     val: StateValue;

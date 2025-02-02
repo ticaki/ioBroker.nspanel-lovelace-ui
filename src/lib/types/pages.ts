@@ -18,6 +18,7 @@ export type PageTypeCards =
     | 'cardPower'
     | 'screensaver'
     | 'screensaver2'
+    | 'screensaver3'
     | 'cardBurnRec'
     | 'cardItemSpecial' // besonders, interne Card zum verwalten von pageItems
     | 'popupNotify'
@@ -29,6 +30,24 @@ export const arrayOfAll =
         array;
 
 const arrayOfAllStateRole = arrayOfAll<StateRole>();
+const arrayOfAllScreenSaverMode = arrayOfAll<Types.ScreensaverModeType>();
+export const screenSaverModeArray = arrayOfAllScreenSaverMode(['standard', 'advanced', 'alternate', 'easyview']);
+export function isScreenSaverMode(F: any): F is Types.ScreensaverModeType {
+    if (typeof F !== 'string') {
+        return false;
+    }
+
+    switch (F) {
+        case 'standard':
+        case 'advanced':
+        case 'alternate':
+        case 'easyview':
+            return true;
+        default:
+            console.info(`${F} is not isScreenSaverMode!`);
+            return false;
+    }
+}
 
 /**
  * if u get a error here, u have to add the new stateRole to the type StateRole or visa versa
@@ -554,7 +573,7 @@ export type cardMediaDataItems = {
 };
 
 export type screensaverDataItemOptions = {
-    card: 'screensaver' | 'screensaver2';
+    card: 'screensaver' | 'screensaver2' | 'screensaver3';
     mode: Types.ScreensaverModeType;
     rotationTime: number;
     model: Types.NSpanelModel;

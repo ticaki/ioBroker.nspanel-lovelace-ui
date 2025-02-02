@@ -1381,6 +1381,32 @@ export const ScreenSaverConst: Record<
             maxEntries: { eu: 1 },
         },
     },
+    easyview: {
+        left: {
+            maxEntries: { eu: 0 },
+        },
+        bottom: {
+            maxEntries: { eu: 3 },
+        },
+        alternate: {
+            maxEntries: { eu: 0 },
+        },
+        indicator: {
+            maxEntries: { eu: 0 },
+        },
+        mricon: {
+            maxEntries: { eu: 2 },
+        },
+        favorit: {
+            maxEntries: { eu: 1 },
+        },
+        time: {
+            maxEntries: { eu: 1 },
+        },
+        date: {
+            maxEntries: { eu: 1 },
+        },
+    },
 };
 
 /*export const PageTypeDefinition: Record<PageTypeCards, { maxEntries: number }> = {

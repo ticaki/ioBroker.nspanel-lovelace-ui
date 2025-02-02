@@ -25,12 +25,31 @@ __export(pages_exports, {
   isColorEntryType: () => isColorEntryType,
   isPlaceholderType: () => isPlaceholderType,
   isQRButtonEvent: () => isQRButtonEvent,
+  isScreenSaverMode: () => isScreenSaverMode,
   isStateRole: () => isStateRole,
+  screenSaverModeArray: () => screenSaverModeArray,
   stateRoleArray: () => stateRoleArray
 });
 module.exports = __toCommonJS(pages_exports);
 const arrayOfAll = () => (array) => array;
 const arrayOfAllStateRole = arrayOfAll();
+const arrayOfAllScreenSaverMode = arrayOfAll();
+const screenSaverModeArray = arrayOfAllScreenSaverMode(["standard", "advanced", "alternate", "easyview"]);
+function isScreenSaverMode(F) {
+  if (typeof F !== "string") {
+    return false;
+  }
+  switch (F) {
+    case "standard":
+    case "advanced":
+    case "alternate":
+    case "easyview":
+      return true;
+    default:
+      console.info(`${F} is not isScreenSaverMode!`);
+      return false;
+  }
+}
 const stateRoleArray = arrayOfAllStateRole([
   "value.power",
   "button.play",
@@ -226,7 +245,9 @@ function isPlaceholderType(F) {
   isColorEntryType,
   isPlaceholderType,
   isQRButtonEvent,
+  isScreenSaverMode,
   isStateRole,
+  screenSaverModeArray,
   stateRoleArray
 });
 //# sourceMappingURL=pages.js.map

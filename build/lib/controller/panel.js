@@ -392,22 +392,24 @@ class Panel extends import_library.BaseClass {
       const scs = this.pages.filter(
         (a) => a && (a.card === "screensaver" || a.card === "screensaver2")
       );
-      const s = scs.filter((a) => currentScreensaver && a.name === currentScreensaver.val);
       if (currentScreensaver && currentScreensaver.val) {
-        if (s && s[0]) {
-          this.screenSaver = s[0];
+        if (scs && scs[0]) {
+          this.screenSaver = scs[0];
+          if (pages.isScreenSaverMode(currentScreensaver.val)) {
+            this.screenSaver.overwriteModel(currentScreensaver.val);
+          }
         }
       }
-      const states = {};
-      scs.forEach((a) => {
-        if (a) {
-          states[a.name] = a.name.slice(1);
-        }
-      });
+      const states = {
+        standard: "Standard",
+        advanced: "Advanced",
+        alternate: "Alternate",
+        easyview: "Easyview"
+      };
       import_definition.genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;
       await this.library.writedp(
         `panels.${this.name}.cmd.screenSaver`,
-        this.screenSaver ? this.screenSaver.name : "",
+        this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : "none",
         import_definition.genericStateObjects.panel.panels.cmd.screenSaver
       );
     }
@@ -641,11 +643,11 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "screenSaver": {
-          const i = this.pages.findIndex((a) => a && a.name === state.val);
-          const s = this.pages[i];
-          if (s) {
-            this.screenSaver = s;
-            await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, s.name);
+          if (typeof state.val === "string" && pages.isScreenSaverMode(state.val)) {
+            if (this.screenSaver) {
+              this.screenSaver.overwriteModel(state.val);
+              await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, state.val);
+            }
           }
         }
       }
