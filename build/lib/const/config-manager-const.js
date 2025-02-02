@@ -18,7 +18,9 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var config_manager_const_exports = {};
 __export(config_manager_const_exports, {
-  CustomTemplates: () => CustomTemplates
+  CustomTemplates: () => CustomTemplates,
+  defaultConfig: () => defaultConfig,
+  isConfig: () => isConfig
 });
 module.exports = __toCommonJS(config_manager_const_exports);
 const CustomTemplates = [
@@ -35,8 +37,79 @@ const CustomTemplates = [
     ]
   }
 ];
+function isConfig(F) {
+  if (F === void 0) {
+    return false;
+  }
+  const requiredFields = [
+    "panelRecvTopic",
+    "panelSendTopic",
+    "weatherEntity",
+    "defaultColor",
+    "defaultOnColor",
+    "defaultOffColor",
+    "defaultBackgroundColor",
+    "pages",
+    "subPages",
+    "button1",
+    "button2",
+    "bottomScreensaverEntity"
+  ];
+  for (const field of requiredFields) {
+    if (F[field] === void 0) {
+      return false;
+    }
+  }
+  return true;
+}
+const defaultConfig = {
+  panelRecvTopic: "",
+  panelSendTopic: "",
+  weatherEntity: "",
+  bottomScreensaverEntity: [],
+  defaultColor: {
+    red: 0,
+    green: 0,
+    blue: 0
+  },
+  defaultOnColor: {
+    red: 0,
+    green: 0,
+    blue: 0
+  },
+  defaultOffColor: {
+    red: 0,
+    green: 0,
+    blue: 0
+  },
+  defaultBackgroundColor: {
+    red: 0,
+    green: 0,
+    blue: 0
+  },
+  pages: [],
+  subPages: [],
+  button1: {
+    mode: null,
+    page: null,
+    entity: null,
+    setValue: null,
+    setOn: void 0,
+    setOff: void 0
+  },
+  button2: {
+    mode: null,
+    page: null,
+    entity: null,
+    setValue: null,
+    setOn: void 0,
+    setOff: void 0
+  }
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  CustomTemplates
+  CustomTemplates,
+  defaultConfig,
+  isConfig
 });
 //# sourceMappingURL=config-manager-const.js.map

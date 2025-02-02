@@ -14,6 +14,7 @@ import { Testconfig } from './lib/config';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import { genericStateObjects } from './lib/const/definition';
+import { ConfigManager } from './lib/controller/config-manager';
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -223,10 +224,9 @@ class NspanelLovelaceUi extends utils.Adapter {
     //  */
     private async onMessage(obj: ioBroker.Message): Promise<void> {
         if (typeof obj === 'object' && obj.message) {
-            if (obj.command) {
-                // e.g. send email or pushover or whatever
-                this.log.info(JSON.stringify(obj));
-                if (obj.command == 'config') {
+            //this.log.info(JSON.stringify(obj));
+            switch (obj.command) {
+                case 'config': {
                     const obj1 = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
                     if (
                         obj1 &&
@@ -236,17 +236,29 @@ class NspanelLovelaceUi extends utils.Adapter {
                         obj1.native.Testconfig2 = obj.message;
                         await this.setForeignObjectAsync(`system.adapter.${this.namespace}`, obj1);
                     }
-                } else if (obj.command == 'updateCustom') {
+                    break;
+                }
+                case 'updateCustom': {
                     if (obj.message && obj.message.state) {
                         const state = await this.getForeignObjectAsync(obj.message.state);
                         if (state && state.common && state.common.custom && state.common.custom[this.namespace]) {
                             this.log.debug(`updateCustom ${JSON.stringify(state.common.custom[this.namespace])}`);
                         }
                     }
+                    break;
                 }
-                // Send response in callback if required
-                if (obj.callback) {
-                    this.sendTo(obj.from, obj.command, [], obj.callback);
+                case 'ScriptConfig': {
+                    if (obj.message) {
+                        const manager = new ConfigManager(this);
+                        await manager.setScriptConfig(obj.message);
+                    }
+                    break;
+                }
+                default: {
+                    // Send response in callback if required
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
                 }
             }
         }

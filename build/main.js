@@ -29,6 +29,7 @@ var import_config = require("./lib/config");
 var import_controller = require("./lib/controller/controller");
 var import_icon_mapping = require("./lib/const/icon_mapping");
 var import_definition = require("./lib/const/definition");
+var import_config_manager = require("./lib/controller/config-manager");
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -199,24 +200,35 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  */
   async onMessage(obj) {
     if (typeof obj === "object" && obj.message) {
-      if (obj.command) {
-        this.log.info(JSON.stringify(obj));
-        if (obj.command == "config") {
+      switch (obj.command) {
+        case "config": {
           const obj1 = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
           if (obj1 && obj1.native && JSON.stringify(obj1.native.Testconfig2) !== JSON.stringify(obj.message)) {
             obj1.native.Testconfig2 = obj.message;
             await this.setForeignObjectAsync(`system.adapter.${this.namespace}`, obj1);
           }
-        } else if (obj.command == "updateCustom") {
+          break;
+        }
+        case "updateCustom": {
           if (obj.message && obj.message.state) {
             const state = await this.getForeignObjectAsync(obj.message.state);
             if (state && state.common && state.common.custom && state.common.custom[this.namespace]) {
               this.log.debug(`updateCustom ${JSON.stringify(state.common.custom[this.namespace])}`);
             }
           }
+          break;
         }
-        if (obj.callback) {
-          this.sendTo(obj.from, obj.command, [], obj.callback);
+        case "ScriptConfig": {
+          if (obj.message) {
+            const manager = new import_config_manager.ConfigManager(this);
+            await manager.setScriptConfig(obj.message);
+          }
+          break;
+        }
+        default: {
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, [], obj.callback);
+          }
         }
       }
     }

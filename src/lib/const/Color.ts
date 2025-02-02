@@ -429,6 +429,15 @@ export class Color extends ColorBase {
     static isRGB(F: any): F is RGB {
         return typeof F == 'object' && 'r' in F && 'b' in F && 'g' in F;
     }
+
+    static isScriptRGB(F: any): boolean {
+        return typeof F == 'object' && 'red' in F && 'blue' in F && 'green' in F;
+    }
+
+    static convertScriptRGBtoRGB(F: any): RGB {
+        return { r: F.red, g: F.green, b: F.blue };
+    }
+
     static isOldRGB(F: any): F is RGB {
         return this.isRGB(F);
     }
