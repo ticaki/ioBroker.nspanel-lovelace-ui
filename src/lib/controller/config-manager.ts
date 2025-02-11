@@ -2,12 +2,16 @@ import { BaseClass } from '../classes/library';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as typePageItem from '../types/type-pageItem';
 import type * as Types from '../types/types';
-import { Color } from '../const/Color';
+import { Color, type RGB } from '../const/Color';
 import type * as pages from '../types/pages';
 import { defaultConfig, isConfig } from '../const/config-manager-const';
+import type { panelConfigPartial } from './panel';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
+    private colorOn: RGB = Color.On;
+    private colorOff: RGB = Color.Off;
+    private colorDefault: RGB = Color.Off;
 
     constructor(adapter: NspanelLovelaceUi) {
         super(adapter, 'config-manager');
@@ -19,29 +23,379 @@ export class ConfigManager extends BaseClass {
             this.log.error(`Invalid configuration from Script: ${config ? JSON.stringify(config) : 'undefined'}`);
             return;
         }
+        const panelConfig: Partial<panelConfigPartial> = { pages: [] };
+        if (config.panelSendTopic.endsWith('.cmnd.CustomSend')) {
+            panelConfig.topic = config.panelSendTopic.split('.').slice(0, -2).join('.');
+        } else {
+            panelConfig.topic = config.panelSendTopic;
+        }
+        if (config.panelName) {
+            panelConfig.name = config.panelName;
+        } else {
+            panelConfig.name = `NSPanel-${config.panelRecvTopic}`;
+        }
+        if (config.defaultColor) {
+            this.colorDefault = Color.convertScriptRGBtoRGB(config.defaultColor);
+        }
+        if (config.defaultOnColor) {
+            this.colorOn = Color.convertScriptRGBtoRGB(config.defaultOnColor);
+        }
+        if (config.defaultOffColor) {
+            this.colorOff = Color.convertScriptRGBtoRGB(config.defaultOffColor);
+        }
 
         // Screensaver configuration
-        const pageItems: typePageItem.PageItemDataItemsOptions[] = [];
+        let pageItems: typePageItem.PageItemDataItemsOptions[] = [];
         if (config.bottomScreensaverEntity) {
             for (const item of config.bottomScreensaverEntity) {
                 if (item) {
-                    pageItems.push(await this.getEntityData(item, 'bottom'));
+                    pageItems.push(await this.getEntityData(item, 'bottom', config));
                 }
+            }
+        }
+        // if weatherEntity is set, add alot weather data to screensaver :)
+        // only works with accuweather atm
+        if (config.weatherEntity) {
+            if (config.weatherEntity.startsWith('accuweather.') && config.weatherEntity.endsWith('.')) {
+                const instance = config.weatherEntity.split('.')[1];
+                pageItems.push({
+                    template: 'text.accuweather.favorit',
+                    dpInit: `/^accuweather\\.${instance}.+/`,
+                });
+                pageItems = pageItems.concat([
+                    // Bottom 1 - accuWeather.0. Forecast Day 1
+                    {
+                        template: 'text.accuweather.sunriseset',
+                        dpInit: `/^accuweather\\.${instance}.Daily.+/`,
+                        modeScr: 'bottom',
+                    },
+                    // Bottom 1 - accuWeather.0. Forecast Day 1
+                    {
+                        template: 'text.accuweather.bot2values',
+                        dpInit: `/^accuweather\\.${instance}.+?d1$/g`,
+                        modeScr: 'bottom',
+                    },
+
+                    // Bottom 2 - accuWeather.0. Forecast Day 2
+                    {
+                        template: 'text.accuweather.bot2values',
+                        dpInit: `/^accuweather\\.${instance}.+?d2$/`,
+                        modeScr: 'bottom',
+                    },
+
+                    // Bottom 3 - accuWeather.0. Forecast Day 3
+                    {
+                        template: 'text.accuweather.bot2values',
+                        dpInit: `/^accuweather\\.${instance}.+?d3$/`,
+                        modeScr: 'bottom',
+                    },
+
+                    // Bottom 4 - accuWeather.0. Forecast Day 4
+                    {
+                        template: 'text.accuweather.bot2values',
+                        dpInit: `/^accuweather\\.${instance}.+?d4$/`,
+                        modeScr: 'bottom',
+                    },
+                    // Bottom 5 - accuWeather.0. Forecast Day 5
+                    {
+                        template: 'text.accuweather.bot2values',
+                        dpInit: `/^accuweather\\.${instance}.+?d5$/`,
+                        modeScr: 'bottom',
+                    },
+                    // Bottom 7 - Sonnenaufgang - Sonnenuntergang im Wechsel
+
+                    // Bottom 8 - Windgeschwindigkeit
+                    {
+                        role: 'text',
+                        dpInit: '',
+                        type: 'text',
+                        modeScr: 'bottom',
+                        data: {
+                            entity1: {
+                                value: {
+                                    type: 'triggered',
+                                    dp: `accuweather.${instance}.Current.WindSpeed`,
+                                },
+                                decimal: {
+                                    type: 'const',
+                                    constVal: 1,
+                                },
+                                factor: {
+                                    type: 'const',
+                                    constVal: 1000 / 3600,
+                                },
+                                unit: undefined,
+                            },
+                            entity2: {
+                                value: {
+                                    type: 'triggered',
+                                    dp: `accuweather.${instance}.Current.WindSpeed`,
+                                },
+                                decimal: {
+                                    type: 'const',
+                                    constVal: 1,
+                                },
+                                factor: {
+                                    type: 'const',
+                                    constVal: 1000 / 3600,
+                                },
+                                unit: {
+                                    type: 'const',
+                                    constVal: 'm/s',
+                                },
+                            },
+                            icon: {
+                                true: {
+                                    value: {
+                                        type: 'const',
+                                        constVal: 'weather-windy',
+                                    },
+                                    color: {
+                                        type: 'const',
+                                        constVal: Color.MSRed,
+                                    },
+                                },
+                                false: {
+                                    value: {
+                                        type: 'const',
+                                        constVal: 'weather-windy',
+                                    },
+                                    color: {
+                                        type: 'const',
+                                        constVal: Color.MSGreen,
+                                    },
+                                },
+                                scale: {
+                                    type: 'const',
+                                    constVal: { val_min: 0, val_max: 80 },
+                                },
+                                maxBri: undefined,
+                                minBri: undefined,
+                            },
+                            text: {
+                                true: {
+                                    type: 'const',
+                                    constVal: 'Wind',
+                                },
+                                false: undefined,
+                            },
+                        },
+                    },
+
+                    // Bottom 9 - Böen
+                    {
+                        role: 'text',
+                        dpInit: '',
+                        type: 'text',
+                        modeScr: 'bottom',
+                        data: {
+                            entity1: {
+                                value: {
+                                    type: 'triggered',
+                                    dp: `accuweather.${instance}.Current.WindGust`,
+                                },
+                                decimal: {
+                                    type: 'const',
+                                    constVal: 1,
+                                },
+                                factor: {
+                                    type: 'const',
+                                    constVal: 1000 / 3600,
+                                },
+                                unit: undefined,
+                            },
+                            entity2: {
+                                value: {
+                                    type: 'triggered',
+                                    dp: `accuweather.${instance}.Current.WindGust`,
+                                },
+                                decimal: {
+                                    type: 'const',
+                                    constVal: 1,
+                                },
+                                factor: {
+                                    type: 'const',
+                                    constVal: 1000 / 3600,
+                                },
+                                unit: {
+                                    type: 'const',
+                                    constVal: 'm/s',
+                                },
+                            },
+                            icon: {
+                                true: {
+                                    value: {
+                                        type: 'const',
+                                        constVal: 'weather-tornado',
+                                    },
+                                    color: {
+                                        type: 'const',
+                                        constVal: Color.MSRed,
+                                    },
+                                },
+                                false: {
+                                    value: {
+                                        type: 'const',
+                                        constVal: 'weather-tornado',
+                                    },
+                                    color: {
+                                        type: 'const',
+                                        constVal: Color.MSGreen,
+                                    },
+                                },
+                                scale: {
+                                    type: 'const',
+                                    constVal: { val_min: 0, val_max: 80 },
+                                },
+                                maxBri: undefined,
+                                minBri: undefined,
+                            },
+                            text: {
+                                true: {
+                                    type: 'const',
+                                    constVal: 'Böen',
+                                },
+                                false: undefined,
+                            },
+                        },
+                    },
+
+                    // Bottom 10 - Windrichtung
+                    {
+                        role: 'text',
+                        dpInit: '',
+                        type: 'text',
+                        modeScr: 'bottom',
+                        data: {
+                            entity2: {
+                                value: {
+                                    type: 'triggered',
+                                    dp: `accuweather.${instance}.Current.WindDirectionText`,
+                                },
+                                decimal: {
+                                    type: 'const',
+                                    constVal: 0,
+                                },
+                                factor: undefined,
+                                unit: {
+                                    type: 'const',
+                                    constVal: '°',
+                                },
+                            },
+                            icon: {
+                                true: {
+                                    value: {
+                                        type: 'const',
+                                        constVal: 'windsock',
+                                    },
+                                    color: {
+                                        type: 'const',
+                                        constVal: '#FFFFFF',
+                                    },
+                                },
+                                false: {
+                                    value: undefined,
+                                    color: undefined,
+                                },
+                                scale: undefined,
+                                maxBri: undefined,
+                                minBri: undefined,
+                            },
+                            text: {
+                                true: {
+                                    type: 'const',
+                                    constVal: 'Windr.',
+                                },
+                                false: undefined,
+                            },
+                        },
+                    },
+
+                    // Bottom 12 - UV-Index
+                    {
+                        role: 'text',
+                        dpInit: '',
+                        type: 'text',
+                        modeScr: 'bottom',
+                        data: {
+                            entity1: {
+                                value: {
+                                    type: 'triggered',
+                                    dp: `accuweather.${instance}.Current.UVIndex`,
+                                },
+                                decimal: undefined,
+                                factor: undefined,
+                                unit: undefined,
+                            },
+                            entity2: {
+                                value: {
+                                    type: 'triggered',
+                                    dp: `accuweather.${instance}.Current.UVIndex`,
+                                    forceType: 'string',
+                                },
+                                decimal: undefined,
+                                factor: undefined,
+                                unit: undefined,
+                            },
+                            icon: {
+                                true: {
+                                    value: {
+                                        type: 'const',
+                                        constVal: 'solar-power',
+                                    },
+                                    color: {
+                                        type: 'const',
+                                        constVal: Color.MSRed,
+                                    },
+                                },
+                                false: {
+                                    value: {
+                                        type: 'const',
+                                        constVal: 'solar-power',
+                                    },
+                                    color: {
+                                        type: 'const',
+                                        constVal: Color.MSGreen,
+                                    },
+                                },
+                                scale: {
+                                    type: 'const',
+                                    constVal: { val_min: 0, val_max: 9 },
+                                },
+                                maxBri: undefined,
+                                minBri: undefined,
+                            },
+                            text: {
+                                true: {
+                                    type: 'const',
+                                    constVal: 'UV',
+                                },
+                                false: undefined,
+                            },
+                        },
+                    },
+                ]);
             }
         }
         if (config.indicatorScreensaverEntity) {
             for (const item of config.indicatorScreensaverEntity) {
                 if (item) {
-                    pageItems.push(await this.getEntityData(item, 'indicator'));
+                    pageItems.push(await this.getEntityData(item, 'indicator', config));
                 }
             }
         }
         if (config.leftScreensaverEntity) {
             for (const item of config.leftScreensaverEntity) {
                 if (item) {
-                    pageItems.push(await this.getEntityData(item, 'left'));
+                    pageItems.push(await this.getEntityData(item, 'left', config));
                 }
             }
+        }
+        if (config.mrIcon1ScreensaverEntity) {
+            pageItems.push(await this.getMrEntityData(config.mrIcon1ScreensaverEntity, 'mricon', '1'));
+        }
+        if (config.mrIcon2ScreensaverEntity) {
+            pageItems.push(await this.getMrEntityData(config.mrIcon2ScreensaverEntity, 'mricon', '2'));
         }
         this.log.debug(`pageItems count: ${pageItems.length}`);
         const convertedConfig: pages.PageBaseConfig = {
@@ -50,20 +404,158 @@ export class ConfigManager extends BaseClass {
             uniqueID: 'scr',
             useColor: false,
             config: {
-                card: 'screensaver2',
-                mode: 'advanced',
+                card: 'screensaver',
+                mode: 'standard',
                 rotationTime: 0,
                 model: 'eu',
                 data: undefined,
             },
-            pageItems: pageItems,
+            pageItems: [
+                ...pageItems,
+                {
+                    role: 'text',
+                    dpInit: '',
+                    type: 'text',
+                    modeScr: 'time',
+                    data: {
+                        entity2: {
+                            value: {
+                                type: 'internal',
+                                dp: '///time',
+                            },
+                            dateFormat: {
+                                type: 'const',
+                                constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                            },
+                        },
+                    },
+                },
+                {
+                    role: 'text',
+                    dpInit: '',
+                    type: 'text',
+                    modeScr: 'date',
+                    data: {
+                        entity2: {
+                            value: {
+                                type: 'internal',
+                                dp: '///date',
+                            },
+                            dateFormat: {
+                                type: 'const',
+                                constVal: {
+                                    local: 'de',
+                                    format: {
+                                        weekday: 'long',
+                                        month: 'short',
+                                        year: 'numeric',
+                                        day: 'numeric',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            ],
         };
-        this.log.debug(`convertedConfig: ${JSON.stringify(convertedConfig)}`);
+        panelConfig.pages!.push(convertedConfig);
+        this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
+        const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
+        if (obj) {
+            obj.native.scriptConfig = obj.native.scriptConfig || [];
+            const index = obj.native.scriptConfig.findIndex((item: any) => item.name === panelConfig.name);
+            if (index !== -1) {
+                obj.native.scriptConfig[index] = panelConfig;
+            } else {
+                obj.native.scriptConfig.push(panelConfig);
+            }
+            await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
+        }
+    }
+
+    async getMrEntityData(
+        entity: ScriptConfig.ScreenSaverMRElement,
+        mode: Types.ScreenSaverPlaces,
+        nr: string,
+    ): Promise<typePageItem.PageItemDataItemsOptions> {
+        const result: Partial<typePageItem.PageItemDataItemsOptions> = {
+            modeScr: mode,
+            type: 'text',
+            data: { entity1: {} },
+        };
+        if (entity.ScreensaverEntity && entity.ScreensaverEntity.endsWith(`Relay.${nr}`)) {
+            result.data!.entity1!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
+        } else {
+            result.data!.entity1!.value = {
+                type: 'internal',
+                dp: `cmd/power${nr}`,
+            };
+        }
+        result.data!.icon = {
+            true: {
+                value: {
+                    type: 'const',
+                    constVal: 'lightbulb',
+                },
+                color: {
+                    type: 'const',
+                    constVal: Color.Yellow,
+                },
+            },
+            false: {
+                value: {
+                    type: 'const',
+                    constVal: 'lightbulb-outline',
+                },
+                color: {
+                    type: 'const',
+                    constVal: Color.HMIOff,
+                },
+            },
+            scale: undefined,
+            maxBri: undefined,
+            minBri: undefined,
+        };
+        if (entity.ScreensaverEntityOnColor) {
+            result.data!.icon.true!.color = await this.getIconColor(entity.ScreensaverEntityOnColor || this.colorOn);
+        }
+        if (entity.ScreensaverEntityOffColor) {
+            result.data!.icon.false!.color = await this.getIconColor(entity.ScreensaverEntityOffColor || this.colorOff);
+        }
+
+        if (entity.ScreensaverEntityIconOn) {
+            result.data!.icon.true!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn);
+        }
+        if (entity.ScreensaverEntityIconOff) {
+            result.data!.icon.true!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff);
+        }
+        if (entity.ScreensaverEntityValue) {
+            result.data!.icon.false!.text = {
+                value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValue, true),
+                unit: entity.ScreensaverEntityValueUnit
+                    ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValueUnit)
+                    : undefined,
+                decimal: entity.ScreensaverEntityValueDecimalPlace
+                    ? { type: 'const', constVal: entity.ScreensaverEntityValueDecimalPlace }
+                    : undefined,
+                factor: undefined,
+            };
+            result.role = 'combined';
+            result.data!.icon.true!.text = result.data!.icon.false!.text;
+        }
+        if (isPageItemDataItemsOptions(result)) {
+            return result;
+        }
+        throw new Error('Invalid data');
     }
 
     async getEntityData(
         entity: ScriptConfig.ScreenSaverElement,
         mode: Types.ScreenSaverPlaces,
+        defaultColors: {
+            defaultOffColor: ScriptConfig.RGB;
+            defaultOnColor: ScriptConfig.RGB;
+        },
     ): Promise<typePageItem.PageItemDataItemsOptions> {
         const result: Partial<typePageItem.PageItemDataItemsOptions> = {
             modeScr: mode,
@@ -71,7 +563,12 @@ export class ConfigManager extends BaseClass {
             data: { entity2: {} },
         };
 
-        const obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
+        let obj;
+        if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith('.')) {
+            obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
+            result.data!.entity2!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
+        }
+
         if (entity.ScreensaverEntityUnitText || entity.ScreensaverEntityUnitText === '') {
             result.data!.entity2!.unit = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityUnitText);
         } else if (obj && obj.common && obj.common.unit) {
@@ -81,43 +578,27 @@ export class ConfigManager extends BaseClass {
         if (entity.ScreensaverEntityFactor) {
             result.data!.entity2!.factor = { type: 'const', constVal: entity.ScreensaverEntityFactor };
         }
+
         if (entity.ScreensaverEntityDecimalPlaces) {
             result.data!.entity2!.decimal = { type: 'const', constVal: entity.ScreensaverEntityDecimalPlaces };
         }
+
         let color: Types.DataItemsOptions | undefined = undefined;
         if (entity.ScreensaverEntityOnColor) {
-            if (typeof entity.ScreensaverEntityOnColor === 'string') {
-                color = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnColor);
-            } else if (Color.isRGB(entity.ScreensaverEntityOnColor)) {
-                color = { type: 'const', constVal: entity.ScreensaverEntityOnColor };
-            } else if (Color.isScriptRGB(entity.ScreensaverEntityOnColor)) {
-                color = { type: 'const', constVal: Color.convertScriptRGBtoRGB(entity.ScreensaverEntityOnColor) };
-            } else {
-                this.adapter.log.error(`Invalid color value: ${JSON.stringify(entity.ScreensaverEntityOnColor)}`);
-            }
-        } else if (entity.ScreensaverEntityIconColor) {
-            if (typeof entity.ScreensaverEntityIconColor === 'string') {
-                color = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconColor);
-            } else if (Color.isRGB(entity.ScreensaverEntityIconColor)) {
-                color = { type: 'const', constVal: entity.ScreensaverEntityIconColor };
-            } else if (Color.isScriptRGB(entity.ScreensaverEntityIconColor)) {
-                color = { type: 'const', constVal: Color.convertScriptRGBtoRGB(entity.ScreensaverEntityIconColor) };
-            } else {
-                this.adapter.log.error(`Invalid color value: ${JSON.stringify(entity.ScreensaverEntityIconColor)}`);
-            }
+            color = await this.getIconColor(entity.ScreensaverEntityOnColor || this.colorOn);
+        } else if (entity.ScreensaverEntityIconColor && !isIconScaleElement(entity.ScreensaverEntityIconColor)) {
+            color = await this.getIconColor(entity.ScreensaverEntityIconColor || this.colorDefault);
+        } else {
+            color = await this.getIconColor(defaultColors.defaultOnColor || this.colorDefault);
         }
+
         let colorOff: Types.DataItemsOptions | undefined = undefined;
         if (entity.ScreensaverEntityIconOff) {
-            if (typeof entity.ScreensaverEntityIconOff === 'string') {
-                colorOff = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff);
-            } else if (Color.isRGB(entity.ScreensaverEntityIconOff)) {
-                colorOff = { type: 'const', constVal: entity.ScreensaverEntityIconOff };
-            } else if (Color.isScriptRGB(entity.ScreensaverEntityIconOff)) {
-                color = { type: 'const', constVal: Color.convertScriptRGBtoRGB(entity.ScreensaverEntityIconOff) };
-            } else {
-                this.adapter.log.error(`Invalid color value: ${JSON.stringify(entity.ScreensaverEntityIconOff)}`);
-            }
+            colorOff = await this.getIconColor(entity.ScreensaverEntityIconOff);
+        } else {
+            colorOff = await this.getIconColor(defaultColors.defaultOffColor);
         }
+
         if (entity.ScreensaverEntityIconOn) {
             result.data!.icon = {
                 true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) },
@@ -126,29 +607,50 @@ export class ConfigManager extends BaseClass {
                 result.data!.icon.true!.color = color;
             }
         }
+
         if (entity.ScreensaverEntityIconOff) {
             result.data!.icon = {
-                false: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff) },
+                ...result.data!.icon,
+                ...{
+                    false: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff) },
+                },
             };
             if (color) {
                 result.data!.icon.false!.color = colorOff;
             }
         }
+        if (entity.ScreensaverEntityIconColor && isIconScaleElement(entity.ScreensaverEntityIconColor)) {
+            result.data!.icon = {
+                ...result.data!.icon,
+
+                scale: {
+                    type: 'const',
+                    constVal: entity.ScreensaverEntityIconColor,
+                },
+            };
+        }
+
         if (entity.ScreensaverEntityOnText) {
             result.data!.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) };
         } else if (entity.ScreensaverEntityText) {
             result.data!.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };
         }
+
         if (entity.ScreensaverEntityOffText) {
             result.data!.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
         }
+
         if (isPageItemDataItemsOptions(result)) {
             return result;
         }
         throw new Error('Invalid data');
     }
+
     async getFieldAsDataItemConfig(possibleId: string, isTrigger: boolean = false): Promise<Types.DataItemsOptions> {
-        const state = possibleId.endsWith('.') ? undefined : await this.adapter.getForeignStateAsync(possibleId);
+        const state =
+            possibleId === '' || possibleId.endsWith('.')
+                ? undefined
+                : await this.adapter.getForeignStateAsync(possibleId);
 
         if (state !== undefined && state !== null) {
             if (isTrigger) {
@@ -158,8 +660,27 @@ export class ConfigManager extends BaseClass {
         }
         return { type: 'const', constVal: possibleId };
     }
+
+    async getIconColor(
+        item: ScriptConfig.RGB | RGB | ScriptConfig.IconScaleElement | string,
+    ): Promise<Types.DataItemsOptions | undefined> {
+        if (isIconScaleElement(item)) {
+            //later
+        } else if (typeof item === 'string') {
+            return await this.getFieldAsDataItemConfig(item);
+        } else if (Color.isRGB(item)) {
+            return { type: 'const', constVal: item };
+        } else if (Color.isScriptRGB(item)) {
+            return { type: 'const', constVal: Color.convertScriptRGBtoRGB(item) };
+        }
+        this.adapter.log.error(`Invalid color value: ${JSON.stringify(item)}`);
+        return undefined;
+    }
 }
 
+function isIconScaleElement(obj: any): obj is ScriptConfig.IconScaleElement {
+    return obj && obj.val_min !== undefined && obj.val_max !== undefined;
+}
 function isPageItemDataItemsOptions(obj: any): obj is typePageItem.PageItemDataItemsOptions {
-    return obj && obj.modeScr && obj.type === 'text' && obj.data && obj.data.entity2;
+    return obj && obj.modeScr && obj.data;
 }

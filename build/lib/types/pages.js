@@ -19,21 +19,46 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var pages_exports = {};
 __export(pages_exports, {
   arrayOfAll: () => arrayOfAll,
+  exhaustiveCheck: () => exhaustiveCheck,
   isAlarmButtonEvent: () => isAlarmButtonEvent,
   isButtonActionType: () => isButtonActionType,
   isClosingBehavior: () => isClosingBehavior,
   isColorEntryType: () => isColorEntryType,
   isPlaceholderType: () => isPlaceholderType,
   isQRButtonEvent: () => isQRButtonEvent,
+  isScreenSaverCardType: () => isScreenSaverCardType,
   isScreenSaverMode: () => isScreenSaverMode,
   isStateRole: () => isStateRole,
+  screenSaverCardArray: () => screenSaverCardArray,
   screenSaverModeArray: () => screenSaverModeArray,
   stateRoleArray: () => stateRoleArray
 });
 module.exports = __toCommonJS(pages_exports);
 const arrayOfAll = () => (array) => array;
+function exhaustiveCheck(_param) {
+}
 const arrayOfAllStateRole = arrayOfAll();
 const arrayOfAllScreenSaverMode = arrayOfAll();
+const arrayOfAllScreenSaverCards = arrayOfAll();
+const screenSaverCardArray = arrayOfAllScreenSaverCards([
+  "screensaver",
+  "screensaver2",
+  "screensaver3"
+]);
+function isScreenSaverCardType(F) {
+  if (typeof F !== "string") {
+    return false;
+  }
+  switch (F) {
+    case "screensaver":
+    case "screensaver2":
+    case "screensaver3":
+      return true;
+    default:
+      console.info(`${F} is not isScreenSaverCardType!`);
+      return false;
+  }
+}
 const screenSaverModeArray = arrayOfAllScreenSaverMode(["standard", "advanced", "alternate", "easyview"]);
 function isScreenSaverMode(F) {
   if (typeof F !== "string") {
@@ -239,14 +264,17 @@ function isPlaceholderType(F) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   arrayOfAll,
+  exhaustiveCheck,
   isAlarmButtonEvent,
   isButtonActionType,
   isClosingBehavior,
   isColorEntryType,
   isPlaceholderType,
   isQRButtonEvent,
+  isScreenSaverCardType,
   isScreenSaverMode,
   isStateRole,
+  screenSaverCardArray,
   screenSaverModeArray,
   stateRoleArray
 });

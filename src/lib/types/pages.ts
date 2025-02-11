@@ -28,9 +28,30 @@ export const arrayOfAll =
     <T>() =>
     <U extends T[]>(array: U & ([T] extends [U[number]] ? unknown : 'Invalid') & { 0: T }): U =>
         array;
-
+export function exhaustiveCheck(_param: never): void {}
 const arrayOfAllStateRole = arrayOfAll<StateRole>();
 const arrayOfAllScreenSaverMode = arrayOfAll<Types.ScreensaverModeType>();
+const arrayOfAllScreenSaverCards = arrayOfAll<screenSaverCardType>();
+export const screenSaverCardArray: screenSaverCardType[] = arrayOfAllScreenSaverCards([
+    'screensaver',
+    'screensaver2',
+    'screensaver3',
+]);
+export function isScreenSaverCardType(F: any): F is screenSaverCardType {
+    if (typeof F !== 'string') {
+        return false;
+    }
+
+    switch (F) {
+        case 'screensaver':
+        case 'screensaver2':
+        case 'screensaver3':
+            return true;
+        default:
+            console.info(`${F} is not isScreenSaverCardType!`);
+            return false;
+    }
+}
 export const screenSaverModeArray = arrayOfAllScreenSaverMode(['standard', 'advanced', 'alternate', 'easyview']);
 export function isScreenSaverMode(F: any): F is Types.ScreensaverModeType {
     if (typeof F !== 'string') {
@@ -111,93 +132,93 @@ export const stateRoleArray = arrayOfAllStateRole([
 ]);
 
 export type StateRole =
-    | 'value.power'
-    | 'button.play'
-    | 'button.pause'
+    | 'button'
+    | 'button.close'
+    | 'button.close.blind'
+    | 'button.close.tilt'
     | 'button.next'
+    | 'button.open'
+    | 'button.open.blind'
+    | 'button.open.tilt'
+    | 'button.pause'
+    | 'button.play'
     | 'button.prev'
     | 'button.stop'
-    | 'button.volume.up'
-    | 'button.volume.down'
-    | 'media.seek' // (common.type=number) %
-    | 'media.mode.shuffle' //(common.type=number) 0 - none, 1 - all, 2 - one
-    | 'media.mode.repeat' //(common.type=boolean)
-    | 'media.state' //['play','stop','pause'] or [0 - pause, 1 - play, 2 - stop] or [true - playing/false - pause]
-    | 'media.artist'
-    | 'media.album'
-    | 'media.title'
-    | 'media.duration'
-    | 'media.elapsed.text'
-    | 'media.elapsed'
-    | 'media.mute'
-    | 'level.volume'
-    | 'media.playlist'
-    | 'button.open.blind'
-    | 'button.open'
-    | 'button.close.blind'
-    | 'button.close'
     | 'button.stop.blind'
-    | 'button.open.tilt'
     | 'button.stop.tilt'
-    | 'button.close.tilt'
-    | 'level.tilt'
-    | 'level.blind'
-    | 'level.color.name'
-    | 'state'
-    | 'level.color.blue'
-    | 'level.color.red'
-    | 'level.color.green'
-    | 'level.color.white'
-    | 'level.brightness'
-    | 'switch'
-    | 'button'
-    | 'sensor.window'
-    | 'sensor.open'
-    | 'value.temperature'
-    | 'value.battery'
-    | 'indicator.lowbat'
-    | 'value'
-    | 'level.temperature'
-    | 'level.value'
+    | 'button.volume.down'
+    | 'button.volume.up'
     | 'date'
     | 'date.sunrise.forecast.0'
-    | 'date.sunset.forecast.0'
     | 'date.sunrise.forecast.1'
+    | 'date.sunset.forecast.0'
     | 'date.sunset.forecast.1'
+    | 'indicator.lowbat'
+    | 'level.blind'
+    | 'level.brightness'
+    | 'level.color.blue'
+    | 'level.color.green'
+    | 'level.color.name'
+    | 'level.color.red'
+    | 'level.color.white'
+    | 'level.temperature'
+    | 'level.tilt'
+    | 'level.value'
+    | 'level.volume'
+    | 'media.album'
+    | 'media.artist'
+    | 'media.duration'
+    | 'media.elapsed'
+    | 'media.elapsed.text'
+    | 'media.mode.repeat'
+    | 'media.mode.shuffle'
+    | 'media.mute'
+    | 'media.playlist'
+    | 'media.seek'
+    | 'media.state'
+    | 'media.title'
+    | 'sensor.open'
+    | 'sensor.window'
+    | 'state'
+    | 'switch'
+    | 'value'
+    | 'value.battery'
+    | 'value.power'
+    | 'value.temperature'
     | '';
 
 export type DeviceRole =
-    | 'text'
-    | 'socket'
-    | 'light'
-    | 'dimmer'
-    | 'hue'
-    | 'ct'
-    | 'cie'
-    | 'rgbThree'
-    | 'rgbSingle'
-    | 'blind'
-    | 'door'
-    | 'window'
-    | 'gate'
-    | 'motion'
-    | 'buttonSensor'
-    | 'button'
-    | 'media.repeat'
-    | 'text.list'
-    | 'arrow'
-    | 'spotify-playlist'
-    | 'timer'
-    | 'rgb.hex'
-    | 'indicator'
     | '2values'
-    | 'combined'
-    | 'textNotIcon'
-    | 'iconNotText'
-    | 'test'
-    | ''
+    | '4values'
+    | 'arrow'
     | 'battery'
-    | '4values'; // timer with internal counter
+    | 'blind'
+    | 'button'
+    | 'buttonSensor'
+    | 'cie'
+    | 'combined'
+    | 'ct'
+    | 'dimmer'
+    | 'door'
+    | 'gate'
+    | 'hue'
+    | 'iconNotText'
+    | 'indicator'
+    | 'light'
+    | 'media.repeat'
+    | 'motion'
+    | 'rgb.hex'
+    | 'rgbSingle'
+    | 'rgbThree'
+    | 'socket'
+    | 'spotify-playlist'
+    | 'test'
+    | 'text'
+    | 'text.list'
+    | 'textNotIcon'
+    | 'timer'
+    | 'window'
+    | '';
 
 export function isStateRole(F: string): F is StateRole {
     switch (F as StateRole) {
@@ -571,15 +592,15 @@ export type cardMediaDataItems = {
         toolbox: (toolboxItemDataItem | undefined)[];
     } & { logo: toolboxItemDataItem | undefined };
 };
-
+export type screenSaverCardType = 'screensaver' | 'screensaver2' | 'screensaver3';
 export type screensaverDataItemOptions = {
-    card: 'screensaver' | 'screensaver2' | 'screensaver3';
+    card: Extends<PageTypeCards, screenSaverCardType>;
     mode: Types.ScreensaverModeType;
     rotationTime: number;
     model: Types.NSpanelModel;
     data: undefined;
 };
-
+type Extends<T, U extends T> = U;
 export type ChangeDeepPartial<Obj> = Obj extends
     | object
     | listItem

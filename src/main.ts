@@ -15,6 +15,7 @@ import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import { genericStateObjects } from './lib/const/definition';
 import { ConfigManager } from './lib/controller/config-manager';
+import type { panelConfigPartial } from './lib/controller/panel';
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -41,7 +42,14 @@ class NspanelLovelaceUi extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration...
      */
     private async onReady(): Promise<void> {
+        await this.extendForeignObjectAsync(this.namespace, {
+            type: 'meta',
+            common: { name: { en: 'Nspanel Instance', de: 'Nspanel Instanze' }, type: 'meta.folder' },
+            native: {},
+        });
+
         this.library = new Library(this);
+        await this.delay(2000);
         if (!this.config.Testconfig2) {
             if (this.config.onlyStartFromSystemConfig) {
                 this.log.warn('No configuration stopped!');
@@ -67,6 +75,23 @@ class NspanelLovelaceUi extends utils.Adapter {
             return;
         }
         try {
+            const obj = await this.getForeignObjectAsync(this.namespace);
+            if (obj && obj.native && obj.native.scriptConfig) {
+                const scriptConfig = obj.native.scriptConfig as Partial<panelConfigPartial>[];
+                // übergangsweise adden wir hier die seiten die wir haben ins erste panel
+                //this.config.Testconfig2 = { ...this.config.Testconfig2, ...obj.native.scriptConfig };
+                if (scriptConfig[0] && scriptConfig[0].pages && this.config.Testconfig2[0].pages) {
+                    this.config.Testconfig2[0].pages = (this.config.Testconfig2[0] as panelConfigPartial).pages.filter(
+                        a => {
+                            if (scriptConfig[0].pages!.find(b => b.uniqueID === a.uniqueID)) {
+                                return false;
+                            }
+                            return true;
+                        },
+                    );
+                    this.config.Testconfig2[0].pages = [...this.config.Testconfig2[0].pages, ...scriptConfig[0].pages];
+                }
+            }
             this.config.Testconfig2[0].pages![0] = this.config.Testconfig2[0].pages![0];
             this.config.Testconfig2[0].timeout = this.config.timeout;
         } catch {

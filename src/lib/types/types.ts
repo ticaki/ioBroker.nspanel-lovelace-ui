@@ -56,7 +56,8 @@ export type TemplateIdent =
     | 'script.lock'
     | 'script.slider'
     | 'script.warning'
-    | 'script.volume';
+    | 'script.volume'
+    | 'text.accuweather.favorit';
 
 export function isEventMethod(F: string): F is EventMethod {
     switch (F as EventMethod) {

@@ -5,7 +5,7 @@ import type * as Types from '../types/types';
 //import moment from 'moment';
 //import parseFormat from 'moment-parseformat';
 import { Page, type PageInterface } from '../classes/Page';
-import type * as pages from '../types/pages';
+import * as pages from '../types/pages';
 import * as tools from '../const/tools';
 import { PageItem } from './pageItem';
 import type { BaseClassTriggerd } from '../controller/states-controller';
@@ -69,6 +69,11 @@ export class Screensaver extends Page {
             (config.card !== 'screensaver' && config.card !== 'screensaver2' && config.card !== 'screensaver3')
         ) {
             return null;
+        }
+        if (!pages.isScreenSaverCardType(config.card)) {
+            pages.exhaustiveCheck(config.card);
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            this.log.error(`Invalid card: ${config.card}`);
         }
         const message: pages.screensaverMessage = {
             options: {
@@ -325,10 +330,19 @@ export class Screensaver extends Page {
         ) {
             return;
         }
-        this.config.mode = mode;
+        if (pages.isScreenSaverMode(mode)) {
+            this.config.mode = mode;
+        } else {
+            pages.exhaustiveCheck(mode);
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            this.log.error(`Invalid mode: ${mode}`);
+        }
     }
 
     overwriteModel(mode: Types.ScreensaverModeType): void {
+        if (mode === this.mode) {
+            return;
+        }
         switch (mode) {
             case 'standard':
             case 'alternate': {
@@ -362,5 +376,7 @@ export class Screensaver extends Page {
             }
         }
         this.mode = mode;
+        this.sendType();
+        void this.update();
     }
 }

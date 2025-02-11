@@ -33,6 +33,7 @@ __export(screensaver_exports, {
 module.exports = __toCommonJS(screensaver_exports);
 var Definition = __toESM(require("../const/definition"));
 var import_Page = require("../classes/Page");
+var pages = __toESM(require("../types/pages"));
 var tools = __toESM(require("../const/tools"));
 var import_pageItem = require("./pageItem");
 class Screensaver extends import_Page.Page {
@@ -73,6 +74,10 @@ class Screensaver extends import_Page.Page {
     const config = this.config;
     if (!config || config.card !== "screensaver" && config.card !== "screensaver2" && config.card !== "screensaver3") {
       return null;
+    }
+    if (!pages.isScreenSaverCardType(config.card)) {
+      pages.exhaustiveCheck(config.card);
+      this.log.error(`Invalid card: ${config.card}`);
     }
     const message = {
       options: {
@@ -306,9 +311,17 @@ class Screensaver extends import_Page.Page {
     if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3") {
       return;
     }
-    this.config.mode = mode;
+    if (pages.isScreenSaverMode(mode)) {
+      this.config.mode = mode;
+    } else {
+      pages.exhaustiveCheck(mode);
+      this.log.error(`Invalid mode: ${mode}`);
+    }
   }
   overwriteModel(mode) {
+    if (mode === this.mode) {
+      return;
+    }
     switch (mode) {
       case "standard":
       case "alternate": {
@@ -338,6 +351,8 @@ class Screensaver extends import_Page.Page {
       }
     }
     this.mode = mode;
+    this.sendType();
+    void this.update();
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

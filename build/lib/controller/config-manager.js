@@ -26,6 +26,9 @@ var import_Color = require("../const/Color");
 var import_config_manager_const = require("../const/config-manager-const");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
+  colorOn = import_Color.Color.On;
+  colorOff = import_Color.Color.Off;
+  colorDefault = import_Color.Color.Off;
   constructor(adapter) {
     super(adapter, "config-manager");
   }
@@ -35,27 +38,368 @@ class ConfigManager extends import_library.BaseClass {
       this.log.error(`Invalid configuration from Script: ${config ? JSON.stringify(config) : "undefined"}`);
       return;
     }
-    const pageItems = [];
+    const panelConfig = { pages: [] };
+    if (config.panelSendTopic.endsWith(".cmnd.CustomSend")) {
+      panelConfig.topic = config.panelSendTopic.split(".").slice(0, -2).join(".");
+    } else {
+      panelConfig.topic = config.panelSendTopic;
+    }
+    if (config.panelName) {
+      panelConfig.name = config.panelName;
+    } else {
+      panelConfig.name = `NSPanel-${config.panelRecvTopic}`;
+    }
+    if (config.defaultColor) {
+      this.colorDefault = import_Color.Color.convertScriptRGBtoRGB(config.defaultColor);
+    }
+    if (config.defaultOnColor) {
+      this.colorOn = import_Color.Color.convertScriptRGBtoRGB(config.defaultOnColor);
+    }
+    if (config.defaultOffColor) {
+      this.colorOff = import_Color.Color.convertScriptRGBtoRGB(config.defaultOffColor);
+    }
+    let pageItems = [];
     if (config.bottomScreensaverEntity) {
       for (const item of config.bottomScreensaverEntity) {
         if (item) {
-          pageItems.push(await this.getEntityData(item, "bottom"));
+          pageItems.push(await this.getEntityData(item, "bottom", config));
         }
+      }
+    }
+    if (config.weatherEntity) {
+      if (config.weatherEntity.startsWith("accuweather.") && config.weatherEntity.endsWith(".")) {
+        const instance = config.weatherEntity.split(".")[1];
+        pageItems.push({
+          template: "text.accuweather.favorit",
+          dpInit: `/^accuweather\\.${instance}.+/`
+        });
+        pageItems = pageItems.concat([
+          // Bottom 1 - accuWeather.0. Forecast Day 1
+          {
+            template: "text.accuweather.sunriseset",
+            dpInit: `/^accuweather\\.${instance}.Daily.+/`,
+            modeScr: "bottom"
+          },
+          // Bottom 1 - accuWeather.0. Forecast Day 1
+          {
+            template: "text.accuweather.bot2values",
+            dpInit: `/^accuweather\\.${instance}.+?d1$/g`,
+            modeScr: "bottom"
+          },
+          // Bottom 2 - accuWeather.0. Forecast Day 2
+          {
+            template: "text.accuweather.bot2values",
+            dpInit: `/^accuweather\\.${instance}.+?d2$/`,
+            modeScr: "bottom"
+          },
+          // Bottom 3 - accuWeather.0. Forecast Day 3
+          {
+            template: "text.accuweather.bot2values",
+            dpInit: `/^accuweather\\.${instance}.+?d3$/`,
+            modeScr: "bottom"
+          },
+          // Bottom 4 - accuWeather.0. Forecast Day 4
+          {
+            template: "text.accuweather.bot2values",
+            dpInit: `/^accuweather\\.${instance}.+?d4$/`,
+            modeScr: "bottom"
+          },
+          // Bottom 5 - accuWeather.0. Forecast Day 5
+          {
+            template: "text.accuweather.bot2values",
+            dpInit: `/^accuweather\\.${instance}.+?d5$/`,
+            modeScr: "bottom"
+          },
+          // Bottom 7 - Sonnenaufgang - Sonnenuntergang im Wechsel
+          // Bottom 8 - Windgeschwindigkeit
+          {
+            role: "text",
+            dpInit: "",
+            type: "text",
+            modeScr: "bottom",
+            data: {
+              entity1: {
+                value: {
+                  type: "triggered",
+                  dp: `accuweather.${instance}.Current.WindSpeed`
+                },
+                decimal: {
+                  type: "const",
+                  constVal: 1
+                },
+                factor: {
+                  type: "const",
+                  constVal: 1e3 / 3600
+                },
+                unit: void 0
+              },
+              entity2: {
+                value: {
+                  type: "triggered",
+                  dp: `accuweather.${instance}.Current.WindSpeed`
+                },
+                decimal: {
+                  type: "const",
+                  constVal: 1
+                },
+                factor: {
+                  type: "const",
+                  constVal: 1e3 / 3600
+                },
+                unit: {
+                  type: "const",
+                  constVal: "m/s"
+                }
+              },
+              icon: {
+                true: {
+                  value: {
+                    type: "const",
+                    constVal: "weather-windy"
+                  },
+                  color: {
+                    type: "const",
+                    constVal: import_Color.Color.MSRed
+                  }
+                },
+                false: {
+                  value: {
+                    type: "const",
+                    constVal: "weather-windy"
+                  },
+                  color: {
+                    type: "const",
+                    constVal: import_Color.Color.MSGreen
+                  }
+                },
+                scale: {
+                  type: "const",
+                  constVal: { val_min: 0, val_max: 80 }
+                },
+                maxBri: void 0,
+                minBri: void 0
+              },
+              text: {
+                true: {
+                  type: "const",
+                  constVal: "Wind"
+                },
+                false: void 0
+              }
+            }
+          },
+          // Bottom 9 - Böen
+          {
+            role: "text",
+            dpInit: "",
+            type: "text",
+            modeScr: "bottom",
+            data: {
+              entity1: {
+                value: {
+                  type: "triggered",
+                  dp: `accuweather.${instance}.Current.WindGust`
+                },
+                decimal: {
+                  type: "const",
+                  constVal: 1
+                },
+                factor: {
+                  type: "const",
+                  constVal: 1e3 / 3600
+                },
+                unit: void 0
+              },
+              entity2: {
+                value: {
+                  type: "triggered",
+                  dp: `accuweather.${instance}.Current.WindGust`
+                },
+                decimal: {
+                  type: "const",
+                  constVal: 1
+                },
+                factor: {
+                  type: "const",
+                  constVal: 1e3 / 3600
+                },
+                unit: {
+                  type: "const",
+                  constVal: "m/s"
+                }
+              },
+              icon: {
+                true: {
+                  value: {
+                    type: "const",
+                    constVal: "weather-tornado"
+                  },
+                  color: {
+                    type: "const",
+                    constVal: import_Color.Color.MSRed
+                  }
+                },
+                false: {
+                  value: {
+                    type: "const",
+                    constVal: "weather-tornado"
+                  },
+                  color: {
+                    type: "const",
+                    constVal: import_Color.Color.MSGreen
+                  }
+                },
+                scale: {
+                  type: "const",
+                  constVal: { val_min: 0, val_max: 80 }
+                },
+                maxBri: void 0,
+                minBri: void 0
+              },
+              text: {
+                true: {
+                  type: "const",
+                  constVal: "B\xF6en"
+                },
+                false: void 0
+              }
+            }
+          },
+          // Bottom 10 - Windrichtung
+          {
+            role: "text",
+            dpInit: "",
+            type: "text",
+            modeScr: "bottom",
+            data: {
+              entity2: {
+                value: {
+                  type: "triggered",
+                  dp: `accuweather.${instance}.Current.WindDirectionText`
+                },
+                decimal: {
+                  type: "const",
+                  constVal: 0
+                },
+                factor: void 0,
+                unit: {
+                  type: "const",
+                  constVal: "\xB0"
+                }
+              },
+              icon: {
+                true: {
+                  value: {
+                    type: "const",
+                    constVal: "windsock"
+                  },
+                  color: {
+                    type: "const",
+                    constVal: "#FFFFFF"
+                  }
+                },
+                false: {
+                  value: void 0,
+                  color: void 0
+                },
+                scale: void 0,
+                maxBri: void 0,
+                minBri: void 0
+              },
+              text: {
+                true: {
+                  type: "const",
+                  constVal: "Windr."
+                },
+                false: void 0
+              }
+            }
+          },
+          // Bottom 12 - UV-Index
+          {
+            role: "text",
+            dpInit: "",
+            type: "text",
+            modeScr: "bottom",
+            data: {
+              entity1: {
+                value: {
+                  type: "triggered",
+                  dp: `accuweather.${instance}.Current.UVIndex`
+                },
+                decimal: void 0,
+                factor: void 0,
+                unit: void 0
+              },
+              entity2: {
+                value: {
+                  type: "triggered",
+                  dp: `accuweather.${instance}.Current.UVIndex`,
+                  forceType: "string"
+                },
+                decimal: void 0,
+                factor: void 0,
+                unit: void 0
+              },
+              icon: {
+                true: {
+                  value: {
+                    type: "const",
+                    constVal: "solar-power"
+                  },
+                  color: {
+                    type: "const",
+                    constVal: import_Color.Color.MSRed
+                  }
+                },
+                false: {
+                  value: {
+                    type: "const",
+                    constVal: "solar-power"
+                  },
+                  color: {
+                    type: "const",
+                    constVal: import_Color.Color.MSGreen
+                  }
+                },
+                scale: {
+                  type: "const",
+                  constVal: { val_min: 0, val_max: 9 }
+                },
+                maxBri: void 0,
+                minBri: void 0
+              },
+              text: {
+                true: {
+                  type: "const",
+                  constVal: "UV"
+                },
+                false: void 0
+              }
+            }
+          }
+        ]);
       }
     }
     if (config.indicatorScreensaverEntity) {
       for (const item of config.indicatorScreensaverEntity) {
         if (item) {
-          pageItems.push(await this.getEntityData(item, "indicator"));
+          pageItems.push(await this.getEntityData(item, "indicator", config));
         }
       }
     }
     if (config.leftScreensaverEntity) {
       for (const item of config.leftScreensaverEntity) {
         if (item) {
-          pageItems.push(await this.getEntityData(item, "left"));
+          pageItems.push(await this.getEntityData(item, "left", config));
         }
       }
+    }
+    if (config.mrIcon1ScreensaverEntity) {
+      pageItems.push(await this.getMrEntityData(config.mrIcon1ScreensaverEntity, "mricon", "1"));
+    }
+    if (config.mrIcon2ScreensaverEntity) {
+      pageItems.push(await this.getMrEntityData(config.mrIcon2ScreensaverEntity, "mricon", "2"));
     }
     this.log.debug(`pageItems count: ${pageItems.length}`);
     const convertedConfig = {
@@ -64,23 +408,151 @@ class ConfigManager extends import_library.BaseClass {
       uniqueID: "scr",
       useColor: false,
       config: {
-        card: "screensaver2",
-        mode: "advanced",
+        card: "screensaver",
+        mode: "standard",
         rotationTime: 0,
         model: "eu",
         data: void 0
       },
-      pageItems
+      pageItems: [
+        ...pageItems,
+        {
+          role: "text",
+          dpInit: "",
+          type: "text",
+          modeScr: "time",
+          data: {
+            entity2: {
+              value: {
+                type: "internal",
+                dp: "///time"
+              },
+              dateFormat: {
+                type: "const",
+                constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+              }
+            }
+          }
+        },
+        {
+          role: "text",
+          dpInit: "",
+          type: "text",
+          modeScr: "date",
+          data: {
+            entity2: {
+              value: {
+                type: "internal",
+                dp: "///date"
+              },
+              dateFormat: {
+                type: "const",
+                constVal: {
+                  local: "de",
+                  format: {
+                    weekday: "long",
+                    month: "short",
+                    year: "numeric",
+                    day: "numeric"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     };
-    this.log.debug(`convertedConfig: ${JSON.stringify(convertedConfig)}`);
+    panelConfig.pages.push(convertedConfig);
+    this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
+    const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
+    if (obj) {
+      obj.native.scriptConfig = obj.native.scriptConfig || [];
+      const index = obj.native.scriptConfig.findIndex((item) => item.name === panelConfig.name);
+      if (index !== -1) {
+        obj.native.scriptConfig[index] = panelConfig;
+      } else {
+        obj.native.scriptConfig.push(panelConfig);
+      }
+      await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
+    }
   }
-  async getEntityData(entity, mode) {
+  async getMrEntityData(entity, mode, nr) {
+    const result = {
+      modeScr: mode,
+      type: "text",
+      data: { entity1: {} }
+    };
+    if (entity.ScreensaverEntity && entity.ScreensaverEntity.endsWith(`Relay.${nr}`)) {
+      result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
+    } else {
+      result.data.entity1.value = {
+        type: "internal",
+        dp: `cmd/power${nr}`
+      };
+    }
+    result.data.icon = {
+      true: {
+        value: {
+          type: "const",
+          constVal: "lightbulb"
+        },
+        color: {
+          type: "const",
+          constVal: import_Color.Color.Yellow
+        }
+      },
+      false: {
+        value: {
+          type: "const",
+          constVal: "lightbulb-outline"
+        },
+        color: {
+          type: "const",
+          constVal: import_Color.Color.HMIOff
+        }
+      },
+      scale: void 0,
+      maxBri: void 0,
+      minBri: void 0
+    };
+    if (entity.ScreensaverEntityOnColor) {
+      result.data.icon.true.color = await this.getIconColor(entity.ScreensaverEntityOnColor || this.colorOn);
+    }
+    if (entity.ScreensaverEntityOffColor) {
+      result.data.icon.false.color = await this.getIconColor(entity.ScreensaverEntityOffColor || this.colorOff);
+    }
+    if (entity.ScreensaverEntityIconOn) {
+      result.data.icon.true.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn);
+    }
+    if (entity.ScreensaverEntityIconOff) {
+      result.data.icon.true.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff);
+    }
+    if (entity.ScreensaverEntityValue) {
+      result.data.icon.false.text = {
+        value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValue, true),
+        unit: entity.ScreensaverEntityValueUnit ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValueUnit) : void 0,
+        decimal: entity.ScreensaverEntityValueDecimalPlace ? { type: "const", constVal: entity.ScreensaverEntityValueDecimalPlace } : void 0,
+        factor: void 0
+      };
+      result.role = "combined";
+      result.data.icon.true.text = result.data.icon.false.text;
+    }
+    if (isPageItemDataItemsOptions(result)) {
+      return result;
+    }
+    throw new Error("Invalid data");
+  }
+  async getEntityData(entity, mode, defaultColors) {
     const result = {
       modeScr: mode,
       type: "text",
       data: { entity2: {} }
     };
-    const obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
+    let obj;
+    if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith(".")) {
+      obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
+      result.data.entity2.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
+    }
     if (entity.ScreensaverEntityUnitText || entity.ScreensaverEntityUnitText === "") {
       result.data.entity2.unit = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityUnitText);
     } else if (obj && obj.common && obj.common.unit) {
@@ -94,37 +566,17 @@ class ConfigManager extends import_library.BaseClass {
     }
     let color = void 0;
     if (entity.ScreensaverEntityOnColor) {
-      if (typeof entity.ScreensaverEntityOnColor === "string") {
-        color = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnColor);
-      } else if (import_Color.Color.isRGB(entity.ScreensaverEntityOnColor)) {
-        color = { type: "const", constVal: entity.ScreensaverEntityOnColor };
-      } else if (import_Color.Color.isScriptRGB(entity.ScreensaverEntityOnColor)) {
-        color = { type: "const", constVal: import_Color.Color.convertScriptRGBtoRGB(entity.ScreensaverEntityOnColor) };
-      } else {
-        this.adapter.log.error(`Invalid color value: ${JSON.stringify(entity.ScreensaverEntityOnColor)}`);
-      }
-    } else if (entity.ScreensaverEntityIconColor) {
-      if (typeof entity.ScreensaverEntityIconColor === "string") {
-        color = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconColor);
-      } else if (import_Color.Color.isRGB(entity.ScreensaverEntityIconColor)) {
-        color = { type: "const", constVal: entity.ScreensaverEntityIconColor };
-      } else if (import_Color.Color.isScriptRGB(entity.ScreensaverEntityIconColor)) {
-        color = { type: "const", constVal: import_Color.Color.convertScriptRGBtoRGB(entity.ScreensaverEntityIconColor) };
-      } else {
-        this.adapter.log.error(`Invalid color value: ${JSON.stringify(entity.ScreensaverEntityIconColor)}`);
-      }
+      color = await this.getIconColor(entity.ScreensaverEntityOnColor || this.colorOn);
+    } else if (entity.ScreensaverEntityIconColor && !isIconScaleElement(entity.ScreensaverEntityIconColor)) {
+      color = await this.getIconColor(entity.ScreensaverEntityIconColor || this.colorDefault);
+    } else {
+      color = await this.getIconColor(defaultColors.defaultOnColor || this.colorDefault);
     }
     let colorOff = void 0;
     if (entity.ScreensaverEntityIconOff) {
-      if (typeof entity.ScreensaverEntityIconOff === "string") {
-        colorOff = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff);
-      } else if (import_Color.Color.isRGB(entity.ScreensaverEntityIconOff)) {
-        colorOff = { type: "const", constVal: entity.ScreensaverEntityIconOff };
-      } else if (import_Color.Color.isScriptRGB(entity.ScreensaverEntityIconOff)) {
-        color = { type: "const", constVal: import_Color.Color.convertScriptRGBtoRGB(entity.ScreensaverEntityIconOff) };
-      } else {
-        this.adapter.log.error(`Invalid color value: ${JSON.stringify(entity.ScreensaverEntityIconOff)}`);
-      }
+      colorOff = await this.getIconColor(entity.ScreensaverEntityIconOff);
+    } else {
+      colorOff = await this.getIconColor(defaultColors.defaultOffColor);
     }
     if (entity.ScreensaverEntityIconOn) {
       result.data.icon = {
@@ -136,11 +588,23 @@ class ConfigManager extends import_library.BaseClass {
     }
     if (entity.ScreensaverEntityIconOff) {
       result.data.icon = {
-        false: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff) }
+        ...result.data.icon,
+        ...{
+          false: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff) }
+        }
       };
       if (color) {
         result.data.icon.false.color = colorOff;
       }
+    }
+    if (entity.ScreensaverEntityIconColor && isIconScaleElement(entity.ScreensaverEntityIconColor)) {
+      result.data.icon = {
+        ...result.data.icon,
+        scale: {
+          type: "const",
+          constVal: entity.ScreensaverEntityIconColor
+        }
+      };
     }
     if (entity.ScreensaverEntityOnText) {
       result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) };
@@ -156,7 +620,7 @@ class ConfigManager extends import_library.BaseClass {
     throw new Error("Invalid data");
   }
   async getFieldAsDataItemConfig(possibleId, isTrigger = false) {
-    const state = possibleId.endsWith(".") ? void 0 : await this.adapter.getForeignStateAsync(possibleId);
+    const state = possibleId === "" || possibleId.endsWith(".") ? void 0 : await this.adapter.getForeignStateAsync(possibleId);
     if (state !== void 0 && state !== null) {
       if (isTrigger) {
         return { type: "triggered", dp: possibleId };
@@ -165,9 +629,24 @@ class ConfigManager extends import_library.BaseClass {
     }
     return { type: "const", constVal: possibleId };
   }
+  async getIconColor(item) {
+    if (isIconScaleElement(item)) {
+    } else if (typeof item === "string") {
+      return await this.getFieldAsDataItemConfig(item);
+    } else if (import_Color.Color.isRGB(item)) {
+      return { type: "const", constVal: item };
+    } else if (import_Color.Color.isScriptRGB(item)) {
+      return { type: "const", constVal: import_Color.Color.convertScriptRGBtoRGB(item) };
+    }
+    this.adapter.log.error(`Invalid color value: ${JSON.stringify(item)}`);
+    return void 0;
+  }
+}
+function isIconScaleElement(obj) {
+  return obj && obj.val_min !== void 0 && obj.val_max !== void 0;
 }
 function isPageItemDataItemsOptions(obj) {
-  return obj && obj.modeScr && obj.type === "text" && obj.data && obj.data.entity2;
+  return obj && obj.modeScr && obj.data;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

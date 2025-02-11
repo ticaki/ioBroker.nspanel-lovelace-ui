@@ -104,6 +104,46 @@ const defaultConfig = {
     setValue: null,
     setOn: void 0,
     setOff: void 0
+  },
+  leftScreensaverEntity: [],
+  indicatorScreensaverEntity: [],
+  mrIcon1ScreensaverEntity: {
+    ScreensaverEntity: null,
+    ScreensaverEntityIconOn: null,
+    ScreensaverEntityIconSelect: void 0,
+    ScreensaverEntityIconOff: null,
+    ScreensaverEntityValue: null,
+    ScreensaverEntityValueDecimalPlace: null,
+    ScreensaverEntityValueUnit: null,
+    ScreensaverEntityOnColor: {
+      red: 0,
+      green: 0,
+      blue: 0
+    },
+    ScreensaverEntityOffColor: {
+      red: 0,
+      green: 0,
+      blue: 0
+    }
+  },
+  mrIcon2ScreensaverEntity: {
+    ScreensaverEntity: null,
+    ScreensaverEntityIconOn: null,
+    ScreensaverEntityIconSelect: void 0,
+    ScreensaverEntityIconOff: null,
+    ScreensaverEntityValue: null,
+    ScreensaverEntityValueDecimalPlace: null,
+    ScreensaverEntityValueUnit: null,
+    ScreensaverEntityOnColor: {
+      red: 0,
+      green: 0,
+      blue: 0
+    },
+    ScreensaverEntityOffColor: {
+      red: 0,
+      green: 0,
+      blue: 0
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

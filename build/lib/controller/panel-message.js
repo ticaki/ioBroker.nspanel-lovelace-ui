@@ -106,7 +106,7 @@ class PanelSend extends import_library.BaseClass {
     }
     this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
     await this.mqttClient.publish(msg.topic, msg.payload, msg.opt);
-    this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 20);
+    this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 50);
   };
   async delete() {
     await super.delete();
