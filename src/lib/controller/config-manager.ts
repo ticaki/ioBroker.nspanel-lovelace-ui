@@ -65,6 +65,7 @@ export class ConfigManager extends BaseClass {
                 pageItems.push({
                     template: 'text.accuweather.favorit',
                     dpInit: `/^accuweather\\.${instance}.+/`,
+                    modeScr: 'favorit',
                 });
                 pageItems = pageItems.concat([
                     // Bottom 1 - accuWeather.0. Forecast Day 1
@@ -489,7 +490,7 @@ export class ConfigManager extends BaseClass {
             data: { entity1: {} },
         };
         if (entity.ScreensaverEntity && entity.ScreensaverEntity.endsWith(`Relay.${nr}`)) {
-            result.data!.entity1!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
+            result.data!.entity1!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
         } else {
             result.data!.entity1!.value = {
                 type: 'internal',
@@ -536,7 +537,7 @@ export class ConfigManager extends BaseClass {
         }
         if (entity.ScreensaverEntityValue) {
             result.data!.icon.false!.text = {
-                value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValue, true),
+                value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValue),
                 unit: entity.ScreensaverEntityValueUnit
                     ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValueUnit)
                     : undefined,
@@ -565,30 +566,31 @@ export class ConfigManager extends BaseClass {
         const result: Partial<typePageItem.PageItemDataItemsOptions> = {
             modeScr: mode,
             type: 'text',
-            data: { entity2: {} },
+            data: { entity1: {} },
         };
+        result.data!.entity2 = result.data!.entity1;
 
         let obj;
         if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith('.')) {
             obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
-            result.data!.entity2!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
+            result.data!.entity1!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
         }
 
         if (entity.ScreensaverEntityUnitText || entity.ScreensaverEntityUnitText === '') {
-            result.data!.entity2!.unit = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityUnitText);
+            result.data!.entity1!.unit = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityUnitText);
         } else if (obj && obj.common && obj.common.unit) {
-            result.data!.entity2!.unit = { type: 'const', constVal: obj.common.unit };
+            result.data!.entity1!.unit = { type: 'const', constVal: obj.common.unit };
         }
 
         if (entity.ScreensaverEntityFactor) {
-            result.data!.entity2!.factor = { type: 'const', constVal: entity.ScreensaverEntityFactor };
+            result.data!.entity1!.factor = { type: 'const', constVal: entity.ScreensaverEntityFactor };
         }
 
         if (entity.ScreensaverEntityDecimalPlaces) {
-            result.data!.entity2!.decimal = { type: 'const', constVal: entity.ScreensaverEntityDecimalPlaces };
+            result.data!.entity1!.decimal = { type: 'const', constVal: entity.ScreensaverEntityDecimalPlaces };
         }
         if (entity.ScreensaverEntityDateFormat) {
-            result.data!.entity2!.dateFormat = {
+            result.data!.entity1!.dateFormat = {
                 type: 'const',
                 constVal: { local: 'de', format: entity.ScreensaverEntityDateFormat },
             };
@@ -604,8 +606,8 @@ export class ConfigManager extends BaseClass {
         }
 
         let colorOff: Types.DataItemsOptions | undefined = undefined;
-        if (entity.ScreensaverEntityIconOff) {
-            colorOff = await this.getIconColor(entity.ScreensaverEntityIconOff);
+        if (entity.ScreensaverEntityOffColor) {
+            colorOff = await this.getIconColor(entity.ScreensaverEntityOffColor);
         } else {
             colorOff = await this.getIconColor(defaultColors.defaultOffColor);
         }

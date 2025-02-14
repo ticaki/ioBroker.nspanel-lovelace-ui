@@ -87,10 +87,8 @@ const swWindy = {red: 150, green: 150, blue: 150};
 
 
 const config: ScriptConfig.Config = {
-    panelRecvTopic: 'nspanel/ns_panel2',
-    panelSendTopic: 'nspanel/ns_panel2',
     panelTopic: 'nspanel/ns_panel2',
-    weatherEntity: 'weatherEntityPath',
+    weatherEntity: 'accuweather.0.',
     defaultOffColor: Off,
     defaultOnColor: On,
     defaultColor: Off,
