@@ -46,5 +46,6 @@
     "valveposition": "Положение клапана",
     "actualtemp": "Фактическая температура",
     "Colour temperature": "Цветовая температура",
-    "Color temperature": "Цветовая температура"
+    "Color temperature": "Цветовая температура",
+    "StateObjects.buttons.indicator": "Индикатор"
 }

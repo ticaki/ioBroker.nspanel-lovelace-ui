@@ -46,5 +46,6 @@
     "valveposition": "Posição da válvula",
     "actualtemp": "Temperatura real",
     "Colour temperature": "Temperatura de cor",
-    "Color temperature": "Temperatura de cor"
+    "Color temperature": "Temperatura de cor",
+    "StateObjects.buttons.indicator": "Indicador"
 }

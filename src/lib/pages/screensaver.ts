@@ -60,6 +60,16 @@ export class Screensaver extends Page {
     async init(): Promise<void> {
         await super.init();
         await this.createPageItems();
+        if (this.pageItems) {
+            const indicators = this.pageItems.filter(x => x && x.config && x.config.modeScr === 'indicator');
+            for (let a = 0; a < indicators.length; a++) {
+                await this.library.writedp(
+                    `panels.${this.panel.name}.buttons.indicator-${a + 1}`,
+                    undefined,
+                    Definition.genericStateObjects.panel.panels.buttons.indicator,
+                );
+            }
+        }
     }
 
     async getData(places: Types.ScreenSaverPlaces[]): Promise<pages.screensaverMessage | null> {
@@ -290,6 +300,16 @@ export class Screensaver extends Page {
         if (event.page && event.id && this.pageItems && this.pageItems[event.id as any]) {
             if (this.blockButtons) {
                 return;
+            }
+            const indicators = this.pageItems.filter(x => x && x.config && x.config.modeScr === 'indicator');
+            for (let a = 0; a < indicators.length; a++) {
+                if (indicators[a] === this.pageItems[event.id as any]) {
+                    await this.library.writedp(
+                        `panels.${this.panel.name}.buttons.indicator-${a + 1}`,
+                        true,
+                        Definition.genericStateObjects.panel.panels.buttons.indicator,
+                    );
+                }
             }
             await this.pageItems[event.id as any]!.onCommand(event.action, event.opt);
             this.blockButtons = this.adapter.setTimeout(() => {

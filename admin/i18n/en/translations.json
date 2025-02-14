@@ -46,5 +46,6 @@
     "valveposition": "Valveposition",
     "actualtemp": "Actual Temp",
     "Colour temperature": "Colour temperature",
-    "Color temperature": "Color temperature"
+    "Color temperature": "Color temperature",
+    "StateObjects.buttons.indicator": "Indicator"
 }

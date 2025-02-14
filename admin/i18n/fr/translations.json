@@ -46,5 +46,6 @@
     "valveposition": "Position de la vanne",
     "actualtemp": "Température réelle",
     "Colour temperature": "Température de couleur",
-    "Color temperature": "Température de couleur"
+    "Color temperature": "Température de couleur",
+    "StateObjects.buttons.indicator": "Indicateur"
 }

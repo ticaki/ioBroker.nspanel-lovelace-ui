@@ -52,6 +52,7 @@ export const genericStateObjects: {
             buttons: customChannelType & {
                 left: ioBroker.StateObject;
                 right: ioBroker.StateObject;
+                indicator: ioBroker.StateObject;
             };
             info: customChannelType & {
                 status: ioBroker.StateObject;
@@ -121,6 +122,18 @@ export const genericStateObjects: {
                     type: 'state',
                     common: {
                         name: 'StateObjects.buttons.right',
+                        type: 'boolean',
+                        role: 'button.press',
+                        read: true,
+                        write: false,
+                    },
+                    native: {},
+                },
+                indicator: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.buttons.indicator',
                         type: 'boolean',
                         role: 'button.press',
                         read: true,

@@ -99,6 +99,18 @@ const genericStateObjects = {
             write: false
           },
           native: {}
+        },
+        indicator: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.buttons.indicator",
+            type: "boolean",
+            role: "button.press",
+            read: true,
+            write: false
+          },
+          native: {}
         }
       },
       cmd: {

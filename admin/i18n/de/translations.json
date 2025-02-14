@@ -46,5 +46,6 @@
     "valveposition": "Ventilposition",
     "actualtemp": "Aktuelle Temp",
     "Colour temperature": "Farbtemperatur",
-    "Color temperature": "Farbtemperatur"
+    "Color temperature": "Farbtemperatur",
+    "StateObjects.buttons.indicator": "Indikator"
 }
