@@ -81,20 +81,34 @@ class NspanelLovelaceUi extends utils.Adapter {
       const obj = await this.getForeignObjectAsync(this.namespace);
       if (obj && obj.native && obj.native.scriptConfig) {
         const scriptConfig = obj.native.scriptConfig;
-        if (scriptConfig[0] && scriptConfig[0].pages && this.config.Testconfig2[0].pages) {
-          this.config.Testconfig2[0].pages = this.config.Testconfig2[0].pages.filter(
-            (a) => {
-              if (scriptConfig[0].pages.find((b) => b.uniqueID === a.uniqueID)) {
+        for (let b = 0; b < scriptConfig.length; b++) {
+          const a = scriptConfig[b];
+          if (!a || !a.pages) {
+            continue;
+          }
+          if (!this.config.Testconfig2[b]) {
+            this.config.Testconfig2[b] = {};
+          }
+          if (!this.config.Testconfig2[b].pages) {
+            this.config.Testconfig2[b].pages = [];
+          }
+          this.config.Testconfig2[b].pages = this.config.Testconfig2[b].pages.filter(
+            (a2) => {
+              if (scriptConfig[b].pages.find((b2) => b2.uniqueID === a2.uniqueID)) {
                 return false;
               }
               return true;
             }
           );
-          this.config.Testconfig2[0].pages = [...this.config.Testconfig2[0].pages, ...scriptConfig[0].pages];
+          a.pages = [...this.config.Testconfig2[b].pages, ...a.pages];
+          this.config.Testconfig2[b] = {
+            ...this.config.Testconfig2[b] || {},
+            ...a
+          };
         }
+        this.config.Testconfig2[0].pages[0] = this.config.Testconfig2[0].pages[0];
+        this.config.Testconfig2[0].timeout = this.config.timeout;
       }
-      this.config.Testconfig2[0].pages[0] = this.config.Testconfig2[0].pages[0];
-      this.config.Testconfig2[0].timeout = this.config.timeout;
     } catch {
       this.log.warn("Invalid configuration stopped!");
       return;

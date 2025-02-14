@@ -429,8 +429,7 @@ declare namespace ScriptConfig {
     export type Config = {
         panelName?: string;
         model?: string;
-        panelRecvTopic?: string;
-        panelSendTopic: string;
+        panelTopic?: string;
         weatherEntity: string;
         leftScreensaverEntity: leftScreensaverEntityType;
         bottomScreensaverEntity: ScreenSaverElement[];

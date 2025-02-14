@@ -26,8 +26,7 @@ export function isConfig(F: any): F is ScriptConfig.Config {
         return false;
     }
     const requiredFields = [
-        'panelRecvTopic',
-        'panelSendTopic',
+        'panelTopic',
         'weatherEntity',
         'defaultColor',
         'defaultOnColor',
@@ -48,8 +47,7 @@ export function isConfig(F: any): F is ScriptConfig.Config {
     return true;
 }
 export const defaultConfig: ScriptConfig.Config = {
-    panelRecvTopic: '',
-    panelSendTopic: '',
+    panelTopic: '',
     weatherEntity: '',
     bottomScreensaverEntity: [],
     defaultColor: {

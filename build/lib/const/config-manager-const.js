@@ -42,8 +42,7 @@ function isConfig(F) {
     return false;
   }
   const requiredFields = [
-    "panelRecvTopic",
-    "panelSendTopic",
+    "panelTopic",
     "weatherEntity",
     "defaultColor",
     "defaultOnColor",
@@ -63,8 +62,7 @@ function isConfig(F) {
   return true;
 }
 const defaultConfig = {
-  panelRecvTopic: "",
-  panelSendTopic: "",
+  panelTopic: "",
   weatherEntity: "",
   bottomScreensaverEntity: [],
   defaultColor: {

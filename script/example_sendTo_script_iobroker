@@ -89,6 +89,7 @@ const swWindy = {red: 150, green: 150, blue: 150};
 const config: ScriptConfig.Config = {
     panelRecvTopic: 'nspanel/ns_panel2',
     panelSendTopic: 'nspanel/ns_panel2',
+    panelTopic: 'nspanel/ns_panel2',
     weatherEntity: 'weatherEntityPath',
     defaultOffColor: Off,
     defaultOnColor: On,
@@ -713,8 +714,10 @@ declare namespace ScriptConfig {
 
     export type Config = {
         panelName?: string;
-        panelRecvTopic?: string;
-        panelSendTopic: string;
+        /**
+         * The topic to receive and send messages to the panel.
+         */
+        panelTopic: string;
         weatherEntity: string;
         leftScreensaverEntity: leftScreensaverEntityType;
         bottomScreensaverEntity: ScreenSaverElement[];

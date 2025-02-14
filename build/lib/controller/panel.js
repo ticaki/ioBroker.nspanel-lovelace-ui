@@ -178,7 +178,7 @@ class Panel extends import_library.BaseClass {
     this.statesControler = options.controller.statesControler;
     this.dimMode = { low: (_b = options.dimLow) != null ? _b : 70, high: (_c = options.dimHigh) != null ? _c : 90 };
     options.pages = options.pages.concat(import_system_templates.systemPages);
-    options.navigation = options.navigation.concat(import_system_templates.systemNavigation);
+    options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
       let pageConfig = options.pages[a] ? import_Page.Page.getPage(options.pages[a], this) : options.pages[a];

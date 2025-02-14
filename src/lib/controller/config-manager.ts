@@ -24,15 +24,19 @@ export class ConfigManager extends BaseClass {
             return;
         }
         const panelConfig: Partial<panelConfigPartial> = { pages: [] };
-        if (config.panelSendTopic.endsWith('.cmnd.CustomSend')) {
-            panelConfig.topic = config.panelSendTopic.split('.').slice(0, -2).join('.');
+        if (!config.panelTopic) {
+            this.log.error(`Required field panelTopic is missing in ${config.panelName || 'unknown'}!`);
+            return;
+        }
+        if (config.panelTopic.endsWith('.cmnd.CustomSend')) {
+            panelConfig.topic = config.panelTopic.split('.').slice(0, -2).join('.');
         } else {
-            panelConfig.topic = config.panelSendTopic;
+            panelConfig.topic = config.panelTopic;
         }
         if (config.panelName) {
             panelConfig.name = config.panelName;
         } else {
-            panelConfig.name = `NSPanel-${config.panelRecvTopic}`;
+            panelConfig.name = `NSPanel-${config.panelTopic}`;
         }
         if (config.defaultColor) {
             this.colorDefault = Color.convertScriptRGBtoRGB(config.defaultColor);
@@ -581,6 +585,12 @@ export class ConfigManager extends BaseClass {
 
         if (entity.ScreensaverEntityDecimalPlaces) {
             result.data!.entity2!.decimal = { type: 'const', constVal: entity.ScreensaverEntityDecimalPlaces };
+        }
+        if (entity.ScreensaverEntityDateFormat) {
+            result.data!.entity2!.dateFormat = {
+                type: 'const',
+                constVal: { local: 'de', format: entity.ScreensaverEntityDateFormat },
+            };
         }
 
         let color: Types.DataItemsOptions | undefined = undefined;

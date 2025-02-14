@@ -176,7 +176,7 @@ export class Panel extends BaseClass {
         this.dimMode = { low: options.dimLow ?? 70, high: options.dimHigh ?? 90 };
 
         options.pages = options.pages.concat(systemPages);
-        options.navigation = options.navigation.concat(systemNavigation);
+        options.navigation = (options.navigation || []).concat(systemNavigation);
 
         let scsFound = 0;
         for (let a = 0; a < options.pages.length; a++) {
