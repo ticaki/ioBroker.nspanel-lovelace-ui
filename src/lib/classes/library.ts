@@ -244,11 +244,11 @@ export class Library extends BaseClass {
      */
     getChannelObject(
         definition: (ioBroker.Object & { _channel?: ioBroker.Object }) | null = null,
-    ): ioBroker.ChannelObject | ioBroker.DeviceObject {
+    ): ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.FolderObject {
         const def = (definition && definition._channel) || null;
-        const result: ioBroker.ChannelObject | ioBroker.DeviceObject = {
+        const result: ioBroker.ChannelObject | ioBroker.DeviceObject | ioBroker.FolderObject = {
             _id: def ? def._id : '',
-            type: def && def.type != 'device' ? 'channel' : 'device',
+            type: def ? (def.type == 'channel' ? 'channel' : def.type === 'device' ? 'device' : 'folder') : 'folder',
             common: {
                 name: (def && def.common && def.common.name) || 'no definition',
             },
@@ -311,6 +311,7 @@ export class Library extends BaseClass {
                     }
                 }
                 await this.adapter.extendObjectAsync(dp, obj);
+                node.init = false;
             }
         }
 
@@ -319,7 +320,7 @@ export class Library extends BaseClass {
         }
 
         if (node && !(node.type === 'state' && val === undefined)) {
-            this.setdb(dp, node.type, val, node.stateTyp, false);
+            this.setdb(dp, node.type, val, node.stateTyp, false, undefined, undefined, node.init);
         }
 
         if (

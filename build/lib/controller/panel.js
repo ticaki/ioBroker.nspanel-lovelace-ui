@@ -86,12 +86,12 @@ class Panel extends import_library.BaseClass {
   detach = { left: false, right: false };
   persistentPageItems = {};
   info = {
+    isOnline: false,
     nspanel: {
       displayVersion: 0,
       model: "",
       bigIconLeft: false,
       bigIconRight: false,
-      isOnline: false,
       currentPage: ""
     },
     tasmota: {
@@ -478,12 +478,12 @@ class Panel extends import_library.BaseClass {
     return this._isOnline;
   }
   set isOnline(s) {
-    this.info.nspanel.isOnline = s;
+    this.info.isOnline = s;
     if (s !== this._isOnline) {
       void this.library.writedp(
-        `panels.${this.name}.info.nspanel.isOnline`,
+        `panels.${this.name}.info.isOnline`,
         s,
-        import_definition.genericStateObjects.panel.panels.info.nspanel.isOnline
+        import_definition.genericStateObjects.panel.panels.info.isOnline
       );
       if (s) {
         this.log.info("is online!");
@@ -691,9 +691,9 @@ class Panel extends import_library.BaseClass {
   async delete() {
     await super.delete();
     await this.library.writedp(
-      `panels.${this.name}.info.nspanel.isOnline`,
+      `panels.${this.name}.info.isOnline`,
       false,
-      import_definition.genericStateObjects.panel.panels.info.nspanel.isOnline
+      import_definition.genericStateObjects.panel.panels.info.isOnline
     );
     for (const a of this.pages) {
       if (a) {

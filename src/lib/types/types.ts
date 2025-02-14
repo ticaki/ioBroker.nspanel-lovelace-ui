@@ -594,12 +594,13 @@ export type STATUS0 = {
 };
 
 export type PanelInfo = {
+    isOnline: boolean;
     nspanel: {
         displayVersion: number;
         model: string;
         bigIconLeft: boolean;
         bigIconRight: boolean;
-        isOnline: boolean;
+
         currentPage: string;
     };
     tasmota: {

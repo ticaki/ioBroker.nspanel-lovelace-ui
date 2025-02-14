@@ -63,7 +63,10 @@ const genericStateObjects = {
         _id: "",
         type: "device",
         common: {
-          name: "StateObjects.panels"
+          name: "StateObjects.panels",
+          statusStates: {
+            onlineId: "info.isOnline"
+          }
         },
         native: {}
       },
@@ -273,7 +276,7 @@ const genericStateObjects = {
         nspanel: {
           _channel: {
             _id: "",
-            type: "channel",
+            type: "folder",
             common: {
               name: "StateObjects.nspanel"
             },
@@ -338,24 +341,24 @@ const genericStateObjects = {
               write: false
             },
             native: {}
-          },
-          isOnline: {
-            _id: "",
-            type: "state",
-            common: {
-              name: "StateObjects.isOnline",
-              type: "boolean",
-              role: "indicator.reachable",
-              read: true,
-              write: false
-            },
-            native: {}
           }
+        },
+        isOnline: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.isOnline",
+            type: "boolean",
+            role: "indicator.reachable",
+            read: true,
+            write: false
+          },
+          native: {}
         },
         tasmota: {
           _channel: {
             _id: "",
-            type: "channel",
+            type: "folder",
             common: {
               name: "Tasmota"
             },
@@ -400,7 +403,7 @@ const genericStateObjects = {
           sts: {
             _channel: {
               _id: "",
-              type: "channel",
+              type: "folder",
               common: {
                 name: "sts"
               },
@@ -505,7 +508,7 @@ const genericStateObjects = {
             Berry: {
               _channel: {
                 _id: "",
-                type: "channel",
+                type: "folder",
                 common: {
                   name: "Berry"
                 },
@@ -563,7 +566,7 @@ const genericStateObjects = {
             Wifi: {
               _channel: {
                 _id: "",
-                type: "channel",
+                type: "folder",
                 common: {
                   name: "Wifi"
                 },
@@ -682,7 +685,7 @@ const genericStateObjects = {
           net: {
             _channel: {
               _id: "",
-              type: "channel",
+              type: "folder",
               common: {
                 name: "net"
               },
@@ -799,7 +802,7 @@ const genericStateObjects = {
             Ethernet: {
               _channel: {
                 _id: "",
-                type: "channel",
+                type: "folder",
                 common: {
                   name: "Ethernet"
                 },

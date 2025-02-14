@@ -253,7 +253,7 @@ class Library extends BaseClass {
     const def = definition && definition._channel || null;
     const result = {
       _id: def ? def._id : "",
-      type: def && def.type != "device" ? "channel" : "device",
+      type: def ? def.type == "channel" ? "channel" : def.type === "device" ? "device" : "folder" : "folder",
       common: {
         name: def && def.common && def.common.name || "no definition"
       },
@@ -308,13 +308,14 @@ class Library extends BaseClass {
           }
         }
         await this.adapter.extendObjectAsync(dp, obj);
+        node.init = false;
       }
     }
     if (obj && obj.type !== "state") {
       return;
     }
     if (node && !(node.type === "state" && val === void 0)) {
-      this.setdb(dp, node.type, val, node.stateTyp, false);
+      this.setdb(dp, node.type, val, node.stateTyp, false, void 0, void 0, node.init);
     }
     if (node && val !== void 0 && (this.defaults.updateStateOnChangeOnly || node.val != val || forceWrite || !node.ack)) {
       const typ = obj && obj.common && obj.common.type || node.stateTyp;

@@ -146,8 +146,8 @@ class NspanelLovelaceUi extends utils.Adapter {
       const states = await this.getStatesAsync("*");
       await this.library.initStates(states);
       for (const id in states) {
-        if (id.endsWith(".info.nspanel.isOnline")) {
-          await this.library.writedp(id, false, import_definition.genericStateObjects.panel.panels.info.nspanel.isOnline);
+        if (id.endsWith(".info.isOnline")) {
+          await this.library.writedp(id, false, import_definition.genericStateObjects.panel.panels.info.isOnline);
         }
       }
       this.log.debug("Check configuration!");

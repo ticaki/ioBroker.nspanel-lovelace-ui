@@ -158,8 +158,8 @@ class NspanelLovelaceUi extends utils.Adapter {
 
             // set all .info.nspanel.isOnline to false
             for (const id in states) {
-                if (id.endsWith('.info.nspanel.isOnline')) {
-                    await this.library.writedp(id, false, genericStateObjects.panel.panels.info.nspanel.isOnline);
+                if (id.endsWith('.info.isOnline')) {
+                    await this.library.writedp(id, false, genericStateObjects.panel.panels.info.isOnline);
                 }
             }
             this.log.debug('Check configuration!');

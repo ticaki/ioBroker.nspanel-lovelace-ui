@@ -93,6 +93,9 @@ export const genericStateObjects: {
                 type: 'device',
                 common: {
                     name: 'StateObjects.panels',
+                    statusStates: {
+                        onlineId: 'info.isOnline',
+                    },
                 },
                 native: {},
             },
@@ -302,7 +305,7 @@ export const genericStateObjects: {
                 nspanel: {
                     _channel: {
                         _id: '',
-                        type: 'channel',
+                        type: 'folder',
                         common: {
                             name: 'StateObjects.nspanel',
                         },
@@ -368,23 +371,23 @@ export const genericStateObjects: {
                         },
                         native: {},
                     },
-                    isOnline: {
-                        _id: '',
-                        type: 'state',
-                        common: {
-                            name: 'StateObjects.isOnline',
-                            type: 'boolean',
-                            role: 'indicator.reachable',
-                            read: true,
-                            write: false,
-                        },
-                        native: {},
+                },
+                isOnline: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.isOnline',
+                        type: 'boolean',
+                        role: 'indicator.reachable',
+                        read: true,
+                        write: false,
                     },
+                    native: {},
                 },
                 tasmota: {
                     _channel: {
                         _id: '',
-                        type: 'channel',
+                        type: 'folder',
                         common: {
                             name: 'Tasmota',
                         },
@@ -429,7 +432,7 @@ export const genericStateObjects: {
                     sts: {
                         _channel: {
                             _id: '',
-                            type: 'channel',
+                            type: 'folder',
                             common: {
                                 name: 'sts',
                             },
@@ -534,7 +537,7 @@ export const genericStateObjects: {
                         Berry: {
                             _channel: {
                                 _id: '',
-                                type: 'channel',
+                                type: 'folder',
                                 common: {
                                     name: 'Berry',
                                 },
@@ -592,7 +595,7 @@ export const genericStateObjects: {
                         Wifi: {
                             _channel: {
                                 _id: '',
-                                type: 'channel',
+                                type: 'folder',
                                 common: {
                                     name: 'Wifi',
                                 },
@@ -711,7 +714,7 @@ export const genericStateObjects: {
                     net: {
                         _channel: {
                             _id: '',
-                            type: 'channel',
+                            type: 'folder',
                             common: {
                                 name: 'net',
                             },
@@ -828,7 +831,7 @@ export const genericStateObjects: {
                         Ethernet: {
                             _channel: {
                                 _id: '',
-                                type: 'channel',
+                                type: 'folder',
                                 common: {
                                     name: 'Ethernet',
                                 },

@@ -81,12 +81,13 @@ export class Panel extends BaseClass {
     public persistentPageItems: Record<string, PageItem> = {};
 
     info: Types.PanelInfo = {
+        isOnline: false,
         nspanel: {
             displayVersion: 0,
             model: '',
             bigIconLeft: false,
             bigIconRight: false,
-            isOnline: false,
+
             currentPage: '',
         },
         tasmota: {
@@ -506,12 +507,12 @@ export class Panel extends BaseClass {
         return this._isOnline;
     }
     set isOnline(s: boolean) {
-        this.info.nspanel.isOnline = s;
+        this.info.isOnline = s;
         if (s !== this._isOnline) {
             void this.library.writedp(
-                `panels.${this.name}.info.nspanel.isOnline`,
+                `panels.${this.name}.info.isOnline`,
                 s,
-                genericStateObjects.panel.panels.info.nspanel.isOnline,
+                genericStateObjects.panel.panels.info.isOnline,
             );
             if (s) {
                 this.log.info('is online!');
@@ -746,9 +747,9 @@ export class Panel extends BaseClass {
     async delete(): Promise<void> {
         await super.delete();
         await this.library.writedp(
-            `panels.${this.name}.info.nspanel.isOnline`,
+            `panels.${this.name}.info.isOnline`,
             false,
-            genericStateObjects.panel.panels.info.nspanel.isOnline,
+            genericStateObjects.panel.panels.info.isOnline,
         );
         for (const a of this.pages) {
             if (a) {
