@@ -2,6 +2,33 @@
     "i18n": true,
     "type": "tabs",
     "items": {
+        "overview": {
+            "type": "panel",
+            "label": "overview",
+            "items": {
+                "panels": {
+                    "type": "table",
+                    "label": "panels",
+                    "items": [
+                        {
+                            "type": "text",
+                            "attr": "name",
+                            "label": "name",
+                            "width": "50%",
+                            "readOnly": true
+                        },
+                        {
+                            "type": "text",
+                            "attr": "topic",
+                            "label": "topic",
+                            "width": "50%",
+                            "readOnly": true
+                        }
+                    ]
+                }
+            }
+
+        },
         "general": {
             "type": "panel",
             "label": "general",

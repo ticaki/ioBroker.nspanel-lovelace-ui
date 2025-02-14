@@ -33,6 +33,7 @@ declare global {
             pageQRpwd: string;
             pageQRwlanhidden: boolean;
             pageQRurl: string;
+            panels: {name: string, topic: string }[]
         }
     }
 }

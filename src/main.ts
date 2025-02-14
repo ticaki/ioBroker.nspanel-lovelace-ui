@@ -80,6 +80,30 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const scriptConfig = obj.native.scriptConfig as Partial<panelConfigPartial>[];
                 // übergangsweise adden wir hier die seiten die wir haben ins erste panel
                 //this.config.Testconfig2 = { ...this.config.Testconfig2, ...obj.native.scriptConfig };
+                let changed = false;
+                for (let b = scriptConfig.length - 1; b >= 0; b--) {
+                    const index = this.config.panels.findIndex(a => a.name === scriptConfig[b].name);
+                    if (index !== -1) {
+                        continue;
+                    }
+                    changed = true;
+                    if (!scriptConfig[b].updated) {
+                        scriptConfig.splice(b, 1);
+                        continue;
+                    }
+                    scriptConfig[b].updated = false;
+                    if (scriptConfig[b].name !== undefined && scriptConfig[b].topic !== undefined) {
+                        this.config.panels.push({ name: scriptConfig[b].name!, topic: scriptConfig[b].topic! });
+                    }
+                }
+                if (changed) {
+                    await this.setForeignObjectAsync(this.namespace, obj);
+                    const o = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
+                    if (o) {
+                        o.native.panels = this.config.panels;
+                        await this.setForeignObjectAsync(`system.adapter.${this.namespace}`, o);
+                    }
+                }
                 for (let b = 0; b < scriptConfig.length; b++) {
                     const a = scriptConfig[b];
                     if (!a || !a.pages) {

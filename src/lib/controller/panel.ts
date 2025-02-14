@@ -32,6 +32,7 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     pages: PageConfigAll[];
     navigation: NavigationConfig['navigationConfig'];
     config: ScreensaverConfigType;
+    updated: boolean;
 }
 
 const DefaultOptions = {

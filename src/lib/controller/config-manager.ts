@@ -463,6 +463,7 @@ export class ConfigManager extends BaseClass {
             ],
         };
         panelConfig.pages!.push(convertedConfig);
+        panelConfig.updated = true;
         this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
         const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
         if (obj) {
