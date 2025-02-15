@@ -125,6 +125,35 @@ class ConfigManager extends import_library.BaseClass {
               if (obj) {
                 if (obj.common && obj.common.role) {
                   const role = obj.common.role;
+                  if (!import_config_manager_const.requiredDatapoints[role]) {
+                    this.log.warn(`Role ${role} not implemented yet!`);
+                    continue;
+                  }
+                  let ok = true;
+                  for (const dp in import_config_manager_const.requiredDatapoints[role]) {
+                    const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : void 0;
+                    if (!o && !import_config_manager_const.requiredOutdatedDataPoints[role][dp].required && !import_config_manager_const.requiredDatapoints[role][dp].required) {
+                      continue;
+                    }
+                    if (!o || o.common.role !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].role || o.common.type !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].type) {
+                      if (!o || o.common.role !== import_config_manager_const.requiredDatapoints[role][dp].role || o.common.type !== import_config_manager_const.requiredDatapoints[role][dp].type) {
+                        ok = false;
+                        if (!o) {
+                          this.log.error(
+                            `Datapoint ${item.id}.${dp} is missing and required!`
+                          );
+                        } else {
+                          this.log.error(
+                            `Datapoint ${item.id}.${dp} has wrong role: ${o.common.role !== import_config_manager_const.requiredDatapoints[role][dp].role ? `${o.common.role} should be ${import_config_manager_const.requiredDatapoints[role][dp].role}` : `ok`} - type: ${o.common.type !== import_config_manager_const.requiredDatapoints[role][dp].type ? `${o.common.role} should be ${import_config_manager_const.requiredDatapoints[role][dp].type}` : `ok`}`
+                          );
+                        }
+                        break;
+                      }
+                    }
+                  }
+                  if (!ok) {
+                    continue;
+                  }
                   switch (role) {
                     case "timeTable": {
                       itemConfig = {
@@ -133,6 +162,7 @@ class ConfigManager extends import_library.BaseClass {
                       };
                       break;
                     }
+                    case "socket":
                     case "light": {
                       const tempItem = {
                         type: "light",
@@ -141,7 +171,7 @@ class ConfigManager extends import_library.BaseClass {
                             true: {
                               value: {
                                 type: "const",
-                                constVal: item.icon || "lightbulb"
+                                constVal: item.icon || role === "socket" ? "power-socket-de" : "lightbulb"
                               },
                               color: {
                                 type: "const",
@@ -151,7 +181,7 @@ class ConfigManager extends import_library.BaseClass {
                             false: {
                               value: {
                                 type: "const",
-                                constVal: item.icon2 || "lightbulb-outline"
+                                constVal: item.icon2 || role === "socket" ? "power-socket-de" : "lightbulb-outline"
                               },
                               color: {
                                 type: "const",
@@ -174,7 +204,6 @@ class ConfigManager extends import_library.BaseClass {
                       itemConfig = tempItem;
                       break;
                     }
-                    case "socket":
                     case "dimmer":
                     case "hue":
                     case "rgb":
@@ -208,7 +237,7 @@ class ConfigManager extends import_library.BaseClass {
                     case "switch.mode.wlan":
                     case "media":
                     case "airCondition": {
-                      this.log.warn(`Role ${role} not implemented yet!`);
+                      this.log.error(`Role ${role} not implemented yet!`);
                       break;
                     }
                     default:
