@@ -84,25 +84,29 @@ class NspanelLovelaceUi extends utils.Adapter {
                 for (let b = scriptConfig.length - 1; b >= 0; b--) {
                     const index = this.config.panels.findIndex(a => a.name === scriptConfig[b].name);
                     if (index !== -1) {
+                        if (this.config.panels[index].removeIt) {
+                            scriptConfig.splice(b, 1);
+                            changed = true;
+                        }
                         continue;
                     }
-                    changed = true;
-                    if (!scriptConfig[b].updated) {
-                        scriptConfig.splice(b, 1);
-                        continue;
-                    }
-                    scriptConfig[b].updated = false;
                     if (scriptConfig[b].name !== undefined && scriptConfig[b].topic !== undefined) {
-                        this.config.panels.push({ name: scriptConfig[b].name!, topic: scriptConfig[b].topic! });
+                        this.config.panels.push({
+                            name: scriptConfig[b].name!,
+                            topic: scriptConfig[b].topic!,
+                            id: '',
+                            removeIt: false,
+                        });
                     }
                 }
+                for (const a of this.config.panels) {
+                    if (a.removeIt) {
+                        await this.delObjectAsync(`panels.${a.id}`, { recursive: true });
+                    }
+                }
+
                 if (changed) {
                     await this.setForeignObjectAsync(this.namespace, obj);
-                    const o = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
-                    if (o) {
-                        o.native.panels = this.config.panels;
-                        await this.setForeignObjectAsync(`system.adapter.${this.namespace}`, o);
-                    }
                 }
                 for (let b = 0; b < scriptConfig.length; b++) {
                     const a = scriptConfig[b];
@@ -133,8 +137,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.config.Testconfig2[0].pages![0] = this.config.Testconfig2[0].pages![0];
                 this.config.Testconfig2[0].timeout = this.config.timeout;
             }
-        } catch {
-            this.log.warn('Invalid configuration stopped!');
+        } catch (e: any) {
+            this.log.warn(`Invalid configuration stopped! ${e}`);
             return;
         }
 
@@ -300,6 +304,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                         obj1.native.Testconfig2 = obj.message;
                         await this.setForeignObjectAsync(`system.adapter.${this.namespace}`, obj1);
                     }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
                     break;
                 }
                 case 'updateCustom': {
@@ -309,6 +316,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                             this.log.debug(`updateCustom ${JSON.stringify(state.common.custom[this.namespace])}`);
                         }
                     }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
                     break;
                 }
                 case 'ScriptConfig': {
@@ -316,6 +326,34 @@ class NspanelLovelaceUi extends utils.Adapter {
                         const manager = new ConfigManager(this);
                         await manager.setScriptConfig(obj.message);
                     }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
+                    break;
+                }
+                case 'RefreshDevices': {
+                    const view = await this.getObjectViewAsync('system', 'device', {
+                        startkey: `${this.namespace}.panels.`,
+                        endkey: `${this.namespace}.panels.\u9999`,
+                    });
+                    let devices: any = {};
+                    if (view && view.rows) {
+                        devices = { panels: [] };
+                        for (const panel of view.rows) {
+                            const result = { id: '', name: '', topic: '', removeIt: false };
+                            const p = await this.getForeignObjectAsync(panel.id);
+                            if (p && p.native && p.native.name) {
+                                result.id = p.native.name;
+                                result.name = p.native.configName;
+                                result.topic = p.native.topic;
+                                devices.panels.push(result);
+                            }
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { native: devices }, obj.callback);
+                    }
+                    this.log.debug(JSON.stringify(view));
                     break;
                 }
                 default: {

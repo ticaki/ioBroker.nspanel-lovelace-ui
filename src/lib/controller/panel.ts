@@ -150,10 +150,12 @@ export class Panel extends BaseClass {
         },
     };
     friendlyName: string = '';
+    configName: string = '';
 
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
         super(adapter, options.name);
         this.friendlyName = options.name;
+        this.configName = options.name;
         this.panelSend = new PanelSend(adapter, {
             name: `${options.name}-SendClass`,
             mqttClient: options.controller.mqttClient,
@@ -310,9 +312,16 @@ export class Panel extends BaseClass {
                 obj.noTrigger ? undefined : this.onInternalCommand,
             );
         }
+        const channelObj = this.library.cloneObject(genericStateObjects.panel.panels._channel);
 
-        genericStateObjects.panel.panels._channel.common.name = this.friendlyName;
-        await this.library.writedp(`panels.${this.name}`, undefined, genericStateObjects.panel.panels._channel);
+        channelObj.common.name = this.friendlyName;
+        channelObj.native = {
+            topic: this.topic,
+            tasmotaName: this.friendlyName,
+            name: this.name,
+            configName: this.configName,
+        };
+        await this.library.writedp(`panels.${this.name}`, undefined, channelObj);
         await this.library.writedp(`panels.${this.name}.cmd`, undefined, genericStateObjects.panel.panels.cmd._channel);
         await this.library.writedp(
             `panels.${this.name}.alarm`,

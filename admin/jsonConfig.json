@@ -6,23 +6,44 @@
             "type": "panel",
             "label": "overview",
             "items": {
+                "_RefreshDevices": {
+                    "type": "sendTo",
+                    "label": "Refresh Devices",
+                    "command": "RefreshDevices",
+                    "jsonData": "{}",
+                    "showProcess": true,
+                    "useNative": true
+                },
                 "panels": {
                     "type": "table",
                     "label": "panels",
+                    "noDelete": true,
                     "items": [
                         {
                             "type": "text",
+                            "attr": "id",
+                            "label": "Id",                       
+                            "readOnly": true
+                        },
+
+                        {
+                            "type": "text",
                             "attr": "name",
-                            "label": "name",
-                            "width": "50%",
+                            "label": "name",                   
                             "readOnly": true
                         },
                         {
                             "type": "text",
                             "attr": "topic",
                             "label": "topic",
-                            "width": "50%",
                             "readOnly": true
+                        },
+                        {
+                            "type": "checkbox",
+                            "attr": "removeIt",
+                            "label": "remove device",
+                            "width": "20%",
+                            "default": false
                         }
                     ]
                 }
