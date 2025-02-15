@@ -4,7 +4,7 @@ import type * as typePageItem from '../types/type-pageItem';
 import type * as Types from '../types/types';
 import { Color, type RGB } from '../const/Color';
 import type * as pages from '../types/pages';
-import { defaultConfig, isConfig } from '../const/config-manager-const';
+import { defaultConfig, isConfig, requiredDatapoints, requiredOutdatedDataPoints } from '../const/config-manager-const';
 import type { panelConfigPartial } from './panel';
 import { exhaustiveCheck } from '../types/pages';
 
@@ -67,7 +67,6 @@ export class ConfigManager extends BaseClass {
             await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
         }
     }
-
     async getGridConfig(config: ScriptConfig.Config, pages: pages.PageBaseConfig[]): Promise<pages.PageBaseConfig[]> {
         if (config.pages) {
             for (const page of config.pages.concat(config.subPages || [])) {
@@ -119,6 +118,55 @@ export class ConfigManager extends BaseClass {
                             if (obj) {
                                 if (obj.common && obj.common.role) {
                                     const role = obj.common.role as ScriptConfig.roles;
+
+                                    // check if role and types are correct
+                                    if (!requiredDatapoints[role]) {
+                                        this.log.warn(`Role ${role} not implemented yet!`);
+                                        continue;
+                                    }
+                                    let ok = true;
+                                    for (const dp in requiredDatapoints[role]) {
+                                        const o =
+                                            dp !== ''
+                                                ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`)
+                                                : undefined;
+                                        if (
+                                            !o &&
+                                            !requiredOutdatedDataPoints[role][dp].required &&
+                                            !requiredDatapoints[role][dp].required
+                                        ) {
+                                            continue;
+                                        }
+                                        if (
+                                            !o ||
+                                            o.common.role !== requiredOutdatedDataPoints[role][dp].role ||
+                                            o.common.type !== requiredOutdatedDataPoints[role][dp].type
+                                        ) {
+                                            if (
+                                                !o ||
+                                                o.common.role !== requiredDatapoints[role][dp].role ||
+                                                o.common.type !== requiredDatapoints[role][dp].type
+                                            ) {
+                                                ok = false;
+                                                if (!o) {
+                                                    this.log.error(
+                                                        `Datapoint ${item.id}.${dp} is missing and required!`,
+                                                    );
+                                                } else {
+                                                    this.log.error(
+                                                        `Datapoint ${item.id}.${dp} has wrong ` +
+                                                            `role: ${o.common.role !== requiredDatapoints[role][dp].role ? `${o.common.role} should be ${requiredDatapoints[role][dp].role}` : `ok`} ` +
+                                                            `- type: ${o.common.type !== requiredDatapoints[role][dp].type ? `${o.common.role} should be ${requiredDatapoints[role][dp].type}` : `ok`}`,
+                                                    );
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (!ok) {
+                                        continue;
+                                    }
+
                                     switch (role) {
                                         case 'timeTable': {
                                             itemConfig = {
@@ -127,6 +175,7 @@ export class ConfigManager extends BaseClass {
                                             };
                                             break;
                                         }
+                                        case 'socket':
                                         case 'light': {
                                             const tempItem: typePageItem.PageItemDataItemsOptions = {
                                                 type: 'light',
@@ -135,7 +184,10 @@ export class ConfigManager extends BaseClass {
                                                         true: {
                                                             value: {
                                                                 type: 'const',
-                                                                constVal: item.icon || 'lightbulb',
+                                                                constVal:
+                                                                    item.icon || role === 'socket'
+                                                                        ? 'power-socket-de'
+                                                                        : 'lightbulb',
                                                             },
                                                             color: {
                                                                 type: 'const',
@@ -145,7 +197,10 @@ export class ConfigManager extends BaseClass {
                                                         false: {
                                                             value: {
                                                                 type: 'const',
-                                                                constVal: item.icon2 || 'lightbulb-outline',
+                                                                constVal:
+                                                                    item.icon2 || role === 'socket'
+                                                                        ? 'power-socket-de'
+                                                                        : 'lightbulb-outline',
                                                             },
                                                             color: {
                                                                 type: 'const',
@@ -168,7 +223,7 @@ export class ConfigManager extends BaseClass {
                                             itemConfig = tempItem;
                                             break;
                                         }
-                                        case 'socket':
+
                                         case 'dimmer':
                                         case 'hue':
                                         case 'rgb':
@@ -202,7 +257,7 @@ export class ConfigManager extends BaseClass {
                                         case 'switch.mode.wlan':
                                         case 'media':
                                         case 'airCondition': {
-                                            this.log.warn(`Role ${role} not implemented yet!`);
+                                            this.log.error(`Role ${role} not implemented yet!`);
                                             break;
                                         }
                                         default:
