@@ -204,7 +204,51 @@ class ConfigManager extends import_library.BaseClass {
                       itemConfig = tempItem;
                       break;
                     }
-                    case "dimmer":
+                    case "dimmer": {
+                      const tempItem = {
+                        type: "light",
+                        data: {
+                          icon: {
+                            true: {
+                              value: {
+                                type: "const",
+                                constVal: item.icon || "lightbulb"
+                              },
+                              color: {
+                                type: "const",
+                                constVal: item.onColor || import_Color.Color.activated
+                              }
+                            },
+                            false: {
+                              value: {
+                                type: "const",
+                                constVal: item.icon2 || "lightbulb-outline"
+                              },
+                              color: {
+                                type: "const",
+                                constVal: item.offColor || import_Color.Color.deactivated
+                              }
+                            },
+                            scale: void 0,
+                            maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
+                            minBri: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
+                          },
+                          dimmer: {
+                            value: { type: "triggered", dp: `${item.id}.SET` },
+                            maxScale: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
+                            minScale: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
+                          },
+                          headline: await this.getFieldAsDataItemConfig(
+                            page.heading || "Dimmer"
+                          ),
+                          entity1: {
+                            value: { type: "triggered", dp: `${item.id}.ON_SET` }
+                          }
+                        }
+                      };
+                      itemConfig = tempItem;
+                      break;
+                    }
                     case "hue":
                     case "rgb":
                     case "rgbSingle":

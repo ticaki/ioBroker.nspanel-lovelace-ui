@@ -224,7 +224,59 @@ export class ConfigManager extends BaseClass {
                                             break;
                                         }
 
-                                        case 'dimmer':
+                                        case 'dimmer': {
+                                            const tempItem: typePageItem.PageItemDataItemsOptions = {
+                                                type: 'light',
+                                                data: {
+                                                    icon: {
+                                                        true: {
+                                                            value: {
+                                                                type: 'const',
+                                                                constVal: item.icon || 'lightbulb',
+                                                            },
+                                                            color: {
+                                                                type: 'const',
+                                                                constVal: item.onColor || Color.activated,
+                                                            },
+                                                        },
+                                                        false: {
+                                                            value: {
+                                                                type: 'const',
+                                                                constVal: item.icon2 || 'lightbulb-outline',
+                                                            },
+                                                            color: {
+                                                                type: 'const',
+                                                                constVal: item.offColor || Color.deactivated,
+                                                            },
+                                                        },
+                                                        scale: undefined,
+                                                        maxBri: item.maxValueBrightness
+                                                            ? { type: 'const', constVal: item.maxValueBrightness }
+                                                            : undefined,
+                                                        minBri: item.minValueBrightness
+                                                            ? { type: 'const', constVal: item.minValueBrightness }
+                                                            : undefined,
+                                                    },
+                                                    dimmer: {
+                                                        value: { type: 'triggered', dp: `${item.id}.SET` },
+                                                        maxScale: item.maxValueBrightness
+                                                            ? { type: 'const', constVal: item.maxValueBrightness }
+                                                            : undefined,
+                                                        minScale: item.minValueBrightness
+                                                            ? { type: 'const', constVal: item.minValueBrightness }
+                                                            : undefined,
+                                                    },
+                                                    headline: await this.getFieldAsDataItemConfig(
+                                                        page.heading || 'Dimmer',
+                                                    ),
+                                                    entity1: {
+                                                        value: { type: 'triggered', dp: `${item.id}.ON_SET` },
+                                                    },
+                                                },
+                                            };
+                                            itemConfig = tempItem;
+                                            break;
+                                        }
                                         case 'hue':
                                         case 'rgb':
                                         case 'rgbSingle':
