@@ -5231,7 +5231,7 @@ const Testconfig = [
         page: "abfall1",
         left: { single: "alarm1" },
         // Die 4 bezieht sich auf den name: 4
-        right: { single: "unlock1", double: "main" }
+        right: { single: "fahrplanrouten", double: "main" }
       },
       {
         name: "unlock1",
@@ -5244,7 +5244,7 @@ const Testconfig = [
         name: "fahrplanrouten",
         //main ist die erste Seite
         page: "fahrplanrouten",
-        left: { double: "unlock1" },
+        left: { double: "abfall1" },
         // Die 4 bezieht sich auf den name: 4
         right: { double: "entities2" }
       },

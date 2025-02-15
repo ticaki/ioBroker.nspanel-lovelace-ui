@@ -211,6 +211,7 @@ class Panel extends import_library.BaseClass {
           this.pages[a] = new import_pageEntities.PageEntities(pmconfig, pageConfig);
           break;
         }
+        case "cardGrid3":
         case "cardGrid2":
         case "cardGrid": {
           pageConfig = import_Page.Page.getPage(pageConfig, this);
@@ -249,7 +250,8 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "screensaver":
-        case "screensaver2": {
+        case "screensaver2":
+        case "screensaver3": {
           scsFound++;
           const ssconfig = {
             card: pageConfig.config.card,
@@ -263,6 +265,9 @@ class Panel extends import_library.BaseClass {
           this.screenSaver = new import_screensaver.Screensaver(ssconfig, pageConfig);
           this.pages[a] = this.screenSaver;
           break;
+        }
+        default: {
+          this.log.error(`Page config is missing card property for page ${pageConfig.uniqueID}`);
         }
       }
     }

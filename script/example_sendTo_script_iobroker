@@ -86,8 +86,27 @@ const swSunny = {red: 255, green: 255, blue: 0};
 const swWindy = {red: 150, green: 150, blue: 150};
 
 
+const fahrplan: any = {
+    heading: 'Fahrplan Script',
+    native: {
+        card: 'cardEntities',
+        dpInit: 'fahrplan.0.0',
+        uniqueID: 'fahrplanrouten',
+        template: 'entities.fahrplan.routes',
+    }
+};
+const grid1: ScriptConfig.PageBaseType = {
+    uniqueName:'grid1', // keine Navigation, am besten uniqueName von config.ts übernehmen
+    heading: 'Grid 1',
+    items: [
+        {id: 'alias.0.Licht.lights.Gerät_1'}, {id: 'alias.0.Licht.lights.Gerät_2'}
+    ],
+    type: 'cardGrid',
+    useColor: true
+}
+
 const config: ScriptConfig.Config = {
-    panelTopic: 'nspanel/ns_panel2',
+    panelTopic: 'nspanel/ns_panel4',
     weatherEntity: 'accuweather.0.',
     defaultOffColor: Off,
     defaultOnColor: On,
@@ -100,7 +119,8 @@ const config: ScriptConfig.Config = {
     // Seiteneinteilung / Page division
     // Hauptseiten / Mainpages
     pages: [
-     
+        fahrplan,
+        grid1,
         //Unlock_Service            //Auto-Alias Service Page (Service Pages used with cardUnlock)
     ],
     // Unterseiten / Subpages
@@ -529,7 +549,8 @@ declare namespace ScriptConfig {
         | PageUnlock
         | PageQR
         | PageAlarm
-        | PagePower;
+        | PagePower
+        | { type: undefined; heading?: string; native: any };
 
     export type PageEntities = {
         type: 'cardEntities';
@@ -730,6 +751,10 @@ declare namespace ScriptConfig {
         subPages: PageType[];
         button1: ConfigButtonFunction;
         button2: ConfigButtonFunction;
+        /**
+         * Native page items for the panel
+         */
+        nativePageItems?: any;
     };
     export type leftScreensaverEntityType =
         | [ScreenSaverElementWithUndefined?, ScreenSaverElementWithUndefined?, ScreenSaverElementWithUndefined?]

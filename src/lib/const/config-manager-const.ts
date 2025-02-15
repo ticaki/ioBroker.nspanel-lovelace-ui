@@ -129,3 +129,109 @@ export const defaultConfig: ScriptConfig.Config = {
         },
     },
 };
+
+export const requiredDatapoints: {
+    [key: string]: {
+        [key: string]: {
+            role: ScriptConfig.roles | ConfigManager.ioBrokerRoles;
+            required: boolean;
+            type: ioBroker.StateCommon['type'];
+        };
+    };
+} = {
+    motion: {
+        ACTUAL: {
+            role: 'sensor.motion',
+            type: 'boolean',
+            required: true,
+        },
+    },
+    cie: {
+        CIE: {
+            role: 'level.color.cie',
+            type: 'number',
+            required: true,
+        },
+        DIMMER: {
+            role: 'level.dimmer',
+            type: 'boolean',
+            required: true,
+        },
+        ON: {
+            role: 'switch.light',
+            type: 'boolean',
+            required: true,
+        },
+        ON_ACTUAL: {
+            role: 'state.light',
+            type: 'boolean',
+            required: true,
+        },
+        TEMPERATURE: {
+            role: 'level.color.temperature',
+            type: 'number',
+            required: true,
+        },
+    },
+    dimmer: {
+        SET: {
+            role: 'level.dimmer',
+            type: 'number',
+            required: true,
+        },
+        ACTUAL: {
+            role: 'value.dimmer',
+            type: 'number',
+            required: true,
+        },
+        ON_SET: {
+            role: 'switch.light',
+            type: 'boolean',
+            required: true,
+        },
+        ON_ACTUAL: {
+            role: 'switch.light',
+            type: 'boolean',
+            required: true,
+        },
+    },
+    timeTable: {
+        ACTUAL: {
+            role: 'state',
+            type: 'string',
+            required: true,
+        },
+        VEHICLE: {
+            role: 'state',
+            type: 'string',
+            required: true,
+        },
+        DIRECTION: {
+            role: 'state',
+            type: 'string',
+            required: true,
+        },
+        DELAY: {
+            role: 'state',
+            type: 'boolean',
+            required: true,
+        },
+    },
+    ct: {
+        DIMMER: {
+            role: 'level.dimmer',
+            type: 'number',
+            required: true,
+        },
+        ON: {
+            role: 'switch.light',
+            type: 'boolean',
+            required: true,
+        },
+        TEMPERATURE: {
+            role: 'level.color.temperature',
+            type: 'number',
+            required: true,
+        },
+    },
+};

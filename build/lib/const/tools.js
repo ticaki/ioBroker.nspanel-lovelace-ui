@@ -665,6 +665,10 @@ function deepAssign(def, source, level = 0) {
       } else if (def[k] !== void 0) {
         source[k] = def[k];
       }
+    } else if (source[k] === void 0) {
+      source[k] = def[k];
+    } else if (def[k] === void 0) {
+      def[k] = source[k];
     }
   }
   for (const k in source) {

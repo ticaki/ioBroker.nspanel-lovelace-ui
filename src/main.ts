@@ -124,7 +124,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         },
                     );
 
-                    a.pages = [...this.config.Testconfig2[b].pages, ...a.pages];
+                    a.pages = (this.config.Testconfig2[b].pages || []).concat(a.pages);
                     this.config.Testconfig2[b] = {
                         ...((this.config.Testconfig2[b] as panelConfigPartial) || {}),
                         ...a,
@@ -196,7 +196,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         if (!('uniqueID' in p)) {
                             continue;
                         }
-                        if (p.card === 'screensaver' || p.card === 'screensaver2') {
+                        if (p.card === 'screensaver' || p.card === 'screensaver2' || p.card === 'screensaver3') {
                             p.uniqueID = `#${p.uniqueID}`;
                         }
                         if (names.indexOf(p.uniqueID) !== -1) {

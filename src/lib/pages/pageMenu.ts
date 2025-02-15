@@ -27,6 +27,7 @@ export class PageMenu extends Page {
                 this.config &&
                 (this.config.card === 'cardEntities' ||
                     this.config.card === 'cardGrid' ||
+                    this.config.card === 'cardGrid3' ||
                     this.config.card === 'cardGrid2')
             ) {
                 /**
@@ -84,6 +85,7 @@ export class PageMenu extends Page {
                 this.config &&
                 (this.config.card === 'cardEntities' ||
                     this.config.card === 'cardGrid' ||
+                    this.config.card === 'cardGrid3' ||
                     this.config.card === 'cardGrid2')
             ) {
                 const temp = await handleCardRole(this.adapter, this.config.cardRole, this);
@@ -98,7 +100,10 @@ export class PageMenu extends Page {
     goLeft(single: boolean = false): void {
         if (
             !this.config ||
-            (this.config.card !== 'cardEntities' && this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')
+            (this.config.card !== 'cardEntities' &&
+                this.config.card !== 'cardGrid' &&
+                this.config.card !== 'cardGrid2' &&
+                this.config.card !== 'cardGrid3')
         ) {
             return;
         }
@@ -130,7 +135,10 @@ export class PageMenu extends Page {
     goRight(single: boolean = false): void {
         if (
             !this.config ||
-            (this.config.card !== 'cardEntities' && this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')
+            (this.config.card !== 'cardEntities' &&
+                this.config.card !== 'cardGrid' &&
+                this.config.card !== 'cardGrid2' &&
+                this.config.card !== 'cardGrid3')
         ) {
             return;
         }
@@ -164,7 +172,10 @@ export class PageMenu extends Page {
     protected getNavigation(): string {
         if (
             !this.config ||
-            (this.config.card !== 'cardEntities' && this.config.card !== 'cardGrid' && this.config.card !== 'cardGrid2')
+            (this.config.card !== 'cardEntities' &&
+                this.config.card !== 'cardGrid' &&
+                this.config.card !== 'cardGrid2' &&
+                this.config.card !== 'cardGrid3')
         ) {
             return '';
         }

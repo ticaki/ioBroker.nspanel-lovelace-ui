@@ -45,7 +45,7 @@ class PageGrid extends import_pageMenu.PageMenu {
     this.iconLeft = "arrow-up-bold";
     this.iconRightP = "arrow-right-bold-outline";
     this.iconRight = "arrow-down-bold";
-    if (options.items && (options.items.card == "cardGrid" || options.items.card == "cardGrid2")) {
+    if (options.items && (options.items.card == "cardGrid" || options.items.card == "cardGrid2" || options.items.card == "cardGrid3")) {
       this.items = options.items;
     }
     this.maxItems = this.card === "cardGrid" ? 6 : 8;
@@ -69,10 +69,10 @@ class PageGrid extends import_pageMenu.PageMenu {
     }
     const message = {};
     message.options = [];
-    if (!this.items || this.items.card !== "cardGrid" && this.items.card !== "cardGrid2") {
+    if (!this.items || this.items.card !== "cardGrid" && this.items.card !== "cardGrid2" && this.items.card !== "cardGrid3") {
       return;
     }
-    if (!this.config || this.config.card !== "cardGrid" && this.config.card !== "cardGrid2") {
+    if (!this.config || this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
       return;
     }
     const arr = (await this.getOptions([])).slice(0, 8);

@@ -482,7 +482,7 @@ class StatesControler extends import_library.BaseClass {
         this.triggerDB[dp].ts = Date.now();
         const oldState = { val: this.triggerDB[dp].state.val, ack: this.triggerDB[dp].state.ack };
         this.triggerDB[dp].state = state;
-        if (state.ack || this.triggerDB[dp].internal || dp.startsWith("0_userdata.0")) {
+        if (state.ack || this.triggerDB[dp].internal || dp.startsWith("0_userdata.0") || dp.startsWith("alias.0")) {
           for (let i = 0; i < this.triggerDB[dp].to.length; i++) {
             const c = this.triggerDB[dp].to[i];
             if (oldState.val !== state.val || oldState.ack !== state.ack || this.triggerDB[dp].change[i] === "ts") {

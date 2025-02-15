@@ -241,6 +241,7 @@ export class Controller extends Library.BaseClass {
         await this.getTasmotaVersion();
         this.dailyIntervalTimeout = this.adapter.setInterval(this.dailyInterval, 24 * 60 * 60 * 1000);
     }
+
     async delete(): Promise<void> {
         if (this.minuteLoopTimeout) {
             this.adapter.clearTimeout(this.minuteLoopTimeout);

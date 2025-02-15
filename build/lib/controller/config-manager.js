@@ -24,6 +24,7 @@ module.exports = __toCommonJS(config_manager_exports);
 var import_library = require("../classes/library");
 var import_Color = require("../const/Color");
 var import_config_manager_const = require("../const/config-manager-const");
+var import_pages = require("../types/pages");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   colorOn = import_Color.Color.On;
@@ -43,6 +44,7 @@ class ConfigManager extends import_library.BaseClass {
       this.log.error(`Required field panelTopic is missing in ${config.panelName || "unknown"}!`);
       return;
     }
+    panelConfig.updated = true;
     if (config.panelTopic.endsWith(".cmnd.CustomSend")) {
       panelConfig.topic = config.panelTopic.split(".").slice(0, -2).join(".");
     } else {
@@ -62,6 +64,171 @@ class ConfigManager extends import_library.BaseClass {
     if (config.defaultOffColor) {
       this.colorOff = import_Color.Color.convertScriptRGBtoRGB(config.defaultOffColor);
     }
+    panelConfig.pages.push(await this.getScreensaverConfig(config));
+    panelConfig.pages = await this.getGridConfig(config, panelConfig.pages || []);
+    this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
+    const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
+    if (obj) {
+      obj.native.scriptConfig = obj.native.scriptConfig || [];
+      const index = obj.native.scriptConfig.findIndex((item) => item.name === panelConfig.name);
+      if (index !== -1) {
+        obj.native.scriptConfig[index] = panelConfig;
+      } else {
+        obj.native.scriptConfig.push(panelConfig);
+      }
+      await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
+    }
+  }
+  async getGridConfig(config, pages) {
+    if (config.pages) {
+      for (const page of config.pages.concat(config.subPages || [])) {
+        if (!page) {
+          continue;
+        }
+        if (page.type === void 0 && page.native) {
+          if (page.heading) {
+            page.native.config = page.native.config || {};
+            page.native.config.data = page.native.config.data || {};
+            page.native.config.data.headline = await this.getFieldAsDataItemConfig(page.heading);
+          }
+          pages.push(page.native);
+          continue;
+        }
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities") {
+          continue;
+        }
+        if (!page.uniqueName) {
+          this.log.error(`Page ${page.heading || "unknown"} has no uniqueName!`);
+          continue;
+        }
+        const gridItem = {
+          dpInit: "",
+          alwaysOn: "none",
+          uniqueID: page.uniqueName || "",
+          useColor: false,
+          config: {
+            card: page.type,
+            data: {
+              headline: await this.getFieldAsDataItemConfig(page.heading || "")
+            }
+          },
+          pageItems: []
+        };
+        if (page.items) {
+          for (const item of page.items) {
+            if (!item) {
+              continue;
+            }
+            let itemConfig = void 0;
+            if (item.id && !item.id.endsWith(".")) {
+              const obj = await this.adapter.getForeignObjectAsync(item.id);
+              if (obj) {
+                if (obj.common && obj.common.role) {
+                  const role = obj.common.role;
+                  switch (role) {
+                    case "timeTable": {
+                      itemConfig = {
+                        template: "text.alias.fahrplan.departure",
+                        dpInit: item.id
+                      };
+                      break;
+                    }
+                    case "light": {
+                      const tempItem = {
+                        type: "light",
+                        data: {
+                          icon: {
+                            true: {
+                              value: {
+                                type: "const",
+                                constVal: item.icon || "lightbulb"
+                              },
+                              color: {
+                                type: "const",
+                                constVal: item.onColor || import_Color.Color.activated
+                              }
+                            },
+                            false: {
+                              value: {
+                                type: "const",
+                                constVal: item.icon2 || "lightbulb-outline"
+                              },
+                              color: {
+                                type: "const",
+                                constVal: item.offColor || import_Color.Color.deactivated
+                              }
+                            },
+                            scale: void 0,
+                            maxBri: void 0,
+                            minBri: void 0
+                          },
+                          colorMode: { type: "const", constVal: false },
+                          headline: await this.getFieldAsDataItemConfig(
+                            page.heading || "Light"
+                          ),
+                          entity1: {
+                            value: { type: "triggered", dp: `${item.id}.SET` }
+                          }
+                        }
+                      };
+                      itemConfig = tempItem;
+                      break;
+                    }
+                    case "socket":
+                    case "dimmer":
+                    case "hue":
+                    case "rgb":
+                    case "rgbSingle":
+                    case "ct":
+                    case "blind":
+                    case "door":
+                    case "window":
+                    case "volumeGroup":
+                    case "volume":
+                    case "info":
+                    case "humidity":
+                    case "temperature":
+                    case "value.temperature":
+                    case "value.humidity":
+                    case "sensor.door":
+                    case "sensor.window":
+                    case "thermostat":
+                    case "warning":
+                    case "cie":
+                    case "gate":
+                    case "motion":
+                    case "buttonSensor":
+                    case "button":
+                    case "value.time":
+                    case "level.timer":
+                    case "value.alarmtime":
+                    case "level.mode.fan":
+                    case "lock":
+                    case "slider":
+                    case "switch.mode.wlan":
+                    case "media":
+                    case "airCondition": {
+                      this.log.warn(`Role ${role} not implemented yet!`);
+                      break;
+                    }
+                    default:
+                      (0, import_pages.exhaustiveCheck)(role);
+                      this.log.error(`Role ${role} not implemented yet!`);
+                  }
+                  if (itemConfig) {
+                    gridItem.pageItems.push(itemConfig);
+                  }
+                }
+              }
+            }
+          }
+        }
+        pages.push(gridItem);
+      }
+    }
+    return pages;
+  }
+  async getScreensaverConfig(config) {
     let pageItems = [];
     if (config.bottomScreensaverEntity) {
       for (const item of config.bottomScreensaverEntity) {
@@ -407,7 +574,54 @@ class ConfigManager extends import_library.BaseClass {
       pageItems.push(await this.getMrEntityData(config.mrIcon2ScreensaverEntity, "mricon", "2"));
     }
     this.log.debug(`pageItems count: ${pageItems.length}`);
-    const convertedConfig = {
+    pageItems = pageItems.concat([
+      {
+        role: "text",
+        dpInit: "",
+        type: "text",
+        modeScr: "time",
+        data: {
+          entity2: {
+            value: {
+              type: "internal",
+              dp: "///time"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
+            }
+          }
+        }
+      },
+      {
+        role: "text",
+        dpInit: "",
+        type: "text",
+        modeScr: "date",
+        data: {
+          entity2: {
+            value: {
+              type: "internal",
+              dp: "///date"
+            },
+            dateFormat: {
+              type: "const",
+              constVal: {
+                local: "de",
+                format: {
+                  weekday: "long",
+                  month: "short",
+                  year: "numeric",
+                  day: "numeric"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]);
+    pageItems = pageItems.concat(config.nativePageItems || []);
+    return {
       dpInit: "",
       alwaysOn: "none",
       uniqueID: "scr",
@@ -419,68 +633,8 @@ class ConfigManager extends import_library.BaseClass {
         model: "eu",
         data: void 0
       },
-      pageItems: [
-        ...pageItems,
-        {
-          role: "text",
-          dpInit: "",
-          type: "text",
-          modeScr: "time",
-          data: {
-            entity2: {
-              value: {
-                type: "internal",
-                dp: "///time"
-              },
-              dateFormat: {
-                type: "const",
-                constVal: { local: "de", format: { hour: "2-digit", minute: "2-digit" } }
-              }
-            }
-          }
-        },
-        {
-          role: "text",
-          dpInit: "",
-          type: "text",
-          modeScr: "date",
-          data: {
-            entity2: {
-              value: {
-                type: "internal",
-                dp: "///date"
-              },
-              dateFormat: {
-                type: "const",
-                constVal: {
-                  local: "de",
-                  format: {
-                    weekday: "long",
-                    month: "short",
-                    year: "numeric",
-                    day: "numeric"
-                  }
-                }
-              }
-            }
-          }
-        }
-      ]
+      pageItems
     };
-    panelConfig.pages.push(convertedConfig);
-    panelConfig.updated = true;
-    this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
-    const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
-    if (obj) {
-      obj.native.scriptConfig = obj.native.scriptConfig || [];
-      const index = obj.native.scriptConfig.findIndex((item) => item.name === panelConfig.name);
-      if (index !== -1) {
-        obj.native.scriptConfig[index] = panelConfig;
-      } else {
-        obj.native.scriptConfig.push(panelConfig);
-      }
-      await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
-    }
   }
   async getMrEntityData(entity, mode, nr) {
     const result = {

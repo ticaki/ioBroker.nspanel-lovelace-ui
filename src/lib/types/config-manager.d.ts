@@ -55,7 +55,15 @@ declare namespace ConfigManager {
         | 'sensor.window'
         | 'value.battery'
         | 'value.temperature'
-        | 'value.humidity';
+        | 'value.humidity'
+        | 'sensor.motion'
+        | 'level.color.cie'
+        | 'level.dimmer'
+        | 'switch.light'
+        | 'state.light'
+        | 'level.color.temperature'
+        | 'value.dimmer'
+        | 'state';
 }
 declare namespace ScriptConfig {
     export type PopupType =
@@ -245,7 +253,8 @@ declare namespace ScriptConfig {
         | PageUnlock
         | PageQR
         | PageAlarm
-        | PagePower;
+        | PagePower
+        | { type: undefined; heading?: string; native: any };
 
     export type PageEntities = {
         type: 'cardEntities';
@@ -444,6 +453,7 @@ declare namespace ScriptConfig {
         subPages: PageType[];
         button1: ConfigButtonFunction;
         button2: ConfigButtonFunction;
+        nativePageItems?: typePageItem.PageItemDataItemsOptions[];
     };
     export type leftScreensaverEntityType =
         | [ScreenSaverElementWithUndefined?, ScreenSaverElementWithUndefined?, ScreenSaverElementWithUndefined?]

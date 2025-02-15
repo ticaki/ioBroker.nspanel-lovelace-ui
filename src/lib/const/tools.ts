@@ -732,6 +732,10 @@ export function deepAssign(def: Record<any, any>, source: Record<any, any>, leve
             } else if (def[k] !== undefined) {
                 source[k] = def[k];
             }
+        } else if (source[k] === undefined) {
+            source[k] = def[k];
+        } else if (def[k] === undefined) {
+            def[k] = source[k];
         }
     }
     for (const k in source) {

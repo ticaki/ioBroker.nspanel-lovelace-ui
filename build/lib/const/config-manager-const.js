@@ -20,7 +20,8 @@ var config_manager_const_exports = {};
 __export(config_manager_const_exports, {
   CustomTemplates: () => CustomTemplates,
   defaultConfig: () => defaultConfig,
-  isConfig: () => isConfig
+  isConfig: () => isConfig,
+  requiredDatapoints: () => requiredDatapoints
 });
 module.exports = __toCommonJS(config_manager_const_exports);
 const CustomTemplates = [
@@ -144,10 +145,108 @@ const defaultConfig = {
     }
   }
 };
+const requiredDatapoints = {
+  motion: {
+    ACTUAL: {
+      role: "sensor.motion",
+      type: "boolean",
+      required: true
+    }
+  },
+  cie: {
+    CIE: {
+      role: "level.color.cie",
+      type: "number",
+      required: true
+    },
+    DIMMER: {
+      role: "level.dimmer",
+      type: "boolean",
+      required: true
+    },
+    ON: {
+      role: "switch.light",
+      type: "boolean",
+      required: true
+    },
+    ON_ACTUAL: {
+      role: "state.light",
+      type: "boolean",
+      required: true
+    },
+    TEMPERATURE: {
+      role: "level.color.temperature",
+      type: "number",
+      required: true
+    }
+  },
+  dimmer: {
+    SET: {
+      role: "level.dimmer",
+      type: "number",
+      required: true
+    },
+    ACTUAL: {
+      role: "value.dimmer",
+      type: "number",
+      required: true
+    },
+    ON_SET: {
+      role: "switch.light",
+      type: "boolean",
+      required: true
+    },
+    ON_ACTUAL: {
+      role: "switch.light",
+      type: "boolean",
+      required: true
+    }
+  },
+  timeTable: {
+    ACTUAL: {
+      role: "state",
+      type: "string",
+      required: true
+    },
+    VEHICLE: {
+      role: "state",
+      type: "string",
+      required: true
+    },
+    DIRECTION: {
+      role: "state",
+      type: "string",
+      required: true
+    },
+    DELAY: {
+      role: "state",
+      type: "boolean",
+      required: true
+    }
+  },
+  ct: {
+    DIMMER: {
+      role: "level.dimmer",
+      type: "number",
+      required: true
+    },
+    ON: {
+      role: "switch.light",
+      type: "boolean",
+      required: true
+    },
+    TEMPERATURE: {
+      role: "level.color.temperature",
+      type: "number",
+      required: true
+    }
+  }
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CustomTemplates,
   defaultConfig,
-  isConfig
+  isConfig,
+  requiredDatapoints
 });
 //# sourceMappingURL=config-manager-const.js.map

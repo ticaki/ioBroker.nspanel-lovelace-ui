@@ -41,7 +41,7 @@ class PageMenu extends import_Page.Page {
   }
   async getOptions(result) {
     if (this.pageItems) {
-      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardGrid" || this.config.card === "cardGrid2")) {
+      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardGrid2")) {
         let pageItems = this.pageItems;
         if (this.config.filterType === "true" || this.config.filterType === "false") {
           this.tempItems = [];
@@ -79,7 +79,7 @@ class PageMenu extends import_Page.Page {
   }
   async onVisibilityChange(val) {
     if (val) {
-      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardGrid" || this.config.card === "cardGrid2")) {
+      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardGrid2")) {
         const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole, this);
         if (temp) {
           this.pageItemConfig = temp;
@@ -89,7 +89,7 @@ class PageMenu extends import_Page.Page {
     await super.onVisibilityChange(val);
   }
   goLeft(single = false) {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2") {
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
       return;
     }
     if (!single) {
@@ -117,7 +117,7 @@ class PageMenu extends import_Page.Page {
     }
   }
   goRight(single = false) {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2") {
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
       return;
     }
     if (!single) {
@@ -147,7 +147,7 @@ class PageMenu extends import_Page.Page {
     }
   }
   getNavigation() {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2") {
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
       return "";
     }
     const pageScroll = this.config.scrollType === "page";

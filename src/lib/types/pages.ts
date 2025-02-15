@@ -10,6 +10,7 @@ export type PageTypeCards =
     | 'cardEntities'
     | 'cardGrid'
     | 'cardGrid2'
+    | 'cardGrid3'
     | 'cardThermo'
     | 'cardMedia'
     | 'cardUnlock'
@@ -549,14 +550,14 @@ export type cardPowerDataItems = {
 };
 
 export type cardGridDataItemOptions = {
-    card: 'cardGrid' | 'cardGrid2';
+    card: 'cardGrid' | 'cardGrid2' | 'cardGrid3';
     cardRole?: CardRole;
     scrollType?: 'page';
     filterType?: 'true' | 'false';
     data: ChangeTypeOfKeys<PageGridBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardGridDataItems = {
-    card: 'cardGrid' | 'cardGrid2';
+    card: 'cardGrid' | 'cardGrid2' | 'cardGrid3';
     data: ChangeTypeOfKeys<PageGridBaseConfig, dataItem.Dataitem | undefined>;
 };
 

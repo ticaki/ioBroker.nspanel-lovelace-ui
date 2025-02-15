@@ -954,4 +954,53 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.alias.fahrplan.departure': {
+        role: 'text.list',
+        type: 'text',
+        adapter: '',
+        data: {
+            icon: {
+                true: {
+                    value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.VEHICLE$/ },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+                false: {
+                    value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.VEHICLE$/ },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+            },
+            entity1: {
+                value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.DELAY$/ },
+            },
+            entity2: {
+                value: {
+                    role: 'date',
+                    mode: 'auto',
+                    type: 'state',
+                    dp: '',
+                    regexp: /\.Departure$/,
+                    read: 'return val === 0 ? null : val',
+                },
+                dateFormat: {
+                    type: 'const',
+                    constVal: { local: 'de', format: { hour: '2-digit', minute: '2-digit' } },
+                },
+            },
+            text: {
+                true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.DIRECTION$/ },
+                false: undefined,
+            },
+            text1: {
+                true: {
+                    role: 'date',
+                    mode: 'auto',
+                    type: 'state',
+                    dp: '',
+                    regexp: /\.ACTUAL$/,
+                    read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
+                },
+                false: undefined,
+            },
+        },
+    },
 };
