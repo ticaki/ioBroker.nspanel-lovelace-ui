@@ -316,7 +316,7 @@ class StatesControler extends import_library.BaseClass {
           delete this.stateDB[id];
         }
       }
-      this.log.debug(`Set a new trigger to ${id}`);
+      this.log.debug(`Set a new trigger from ${from.name} to ${id}`);
     }
   }
   /**
