@@ -60,7 +60,7 @@ export class Controller extends Library.BaseClass {
     /**
      * Update Date every hour....
      *
-     * @returns
+     * @returns void
      */
     dateUpdateLoop = async (): Promise<void> => {
         if (this.unload) {
