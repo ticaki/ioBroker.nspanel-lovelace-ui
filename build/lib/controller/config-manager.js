@@ -68,14 +68,20 @@ class ConfigManager extends import_library.BaseClass {
     if (config.pages.length > 1) {
       for (let a = 0; a < config.pages.length; a++) {
         const page = config.pages[a];
-        if (page.type === void 0 || page.uniqueName == null) {
+        let uniqueID = "";
+        if (page.type === void 0) {
+          uniqueID = page.native.uniqueID || "";
+        } else {
+          uniqueID = page.uniqueName || "";
+        }
+        if (uniqueID === "") {
           continue;
         }
         panelConfig.navigation.push({
-          name: page.uniqueName,
+          name: uniqueID,
           left: void 0,
           right: void 0,
-          page: page.uniqueName
+          page: uniqueID
         });
       }
       if (panelConfig.navigation.length > 1) {
@@ -84,7 +90,7 @@ class ConfigManager extends import_library.BaseClass {
             return {
               ...item,
               left: { single: array[array.length - 1].name },
-              right: { single: array[0].name }
+              right: { single: array[index + 1].name }
             };
           } else if (index === array.length - 1) {
             return { ...item, left: { single: array[index - 1].name }, right: { single: array[0].name } };

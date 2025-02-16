@@ -59,14 +59,20 @@ export class ConfigManager extends BaseClass {
         if (config.pages.length > 1) {
             for (let a = 0; a < config.pages.length; a++) {
                 const page = config.pages[a];
-                if (page.type === undefined || page.uniqueName == null) {
+                let uniqueID = '';
+                if (page.type === undefined) {
+                    uniqueID = page.native.uniqueID || '';
+                } else {
+                    uniqueID = page.uniqueName || '';
+                }
+                if (uniqueID === '') {
                     continue;
                 }
                 panelConfig.navigation.push({
-                    name: page.uniqueName,
+                    name: uniqueID,
                     left: undefined,
                     right: undefined,
-                    page: page.uniqueName,
+                    page: uniqueID,
                 });
             }
             if (panelConfig.navigation.length > 1) {
@@ -76,7 +82,7 @@ export class ConfigManager extends BaseClass {
                         return {
                             ...item,
                             left: { single: array[array.length - 1]!.name },
-                            right: { single: array[0]!.name },
+                            right: { single: array[index + 1]!.name },
                         };
                     } else if (index === array.length - 1) {
                         return { ...item, left: { single: array[index - 1]!.name }, right: { single: array[0]!.name } };

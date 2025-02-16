@@ -46,6 +46,10 @@ export class Screensaver extends Page {
                 config.card = 'screensaver2';
                 break;
             }
+            case 'easyview': {
+                config.card = 'screensaver3';
+                break;
+            }
         }
         config.alwaysOn = 'none';
         super(config, options);
