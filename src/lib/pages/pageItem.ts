@@ -193,7 +193,7 @@ export class PageItem extends BaseClassTriggerd {
                         (colorMode === 'hue'
                             ? await tools.GetIconColor(
                                   rgb ?? undefined,
-                                  dimmer !== null ? (dimmer > 10 ? dimmer : 10) : v,
+                                  dimmer != null ? (dimmer > 30 ? dimmer : 30) : v,
                               )
                             : await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ??
                         (await tools.getIconEntryColor(item.icon, dimmer ?? v, Color.Yellow)) ??
@@ -784,7 +784,7 @@ export class PageItem extends BaseClassTriggerd {
                                 break;
                             case 'hue': {
                                 const nhue = (item.hue && (await item.hue.getNumber())) ?? null;
-                                if (nhue) {
+                                if (nhue != null) {
                                     rgb = Color.hsv2RGB(nhue, 1, 1) ?? null;
                                 }
                                 break;
@@ -822,10 +822,10 @@ export class PageItem extends BaseClassTriggerd {
                         if (rgb !== null && colorMode === 'hue') {
                             message.slidersColor = await tools.GetIconColor(
                                 rgb,
-                                message.slider1Pos !== 'disable' && message.slider1Pos !== undefined
-                                    ? message.slider1Pos > 20
+                                message.slider1Pos !== 'disable' && message.slider1Pos != null
+                                    ? message.slider1Pos > 30
                                         ? message.slider1Pos
-                                        : 20
+                                        : 30
                                     : message.buttonState !== 'disable' && message.buttonState !== false,
                             );
                         }

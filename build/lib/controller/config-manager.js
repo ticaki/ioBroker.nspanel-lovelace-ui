@@ -123,174 +123,256 @@ class ConfigManager extends import_library.BaseClass {
             if (item.id && !item.id.endsWith(".")) {
               const obj = await this.adapter.getForeignObjectAsync(item.id);
               if (obj) {
-                if (obj.common && obj.common.role) {
-                  const role = obj.common.role;
-                  if (!import_config_manager_const.requiredDatapoints[role]) {
-                    this.log.warn(`Role ${role} not implemented yet!`);
+                if (!(obj.common && obj.common.role)) {
+                  this.log.error(`Role missing in ${item.id}!`);
+                  continue;
+                }
+                const role = obj.common.role;
+                if (!import_config_manager_const.requiredDatapoints[role]) {
+                  this.log.warn(`Role ${role} not implemented yet!`);
+                  continue;
+                }
+                let ok = true;
+                for (const dp in import_config_manager_const.requiredDatapoints[role]) {
+                  const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : void 0;
+                  if (!o && !import_config_manager_const.requiredOutdatedDataPoints[role][dp].required && !import_config_manager_const.requiredDatapoints[role][dp].required) {
                     continue;
                   }
-                  let ok = true;
-                  for (const dp in import_config_manager_const.requiredDatapoints[role]) {
-                    const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : void 0;
-                    if (!o && !import_config_manager_const.requiredOutdatedDataPoints[role][dp].required && !import_config_manager_const.requiredDatapoints[role][dp].required) {
-                      continue;
-                    }
-                    if (!o || o.common.role !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].role || o.common.type !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].type) {
-                      if (!o || o.common.role !== import_config_manager_const.requiredDatapoints[role][dp].role || o.common.type !== import_config_manager_const.requiredDatapoints[role][dp].type) {
-                        ok = false;
-                        if (!o) {
-                          this.log.error(
-                            `Datapoint ${item.id}.${dp} is missing and required!`
-                          );
-                        } else {
-                          this.log.error(
-                            `Datapoint ${item.id}.${dp} has wrong role: ${o.common.role !== import_config_manager_const.requiredDatapoints[role][dp].role ? `${o.common.role} should be ${import_config_manager_const.requiredDatapoints[role][dp].role}` : `ok`} - type: ${o.common.type !== import_config_manager_const.requiredDatapoints[role][dp].type ? `${o.common.role} should be ${import_config_manager_const.requiredDatapoints[role][dp].type}` : `ok`}`
-                          );
-                        }
-                        break;
+                  if (!o || o.common.role !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].role || o.common.type !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].type) {
+                    if (!o || o.common.role !== import_config_manager_const.requiredDatapoints[role][dp].role || o.common.type !== import_config_manager_const.requiredDatapoints[role][dp].type) {
+                      ok = false;
+                      if (!o) {
+                        this.log.error(`Datapoint ${item.id}.${dp} is missing and required!`);
+                      } else {
+                        this.log.error(
+                          `Datapoint ${item.id}.${dp} has wrong role: ${o.common.role !== import_config_manager_const.requiredDatapoints[role][dp].role ? `${o.common.role} should be ${import_config_manager_const.requiredDatapoints[role][dp].role}` : `ok`} - type: ${o.common.type !== import_config_manager_const.requiredDatapoints[role][dp].type ? `${o.common.role} should be ${import_config_manager_const.requiredDatapoints[role][dp].type}` : `ok`}`
+                        );
                       }
-                    }
-                  }
-                  if (!ok) {
-                    continue;
-                  }
-                  switch (role) {
-                    case "timeTable": {
-                      itemConfig = {
-                        template: "text.alias.fahrplan.departure",
-                        dpInit: item.id
-                      };
                       break;
                     }
-                    case "socket":
-                    case "light": {
-                      const tempItem = {
-                        type: "light",
-                        data: {
-                          icon: {
-                            true: {
-                              value: {
-                                type: "const",
-                                constVal: item.icon || role === "socket" ? "power-socket-de" : "lightbulb"
-                              },
-                              color: {
-                                type: "const",
-                                constVal: item.onColor || import_Color.Color.activated
-                              }
+                  }
+                }
+                if (!ok) {
+                  continue;
+                }
+                const commonName = typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()];
+                switch (role) {
+                  case "timeTable": {
+                    itemConfig = {
+                      template: "text.alias.fahrplan.departure",
+                      dpInit: item.id
+                    };
+                    break;
+                  }
+                  case "socket":
+                  case "light": {
+                    const tempItem = {
+                      type: "light",
+                      data: {
+                        icon: {
+                          true: {
+                            value: {
+                              type: "const",
+                              constVal: item.icon || role === "socket" ? "power-socket-de" : "lightbulb"
                             },
-                            false: {
-                              value: {
-                                type: "const",
-                                constVal: item.icon2 || role === "socket" ? "power-socket-de" : "lightbulb-outline"
-                              },
-                              color: {
-                                type: "const",
-                                constVal: item.offColor || import_Color.Color.deactivated
-                              }
-                            },
-                            scale: void 0,
-                            maxBri: void 0,
-                            minBri: void 0
+                            color: {
+                              type: "const",
+                              constVal: item.onColor || import_Color.Color.activated
+                            }
                           },
-                          colorMode: { type: "const", constVal: false },
-                          headline: await this.getFieldAsDataItemConfig(
-                            page.heading || "Light"
-                          ),
-                          entity1: {
-                            value: { type: "triggered", dp: `${item.id}.SET` }
-                          }
+                          false: {
+                            value: {
+                              type: "const",
+                              constVal: item.icon2 || role === "socket" ? "power-socket-de" : "lightbulb-outline"
+                            },
+                            color: {
+                              type: "const",
+                              constVal: item.offColor || import_Color.Color.deactivated
+                            }
+                          },
+                          scale: void 0,
+                          maxBri: void 0,
+                          minBri: void 0
+                        },
+                        colorMode: { type: "const", constVal: false },
+                        headline: await this.getFieldAsDataItemConfig(
+                          item.name || commonName || "Light"
+                        ),
+                        entity1: {
+                          value: { type: "triggered", dp: `${item.id}.SET` }
                         }
-                      };
-                      itemConfig = tempItem;
-                      break;
-                    }
-                    case "dimmer": {
-                      const tempItem = {
-                        type: "light",
-                        data: {
-                          icon: {
-                            true: {
-                              value: {
-                                type: "const",
-                                constVal: item.icon || "lightbulb"
-                              },
-                              color: {
-                                type: "const",
-                                constVal: item.onColor || import_Color.Color.activated
-                              }
+                      }
+                    };
+                    itemConfig = tempItem;
+                    break;
+                  }
+                  case "dimmer": {
+                    const tempItem = {
+                      type: "light",
+                      role: "dimmer",
+                      data: {
+                        icon: {
+                          true: {
+                            value: {
+                              type: "const",
+                              constVal: item.icon || "lightbulb"
                             },
-                            false: {
-                              value: {
-                                type: "const",
-                                constVal: item.icon2 || "lightbulb-outline"
-                              },
-                              color: {
-                                type: "const",
-                                constVal: item.offColor || import_Color.Color.deactivated
-                              }
+                            color: {
+                              type: "const",
+                              constVal: item.onColor || import_Color.Color.activated
+                            }
+                          },
+                          false: {
+                            value: {
+                              type: "const",
+                              constVal: item.icon2 || "lightbulb-outline"
                             },
-                            scale: void 0,
-                            maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
-                            minBri: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
+                            color: {
+                              type: "const",
+                              constVal: item.offColor || import_Color.Color.deactivated
+                            }
                           },
-                          dimmer: {
-                            value: { type: "triggered", dp: `${item.id}.SET` },
-                            maxScale: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
-                            minScale: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
-                          },
-                          headline: await this.getFieldAsDataItemConfig(
-                            page.heading || "Dimmer"
-                          ),
-                          entity1: {
-                            value: { type: "triggered", dp: `${item.id}.ON_SET` }
+                          scale: void 0,
+                          maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
+                          minBri: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
+                        },
+                        colorMode: item.colormode ? { type: "const", constVal: !!item.colormode } : void 0,
+                        dimmer: {
+                          value: { type: "triggered", dp: `${item.id}.SET` },
+                          maxScale: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
+                          minScale: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
+                        },
+                        headline: await this.getFieldAsDataItemConfig(
+                          item.name || commonName || "Dimmer"
+                        ),
+                        text1: {
+                          true: {
+                            type: "const",
+                            constVal: `Brightness`
                           }
+                        },
+                        entity1: {
+                          value: { type: "triggered", dp: `${item.id}.ON_SET` }
                         }
-                      };
-                      itemConfig = tempItem;
-                      break;
-                    }
-                    case "hue":
-                    case "rgb":
-                    case "rgbSingle":
-                    case "ct":
-                    case "blind":
-                    case "door":
-                    case "window":
-                    case "volumeGroup":
-                    case "volume":
-                    case "info":
-                    case "humidity":
-                    case "temperature":
-                    case "value.temperature":
-                    case "value.humidity":
-                    case "sensor.door":
-                    case "sensor.window":
-                    case "thermostat":
-                    case "warning":
-                    case "cie":
-                    case "gate":
-                    case "motion":
-                    case "buttonSensor":
-                    case "button":
-                    case "value.time":
-                    case "level.timer":
-                    case "value.alarmtime":
-                    case "level.mode.fan":
-                    case "lock":
-                    case "slider":
-                    case "switch.mode.wlan":
-                    case "media":
-                    case "airCondition": {
-                      this.log.error(`Role ${role} not implemented yet!`);
-                      break;
-                    }
-                    default:
-                      (0, import_pages.exhaustiveCheck)(role);
-                      this.log.error(`Role ${role} not implemented yet!`);
+                      }
+                    };
+                    itemConfig = tempItem;
+                    break;
                   }
-                  if (itemConfig) {
-                    gridItem.pageItems.push(itemConfig);
+                  case "hue": {
+                    const tempItem = {
+                      type: "light",
+                      role: "hue",
+                      data: {
+                        icon: {
+                          true: {
+                            value: {
+                              type: "const",
+                              constVal: item.icon || "lightbulb"
+                            },
+                            color: {
+                              type: "const",
+                              constVal: item.onColor || import_Color.Color.activated
+                            }
+                          },
+                          false: {
+                            value: {
+                              type: "const",
+                              constVal: item.icon2 || "lightbulb-outline"
+                            },
+                            color: {
+                              type: "const",
+                              constVal: item.offColor || import_Color.Color.deactivated
+                            }
+                          },
+                          scale: void 0,
+                          maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
+                          minBri: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
+                        },
+                        colorMode: item.colormode ? { type: "const", constVal: !!item.colormode } : void 0,
+                        dimmer: {
+                          value: { type: "triggered", dp: `${item.id}.DIMMER` },
+                          maxScale: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
+                          minScale: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
+                        },
+                        headline: await this.getFieldAsDataItemConfig(
+                          item.name || commonName || "HUE"
+                        ),
+                        hue: {
+                          type: "triggered",
+                          dp: `${item.id}.HUE`
+                        },
+                        ct: {
+                          value: { type: "triggered", dp: `${item.id}.CT` },
+                          maxScale: item.maxValueColorTemp ? { type: "const", constVal: item.maxValueColorTemp } : void 0,
+                          minScale: item.minValueColorTemp ? { type: "const", constVal: item.minValueColorTemp } : void 0
+                        },
+                        text1: {
+                          true: {
+                            type: "const",
+                            constVal: `Brightness`
+                          }
+                        },
+                        text2: {
+                          true: {
+                            type: "const",
+                            constVal: `Colour temperature`
+                          }
+                        },
+                        text3: {
+                          true: {
+                            type: "const",
+                            constVal: `Color`
+                          }
+                        },
+                        entity1: {
+                          value: { type: "triggered", dp: `${item.id}.ON` }
+                        }
+                      }
+                    };
+                    itemConfig = tempItem;
+                    break;
                   }
+                  case "rgb":
+                  case "rgbSingle":
+                  case "ct":
+                  case "blind":
+                  case "door":
+                  case "window":
+                  case "volumeGroup":
+                  case "volume":
+                  case "info":
+                  case "humidity":
+                  case "temperature":
+                  case "value.temperature":
+                  case "value.humidity":
+                  case "sensor.door":
+                  case "sensor.window":
+                  case "thermostat":
+                  case "warning":
+                  case "cie":
+                  case "gate":
+                  case "motion":
+                  case "buttonSensor":
+                  case "button":
+                  case "value.time":
+                  case "level.timer":
+                  case "value.alarmtime":
+                  case "level.mode.fan":
+                  case "lock":
+                  case "slider":
+                  case "switch.mode.wlan":
+                  case "media":
+                  case "airCondition": {
+                    this.log.error(`Role ${role} not implemented yet!`);
+                    break;
+                  }
+                  default:
+                    (0, import_pages.exhaustiveCheck)(role);
+                    this.log.error(`Role ${role} not implemented yet!`);
+                }
+                if (itemConfig) {
+                  gridItem.pageItems.push(itemConfig);
                 }
               }
             }
