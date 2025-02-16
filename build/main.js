@@ -127,6 +127,13 @@ class NspanelLovelaceUi extends utils.Adapter {
               return true;
             }
           );
+          this.config.Testconfig2[b].navigation = this.config.Testconfig2[b].navigation.filter((a2) => {
+            if (scriptConfig[b].navigation.find((b2) => a2 == null || b2 == null || b2.name === a2.name)) {
+              return false;
+            }
+            return true;
+          });
+          a.navigation = (this.config.Testconfig2[b].navigation || []).concat(a.navigation);
           a.pages = (this.config.Testconfig2[b].pages || []).concat(a.pages);
           this.config.Testconfig2[b] = {
             ...this.config.Testconfig2[b] || {},

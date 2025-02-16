@@ -46,7 +46,7 @@ export class PanelSend extends BaseClass {
                 if (msg) {
                     this.log.debug(`Receive ack for ${JSON.stringify(msg)}`);
                 }
-                await this.sendMessageLoop();
+                this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 250);
             }
         }
     };
@@ -103,7 +103,7 @@ export class PanelSend extends BaseClass {
         }
         this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
         await this.mqttClient.publish(msg.topic, msg.payload, msg.opt);
-        this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 50);
+        this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 250);
     };
 
     async delete(): Promise<void> {

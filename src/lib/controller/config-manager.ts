@@ -7,6 +7,7 @@ import type * as pages from '../types/pages';
 import { defaultConfig, isConfig, requiredDatapoints, requiredOutdatedDataPoints } from '../const/config-manager-const';
 import type { panelConfigPartial } from './panel';
 import { exhaustiveCheck } from '../types/pages';
+import type { NavigationItemConfig } from '../classes/navigation';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -24,7 +25,10 @@ export class ConfigManager extends BaseClass {
             this.log.error(`Invalid configuration from Script: ${config ? JSON.stringify(config) : 'undefined'}`);
             return;
         }
-        const panelConfig: Partial<panelConfigPartial> = { pages: [] };
+        let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
+            navigation: NavigationItemConfig[];
+            pages: pages.PageBaseConfig[];
+        } = { pages: [], navigation: [] };
         if (!config.panelTopic) {
             this.log.error(`Required field panelTopic is missing in ${config.panelName || 'unknown'}!`);
             return;
@@ -51,8 +55,42 @@ export class ConfigManager extends BaseClass {
         }
 
         // Screensaver configuration
-        panelConfig.pages!.push(await this.getScreensaverConfig(config));
-        panelConfig.pages = await this.getGridConfig(config, panelConfig.pages || []);
+        panelConfig.pages.push(await this.getScreensaverConfig(config));
+        if (config.pages.length > 1) {
+            for (let a = 0; a < config.pages.length; a++) {
+                const page = config.pages[a];
+                if (page.type === undefined || page.uniqueName == null) {
+                    continue;
+                }
+                panelConfig.navigation.push({
+                    name: page.uniqueName,
+                    left: undefined,
+                    right: undefined,
+                    page: page.uniqueName,
+                });
+            }
+            if (panelConfig.navigation.length > 1) {
+                //@ts-expect-error Just look 4 lines aboe name CANT be undefined and same for ITEM...
+                panelConfig.navigation = panelConfig.navigation.map((item, index, array) => {
+                    if (index === 0) {
+                        return {
+                            ...item,
+                            left: { single: array[array.length - 1]!.name },
+                            right: { single: array[0]!.name },
+                        };
+                    } else if (index === array.length - 1) {
+                        return { ...item, left: { single: array[index - 1]!.name }, right: { single: array[0]!.name } };
+                    }
+                    return {
+                        ...item,
+                        left: { single: array[index - 1]!.name },
+                        right: { single: array[index + 1]!.name },
+                    };
+                });
+            }
+        }
+
+        panelConfig = await this.getGridConfig(config, panelConfig);
 
         this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
         const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
@@ -67,7 +105,13 @@ export class ConfigManager extends BaseClass {
             await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
         }
     }
-    async getGridConfig(config: ScriptConfig.Config, pages: pages.PageBaseConfig[]): Promise<pages.PageBaseConfig[]> {
+    async getGridConfig(
+        config: ScriptConfig.Config,
+        result: { pages: pages.PageBaseConfig[] | undefined; navigation: NavigationItemConfig[] },
+    ): Promise<{ pages: pages.PageBaseConfig[]; navigation: NavigationItemConfig[] }> {
+        if (result.pages === undefined) {
+            result.pages = [];
+        }
         if (config.pages) {
             for (const page of config.pages.concat(config.subPages || [])) {
                 if (!page) {
@@ -79,7 +123,7 @@ export class ConfigManager extends BaseClass {
                         page.native.config.data = page.native.config.data || {};
                         page.native.config.data.headline = await this.getFieldAsDataItemConfig(page.heading);
                     }
-                    pages.push(page.native);
+                    result.pages.push(page.native);
                     continue;
                 }
                 if (
@@ -94,6 +138,16 @@ export class ConfigManager extends BaseClass {
                     this.log.error(`Page ${page.heading || 'unknown'} has no uniqueName!`);
                     continue;
                 }
+                const left =
+                    page.prev || (page.parent && page.parent.type !== undefined && page.parent.uniqueName) || undefined;
+                const right = page.next || page.home || undefined;
+                const navItem: NavigationItemConfig = {
+                    name: page.uniqueName,
+                    left: left ? { single: left } : undefined,
+                    right: right ? { single: right } : undefined,
+                    page: page.uniqueName,
+                };
+                result.navigation.push(navItem);
                 const gridItem: pages.PageBaseConfig = {
                     dpInit: '',
                     alwaysOn: 'none',
@@ -425,10 +479,11 @@ export class ConfigManager extends BaseClass {
                         }
                     }
                 }
-                pages.push(gridItem);
+                result.pages.push(gridItem);
             }
         }
-        return pages;
+
+        return { pages: result.pages || [], navigation: result.navigation };
     }
 
     async getScreensaverConfig(config: ScriptConfig.Config): Promise<pages.PageBaseConfig> {
