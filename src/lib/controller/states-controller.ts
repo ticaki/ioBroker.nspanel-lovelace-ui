@@ -199,7 +199,7 @@ export class BaseClassTriggerd extends BaseClass {
     /**
      * Event when visibility is on Change.
      *
-     * @param val
+     * @param val true/false
      */
     protected async onVisibilityChange(val: boolean): Promise<void> {
         val;
@@ -312,9 +312,9 @@ export class StatesControler extends BaseClass {
      *
      * @param id state id
      * @param from the page that handle the trigger
-     * @param internal
-     * @param trigger
-     * @param change
+     * @param internal if the state is internal
+     * @param trigger if the state should trigger
+     * @param change if the state should trigger on change or ts
      */
     async setTrigger(
         id: string,
