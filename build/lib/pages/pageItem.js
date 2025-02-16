@@ -180,7 +180,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           const colorMode = !item.colorMode ? "none" : await item.colorMode.getBoolean() ? "hue" : "ct";
           message.iconColor = (_g = (_f = colorMode === "hue" ? await tools.GetIconColor(
             rgb != null ? rgb : void 0,
-            dimmer !== null ? dimmer > 10 ? dimmer : 10 : v
+            dimmer != null ? dimmer > 30 ? dimmer : 30 : v
           ) : await tools.getTemperaturColorFromValue(item.ct, dimmer != null ? dimmer : 100)) != null ? _f : await tools.getIconEntryColor(item.icon, dimmer != null ? dimmer : v, import_Color.Color.Yellow)) != null ? _g : "";
           if (v) {
             message.optionalValue = "1";
@@ -712,7 +712,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 break;
               case "hue": {
                 const nhue = (_d = item.hue && await item.hue.getNumber()) != null ? _d : null;
-                if (nhue) {
+                if (nhue != null) {
                   rgb = (_e = import_Color.Color.hsv2RGB(nhue, 1, 1)) != null ? _e : null;
                 }
                 break;
@@ -745,7 +745,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             if (rgb !== null && colorMode === "hue") {
               message.slidersColor = await tools.GetIconColor(
                 rgb,
-                message.slider1Pos !== "disable" && message.slider1Pos !== void 0 ? message.slider1Pos > 20 ? message.slider1Pos : 20 : message.buttonState !== "disable" && message.buttonState !== false
+                message.slider1Pos !== "disable" && message.slider1Pos != null ? message.slider1Pos > 30 ? message.slider1Pos : 30 : message.buttonState !== "disable" && message.buttonState !== false
               );
             }
             if (message.slider2Pos !== "disable" && colorMode === "ct") {
