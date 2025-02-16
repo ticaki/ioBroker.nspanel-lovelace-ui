@@ -487,6 +487,7 @@ class StatesControler extends import_library.BaseClass {
             const c = this.triggerDB[dp].to[i];
             if (oldState.val !== state.val || oldState.ack !== state.ack || this.triggerDB[dp].change[i] === "ts") {
               if (!c.neverDeactivateTrigger && !this.triggerDB[dp].subscribed[i] || !this.triggerDB[dp].triggerAllowed[i]) {
+                this.log.debug(`Ignore trigger from state ${dp} not subscribed or not allowed!`);
                 return;
               }
               if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
@@ -494,8 +495,12 @@ class StatesControler extends import_library.BaseClass {
               } else if (!c.unload) {
                 c.onStateTriggerSuperDoNotOverride && await c.onStateTriggerSuperDoNotOverride(dp, c);
               }
+            } else {
+              this.log.debug(`Ignore trigger from state ${dp} no change!`);
             }
           }
+        } else {
+          this.log.debug(`Ignore trigger from state ${dp} ack is false!`);
         }
       }
       if (state.val === null || state.val === void 0 || typeof state.val !== "object") {

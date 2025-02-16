@@ -107,8 +107,16 @@ export class ConfigManager extends BaseClass {
     }
     async getGridConfig(
         config: ScriptConfig.Config,
-        result: { pages: pages.PageBaseConfig[] | undefined; navigation: NavigationItemConfig[] },
-    ): Promise<{ pages: pages.PageBaseConfig[]; navigation: NavigationItemConfig[] }> {
+        result: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
+            navigation: NavigationItemConfig[];
+            pages: pages.PageBaseConfig[];
+        },
+    ): Promise<
+        Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
+            navigation: NavigationItemConfig[];
+            pages: pages.PageBaseConfig[];
+        }
+    > {
         if (result.pages === undefined) {
             result.pages = [];
         }
@@ -483,7 +491,7 @@ export class ConfigManager extends BaseClass {
             }
         }
 
-        return { pages: result.pages || [], navigation: result.navigation };
+        return result;
     }
 
     async getScreensaverConfig(config: ScriptConfig.Config): Promise<pages.PageBaseConfig> {

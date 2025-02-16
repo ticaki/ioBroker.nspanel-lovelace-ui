@@ -425,7 +425,7 @@ class ConfigManager extends import_library.BaseClass {
         result.pages.push(gridItem);
       }
     }
-    return { pages: result.pages || [], navigation: result.navigation };
+    return result;
   }
   async getScreensaverConfig(config) {
     let pageItems = [];
