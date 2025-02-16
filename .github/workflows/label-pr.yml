@@ -9,6 +9,6 @@ jobs:
     - name: label swapping
       uses: jinmayamashita/ready-for-review@1.0.0
       with:
-        in-progress-label: 'in progress'
-        ready-for-review-label: 'ready for review'
-        repo-token: ${{ secrets.AUTO_ASSIGN }}
+        in-progress-label: 'In progress'
+        ready-for-review-label: 'Ready for review'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}

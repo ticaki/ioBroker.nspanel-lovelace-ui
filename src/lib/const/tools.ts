@@ -716,7 +716,7 @@ export function getPayload(...s: string[]): string {
  * @param def Json with json, number, boolean, strings, null, undefined
  * @param source Json with json, number, boolean, strings, null, undefined
  * @param level ignore
- * @returns
+ * @returns Json with json, number, boolean, strings, null, undefined
  */
 export function deepAssign(def: Record<any, any>, source: Record<any, any>, level: number = 0): any {
     if (level++ > 20) {
