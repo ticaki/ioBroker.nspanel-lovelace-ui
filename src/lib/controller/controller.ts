@@ -60,7 +60,7 @@ export class Controller extends Library.BaseClass {
     /**
      * Update Date every hour....
      *
-     * @returns
+     * @returns void
      */
     dateUpdateLoop = async (): Promise<void> => {
         if (this.unload) {
@@ -81,9 +81,9 @@ export class Controller extends Library.BaseClass {
     /**
      *....
      *
-     * @param id
-     * @param _state
-     * @returns
+     * @param id - id of the state
+     * @param _state - state
+     * @returns nsPanelStateVal
      */
     onInternalCommand = async (id: string, _state: nsPanelState | undefined): Promise<nsPanelStateVal> => {
         if (!id.startsWith('///')) {
