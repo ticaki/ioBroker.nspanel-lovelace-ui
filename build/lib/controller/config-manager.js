@@ -39,7 +39,7 @@ class ConfigManager extends import_library.BaseClass {
       this.log.error(`Invalid configuration from Script: ${config ? JSON.stringify(config) : "undefined"}`);
       return;
     }
-    const panelConfig = { pages: [] };
+    let panelConfig = { pages: [], navigation: [] };
     if (!config.panelTopic) {
       this.log.error(`Required field panelTopic is missing in ${config.panelName || "unknown"}!`);
       return;
@@ -65,7 +65,39 @@ class ConfigManager extends import_library.BaseClass {
       this.colorOff = import_Color.Color.convertScriptRGBtoRGB(config.defaultOffColor);
     }
     panelConfig.pages.push(await this.getScreensaverConfig(config));
-    panelConfig.pages = await this.getGridConfig(config, panelConfig.pages || []);
+    if (config.pages.length > 1) {
+      for (let a = 0; a < config.pages.length; a++) {
+        const page = config.pages[a];
+        if (page.type === void 0 || page.uniqueName == null) {
+          continue;
+        }
+        panelConfig.navigation.push({
+          name: page.uniqueName,
+          left: void 0,
+          right: void 0,
+          page: page.uniqueName
+        });
+      }
+      if (panelConfig.navigation.length > 1) {
+        panelConfig.navigation = panelConfig.navigation.map((item, index, array) => {
+          if (index === 0) {
+            return {
+              ...item,
+              left: { single: array[array.length - 1].name },
+              right: { single: array[0].name }
+            };
+          } else if (index === array.length - 1) {
+            return { ...item, left: { single: array[index - 1].name }, right: { single: array[0].name } };
+          }
+          return {
+            ...item,
+            left: { single: array[index - 1].name },
+            right: { single: array[index + 1].name }
+          };
+        });
+      }
+    }
+    panelConfig = await this.getGridConfig(config, panelConfig);
     this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
     const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
     if (obj) {
@@ -79,7 +111,10 @@ class ConfigManager extends import_library.BaseClass {
       await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
     }
   }
-  async getGridConfig(config, pages) {
+  async getGridConfig(config, result) {
+    if (result.pages === void 0) {
+      result.pages = [];
+    }
     if (config.pages) {
       for (const page of config.pages.concat(config.subPages || [])) {
         if (!page) {
@@ -91,7 +126,7 @@ class ConfigManager extends import_library.BaseClass {
             page.native.config.data = page.native.config.data || {};
             page.native.config.data.headline = await this.getFieldAsDataItemConfig(page.heading);
           }
-          pages.push(page.native);
+          result.pages.push(page.native);
           continue;
         }
         if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities") {
@@ -101,6 +136,15 @@ class ConfigManager extends import_library.BaseClass {
           this.log.error(`Page ${page.heading || "unknown"} has no uniqueName!`);
           continue;
         }
+        const left = page.prev || page.parent && page.parent.type !== void 0 && page.parent.uniqueName || void 0;
+        const right = page.next || page.home || void 0;
+        const navItem = {
+          name: page.uniqueName,
+          left: left ? { single: left } : void 0,
+          right: right ? { single: right } : void 0,
+          page: page.uniqueName
+        };
+        result.navigation.push(navItem);
         const gridItem = {
           dpInit: "",
           alwaysOn: "none",
@@ -378,10 +422,10 @@ class ConfigManager extends import_library.BaseClass {
             }
           }
         }
-        pages.push(gridItem);
+        result.pages.push(gridItem);
       }
     }
-    return pages;
+    return { pages: result.pages || [], navigation: result.navigation };
   }
   async getScreensaverConfig(config) {
     let pageItems = [];
