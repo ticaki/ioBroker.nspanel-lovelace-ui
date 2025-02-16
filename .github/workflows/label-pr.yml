@@ -1,0 +1,14 @@
+on:
+  pull_request:
+    types: [opened, reopen, ready_for_review]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+    - name: label swapping
+      uses: jinmayamashita/ready-for-review@1.0.0
+      with:
+        in-progress-label: 'in progress'
+        ready-for-review-label: 'ready for review'
+        repo-token: ${{ secrets.AUTO_ASSIGN }}
