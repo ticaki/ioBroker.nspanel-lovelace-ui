@@ -313,8 +313,8 @@ export class StatesControler extends BaseClass {
      * @param id state id
      * @param from the page that handle the trigger
      * @param internal if the state is internal
-     * @param trigger if the state should trigger
-     * @param change if the state should trigger on change or ts
+     * @param trigger if the state should trigger other classes
+     * @param change if the state should trigger other classes
      */
     async setTrigger(
         id: string,
@@ -437,9 +437,9 @@ export class StatesControler extends BaseClass {
      * Read a state from DB or js-controller
      *
      * @param id state id with namespace
-     * @param response
-     * @param internal
-     * @returns
+     * @param response now or medium
+     * @param internal if the state is internal
+     * @returns nsPanelState or null
      */
     async getState(
         id: string,
@@ -638,7 +638,7 @@ export class StatesControler extends BaseClass {
      * @param ack false use value/ true use func
      * @param common optional for first call
      * @param func optional for first call
-     * @returns
+     * @returns true if set
      */
     public async setInternalState(
         id: string,
@@ -689,7 +689,7 @@ export class StatesControler extends BaseClass {
      *
      * @param data Json with configuration to create dataitems
      * @param parent Page etc.
-     * @param target
+     * @param target optional target
      * @returns then json with values dataitem or undefined
      */
     async createDataItems(data: any, parent: any, target: any = {}): Promise<any> {
