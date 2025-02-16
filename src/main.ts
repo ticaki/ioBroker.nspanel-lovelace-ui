@@ -109,8 +109,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                     await this.setForeignObjectAsync(this.namespace, obj);
                 }
                 for (let b = 0; b < scriptConfig.length; b++) {
-                    const a = scriptConfig[b];
-                    if (!a || !a.pages) {
+                    const s = scriptConfig[b];
+                    if (!s || !s.pages) {
                         continue;
                     }
                     if (!this.config.Testconfig2[b]) {
@@ -119,9 +119,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (!this.config.Testconfig2[b].pages) {
                         this.config.Testconfig2[b].pages = [];
                     }
+                    if (!this.config.Testconfig2[b].navigation) {
+                        this.config.Testconfig2[b].navigation = [];
+                    }
                     this.config.Testconfig2[b].pages = (this.config.Testconfig2[b] as panelConfigPartial).pages.filter(
                         a => {
-                            if (scriptConfig[b].pages!.find(b => b.uniqueID === a.uniqueID)) {
+                            if (s.pages!.find(b => b.uniqueID === a.uniqueID)) {
                                 return false;
                             }
                             return true;
@@ -130,16 +133,16 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.config.Testconfig2[b].navigation = (
                         this.config.Testconfig2[b] as panelConfigPartial
                     ).navigation.filter(a => {
-                        if (scriptConfig[b].navigation!.find(b => a == null || b == null || b.name === a.name)) {
+                        if (s.navigation && s.navigation.find(b => a == null || b == null || b.name === a.name)) {
                             return false;
                         }
                         return true;
                     });
-                    a.navigation = (this.config.Testconfig2[b].navigation || []).concat(a.navigation);
-                    a.pages = (this.config.Testconfig2[b].pages || []).concat(a.pages);
+                    s.navigation = (this.config.Testconfig2[b].navigation || []).concat(s.navigation || []);
+                    s.pages = (this.config.Testconfig2[b].pages || []).concat(s.pages || []);
                     this.config.Testconfig2[b] = {
                         ...((this.config.Testconfig2[b] as panelConfigPartial) || {}),
-                        ...a,
+                        ...s,
                     };
                 }
                 this.config.Testconfig2[0].pages![0] = this.config.Testconfig2[0].pages![0];

@@ -109,8 +109,8 @@ class NspanelLovelaceUi extends utils.Adapter {
           await this.setForeignObjectAsync(this.namespace, obj);
         }
         for (let b = 0; b < scriptConfig.length; b++) {
-          const a = scriptConfig[b];
-          if (!a || !a.pages) {
+          const s = scriptConfig[b];
+          if (!s || !s.pages) {
             continue;
           }
           if (!this.config.Testconfig2[b]) {
@@ -119,25 +119,28 @@ class NspanelLovelaceUi extends utils.Adapter {
           if (!this.config.Testconfig2[b].pages) {
             this.config.Testconfig2[b].pages = [];
           }
+          if (!this.config.Testconfig2[b].navigation) {
+            this.config.Testconfig2[b].navigation = [];
+          }
           this.config.Testconfig2[b].pages = this.config.Testconfig2[b].pages.filter(
-            (a2) => {
-              if (scriptConfig[b].pages.find((b2) => b2.uniqueID === a2.uniqueID)) {
+            (a) => {
+              if (s.pages.find((b2) => b2.uniqueID === a.uniqueID)) {
                 return false;
               }
               return true;
             }
           );
-          this.config.Testconfig2[b].navigation = this.config.Testconfig2[b].navigation.filter((a2) => {
-            if (scriptConfig[b].navigation.find((b2) => a2 == null || b2 == null || b2.name === a2.name)) {
+          this.config.Testconfig2[b].navigation = this.config.Testconfig2[b].navigation.filter((a) => {
+            if (s.navigation && s.navigation.find((b2) => a == null || b2 == null || b2.name === a.name)) {
               return false;
             }
             return true;
           });
-          a.navigation = (this.config.Testconfig2[b].navigation || []).concat(a.navigation);
-          a.pages = (this.config.Testconfig2[b].pages || []).concat(a.pages);
+          s.navigation = (this.config.Testconfig2[b].navigation || []).concat(s.navigation || []);
+          s.pages = (this.config.Testconfig2[b].pages || []).concat(s.pages || []);
           this.config.Testconfig2[b] = {
             ...this.config.Testconfig2[b] || {},
-            ...a
+            ...s
           };
         }
         this.config.Testconfig2[0].pages[0] = this.config.Testconfig2[0].pages[0];

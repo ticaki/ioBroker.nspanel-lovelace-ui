@@ -190,7 +190,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   /**
    * Event when visibility is on Change.
    *
-   * @param val
+   * @param val true/false
    */
   async onVisibilityChange(val) {
     val;
@@ -275,9 +275,9 @@ class StatesControler extends import_library.BaseClass {
    *
    * @param id state id
    * @param from the page that handle the trigger
-   * @param internal
-   * @param trigger
-   * @param change
+   * @param internal if the state is internal
+   * @param trigger if the state should trigger other classes
+   * @param change if the state should trigger other classes
    */
   async setTrigger(id, from, internal = false, trigger = true, change) {
     if (id.startsWith(this.adapter.namespace)) {
@@ -389,9 +389,9 @@ class StatesControler extends import_library.BaseClass {
    * Read a state from DB or js-controller
    *
    * @param id state id with namespace
-   * @param response
-   * @param internal
-   * @returns
+   * @param response now or medium
+   * @param internal if the state is internal
+   * @returns nsPanelState or null
    */
   async getState(id, response = "medium", internal = false) {
     let timespan = this.timespan;
@@ -557,7 +557,7 @@ class StatesControler extends import_library.BaseClass {
    * @param ack false use value/ true use func
    * @param common optional for first call
    * @param func optional for first call
-   * @returns
+   * @returns true if set
    */
   async setInternalState(id, val, ack = false, common = void 0, func = void 0) {
     var _a;
@@ -594,7 +594,7 @@ class StatesControler extends import_library.BaseClass {
    *
    * @param data Json with configuration to create dataitems
    * @param parent Page etc.
-   * @param target
+   * @param target optional target
    * @returns then json with values dataitem or undefined
    */
   async createDataItems(data, parent, target = {}) {

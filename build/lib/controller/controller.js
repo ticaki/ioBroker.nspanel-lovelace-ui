@@ -79,7 +79,7 @@ class Controller extends Library.BaseClass {
   /**
    * Update Date every hour....
    *
-   * @returns
+   * @returns void
    */
   dateUpdateLoop = async () => {
     if (this.unload) {
