@@ -1003,34 +1003,37 @@ export class ConfigManager extends BaseClass {
             defaultOnColor: ScriptConfig.RGB;
         },
     ): Promise<typePageItem.PageItemDataItemsOptions> {
-        const result: Partial<typePageItem.PageItemDataItemsOptions> = {
+        const result: typePageItem.PageItemDataItemsOptions = {
             modeScr: mode,
             type: 'text',
             data: { entity1: {} },
         };
-        result.data!.entity2 = result.data!.entity1;
+        if (!result.data.entity1) {
+            throw new Error('Invalid data');
+        }
+        result.data.entity2 = result.data.entity1;
 
         let obj;
         if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith('.')) {
             obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
-            result.data!.entity1!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
+            result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
         }
 
         if (entity.ScreensaverEntityUnitText || entity.ScreensaverEntityUnitText === '') {
-            result.data!.entity1!.unit = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityUnitText);
+            result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityUnitText);
         } else if (obj && obj.common && obj.common.unit) {
-            result.data!.entity1!.unit = { type: 'const', constVal: obj.common.unit };
+            result.data.entity1.unit = { type: 'const', constVal: obj.common.unit };
         }
 
         if (entity.ScreensaverEntityFactor) {
-            result.data!.entity1!.factor = { type: 'const', constVal: entity.ScreensaverEntityFactor };
+            result.data.entity1.factor = { type: 'const', constVal: entity.ScreensaverEntityFactor };
         }
 
         if (entity.ScreensaverEntityDecimalPlaces) {
-            result.data!.entity1!.decimal = { type: 'const', constVal: entity.ScreensaverEntityDecimalPlaces };
+            result.data.entity1.decimal = { type: 'const', constVal: entity.ScreensaverEntityDecimalPlaces };
         }
         if (entity.ScreensaverEntityDateFormat) {
-            result.data!.entity1!.dateFormat = {
+            result.data.entity1.dateFormat = {
                 type: 'const',
                 constVal: { local: 'de', format: entity.ScreensaverEntityDateFormat },
             };
@@ -1048,34 +1051,37 @@ export class ConfigManager extends BaseClass {
         let colorOff: Types.DataItemsOptions | undefined = undefined;
         if (entity.ScreensaverEntityOffColor) {
             colorOff = await this.getIconColor(entity.ScreensaverEntityOffColor);
-        } else {
+        } else if (entity.ScreensaverEntityOffColor !== null) {
             colorOff = await this.getIconColor(defaultColors.defaultOffColor);
         }
 
         if (entity.ScreensaverEntityIconOn) {
-            result.data!.icon = {
+            result.data.icon = {
                 true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) },
             };
-            if (color) {
-                result.data!.icon.true!.color = color;
-            }
+        }
+        if (color) {
+            result.data.icon = result.data.icon || {};
+            result.data.icon.true = result.data.icon.true || {};
+            result.data.icon.true.color = color;
         }
 
         if (entity.ScreensaverEntityIconOff) {
-            result.data!.icon = {
-                ...result.data!.icon,
+            result.data.icon = {
+                ...result.data.icon,
                 ...{
                     false: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff) },
                 },
             };
-            if (color) {
-                result.data!.icon.false!.color = colorOff;
-            }
+        }
+        if (color) {
+            result.data.icon = result.data.icon || {};
+            result.data.icon.false = result.data.icon.false || {};
+            result.data.icon.false.color = colorOff;
         }
         if (entity.ScreensaverEntityIconColor && isIconScaleElement(entity.ScreensaverEntityIconColor)) {
-            result.data!.icon = {
-                ...result.data!.icon,
-
+            result.data.icon = {
+                ...result.data.icon,
                 scale: {
                     type: 'const',
                     constVal: entity.ScreensaverEntityIconColor,
@@ -1084,13 +1090,13 @@ export class ConfigManager extends BaseClass {
         }
 
         if (entity.ScreensaverEntityOnText) {
-            result.data!.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) };
+            result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) };
         } else if (entity.ScreensaverEntityText) {
-            result.data!.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };
+            result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };
         }
 
         if (entity.ScreensaverEntityOffText) {
-            result.data!.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
+            result.data.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
         }
 
         if (isPageItemDataItemsOptions(result)) {

@@ -410,7 +410,7 @@ class Panel extends import_library.BaseClass {
         if (scs && scs[0]) {
           this.screenSaver = scs[0];
           if (pages.isScreenSaverMode(currentScreensaver.val)) {
-            this.screenSaver.overwriteModel(currentScreensaver.val);
+            this.screenSaver.overwriteModel(currentScreensaver.val, true);
           }
         }
       }

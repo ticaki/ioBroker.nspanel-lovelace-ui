@@ -112,7 +112,8 @@ const config: ScriptConfig.Config = {
     defaultOnColor: On,
     defaultColor: Off,
     defaultBackgroundColor: HMIDark,
-
+    
+    // Als Gedankenstütze, die Hauptseite muß main heißen!
     //panelName: 'NSPanel', //unique name for the panel
 
 

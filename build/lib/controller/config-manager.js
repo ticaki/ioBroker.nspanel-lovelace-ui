@@ -913,6 +913,9 @@ class ConfigManager extends import_library.BaseClass {
       type: "text",
       data: { entity1: {} }
     };
+    if (!result.data.entity1) {
+      throw new Error("Invalid data");
+    }
     result.data.entity2 = result.data.entity1;
     let obj;
     if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith(".")) {
@@ -947,16 +950,18 @@ class ConfigManager extends import_library.BaseClass {
     let colorOff = void 0;
     if (entity.ScreensaverEntityOffColor) {
       colorOff = await this.getIconColor(entity.ScreensaverEntityOffColor);
-    } else {
+    } else if (entity.ScreensaverEntityOffColor !== null) {
       colorOff = await this.getIconColor(defaultColors.defaultOffColor);
     }
     if (entity.ScreensaverEntityIconOn) {
       result.data.icon = {
         true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) }
       };
-      if (color) {
-        result.data.icon.true.color = color;
-      }
+    }
+    if (color) {
+      result.data.icon = result.data.icon || {};
+      result.data.icon.true = result.data.icon.true || {};
+      result.data.icon.true.color = color;
     }
     if (entity.ScreensaverEntityIconOff) {
       result.data.icon = {
@@ -965,9 +970,11 @@ class ConfigManager extends import_library.BaseClass {
           false: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff) }
         }
       };
-      if (color) {
-        result.data.icon.false.color = colorOff;
-      }
+    }
+    if (color) {
+      result.data.icon = result.data.icon || {};
+      result.data.icon.false = result.data.icon.false || {};
+      result.data.icon.false.color = colorOff;
     }
     if (entity.ScreensaverEntityIconColor && isIconScaleElement(entity.ScreensaverEntityIconColor)) {
       result.data.icon = {

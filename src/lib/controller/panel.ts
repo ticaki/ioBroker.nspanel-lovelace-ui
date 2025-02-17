@@ -426,7 +426,7 @@ export class Panel extends BaseClass {
                 if (scs && scs[0]) {
                     this.screenSaver = scs[0] as Screensaver;
                     if (pages.isScreenSaverMode(currentScreensaver.val)) {
-                        this.screenSaver.overwriteModel(currentScreensaver.val);
+                        this.screenSaver.overwriteModel(currentScreensaver.val, true);
                     }
                 }
             }

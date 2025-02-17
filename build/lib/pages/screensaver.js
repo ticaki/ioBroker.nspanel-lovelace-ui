@@ -343,7 +343,7 @@ class Screensaver extends import_Page.Page {
       this.log.error(`Invalid mode: ${mode}`);
     }
   }
-  overwriteModel(mode) {
+  overwriteModel(mode, init = false) {
     if (mode === this.mode) {
       return;
     }
@@ -376,8 +376,10 @@ class Screensaver extends import_Page.Page {
       }
     }
     this.mode = mode;
-    this.sendType();
-    void this.update();
+    if (!init) {
+      this.sendType();
+      void this.update();
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

@@ -364,7 +364,7 @@ export class Screensaver extends Page {
         }
     }
 
-    overwriteModel(mode: Types.ScreensaverModeType): void {
+    overwriteModel(mode: Types.ScreensaverModeType, init: boolean = false): void {
         if (mode === this.mode) {
             return;
         }
@@ -401,7 +401,9 @@ export class Screensaver extends Page {
             }
         }
         this.mode = mode;
-        this.sendType();
-        void this.update();
+        if (!init) {
+            this.sendType();
+            void this.update();
+        }
     }
 }

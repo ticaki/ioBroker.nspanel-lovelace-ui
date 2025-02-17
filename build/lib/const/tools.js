@@ -295,6 +295,17 @@ async function getIconEntryColor(i, value, def, defOff = null) {
   }
   if (typeof value === "boolean") {
     const color = i.true && i.true.color && await i.true.color.getRGBDec();
+    const scale = i.scale && await i.scale.getObject();
+    if (scale) {
+      if ((0, import_types.isIconScaleElement)(scale)) {
+        if (scale.val_min === 1 && scale.val_max === 0) {
+          value = !value;
+        }
+        if (scale.val_best !== void 0 && scale.val_best == 0) {
+          value = !value;
+        }
+      }
+    }
     if (!value) {
       return (_c = (_b = (_a = i.false && i.false.color && await i.false.color.getRGBDec()) != null ? _a : defOff && String(import_Color.Color.rgb_dec565(defOff))) != null ? _b : color) != null ? _c : String(import_Color.Color.rgb_dec565(def));
     }

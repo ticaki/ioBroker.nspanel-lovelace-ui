@@ -310,6 +310,17 @@ export async function getIconEntryColor(
     }
     if (typeof value === 'boolean') {
         const color = i.true && i.true.color && (await i.true.color.getRGBDec());
+        const scale = i.scale && (await i.scale.getObject());
+        if (scale) {
+            if (isIconScaleElement(scale)) {
+                if (scale.val_min === 1 && scale.val_max === 0) {
+                    value = !value;
+                }
+                if (scale.val_best !== undefined && scale.val_best == 0) {
+                    value = !value;
+                }
+            }
+        }
         if (!value) {
             return (
                 (i.false && i.false.color && (await i.false.color.getRGBDec())) ??
