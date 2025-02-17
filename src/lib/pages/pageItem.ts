@@ -1194,7 +1194,7 @@ export class PageItem extends BaseClassTriggerd {
                     }
                 } else if (entry.type === 'light') {
                     const item = entry.data;
-                    item.entity1 && item.entity1.value && (await item.entity1.value.setStateFlip());
+                    item.setValue1 && (await item.setValue1.setStateFlip());
                 }
                 break;
             }
@@ -1232,10 +1232,10 @@ export class PageItem extends BaseClassTriggerd {
             case 'OnOff': {
                 if (entry.type === 'light') {
                     const item = entry.data;
-                    if (item && item.entity1 && item.entity1.value && item.entity1.value.writeable) {
-                        await item.entity1.value.setStateAsync(value === '1');
+                    if (item && item.setValue1 && item.setValue1.writeable) {
+                        await item.setValue1.setStateAsync(value === '1');
                     } else {
-                        this.log.warn('entity1 is not writeable!');
+                        this.log.warn('setValue1 is not writeable!');
                     }
                 }
                 break;

@@ -11,4 +11,4 @@ jobs:
       with:
         in-progress-label: 'In progress'
         ready-for-review-label: 'Ready for review'
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        repo-token: ${{ secrets.AUTO_ASSIGN }}

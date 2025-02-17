@@ -297,6 +297,8 @@ export type PageItemLight = Pick<
     | 'ct'
     | 'headline'
     | 'colorMode'
+    | 'setValue1'
+    | 'setValue2'
 >;
 export type PageItemLightDataItemsOptions = {
     type: 'light';
@@ -349,6 +351,8 @@ export type PageItemShutter = Pick<
     | 'headline'
     | 'valueList'
     | 'setList'
+    | 'setValue1'
+    | 'setValue2'
 >;
 export type PageItemShutterDataItemsOptions = {
     type: 'shutter';

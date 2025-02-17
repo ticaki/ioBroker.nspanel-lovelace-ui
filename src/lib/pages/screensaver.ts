@@ -145,12 +145,11 @@ export class Screensaver extends Page {
                         if (!msg) {
                             items[i] = tools.getPayload('', '', '', '', '', '');
                         } else {
-                            let arr = items[i].split('~');
+                            const arr = items[i].split('~');
                             arr[0] = '';
                             if (place !== 'indicator') {
                                 arr[1] = '';
                             }
-                            arr = arr.map(a => a.slice(0, 10));
                             items[i] = tools.getPayloadArray(arr);
                         }
                     }
