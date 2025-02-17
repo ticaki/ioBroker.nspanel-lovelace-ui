@@ -262,7 +262,7 @@ export class StatesControler extends BaseClass {
             this.objectDatabase = {};
         }, 1800000);
     }
-    private deletePageLoop = (): void => {
+    deletePageLoop = (): void => {
         const removeId = [];
         for (const id in this.triggerDB) {
             const entry = this.triggerDB[id];
@@ -335,6 +335,7 @@ export class StatesControler extends BaseClass {
                 this.triggerDB[id].subscribed.push(false);
                 this.triggerDB[id].triggerAllowed.push(trigger);
                 this.triggerDB[id].change.push(change ? change : 'ne');
+                this.log.debug(`Activate trigger from ${from.name} to ${id}`);
             } else {
                 //nothing
             }
@@ -420,6 +421,7 @@ export class StatesControler extends BaseClass {
                 continue;
             }
             entry.subscribed[index] = false;
+            this.log.debug(`Deactivate trigger from ${to.name} to ${id}`);
             if (!entry.subscribed.some(a => a)) {
                 await this.adapter.unsubscribeForeignStatesAsync(id);
             }
@@ -560,7 +562,7 @@ export class StatesControler extends BaseClass {
                             ) {
                                 this.log.debug(`Ignore trigger from state ${dp} not subscribed or not allowed!`);
                                 this.log.debug(
-                                    `!c.neverDeactivateTrigger: ${!c.neverDeactivateTrigger} && !this.triggerDB[dp].subscribed[i]: ${this.triggerDB[dp].subscribed[i]} || !this.triggerDB[dp].triggerAllowed[i]: ${!this.triggerDB[dp].triggerAllowed[i]}`,
+                                    `!c.neverDeactivateTrigger: ${!c.neverDeactivateTrigger} && !this.triggerDB[dp].subscribed[i]: ${!this.triggerDB[dp].subscribed[i]} || !this.triggerDB[dp].triggerAllowed[i]: ${!this.triggerDB[dp].triggerAllowed[i]}`,
                                 );
                                 return;
                             }

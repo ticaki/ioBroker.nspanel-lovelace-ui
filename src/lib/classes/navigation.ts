@@ -19,7 +19,7 @@ export type NavigationItemConfig = {
     page: string;
     optional?: optionalActionsType;
 } | null;
-
+export type NavigationItemConfigNonNull = NonNullable<NavigationItemConfig>;
 type NavigationItem = {
     left: {
         single?: number;
@@ -42,7 +42,7 @@ export interface NavigationConfig {
 export class Navigation extends BaseClass {
     panel: Panel;
     private database: NavigationItem[] = [];
-    private navigationConfig: NavigationItemConfig[];
+    private navigationConfig: NavigationItemConfigNonNull[];
     private mainPage = 'main';
     private doubleClickTimeout: ioBroker.Timeout | undefined;
     private _currentItem: number = 0;
@@ -67,20 +67,31 @@ export class Navigation extends BaseClass {
     constructor(config: NavigationConfig) {
         super(config.adapter, `${config.panel.name}-navigation`);
         this.panel = config.panel;
-        this.navigationConfig = config.navigationConfig;
+        this.navigationConfig = config.navigationConfig.filter(a => a !== null && a != null);
     }
 
     init(): void {
         this.database = [];
-        let b = 1;
         let serviceLeft = '';
         let serviceRight = '';
         let serviceID = -1;
+        this.navigationConfig.sort((a, b) => {
+            if (a.name === 'main') {
+                return -1;
+            }
+            if (b.name === 'main') {
+                return 1;
+            }
+            if (a.name > b.name) {
+                return 1;
+            }
+            if (a.name < b.name) {
+                return -1;
+            }
+            return 0;
+        });
         for (let a = 0; a < this.navigationConfig.length; a++) {
             const c = this.navigationConfig[a];
-            if (!c) {
-                continue;
-            }
             if (c.left && c.left.single === '///service') {
                 serviceRight = c.name;
             }
@@ -91,8 +102,7 @@ export class Navigation extends BaseClass {
                 serviceID = a;
             }
             const pageID = this.panel.getPagebyUniqueID(c.page);
-            this.database[c.name === 'main' ? 0 : b++] =
-                pageID !== null ? { page: pageID, left: {}, right: {}, index: a } : null;
+            this.database[a] = pageID !== null ? { page: pageID, left: {}, right: {}, index: a } : null;
         }
         if (serviceID !== -1) {
             const c = this.navigationConfig[serviceID];
@@ -155,7 +165,7 @@ export class Navigation extends BaseClass {
     setMainPageByName(n: string): void {
         const index = this.navigationConfig.findIndex(a => a && a.name === n);
         if (index !== -1 && this.database[index]) {
-            this.mainPage = this.navigationConfig[index]!.name;
+            this.mainPage = this.navigationConfig[index].name;
         } else {
             this.log.warn(`Dont find navigation main page for ${n}`);
         }

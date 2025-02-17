@@ -1004,6 +1004,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       }
     }
     await super.delete();
+    this.controller.statesControler.deletePageLoop();
     this.parent = void 0;
   }
   async onCommand(action, value) {

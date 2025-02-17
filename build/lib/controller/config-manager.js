@@ -104,6 +104,9 @@ class ConfigManager extends import_library.BaseClass {
       }
     }
     panelConfig = await this.getGridConfig(config, panelConfig);
+    if (config.navigation != null) {
+      panelConfig.navigation = config.navigation;
+    }
     this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
     const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
     if (obj) {
@@ -142,15 +145,17 @@ class ConfigManager extends import_library.BaseClass {
           this.log.error(`Page ${page.heading || "unknown"} has no uniqueName!`);
           continue;
         }
-        const left = page.prev || page.parent && page.parent.type !== void 0 && page.parent.uniqueName || void 0;
-        const right = page.next || page.home || void 0;
-        const navItem = {
-          name: page.uniqueName,
-          left: left ? { single: left } : void 0,
-          right: right ? { single: right } : void 0,
-          page: page.uniqueName
-        };
-        result.navigation.push(navItem);
+        if ((config.subPages || []).includes(page)) {
+          const left = page.prev || page.parent && page.parent.type !== void 0 && page.parent.uniqueName || void 0;
+          const right = page.next || page.home || void 0;
+          const navItem = {
+            name: page.uniqueName,
+            left: left ? { single: left } : void 0,
+            right: right ? { single: right } : void 0,
+            page: page.uniqueName
+          };
+          result.navigation.push(navItem);
+        }
         const gridItem = {
           dpInit: "",
           alwaysOn: "none",
@@ -177,7 +182,14 @@ class ConfigManager extends import_library.BaseClass {
                   this.log.error(`Role missing in ${item.id}!`);
                   continue;
                 }
-                const role = obj.common.role;
+                let role = obj.common.role;
+                if (item.navigate) {
+                  if (!item.targetPage || typeof item.targetPage !== "string") {
+                    this.log.error(`TargetPage missing in ${page.uniqueName} - ${item.id}!`);
+                    continue;
+                  }
+                  role = "button";
+                }
                 if (!import_config_manager_const.requiredDatapoints[role]) {
                   this.log.warn(`Role ${role} not implemented yet!`);
                   continue;
@@ -383,6 +395,51 @@ class ConfigManager extends import_library.BaseClass {
                     itemConfig = tempItem;
                     break;
                   }
+                  case "button": {
+                    const tempItem = {
+                      type: "button",
+                      role: "button",
+                      data: {
+                        icon: {
+                          true: {
+                            value: {
+                              type: "const",
+                              constVal: item.icon || "gesture-tap-button"
+                            },
+                            color: {
+                              type: "const",
+                              constVal: item.onColor || import_Color.Color.activated
+                            }
+                          },
+                          false: {
+                            value: {
+                              type: "const",
+                              constVal: item.icon2 || "gesture-tap-button"
+                            },
+                            color: {
+                              type: "const",
+                              constVal: item.offColor || import_Color.Color.deactivated
+                            }
+                          },
+                          scale: void 0,
+                          maxBri: void 0,
+                          minBri: void 0
+                        },
+                        text: {
+                          true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : void 0
+                        },
+                        text1: {
+                          true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+                        },
+                        entity1: {
+                          value: { type: "triggered", dp: `${item.id}.ACTUAL` }
+                        },
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+                      }
+                    };
+                    itemConfig = tempItem;
+                    break;
+                  }
                   case "rgb":
                   case "rgbSingle":
                   case "ct":
@@ -404,7 +461,6 @@ class ConfigManager extends import_library.BaseClass {
                   case "gate":
                   case "motion":
                   case "buttonSensor":
-                  case "button":
                   case "value.time":
                   case "level.timer":
                   case "value.alarmtime":

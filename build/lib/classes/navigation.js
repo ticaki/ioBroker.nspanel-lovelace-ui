@@ -52,19 +52,30 @@ class Navigation extends import_library.BaseClass {
   constructor(config) {
     super(config.adapter, `${config.panel.name}-navigation`);
     this.panel = config.panel;
-    this.navigationConfig = config.navigationConfig;
+    this.navigationConfig = config.navigationConfig.filter((a) => a !== null && a != null);
   }
   init() {
     this.database = [];
-    let b = 1;
     let serviceLeft = "";
     let serviceRight = "";
     let serviceID = -1;
+    this.navigationConfig.sort((a, b) => {
+      if (a.name === "main") {
+        return -1;
+      }
+      if (b.name === "main") {
+        return 1;
+      }
+      if (a.name > b.name) {
+        return 1;
+      }
+      if (a.name < b.name) {
+        return -1;
+      }
+      return 0;
+    });
     for (let a = 0; a < this.navigationConfig.length; a++) {
       const c = this.navigationConfig[a];
-      if (!c) {
-        continue;
-      }
       if (c.left && c.left.single === "///service") {
         serviceRight = c.name;
       }
@@ -75,7 +86,7 @@ class Navigation extends import_library.BaseClass {
         serviceID = a;
       }
       const pageID = this.panel.getPagebyUniqueID(c.page);
-      this.database[c.name === "main" ? 0 : b++] = pageID !== null ? { page: pageID, left: {}, right: {}, index: a } : null;
+      this.database[a] = pageID !== null ? { page: pageID, left: {}, right: {}, index: a } : null;
     }
     if (serviceID !== -1) {
       const c = this.navigationConfig[serviceID];

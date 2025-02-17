@@ -98,6 +98,9 @@ export class ConfigManager extends BaseClass {
 
         panelConfig = await this.getGridConfig(config, panelConfig);
 
+        if (config.navigation != null) {
+            panelConfig.navigation = config.navigation;
+        }
         this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
         const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
         if (obj) {
@@ -152,16 +155,20 @@ export class ConfigManager extends BaseClass {
                     this.log.error(`Page ${page.heading || 'unknown'} has no uniqueName!`);
                     continue;
                 }
-                const left =
-                    page.prev || (page.parent && page.parent.type !== undefined && page.parent.uniqueName) || undefined;
-                const right = page.next || page.home || undefined;
-                const navItem: NavigationItemConfig = {
-                    name: page.uniqueName,
-                    left: left ? { single: left } : undefined,
-                    right: right ? { single: right } : undefined,
-                    page: page.uniqueName,
-                };
-                result.navigation.push(navItem);
+                if ((config.subPages || []).includes(page)) {
+                    const left =
+                        page.prev ||
+                        (page.parent && page.parent.type !== undefined && page.parent.uniqueName) ||
+                        undefined;
+                    const right = page.next || page.home || undefined;
+                    const navItem: NavigationItemConfig = {
+                        name: page.uniqueName,
+                        left: left ? { single: left } : undefined,
+                        right: right ? { single: right } : undefined,
+                        page: page.uniqueName,
+                    };
+                    result.navigation.push(navItem);
+                }
                 const gridItem: pages.PageBaseConfig = {
                     dpInit: '',
                     alwaysOn: 'none',
@@ -188,8 +195,14 @@ export class ConfigManager extends BaseClass {
                                     this.log.error(`Role missing in ${item.id}!`);
                                     continue;
                                 }
-                                const role = obj.common.role as ScriptConfig.roles;
-
+                                let role = obj.common.role as ScriptConfig.roles;
+                                if (item.navigate) {
+                                    if (!item.targetPage || typeof item.targetPage !== 'string') {
+                                        this.log.error(`TargetPage missing in ${page.uniqueName} - ${item.id}!`);
+                                        continue;
+                                    }
+                                    role = 'button';
+                                }
                                 // check if role and types are correct
                                 if (!requiredDatapoints[role]) {
                                     this.log.warn(`Role ${role} not implemented yet!`);
@@ -447,6 +460,57 @@ export class ConfigManager extends BaseClass {
                                         itemConfig = tempItem;
                                         break;
                                     }
+                                    case 'button': {
+                                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                                            type: 'button',
+                                            role: 'button',
+                                            data: {
+                                                icon: {
+                                                    true: {
+                                                        value: {
+                                                            type: 'const',
+                                                            constVal: item.icon || 'gesture-tap-button',
+                                                        },
+                                                        color: {
+                                                            type: 'const',
+                                                            constVal: item.onColor || Color.activated,
+                                                        },
+                                                    },
+                                                    false: {
+                                                        value: {
+                                                            type: 'const',
+                                                            constVal: item.icon2 || 'gesture-tap-button',
+                                                        },
+                                                        color: {
+                                                            type: 'const',
+                                                            constVal: item.offColor || Color.deactivated,
+                                                        },
+                                                    },
+                                                    scale: undefined,
+                                                    maxBri: undefined,
+                                                    minBri: undefined,
+                                                },
+                                                text: {
+                                                    true: item.buttonText
+                                                        ? await this.getFieldAsDataItemConfig(item.buttonText)
+                                                        : undefined,
+                                                },
+                                                text1: {
+                                                    true: item.name
+                                                        ? await this.getFieldAsDataItemConfig(item.name)
+                                                        : undefined,
+                                                },
+                                                entity1: {
+                                                    value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                                                },
+                                                setNavi: item.targetPage
+                                                    ? await this.getFieldAsDataItemConfig(item.targetPage)
+                                                    : undefined,
+                                            },
+                                        };
+                                        itemConfig = tempItem;
+                                        break;
+                                    }
                                     case 'rgb':
                                     case 'rgbSingle':
                                     case 'ct':
@@ -468,7 +532,6 @@ export class ConfigManager extends BaseClass {
                                     case 'gate':
                                     case 'motion':
                                     case 'buttonSensor':
-                                    case 'button':
                                     case 'value.time':
                                     case 'level.timer':
                                     case 'value.alarmtime':

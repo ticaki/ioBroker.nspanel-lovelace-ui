@@ -291,6 +291,7 @@ class StatesControler extends import_library.BaseClass {
         this.triggerDB[id].subscribed.push(false);
         this.triggerDB[id].triggerAllowed.push(trigger);
         this.triggerDB[id].change.push(change ? change : "ne");
+        this.log.debug(`Activate trigger from ${from.name} to ${id}`);
       } else {
       }
     } else if (internal) {
@@ -372,6 +373,7 @@ class StatesControler extends import_library.BaseClass {
         continue;
       }
       entry.subscribed[index] = false;
+      this.log.debug(`Deactivate trigger from ${to.name} to ${id}`);
       if (!entry.subscribed.some((a) => a)) {
         await this.adapter.unsubscribeForeignStatesAsync(id);
       }
@@ -489,7 +491,7 @@ class StatesControler extends import_library.BaseClass {
               if (!c.neverDeactivateTrigger && !this.triggerDB[dp].subscribed[i] || !this.triggerDB[dp].triggerAllowed[i]) {
                 this.log.debug(`Ignore trigger from state ${dp} not subscribed or not allowed!`);
                 this.log.debug(
-                  `!c.neverDeactivateTrigger: ${!c.neverDeactivateTrigger} && !this.triggerDB[dp].subscribed[i]: ${this.triggerDB[dp].subscribed[i]} || !this.triggerDB[dp].triggerAllowed[i]: ${!this.triggerDB[dp].triggerAllowed[i]}`
+                  `!c.neverDeactivateTrigger: ${!c.neverDeactivateTrigger} && !this.triggerDB[dp].subscribed[i]: ${!this.triggerDB[dp].subscribed[i]} || !this.triggerDB[dp].triggerAllowed[i]: ${!this.triggerDB[dp].triggerAllowed[i]}`
                 );
                 return;
               }

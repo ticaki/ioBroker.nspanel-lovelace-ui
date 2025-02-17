@@ -131,6 +131,20 @@ declare namespace ScriptConfig {
         method: EventMethod;
     };
 
+    export type NavigationItemConfig = {
+        name: string;
+        left?: {
+            single?: string;
+            double?: string;
+        };
+        right?: {
+            single?: string;
+            double?: string;
+        };
+        page: string;
+        optional?: never;
+    } | null;
+
     export type SerialType = 'button' | 'light' | 'shutter' | 'text' | 'input_sel' | 'timer' | 'number' | 'fan';
 
     /**
@@ -496,6 +510,7 @@ declare namespace ScriptConfig {
         button1: ConfigButtonFunction;
         button2: ConfigButtonFunction;
         nativePageItems?: typePageItem.PageItemDataItemsOptions[];
+        navigation?: NavigationItemConfig[];
     };
     export type leftScreensaverEntityType =
         | [ScreenSaverElementWithUndefined?, ScreenSaverElementWithUndefined?, ScreenSaverElementWithUndefined?]

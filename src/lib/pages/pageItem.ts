@@ -1140,6 +1140,7 @@ export class PageItem extends BaseClassTriggerd {
             }
         }
         await super.delete();
+        this.controller.statesControler.deletePageLoop();
         this.parent = undefined;
     }
 
