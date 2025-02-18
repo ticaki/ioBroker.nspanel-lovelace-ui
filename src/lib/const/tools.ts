@@ -277,10 +277,21 @@ export async function getIconEntryValue(
         return text;
     }
     const icon = (i.true && i.true.value && (await i.true.value.getString())) ?? null;
-    if (!on) {
+    if (typeof on === 'boolean' && !on) {
         return Icons.GetIcon((i.false && i.false.value && (await i.false.value.getString())) ?? defOff ?? icon ?? def);
+    } else if (typeof on === 'number') {
+        const scaleM = i.scale && (await i.scale.getObject());
+        const scale = isPartialIconScaleElement(scaleM) ? scaleM : { val_min: 0, val_max: 100 };
+        if (scale.val_min < on && scale.val_max > on) {
+            return Icons.GetIcon(
+                (i.unstable && i.unstable.value && (await i.unstable.value.getString())) ?? icon ?? def,
+            );
+        } else if (scale.val_min > on) {
+            return Icons.GetIcon(
+                (i.false && i.false.value && (await i.false.value.getString())) ?? defOff ?? icon ?? def,
+            );
+        }
     }
-
     return Icons.GetIcon(icon ?? def);
 }
 

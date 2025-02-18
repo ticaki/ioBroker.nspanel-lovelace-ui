@@ -24,6 +24,102 @@ Merkhilfe:
 
 Immer wenn ich Zeit und lust habe Dokumentiere ich hier Sachen.
 
+Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
+
+## Konvertierung der Skriptkonfiguration in Adapterkonfig
+
+### Cards
+- [ ] cardChart
+- [ ] cardLChart
+- [x] cardEntities
+- [x] cardGrid
+- [x] cardGrid2
+- [x] cardGrid3
+- [ ] cardThermo
+- [ ] cardMedia
+- [ ] cardUnlock
+- [ ] cardQR
+- [ ] cardAlarm
+- [ ] cardPower
+
+### PageItems
+- [x] light
+- [x] socket
+- [x] dimmer
+- [x] hue
+- [x] rgb
+- [x] rgbSingle
+- [x] ct
+- [x] blind
+- [ ] door
+- [ ] window
+- [ ] volumeGroup
+- [ ] volume
+- [ ] info
+- [ ] humidity
+- [ ] temperature
+- [ ] value.temperature
+- [ ] value.humidity
+- [ ] sensor.door
+- [ ] sensor.window
+- [ ] thermostat
+- [ ] warning
+- [ ] cie
+- [ ] gate
+- [ ] motion
+- [ ] buttonSensor
+- [ ] button
+- [ ] value.time
+- [ ] level.timer
+- [ ] value.alarmtime
+- [ ] level.mode.fan
+- [ ] lock
+- [ ] slider
+- [ ] switch.mode.wlan
+- [ ] media
+- [ ] timeTable
+- [ ] airCondition
+
+### PageItems Navigation
+- [x] light
+- [x] socket
+- [x] dimmer
+- [x] hue
+- [x] rgb
+- [x] rgbSingle
+- [x] ct
+- [ ] blind
+- [ ] door
+- [ ] window
+- [ ] volumeGroup
+- [ ] volume
+- [ ] info
+- [ ] humidity
+- [ ] temperature
+- [ ] value.temperature
+- [ ] value.humidity
+- [ ] sensor.door
+- [ ] sensor.window
+- [ ] thermostat
+- [ ] warning
+- [ ] cie
+- [ ] gate
+- [ ] motion
+- [ ] buttonSensor
+- [ ] button
+- [ ] value.time
+- [ ] level.timer
+- [ ] value.alarmtime
+- [ ] level.mode.fan
+- [ ] lock
+- [ ] slider
+- [ ] switch.mode.wlan
+- [ ] media
+- [ ] timeTable
+- [ ] airCondition
+
+
+
 ## Eingebaut:
 - cardMedia 
 - cardGrid/2

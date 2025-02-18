@@ -265,10 +265,13 @@ export class ConfigManager extends BaseClass {
             case 'socket':
             case 'light':
             case 'dimmer':
-            case 'hue': {
+            case 'hue':
+            case 'rgb':
+            case 'rgbSingle':
+            case 'ct': {
                 const tempItem: typePageItem.PageItemDataItemsOptions = {
                     type: 'button',
-                    role: role,
+                    role: role === 'rgb' ? 'rgbThree' : role,
                     data: {
                         icon: {
                             true: {
@@ -362,9 +365,6 @@ export class ConfigManager extends BaseClass {
                 itemConfig = tempItem;
                 break;
             }
-            case 'rgb':
-            case 'rgbSingle':
-            case 'ct':
             case 'blind':
             case 'door':
             case 'window':
@@ -546,10 +546,20 @@ export class ConfigManager extends BaseClass {
                         itemConfig = tempItem;
                         break;
                     }
+                    case 'rgbSingle':
+                    case 'ct':
+                    case 'rgb':
                     case 'hue': {
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'light',
-                            role: 'hue',
+                            role:
+                                role === 'hue'
+                                    ? 'hue'
+                                    : role === 'rgb'
+                                      ? 'rgbThree'
+                                      : role === 'rgbSingle'
+                                        ? 'rgbSingle'
+                                        : 'ct',
                             data: {
                                 icon: {
                                     true: {
@@ -590,13 +600,57 @@ export class ConfigManager extends BaseClass {
                                         ? { type: 'const', constVal: item.minValueBrightness }
                                         : undefined,
                                 },
-                                headline: await this.getFieldAsDataItemConfig(item.name || commonName || 'HUE'),
-                                hue: {
-                                    type: 'triggered',
-                                    dp: `${item.id}.HUE`,
-                                },
+                                headline: await this.getFieldAsDataItemConfig(item.name || commonName || role),
+                                hue:
+                                    role !== 'hue'
+                                        ? undefined
+                                        : {
+                                              type: 'triggered',
+                                              dp: `${item.id}.HUE`,
+                                          },
+                                Red:
+                                    role !== 'rgb'
+                                        ? undefined
+                                        : {
+                                              type: 'triggered',
+                                              dp: `${item.id}.RED`,
+                                          },
+                                Green:
+                                    role !== 'rgb'
+                                        ? undefined
+                                        : {
+                                              type: 'triggered',
+                                              dp: `${item.id}.GREEN`,
+                                          },
+                                Blue:
+                                    role !== 'rgb'
+                                        ? undefined
+                                        : {
+                                              type: 'triggered',
+                                              dp: `${item.id}.BLUE`,
+                                          },
+                                White:
+                                    role !== 'rgb'
+                                        ? undefined
+                                        : (await this.existsState(`${item.id}.WHITE`))
+                                          ? {
+                                                value: {
+                                                    type: 'triggered',
+                                                    dp: `${item.id}.WHITE`,
+                                                },
+                                            }
+                                          : undefined,
+                                color:
+                                    role !== 'rgbSingle'
+                                        ? undefined
+                                        : {
+                                              true: {
+                                                  type: 'triggered',
+                                                  dp: `${item.id}.COLOR`,
+                                              },
+                                          },
                                 ct: {
-                                    value: { type: 'triggered', dp: `${item.id}.CT` },
+                                    value: { type: 'triggered', dp: `${item.id}.TEMPERATURE` },
                                     maxScale: item.maxValueColorTemp
                                         ? { type: 'const', constVal: item.maxValueColorTemp }
                                         : undefined,
@@ -616,12 +670,15 @@ export class ConfigManager extends BaseClass {
                                         constVal: `Colour temperature`,
                                     },
                                 },
-                                text3: {
-                                    true: {
-                                        type: 'const',
-                                        constVal: `Color`,
-                                    },
-                                },
+                                text3:
+                                    role === 'ct'
+                                        ? undefined
+                                        : {
+                                              true: {
+                                                  type: 'const',
+                                                  constVal: `Color`,
+                                              },
+                                          },
                                 entity1: {
                                     value: { type: 'triggered', dp: `${item.id}.ON_ACTUAL` },
                                 },
@@ -677,10 +734,68 @@ export class ConfigManager extends BaseClass {
                         itemConfig = tempItem;
                         break;
                     }
-                    case 'rgb':
-                    case 'rgbSingle':
-                    case 'ct':
-                    case 'blind':
+                    case 'blind': {
+                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                            type: 'shutter',
+                            role: 'blind',
+                            data: {
+                                icon: {
+                                    true: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: item.icon || 'window-shutter-open',
+                                        },
+                                        color: {
+                                            type: 'const',
+                                            constVal: item.onColor || Color.activated,
+                                        },
+                                    },
+                                    false: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: item.icon2 || 'window-shutter',
+                                        },
+                                        color: {
+                                            type: 'const',
+                                            constVal: item.offColor || Color.deactivated,
+                                        },
+                                    },
+                                    unstable: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: item.icon3 || 'window-shutter-alert',
+                                        },
+                                    },
+                                    scale: undefined,
+                                    maxBri: undefined,
+                                    minBri: undefined,
+                                },
+                                text: {
+                                    true: { type: 'const', constVal: 'Position' },
+                                },
+                                headline: item.name
+                                    ? await this.getFieldAsDataItemConfig(item.name)
+                                    : { type: 'const', constVal: commonName ?? 'Blind' },
+
+                                entity1: {
+                                    value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                                    set: { type: 'state', dp: `${item.id}.SET` },
+                                },
+                                entity2: {
+                                    value: { type: 'triggered', dp: `${item.id}.TILT_ACTUAL` },
+                                    set: { type: 'state', dp: `${item.id}.TILT_SET` },
+                                },
+                                up: { type: 'state', dp: `${item.id}.OPEN` },
+                                down: { type: 'state', dp: `${item.id}.CLOSE` },
+                                stop: { type: 'state', dp: `${item.id}.STOP` },
+                                up2: { type: 'state', dp: `${item.id}.TILT_OPEN` },
+                                down2: { type: 'state', dp: `${item.id}.TILT_CLOSE` },
+                                stop2: { type: 'state', dp: `${item.id}.TILT_STOP` },
+                            },
+                        };
+                        itemConfig = tempItem;
+                        break;
+                    }
                     case 'door':
                     case 'window':
                     case 'volumeGroup':
@@ -1405,6 +1520,9 @@ export class ConfigManager extends BaseClass {
         }
         this.adapter.log.error(`Invalid color value: ${JSON.stringify(item)}`);
         return undefined;
+    }
+    async existsState(id: string): Promise<boolean> {
+        return (await this.adapter.getStateAsync(id)) !== null;
     }
 }
 

@@ -15,7 +15,7 @@ async function configuration (): Promise<void> {
         heading: 'Grid 1',
         items: [
             {id: 'alias.0.Licht.lights.Gerät_1'}, {id: 'alias.0.Licht.lights.Gerät_2'}, {id: '0_userdata.0.Einzelne_Geräte.dimmer'}, {id: 'alias.0.NSPanel.allgemein.hue', colormode: 'true'},
-            {navigate: true, targetPage:'fahrplanrouten'}
+            {navigate: true, targetPage:'fahrplanrouten'}, {id:'alias.0.NSPanel.allgemein.shutter'}
         ],
         type: 'cardGrid',
         useColor: true

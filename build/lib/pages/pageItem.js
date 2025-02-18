@@ -201,7 +201,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             this.log.warn(`Entity ${this.config.role} has no value!`);
             break;
           }
-          message.icon = await tools.getIconEntryValue(item.icon, value < 40, "window-open");
+          message.icon = await tools.getIconEntryValue(item.icon, value, "window-open");
           message.iconColor = await tools.getIconEntryColor(item.icon, value, import_Color.Color.White);
           const optionalValue = item.valueList ? await item.valueList.getObject() : [
             "arrow-up",
@@ -228,7 +228,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             (_k = (_j = await tools.getEntryTextOnOff(item.headline, !!value)) != null ? _j : message.displayName) != null ? _k : ""
           );
           return tools.getItemMesssage(message);
-          break;
         }
         case "number": {
           if (entry.type === "number") {
@@ -897,9 +896,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         const pos1 = (_G = await tools.getValueEntryNumber(item.entity1)) != null ? _G : "disable";
         const pos2 = (_H = await tools.getValueEntryNumber(item.entity2)) != null ? _H : "disable";
         if (pos1 !== "disable") {
-          message.icon = (_I = await tools.getIconEntryValue(item.icon, pos1 < 40, "")) != null ? _I : "";
+          message.icon = (_I = await tools.getIconEntryValue(item.icon, pos1, "")) != null ? _I : "";
         } else if (pos2 !== "disable") {
-          message.icon = (_J = await tools.getIconEntryValue(item.icon, pos2 < 40, "")) != null ? _J : "";
+          message.icon = (_J = await tools.getIconEntryValue(item.icon, pos2, "")) != null ? _J : "";
         }
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
           "arrow-up",
@@ -1095,10 +1094,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       case "OnOff": {
         if (entry.type === "light") {
           const item = entry.data;
-          if (item && item.setValue1 && item.setValue1.writeable) {
-            await item.setValue1.setStateAsync(value === "1");
+          if (item && item.entity1) {
+            await tools.setValueEntry(item.entity1, value === "1");
           } else {
-            this.log.warn("setValue1 is not writeable!");
+            this.log.warn("entity1 is not writeable!");
           }
         }
         break;

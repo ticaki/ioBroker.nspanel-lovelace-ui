@@ -219,7 +219,7 @@ export class PageItem extends BaseClassTriggerd {
                         this.log.warn(`Entity ${this.config.role} has no value!`);
                         break;
                     }
-                    message.icon = await tools.getIconEntryValue(item.icon, value < 40, 'window-open');
+                    message.icon = await tools.getIconEntryValue(item.icon, value, 'window-open');
                     message.iconColor = await tools.getIconEntryColor(item.icon, value, Color.White);
                     const optionalValue = item.valueList
                         ? await item.valueList.getObject()
@@ -249,7 +249,6 @@ export class PageItem extends BaseClassTriggerd {
                         (await tools.getEntryTextOnOff(item.headline, !!value)) ?? message.displayName ?? '',
                     );
                     return tools.getItemMesssage(message);
-                    break;
                 }
 
                 case 'number': {
@@ -1022,9 +1021,9 @@ export class PageItem extends BaseClassTriggerd {
                 const pos1 = (await tools.getValueEntryNumber(item.entity1)) ?? 'disable';
                 const pos2 = (await tools.getValueEntryNumber(item.entity2)) ?? 'disable';
                 if (pos1 !== 'disable') {
-                    message.icon = (await tools.getIconEntryValue(item.icon, pos1 < 40, '')) ?? '';
+                    message.icon = (await tools.getIconEntryValue(item.icon, pos1, '')) ?? '';
                 } else if (pos2 !== 'disable') {
-                    message.icon = (await tools.getIconEntryValue(item.icon, pos2 < 40, '')) ?? '';
+                    message.icon = (await tools.getIconEntryValue(item.icon, pos2, '')) ?? '';
                 }
                 const optionalValue = item.valueList
                     ? await item.valueList.getObject()
@@ -1232,10 +1231,10 @@ export class PageItem extends BaseClassTriggerd {
             case 'OnOff': {
                 if (entry.type === 'light') {
                     const item = entry.data;
-                    if (item && item.setValue1 && item.setValue1.writeable) {
-                        await item.setValue1.setStateAsync(value === '1');
+                    if (item && item.entity1) {
+                        await tools.setValueEntry(item.entity1, value === '1');
                     } else {
-                        this.log.warn('setValue1 is not writeable!');
+                        this.log.warn('entity1 is not writeable!');
                     }
                 }
                 break;

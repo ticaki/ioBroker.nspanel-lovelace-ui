@@ -466,7 +466,8 @@ export type ColorEntryTypeNew =
       })
     | undefined;
 export type IconEntryType =
-    | (Partial<Record<Types.BooleanUnion, { value: string; text?: TextSizeEntryType }>> & ColorEntryTypeNew)
+    | (Partial<Record<Types.BooleanUnion, { value: string; text?: TextSizeEntryType }>> &
+          ColorEntryTypeNew & { unstable: { value: string; text?: TextSizeEntryType; color: RGB } })
     | undefined;
 
 export type TextEntryType = Record<Types.BooleanUnion, string>;

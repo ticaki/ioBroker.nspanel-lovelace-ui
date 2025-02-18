@@ -74,6 +74,12 @@
                     "label": "mqttPassword",
                     "newLine": false
                 },
+                "_header": {
+                    "type": "header",
+                    "label": "Not used",
+                    "size": 3,
+                    "text": "Not used"
+                },
                 "topic": {
                     "type": "text",
                     "label": "topic",
@@ -127,7 +133,7 @@
         },
         "pageQR":{
             "type": "panel",
-            "label": "Page QR",
+            "label": "+",
             "items": {
                 "pageQRselType":{
                     "type": "select",

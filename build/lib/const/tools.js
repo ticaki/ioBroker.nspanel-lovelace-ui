@@ -244,7 +244,7 @@ async function setScaledNumber(i, value) {
   }
 }
 async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
-  var _a, _b, _c, _d, _e, _f;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
   if (i === void 0) {
     return "";
   }
@@ -270,8 +270,20 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
     return text;
   }
   const icon = (_c = i.true && i.true.value && await i.true.value.getString()) != null ? _c : null;
-  if (!on) {
+  if (typeof on === "boolean" && !on) {
     return import_icon_mapping.Icons.GetIcon((_f = (_e = (_d = i.false && i.false.value && await i.false.value.getString()) != null ? _d : defOff) != null ? _e : icon) != null ? _f : def);
+  } else if (typeof on === "number") {
+    const scaleM = i.scale && await i.scale.getObject();
+    const scale = (0, import_types.isPartialIconScaleElement)(scaleM) ? scaleM : { val_min: 0, val_max: 100 };
+    if (scale.val_min < on && scale.val_max > on) {
+      return import_icon_mapping.Icons.GetIcon(
+        (_h = (_g = i.unstable && i.unstable.value && await i.unstable.value.getString()) != null ? _g : icon) != null ? _h : def
+      );
+    } else if (scale.val_min > on) {
+      return import_icon_mapping.Icons.GetIcon(
+        (_k = (_j = (_i = i.false && i.false.value && await i.false.value.getString()) != null ? _i : defOff) != null ? _j : icon) != null ? _k : def
+      );
+    }
   }
   return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def);
 }
