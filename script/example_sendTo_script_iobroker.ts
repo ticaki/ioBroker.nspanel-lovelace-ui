@@ -1,5 +1,6 @@
 async function configuration (): Promise<void> {
 
+
     const fahrplan: any = {
         heading: 'Fahrplan Script',
         native: {
@@ -10,10 +11,10 @@ async function configuration (): Promise<void> {
         }
     };
     const grid1: ScriptConfig.PageBaseType = {
-        uniqueName: 'grid1', // keine Navigation, am besten uniqueName von config.ts übernehmen
+        uniqueName: 'main', // keine Navigation, am besten uniqueName von config.ts übernehmen
         heading: 'Grid 1',
         items: [
-            {id: 'alias.0.Licht.lights.Gerät_1'}, {id: 'alias.0.Licht.lights.Gerät_2'}, {id: '0_userdata.0.Einzelne_Geräte.dimmer'}, {id: '0_userdata.0.Einzelne_Geräte.hue', colormode: 'true'},
+            {id: 'alias.0.Licht.lights.Gerät_1'}, {id: 'alias.0.Licht.lights.Gerät_2'}, {id: '0_userdata.0.Einzelne_Geräte.dimmer'}, {id: 'alias.0.NSPanel.allgemein.hue', colormode: 'true'},
             {navigate: true, targetPage:'fahrplanrouten'}
         ],
         type: 'cardGrid',
@@ -280,10 +281,10 @@ async function configuration (): Promise<void> {
      *  For a update copy and paste the code below from orginal file.
      */
 
-    sendTo('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version})
+    log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version}))
 }
 
-const version = '0.1.0';
+const version = '0.2.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color

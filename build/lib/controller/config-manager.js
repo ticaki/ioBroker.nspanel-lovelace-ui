@@ -30,7 +30,7 @@ class ConfigManager extends import_library.BaseClass {
   colorOn = import_Color.Color.On;
   colorOff = import_Color.Color.Off;
   colorDefault = import_Color.Color.Off;
-  scriptVersion = "0.1.1";
+  scriptVersion = "0.2.0";
   constructor(adapter) {
     super(adapter, "config-manager");
   }
@@ -38,17 +38,20 @@ class ConfigManager extends import_library.BaseClass {
     const config = Object.assign(import_config_manager_const.defaultConfig, configuration);
     if (!config || !(0, import_config_manager_const.isConfig)(config)) {
       this.log.error(`Invalid configuration from Script: ${config ? JSON.stringify(config) : "undefined"}`);
-      return;
+      return ["Invalid configuration"];
     }
+    let messages = [`version: ${config.version}`];
     const version = config.version.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
     const requiredVersion = this.scriptVersion.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
     if (version < requiredVersion) {
-      this.log.warn(`Script version ${config.version} is lower than the required version ${this.scriptVersion}!`);
+      messages.push(`Script version ${config.version} is lower than the required version ${this.scriptVersion}!`);
+      this.log.warn(messages[messages.length - 1]);
     }
     let panelConfig = { pages: [], navigation: [] };
     if (!config.panelTopic) {
       this.log.error(`Required field panelTopic is missing in ${config.panelName || "unknown"}!`);
-      return;
+      messages.push("Required field panelTopic is missing");
+      return messages;
     }
     panelConfig.updated = true;
     if (config.panelTopic.endsWith(".cmnd.CustomSend")) {
@@ -70,7 +73,12 @@ class ConfigManager extends import_library.BaseClass {
     if (config.defaultOffColor) {
       this.colorOff = import_Color.Color.convertScriptRGBtoRGB(config.defaultOffColor);
     }
-    panelConfig.pages.push(await this.getScreensaverConfig(config));
+    try {
+      panelConfig.pages.push(await this.getScreensaverConfig(config));
+    } catch (error) {
+      messages.push(`Screensaver configuration error - ${error}`);
+      this.log.error(messages[messages.length - 1]);
+    }
     if (config.pages.length > 1) {
       for (let a = 0; a < config.pages.length; a++) {
         const page = config.pages[a];
@@ -109,11 +117,10 @@ class ConfigManager extends import_library.BaseClass {
         });
       }
     }
-    panelConfig = await this.getPageConfig(config, panelConfig);
+    ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
     if (config.navigation != null) {
       panelConfig.navigation = config.navigation;
     }
-    this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
     const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
     if (obj) {
       obj.native.scriptConfig = obj.native.scriptConfig || [];
@@ -125,10 +132,12 @@ class ConfigManager extends import_library.BaseClass {
       }
       await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
     }
+    messages.push(`done`);
+    return messages;
   }
-  async getPageConfig(config, result) {
-    if (result.pages === void 0) {
-      result.pages = [];
+  async getPageConfig(config, panelConfig, messages) {
+    if (panelConfig.pages === void 0) {
+      panelConfig.pages = [];
     }
     if (config.pages) {
       for (const page of config.pages.concat(config.subPages || [])) {
@@ -141,14 +150,15 @@ class ConfigManager extends import_library.BaseClass {
             page.native.config.data = page.native.config.data || {};
             page.native.config.data.headline = await this.getFieldAsDataItemConfig(page.heading);
           }
-          result.pages.push(page.native);
+          panelConfig.pages.push(page.native);
           continue;
         }
         if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities") {
           continue;
         }
         if (!page.uniqueName) {
-          this.log.error(`Page ${page.heading || "unknown"} has no uniqueName!`);
+          messages.push(`Page ${page.heading || "unknown"} has no uniqueName!`);
+          this.log.error(messages[messages.length - 1]);
           continue;
         }
         if ((config.subPages || []).includes(page)) {
@@ -160,7 +170,7 @@ class ConfigManager extends import_library.BaseClass {
             right: right ? { single: right } : void 0,
             page: page.uniqueName
           };
-          result.navigation.push(navItem);
+          panelConfig.navigation.push(navItem);
         }
         const gridItem = {
           dpInit: "",
@@ -186,16 +196,17 @@ class ConfigManager extends import_library.BaseClass {
                 gridItem.pageItems.push(itemConfig);
               }
             } catch (error) {
-              this.log.error(
+              messages.push(
                 `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
               );
+              this.log.error(messages[messages.length - 1]);
             }
           }
-          result.pages.push(gridItem);
+          panelConfig.pages.push(gridItem);
         }
       }
     }
-    return result;
+    return { panelConfig, messages };
   }
   async getPageNaviItemConfig(item) {
     let itemConfig = void 0;
@@ -363,8 +374,7 @@ class ConfigManager extends import_library.BaseClass {
         }
         const role = obj.common.role;
         if (!import_config_manager_const.requiredDatapoints[role]) {
-          this.log.warn(`Role ${role} not implemented yet!`);
-          return;
+          throw new Error(`Role ${role} not implemented yet!`);
         }
         if (!await this.checkRequiredDatapoints(role, item)) {
           return;
@@ -619,12 +629,12 @@ class ConfigManager extends import_library.BaseClass {
           case "switch.mode.wlan":
           case "media":
           case "airCondition": {
-            this.log.error(`Role ${role} not implemented yet!`);
+            throw new Error(`Role ${role} not implemented yet!`);
             break;
           }
           default:
             (0, import_pages.exhaustiveCheck)(role);
-            this.log.error(`Role ${role} not implemented yet!`);
+            throw new Error(`Role ${role} not implemented yet!`);
         }
         return itemConfig;
       }
@@ -636,7 +646,11 @@ class ConfigManager extends import_library.BaseClass {
     if (config.bottomScreensaverEntity) {
       for (const item of config.bottomScreensaverEntity) {
         if (item) {
-          pageItems.push(await this.getEntityData(item, "bottom", config));
+          try {
+            pageItems.push(await this.getEntityData(item, "bottom", config));
+          } catch (error) {
+            throw new Error(`bottomScreensaverEntity - ${error}`);
+          }
         }
       }
     }
@@ -959,24 +973,40 @@ class ConfigManager extends import_library.BaseClass {
     if (config.indicatorScreensaverEntity) {
       for (const item of config.indicatorScreensaverEntity) {
         if (item) {
-          pageItems.push(await this.getEntityData(item, "indicator", config));
+          try {
+            pageItems.push(await this.getEntityData(item, "indicator", config));
+          } catch (error) {
+            throw new Error(`indicatorScreensaverEntity - ${error}`);
+          }
         }
       }
     }
     if (config.leftScreensaverEntity) {
       for (const item of config.leftScreensaverEntity) {
         if (item) {
-          pageItems.push(await this.getEntityData(item, "left", config));
+          try {
+            pageItems.push(await this.getEntityData(item, "left", config));
+          } catch (error) {
+            throw new Error(`leftScreensaverEntity - ${error}`);
+          }
         }
       }
     }
     if (config.mrIcon1ScreensaverEntity) {
-      pageItems.push(await this.getMrEntityData(config.mrIcon1ScreensaverEntity, "mricon", "1"));
+      try {
+        pageItems.push(await this.getMrEntityData(config.mrIcon1ScreensaverEntity, "mricon", "1"));
+      } catch (error) {
+        throw new Error(`mrIcon1ScreensaverEntity - ${error}`);
+      }
     }
     if (config.mrIcon2ScreensaverEntity) {
-      pageItems.push(await this.getMrEntityData(config.mrIcon2ScreensaverEntity, "mricon", "2"));
+      try {
+        pageItems.push(await this.getMrEntityData(config.mrIcon2ScreensaverEntity, "mricon", "2"));
+      } catch (error) {
+        throw new Error(`mrIcon2ScreensaverEntity - ${error}`);
+      }
     }
-    this.log.debug(`pageItems count: ${pageItems.length}`);
+    this.log.debug(`Screensaver pageItems count: ${pageItems.length}`);
     pageItems = pageItems.concat([
       {
         role: "text",

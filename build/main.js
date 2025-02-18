@@ -297,12 +297,13 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "ScriptConfig": {
+          let result = ["something went wrong"];
           if (obj.message) {
             const manager = new import_config_manager.ConfigManager(this);
-            await manager.setScriptConfig(obj.message);
+            result = await manager.setScriptConfig(obj.message);
           }
           if (obj.callback) {
-            this.sendTo(obj.from, obj.command, [], obj.callback);
+            this.sendTo(obj.from, obj.command, result, obj.callback);
           }
           break;
         }
