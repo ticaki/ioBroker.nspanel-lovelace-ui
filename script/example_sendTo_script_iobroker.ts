@@ -1,4 +1,289 @@
+async function configuration (): Promise<void> {
 
+    const fahrplan: any = {
+        heading: 'Fahrplan Script',
+        native: {
+            card: 'cardEntities',
+            dpInit: 'fahrplan.0.0',
+            uniqueID: 'fahrplanrouten',
+            template: 'entities.fahrplan.routes',
+        }
+    };
+    const grid1: ScriptConfig.PageBaseType = {
+        uniqueName: 'grid1', // keine Navigation, am besten uniqueName von config.ts übernehmen
+        heading: 'Grid 1',
+        items: [
+            {id: 'alias.0.Licht.lights.Gerät_1'}, {id: 'alias.0.Licht.lights.Gerät_2'}, {id: '0_userdata.0.Einzelne_Geräte.dimmer'}, {id: '0_userdata.0.Einzelne_Geräte.hue', colormode: 'true'},
+            {navigate: true, targetPage:'fahrplanrouten'}
+        ],
+        type: 'cardGrid',
+        useColor: true
+    }
+
+    const config: ScriptConfig.Config = {
+        panelTopic: 'nspanel/ns_panel4',
+        weatherEntity: 'accuweather.0.',
+        defaultOffColor: Off,
+        defaultOnColor: On,
+        defaultColor: Off,
+        defaultBackgroundColor: HMIDark,
+
+        // Als Gedankenstütze, die Hauptseite muß main heißen!
+        //panelName: 'NSPanel', //unique name for the panel
+
+
+        // Seiteneinteilung / Page division
+        // Hauptseiten / Mainpages
+        pages: [
+            fahrplan,
+            grid1,
+            //Unlock_Service            //Auto-Alias Service Page (Service Pages used with cardUnlock)
+        ],
+        // Unterseiten / Subpages
+        subPages: [
+
+        ],
+
+        /***********************************************************************
+         **                                                                   **
+         **                    Screensaver Configuration                      **
+         **                                                                   **
+         ***********************************************************************/
+        indicatorScreensaverEntity: [
+            // indicatorScreensaverEntity 1 (only Advanced Screensaver)
+            {
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Fenster.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'window-open-variant',
+                ScreensaverEntityIconOff: 'window-closed-variant',
+                ScreensaverEntityText: 'Fenster',
+                ScreensaverEntityUnitText: '%',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
+            },
+            // indicatorScreensaverEntity 2 (only Advanced Screensaver)
+            {
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Tuer.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'door-open',
+                ScreensaverEntityIconOff: 'door-closed',
+                ScreensaverEntityText: 'Tür',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
+            },
+            // indicatorScreensaverEntity 3 (only Advanced Screensaver)
+            {
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_Licht_An.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'lightbulb',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Licht',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
+            },
+            // indicatorScreensaverEntity 4 (only Advanced Screensaver)
+            {
+                ScreensaverEntity: 'alias.0.Türschloss.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'lock',
+                ScreensaverEntityIconOff: 'lock-open',
+                ScreensaverEntityText: 'Türschloss',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 1, val_best: 1},
+            },
+            // indicatorScreensaverEntity 5 (only Advanced Screensaver)
+            {
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Auto.Safety.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'car-key',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Auto',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 1, val_best: 1},
+            },
+        ],
+
+        bottomScreensaverEntity: [
+            // bottomScreensaverEntity 1
+            {
+                ScreensaverEntity: 'accuweather.0.Daily.Day1.Sunrise',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityDateFormat: {hour: '2-digit', minute: '2-digit'}, // Description at Wiki-Pages
+                ScreensaverEntityIconOn: 'weather-sunset-up',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Sonne',
+                ScreensaverEntityUnitText: '%',
+                ScreensaverEntityIconColor: MSYellow //{'val_min': 0, 'val_max': 100}
+            },
+            // bottomScreensaverEntity 2
+            {
+                ScreensaverEntity: 'accuweather.0.Current.WindSpeed',
+                ScreensaverEntityFactor: (1000 / 3600),
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'weather-windy',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: "Wind",
+                ScreensaverEntityUnitText: 'm/s',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 120}
+            },
+            // bottomScreensaverEntity 3
+            {
+                ScreensaverEntity: 'accuweather.0.Current.WindGust',
+                ScreensaverEntityFactor: (1000 / 3600),
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'weather-tornado',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Böen',
+                ScreensaverEntityUnitText: 'm/s',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 120}
+            },
+            // bottomScreensaverEntity 4
+            {
+                ScreensaverEntity: 'accuweather.0.Current.WindDirectionText',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'windsock',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Windr.',
+                ScreensaverEntityUnitText: '°',
+                ScreensaverEntityIconColor: White
+            },
+            // bottomScreensaverEntity 5 (for Alternative and Advanced Screensaver)
+            {
+                ScreensaverEntity: 'accuweather.0.Current.RelativeHumidity',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'water-percent',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Feuchte',
+                ScreensaverEntityUnitText: '%',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 100, 'val_best': 65}
+            },
+            // bottomScreensaverEntity 6 (for Advanced Screensaver)
+            {
+                ScreensaverEntity: 'Relay.1',
+                ScreensaverEntityIconOn: 'coach-lamp-variant',
+                ScreensaverEntityText: 'Street',
+                ScreensaverEntityOnColor: Yellow,
+                ScreensaverEntityOffColor: White,
+                ScreensaverEntityOnText: 'Is ON',
+                ScreensaverEntityOffText: 'Not ON'
+            },
+            // Examples for Advanced-Screensaver: https://github.com/joBr99/nspanel-lovelace-ui/wiki/ioBroker-Config-Screensaver#entity-status-icons-ab-v400 
+        ],
+
+        leftScreensaverEntity: [
+            // leftScreensaverEntity 1 (only Advanced Screensaver)
+            {
+                ScreensaverEntity: 'alias.0.NSPanel.Flur.Sensor.ANALOG.Temperature.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'thermometer',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Temperatur',
+                ScreensaverEntityUnitText: '°C',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 35, val_best: 22},
+            },
+            // leftScreensaverEntity 2 (only Advanced Screensaver)
+            {
+                ScreensaverEntity: 'alias.0.Heizung.WärmeTagesVerbrauch.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'counter',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Wärme',
+                ScreensaverEntityUnitText: ' kWh',
+                ScreensaverEntityIconColor: MSYellow, //{'val_min': 0, 'val_max': 5000}
+            },
+            // leftScreensaverEntity 3 (only Advanced Screensaver)
+            {
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Abfall.event1.INFO',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityDateFormat: {year: 'numeric', month: '2-digit', day: '2-digit'},
+                ScreensaverEntityIconOn: 'trash-can',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Abfall',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: '0_userdata.0.Abfallkalender.1.color',
+            },
+        ],
+
+        // Status Icon 
+        mrIcon1ScreensaverEntity: {
+            ScreensaverEntity: 'Relay.1',
+            ScreensaverEntityIconOn: 'lightbulb',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityValue: null,
+            ScreensaverEntityValueDecimalPlace: 0,
+            ScreensaverEntityValueUnit: null,
+            ScreensaverEntityOnColor: On,
+            ScreensaverEntityOffColor: HMIOff
+        },
+        mrIcon2ScreensaverEntity: {
+            ScreensaverEntity: 'Relay.2',
+            ScreensaverEntityIconOn: 'lightbulb',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityValue: null,
+            ScreensaverEntityValueDecimalPlace: 0,
+            ScreensaverEntityValueUnit: null,
+            ScreensaverEntityOnColor: On,
+            ScreensaverEntityOffColor: HMIOff
+        },
+        // ------ DE: Ende der Screensaver Einstellungen --------------------
+        // ------ EN: End of screensaver settings ---------------------------
+
+        //-------DE: Anfang Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
+        //-------EN: Start Settings for Hardware Button, if used in software (Rule2) --------------------------------------
+        // DE: Konfiguration des linken Schalters des NSPanels
+        // EN: Configuration of the left switch of the NSPanel
+        button1: {
+            // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'toggle', 'set' - Wenn nicht definiert --> mode: null
+            // EN: Possible values if Rule2 defined: 'page', 'toggle', 'set' - If not defined --> mode: null
+            mode: null,
+            // DE: Zielpage - Verwendet wenn mode = page
+            // EN: Target page - Used if mode = page
+            page: null,
+            // DE: Zielentity - Verwendet wenn mode = set oder toggle
+            // EN: Target entity - Used if mode = set or toggle
+            entity: null,
+            // DE: Zielwert - Verwendet wenn mode = set
+            // EN: Target value - Used if mode = set
+            setValue: null
+        },
+
+        // DE: Konfiguration des rechten Schalters des NSPanels
+        // EN: Configuration of the right switch of the NSPanel
+        button2: {
+            mode: null,
+            page: null,
+            entity: null,
+            setValue: null
+        },
+
+        //--------- DE: Ende - Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
+        //--------- EN: End - settings for hardware button if they are used in software (Rule2) ------------------------------
+
+        // DE: WICHTIG !! Parameter nicht ändern  WICHTIG!!
+        // EN: IMPORTANT !! Do not change parameters IMPORTANT!!
+
+    };
+
+
+    /**
+     *  END STOP END STOP END - No more configuration - END STOP END STOP END
+     *  For a update copy and paste the code below from orginal file.
+     */
+
+    sendTo('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version})
+}
+
+const version = '0.1.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -84,283 +369,6 @@ const swSnowy = {red: 150, green: 150, blue: 150};
 const swSnowyRainy = {red: 150, green: 150, blue: 255};
 const swSunny = {red: 255, green: 255, blue: 0};
 const swWindy = {red: 150, green: 150, blue: 150};
-
-
-const fahrplan: any = {
-    heading: 'Fahrplan Script',
-    native: {
-        card: 'cardEntities',
-        dpInit: 'fahrplan.0.0',
-        uniqueID: 'fahrplanrouten',
-        template: 'entities.fahrplan.routes',
-    }
-};
-const grid1: ScriptConfig.PageBaseType = {
-    uniqueName:'grid1', // keine Navigation, am besten uniqueName von config.ts übernehmen
-    heading: 'Grid 1',
-    items: [
-        {id: 'alias.0.Licht.lights.Gerät_1'}, {id: 'alias.0.Licht.lights.Gerät_2'}
-    ],
-    type: 'cardGrid',
-    useColor: true
-}
-
-const config: ScriptConfig.Config = {
-    panelTopic: 'nspanel/ns_panel4',
-    weatherEntity: 'accuweather.0.',
-    defaultOffColor: Off,
-    defaultOnColor: On,
-    defaultColor: Off,
-    defaultBackgroundColor: HMIDark,
-    
-    // Als Gedankenstütze, die Hauptseite muß main heißen!
-    //panelName: 'NSPanel', //unique name for the panel
-
-
-    // Seiteneinteilung / Page division
-    // Hauptseiten / Mainpages
-    pages: [
-        fahrplan,
-        grid1,
-        //Unlock_Service            //Auto-Alias Service Page (Service Pages used with cardUnlock)
-    ],
-    // Unterseiten / Subpages
-    subPages: [
-        
-    ],
-
-    /***********************************************************************
-     **                                                                   **
-     **                    Screensaver Configuration                      **
-     **                                                                   **
-     ***********************************************************************/
-    indicatorScreensaverEntity: [
-        // indicatorScreensaverEntity 1 (only Advanced Screensaver)
-        {
-            ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Fenster.ACTUAL',
-            ScreensaverEntityFactor: 1,
-            ScreensaverEntityDecimalPlaces: 0,
-            ScreensaverEntityIconOn: 'window-open-variant',
-            ScreensaverEntityIconOff: 'window-closed-variant',
-            ScreensaverEntityText: 'Fenster',
-            ScreensaverEntityUnitText: '%',
-            ScreensaverEntityIconColor: { val_min: 0, val_max: 1 },
-        },
-        // indicatorScreensaverEntity 2 (only Advanced Screensaver)
-        {
-            ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Tuer.ACTUAL',
-            ScreensaverEntityFactor: 1,
-            ScreensaverEntityDecimalPlaces: 0,
-            ScreensaverEntityIconOn: 'door-open',
-            ScreensaverEntityIconOff: 'door-closed',
-            ScreensaverEntityText: 'Tür',
-            ScreensaverEntityUnitText: '',
-            ScreensaverEntityIconColor: { val_min: 0, val_max: 1 },
-        },
-        // indicatorScreensaverEntity 3 (only Advanced Screensaver)
-        {
-            ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_Licht_An.ACTUAL',
-            ScreensaverEntityFactor: 1,
-            ScreensaverEntityDecimalPlaces: 0,
-            ScreensaverEntityIconOn: 'lightbulb',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityText: 'Licht',
-            ScreensaverEntityUnitText: '',
-            ScreensaverEntityIconColor: { val_min: 0, val_max: 1 },
-        },
-        // indicatorScreensaverEntity 4 (only Advanced Screensaver)
-        {
-            ScreensaverEntity: 'alias.0.Türschloss.ACTUAL',
-            ScreensaverEntityFactor: 1,
-            ScreensaverEntityDecimalPlaces: 0,
-            ScreensaverEntityIconOn: 'lock',
-            ScreensaverEntityIconOff: 'lock-open',
-            ScreensaverEntityText: 'Türschloss',
-            ScreensaverEntityUnitText: '',
-            ScreensaverEntityIconColor: { val_min: 0, val_max: 1, val_best: 1 },
-        },
-        // indicatorScreensaverEntity 5 (only Advanced Screensaver)
-        {
-            ScreensaverEntity: 'alias.0.NSPanel.allgemein.Auto.Safety.ACTUAL',
-            ScreensaverEntityFactor: 1,
-            ScreensaverEntityDecimalPlaces: 0,
-            ScreensaverEntityIconOn: 'car-key',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityText: 'Auto',
-            ScreensaverEntityUnitText: '',
-            ScreensaverEntityIconColor: { val_min: 0, val_max: 1, val_best: 1 },
-        },
-    ],
-
-    bottomScreensaverEntity: [
-        // bottomScreensaverEntity 1
-        {
-            ScreensaverEntity: 'accuweather.0.Daily.Day1.Sunrise',
-            ScreensaverEntityFactor: 1,
-            ScreensaverEntityDecimalPlaces: 0,
-            ScreensaverEntityDateFormat: {hour: '2-digit', minute: '2-digit'}, // Description at Wiki-Pages
-            ScreensaverEntityIconOn: 'weather-sunset-up',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityText: 'Sonne',
-            ScreensaverEntityUnitText: '%',
-            ScreensaverEntityIconColor: MSYellow //{'val_min': 0, 'val_max': 100}
-        },
-        // bottomScreensaverEntity 2
-        {
-            ScreensaverEntity: 'accuweather.0.Current.WindSpeed',
-            ScreensaverEntityFactor: (1000 / 3600),
-            ScreensaverEntityDecimalPlaces: 1,
-            ScreensaverEntityIconOn: 'weather-windy',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityText: "Wind",
-            ScreensaverEntityUnitText: 'm/s',
-            ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 120}
-        },
-        // bottomScreensaverEntity 3
-        {
-            ScreensaverEntity: 'accuweather.0.Current.WindGust',
-            ScreensaverEntityFactor: (1000 / 3600),
-            ScreensaverEntityDecimalPlaces: 1,
-            ScreensaverEntityIconOn: 'weather-tornado',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityText: 'Böen',
-            ScreensaverEntityUnitText: 'm/s',
-            ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 120}
-        },
-        // bottomScreensaverEntity 4
-        {
-            ScreensaverEntity: 'accuweather.0.Current.WindDirectionText',
-            ScreensaverEntityFactor: 1,
-            ScreensaverEntityDecimalPlaces: 0,
-            ScreensaverEntityIconOn: 'windsock',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityText: 'Windr.',
-            ScreensaverEntityUnitText: '°',
-            ScreensaverEntityIconColor: White
-        },
-        // bottomScreensaverEntity 5 (for Alternative and Advanced Screensaver)
-        {
-            ScreensaverEntity: 'accuweather.0.Current.RelativeHumidity',
-            ScreensaverEntityFactor: 1,
-            ScreensaverEntityDecimalPlaces: 1,
-            ScreensaverEntityIconOn: 'water-percent',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityText: 'Feuchte',
-            ScreensaverEntityUnitText: '%',
-            ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 100, 'val_best': 65}
-        },
-        // bottomScreensaverEntity 6 (for Advanced Screensaver)
-        {
-            ScreensaverEntity:  'Relay.1',
-            ScreensaverEntityIconOn: 'coach-lamp-variant',
-            ScreensaverEntityText: 'Street',
-            ScreensaverEntityOnColor: Yellow,
-            ScreensaverEntityOffColor: White,
-            ScreensaverEntityOnText: 'Is ON',
-            ScreensaverEntityOffText: 'Not ON'
-        },
-        // Examples for Advanced-Screensaver: https://github.com/joBr99/nspanel-lovelace-ui/wiki/ioBroker-Config-Screensaver#entity-status-icons-ab-v400 
-    ],
-
-    leftScreensaverEntity: [
-         // leftScreensaverEntity 1 (only Advanced Screensaver)
-        {
-            ScreensaverEntity: 'alias.0.NSPanel.Flur.Sensor.ANALOG.Temperature.ACTUAL',
-            ScreensaverEntityFactor: 1,
-            ScreensaverEntityDecimalPlaces: 1,
-            ScreensaverEntityIconOn: 'thermometer',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityText: 'Temperatur',
-            ScreensaverEntityUnitText: '°C',
-            ScreensaverEntityIconColor: { val_min: 0, val_max: 35, val_best: 22 },
-        },
-        // leftScreensaverEntity 2 (only Advanced Screensaver)
-        {
-            ScreensaverEntity: 'alias.0.Heizung.WärmeTagesVerbrauch.ACTUAL',
-            ScreensaverEntityFactor: 1,
-            ScreensaverEntityDecimalPlaces: 1,
-            ScreensaverEntityIconOn: 'counter',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityText: 'Wärme',
-            ScreensaverEntityUnitText: ' kWh',
-            ScreensaverEntityIconColor: MSYellow, //{'val_min': 0, 'val_max': 5000}
-        },
-        // leftScreensaverEntity 3 (only Advanced Screensaver)
-        {
-            ScreensaverEntity: 'alias.0.NSPanel.allgemein.Abfall.event1.INFO',
-            ScreensaverEntityFactor: 1,
-            ScreensaverEntityDecimalPlaces: 0,
-            ScreensaverEntityDateFormat: { year: 'numeric', month: '2-digit', day: '2-digit' },
-            ScreensaverEntityIconOn: 'trash-can',
-            ScreensaverEntityIconOff: null,
-            ScreensaverEntityText: 'Abfall',
-            ScreensaverEntityUnitText: '',
-            ScreensaverEntityIconColor: '0_userdata.0.Abfallkalender.1.color',
-        },
-    ],
-
-    // Status Icon 
-    mrIcon1ScreensaverEntity: {
-        ScreensaverEntity:  'Relay.1',
-        ScreensaverEntityIconOn: 'lightbulb',
-        ScreensaverEntityIconOff: null,
-        ScreensaverEntityValue: null,
-        ScreensaverEntityValueDecimalPlace: 0,
-        ScreensaverEntityValueUnit: null,
-        ScreensaverEntityOnColor: On,
-        ScreensaverEntityOffColor: HMIOff
-    },
-    mrIcon2ScreensaverEntity: {
-        ScreensaverEntity:  'Relay.2',
-        ScreensaverEntityIconOn: 'lightbulb',
-        ScreensaverEntityIconOff: null,
-        ScreensaverEntityValue: null,
-        ScreensaverEntityValueDecimalPlace: 0,
-        ScreensaverEntityValueUnit: null,
-        ScreensaverEntityOnColor: On,
-        ScreensaverEntityOffColor: HMIOff
-    },
-    // ------ DE: Ende der Screensaver Einstellungen --------------------
-    // ------ EN: End of screensaver settings ---------------------------
-
-    //-------DE: Anfang Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
-    //-------EN: Start Settings for Hardware Button, if used in software (Rule2) --------------------------------------
-    // DE: Konfiguration des linken Schalters des NSPanels
-    // EN: Configuration of the left switch of the NSPanel
-    button1: {
-        // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'toggle', 'set' - Wenn nicht definiert --> mode: null
-        // EN: Possible values if Rule2 defined: 'page', 'toggle', 'set' - If not defined --> mode: null
-        mode: null,
-        // DE: Zielpage - Verwendet wenn mode = page
-        // EN: Target page - Used if mode = page
-        page: null,
-        // DE: Zielentity - Verwendet wenn mode = set oder toggle
-        // EN: Target entity - Used if mode = set or toggle
-        entity: null,
-        // DE: Zielwert - Verwendet wenn mode = set
-        // EN: Target value - Used if mode = set
-        setValue: null
-    },
-
-    // DE: Konfiguration des rechten Schalters des NSPanels
-    // EN: Configuration of the right switch of the NSPanel
-    button2: {
-        mode: null,
-        page: null,
-        entity: null,
-        setValue: null
-    },
-
-    //--------- DE: Ende - Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
-    //--------- EN: End - settings for hardware button if they are used in software (Rule2) ------------------------------
-
-    // DE: WICHTIG !! Parameter nicht ändern  WICHTIG!!
-    // EN: IMPORTANT !! Do not change parameters IMPORTANT!!
-    
-};
-
-
-sendTo('nspanel-lovelace-ui.0', 'ScriptConfig', config )
 
 declare namespace ScriptConfig {
     export type PopupType =
@@ -565,7 +573,7 @@ declare namespace ScriptConfig {
         | PageQR
         | PageAlarm
         | PagePower
-        | { type: undefined; heading?: string; native: any };
+        | {type: undefined; heading?: string; native: any};
 
     export type PageEntities = {
         type: 'cardEntities';
@@ -729,21 +737,21 @@ declare namespace ScriptConfig {
     export type ConfigButtonFunction = {
         mode: 'page' | 'toggle' | 'set' | null;
         page:
-            | PageThermo
-            | PageMedia
-            | PageAlarm
-            | PageQR
-            | PageEntities
-            | PageGrid
-            | PageGrid2
-            | PagePower
-            | PageChart
-            | PageUnlock
-            | null;
+        | PageThermo
+        | PageMedia
+        | PageAlarm
+        | PageQR
+        | PageEntities
+        | PageGrid
+        | PageGrid2
+        | PagePower
+        | PageChart
+        | PageUnlock
+        | null;
         entity: string | null;
         setValue: string | number | boolean | null;
-        setOn?: { dp: string; val: iobJS.StateValue };
-        setOff?: { dp: string; val: iobJS.StateValue };
+        setOn?: {dp: string; val: iobJS.StateValue};
+        setOff?: {dp: string; val: iobJS.StateValue};
     };
 
     export type Config = {
@@ -777,12 +785,12 @@ declare namespace ScriptConfig {
         | [];
     export type indicatorScreensaverEntityType =
         | [
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-          ]
+            ScreenSaverElementWithUndefined?,
+            ScreenSaverElementWithUndefined?,
+            ScreenSaverElementWithUndefined?,
+            ScreenSaverElementWithUndefined?,
+            ScreenSaverElementWithUndefined?,
+        ]
         | [];
     export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
     export type ScreenSaverElement = {
@@ -819,13 +827,13 @@ declare namespace ScriptConfig {
                     {icon: 'snowflake', value: -10},
                     ]
          */
-        ScreensaverEntityIconSelect?: { icon: string; value: number }[] | null;
+        ScreensaverEntityIconSelect?: {icon: string; value: number}[] | null;
     };
 
     export type ScreenSaverMRElement = {
         ScreensaverEntity: string | null;
         ScreensaverEntityIconOn: string | null;
-        ScreensaverEntityIconSelect?: { [key: string]: string } | null | undefined;
+        ScreensaverEntityIconSelect?: {[key: string]: string} | null | undefined;
         ScreensaverEntityIconOff: string | null;
         ScreensaverEntityValue: string | null;
         ScreensaverEntityValueDecimalPlace: number | null;
@@ -842,7 +850,7 @@ declare namespace ScriptConfig {
         ScreensaverEntityValueUnit: string | null;
         ScreensaverEntityOnColor: RGB;
         ScreensaverEntityOffColor: RGB;
-        ScreensaverEntityIconSelect: { [key: string]: string } | null;
+        ScreensaverEntityIconSelect: {[key: string]: string} | null;
     };
 
     export type IconScaleElement = {
@@ -940,3 +948,4 @@ declare namespace ScriptConfig {
         | 'repeat'
         | 'favorites';
 }
+configuration();

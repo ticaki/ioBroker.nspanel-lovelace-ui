@@ -47,6 +47,7 @@ export function isConfig(F: any): F is ScriptConfig.Config {
     return true;
 }
 export const defaultConfig: ScriptConfig.Config = {
+    version: '0',
     panelTopic: '',
     weatherEntity: '',
     bottomScreensaverEntity: [],

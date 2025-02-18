@@ -30,6 +30,7 @@ class ConfigManager extends import_library.BaseClass {
   colorOn = import_Color.Color.On;
   colorOff = import_Color.Color.Off;
   colorDefault = import_Color.Color.Off;
+  scriptVersion = "0.1.1";
   constructor(adapter) {
     super(adapter, "config-manager");
   }
@@ -38,6 +39,11 @@ class ConfigManager extends import_library.BaseClass {
     if (!config || !(0, import_config_manager_const.isConfig)(config)) {
       this.log.error(`Invalid configuration from Script: ${config ? JSON.stringify(config) : "undefined"}`);
       return;
+    }
+    const version = config.version.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
+    const requiredVersion = this.scriptVersion.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
+    if (version < requiredVersion) {
+      this.log.warn(`Script version ${config.version} is lower than the required version ${this.scriptVersion}!`);
     }
     let panelConfig = { pages: [], navigation: [] };
     if (!config.panelTopic) {

@@ -64,6 +64,7 @@ function isConfig(F) {
   return true;
 }
 const defaultConfig = {
+  version: "0",
   panelTopic: "",
   weatherEntity: "",
   bottomScreensaverEntity: [],

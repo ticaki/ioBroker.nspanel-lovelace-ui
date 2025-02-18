@@ -14,6 +14,7 @@ export class ConfigManager extends BaseClass {
     private colorOn: RGB = Color.On;
     private colorOff: RGB = Color.Off;
     private colorDefault: RGB = Color.Off;
+    private scriptVersion = '0.1.1';
 
     constructor(adapter: NspanelLovelaceUi) {
         super(adapter, 'config-manager');
@@ -24,6 +25,20 @@ export class ConfigManager extends BaseClass {
         if (!config || !isConfig(config)) {
             this.log.error(`Invalid configuration from Script: ${config ? JSON.stringify(config) : 'undefined'}`);
             return;
+        }
+
+        const version = config.version
+            .split('.')
+            .map((item, i) => parseInt(item) * Math.pow(100, 2 - i))
+            .reduce((a, b) => a + b);
+
+        const requiredVersion = this.scriptVersion
+            .split('.')
+            .map((item, i) => parseInt(item) * Math.pow(100, 2 - i))
+            .reduce((a, b) => a + b);
+
+        if (version < requiredVersion) {
+            this.log.warn(`Script version ${config.version} is lower than the required version ${this.scriptVersion}!`);
         }
         let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];

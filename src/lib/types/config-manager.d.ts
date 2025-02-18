@@ -492,6 +492,7 @@ declare namespace ScriptConfig {
     };
 
     export type Config = {
+        version: string;
         panelName?: string;
         model?: string;
         panelTopic?: string;
