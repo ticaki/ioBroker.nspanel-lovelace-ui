@@ -222,6 +222,21 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
 
             if (this.config.testCase) {
+                await this.extendForeignObjectAsync('0_userdata.0.boolean', {
+                    type: 'state',
+                    common: { name: 'boolean', type: 'boolean' },
+                    native: {},
+                });
+                await this.extendForeignObjectAsync('0_userdata.0.number', {
+                    type: 'state',
+                    common: { name: 'number', type: 'number' },
+                    native: {},
+                });
+                await this.extendForeignObjectAsync('0_userdata.0.string', {
+                    type: 'state',
+                    common: { name: 'string', type: 'string' },
+                    native: {},
+                });
                 this.config.Testconfig2 = testCaseConfig;
                 const test = new MQTT.MQTTClientClass(
                     this,

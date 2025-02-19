@@ -79,7 +79,7 @@ tests.integration(path.join(__dirname, '..'), {
                 await harness.states.setState('0_userdata.0.number', 1);
                 await harness.states.setState('0_userdata.0.string', 'test');
                 await harness.startAdapterAndWait();
-                await wait(15000);
+                await wait(20000);
                 
                 setTimeout(() => {
                     harness.sendTo('nspanel-lovelace-ui.0', 'stillAlive', 'test', (res) => {

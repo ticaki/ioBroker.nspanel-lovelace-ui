@@ -6291,7 +6291,7 @@ const testScr = {
         entity2: {
           value: {
             type: "triggered",
-            dp: "0_userdata.0.number.time",
+            dp: "0_userdata.0.number",
             read: "return new Date(val).getTime()",
             forceType: "number"
           },
@@ -6563,7 +6563,7 @@ const testCaseConfig = [
     // override by password.ts
     navigation: [
       {
-        name: "test1",
+        name: "main",
         //main ist die erste Seite
         page: "test1",
         left: { single: "test2" },
@@ -6574,9 +6574,9 @@ const testCaseConfig = [
         name: "test2",
         //main ist die erste Seite
         page: "test2",
-        left: { single: "test1" },
+        left: { single: "main" },
         // Die 4 bezieht sich auf den name: 4
-        right: { single: "test1", double: "test1" }
+        right: { single: "main", double: "not exist" }
       }
     ],
     topic: "nspanel/ns_panel4",
