@@ -10,7 +10,7 @@ import 'source-map-support/register';
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 import * as MQTT from './lib/classes/mqtt';
-import { Testconfig } from './lib/config';
+import { testCaseConfig, Testconfig } from './lib/config';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import { genericStateObjects } from './lib/const/definition';
@@ -218,6 +218,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
 
             if (this.config.testCase) {
+                this.config.Testconfig2 = testCaseConfig;
                 const test = new MQTT.MQTTClientClass(
                     this,
                     this.config.mqttIp,
@@ -236,11 +237,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                 test.subscript('nspanel/ns_panel4/cmnd/#', async (topic, message) => {
                     this.log.debug(`Testcase ${topic}`);
                     if (message === 'pageType~pageStartup') {
-                        await test.publish('nspanel/ns_panel4/tele/RESULT', 'Done');
+                        await test.publish('nspanel/ns_panel4/stat/RESULT', '{"CustomSend": "Done"}');
+                        await test.publish('nspanel/ns_panel4/tele/RESULT', '{"CustomRecv":"event,startup,54,eu"}');
                     } else if (topic === 'nspanel/ns_panel4/cmnd/STATUS0') {
                         await test.publish(
-                            'nspanel/ns_panel4/tele/RESULT',
-                            '"{"Status":{"Module":0,"DeviceName":"NSPanel 4 Test","FriendlyName":["Tasmota",""],"Topic":"ns_panel4","ButtonTopic":"0","Power":"00","PowerLock":"00",' +
+                            'nspanel/ns_panel4/stat/STATUS0',
+                            '{"Status":{"Module":0,"DeviceName":"NSPanel 4 Test","FriendlyName":["Tasmota",""],"Topic":"ns_panel4","ButtonTopic":"0","Power":"00","PowerLock":"00",' +
                                 '"PowerOnState":3,"LedState":1,"LedMask":"FFFF","SaveData":1,"SaveState":1,"SwitchTopic":"0","SwitchMode":' +
                                 '[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"ButtonRetain":0,"SwitchRetain":0,"SensorRetain":0,"PowerRetain":0,"InfoRetain":0,' +
                                 '"StateRetain":0,"StatusRetain":0},"StatusPRM":{"Baudrate":115200,"SerialConfig":"8N1","GroupTopic":"tasmotas",' +
@@ -261,7 +263,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 '"EndDST":"2025-10-26T03:00:00","Timezone":"+01:00","Sunrise":"07:50","Sunset":"18:17"},"StatusSNS":{"Time":"2025-02-19T10:30:57","ANALOG":{"Temperature1":-3.2},"TempUnit"' +
                                 ':"C"},"StatusSTS":{"Time":"2025-02-19T10:30:57","Uptime":"0T00:07:28","UptimeSec":448,"Heap":146,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":1,"Berry":' +
                                 '{"HeapUsed":16,"Objects":212},"POWER1":"OFF","POWER2":"OFF","Wifi":{"AP":1,"SSId":"Keller","BSSId":"DC:15:C8:EB:3E:B8","Channel":7,"Mode":"HT40","RSSI":46,"Signal":-77,' +
-                                '"LinkCount":1,"Downtime":"0T00:00:03"}}}"',
+                                '"LinkCount":1,"Downtime":"0T00:00:03"}}}',
                         );
                     }
                 });

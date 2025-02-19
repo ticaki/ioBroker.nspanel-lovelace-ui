@@ -9,7 +9,7 @@ const popupWelcome: PageBaseConfig = {
     config: {
         card: 'popupNotify',
         data: {
-            entity1: { value: { type: 'state', dp: '0_userdata.0.example_state' } },
+            entity1: { value: { type: 'const', constVal: 'hm' } },
             headline: { type: 'const', constVal: 'welcomeHToken' },
             colorHeadline: { true: { color: { type: 'const', constVal: Color.Green } } },
             buttonLeft: { type: 'const', constVal: '' },
