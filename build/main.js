@@ -174,9 +174,13 @@ class NspanelLovelaceUi extends utils.Adapter {
           "./mqtt"
         );
         this.config.mqttIp = "127.0.0.1";
+        let c = 0;
         while (!this.mqttServer.ready) {
           this.log.debug("Wait for mqttServer");
           await this.delay(1e3);
+          if (c++ > 6) {
+            throw new Error("mqttServer not ready!");
+          }
         }
       }
       if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
@@ -208,9 +212,13 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.debug(`${topic} ${message}`);
           }
         );
+        let c = 0;
         while (!test.ready) {
           this.log.debug("Wait for Test mqttClient");
           await this.delay(1e3);
+          if (c++ > 6) {
+            throw new Error("Test mqttClient not ready!");
+          }
         }
         test.subscript("nspanel/ns_panel4/cmnd/#", async (topic, message) => {
           this.log.debug(`Testcase ${topic}`);
