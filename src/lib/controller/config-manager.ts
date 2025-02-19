@@ -131,6 +131,15 @@ export class ConfigManager extends BaseClass {
         const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
         if (obj) {
             obj.native.scriptConfig = obj.native.scriptConfig || [];
+            // remove duplicates
+            obj.native.scriptConfig = obj.native.scriptConfig.filter(
+                (item: any, i: number) =>
+                    obj.native.scriptConfig.findIndex((item2: any) => item2.topic === item.topic) === i,
+            );
+            // remove config with same topic and different name
+            obj.native.scriptConfig = obj.native.scriptConfig.filter(
+                (item: any) => !(item.topic === panelConfig.topic && item.name !== panelConfig.name),
+            );
             const index = obj.native.scriptConfig.findIndex((item: any) => item.name === panelConfig.name);
             if (index !== -1) {
                 obj.native.scriptConfig[index] = panelConfig;
@@ -420,7 +429,7 @@ export class ConfigManager extends BaseClass {
                 if (!(obj.common && obj.common.role)) {
                     throw new Error(`Role missing in ${item.id}!`);
                 }
-                const role = obj.common.role as ScriptConfig.roles;
+                let role = obj.common.role as ScriptConfig.roles;
                 // check if role and types are correct
                 if (!requiredDatapoints[role]) {
                     throw new Error(`Role ${role} not implemented yet!`);
@@ -721,7 +730,9 @@ export class ConfigManager extends BaseClass {
                                 text: {
                                     true: item.buttonText
                                         ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                        : undefined,
+                                        : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                                          ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
+                                          : undefined,
                                 },
                                 text1: {
                                     true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
@@ -796,10 +807,6 @@ export class ConfigManager extends BaseClass {
                         itemConfig = tempItem;
                         break;
                     }
-                    case 'door':
-                    case 'window':
-                    case 'volumeGroup':
-                    case 'volume':
                     case 'info':
                     case 'humidity':
                     case 'temperature':
@@ -807,6 +814,99 @@ export class ConfigManager extends BaseClass {
                     case 'value.humidity':
                     case 'sensor.door':
                     case 'sensor.window':
+                    case 'door':
+                    case 'window': {
+                        let iconOn = 'door-open';
+                        let iconOff = 'door-closed';
+                        let iconUnstable = 'alert';
+                        switch (role) {
+                            case 'door':
+                            case 'sensor.door': {
+                                role = 'door';
+                                break;
+                            }
+                            case 'window':
+                            case 'sensor.window': {
+                                iconOn = 'window-open-variant';
+                                iconOff = 'window-closed-variant';
+                                iconUnstable = 'window-closed-variant';
+                                role = 'window';
+                                break;
+                            }
+                            case 'info': {
+                                iconOn = 'information-outline';
+                                iconOff = 'information-outline';
+                                role = 'info';
+                                break;
+                            }
+                            case 'temperature':
+                            case 'value.temperature': {
+                                iconOn = 'thermometer';
+                                iconOff = 'snowflake-thermometer';
+                                iconUnstable = 'sun-thermometer';
+                                role = 'temperature';
+                                break;
+                            }
+                            case 'humidity':
+                            case 'value.humidity': {
+                                iconOn = 'water-percent';
+                                iconOff = 'water-off';
+                                iconUnstable = 'water-percent-alert';
+                                role = 'humidity';
+                                break;
+                            }
+                        }
+                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                            type: 'text',
+                            role: role,
+                            data: {
+                                icon: {
+                                    true: {
+                                        value: await this.getFieldAsDataItemConfig(item.icon || iconOn),
+
+                                        color: {
+                                            type: 'const',
+                                            constVal: item.onColor
+                                                ? await this.getFieldAsDataItemConfig(item.onColor)
+                                                : Color.activated,
+                                        },
+                                    },
+                                    false: {
+                                        value: await this.getFieldAsDataItemConfig(item.icon2 || iconOff),
+                                        color: {
+                                            type: 'const',
+                                            constVal: item.offColor
+                                                ? await this.getFieldAsDataItemConfig(item.offColor)
+                                                : Color.deactivated,
+                                        },
+                                    },
+                                    unstable: {
+                                        value: await this.getFieldAsDataItemConfig(item.icon3 || iconUnstable),
+                                    },
+                                    scale: undefined,
+                                    maxBri: undefined,
+                                    minBri: undefined,
+                                },
+                                text: {
+                                    true: item.buttonText
+                                        ? await this.getFieldAsDataItemConfig(item.buttonText)
+                                        : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                                          ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
+                                          : undefined,
+                                },
+                                text1: {
+                                    true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                                },
+                                entity1: {
+                                    value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                                },
+                            },
+                        };
+                        itemConfig = tempItem;
+                        break;
+                    }
+                    case 'volumeGroup':
+                    case 'volume':
                     case 'thermostat':
                     case 'warning':
                     case 'cie':
@@ -1491,13 +1591,16 @@ export class ConfigManager extends BaseClass {
         throw new Error('Invalid data');
     }
 
-    async getFieldAsDataItemConfig(possibleId: string, isTrigger: boolean = false): Promise<Types.DataItemsOptions> {
+    async getFieldAsDataItemConfig(
+        possibleId: string | ScriptConfig.RGB,
+        isTrigger: boolean = false,
+    ): Promise<Types.DataItemsOptions> {
         const state =
-            possibleId === '' || possibleId.endsWith('.')
+            Color.isScriptRGB(possibleId) || possibleId === '' || possibleId.endsWith('.')
                 ? undefined
                 : await this.adapter.getForeignStateAsync(possibleId);
 
-        if (state !== undefined && state !== null) {
+        if (!Color.isScriptRGB(possibleId) && state !== undefined && state !== null) {
             if (isTrigger) {
                 return { type: 'triggered', dp: possibleId };
             }

@@ -60,7 +60,7 @@ export class Panel extends BaseClass {
     private pages: (Page | undefined)[] = [];
     private _activePage: Page | undefined = undefined;
     private screenSaver: Screensaver | undefined;
-    private InitDone: boolean = false;
+    private InitProcess: '' | 'awaiting' | 'done' = '';
     private _isOnline: boolean = false;
     public lastCard: string = '';
     public notifyIndex: number = -1;
@@ -583,12 +583,17 @@ export class Panel extends BaseClass {
                         break;
                     }
                     case 'stat/STATUS0': {
+                        if (this.InitProcess === 'awaiting') {
+                            this.log.warn('Receive status0 while awaiting init process!');
+                            return;
+                        }
                         const data = JSON.parse(message) as Types.STATUS0;
                         this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
-                        const i = this.InitDone;
-                        if (!this.InitDone) {
+                        const i = this.InitProcess === 'done';
+                        if (this.InitProcess === '') {
+                            this.InitProcess = 'awaiting';
                             await this.start();
-                            this.InitDone = true;
+                            this.InitProcess = 'done';
                         }
                         await this.library.writedp(
                             `panels.${this.name}.info`,
@@ -800,7 +805,7 @@ export class Panel extends BaseClass {
      * @returns
      */
     async HandleIncomingMessage(event: Types.IncomingEvent): Promise<void> {
-        if (this.InitDone === false) {
+        if (this.InitProcess !== 'done') {
             this.isOnline = false;
             return;
         }

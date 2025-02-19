@@ -66,7 +66,7 @@ class Panel extends import_library.BaseClass {
   pages = [];
   _activePage = void 0;
   screenSaver;
-  InitDone = false;
+  InitProcess = "";
   _isOnline = false;
   lastCard = "";
   notifyIndex = -1;
@@ -550,12 +550,17 @@ class Panel extends import_library.BaseClass {
             break;
           }
           case "stat/STATUS0": {
+            if (this.InitProcess === "awaiting") {
+              this.log.warn("Receive status0 while awaiting init process!");
+              return;
+            }
             const data = JSON.parse(message);
             this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
-            const i = this.InitDone;
-            if (!this.InitDone) {
+            const i = this.InitProcess === "done";
+            if (this.InitProcess === "") {
+              this.InitProcess = "awaiting";
               await this.start();
-              this.InitDone = true;
+              this.InitProcess = "done";
             }
             await this.library.writedp(
               `panels.${this.name}.info`,
@@ -743,7 +748,7 @@ class Panel extends import_library.BaseClass {
    * @returns
    */
   async HandleIncomingMessage(event) {
-    if (this.InitDone === false) {
+    if (this.InitProcess !== "done") {
       this.isOnline = false;
       return;
     }

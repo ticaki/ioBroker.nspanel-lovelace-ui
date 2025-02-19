@@ -219,6 +219,9 @@ export type DeviceRole =
     | 'textNotIcon'
     | 'timer'
     | 'window'
+    | 'info'
+    | 'humidity'
+    | 'temperature'
     | '';
 
 export function isStateRole(F: string): F is StateRole {

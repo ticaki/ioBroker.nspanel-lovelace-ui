@@ -124,6 +124,12 @@ class ConfigManager extends import_library.BaseClass {
     const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
     if (obj) {
       obj.native.scriptConfig = obj.native.scriptConfig || [];
+      obj.native.scriptConfig = obj.native.scriptConfig.filter(
+        (item, i) => obj.native.scriptConfig.findIndex((item2) => item2.topic === item.topic) === i
+      );
+      obj.native.scriptConfig = obj.native.scriptConfig.filter(
+        (item) => !(item.topic === panelConfig.topic && item.name !== panelConfig.name)
+      );
       const index = obj.native.scriptConfig.findIndex((item) => item.name === panelConfig.name);
       if (index !== -1) {
         obj.native.scriptConfig[index] = panelConfig;
@@ -372,7 +378,7 @@ class ConfigManager extends import_library.BaseClass {
         if (!(obj.common && obj.common.role)) {
           throw new Error(`Role missing in ${item.id}!`);
         }
-        const role = obj.common.role;
+        let role = obj.common.role;
         if (!import_config_manager_const.requiredDatapoints[role]) {
           throw new Error(`Role ${role} not implemented yet!`);
         }
@@ -613,7 +619,7 @@ class ConfigManager extends import_library.BaseClass {
                   minBri: void 0
                 },
                 text: {
-                  true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : void 0
+                  true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : void 0
                 },
                 text1: {
                   true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
@@ -685,10 +691,6 @@ class ConfigManager extends import_library.BaseClass {
             itemConfig = tempItem;
             break;
           }
-          case "door":
-          case "window":
-          case "volumeGroup":
-          case "volume":
           case "info":
           case "humidity":
           case "temperature":
@@ -696,6 +698,90 @@ class ConfigManager extends import_library.BaseClass {
           case "value.humidity":
           case "sensor.door":
           case "sensor.window":
+          case "door":
+          case "window": {
+            let iconOn = "door-open";
+            let iconOff = "door-closed";
+            let iconUnstable = "alert";
+            switch (role) {
+              case "door":
+              case "sensor.door": {
+                role = "door";
+                break;
+              }
+              case "window":
+              case "sensor.window": {
+                iconOn = "window-open-variant";
+                iconOff = "window-closed-variant";
+                iconUnstable = "window-closed-variant";
+                role = "window";
+                break;
+              }
+              case "info": {
+                iconOn = "information-outline";
+                iconOff = "information-outline";
+                role = "info";
+                break;
+              }
+              case "temperature":
+              case "value.temperature": {
+                iconOn = "thermometer";
+                iconOff = "snowflake-thermometer";
+                iconUnstable = "sun-thermometer";
+                role = "temperature";
+                break;
+              }
+              case "humidity":
+              case "value.humidity": {
+                iconOn = "water-percent";
+                iconOff = "water-off";
+                iconUnstable = "water-percent-alert";
+                role = "humidity";
+                break;
+              }
+            }
+            const tempItem = {
+              type: "text",
+              role,
+              data: {
+                icon: {
+                  true: {
+                    value: await this.getFieldAsDataItemConfig(item.icon || iconOn),
+                    color: {
+                      type: "const",
+                      constVal: item.onColor ? await this.getFieldAsDataItemConfig(item.onColor) : import_Color.Color.activated
+                    }
+                  },
+                  false: {
+                    value: await this.getFieldAsDataItemConfig(item.icon2 || iconOff),
+                    color: {
+                      type: "const",
+                      constVal: item.offColor ? await this.getFieldAsDataItemConfig(item.offColor) : import_Color.Color.deactivated
+                    }
+                  },
+                  unstable: {
+                    value: await this.getFieldAsDataItemConfig(item.icon3 || iconUnstable)
+                  },
+                  scale: void 0,
+                  maxBri: void 0,
+                  minBri: void 0
+                },
+                text: {
+                  true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : void 0
+                },
+                text1: {
+                  true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+                },
+                entity1: {
+                  value: { type: "triggered", dp: `${item.id}.ACTUAL` }
+                }
+              }
+            };
+            itemConfig = tempItem;
+            break;
+          }
+          case "volumeGroup":
+          case "volume":
           case "thermostat":
           case "warning":
           case "cie":
@@ -1330,8 +1416,8 @@ class ConfigManager extends import_library.BaseClass {
     throw new Error("Invalid data");
   }
   async getFieldAsDataItemConfig(possibleId, isTrigger = false) {
-    const state = possibleId === "" || possibleId.endsWith(".") ? void 0 : await this.adapter.getForeignStateAsync(possibleId);
-    if (state !== void 0 && state !== null) {
+    const state = import_Color.Color.isScriptRGB(possibleId) || possibleId === "" || possibleId.endsWith(".") ? void 0 : await this.adapter.getForeignStateAsync(possibleId);
+    if (!import_Color.Color.isScriptRGB(possibleId) && state !== void 0 && state !== null) {
       if (isTrigger) {
         return { type: "triggered", dp: possibleId };
       }

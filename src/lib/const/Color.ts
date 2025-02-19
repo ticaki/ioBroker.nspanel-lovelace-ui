@@ -430,7 +430,7 @@ export class Color extends ColorBase {
         return typeof F == 'object' && 'r' in F && 'b' in F && 'g' in F;
     }
 
-    static isScriptRGB(F: any): boolean {
+    static isScriptRGB(F: any): F is ScriptConfig.RGB {
         return typeof F == 'object' && 'red' in F && 'blue' in F && 'green' in F;
     }
 
