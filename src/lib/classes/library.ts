@@ -61,6 +61,9 @@ class CustomLog {
     }
     error(log: string, log2: string = ''): void {
         this.#adapter.log.error(log2 ? `[${log}] ${log2}` : `[${this.#prefix}] ${log}`);
+        if (this.#adapter.config.testCase) {
+            throw new Error(log2 ? `[${log}] ${log2}` : `[${this.#prefix}] ${log}`);
+        }
     }
     setLogPrefix(text: string): void {
         this.#prefix = text;
@@ -679,7 +682,7 @@ export class Library extends BaseClass {
         try {
             this.translation = await import(`../../../admin/i18n/${this.adapter.language}/translations.json`);
         } catch {
-            this.log.error(`Language ${this.adapter.language} not exist!`);
+            this.log.warn(`Language ${this.adapter.language} not exist!`);
         }
     }
     sortText(text: string[]): string[] {

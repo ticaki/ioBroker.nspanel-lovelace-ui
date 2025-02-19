@@ -29,7 +29,7 @@ class SystemNotifications extends import_library.BaseClass {
   messageTimeout;
   count = 0;
   constructor(adapter) {
-    super(adapter, "system-notifcations");
+    super(adapter, "system-notifications");
     this.language = this.adapter.library.getLocalLanguage();
   }
   async init() {
@@ -37,6 +37,9 @@ class SystemNotifications extends import_library.BaseClass {
     const obj = await this.adapter.getObjectAsync(`${this.adapter.namespace}.panels`);
     if (obj) {
       this.notifications = obj.native && obj.native.SystemNotifications || [];
+    }
+    if (this.adapter.config.testCase) {
+      return;
     }
     await this.handleIobrokerNotifications();
   }

@@ -9,7 +9,7 @@ export class SystemNotifications extends BaseClass {
     private count: number = 0;
 
     constructor(adapter: AdapterClassDefinition) {
-        super(adapter, 'system-notifcations');
+        super(adapter, 'system-notifications');
         this.language = this.adapter.library.getLocalLanguage();
     }
     public async init(): Promise<void> {
@@ -18,7 +18,9 @@ export class SystemNotifications extends BaseClass {
         if (obj) {
             this.notifications = (obj.native && obj.native.SystemNotifications) || [];
         }
-
+        if (this.adapter.config.testCase) {
+            return;
+        }
         await this.handleIobrokerNotifications();
     }
     async delete(): Promise<void> {

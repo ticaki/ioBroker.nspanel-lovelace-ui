@@ -98,6 +98,7 @@ export class MQTTClientClass extends BaseClass {
 export class MQTTServerClass extends BaseClass {
     aedes: Aedes;
     server: Server;
+    ready: boolean = false;
     constructor(adapter: AdapterClassDefinition, port: number, username: string, password: string, path: string) {
         super(adapter, 'mqttServer');
         const persistence = aedesPersistencelevel(new Level(path));
@@ -105,6 +106,7 @@ export class MQTTServerClass extends BaseClass {
         this.server = createServer(this.aedes.handle);
 
         this.server.listen(port, () => {
+            this.ready = true;
             this.log.info(`Started and listening on port ${port}`);
         });
         this.aedes.authenticate = (

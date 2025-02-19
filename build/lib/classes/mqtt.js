@@ -106,12 +106,14 @@ class MQTTClientClass extends import_library.BaseClass {
 class MQTTServerClass extends import_library.BaseClass {
   aedes;
   server;
+  ready = false;
   constructor(adapter, port, username, password, path) {
     super(adapter, "mqttServer");
     const persistence = (0, import_aedes_persistence_level.default)(new import_level.Level(path));
     this.aedes = new import_aedes.default({ persistence });
     this.server = (0, import_net.createServer)(this.aedes.handle);
     this.server.listen(port, () => {
+      this.ready = true;
       this.log.info(`Started and listening on port ${port}`);
     });
     this.aedes.authenticate = (client, un, pw, callback) => {

@@ -92,6 +92,9 @@ class CustomLog {
   }
   error(log, log2 = "") {
     __privateGet(this, _adapter).log.error(log2 ? `[${log}] ${log2}` : `[${__privateGet(this, _prefix)}] ${log}`);
+    if (__privateGet(this, _adapter).config.testCase) {
+      throw new Error(log2 ? `[${log}] ${log2}` : `[${__privateGet(this, _prefix)}] ${log}`);
+    }
   }
   setLogPrefix(text) {
     __privateSet(this, _prefix, text);
@@ -627,7 +630,7 @@ class Library extends BaseClass {
     try {
       this.translation = await Promise.resolve().then(() => __toESM(require(`../../../admin/i18n/${this.adapter.language}/translations.json`)));
     } catch {
-      this.log.error(`Language ${this.adapter.language} not exist!`);
+      this.log.warn(`Language ${this.adapter.language} not exist!`);
     }
   }
   sortText(text) {
