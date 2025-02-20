@@ -4,7 +4,7 @@ import { requiredOutdatedDataPoints } from '../const/config-manager-const';
 export async function generateAliasDocumentation(): Promise<void> {
     const checkPath = '.dev-data';
     let readme = `| Channel role | State ID | common.type | common.role | required | common.write | description |  \n`;
-    readme += `| --- | :--- | :--- | :--- | --- | --- | :--- |  \n`;
+    readme += `| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  \n`;
     let test = fs.readdirSync('./');
     if (test) {
         test = [''];

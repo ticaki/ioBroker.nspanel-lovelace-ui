@@ -37,7 +37,7 @@ async function generateAliasDocumentation() {
   const checkPath = ".dev-data";
   let readme = `| Channel role | State ID | common.type | common.role | required | common.write | description |  
 `;
-  readme += `| --- | :--- | :--- | :--- | --- | --- | :--- |  
+  readme += `| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 `;
   let test = fs.readdirSync("./");
   if (test) {

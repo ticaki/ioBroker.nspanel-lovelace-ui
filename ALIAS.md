@@ -1,5 +1,5 @@
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
-| --- | :--- | :--- | :--- | --- | --- | :--- |  
+| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | motion | ACTUAL | boolean| sensor.motion  | X |  |  | 
 | cie | CIE | number| level.color.cie  | X |  |  | 
 | " | DIMMER | boolean| level.dimmer  | X |  |  | 
