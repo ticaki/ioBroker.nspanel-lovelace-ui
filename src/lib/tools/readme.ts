@@ -15,7 +15,7 @@ export async function generateAliasDocumentation(): Promise<void> {
             const data = requiredOutdatedDataPoints[folder];
             for (const key in data) {
                 const row = data[key];
-                readme += `| ${folder == lastFolder ? '"' : folder} | ${key} | ${row.type}| ${row.role}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
+                readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${row.role}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
                 lastFolder = folder;
             }
         }
