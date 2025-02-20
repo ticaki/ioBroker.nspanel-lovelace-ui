@@ -435,8 +435,6 @@ declare namespace ScriptConfig {
         | 'temperature'
         | 'value.temperature'
         | 'value.humidity'
-        | 'sensor.door'
-        | 'sensor.window'
         | 'thermostat'
         | 'warning'
         | 'cie'
