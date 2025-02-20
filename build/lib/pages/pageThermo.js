@@ -145,10 +145,18 @@ class PageThermo extends import_Page.Page {
       v = (_c = item.data.minTemp && await item.data.minTemp.getNumber()) != null ? _c : null;
       if (v !== null) {
         message.minTemp = v * 10;
+      } else if (item.data.set1 && item.data.set1.common.min != null) {
+        message.minTemp = item.data.set1.common.min * 10;
+      } else {
+        message.minTemp = 150;
       }
       v = (_d = item.data.maxTemp && await item.data.maxTemp.getNumber()) != null ? _d : null;
       if (v !== null) {
         message.maxTemp = v * 10;
+      } else if (item.data.set1 && item.data.set1.common.max != null) {
+        message.maxTemp = item.data.set1.common.max * 10;
+      } else {
+        message.maxTemp = 300;
       }
       v = (_e = item.data.set2 && await item.data.set2.getNumber()) != null ? _e : null;
       if (v !== null) {
@@ -158,10 +166,32 @@ class PageThermo extends import_Page.Page {
       if (v !== null) {
         message.tCF = v;
         message.currentTemp += v;
+      } else {
+        if (item && item.data) {
+          let set = item.data.set1;
+          if (set) {
+            if (set.common.unit) {
+              message.tCF = set.common.unit;
+              message.currentTemp += set.common.unit;
+            }
+          } else {
+            set = item.data.set2;
+            if (set) {
+              if (set.common.unit) {
+                message.tCF = set.common.unit;
+                message.currentTemp += set.common.unit;
+              }
+            }
+          }
+        }
       }
       v = (_g = item.data.tempStep && await item.data.tempStep.getString()) != null ? _g : null;
       if (v !== null) {
         message.tempStep = v;
+      } else if (item.data.set1 && item.data.set1.common.step) {
+        message.tempStep = String(item.data.set1.common.step * 10);
+      } else {
+        message.tempStep = "5";
       }
       message.tCurTempLbl = this.library.getTranslation((_h = await (0, import_tools.getValueEntryString)(item.data.mixed1)) != null ? _h : "");
       message.currentTemp = this.library.getTranslation((_i = await (0, import_tools.getValueEntryString)(item.data.mixed2)) != null ? _i : "");

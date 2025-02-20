@@ -47,5 +47,6 @@
     "actualtemp": "Фактична темп",
     "Colour temperature": "Колірна температура",
     "Color temperature": "Колірна температура",
-    "StateObjects.buttons.indicator": "Індикатор"
+    "StateObjects.buttons.indicator": "Індикатор",
+    "Humidity": "Вологість"
 }

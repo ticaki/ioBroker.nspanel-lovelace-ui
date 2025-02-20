@@ -9,6 +9,7 @@ export class Dataitem extends BaseClass {
     stateDB: StatesControler;
     type: ioBroker.CommonType | undefined = undefined;
     parent: BaseClassTriggerd;
+    common: Partial<ioBroker.StateCommon> = {};
     private _writeable: boolean = false;
     /**
      * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
@@ -74,6 +75,7 @@ export class Dataitem extends BaseClass {
                 this.type = this.type || obj.common.type;
                 this.options.role = obj.common.role;
                 this._writeable = !!obj.common.write;
+                this.common = obj.common;
                 if (this.options.type == 'triggered') {
                     await this.stateDB.setTrigger(this.options.dp, this.parent, false, undefined, this.options.change);
                 } else if (this.options.type == 'internal') {

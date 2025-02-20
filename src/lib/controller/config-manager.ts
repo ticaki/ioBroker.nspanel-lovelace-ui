@@ -187,7 +187,8 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardGrid' &&
                     page.type !== 'cardGrid2' &&
                     page.type !== 'cardGrid3' &&
-                    page.type !== 'cardEntities'
+                    page.type !== 'cardEntities' &&
+                    page.type !== 'cardThermo'
                 ) {
                     continue;
                 }
@@ -210,7 +211,7 @@ export class ConfigManager extends BaseClass {
                     };
                     panelConfig.navigation.push(navItem);
                 }
-                const gridItem: pages.PageBaseConfig = {
+                let gridItem: pages.PageBaseConfig = {
                     dpInit: '',
                     alwaysOn: 'none',
                     uniqueID: page.uniqueName || '',
@@ -223,6 +224,9 @@ export class ConfigManager extends BaseClass {
                     },
                     pageItems: [],
                 };
+                if (page.type === 'cardThermo') {
+                    ({ gridItem, messages } = await this.getPageThermo(page, gridItem, messages));
+                }
                 if (page.items) {
                     for (const item of page.items) {
                         if (!item) {
@@ -230,7 +234,7 @@ export class ConfigManager extends BaseClass {
                         }
                         try {
                             const itemConfig = await this.getPageItemConfig(item, page);
-                            if (itemConfig) {
+                            if (itemConfig && gridItem.pageItems) {
                                 gridItem.pageItems.push(itemConfig);
                             }
                         } catch (error: any) {
@@ -246,7 +250,26 @@ export class ConfigManager extends BaseClass {
         }
         return { panelConfig, messages };
     }
+    async getPageThermo(
+        page: ScriptConfig.PageType,
+        gridItem: pages.PageBaseConfig,
+        messages: string[],
+    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+        if (page.type !== 'cardThermo' || !gridItem.config || gridItem.config.card !== 'cardThermo') {
+            return { gridItem, messages };
+        }
+        if (!page.items || !page.items[0] || page.items[0].id == null) {
+            const msg = 'Thermo page has no items or item 0 has no id!';
+            messages.push(msg);
+            this.log.error(msg);
+            return { gridItem, messages };
+        }
 
+        gridItem.template = 'thermo.script';
+        gridItem.dpInit = page.items[0].id;
+
+        return { gridItem, messages };
+    }
     async getPageNaviItemConfig(
         item: ScriptConfig.PageItem,
         _page: ScriptConfig.PageType,
@@ -375,6 +398,7 @@ export class ConfigManager extends BaseClass {
                 itemConfig = tempItem;
                 break;
             }
+            case 'thermostat':
             case 'blind':
             case 'door':
             case 'window':
@@ -385,7 +409,6 @@ export class ConfigManager extends BaseClass {
             case 'temperature':
             case 'value.temperature':
             case 'value.humidity':
-            case 'thermostat':
             case 'warning':
             case 'cie':
             case 'gate':
@@ -434,7 +457,7 @@ export class ConfigManager extends BaseClass {
                 const role = obj.common.role as ScriptConfig.roles;
                 // check if role and types are correct
                 if (!requiredDatapoints[role] && !requiredOutdatedDataPoints[role]) {
-                    throw new Error(`Role ${role} not supported!`);
+                    throw new Error(`Channel role ${role} not supported!`);
                 }
                 if (!(await this.checkRequiredDatapoints(role, item))) {
                     return;
@@ -992,10 +1015,10 @@ export class ConfigManager extends BaseClass {
                         itemConfig = tempItem;
                         break;
                     }
-
+                    case 'thermostat':
+                        break;
                     case 'volumeGroup':
                     case 'volume':
-                    case 'thermostat':
                     case 'warning':
                     case 'cie':
                     case 'buttonSensor':
@@ -1463,13 +1486,15 @@ export class ConfigManager extends BaseClass {
     async checkRequiredDatapoints(role: ScriptConfig.roles, item: ScriptConfig.PageItem): Promise<boolean> {
         for (const dp in requiredDatapoints[role]) {
             const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
+
             if (!o && !requiredOutdatedDataPoints[role][dp].required && !requiredDatapoints[role][dp].required) {
-                throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
+                continue;
             }
             if (
                 !o ||
                 o.common.role !== requiredOutdatedDataPoints[role][dp].role ||
-                o.common.type !== requiredOutdatedDataPoints[role][dp].type
+                o.common.type !== requiredOutdatedDataPoints[role][dp].type ||
+                o.common.write !== requiredOutdatedDataPoints[role][dp].writeable
             ) {
                 if (
                     !o ||
@@ -1481,8 +1506,9 @@ export class ConfigManager extends BaseClass {
                     } else {
                         throw new Error(
                             `Datapoint ${item.id}.${dp} has wrong ` +
-                                `role: ${o.common.role !== requiredDatapoints[role][dp].role ? `${o.common.role} should be ${requiredDatapoints[role][dp].role}` : `ok`} ` +
-                                `- type: ${o.common.type !== requiredDatapoints[role][dp].type ? `${o.common.type} should be ${requiredDatapoints[role][dp].type}` : `ok`}`,
+                                `role: ${o.common.role !== requiredOutdatedDataPoints[role][dp].role ? `${o.common.role} should be ${requiredOutdatedDataPoints[role][dp].role}` : `ok`} ` +
+                                `- type: ${o.common.type !== requiredOutdatedDataPoints[role][dp].type ? `${o.common.type} should be ${requiredOutdatedDataPoints[role][dp].type}` : `ok`}` +
+                                ` ${o.common.write !== requiredOutdatedDataPoints[role][dp].writeable ? ' - must be writeable!' : ''} `,
                         );
                     }
                     return false;
@@ -1590,7 +1616,7 @@ export class ConfigManager extends BaseClass {
             obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
             result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
         }
-
+        const dataType = obj && obj.common && obj.common.type ? obj.common.type : undefined;
         if (entity.ScreensaverEntityUnitText || entity.ScreensaverEntityUnitText === '') {
             result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityUnitText);
         } else if (obj && obj.common && obj.common.unit) {
@@ -1631,6 +1657,29 @@ export class ConfigManager extends BaseClass {
             result.data.icon = {
                 true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) },
             };
+        }
+        if (
+            dataType === 'number' &&
+            entity.ScreensaverEntityIconSelect &&
+            Array.isArray(entity.ScreensaverEntityIconSelect)
+        ) {
+            const obj = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
+            if (obj && obj.type === 'state') {
+                entity.ScreensaverEntityIconSelect.sort((a, b) => a.value - b.value);
+                obj.read = `
+                const items = [${entity.ScreensaverEntityIconSelect.map(item => `{${item.value}, ${item.icon}}`).join(', ')}];
+                for (let i = 1; i < items.length; i++) {
+                    if (val <= items[i].val) {return items[i].icon;}
+                }
+                return items[items.length - 1].icon;`;
+
+                result.data.icon = {
+                    ...result.data.icon,
+                    true: {
+                        value: obj,
+                    },
+                };
+            }
         }
         if (color) {
             result.data.icon = result.data.icon || {};

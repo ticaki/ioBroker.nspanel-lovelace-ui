@@ -47,5 +47,6 @@
     "actualtemp": "Rzeczywista temperatura",
     "Colour temperature": "Temperatura barwowa",
     "Color temperature": "Temperatura koloru",
-    "StateObjects.buttons.indicator": "Wskaźnik"
+    "StateObjects.buttons.indicator": "Wskaźnik",
+    "Humidity": "Wilgotność"
 }

@@ -129,6 +129,7 @@ export const stateRoleArray = arrayOfAllStateRole([
     'date.sunset.forecast.0',
     'date.sunrise.forecast.1',
     'date.sunset.forecast.1',
+    'value.humidity',
     '',
 ]);
 
@@ -186,6 +187,7 @@ export type StateRole =
     | 'value.battery'
     | 'value.power'
     | 'value.temperature'
+    | 'value.humidity'
     | '';
 
 export type DeviceRole =

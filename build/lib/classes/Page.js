@@ -134,7 +134,7 @@ class Page extends import_states_controller.BaseClassPage {
     this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
   }
   sendType() {
-    if (this.panel.lastCard !== this.card) {
+    if (this.panel.lastCard !== this.card || this.card === "cardThermo") {
       this.sendToPanel(`pageType~${this.card}`);
     }
     this.panel.lastCard = this.card;

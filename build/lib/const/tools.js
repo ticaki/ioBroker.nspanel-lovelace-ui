@@ -510,7 +510,7 @@ function isTextSizeEntryType(F) {
   return "textSize" in F;
 }
 async function getValueEntryString(i, v = null) {
-  var _a, _b, _c, _d, _e, _f;
+  var _a, _b, _c, _d, _e, _f, _g, _h;
   if (!i || !i.value) {
     return null;
   }
@@ -531,19 +531,19 @@ async function getValueEntryString(i, v = null) {
         res2 = String(nval);
       }
     }
-    res2 = res2 + ((_c = i.unit && await i.unit.getString()) != null ? _c : "");
+    res2 = res2 + ((_d = (_c = i.unit && await i.unit.getString()) != null ? _c : i.value.common.unit) != null ? _d : "");
     let opt2 = "";
     if (isTextSizeEntryType(i)) {
-      opt2 = String((_d = i.textSize && await i.textSize.getNumber()) != null ? _d : "");
+      opt2 = String((_e = i.textSize && await i.textSize.getNumber()) != null ? _e : "");
     }
     return res2 + (opt2 ? `\xAC${opt2}` : "");
   }
   let res = await i.value.getString();
   let opt = "";
   if (res != null) {
-    res += (_e = i.unit && await i.unit.getString()) != null ? _e : "";
+    res += (_g = (_f = i.unit && await i.unit.getString()) != null ? _f : i.value.common.unit) != null ? _g : "";
     if (isTextSizeEntryType(i)) {
-      opt = String((_f = i.textSize && await i.textSize.getNumber()) != null ? _f : "");
+      opt = String((_h = i.textSize && await i.textSize.getNumber()) != null ? _h : "");
     }
     res += opt ? `\xAC${opt}` : "";
   }

@@ -137,6 +137,8 @@ export const requiredOutdatedDataPoints: {
             role: ScriptConfig.roles | ConfigManager.ioBrokerRoles;
             required: boolean;
             type: ioBroker.StateCommon['type'];
+            writeable?: boolean;
+            description?: string;
         };
     };
 } = {
@@ -293,6 +295,7 @@ export const requiredOutdatedDataPoints: {
             role: 'level.blind',
             type: 'number',
             required: true,
+            writeable: true,
         },
         CLOSE: {
             role: 'button.close.blind',
@@ -345,6 +348,13 @@ export const requiredOutdatedDataPoints: {
             role: 'level.temperature',
             type: 'number',
             required: true,
+            writeable: true,
+        },
+        SET2: {
+            role: 'level.temperature',
+            type: 'number',
+            required: true,
+            writeable: true,
         },
         AUTO: {
             role: 'state',

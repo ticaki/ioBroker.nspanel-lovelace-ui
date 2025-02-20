@@ -167,7 +167,7 @@ export class Page extends BaseClassPage {
         this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
     }
     sendType(): void {
-        if (this.panel.lastCard !== this.card) {
+        if (this.panel.lastCard !== this.card || this.card === 'cardThermo') {
             this.sendToPanel(`pageType~${this.card}`);
         }
         this.panel.lastCard = this.card;

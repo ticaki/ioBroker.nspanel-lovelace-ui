@@ -16,7 +16,8 @@ export type PageTemplateIdent =
     | 'entities.fahrplan.departure-timetable'
     | 'entities.fahrplan.routes'
     | 'thermo.hmip.valve'
-    | 'thermo.hmip.wallthermostat';
+    | 'thermo.hmip.wallthermostat'
+    | 'thermo.script';
 
 export type TemplateIdent =
     | 'generic.shutter'

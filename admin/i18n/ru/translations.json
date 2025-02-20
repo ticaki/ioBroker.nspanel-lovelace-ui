@@ -47,5 +47,6 @@
     "actualtemp": "Фактическая температура",
     "Colour temperature": "Цветовая температура",
     "Color temperature": "Цветовая температура",
-    "StateObjects.buttons.indicator": "Индикатор"
+    "StateObjects.buttons.indicator": "Индикатор",
+    "Humidity": "Влажность"
 }

@@ -26,6 +26,8 @@ Immer wenn ich Zeit und lust habe Dokumentiere ich hier Sachen.
 
 Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 
+[Alias Tabelle](ALIAS.md)
+
 ## Konvertierung der Skriptkonfiguration in Adapterkonfig
 
 ### Cards
@@ -35,7 +37,7 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [x] cardGrid
 - [x] cardGrid2
 - [x] cardGrid3
-- [ ] cardThermo
+- [x] cardThermo
 - [ ] cardMedia
 - [ ] cardUnlock
 - [ ] cardQR
@@ -60,7 +62,7 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [x] temperature
 - [x] value.temperature
 - [x] value.humidity
-- [ ] thermostat
+- [x] thermostat
 - [ ] warning
 - [ ] cie
 - [ ] gate

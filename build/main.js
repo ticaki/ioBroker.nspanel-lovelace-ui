@@ -30,6 +30,7 @@ var import_controller = require("./lib/controller/controller");
 var import_icon_mapping = require("./lib/const/icon_mapping");
 var import_definition = require("./lib/const/definition");
 var import_config_manager = require("./lib/controller/config-manager");
+var import_readme = require("./lib/tools/readme");
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -59,6 +60,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     });
     this.library = new import_library.Library(this);
     await this.delay(2e3);
+    await (0, import_readme.generateAliasDocumentation)();
     if (!this.config.Testconfig2) {
       if (this.config.onlyStartFromSystemConfig) {
         this.log.warn("No configuration stopped!");

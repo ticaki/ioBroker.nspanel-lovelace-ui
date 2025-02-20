@@ -16,6 +16,7 @@ import { Icons } from './lib/const/icon_mapping';
 import { genericStateObjects } from './lib/const/definition';
 import { ConfigManager } from './lib/controller/config-manager';
 import type { panelConfigPartial } from './lib/controller/panel';
+import { generateAliasDocumentation } from './lib/tools/readme';
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -50,6 +51,9 @@ class NspanelLovelaceUi extends utils.Adapter {
 
         this.library = new Library(this);
         await this.delay(2000);
+
+        await generateAliasDocumentation();
+
         if (!this.config.Testconfig2) {
             if (this.config.onlyStartFromSystemConfig) {
                 this.log.warn('No configuration stopped!');

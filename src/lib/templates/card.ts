@@ -2351,4 +2351,320 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
             },
         ],
     },
+    'thermo.script': {
+        adapter: 'alias.0',
+        card: 'cardThermo',
+        alwaysOn: 'none',
+        useColor: false,
+        items: undefined,
+        config: {
+            card: 'cardThermo',
+            data: {
+                mixed1: {
+                    value: { type: 'const', constVal: 'Temperature' },
+                },
+                mixed2: {
+                    value: {
+                        mode: 'auto',
+                        role: 'value.temperature',
+                        type: 'triggered',
+                        dp: '',
+                        regexp: /\.ACTUAL$/,
+                    },
+                    factor: { type: 'const', constVal: 1 },
+                    decimal: { type: 'const', constVal: 1 },
+                },
+                mixed3: {
+                    value: { type: 'const', constVal: 'Humidity' },
+                },
+                mixed4: {
+                    value: {
+                        mode: 'auto',
+                        role: 'value.humidity',
+                        type: 'triggered',
+                        dp: '',
+                        regexp: /\.HUMIDITY$/,
+                    },
+                    factor: { type: 'const', constVal: 1 },
+                    decimal: { type: 'const', constVal: 0 },
+                    unit: { type: 'const', constVal: '%' },
+                },
+                set1: {
+                    mode: 'auto',
+                    role: 'level.temperature',
+                    type: 'state',
+                    dp: '',
+                    regexp: /\.SET$/,
+                },
+                set2: {
+                    mode: 'auto',
+                    role: 'level.temperature',
+                    type: 'state',
+                    dp: '',
+                    regexp: /\.SET2$/,
+                },
+            },
+        },
+        pageItems: [
+            //Automatic
+            {
+                role: 'button',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'alpha-a-circle' },
+                            color: { type: 'const', constVal: Color.activated },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'alpha-a-circle-outline' },
+                            color: { type: 'const', constVal: Color.deactivated },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: '',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.MODE$/,
+                            read: `return val == 'AUTOMATIC' ? true : false`,
+                            forceType: 'boolean',
+                        },
+                    },
+                    setValue1: {
+                        mode: 'auto',
+                        role: '',
+                        type: 'state',
+                        dp: '',
+                        regexp: /\.MODE$/,
+                        write: `return val != true ? 'AUTOMATIC' : 'MANUAL'`,
+                    },
+                },
+            },
+            //Manual
+            {
+                role: 'button',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'alpha-m-circle' },
+                            color: { type: 'const', constVal: Color.activated },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'alpha-m-circle-outline' },
+                            color: { type: 'const', constVal: Color.deactivated },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: '',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.MODE$/,
+                            read: `return val == 'MANUAL' ? true : false`,
+                        },
+                    },
+                    setValue1: {
+                        mode: 'auto',
+                        role: '',
+                        type: 'state',
+                        dp: '',
+                        regexp: /\.MODE$/,
+                        write: `return val = true ? 'MANUAL' : 'AUTOMATIC'`,
+                    },
+                },
+            },
+            //Boost
+            {
+                role: 'button',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'fast-forward-60' },
+                            color: { type: 'const', constVal: Color.activated },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'fast-forward-60' },
+                            color: { type: 'const', constVal: Color.deactivated },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: '',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.BOOST$/,
+                        },
+                    },
+                    setValue1: { mode: 'auto', type: 'state', role: 'switch', dp: '', regexp: /\.boostMode$/ },
+                },
+            },
+            //Fenster
+            {
+                role: 'indicator',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'window-open-variant' },
+                            color: { type: 'const', constVal: Color.open },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'window-closed-variant' },
+                            color: { type: 'const', constVal: Color.close },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: '',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.WINDOWOPEN$/,
+                        },
+                    },
+                },
+            },
+            //Party
+            {
+                role: 'indicator',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'party-popper' },
+                            color: { type: 'const', constVal: Color.activated },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'party-popper' },
+                            color: { type: 'const', constVal: Color.deactivated },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: '',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.PARTY$/,
+                        },
+                    },
+                },
+            },
+            {
+                role: 'indicator',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'alert-circle' },
+                            color: { type: 'const', constVal: Color.bad },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'alert-circle-outline' },
+                            color: { type: 'const', constVal: Color.deactivated },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: '',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.MAINTAIN$/,
+                        },
+                    },
+                },
+            },
+            {
+                role: 'indicator',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'wifi-off' },
+                            color: { type: 'const', constVal: Color.bad },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'wifi' },
+                            color: { type: 'const', constVal: Color.good },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: '',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.UNREACH$/,
+                        },
+                    },
+                },
+            },
+            {
+                role: 'indicator',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'account-wrench' },
+                            color: { type: 'const', constVal: Color.true },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'account-wrench' },
+                            color: { type: 'const', constVal: Color.deactivated },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: '',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.MAINTAIN$/,
+                        },
+                    },
+                },
+            },
+            {
+                role: 'indicator',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'battery-low' },
+                            color: { type: 'const', constVal: Color.bad },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'battery-high' },
+                            color: { type: 'const', constVal: Color.good },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: '',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.LOWBAT$/,
+                        },
+                    },
+                },
+            },
+        ],
+    },
 };

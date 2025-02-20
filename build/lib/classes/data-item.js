@@ -41,6 +41,7 @@ class Dataitem extends import_library.BaseClass {
   stateDB;
   type = void 0;
   parent;
+  common = {};
   _writeable = false;
   /**
    * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
@@ -104,6 +105,7 @@ class Dataitem extends import_library.BaseClass {
         this.type = this.type || obj.common.type;
         this.options.role = obj.common.role;
         this._writeable = !!obj.common.write;
+        this.common = obj.common;
         if (this.options.type == "triggered") {
           await this.stateDB.setTrigger(this.options.dp, this.parent, false, void 0, this.options.change);
         } else if (this.options.type == "internal") {

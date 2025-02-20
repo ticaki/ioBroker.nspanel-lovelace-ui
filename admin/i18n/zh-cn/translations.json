@@ -47,5 +47,6 @@
     "actualtemp": "实际温度",
     "Colour temperature": "色温",
     "Color temperature": "色温",
-    "StateObjects.buttons.indicator": "指标"
+    "StateObjects.buttons.indicator": "指标",
+    "Humidity": "湿度"
 }

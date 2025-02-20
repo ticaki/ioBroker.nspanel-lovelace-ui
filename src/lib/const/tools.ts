@@ -575,7 +575,7 @@ export async function getValueEntryString(
                 res = String(nval);
             }
         }
-        res = res + ((i.unit && (await i.unit.getString())) ?? '');
+        res = res + ((i.unit && (await i.unit.getString())) ?? i.value.common.unit ?? '');
         let opt = '';
         if (isTextSizeEntryType(i)) {
             opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
@@ -585,7 +585,7 @@ export async function getValueEntryString(
     let res = await i.value.getString();
     let opt = '';
     if (res != null) {
-        res += (i.unit && (await i.unit.getString())) ?? '';
+        res += (i.unit && (await i.unit.getString())) ?? i.value.common.unit ?? '';
         if (isTextSizeEntryType(i)) {
             opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
         }

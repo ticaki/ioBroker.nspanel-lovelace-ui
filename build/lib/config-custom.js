@@ -3744,6 +3744,7 @@ const pageThermoTest = {
         constVal: "5"
       },
       set1: { type: "state", dp: "0_userdata.0.number1" },
+      set2: { type: "state", dp: "0_userdata.0.number2" },
       mixed4: {
         value: {
           type: "const",

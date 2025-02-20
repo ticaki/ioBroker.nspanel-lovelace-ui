@@ -47,5 +47,6 @@
     "actualtemp": "Werkelijke temperatuur",
     "Colour temperature": "Kleur temperatuur",
     "Color temperature": "Kleurtemperatuur",
-    "StateObjects.buttons.indicator": "Indicator"
+    "StateObjects.buttons.indicator": "Indicator",
+    "Humidity": "Vochtigheid"
 }

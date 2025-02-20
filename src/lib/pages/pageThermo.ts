@@ -145,23 +145,57 @@ export class PageThermo extends Page {
             v = (item.data.minTemp && (await item.data.minTemp.getNumber())) ?? null;
             if (v !== null) {
                 message.minTemp = v * 10;
+            } else if (item.data.set1 && item.data.set1.common.min != null) {
+                message.minTemp = item.data.set1.common.min * 10;
+            } else {
+                message.minTemp = 150;
             }
+
             v = (item.data.maxTemp && (await item.data.maxTemp.getNumber())) ?? null;
             if (v !== null) {
                 message.maxTemp = v * 10;
+            } else if (item.data.set1 && item.data.set1.common.max != null) {
+                message.maxTemp = item.data.set1.common.max * 10;
+            } else {
+                message.maxTemp = 300;
             }
+
             v = (item.data.set2 && (await item.data.set2.getNumber())) ?? null;
             if (v !== null) {
                 message.temp2 = v * 10;
             }
+
+            // if we dont have a unit we get it from set1 or set2
             v = (item.data.unit && (await item.data.unit.getString())) ?? null;
             if (v !== null) {
                 message.tCF = v;
                 message.currentTemp += v;
+            } else {
+                if (item && item.data) {
+                    let set = item.data.set1;
+                    if (set) {
+                        if (set.common.unit) {
+                            message.tCF = set.common.unit;
+                            message.currentTemp += set.common.unit;
+                        }
+                    } else {
+                        set = item.data.set2;
+                        if (set) {
+                            if (set.common.unit) {
+                                message.tCF = set.common.unit;
+                                message.currentTemp += set.common.unit;
+                            }
+                        }
+                    }
+                }
             }
             v = (item.data.tempStep && (await item.data.tempStep.getString())) ?? null;
             if (v !== null) {
                 message.tempStep = v;
+            } else if (item.data.set1 && item.data.set1.common.step) {
+                message.tempStep = String(item.data.set1.common.step * 10);
+            } else {
+                message.tempStep = '5';
             }
 
             message.tCurTempLbl = this.library.getTranslation((await getValueEntryString(item.data.mixed1)) ?? '');

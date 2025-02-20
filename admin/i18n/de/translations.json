@@ -47,5 +47,6 @@
     "actualtemp": "Aktuelle Temp",
     "Colour temperature": "Farbtemperatur",
     "Color temperature": "Farbtemperatur",
-    "StateObjects.buttons.indicator": "Indikator"
+    "StateObjects.buttons.indicator": "Indikator",
+    "Humidity": "Luftfeuchtigkeit"
 }

@@ -300,7 +300,8 @@ const requiredOutdatedDataPoints = {
     SET: {
       role: "level.blind",
       type: "number",
-      required: true
+      required: true,
+      writeable: true
     },
     CLOSE: {
       role: "button.close.blind",
@@ -352,7 +353,14 @@ const requiredOutdatedDataPoints = {
     SET: {
       role: "level.temperature",
       type: "number",
-      required: true
+      required: true,
+      writeable: true
+    },
+    SET2: {
+      role: "level.temperature",
+      type: "number",
+      required: true,
+      writeable: true
     },
     AUTO: {
       role: "state",
