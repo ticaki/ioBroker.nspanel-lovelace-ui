@@ -492,8 +492,8 @@ export class ConfigManager extends BaseClass {
                                 headline: await this.getFieldAsDataItemConfig(item.name || commonName || 'Light'),
                                 entity1: {
                                     value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                                    set: { type: 'state', dp: `${item.id}.SET` },
                                 },
-                                setValue1: { type: 'state', dp: `${item.id}.SET` },
                             },
                         };
                         itemConfig = tempItem;
@@ -537,6 +537,7 @@ export class ConfigManager extends BaseClass {
                                 colorMode: item.colormode ? { type: 'const', constVal: !!item.colormode } : undefined,
                                 dimmer: {
                                     value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                                    set: { type: 'state', dp: `${item.id}.SET` },
                                     maxScale: item.maxValueBrightness
                                         ? { type: 'const', constVal: item.maxValueBrightness }
                                         : undefined,
@@ -553,9 +554,8 @@ export class ConfigManager extends BaseClass {
                                 },
                                 entity1: {
                                     value: { type: 'triggered', dp: `${item.id}.ON_ACTUAL` },
+                                    set: { type: 'state', dp: `${item.id}.ON_SET` },
                                 },
-                                setValue1: { type: 'state', dp: `${item.id}.ON_SET` },
-                                setValue2: { type: 'state', dp: `${item.id}.SET` },
                             },
                         };
                         itemConfig = tempItem;
@@ -696,8 +696,8 @@ export class ConfigManager extends BaseClass {
                                           },
                                 entity1: {
                                     value: { type: 'triggered', dp: `${item.id}.ON_ACTUAL` },
+                                    set: { type: 'state', dp: `${item.id}.ON` },
                                 },
-                                setValue1: { type: 'state', dp: `${item.id}.ON` },
                             },
                         };
                         itemConfig = tempItem;
