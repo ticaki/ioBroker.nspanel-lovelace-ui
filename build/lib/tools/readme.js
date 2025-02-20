@@ -37,7 +37,7 @@ async function generateAliasDocumentation() {
   const checkPath = ".dev-data";
   let readme = `| Channel role | State ID | common.type | common.role | required | common.write | description |  
 `;
-  readme += `| :--- | :--- | :--- | :--- | --- | --- | :--- |  
+  readme += `| --- | :--- | :--- | :--- | --- | --- | :--- |  
 `;
   let test = fs.readdirSync("./");
   if (test) {
@@ -49,7 +49,7 @@ async function generateAliasDocumentation() {
       const data = import_config_manager_const.requiredOutdatedDataPoints[folder];
       for (const key in data) {
         const row = data[key];
-        readme += `| ${folder == lastFolder ? "" : folder} | ${key} | ${row.type}| ${row.role}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
+        readme += `| ${folder == lastFolder ? '"' : folder} | ${key} | ${row.type}| ${row.role}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
 `;
         lastFolder = folder;
       }
