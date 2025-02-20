@@ -105,7 +105,8 @@ declare namespace ConfigManager {
         | 'weather.title'
         | 'value.warning'
         | 'weather.title.short'
-        | 'weather.icon.forecast';
+        | 'weather.icon.forecast'
+        | 'sensor.door';
 }
 declare namespace ScriptConfig {
     export type PopupType =
@@ -171,8 +172,6 @@ declare namespace ScriptConfig {
         | 'temperature'
         | 'value.temperature'
         | 'value.humidity'
-        | 'sensor.door'
-        | 'sensor.window'
         | 'thermostat'
         | 'warning'
         | 'cie'
@@ -442,6 +441,7 @@ declare namespace ScriptConfig {
         name?: string;
         secondRow?: string;
         buttonText?: string;
+        buttonTextOff?: string;
         unit?: string;
         navigate?: boolean;
         colormode?: string;

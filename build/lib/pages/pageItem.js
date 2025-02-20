@@ -263,6 +263,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             if (value === null) {
               value = true;
             }
+            message.displayName = this.library.getTranslation(
+              (_r = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _r : ""
+            );
             switch (entry.role) {
               case "2values": {
                 message.optionalValue = ``;
@@ -302,13 +305,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               }
               default: {
                 message.optionalValue = this.library.getTranslation(
-                  (_s = (_r = await tools.getValueEntryString(item.entity2)) != null ? _r : await tools.getEntryTextOnOff(item.text1, !!value)) != null ? _s : ""
+                  (_t = (_s = await tools.getValueEntryString(item.entity2)) != null ? _s : await tools.getEntryTextOnOff(item.text1, !!value)) != null ? _t : ""
                 );
               }
             }
-            message.displayName = this.library.getTranslation(
-              (_t = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _t : ""
-            );
             switch (entry.role) {
               case "textNotIcon": {
                 message.icon = (_u = await tools.getIconEntryValue(item.icon, !!value, "", null, true)) != null ? _u : "";

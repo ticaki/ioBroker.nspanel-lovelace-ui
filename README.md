@@ -51,17 +51,15 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [x] rgbSingle
 - [x] ct
 - [x] blind
-- [ ] door
-- [ ] window
+- [x] door
+- [x] window
 - [ ] volumeGroup
 - [ ] volume
-- [ ] info
-- [ ] humidity
-- [ ] temperature
-- [ ] value.temperature
-- [ ] value.humidity
-- [ ] sensor.door
-- [ ] sensor.window
+- [x] info
+- [x] humidity
+- [x] temperature
+- [x] value.temperature
+- [x] value.humidity
 - [ ] thermostat
 - [ ] warning
 - [ ] cie

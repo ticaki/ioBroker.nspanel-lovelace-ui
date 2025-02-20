@@ -197,7 +197,7 @@ class ConfigManager extends import_library.BaseClass {
               continue;
             }
             try {
-              const itemConfig = await this.getPageItemConfig(item);
+              const itemConfig = await this.getPageItemConfig(item, page);
               if (itemConfig) {
                 gridItem.pageItems.push(itemConfig);
               }
@@ -214,7 +214,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     return { panelConfig, messages };
   }
-  async getPageNaviItemConfig(item) {
+  async getPageNaviItemConfig(item, _page) {
     let itemConfig = void 0;
     const obj = item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
     const role = obj && obj.common.role ? obj.common.role : void 0;
@@ -337,8 +337,6 @@ class ConfigManager extends import_library.BaseClass {
       case "temperature":
       case "value.temperature":
       case "value.humidity":
-      case "sensor.door":
-      case "sensor.window":
       case "thermostat":
       case "warning":
       case "cie":
@@ -355,22 +353,22 @@ class ConfigManager extends import_library.BaseClass {
       case "media":
       case "timeTable":
       case "airCondition": {
-        throw new Error(`Navigation for ${role} not implemented yet!`);
+        throw new Error(`Navigation for ${role} not implemented yet!!`);
       }
       default:
         (0, import_pages.exhaustiveCheck)(role);
-        throw new Error(`Role ${role} not implemented yet!`);
+        throw new Error(`Role ${role} not implemented yet!!!`);
     }
     return itemConfig;
     return void 0;
   }
-  async getPageItemConfig(item) {
+  async getPageItemConfig(item, page) {
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
         throw new Error(`TargetPage missing in ${item && item.id || "no id"}!`);
       }
-      return await this.getPageNaviItemConfig(item);
+      return await this.getPageNaviItemConfig(item, page);
     }
     if (item.id && !item.id.endsWith(".")) {
       const obj = await this.adapter.getForeignObjectAsync(item.id);
@@ -378,13 +376,14 @@ class ConfigManager extends import_library.BaseClass {
         if (!(obj.common && obj.common.role)) {
           throw new Error(`Role missing in ${item.id}!`);
         }
-        let role = obj.common.role;
-        if (!import_config_manager_const.requiredDatapoints[role]) {
-          throw new Error(`Role ${role} not implemented yet!`);
+        const role = obj.common.role;
+        if (!import_config_manager_const.requiredDatapoints[role] && !import_config_manager_const.requiredOutdatedDataPoints[role]) {
+          throw new Error(`Role ${role} not supported!`);
         }
         if (!await this.checkRequiredDatapoints(role, item)) {
           return;
         }
+        const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
         const commonName = typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()];
         switch (role) {
           case "timeTable": {
@@ -619,7 +618,8 @@ class ConfigManager extends import_library.BaseClass {
                   minBri: void 0
                 },
                 text: {
-                  true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : void 0
+                  true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` },
+                  false: item.buttonTextOff ? await this.getFieldAsDataItemConfig(item.buttonTextOff) : await this.existsState(`${item.id}.BUTTONTEXTOFF`) ? { type: "state", dp: `${item.id}.BUTTONTEXTOFF` } : item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
                 },
                 text1: {
                   true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
@@ -691,36 +691,56 @@ class ConfigManager extends import_library.BaseClass {
             itemConfig = tempItem;
             break;
           }
+          case "gate": {
+            break;
+          }
+          case "motion":
           case "info":
           case "humidity":
           case "temperature":
           case "value.temperature":
           case "value.humidity":
-          case "sensor.door":
-          case "sensor.window":
           case "door":
           case "window": {
             let iconOn = "door-open";
             let iconOff = "door-closed";
-            let iconUnstable = "alert";
+            let iconUnstable = "";
+            let textOn = void 0;
+            let textOff = void 0;
+            let adapterRole = "";
+            let commonUnit = void 0;
             switch (role) {
-              case "door":
-              case "sensor.door": {
-                role = "door";
+              case "motion": {
+                iconOn = "motion-sensor";
+                iconOff = "motion-sensor";
+                iconUnstable = "";
+                adapterRole = "iconNotText";
+                textOn = "On";
+                textOff = "Off";
                 break;
               }
-              case "window":
-              case "sensor.window": {
+              case "door": {
+                adapterRole = "iconNotText";
+                iconOn = "door-open";
+                iconOff = "door-closed";
+                iconUnstable = "door-closed";
+                textOn = "Opened";
+                textOff = "Closed";
+                break;
+              }
+              case "window": {
                 iconOn = "window-open-variant";
                 iconOff = "window-closed-variant";
                 iconUnstable = "window-closed-variant";
-                role = "window";
+                adapterRole = "iconNotText";
+                textOn = "Opened";
+                textOff = "Closed";
                 break;
               }
               case "info": {
                 iconOn = "information-outline";
                 iconOff = "information-outline";
-                role = "info";
+                adapterRole = specialRole;
                 break;
               }
               case "temperature":
@@ -728,7 +748,9 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "thermometer";
                 iconOff = "snowflake-thermometer";
                 iconUnstable = "sun-thermometer";
-                role = "temperature";
+                adapterRole = specialRole;
+                const obj2 = await this.existsState(`${item.id}.ACTUAL`) ? await this.adapter.getForeignObjectAsync(`${item.id}.ACTUAL`) : void 0;
+                commonUnit = obj2 && obj2.common && obj2.common.unit ? obj2.common.unit : void 0;
                 break;
               }
               case "humidity":
@@ -736,13 +758,15 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "water-percent";
                 iconOff = "water-off";
                 iconUnstable = "water-percent-alert";
-                role = "humidity";
+                adapterRole = specialRole;
+                const o = await this.existsState(`${item.id}.ACTUAL`) ? await this.adapter.getForeignObjectAsync(`${item.id}.ACTUAL`) : void 0;
+                commonUnit = o && o.common && o.common.unit ? o.common.unit : void 0;
                 break;
               }
             }
             const tempItem = {
               type: "text",
-              role,
+              role: adapterRole,
               data: {
                 icon: {
                   true: {
@@ -750,6 +774,10 @@ class ConfigManager extends import_library.BaseClass {
                     color: {
                       type: "const",
                       constVal: item.onColor ? await this.getFieldAsDataItemConfig(item.onColor) : import_Color.Color.activated
+                    },
+                    text: {
+                      value: { type: "state", dp: `${item.id}.ACTUAL` },
+                      unit: commonUnit ? { type: "const", constVal: commonUnit } : void 0
                     }
                   },
                   false: {
@@ -757,6 +785,10 @@ class ConfigManager extends import_library.BaseClass {
                     color: {
                       type: "const",
                       constVal: item.offColor ? await this.getFieldAsDataItemConfig(item.offColor) : import_Color.Color.deactivated
+                    },
+                    text: {
+                      value: { type: "state", dp: `${item.id}.ACTUAL` },
+                      unit: commonUnit ? { type: "const", constVal: commonUnit } : void 0
                     }
                   },
                   unstable: {
@@ -766,15 +798,20 @@ class ConfigManager extends import_library.BaseClass {
                   maxBri: void 0,
                   minBri: void 0
                 },
-                text: {
-                  true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : void 0
-                },
                 text1: {
-                  true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+                  true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : textOn ? { type: "const", constVal: textOn } : { type: "state", dp: `${item.id}.ACTUAL` },
+                  false: item.buttonTextOff ? await this.getFieldAsDataItemConfig(item.buttonTextOff) : await this.existsState(`${item.id}.BUTTONTEXTOFF`) ? { type: "state", dp: `${item.id}.BUTTONTEXTOFF` } : textOff ? { type: "const", constVal: textOff } : item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
+                },
+                text: {
+                  true: item.name ? await this.getFieldAsDataItemConfig(item.name) : commonName ? { type: "const", constVal: commonName } : void 0
                 },
                 entity1: {
                   value: { type: "triggered", dp: `${item.id}.ACTUAL` }
-                }
+                },
+                entity2: role === "temperature" || role === "value.temperature" || role === "humidity" || role === "value.humidity" ? {
+                  value: { type: "state", dp: `${item.id}.ACTUAL` },
+                  unit: commonUnit ? { type: "const", constVal: commonUnit } : void 0
+                } : void 0
               }
             };
             itemConfig = tempItem;
@@ -785,8 +822,6 @@ class ConfigManager extends import_library.BaseClass {
           case "thermostat":
           case "warning":
           case "cie":
-          case "gate":
-          case "motion":
           case "buttonSensor":
           case "value.time":
           case "level.timer":
@@ -797,12 +832,12 @@ class ConfigManager extends import_library.BaseClass {
           case "switch.mode.wlan":
           case "media":
           case "airCondition": {
-            throw new Error(`Role ${role} not implemented yet!`);
+            throw new Error(`Role ${role} not implemented yet!!`);
             break;
           }
           default:
             (0, import_pages.exhaustiveCheck)(role);
-            throw new Error(`Role ${role} not implemented yet!`);
+            throw new Error(`Role ${role} not implemented yet!!!`);
         }
         return itemConfig;
       }
@@ -1249,7 +1284,7 @@ class ConfigManager extends import_library.BaseClass {
             throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
           } else {
             throw new Error(
-              `Datapoint ${item.id}.${dp} has wrong role: ${o.common.role !== import_config_manager_const.requiredDatapoints[role][dp].role ? `${o.common.role} should be ${import_config_manager_const.requiredDatapoints[role][dp].role}` : `ok`} - type: ${o.common.type !== import_config_manager_const.requiredDatapoints[role][dp].type ? `${o.common.role} should be ${import_config_manager_const.requiredDatapoints[role][dp].type}` : `ok`}`
+              `Datapoint ${item.id}.${dp} has wrong role: ${o.common.role !== import_config_manager_const.requiredDatapoints[role][dp].role ? `${o.common.role} should be ${import_config_manager_const.requiredDatapoints[role][dp].role}` : `ok`} - type: ${o.common.type !== import_config_manager_const.requiredDatapoints[role][dp].type ? `${o.common.type} should be ${import_config_manager_const.requiredDatapoints[role][dp].type}` : `ok`}`
             );
           }
           return false;
@@ -1438,7 +1473,7 @@ class ConfigManager extends import_library.BaseClass {
     return void 0;
   }
   async existsState(id) {
-    return await this.adapter.getStateAsync(id) !== null;
+    return await this.adapter.getForeignStateAsync(id) !== null;
   }
 }
 function isIconScaleElement(obj) {

@@ -292,6 +292,10 @@ export class PageItem extends BaseClassTriggerd {
                             value = true;
                         }
 
+                        message.displayName = this.library.getTranslation(
+                            (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
+                        );
+
                         switch (entry.role) {
                             case '2values': {
                                 message.optionalValue = ``;
@@ -340,10 +344,6 @@ export class PageItem extends BaseClassTriggerd {
                                 );
                             }
                         }
-
-                        message.displayName = this.library.getTranslation(
-                            (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
-                        );
 
                         switch (entry.role) {
                             case 'textNotIcon': {

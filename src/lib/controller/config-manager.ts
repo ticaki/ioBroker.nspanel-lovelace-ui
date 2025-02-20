@@ -229,7 +229,7 @@ export class ConfigManager extends BaseClass {
                             continue;
                         }
                         try {
-                            const itemConfig = await this.getPageItemConfig(item);
+                            const itemConfig = await this.getPageItemConfig(item, page);
                             if (itemConfig) {
                                 gridItem.pageItems.push(itemConfig);
                             }
@@ -249,6 +249,7 @@ export class ConfigManager extends BaseClass {
 
     async getPageNaviItemConfig(
         item: ScriptConfig.PageItem,
+        _page: ScriptConfig.PageType,
     ): Promise<typePageItem.PageItemDataItemsOptions | undefined> {
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
         const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
@@ -384,8 +385,6 @@ export class ConfigManager extends BaseClass {
             case 'temperature':
             case 'value.temperature':
             case 'value.humidity':
-            case 'sensor.door':
-            case 'sensor.window':
             case 'thermostat':
             case 'warning':
             case 'cie':
@@ -402,26 +401,29 @@ export class ConfigManager extends BaseClass {
             case 'media':
             case 'timeTable':
             case 'airCondition': {
-                throw new Error(`Navigation for ${role} not implemented yet!`);
+                throw new Error(`Navigation for ${role} not implemented yet!!`);
             }
             default:
                 exhaustiveCheck(role);
 
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                throw new Error(`Role ${role} not implemented yet!`);
+                throw new Error(`Role ${role} not implemented yet!!!`);
         }
         return itemConfig;
 
         return undefined;
     }
 
-    async getPageItemConfig(item: ScriptConfig.PageItem): Promise<typePageItem.PageItemDataItemsOptions | undefined> {
+    async getPageItemConfig(
+        item: ScriptConfig.PageItem,
+        page: ScriptConfig.PageType,
+    ): Promise<typePageItem.PageItemDataItemsOptions | undefined> {
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
         if (item.navigate) {
             if (!item.targetPage || typeof item.targetPage !== 'string') {
                 throw new Error(`TargetPage missing in ${(item && item.id) || 'no id'}!`);
             }
-            return await this.getPageNaviItemConfig(item);
+            return await this.getPageNaviItemConfig(item, page);
         }
         if (item.id && !item.id.endsWith('.')) {
             const obj = await this.adapter.getForeignObjectAsync(item.id);
@@ -429,14 +431,18 @@ export class ConfigManager extends BaseClass {
                 if (!(obj.common && obj.common.role)) {
                     throw new Error(`Role missing in ${item.id}!`);
                 }
-                let role = obj.common.role as ScriptConfig.roles;
+                const role = obj.common.role as ScriptConfig.roles;
                 // check if role and types are correct
-                if (!requiredDatapoints[role]) {
-                    throw new Error(`Role ${role} not implemented yet!`);
+                if (!requiredDatapoints[role] && !requiredOutdatedDataPoints[role]) {
+                    throw new Error(`Role ${role} not supported!`);
                 }
                 if (!(await this.checkRequiredDatapoints(role, item))) {
                     return;
                 }
+                const specialRole: pages.DeviceRole =
+                    page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
+                        ? 'textNotIcon'
+                        : 'iconNotText';
                 const commonName =
                     typeof obj.common.name === 'string'
                         ? obj.common.name
@@ -732,7 +738,16 @@ export class ConfigManager extends BaseClass {
                                         ? await this.getFieldAsDataItemConfig(item.buttonText)
                                         : (await this.existsState(`${item.id}.BUTTONTEXT`))
                                           ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                          : undefined,
+                                          : { type: 'state', dp: `${item.id}.ACTUAL` },
+                                    false: item.buttonTextOff
+                                        ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
+                                        : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
+                                          ? { type: 'state', dp: `${item.id}.BUTTONTEXTOFF` }
+                                          : item.buttonText
+                                            ? await this.getFieldAsDataItemConfig(item.buttonText)
+                                            : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                                              ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
+                                              : { type: 'state', dp: `${item.id}.ACTUAL` },
                                 },
                                 text1: {
                                     true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
@@ -807,36 +822,64 @@ export class ConfigManager extends BaseClass {
                         itemConfig = tempItem;
                         break;
                     }
+                    case 'gate': {
+                        /*
+                        No idea what to do with this role
+                        const iconOn = 'garage-open';
+                        const iconOff = 'garage';
+                        const iconUnstable = '';
+                        role = 'gate';
+                        const textOn = 'Opened';
+                        const textOff = 'Closed';*/
+                        break;
+                    }
+                    case 'motion':
                     case 'info':
                     case 'humidity':
                     case 'temperature':
                     case 'value.temperature':
                     case 'value.humidity':
-                    case 'sensor.door':
-                    case 'sensor.window':
                     case 'door':
                     case 'window': {
                         let iconOn = 'door-open';
                         let iconOff = 'door-closed';
-                        let iconUnstable = 'alert';
+                        let iconUnstable = '';
+                        let textOn: undefined | string = undefined;
+                        let textOff: undefined | string = undefined;
+                        let adapterRole: pages.DeviceRole = '';
+                        let commonUnit: string | undefined = undefined;
                         switch (role) {
-                            case 'door':
-                            case 'sensor.door': {
-                                role = 'door';
+                            case 'motion': {
+                                iconOn = 'motion-sensor';
+                                iconOff = 'motion-sensor';
+                                iconUnstable = '';
+                                adapterRole = 'iconNotText';
+                                textOn = 'On';
+                                textOff = 'Off';
                                 break;
                             }
-                            case 'window':
-                            case 'sensor.window': {
+                            case 'door': {
+                                adapterRole = 'iconNotText';
+                                iconOn = 'door-open';
+                                iconOff = 'door-closed';
+                                iconUnstable = 'door-closed';
+                                textOn = 'Opened';
+                                textOff = 'Closed';
+                                break;
+                            }
+                            case 'window': {
                                 iconOn = 'window-open-variant';
                                 iconOff = 'window-closed-variant';
                                 iconUnstable = 'window-closed-variant';
-                                role = 'window';
+                                adapterRole = 'iconNotText';
+                                textOn = 'Opened';
+                                textOff = 'Closed';
                                 break;
                             }
                             case 'info': {
                                 iconOn = 'information-outline';
                                 iconOff = 'information-outline';
-                                role = 'info';
+                                adapterRole = specialRole;
                                 break;
                             }
                             case 'temperature':
@@ -844,7 +887,11 @@ export class ConfigManager extends BaseClass {
                                 iconOn = 'thermometer';
                                 iconOff = 'snowflake-thermometer';
                                 iconUnstable = 'sun-thermometer';
-                                role = 'temperature';
+                                adapterRole = specialRole;
+                                const obj = (await this.existsState(`${item.id}.ACTUAL`))
+                                    ? await this.adapter.getForeignObjectAsync(`${item.id}.ACTUAL`)
+                                    : undefined;
+                                commonUnit = obj && obj.common && obj.common.unit ? obj.common.unit : undefined;
                                 break;
                             }
                             case 'humidity':
@@ -852,13 +899,18 @@ export class ConfigManager extends BaseClass {
                                 iconOn = 'water-percent';
                                 iconOff = 'water-off';
                                 iconUnstable = 'water-percent-alert';
-                                role = 'humidity';
+                                adapterRole = specialRole;
+                                const o = (await this.existsState(`${item.id}.ACTUAL`))
+                                    ? await this.adapter.getForeignObjectAsync(`${item.id}.ACTUAL`)
+                                    : undefined;
+
+                                commonUnit = o && o.common && o.common.unit ? o.common.unit : undefined;
                                 break;
                             }
                         }
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'text',
-                            role: role,
+                            role: adapterRole,
                             data: {
                                 icon: {
                                     true: {
@@ -870,6 +922,10 @@ export class ConfigManager extends BaseClass {
                                                 ? await this.getFieldAsDataItemConfig(item.onColor)
                                                 : Color.activated,
                                         },
+                                        text: {
+                                            value: { type: 'state', dp: `${item.id}.ACTUAL` },
+                                            unit: commonUnit ? { type: 'const', constVal: commonUnit } : undefined,
+                                        },
                                     },
                                     false: {
                                         value: await this.getFieldAsDataItemConfig(item.icon2 || iconOff),
@@ -879,6 +935,10 @@ export class ConfigManager extends BaseClass {
                                                 ? await this.getFieldAsDataItemConfig(item.offColor)
                                                 : Color.deactivated,
                                         },
+                                        text: {
+                                            value: { type: 'state', dp: `${item.id}.ACTUAL` },
+                                            unit: commonUnit ? { type: 'const', constVal: commonUnit } : undefined,
+                                        },
                                     },
                                     unstable: {
                                         value: await this.getFieldAsDataItemConfig(item.icon3 || iconUnstable),
@@ -887,31 +947,57 @@ export class ConfigManager extends BaseClass {
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
-                                text: {
+                                text1: {
                                     true: item.buttonText
                                         ? await this.getFieldAsDataItemConfig(item.buttonText)
                                         : (await this.existsState(`${item.id}.BUTTONTEXT`))
                                           ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                          : undefined,
+                                          : textOn
+                                            ? { type: 'const', constVal: textOn }
+                                            : { type: 'state', dp: `${item.id}.ACTUAL` },
+                                    false: item.buttonTextOff
+                                        ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
+                                        : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
+                                          ? { type: 'state', dp: `${item.id}.BUTTONTEXTOFF` }
+                                          : textOff
+                                            ? { type: 'const', constVal: textOff }
+                                            : item.buttonText
+                                              ? await this.getFieldAsDataItemConfig(item.buttonText)
+                                              : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                                                ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
+                                                : { type: 'state', dp: `${item.id}.ACTUAL` },
                                 },
-                                text1: {
-                                    true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                                text: {
+                                    true: item.name
+                                        ? await this.getFieldAsDataItemConfig(item.name)
+                                        : commonName
+                                          ? { type: 'const', constVal: commonName }
+                                          : undefined,
                                 },
                                 entity1: {
                                     value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
                                 },
+                                entity2:
+                                    role === 'temperature' ||
+                                    role === 'value.temperature' ||
+                                    role === 'humidity' ||
+                                    role === 'value.humidity'
+                                        ? {
+                                              value: { type: 'state', dp: `${item.id}.ACTUAL` },
+                                              unit: commonUnit ? { type: 'const', constVal: commonUnit } : undefined,
+                                          }
+                                        : undefined,
                             },
                         };
                         itemConfig = tempItem;
                         break;
                     }
+
                     case 'volumeGroup':
                     case 'volume':
                     case 'thermostat':
                     case 'warning':
                     case 'cie':
-                    case 'gate':
-                    case 'motion':
                     case 'buttonSensor':
                     case 'value.time':
                     case 'level.timer':
@@ -922,13 +1008,13 @@ export class ConfigManager extends BaseClass {
                     case 'switch.mode.wlan':
                     case 'media':
                     case 'airCondition': {
-                        throw new Error(`Role ${role} not implemented yet!`);
+                        throw new Error(`Role ${role} not implemented yet!!`);
                         break;
                     }
                     default:
                         exhaustiveCheck(role);
                         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                        throw new Error(`Role ${role} not implemented yet!`);
+                        throw new Error(`Role ${role} not implemented yet!!!`);
                 }
                 return itemConfig;
             }
@@ -1396,7 +1482,7 @@ export class ConfigManager extends BaseClass {
                         throw new Error(
                             `Datapoint ${item.id}.${dp} has wrong ` +
                                 `role: ${o.common.role !== requiredDatapoints[role][dp].role ? `${o.common.role} should be ${requiredDatapoints[role][dp].role}` : `ok`} ` +
-                                `- type: ${o.common.type !== requiredDatapoints[role][dp].type ? `${o.common.role} should be ${requiredDatapoints[role][dp].type}` : `ok`}`,
+                                `- type: ${o.common.type !== requiredDatapoints[role][dp].type ? `${o.common.type} should be ${requiredDatapoints[role][dp].type}` : `ok`}`,
                         );
                     }
                     return false;
@@ -1625,7 +1711,7 @@ export class ConfigManager extends BaseClass {
         return undefined;
     }
     async existsState(id: string): Promise<boolean> {
-        return (await this.adapter.getStateAsync(id)) !== null;
+        return (await this.adapter.getForeignStateAsync(id)) !== null;
     }
 }
 
