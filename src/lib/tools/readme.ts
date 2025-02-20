@@ -10,11 +10,13 @@ export async function generateAliasDocumentation(): Promise<void> {
         test = [''];
     }
     if (fs.existsSync(checkPath)) {
+        let lastFolder = '';
         for (const folder in requiredOutdatedDataPoints) {
             const data = requiredOutdatedDataPoints[folder];
             for (const key in data) {
                 const row = data[key];
-                readme += `| ${folder} | ${key} | ${row.type}| ${row.role}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
+                readme += `| ${folder == lastFolder ? '' : folder} | ${key} | ${row.type}| ${row.role}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
+                lastFolder = folder;
             }
         }
         fs.writeFileSync('ALIAS.md', readme);

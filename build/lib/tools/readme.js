@@ -44,12 +44,14 @@ async function generateAliasDocumentation() {
     test = [""];
   }
   if (fs.existsSync(checkPath)) {
+    let lastFolder = "";
     for (const folder in import_config_manager_const.requiredOutdatedDataPoints) {
       const data = import_config_manager_const.requiredOutdatedDataPoints[folder];
       for (const key in data) {
         const row = data[key];
-        readme += `| ${folder} | ${key} | ${row.type}| ${row.role}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
+        readme += `| ${folder == lastFolder ? "" : folder} | ${key} | ${row.type}| ${row.role}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
 `;
+        lastFolder = folder;
       }
     }
     fs.writeFileSync("ALIAS.md", readme);
