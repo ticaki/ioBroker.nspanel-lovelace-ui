@@ -1494,7 +1494,7 @@ export class ConfigManager extends BaseClass {
                 !o ||
                 o.common.role !== requiredOutdatedDataPoints[role][dp].role ||
                 o.common.type !== requiredOutdatedDataPoints[role][dp].type ||
-                o.common.write !== requiredOutdatedDataPoints[role][dp].writeable
+                (requiredOutdatedDataPoints[role][dp].writeable && !o.common.write)
             ) {
                 if (
                     !o ||
@@ -1506,9 +1506,9 @@ export class ConfigManager extends BaseClass {
                     } else {
                         throw new Error(
                             `Datapoint ${item.id}.${dp} has wrong ` +
-                                `role: ${o.common.role !== requiredOutdatedDataPoints[role][dp].role ? `${o.common.role} should be ${requiredOutdatedDataPoints[role][dp].role}` : `ok`} ` +
-                                `- type: ${o.common.type !== requiredOutdatedDataPoints[role][dp].type ? `${o.common.type} should be ${requiredOutdatedDataPoints[role][dp].type}` : `ok`}` +
-                                ` ${o.common.write !== requiredOutdatedDataPoints[role][dp].writeable ? ' - must be writeable!' : ''} `,
+                                `${o.common.role !== requiredOutdatedDataPoints[role][dp].role ? `role: ${o.common.role} should be ${requiredOutdatedDataPoints[role][dp].role}` : ''} ` +
+                                `${o.common.type !== requiredOutdatedDataPoints[role][dp].type ? ` type: ${o.common.type} should be ${requiredOutdatedDataPoints[role][dp].type}` : ''}` +
+                                ` ${!(requiredOutdatedDataPoints[role][dp].writeable && !o.common.write) ? ' - must be writeable!' : ''} `,
                         );
                     }
                     return false;

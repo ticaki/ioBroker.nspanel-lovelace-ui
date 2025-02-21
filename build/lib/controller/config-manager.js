@@ -1296,13 +1296,13 @@ class ConfigManager extends import_library.BaseClass {
       if (!o && !import_config_manager_const.requiredOutdatedDataPoints[role][dp].required && !import_config_manager_const.requiredDatapoints[role][dp].required) {
         continue;
       }
-      if (!o || o.common.role !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].role || o.common.type !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].type || o.common.write !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].writeable) {
+      if (!o || o.common.role !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].role || o.common.type !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].type || import_config_manager_const.requiredOutdatedDataPoints[role][dp].writeable && !o.common.write) {
         if (!o || o.common.role !== import_config_manager_const.requiredDatapoints[role][dp].role || o.common.type !== import_config_manager_const.requiredDatapoints[role][dp].type) {
           if (!o) {
             throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
           } else {
             throw new Error(
-              `Datapoint ${item.id}.${dp} has wrong role: ${o.common.role !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].role ? `${o.common.role} should be ${import_config_manager_const.requiredOutdatedDataPoints[role][dp].role}` : `ok`} - type: ${o.common.type !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].type ? `${o.common.type} should be ${import_config_manager_const.requiredOutdatedDataPoints[role][dp].type}` : `ok`} ${o.common.write !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].writeable ? " - must be writeable!" : ""} `
+              `Datapoint ${item.id}.${dp} has wrong ${o.common.role !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].role ? `role: ${o.common.role} should be ${import_config_manager_const.requiredOutdatedDataPoints[role][dp].role}` : ""} ${o.common.type !== import_config_manager_const.requiredOutdatedDataPoints[role][dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredOutdatedDataPoints[role][dp].type}` : ""} ${!(import_config_manager_const.requiredOutdatedDataPoints[role][dp].writeable && !o.common.write) ? " - must be writeable!" : ""} `
             );
           }
           return false;
