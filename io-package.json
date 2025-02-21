@@ -132,7 +132,10 @@
             "Lovelace UI",
             "ioBroker"
         ],
-        "license": "MIT",
+        "licenseInformation": {
+            "license": "MIT",
+            "type": "free"
+        },
         "platform": "Javascript/Node.js",
         "main": "build/main.js",
         "icon": "nspanel-lovelace-ui.png",

@@ -239,6 +239,9 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) alot changes
+
 ### 0.1.0-preAlpha.0 (2024-03-09)
 - (ticaki) alot :)
 
@@ -263,7 +266,7 @@ Sind natürlich alles Dataitems
 ## License
 MIT License
 
-Copyright (c) 2024 ticaki <github@renopoint.de>
+Copyright (c) 2024-2025 ticaki <github@renopoint.de>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
