@@ -143,15 +143,11 @@ class ConfigManager extends import_library.BaseClass {
       obj.native.scriptConfig = obj.native.scriptConfig.filter(
         (item, i) => obj.native.scriptConfig.findIndex((item2) => item2.topic === item.topic) === i
       );
+      obj.native.scriptConfig = obj.native.scriptConfig.filter((item) => item.topic !== panelConfig.topic);
       obj.native.scriptConfig = obj.native.scriptConfig.filter(
-        (item) => !(item.topic === panelConfig.topic && item.name !== panelConfig.name)
+        (item) => this.adapter.config.panels.findIndex((a) => a.topic === item.topic) !== -1
       );
-      const index = obj.native.scriptConfig.findIndex((item) => item.name === panelConfig.name);
-      if (index !== -1) {
-        obj.native.scriptConfig[index] = panelConfig;
-      } else {
-        obj.native.scriptConfig.push(panelConfig);
-      }
+      obj.native.scriptConfig.push(panelConfig);
       await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
     }
     messages.push(`done`);
@@ -184,7 +180,7 @@ class ConfigManager extends import_library.BaseClass {
           continue;
         }
         if ((config.subPages || []).includes(page)) {
-          const left = page.prev || page.parent && page.parent.type !== void 0 && page.parent.uniqueName || void 0;
+          const left = page.prev || page.parent || void 0;
           const right = page.next || page.home || void 0;
           const navItem = {
             name: page.uniqueName,

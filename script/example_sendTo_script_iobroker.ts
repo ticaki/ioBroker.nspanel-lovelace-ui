@@ -531,7 +531,7 @@ declare namespace ScriptConfig {
         items: PageItem[];
         useColor: boolean;
         subPage?: boolean;
-        parent?: PageType;
+        parent?: string;
         parentIcon?: string;
         parentIconColor?: RGB;
         prev?: string;

@@ -13,7 +13,7 @@ export class PanelSend extends BaseClass {
     private messageDbTasmota: { topic: string; payload: string; opt?: IClientPublishOptions }[] = [];
 
     private messageTimeout: ioBroker.Timeout | undefined;
-    private messageTimeoutTasmota: ioBroker.Timeout | undefined;
+    private messageTimeoutTasmota: ioBroker.Timeout | true | undefined;
     private mqttClient: MQTTClientClass;
     private topic: string = '';
     private losingMessageCount = 0;
@@ -102,8 +102,9 @@ export class PanelSend extends BaseClass {
             return;
         }
         this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
+        this.messageTimeoutTasmota = true;
         await this.mqttClient.publish(msg.topic, msg.payload, msg.opt);
-        this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 250);
+        this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 150);
     };
 
     async delete(): Promise<void> {
@@ -111,7 +112,7 @@ export class PanelSend extends BaseClass {
         if (this.messageTimeout) {
             this.adapter.clearTimeout(this.messageTimeout);
         }
-        if (this.messageTimeoutTasmota) {
+        if (this.messageTimeoutTasmota && this.messageTimeoutTasmota !== true) {
             this.adapter.clearTimeout(this.messageTimeoutTasmota);
         }
     }

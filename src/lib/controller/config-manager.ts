@@ -153,15 +153,12 @@ export class ConfigManager extends BaseClass {
                     obj.native.scriptConfig.findIndex((item2: any) => item2.topic === item.topic) === i,
             );
             // remove config with same topic and different name
+            obj.native.scriptConfig = obj.native.scriptConfig.filter((item: any) => item.topic !== panelConfig.topic);
             obj.native.scriptConfig = obj.native.scriptConfig.filter(
-                (item: any) => !(item.topic === panelConfig.topic && item.name !== panelConfig.name),
+                (item: any) => this.adapter.config.panels.findIndex(a => a.topic === item.topic) !== -1,
             );
-            const index = obj.native.scriptConfig.findIndex((item: any) => item.name === panelConfig.name);
-            if (index !== -1) {
-                obj.native.scriptConfig[index] = panelConfig;
-            } else {
-                obj.native.scriptConfig.push(panelConfig);
-            }
+            obj.native.scriptConfig.push(panelConfig);
+
             await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
         }
         messages.push(`done`);
@@ -215,10 +212,7 @@ export class ConfigManager extends BaseClass {
                 }
 
                 if ((config.subPages || []).includes(page)) {
-                    const left =
-                        page.prev ||
-                        (page.parent && page.parent.type !== undefined && page.parent.uniqueName) ||
-                        undefined;
+                    const left = page.prev || page.parent || undefined;
                     const right = page.next || page.home || undefined;
                     const navItem: NavigationItemConfig = {
                         name: page.uniqueName,

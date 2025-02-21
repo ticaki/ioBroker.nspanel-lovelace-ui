@@ -84,6 +84,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       const obj = await this.getForeignObjectAsync(this.namespace);
       if (obj && obj.native && obj.native.scriptConfig) {
         const scriptConfig = obj.native.scriptConfig;
+        this.config.Testconfig2 = [];
         for (let b = 0; b < scriptConfig.length; b++) {
           const s = scriptConfig[b];
           if (!s || !s.pages) {
@@ -121,8 +122,6 @@ class NspanelLovelaceUi extends utils.Adapter {
             ...s
           };
         }
-        this.config.Testconfig2[0].pages[0] = this.config.Testconfig2[0].pages[0];
-        this.config.Testconfig2[0].timeout = this.config.timeout;
       }
     } catch (e) {
       this.log.warn(`Invalid configuration stopped! ${e}`);
