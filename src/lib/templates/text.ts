@@ -120,6 +120,58 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.humidity': {
+        role: '',
+        adapter: '',
+        type: 'text',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'water-percent' },
+                    text: {
+                        value: {
+                            type: 'triggered',
+                            mode: 'auto',
+                            role: 'value.humidity',
+                            dp: '',
+                            read: 'return Math.round(val)',
+                        },
+                        unit: { type: 'const', constVal: '%' },
+                    },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'water-percent' },
+                    color: { type: 'const', constVal: Color.Blue },
+                },
+                scale: { type: 'const', constVal: { min: 0, max: 100 } },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.humidity',
+                    dp: '',
+                },
+                unit: { type: 'const', constVal: '%' },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Humidity' },
+                false: undefined,
+            },
+            text1: {
+                true: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.humidity',
+                    dp: '',
+                    read: 'return Math.round(parseFloat(val))',
+                },
+                false: undefined,
+            },
+        },
+    },
     'text.battery': {
         /**
          * entity1 enthält den Füllstand

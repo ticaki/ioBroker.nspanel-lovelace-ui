@@ -41,6 +41,7 @@ export type TemplateIdent =
     | 'button.service.adapter.noconnection'
     | 'text.fahrplan.departure'
     | ''
+    | 'text.humidity'
     | 'script.light'
     | 'script.socket'
     | 'script.hue'

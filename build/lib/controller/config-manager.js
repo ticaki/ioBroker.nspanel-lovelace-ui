@@ -117,6 +117,22 @@ class ConfigManager extends import_library.BaseClass {
         });
       }
     }
+    const names = [];
+    let double = false;
+    for (const page of config.pages) {
+      if (page && page.type !== void 0) {
+        if (names.includes(page.uniqueName)) {
+          double = true;
+          this.log.error(messages[messages.length - 1]);
+          messages.push(`Abort - double uniqueName ${page.uniqueName} in config!`);
+        } else {
+          names.push(page.uniqueName);
+        }
+      }
+    }
+    if (double) {
+      return messages;
+    }
     ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
     if (config.navigation != null) {
       panelConfig.navigation = config.navigation;
@@ -231,7 +247,7 @@ class ConfigManager extends import_library.BaseClass {
     gridItem.dpInit = page.items[0].id;
     return { gridItem, messages };
   }
-  async getPageNaviItemConfig(item, _page) {
+  async getPageNaviItemConfig(item, page) {
     let itemConfig = void 0;
     const obj = item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
     const role = obj && obj.common.role ? obj.common.role : void 0;
@@ -243,6 +259,7 @@ class ConfigManager extends import_library.BaseClass {
         return;
       }
     }
+    const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
     switch (role) {
       case "socket":
       case "light":
@@ -344,17 +361,36 @@ class ConfigManager extends import_library.BaseClass {
         itemConfig = tempItem;
         break;
       }
+      case "humidity":
+      case "value.humidity": {
+        {
+          itemConfig = {
+            type: "text",
+            dpInit: item.id,
+            role: specialRole,
+            template: "text.humidity"
+          };
+          break;
+        }
+        break;
+      }
+      case "temperature":
       case "thermostat":
+      case "value.temperature": {
+        itemConfig = {
+          type: "text",
+          dpInit: item.id,
+          role: specialRole,
+          template: "text.temperature"
+        };
+        break;
+      }
       case "blind":
       case "door":
       case "window":
       case "volumeGroup":
       case "volume":
       case "info":
-      case "humidity":
-      case "temperature":
-      case "value.temperature":
-      case "value.humidity":
       case "warning":
       case "cie":
       case "gate":

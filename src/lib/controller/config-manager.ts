@@ -120,6 +120,22 @@ export class ConfigManager extends BaseClass {
                 });
             }
         }
+        const names: string[] = [];
+        let double = false;
+        for (const page of config.pages) {
+            if (page && page.type !== undefined) {
+                if (names.includes(page.uniqueName)) {
+                    double = true;
+                    this.log.error(messages[messages.length - 1]);
+                    messages.push(`Abort - double uniqueName ${page.uniqueName} in config!`);
+                } else {
+                    names.push(page.uniqueName);
+                }
+            }
+        }
+        if (double) {
+            return messages;
+        }
 
         ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
 
@@ -197,6 +213,7 @@ export class ConfigManager extends BaseClass {
                     this.log.error(messages[messages.length - 1]);
                     continue;
                 }
+
                 if ((config.subPages || []).includes(page)) {
                     const left =
                         page.prev ||
@@ -272,7 +289,7 @@ export class ConfigManager extends BaseClass {
     }
     async getPageNaviItemConfig(
         item: ScriptConfig.PageItem,
-        _page: ScriptConfig.PageType,
+        page: ScriptConfig.PageType,
     ): Promise<typePageItem.PageItemDataItemsOptions | undefined> {
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
         const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
@@ -294,6 +311,10 @@ export class ConfigManager extends BaseClass {
                 return;
             }
         }
+        const specialRole: pages.DeviceRole =
+            page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
+                ? 'textNotIcon'
+                : 'iconNotText';
         switch (role) {
             case 'socket':
             case 'light':
@@ -398,17 +419,37 @@ export class ConfigManager extends BaseClass {
                 itemConfig = tempItem;
                 break;
             }
+            case 'humidity':
+            case 'value.humidity': {
+                {
+                    itemConfig = {
+                        type: 'text',
+                        dpInit: item.id!,
+                        role: specialRole,
+                        template: 'text.humidity',
+                    };
+                    break;
+                }
+                break;
+            }
+            case 'temperature':
             case 'thermostat':
+            case 'value.temperature': {
+                itemConfig = {
+                    type: 'text',
+                    dpInit: item.id!,
+                    role: specialRole,
+                    template: 'text.temperature',
+                };
+                break;
+            }
+
             case 'blind':
             case 'door':
             case 'window':
             case 'volumeGroup':
             case 'volume':
             case 'info':
-            case 'humidity':
-            case 'temperature':
-            case 'value.temperature':
-            case 'value.humidity':
             case 'warning':
             case 'cie':
             case 'gate':
