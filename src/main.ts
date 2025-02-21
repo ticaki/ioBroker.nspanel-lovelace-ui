@@ -124,9 +124,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (index == -1) {
                         continue;
                     }
-                    if (!this.config.Testconfig2[b]) {
-                        this.config.Testconfig2[b] = {};
-                    }
+                    //if (!this.config.Testconfig2[b]) {
+                    this.config.Testconfig2[b] = {};
+                    //}
 
                     if (!this.config.Testconfig2[b].pages) {
                         this.config.Testconfig2[b].pages = [];
