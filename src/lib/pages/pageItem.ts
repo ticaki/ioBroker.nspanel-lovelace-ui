@@ -280,10 +280,13 @@ export class PageItem extends BaseClassTriggerd {
                  * entity1 is value to calculate color
                  * entity2 is display value
                  */
-                case 'text': {
-                    if (entry.type === 'text') {
+                case 'text':
+                case 'button': {
+                    /**
+                     * Alles was einen Druckfläche sein kann. D
+                     */
+                    if (entry.type === 'text' || entry.type === 'button') {
                         const item = entry.data;
-                        message.type = 'text';
                         let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1, false);
                         if (value === null) {
                             value = await tools.getValueEntryBoolean(item.entity1);
@@ -296,55 +299,75 @@ export class PageItem extends BaseClassTriggerd {
                             (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
                         );
 
-                        switch (entry.role) {
-                            case '2values': {
-                                message.optionalValue = ``;
-                                const val1 = await tools.getValueEntryNumber(item.entity1);
-                                const val2 = await tools.getValueEntryNumber(item.entity2);
-                                const unit1 =
-                                    item.entity1 && item.entity1.unit && (await item.entity1.unit.getString());
-                                const unit2 =
-                                    item.entity2 && item.entity2.unit && (await item.entity2.unit.getString());
-                                if (val1 !== null && val2 !== null) {
-                                    message.optionalValue = String(val1) + (unit1 ?? '') + String(val2) + (unit2 ?? '');
-                                    if (typeof value === 'number') {
-                                        value = val1 + val2 / 2;
-                                    }
-                                }
-
-                                break;
+                        if (entry.type === 'button') {
+                            message.optionalValue = (value ?? true) ? '1' : '0';
+                            if (this.parent && this.parent.card === 'cardEntities') {
+                                message.optionalValue =
+                                    (await tools.getEntryTextOnOff(item.text1, !!value)) ?? message.optionalValue;
                             }
-                            case '4values': {
-                                let val = await tools.getValueEntryString(item.entity1);
-                                value = true;
-                                if (val === null) {
-                                    value = false;
-                                    val = await tools.getValueEntryString(item.entity2);
-                                    if (val === null) {
-                                        value = true;
-                                        val = await tools.getValueEntryString(item.entity3);
-                                        if (val === null) {
-                                            value = false;
-                                            val = await tools.getValueEntryString(item.entity4);
+                        } else {
+                            switch (entry.role) {
+                                case '2values': {
+                                    message.optionalValue = ``;
+                                    const val1 = await tools.getValueEntryNumber(item.entity1);
+                                    const val2 = await tools.getValueEntryNumber(item.entity2);
+                                    const unit1 =
+                                        item.entity1 && item.entity1.unit && (await item.entity1.unit.getString());
+                                    const unit2 =
+                                        item.entity2 && item.entity2.unit && (await item.entity2.unit.getString());
+                                    if (val1 !== null && val2 !== null) {
+                                        message.optionalValue =
+                                            String(val1) + (unit1 ?? '') + String(val2) + (unit2 ?? '');
+                                        if (typeof value === 'number') {
+                                            value = val1 + val2 / 2;
                                         }
                                     }
+
+                                    break;
                                 }
-                                if (val) {
-                                    message.optionalValue = this.library.getTranslation(val);
-                                } else {
-                                    message.optionalValue = '';
+                                case '4values': {
+                                    let val = await tools.getValueEntryString(item.entity1);
+                                    value = true;
+                                    if (val === null) {
+                                        value = false;
+                                        val = await tools.getValueEntryString(item.entity2);
+                                        if (val === null) {
+                                            value = true;
+                                            val = await tools.getValueEntryString(item.entity3);
+                                            if (val === null) {
+                                                value = false;
+                                                val = await tools.getValueEntryString(item.entity4);
+                                            }
+                                        }
+                                    }
+                                    if (val) {
+                                        message.optionalValue = this.library.getTranslation(val);
+                                    } else {
+                                        message.optionalValue = '';
+                                    }
+                                    break;
                                 }
-                                break;
-                            }
-                            default: {
-                                message.optionalValue = this.library.getTranslation(
-                                    (await tools.getValueEntryString(item.entity2)) ??
-                                        (await tools.getEntryTextOnOff(item.text1, !!value)) ??
-                                        '',
-                                );
+                                default: {
+                                    message.optionalValue = this.library.getTranslation(
+                                        (await tools.getValueEntryString(item.entity2)) ??
+                                            (await tools.getEntryTextOnOff(item.text1, !!value)) ??
+                                            '',
+                                    );
+                                }
                             }
                         }
-
+                        if (entry.type === 'button' && entry.data.confirm) {
+                            if (this.confirmClick === 'unlock') {
+                                if (this.parent && this.parent.card === 'cardEntities') {
+                                    message.optionalValue =
+                                        (await entry.data.confirm.getString()) ?? message.optionalValue;
+                                }
+                                this.confirmClick = Date.now();
+                            } else {
+                                this.confirmClick = 'lock';
+                            }
+                        }
+                        message.icon = await tools.getIconEntryValue(item.icon, value, 'home');
                         switch (entry.role) {
                             case 'textNotIcon': {
                                 message.icon =
@@ -383,10 +406,9 @@ export class PageItem extends BaseClassTriggerd {
                                     )) ?? '';
                             }
                         }
-
-                        message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
+                        message.iconColor = await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOn);
                         return tools.getPayload(
-                            message.type,
+                            'button',
                             message.intNameEntity,
                             message.icon,
                             message.iconColor,
@@ -394,48 +416,6 @@ export class PageItem extends BaseClassTriggerd {
                             message.optionalValue,
                         );
                     }
-                    break;
-                }
-                case 'button': {
-                    /**
-                     * Alles was einen Druckfläche sein kann. D
-                     */
-                    const item = entry.data;
-                    let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1, false);
-                    if (value === null) {
-                        value = await tools.getValueEntryBoolean(item.entity1);
-                    }
-                    if (value === null) {
-                        value = true;
-                    }
-                    message.optionalValue = (value ?? true) ? '1' : '0';
-                    if (this.parent && this.parent.card === 'cardEntities') {
-                        message.optionalValue =
-                            (await tools.getEntryTextOnOff(item.text1, !!value)) ?? message.optionalValue;
-                    }
-                    message.displayName = this.library.getTranslation(
-                        (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
-                    );
-                    if (item.confirm) {
-                        if (this.confirmClick === 'unlock') {
-                            if (this.parent && this.parent.card === 'cardEntities') {
-                                message.optionalValue = (await item.confirm.getString()) ?? message.optionalValue;
-                            }
-                            this.confirmClick = Date.now();
-                        } else {
-                            this.confirmClick = 'lock';
-                        }
-                    }
-                    message.icon = await tools.getIconEntryValue(item.icon, value, 'home');
-                    message.iconColor = await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOn);
-                    return tools.getPayload(
-                        'button',
-                        message.intNameEntity,
-                        message.icon,
-                        message.iconColor,
-                        message.displayName,
-                        message.optionalValue,
-                    );
 
                     break;
                 }

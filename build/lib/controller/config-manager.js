@@ -361,10 +361,13 @@ class ConfigManager extends import_library.BaseClass {
       case "value.humidity": {
         {
           itemConfig = {
-            type: "text",
+            type: "button",
             dpInit: item.id,
             role: specialRole,
-            template: "text.humidity"
+            template: "button.humidity",
+            data: {
+              setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+            }
           };
           break;
         }
@@ -374,10 +377,13 @@ class ConfigManager extends import_library.BaseClass {
       case "thermostat":
       case "value.temperature": {
         itemConfig = {
-          type: "text",
+          type: "button",
           dpInit: item.id,
           role: specialRole,
-          template: "text.temperature"
+          template: "button.temperature",
+          data: {
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
         };
         break;
       }

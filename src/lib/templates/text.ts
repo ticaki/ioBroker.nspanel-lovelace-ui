@@ -71,107 +71,55 @@ export const textTemplates: TemplateItems = {
         },
     },
     'text.temperature': {
-        role: '',
-        adapter: '',
-        type: 'text',
-
-        data: {
-            icon: {
-                true: {
-                    value: { type: 'const', constVal: 'temperature-celsius' },
-                    text: {
-                        value: {
-                            type: 'triggered',
-                            mode: 'auto',
-                            role: 'value.temperature',
-                            dp: '',
-                            read: 'return Math.round(val*10)/10',
+            role: '',
+            adapter: '',
+            type: 'text',
+    
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'temperature-celsius' },
+                        text: {
+                            value: {
+                                type: 'triggered',
+                                mode: 'auto',
+                                role: 'value.temperature',
+                                dp: '',
+                                read: 'return Math.round(val*10)/10',
+                            },
                         },
+                        color: { type: 'const', constVal: Color.Red },
                     },
-                    color: { type: 'const', constVal: Color.Red },
+                    false: {
+                        value: { type: 'const', constVal: 'temperature-celsius' },
+                        color: { type: 'const', constVal: Color.Blue },
+                    },
+                    scale: { type: 'const', constVal: { min: 0, max: 30 } },
                 },
-                false: {
-                    value: { type: 'const', constVal: 'temperature-celsius' },
-                    color: { type: 'const', constVal: Color.Blue },
+                entity1: {
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.temperature',
+                        dp: '',
+                    },
                 },
-                scale: { type: 'const', constVal: { min: 0, max: 30 } },
-            },
-            entity1: {
-                value: {
-                    type: 'triggered',
-                    mode: 'auto',
-                    role: 'value.temperature',
-                    dp: '',
+                text: {
+                    true: { type: 'const', constVal: 'Temperature' },
+                    false: undefined,
                 },
-            },
-            text: {
-                true: { type: 'const', constVal: 'Temperature' },
-                false: undefined,
-            },
-            text1: {
-                true: {
-                    type: 'triggered',
-                    mode: 'auto',
-                    role: 'value.temperature',
-                    dp: '',
-                    read: 'return Math.round(parseFloat(val)*10)/10',
+                text1: {
+                    true: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.temperature',
+                        dp: '',
+                        read: 'return Math.round(parseFloat(val)*10)/10',
+                    },
+                    false: undefined,
                 },
-                false: undefined,
             },
         },
-    },
-    'text.humidity': {
-        role: '',
-        adapter: '',
-        type: 'text',
-
-        data: {
-            icon: {
-                true: {
-                    value: { type: 'const', constVal: 'water-percent' },
-                    text: {
-                        value: {
-                            type: 'triggered',
-                            mode: 'auto',
-                            role: 'value.humidity',
-                            dp: '',
-                            read: 'return Math.round(val)',
-                        },
-                        unit: { type: 'const', constVal: '%' },
-                    },
-                    color: { type: 'const', constVal: Color.Red },
-                },
-                false: {
-                    value: { type: 'const', constVal: 'water-percent' },
-                    color: { type: 'const', constVal: Color.Blue },
-                },
-                scale: { type: 'const', constVal: { min: 0, max: 100 } },
-            },
-            entity1: {
-                value: {
-                    type: 'triggered',
-                    mode: 'auto',
-                    role: 'value.humidity',
-                    dp: '',
-                },
-                unit: { type: 'const', constVal: '%' },
-            },
-            text: {
-                true: { type: 'const', constVal: 'Humidity' },
-                false: undefined,
-            },
-            text1: {
-                true: {
-                    type: 'triggered',
-                    mode: 'auto',
-                    role: 'value.humidity',
-                    dp: '',
-                    read: 'return Math.round(parseFloat(val))',
-                },
-                false: undefined,
-            },
-        },
-    },
     'text.battery': {
         /**
          * entity1 enthält den Füllstand

@@ -187,6 +187,106 @@ const buttonTemplates = {
       },
       text1: { true: { type: "internal", dp: "///AdapterStopped" }, false: void 0 }
     }
+  },
+  "button.temperature": {
+    role: "",
+    adapter: "",
+    type: "button",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "temperature-celsius" },
+          text: {
+            value: {
+              type: "triggered",
+              mode: "auto",
+              role: "value.temperature",
+              dp: "",
+              read: "return Math.round(val*10)/10"
+            }
+          },
+          color: { type: "const", constVal: import_Color.Color.Red }
+        },
+        false: {
+          value: { type: "const", constVal: "temperature-celsius" },
+          color: { type: "const", constVal: import_Color.Color.Blue }
+        },
+        scale: { type: "const", constVal: { min: 0, max: 30 } }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "value.temperature",
+          dp: ""
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "Temperature" },
+        false: void 0
+      },
+      text1: {
+        true: {
+          type: "triggered",
+          mode: "auto",
+          role: "value.temperature",
+          dp: "",
+          read: "return Math.round(parseFloat(val)*10)/10"
+        },
+        false: void 0
+      }
+    }
+  },
+  "button.humidity": {
+    role: "",
+    adapter: "",
+    type: "button",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "water-percent" },
+          text: {
+            value: {
+              type: "triggered",
+              mode: "auto",
+              role: "value.humidity",
+              dp: "",
+              read: "return Math.round(val)"
+            },
+            unit: { type: "const", constVal: "%" }
+          },
+          color: { type: "const", constVal: import_Color.Color.Red }
+        },
+        false: {
+          value: { type: "const", constVal: "water-percent" },
+          color: { type: "const", constVal: import_Color.Color.Blue }
+        },
+        scale: { type: "const", constVal: { min: 0, max: 100 } }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "value.humidity",
+          dp: ""
+        },
+        unit: { type: "const", constVal: "%" }
+      },
+      text: {
+        true: { type: "const", constVal: "Humidity" },
+        false: void 0
+      },
+      text1: {
+        true: {
+          type: "triggered",
+          mode: "auto",
+          role: "value.humidity",
+          dp: "",
+          read: "return Math.round(parseFloat(val))"
+        },
+        false: void 0
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:
