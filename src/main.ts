@@ -17,6 +17,7 @@ import { genericStateObjects } from './lib/const/definition';
 import { ConfigManager } from './lib/controller/config-manager';
 import type { panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
+import type { STATUS0 } from './lib/types/types';
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -24,6 +25,8 @@ class NspanelLovelaceUi extends utils.Adapter {
     mqttServer: MQTT.MQTTServerClass | undefined;
     controller: Controller | undefined;
     unload: boolean = false;
+
+    timeoutAdmin: ioBroker.Timeout | undefined;
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -84,9 +87,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const scriptConfig = obj.native.scriptConfig as Partial<panelConfigPartial>[];
                 // übergangsweise adden wir hier die seiten die wir haben ins erste panel
                 //this.config.Testconfig2 = { ...this.config.Testconfig2, ...obj.native.scriptConfig };
-                let changed = false;
-                for (let b = scriptConfig.length - 1; b >= 0; b--) {
-                    const index = this.config.panels.findIndex(a => a.name === scriptConfig[b].name);
+                //const changed = false;
+                /*for (let b = scriptConfig.length - 1; b >= 0; b--) {
+                    const index = this.config.panels.findIndex(a => a.topic === scriptConfig[b].topic);
                     if (index !== -1) {
                         if (this.config.panels[index].removeIt) {
                             scriptConfig.splice(b, 1);
@@ -111,15 +114,20 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                 if (changed) {
                     await this.setForeignObjectAsync(this.namespace, obj);
-                }
+                }*/
                 for (let b = 0; b < scriptConfig.length; b++) {
                     const s = scriptConfig[b];
                     if (!s || !s.pages) {
                         continue;
                     }
+                    const index = this.config.panels.findIndex(a => a.topic === s.topic);
+                    if (index == -1) {
+                        continue;
+                    }
                     if (!this.config.Testconfig2[b]) {
                         this.config.Testconfig2[b] = {};
                     }
+
                     if (!this.config.Testconfig2[b].pages) {
                         this.config.Testconfig2[b].pages = [];
                     }
@@ -349,6 +357,9 @@ class NspanelLovelaceUi extends utils.Adapter {
             // clearTimeout(timeout2);
             // ...
             // clearInterval(interval1);
+            if (this.timeoutAdmin) {
+                this.clearTimeout(this.timeoutAdmin);
+            }
             if (this.controller) {
                 this.controller.delete;
             }
@@ -438,7 +449,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
                 case 'RefreshDevices': {
-                    const view = await this.getObjectViewAsync('system', 'device', {
+                    /*const view = await this.getObjectViewAsync('system', 'device', {
                         startkey: `${this.namespace}.panels.`,
                         endkey: `${this.namespace}.panels.\u9999`,
                     });
@@ -448,18 +459,69 @@ class NspanelLovelaceUi extends utils.Adapter {
                         for (const panel of view.rows) {
                             const result = { id: '', name: '', topic: '', removeIt: false };
                             const p = await this.getForeignObjectAsync(panel.id);
-                            if (p && p.native && p.native.name) {
-                                result.id = p.native.name;
+                            if (
+                                p &&
+                                p.native &&
+                                p.native.name &&
+                                p.native.configName === obj.message.name &&
+                                p.native.topic === obj.message.topic
+                            ) {
+                                result.id = ''; //p.native.name;
                                 result.name = p.native.configName;
                                 result.topic = p.native.topic;
                                 devices.panels.push(result);
                             }
                         }
-                    }
-                    if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, { native: devices }, obj.callback);
-                    }
-                    this.log.debug(JSON.stringify(view));
+                    }*/
+                    const device = { id: '', name: obj.message.name, topic: obj.message.topic };
+
+                    const mqtt = new MQTT.MQTTClientClass(
+                        this,
+                        this.config.mqttIp,
+                        this.config.mqttPort,
+                        this.config.mqttUsername,
+                        this.config.mqttPassword,
+                        (topic, message) => {
+                            this.log.debug(`${topic} ${message}`);
+                        },
+                    );
+                    this.timeoutAdmin = this.setTimeout(
+                        async mqtt => {
+                            let rCount = 0;
+                            if (mqtt) {
+                                if (!device.id) {
+                                    rCount++;
+                                    mqtt.subscript(
+                                        `${device.topic}/stat/STATUS0`,
+                                        (_topic: string, _message: string) => {
+                                            const msg = JSON.parse(_message) as STATUS0;
+                                            if (msg.StatusNET) {
+                                                device.id = this.library.cleandp(msg.StatusNET.Mac, false, true);
+                                            }
+                                            rCount--;
+                                        },
+                                    );
+                                    await mqtt.publish(`${device.topic}/cmnd/STATUS0`, '');
+                                }
+
+                                const _waitForFinish = (count: number): void => {
+                                    if (count > 10 || rCount === 0) {
+                                        if (obj.callback) {
+                                            this.sendTo(obj.from, obj.command, { native: device }, obj.callback);
+                                        }
+                                        mqtt.destroy();
+                                        return;
+                                    }
+
+                                    this.timeoutAdmin = this.setTimeout(_waitForFinish, 500, ++count);
+                                };
+                                _waitForFinish(0);
+                            }
+                        },
+                        500,
+                        mqtt,
+                    );
+
                     break;
                 }
                 default: {

@@ -48,5 +48,8 @@
     "Colour temperature": "Temperatura del colore",
     "Color temperature": "Temperatura di colore",
     "StateObjects.buttons.indicator": "Indicatore",
-    "Humidity": "Umidità"
+    "Humidity": "Umidità",
+    "panelName": "Nome pannello (univoco)",
+    "panelTopic": "Argomento mqtt (unico)",
+    "mustBeUnique": "deve essere unico"
 }

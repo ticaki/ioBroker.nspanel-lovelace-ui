@@ -48,5 +48,8 @@
     "Colour temperature": "Колірна температура",
     "Color temperature": "Колірна температура",
     "StateObjects.buttons.indicator": "Індикатор",
-    "Humidity": "Вологість"
+    "Humidity": "Вологість",
+    "panelName": "Назва панелі (унікальна)",
+    "panelTopic": "Тема MQTT (унікальна)",
+    "mustBeUnique": "Має бути унікальним"
 }

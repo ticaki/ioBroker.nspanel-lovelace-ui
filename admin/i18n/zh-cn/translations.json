@@ -48,5 +48,8 @@
     "Colour temperature": "色温",
     "Color temperature": "色温",
     "StateObjects.buttons.indicator": "指标",
-    "Humidity": "湿度"
+    "Humidity": "湿度",
+    "panelName": "面板名称（唯一）",
+    "panelTopic": "MQTT主题（唯一）",
+    "mustBeUnique": "必须是唯一的"
 }

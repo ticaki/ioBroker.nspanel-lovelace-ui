@@ -48,5 +48,8 @@
     "Colour temperature": "Kleur temperatuur",
     "Color temperature": "Kleurtemperatuur",
     "StateObjects.buttons.indicator": "Indicator",
-    "Humidity": "Vochtigheid"
+    "Humidity": "Vochtigheid",
+    "panelName": "Paneelnaam (uniek)",
+    "panelTopic": "MQTT Topic (uniek)",
+    "mustBeUnique": "moet uniek zijn"
 }

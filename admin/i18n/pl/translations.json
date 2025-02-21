@@ -48,5 +48,8 @@
     "Colour temperature": "Temperatura barwowa",
     "Color temperature": "Temperatura koloru",
     "StateObjects.buttons.indicator": "Wskaźnik",
-    "Humidity": "Wilgotność"
+    "Humidity": "Wilgotność",
+    "panelName": "Nazwa panelu (unikalna)",
+    "panelTopic": "MQTT Temat (unikalny)",
+    "mustBeUnique": "Musi być wyjątkowy"
 }

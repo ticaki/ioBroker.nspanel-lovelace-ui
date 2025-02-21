@@ -37,6 +37,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   mqttServer;
   controller;
   unload = false;
+  timeoutAdmin;
   constructor(options = {}) {
     super({
       ...options,
@@ -83,36 +84,13 @@ class NspanelLovelaceUi extends utils.Adapter {
       const obj = await this.getForeignObjectAsync(this.namespace);
       if (obj && obj.native && obj.native.scriptConfig) {
         const scriptConfig = obj.native.scriptConfig;
-        let changed = false;
-        for (let b = scriptConfig.length - 1; b >= 0; b--) {
-          const index = this.config.panels.findIndex((a) => a.name === scriptConfig[b].name);
-          if (index !== -1) {
-            if (this.config.panels[index].removeIt) {
-              scriptConfig.splice(b, 1);
-              changed = true;
-            }
-            continue;
-          }
-          if (scriptConfig[b].name !== void 0 && scriptConfig[b].topic !== void 0) {
-            this.config.panels.push({
-              name: scriptConfig[b].name,
-              topic: scriptConfig[b].topic,
-              id: "",
-              removeIt: false
-            });
-          }
-        }
-        for (const a of this.config.panels) {
-          if (a.removeIt) {
-            await this.delObjectAsync(`panels.${a.id}`, { recursive: true });
-          }
-        }
-        if (changed) {
-          await this.setForeignObjectAsync(this.namespace, obj);
-        }
         for (let b = 0; b < scriptConfig.length; b++) {
           const s = scriptConfig[b];
           if (!s || !s.pages) {
+            continue;
+          }
+          const index = this.config.panels.findIndex((a) => a.topic === s.topic);
+          if (index == -1) {
             continue;
           }
           if (!this.config.Testconfig2[b]) {
@@ -296,6 +274,9 @@ class NspanelLovelaceUi extends utils.Adapter {
   async onUnload(callback) {
     try {
       this.unload = true;
+      if (this.timeoutAdmin) {
+        this.clearTimeout(this.timeoutAdmin);
+      }
       if (this.controller) {
         this.controller.delete;
       }
@@ -377,28 +358,51 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "RefreshDevices": {
-          const view = await this.getObjectViewAsync("system", "device", {
-            startkey: `${this.namespace}.panels.`,
-            endkey: `${this.namespace}.panels.\u9999`
-          });
-          let devices = {};
-          if (view && view.rows) {
-            devices = { panels: [] };
-            for (const panel of view.rows) {
-              const result = { id: "", name: "", topic: "", removeIt: false };
-              const p = await this.getForeignObjectAsync(panel.id);
-              if (p && p.native && p.native.name) {
-                result.id = p.native.name;
-                result.name = p.native.configName;
-                result.topic = p.native.topic;
-                devices.panels.push(result);
-              }
+          const device = { id: "", name: obj.message.name, topic: obj.message.topic };
+          const mqtt = new MQTT.MQTTClientClass(
+            this,
+            this.config.mqttIp,
+            this.config.mqttPort,
+            this.config.mqttUsername,
+            this.config.mqttPassword,
+            (topic, message) => {
+              this.log.debug(`${topic} ${message}`);
             }
-          }
-          if (obj.callback) {
-            this.sendTo(obj.from, obj.command, { native: devices }, obj.callback);
-          }
-          this.log.debug(JSON.stringify(view));
+          );
+          this.timeoutAdmin = this.setTimeout(
+            async (mqtt2) => {
+              let rCount = 0;
+              if (mqtt2) {
+                if (!device.id) {
+                  rCount++;
+                  mqtt2.subscript(
+                    `${device.topic}/stat/STATUS0`,
+                    (_topic, _message) => {
+                      const msg = JSON.parse(_message);
+                      if (msg.StatusNET) {
+                        device.id = this.library.cleandp(msg.StatusNET.Mac, false, true);
+                      }
+                      rCount--;
+                    }
+                  );
+                  await mqtt2.publish(`${device.topic}/cmnd/STATUS0`, "");
+                }
+                const _waitForFinish = (count) => {
+                  if (count > 10 || rCount === 0) {
+                    if (obj.callback) {
+                      this.sendTo(obj.from, obj.command, { native: device }, obj.callback);
+                    }
+                    mqtt2.destroy();
+                    return;
+                  }
+                  this.timeoutAdmin = this.setTimeout(_waitForFinish, 500, ++count);
+                };
+                _waitForFinish(0);
+              }
+            },
+            500,
+            mqtt
+          );
           break;
         }
         default: {

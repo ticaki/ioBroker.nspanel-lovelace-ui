@@ -6,49 +6,51 @@
             "type": "panel",
             "label": "overview",
             "items": {
-                "_RefreshDevices": {
-                    "type": "sendTo",
-                    "label": "Refresh Devices",
-                    "command": "RefreshDevices",
-                    "jsonData": "{}",
-                    "showProcess": true,
-                    "useNative": true
-                },
                 "panels": {
                     "type": "table",
                     "label": "panels",
-                    "noDelete": true,
+                    "uniqueColumns": [
+                        "name",
+                        "topic"
+                    ],
                     "items": [
                         {
                             "type": "text",
                             "attr": "id",
-                            "label": "Id",                       
+                            "label": "Id",
                             "readOnly": true
                         },
-
                         {
                             "type": "text",
                             "attr": "name",
-                            "label": "name",                   
-                            "readOnly": true
+                            "label": "panelName",
+                            "readOnly": false,
+                            //"validator": "const x={};for (const c of globalData.panels) {if (x[c.name]==='x') return false; x[c.name]='x';}; return true;",
+                            //"validatorNoSaveOnError": true,
+                            "validatorErrorText": "mustBeUnique"
                         },
                         {
                             "type": "text",
                             "attr": "topic",
-                            "label": "topic",
-                            "readOnly": true
+                            "label": "panelTopic",
+                            "readOnly": false,
+                            //"validator": "const x={};for (const c of globalData.panels) {if (x[c.topic]==='x') return false; x[c.topic]='x';}; return true;",
+                            //"validatorNoSaveOnError": true,
+                            "validatorErrorText": "mustBeUnique"
                         },
                         {
-                            "type": "checkbox",
-                            "attr": "removeIt",
-                            "label": "remove device",
-                            "width": "20%",
-                            "default": false
+                            "attr": "_RefreshDevices",
+                            "type": "sendTo",
+                            "label": "Refresh Devices",
+                            "command": "RefreshDevices",
+                            "jsonData": "{\"id\": \"${data.id}\", \"name\": \"${data.name}\", \"topic\": \"${data.topic}\" }",
+                            "showProcess": true,
+                            "useNative": true,
+                            "disabled": "_changed"
                         }
                     ]
                 }
             }
-
         },
         "general": {
             "type": "panel",
@@ -131,43 +133,51 @@
                 }
             }
         },
-        "pageQR":{
+        "pageQR": {
             "type": "panel",
             "label": "+",
             "items": {
-                "pageQRselType":{
+                "pageQRselType": {
                     "type": "select",
                     "label": "QR Typ",
                     "options": [
-                        {"label": "none", "value": 0},
-                        {"label": "Wifi", "value": 1},
-                        {"label": "URL", "value": 2}
-
+                        {
+                            "label": "none",
+                            "value": 0
+                        },
+                        {
+                            "label": "Wifi",
+                            "value": 1
+                        },
+                        {
+                            "label": "URL",
+                            "value": 2
+                        }
                     ]
                 },
-                "pageQRwlantype":{
+                "pageQRwlantype": {
                     "type": "text",
                     "label": "Verschlüssselung",
                     "hidden": "data.pageQRselType !== 1",
                     "newLine": true
                 },
-                "pageQRssid":{
+                "pageQRssid": {
                     "type": "text",
                     "label": "SSID",
                     "hidden": "data.pageQRselType !== 1"
                 },
-                "pageQRpwd":{
+                "pageQRpwd": {
                     "type": "password",
                     "label": "Password",
                     "hidden": "data.pageQRselType !== 1"
                 },
-                "pageQRwlanhidden":{
+                "pageQRwlanhidden": {
                     "type": "checkbox",
                     "label": "verstecktes Wlan",
                     "hidden": "data.pageQRselType !== 1",
                     "default": false
                 },
-                "pageQRurl":{
+                "pageQRurl": {
                     "type": "text",
                     "label": "URL",
                     "default": "https://",
