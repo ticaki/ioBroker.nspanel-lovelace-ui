@@ -21,7 +21,7 @@ __export(config_manager_const_exports, {
   CustomTemplates: () => CustomTemplates,
   defaultConfig: () => defaultConfig,
   isConfig: () => isConfig,
-  requiredDatapoints: () => requiredDatapoints,
+  requiredFeatureDatapoints: () => requiredFeatureDatapoints,
   requiredScriptDataPoints: () => requiredScriptDataPoints
 });
 module.exports = __toCommonJS(config_manager_const_exports);
@@ -149,1328 +149,508 @@ const defaultConfig = {
 };
 const requiredScriptDataPoints = {
   motion: {
-    ACTUAL: {
-      role: "sensor.motion",
-      type: "boolean",
-      required: true,
-      writeable: false
-    }
+    name: "motion",
+    description: "",
+    data: { ACTUAL: { role: "sensor.motion", type: "boolean", required: true, writeable: false } }
   },
   cie: {
-    CIE: {
-      role: "level.color.cie",
-      type: "string",
-      required: true,
-      writeable: true
-    },
-    DIMMER: {
-      role: "level.dimmer",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    ON: {
-      role: "switch.light",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true,
-      writeable: false
-    },
-    TEMPERATURE: {
-      role: "level.color.temperature",
-      type: "number",
-      required: true,
-      writeable: true
+    name: "cie",
+    description: "",
+    data: {
+      CIE: { role: "level.color.cie", type: "string", required: true, writeable: true },
+      DIMMER: { role: "level.dimmer", type: "boolean", required: true, writeable: true },
+      ON: { role: "switch.light", type: "boolean", required: true, writeable: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true, writeable: false },
+      TEMPERATURE: { role: "level.color.temperature", type: "number", required: true, writeable: true }
     }
   },
   dimmer: {
-    SET: {
-      role: "level.dimmer",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    ACTUAL: {
-      role: "value.dimmer",
-      type: "number",
-      required: true,
-      writeable: false
-    },
-    ON_SET: {
-      role: "switch.light",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true,
-      writeable: false
+    name: "dimmer",
+    description: "",
+    data: {
+      SET: { role: "level.dimmer", type: "number", required: true, writeable: true },
+      ACTUAL: { role: "value.dimmer", type: "number", required: true, writeable: false },
+      ON_SET: { role: "switch.light", type: "boolean", required: true, writeable: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true, writeable: false }
     }
   },
   timeTable: {
-    ACTUAL: {
-      role: "state",
-      type: "string",
-      required: true,
-      writeable: false
-    },
-    VEHICLE: {
-      role: "state",
-      type: "string",
-      required: true,
-      writeable: false
-    },
-    DIRECTION: {
-      role: "state",
-      type: "string",
-      required: true,
-      writeable: false
-    },
-    DELAY: {
-      role: "state",
-      type: "boolean",
-      required: true,
-      writeable: false
+    name: "timeTable",
+    description: "",
+    data: {
+      ACTUAL: { role: "state", type: "string", required: true, writeable: false },
+      VEHICLE: { role: "state", type: "string", required: true, writeable: false },
+      DIRECTION: { role: "state", type: "string", required: true, writeable: false },
+      DELAY: { role: "state", type: "boolean", required: true, writeable: false }
     }
   },
   ct: {
-    DIMMER: {
-      role: "level.dimmer",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    ON: {
-      role: "switch.light",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true,
-      writeable: false
-    },
-    TEMPERATURE: {
-      role: "level.color.temperature",
-      type: "number",
-      required: true,
-      writeable: true
+    name: "ct",
+    description: "",
+    data: {
+      DIMMER: { role: "level.dimmer", type: "number", required: true, writeable: true },
+      ON: { role: "switch.light", type: "boolean", required: true, writeable: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true, writeable: false },
+      TEMPERATURE: { role: "level.color.temperature", type: "number", required: true, writeable: true }
     }
   },
   window: {
-    ACTUAL: {
-      role: "sensor.window",
-      type: "boolean",
-      required: true,
-      writeable: false
-    }
+    name: "window",
+    description: "",
+    data: { ACTUAL: { role: "sensor.window", type: "boolean", required: true, writeable: false } }
   },
   humidity: {
-    ACTUAL: {
-      role: "value.humidity",
-      type: "number",
-      required: true,
-      writeable: false
-    }
+    name: "humidity",
+    description: "",
+    data: { ACTUAL: { role: "value.humidity", type: "number", required: true, writeable: false } }
   },
   hue: {
-    DIMMER: {
-      role: "level.dimmer",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    ON: {
-      role: "switch.light",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true,
-      writeable: false
-    },
-    TEMPERATURE: {
-      role: "level.color.temperature",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    HUE: {
-      role: "level.color.hue",
-      type: "number",
-      required: false,
-      writeable: true
+    name: "hue",
+    description: "",
+    data: {
+      DIMMER: { role: "level.dimmer", type: "number", required: true, writeable: true },
+      ON: { role: "switch.light", type: "boolean", required: true, writeable: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true, writeable: false },
+      TEMPERATURE: { role: "level.color.temperature", type: "number", required: true, writeable: true },
+      HUE: { role: "level.color.hue", type: "number", required: false, writeable: true }
     }
   },
   info: {
-    ACTUAL: {
-      role: "state",
-      type: "string",
-      required: true,
-      writeable: false
-    }
+    name: "info",
+    description: "",
+    data: { ACTUAL: { role: "state", type: "string", required: true, writeable: false } }
   },
   blind: {
-    ACTUAL: {
-      role: "value.blind",
-      type: "number",
-      required: true,
-      writeable: false
-    },
-    SET: {
-      role: "level.blind",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    CLOSE: {
-      role: "button.close.blind",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    OPEN: {
-      role: "button.open.blind",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    STOP: {
-      role: "button.stop.blind",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    TILT_ACTUAL: {
-      role: "value.tilt",
-      type: "number",
-      required: false,
-      writeable: false
-    },
-    TILT_SET: {
-      role: "level.tilt",
-      type: "number",
-      required: false,
-      writeable: true
-    },
-    TILT_CLOSE: {
-      role: "button.close.tilt",
-      type: "boolean",
-      required: false,
-      writeable: true
-    },
-    TILT_OPEN: {
-      role: "button.open.tilt",
-      type: "boolean",
-      required: false,
-      writeable: true
-    },
-    TILT_STOP: {
-      role: "button.stop.tilt",
-      type: "boolean",
-      required: false,
-      writeable: true
+    name: "blind",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.blind", type: "number", required: true, writeable: false },
+      SET: { role: "level.blind", type: "number", required: true, writeable: true },
+      CLOSE: { role: "button.close.blind", type: "boolean", required: true, writeable: true },
+      OPEN: { role: "button.open.blind", type: "boolean", required: true, writeable: true },
+      STOP: { role: "button.stop.blind", type: "boolean", required: true, writeable: true },
+      TILT_ACTUAL: { role: "value.tilt", type: "number", required: false, writeable: false },
+      TILT_SET: { role: "level.tilt", type: "number", required: false, writeable: true },
+      TILT_CLOSE: { role: "button.close.tilt", type: "boolean", required: false, writeable: true },
+      TILT_OPEN: { role: "button.open.tilt", type: "boolean", required: false, writeable: true },
+      TILT_STOP: { role: "button.stop.tilt", type: "boolean", required: false, writeable: true }
     }
   },
   airCondition: {
-    ACTUAL: {
-      role: "value.temperature",
-      type: "number",
-      required: true,
-      writeable: false
-    },
-    SET: {
-      role: "level.temperature",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    SET2: {
-      role: "level.temperature",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    AUTO: {
-      role: "state",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    COOL: {
-      role: "state",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    BOOST: {
-      role: "switch.boost",
-      type: "boolean",
-      required: false,
-      writeable: true
-    },
-    ERROR: {
-      role: "indicator.error",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    HEAT: {
-      role: "state",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    HUMINITY: {
-      role: "value.humidity",
-      type: "number",
-      required: false,
-      writeable: false
-    },
-    MAINTAIN: {
-      role: "indicator.maintainance",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    MODE: {
-      role: "level.mode.aircondition",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    OFF: {
-      role: "state",
-      type: "boolean",
-      required: true,
-      writeable: false
-    },
-    POWER: {
-      role: "switch.power",
-      type: "boolean",
-      required: false,
-      writeable: true
-    },
-    SPEED: {
-      role: "level.mode.fan",
-      type: "number",
-      required: false,
-      writeable: true
-    },
-    SWING: {
-      role: "switch.mode.swing",
-      type: "boolean",
-      required: false,
-      writeable: true
-    },
-    UNREACH: {
-      role: "indicator.maintainance",
-      type: "boolean",
-      required: false,
-      writeable: false
+    name: "airCondition",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.temperature", type: "number", required: true, writeable: false },
+      SET: { role: "level.temperature", type: "number", required: true, writeable: true },
+      SET2: { role: "level.temperature", type: "number", required: true, writeable: true },
+      AUTO: { role: "state", type: "boolean", required: false, writeable: false },
+      COOL: { role: "state", type: "boolean", required: false, writeable: false },
+      BOOST: { role: "switch.boost", type: "boolean", required: false, writeable: true },
+      ERROR: { role: "indicator.error", type: "boolean", required: false, writeable: false },
+      HEAT: { role: "state", type: "boolean", required: false, writeable: false },
+      HUMINITY: { role: "value.humidity", type: "number", required: false, writeable: false },
+      MAINTAIN: { role: "indicator.maintainance", type: "boolean", required: false, writeable: false },
+      MODE: { role: "level.mode.aircondition", type: "number", required: true, writeable: true },
+      OFF: { role: "state", type: "boolean", required: true, writeable: false },
+      POWER: { role: "switch.power", type: "boolean", required: false, writeable: true },
+      SPEED: { role: "level.mode.fan", type: "number", required: false, writeable: true },
+      SWING: { role: "switch.mode.swing", type: "boolean", required: false, writeable: true },
+      UNREACH: { role: "indicator.maintainance", type: "boolean", required: false, writeable: false }
     }
   },
   socket: {
-    ACTUAL: {
-      role: "switch",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    SET: {
-      role: "switch",
-      type: "boolean",
-      required: true,
-      writeable: true
+    name: "socket",
+    description: "",
+    data: {
+      ACTUAL: { role: "switch", type: "boolean", required: false, writeable: false },
+      SET: { role: "switch", type: "boolean", required: true, writeable: true }
     }
   },
   light: {
-    ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    SET: {
-      role: "switch.light",
-      type: "boolean",
-      required: true,
-      writeable: true
+    name: "light",
+    description: "",
+    data: {
+      ACTUAL: { role: "sensor.light", type: "boolean", required: false, writeable: false },
+      SET: { role: "switch.light", type: "boolean", required: true, writeable: true }
     }
   },
   volume: {
-    ACTUAL: {
-      role: "value.volume",
-      type: "number",
-      required: true,
-      writeable: false
-    },
-    SET: {
-      role: "level.volume",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    MUTE: {
-      role: "media.mute",
-      type: "boolean",
-      required: true,
-      writeable: true
+    name: "volume",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.volume", type: "number", required: true, writeable: false },
+      SET: { role: "level.volume", type: "number", required: true, writeable: true },
+      MUTE: { role: "media.mute", type: "boolean", required: true, writeable: true }
     }
   },
   rgb: {
-    RED: {
-      role: "level.color.red",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    GREEN: {
-      role: "level.color.green",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    BLUE: {
-      role: "level.color.blue",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true,
-      writeable: false
-    },
-    ON: {
-      role: "switch.light",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    DIMMER: {
-      role: "level.dimmer",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    TEMPERATURE: {
-      role: "level.color.temperature",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    WHITE: {
-      role: "level.color.white",
-      type: "number",
-      required: false,
-      writeable: true
+    name: "rgb",
+    description: "",
+    data: {
+      RED: { role: "level.color.red", type: "number", required: true, writeable: true },
+      GREEN: { role: "level.color.green", type: "number", required: true, writeable: true },
+      BLUE: { role: "level.color.blue", type: "number", required: true, writeable: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true, writeable: false },
+      ON: { role: "switch.light", type: "boolean", required: true, writeable: true },
+      DIMMER: { role: "level.dimmer", type: "number", required: true, writeable: true },
+      TEMPERATURE: { role: "level.color.temperature", type: "number", required: true, writeable: true },
+      WHITE: { role: "level.color.white", type: "number", required: false, writeable: true }
     }
   },
   rbgSingle: {
-    RGB: {
-      role: "level.color.rgb",
-      type: "string",
-      required: true,
-      writeable: true
-    },
-    ON: {
-      role: "switch.light",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    DIMMER: {
-      role: "level.dimmer",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    TEMPERATURE: {
-      role: "level.color.temperature",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true,
-      writeable: false
+    name: "rbgSingle",
+    description: "",
+    data: {
+      RGB: { role: "level.color.rgb", type: "string", required: true, writeable: true },
+      ON: { role: "switch.light", type: "boolean", required: true, writeable: true },
+      DIMMER: { role: "level.dimmer", type: "number", required: true, writeable: true },
+      TEMPERATURE: { role: "level.color.temperature", type: "number", required: true, writeable: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true, writeable: false }
     }
   },
   slider: {
-    SET: {
-      role: "level",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    ACTUAL: {
-      role: "value",
-      type: "number",
-      required: true,
-      writeable: false
+    name: "slider",
+    description: "",
+    data: {
+      SET: { role: "level", type: "number", required: true, writeable: true },
+      ACTUAL: { role: "value", type: "number", required: true, writeable: false }
     }
   },
   button: {
-    SET: {
-      role: "button",
-      type: "boolean",
-      required: true,
-      writeable: true
-    }
+    name: "button",
+    description: "",
+    data: { SET: { role: "button", type: "boolean", required: true, writeable: true } }
   },
   buttonSensor: {
-    ACTUAL: {
-      //PRESS lt. Device - correct but not backward compatible
-      role: "button.press",
-      type: "boolean",
-      required: true,
-      writeable: false
-    }
+    name: "buttonSensor",
+    description: "",
+    data: { ACTUAL: { role: "button.press", type: "boolean", required: true, writeable: false } }
   },
   temperature: {
-    ACTUAL: {
-      role: "value.temperature",
-      type: "number",
-      required: true,
-      writeable: false
-    },
-    SECOND: {
-      role: "value.humidity",
-      type: "number",
-      required: false,
-      writeable: false
+    name: "temperature",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.temperature", type: "number", required: true, writeable: false },
+      SECOND: { role: "value.humidity", type: "number", required: false, writeable: false }
     }
   },
   "value.temperature": {
-    ACTUAL: {
-      role: "value.temperature",
-      type: "number",
-      required: true,
-      writeable: false
-    },
-    SECOND: {
-      role: "value.humidity",
-      type: "number",
-      required: false,
-      writeable: false
+    name: "value.temperature",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.temperature", type: "number", required: true, writeable: false },
+      SECOND: { role: "value.humidity", type: "number", required: false, writeable: false }
     }
   },
   thermostat: {
-    ACTUAL: {
-      role: "value.temperature",
-      type: "number",
-      required: true,
-      writeable: false
-    },
-    SET: {
-      role: "level.temperature",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    MODE: {
-      role: "level.mode.thermostat",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    BOOST: {
-      role: "state",
-      type: "boolean",
-      required: false
-    },
-    AUTOMATIC: {
-      role: "state",
-      type: "boolean",
-      required: true
-    },
-    ERROR: {
-      role: "indicator.error",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    LOWBAT: {
-      role: "indicator.maintainance",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    MANUAL: {
-      role: "state",
-      type: "boolean",
-      required: false
-    },
-    UNREACH: {
-      role: "indicator.maintainance",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    HUMINITY: {
-      role: "value.humidity",
-      type: "number",
-      required: false,
-      writeable: false
-    },
-    MAINTAIN: {
-      role: "indicator.maintainance",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    PARTY: {
-      role: "state",
-      type: "boolean",
-      required: false
-    },
-    POWER: {
-      role: "switch.power",
-      type: "boolean",
-      required: false,
-      writeable: true
-    },
-    VACATION: {
-      role: "state",
-      type: "boolean",
-      required: false
-    },
-    WINDOWOPEN: {
-      role: "state",
-      type: "boolean",
-      required: false,
-      writeable: false
-    },
-    WORKING: {
-      role: "state",
-      type: "boolean",
-      required: false,
-      writeable: false
+    name: "thermostat",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.temperature", type: "number", required: true, writeable: false },
+      SET: { role: "level.temperature", type: "number", required: true, writeable: true },
+      MODE: { role: "level.mode.thermostat", type: "number", required: true, writeable: true },
+      BOOST: { role: "state", type: "boolean", required: false },
+      AUTOMATIC: { role: "state", type: "boolean", required: true },
+      ERROR: { role: "indicator.error", type: "boolean", required: false, writeable: false },
+      LOWBAT: { role: "indicator.maintainance", type: "boolean", required: false, writeable: false },
+      MANUAL: { role: "state", type: "boolean", required: false },
+      UNREACH: { role: "indicator.maintainance", type: "boolean", required: false, writeable: false },
+      HUMINITY: { role: "value.humidity", type: "number", required: false, writeable: false },
+      MAINTAIN: { role: "indicator.maintainance", type: "boolean", required: false, writeable: false },
+      PARTY: { role: "state", type: "boolean", required: false },
+      POWER: { role: "switch.power", type: "boolean", required: false, writeable: true },
+      VACATION: { role: "state", type: "boolean", required: false },
+      WINDOWOPEN: { role: "state", type: "boolean", required: false, writeable: false },
+      WORKING: { role: "state", type: "boolean", required: false, writeable: false }
     }
   },
-  // hier gehts weiter
   "level.timer": {
-    ACTUAL: {
-      role: "timestamp",
-      type: "number",
-      required: true,
-      writeable: false
-    },
-    STATE: {
-      role: "state",
-      type: "string",
-      required: true
+    name: "level.timer",
+    description: "",
+    data: {
+      ACTUAL: { role: "timestamp", type: "number", required: true, writeable: false },
+      STATE: { role: "state", type: "string", required: true }
     }
   },
   gate: {
-    /* Aktuell lt.Script nur ACTUAL 
-    Im Device:
-    ACTUAL: {
-        role: 'value.blind',
-        type: 'number',
-        required: true,
-        writeable: false,
-    },
-    /*SET: {
-        role: 'switch.gate',
-        type: 'boolean',
-        required: true,
-        writeable: true,
-    },
-    STOP: {
-        role: 'button.stop',
-        type: 'boolean',
-        required: true,
-        writeable: true,
-    }
-    
-    */
-    ACTUAL: {
-      role: "switch.gate",
-      type: "boolean",
-      required: true,
-      writeable: false
-    }
-    /*SET: {
-        role: 'switch.gate',
-        type: 'boolean',
-        required: true,
-        writeable: true,
-    },
-    STOP: {
-        role: 'button.stop',
-        type: 'boolean',
-        required: true,
-        writeable: true,
-    },*/
+    name: "gate",
+    description: "",
+    data: { ACTUAL: { role: "switch.gate", type: "boolean", required: true, writeable: false } }
   },
   door: {
-    ACTUAL: {
-      role: "sensor.door",
-      type: "boolean",
-      required: true,
-      writeable: false
-    }
+    name: "door",
+    description: "",
+    data: { ACTUAL: { role: "sensor.door", type: "boolean", required: true, writeable: false } }
   },
   "level.mode.fan": {
-    ACTUAL: {
-      role: "state",
-      type: "boolean",
-      required: true,
-      writeable: false
-    },
-    MODE: {
-      role: "state",
-      type: "number",
-      required: true,
-      writeable: true
-    },
-    SET: {
-      role: "state",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    SPEED: {
-      role: "state",
-      type: "number",
-      required: true,
-      writeable: true
+    name: "level.mode.fan",
+    description: "",
+    data: {
+      ACTUAL: { role: "state", type: "boolean", required: true, writeable: false },
+      MODE: { role: "state", type: "number", required: true, writeable: true },
+      SET: { role: "state", type: "boolean", required: true, writeable: true },
+      SPEED: { role: "state", type: "number", required: true, writeable: true }
     }
   },
   lock: {
-    ACTUAL: {
-      role: "state",
-      type: "boolean",
-      required: true,
-      writeable: false
-    },
-    OPEN: {
-      role: "state",
-      type: "boolean",
-      required: true,
-      writeable: false
-    },
-    SET: {
-      role: "switch.lock",
-      type: "boolean",
-      required: true,
-      writeable: true
+    name: "lock",
+    description: "",
+    data: {
+      ACTUAL: { role: "state", type: "boolean", required: true, writeable: false },
+      OPEN: { role: "state", type: "boolean", required: true, writeable: false },
+      SET: { role: "switch.lock", type: "boolean", required: true, writeable: true }
     }
   },
   warning: {
-    INFO: {
-      role: "weather.title",
-      type: "string",
-      required: true,
-      writeable: false
-    },
-    LEVEL: {
-      role: "value.warning",
-      type: "number",
-      required: true,
-      writeable: false
-    },
-    TITLE: {
-      role: "weather.title.short",
-      type: "string",
-      required: true,
-      writeable: false
+    name: "warning",
+    description: "",
+    data: {
+      INFO: { role: "weather.title", type: "string", required: true, writeable: false },
+      LEVEL: { role: "value.warning", type: "number", required: true, writeable: false },
+      TITLE: { role: "weather.title.short", type: "string", required: true, writeable: false }
     }
   },
   weatherforecast: {
-    ICON: {
-      role: "weather.icon.forecast",
-      type: "string",
-      required: true,
-      writeable: false
-    },
-    TEMP: {
-      role: "value.temperature",
-      type: "number",
-      required: true,
-      writeable: false
+    name: "weatherforecast",
+    description: "",
+    data: {
+      ICON: { role: "weather.icon.forecast", type: "string", required: true, writeable: false },
+      TEMP: { role: "value.temperature", type: "number", required: true, writeable: false }
     }
   },
   WIFI: {
-    ACTUAL: {
-      role: "state",
-      type: "string",
-      required: true,
-      writeable: false
-    },
-    SWITCH: {
-      role: "switch",
-      type: "boolean",
-      required: false,
-      writeable: true
+    name: "WIFI",
+    description: "",
+    data: {
+      ACTUAL: { role: "state", type: "string", required: true, writeable: false },
+      SWITCH: { role: "switch", type: "boolean", required: false, writeable: true }
     }
   }
 };
-const requiredDatapoints = {
+const requiredFeatureDatapoints = {
   motion: {
-    ACTUAL: {
-      role: "sensor.motion",
-      type: "boolean",
-      required: true
-    }
+    name: "motion",
+    description: "",
+    data: { ACTUAL: { role: "sensor.motion", type: "boolean", required: true } }
   },
   cie: {
-    CIE: {
-      role: "level.color.cie",
-      type: "number",
-      required: true
-    },
-    DIMMER: {
-      role: "level.dimmer",
-      type: "boolean",
-      required: true
-    },
-    ON: {
-      role: "switch.light",
-      type: "boolean",
-      required: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true
-    },
-    TEMPERATURE: {
-      role: "level.color.temperature",
-      type: "number",
-      required: true
+    name: "cie",
+    description: "",
+    data: {
+      CIE: { role: "level.color.cie", type: "number", required: true },
+      DIMMER: { role: "level.dimmer", type: "boolean", required: true },
+      ON: { role: "switch.light", type: "boolean", required: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true },
+      TEMPERATURE: { role: "level.color.temperature", type: "number", required: true }
     }
   },
   dimmer: {
-    SET: {
-      role: "level.dimmer",
-      type: "number",
-      required: true
-    },
-    ACTUAL: {
-      role: "value.dimmer",
-      type: "number",
-      required: true
-    },
-    ON_SET: {
-      role: "switch.light",
-      type: "boolean",
-      required: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true
+    name: "dimmer",
+    description: "",
+    data: {
+      SET: { role: "level.dimmer", type: "number", required: true },
+      ACTUAL: { role: "value.dimmer", type: "number", required: true },
+      ON_SET: { role: "switch.light", type: "boolean", required: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true }
     }
   },
   timeTable: {
-    ACTUAL: {
-      role: "text",
-      type: "string",
-      required: true
-    },
-    VEHICLE: {
-      role: "text",
-      type: "string",
-      required: true
-    },
-    DIRECTION: {
-      role: "text",
-      type: "string",
-      required: true
-    },
-    DELAY: {
-      role: "indicator",
-      type: "boolean",
-      required: true
+    name: "timeTable",
+    description: "",
+    data: {
+      ACTUAL: { role: "text", type: "string", required: true },
+      VEHICLE: { role: "text", type: "string", required: true },
+      DIRECTION: { role: "text", type: "string", required: true },
+      DELAY: { role: "indicator", type: "boolean", required: true }
     }
   },
   ct: {
-    DIMMER: {
-      role: "level.dimmer",
-      type: "number",
-      required: true
-    },
-    ON: {
-      role: "switch.light",
-      type: "boolean",
-      required: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true
-    },
-    TEMPERATURE: {
-      role: "level.color.temperature",
-      type: "number",
-      required: true
+    name: "ct",
+    description: "",
+    data: {
+      DIMMER: { role: "level.dimmer", type: "number", required: true },
+      ON: { role: "switch.light", type: "boolean", required: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true },
+      TEMPERATURE: { role: "level.color.temperature", type: "number", required: true }
     }
   },
   window: {
-    ACTUAL: {
-      role: "sensor.window",
-      type: "boolean",
-      required: true
-    }
+    name: "window",
+    description: "",
+    data: { ACTUAL: { role: "sensor.window", type: "boolean", required: true } }
   },
   humidity: {
-    ACTUAL: {
-      role: "value.humidity",
-      type: "number",
-      required: true
-    }
+    name: "humidity",
+    description: "",
+    data: { ACTUAL: { role: "value.humidity", type: "number", required: true } }
   },
   hue: {
-    DIMMER: {
-      role: "level.dimmer",
-      type: "number",
-      required: true
-    },
-    ON: {
-      role: "switch.light",
-      type: "boolean",
-      required: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true
-    },
-    TEMPERATURE: {
-      role: "level.color.temperature",
-      type: "number",
-      required: true
-    },
-    HUE: {
-      role: "level.color.hue",
-      type: "number",
-      required: false
+    name: "hue",
+    description: "",
+    data: {
+      DIMMER: { role: "level.dimmer", type: "number", required: true },
+      ON: { role: "switch.light", type: "boolean", required: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true },
+      TEMPERATURE: { role: "level.color.temperature", type: "number", required: true },
+      HUE: { role: "level.color.hue", type: "number", required: false }
     }
   },
-  info: {
-    ACTUAL: {
-      role: "text",
-      type: "string",
-      required: true
-    }
-  },
+  info: { name: "info", description: "", data: { ACTUAL: { role: "text", type: "string", required: true } } },
   blind: {
-    ACTUAL: {
-      role: "value.blind",
-      type: "number",
-      required: true
-    },
-    SET: {
-      role: "level.blind",
-      type: "number",
-      required: true
-    },
-    CLOSE: {
-      role: "button.close.blind",
-      type: "boolean",
-      required: true
-    },
-    OPEN: {
-      role: "button.open.blind",
-      type: "boolean",
-      required: true
-    },
-    STOP: {
-      role: "button.stop.blind",
-      type: "boolean",
-      required: true
-    },
-    TILT_ACTUAL: {
-      role: "value.tilt",
-      type: "number",
-      required: false
-    },
-    TILT_SET: {
-      role: "level.tilt",
-      type: "number",
-      required: false
-    },
-    TILT_CLOSE: {
-      role: "button.close.tilt",
-      type: "boolean",
-      required: false
-    },
-    TILT_OPEN: {
-      role: "button.open.tilt",
-      type: "boolean",
-      required: false
-    },
-    TILT_STOP: {
-      role: "button.stop.tilt",
-      type: "boolean",
-      required: false
+    name: "blind",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.blind", type: "number", required: true },
+      SET: { role: "level.blind", type: "number", required: true },
+      CLOSE: { role: "button.close.blind", type: "boolean", required: true },
+      OPEN: { role: "button.open.blind", type: "boolean", required: true },
+      STOP: { role: "button.stop.blind", type: "boolean", required: true },
+      TILT_ACTUAL: { role: "value.tilt", type: "number", required: false },
+      TILT_SET: { role: "level.tilt", type: "number", required: false },
+      TILT_CLOSE: { role: "button.close.tilt", type: "boolean", required: false },
+      TILT_OPEN: { role: "button.open.tilt", type: "boolean", required: false },
+      TILT_STOP: { role: "button.stop.tilt", type: "boolean", required: false }
     }
   },
   airCondition: {
-    ACTUAL: {
-      role: "value.temperature",
-      type: "number",
-      required: true
-    },
-    SET: {
-      role: "level.temperature",
-      type: "number",
-      required: true
-    },
-    AUTO: {
-      role: "switch",
-      type: "boolean",
-      required: false
-    },
-    COOL: {
-      role: "switch",
-      type: "boolean",
-      required: false
-    },
-    BOOST: {
-      role: "switch.boost",
-      type: "boolean",
-      required: false
-    },
-    ERROR: {
-      role: "indicator.error",
-      type: "boolean",
-      required: false
-    },
-    HEAT: {
-      role: "switch",
-      type: "boolean",
-      required: false
-    },
-    HUMINITY: {
-      role: "value.humidity",
-      type: "number",
-      required: false
-    },
-    MAINTAIN: {
-      role: "indicator.maintainance",
-      type: "boolean",
-      required: false
-    },
-    MODE: {
-      role: "level.mode.aircondition",
-      type: "number",
-      required: true
-    },
-    OFF: {
-      role: "switch",
-      type: "boolean",
-      required: true
-    },
-    POWER: {
-      role: "switch",
-      type: "boolean",
-      required: false
-    },
-    SPEED: {
-      role: "level.mode.fan",
-      type: "number",
-      required: false
-    },
-    SWING: {
-      role: "switch.mode.swing",
-      type: "boolean",
-      required: false
-    },
-    UNREACH: {
-      role: "indicator.maintenance.unreach",
-      type: "boolean",
-      required: false
+    name: "airCondition",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.temperature", type: "number", required: true },
+      SET: { role: "level.temperature", type: "number", required: true },
+      AUTO: { role: "switch", type: "boolean", required: false },
+      COOL: { role: "switch", type: "boolean", required: false },
+      BOOST: { role: "switch.boost", type: "boolean", required: false },
+      ERROR: { role: "indicator.error", type: "boolean", required: false },
+      HEAT: { role: "switch", type: "boolean", required: false },
+      HUMINITY: { role: "value.humidity", type: "number", required: false },
+      MAINTAIN: { role: "indicator.maintainance", type: "boolean", required: false },
+      MODE: { role: "level.mode.aircondition", type: "number", required: true },
+      OFF: { role: "switch", type: "boolean", required: true },
+      POWER: { role: "switch", type: "boolean", required: false },
+      SPEED: { role: "level.mode.fan", type: "number", required: false },
+      SWING: { role: "switch.mode.swing", type: "boolean", required: false },
+      UNREACH: { role: "indicator.maintenance.unreach", type: "boolean", required: false }
     }
   },
   socket: {
-    ACTUAL: {
-      role: "switch",
-      type: "boolean",
-      required: false
-    },
-    SET: {
-      role: "switch",
-      type: "boolean",
-      required: true
+    name: "socket",
+    description: "",
+    data: {
+      ACTUAL: { role: "switch", type: "boolean", required: false },
+      SET: { role: "switch", type: "boolean", required: true }
     }
   },
   light: {
-    ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: false
-    },
-    SET: {
-      role: "switch.light",
-      type: "boolean",
-      required: true
+    name: "light",
+    description: "",
+    data: {
+      ACTUAL: { role: "sensor.light", type: "boolean", required: false },
+      SET: { role: "switch.light", type: "boolean", required: true }
     }
   },
   volume: {
-    ACTUAL: {
-      role: "value.volume",
-      type: "number",
-      required: true
-    },
-    SET: {
-      role: "level.volume",
-      type: "number",
-      required: true
-    },
-    MUTE: {
-      role: "media.mute",
-      type: "boolean",
-      required: true
+    name: "volume",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.volume", type: "number", required: true },
+      SET: { role: "level.volume", type: "number", required: true },
+      MUTE: { role: "media.mute", type: "boolean", required: true }
     }
   },
   rgb: {
-    RED: {
-      role: "level.color.red",
-      type: "number",
-      required: true
-    },
-    GREEN: {
-      role: "level.color.green",
-      type: "number",
-      required: true
-    },
-    BLUE: {
-      role: "level.color.blue",
-      type: "number",
-      required: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true
-    },
-    ON: {
-      role: "switch.light",
-      type: "boolean",
-      required: true
-    },
-    DIMMER: {
-      role: "level.dimmer",
-      type: "number",
-      required: true
-    },
-    TEMPERATURE: {
-      role: "level.color.temperature",
-      type: "number",
-      required: true
-    },
-    WHITE: {
-      role: "level.color.white",
-      type: "number",
-      required: false
+    name: "rgb",
+    description: "",
+    data: {
+      RED: { role: "level.color.red", type: "number", required: true },
+      GREEN: { role: "level.color.green", type: "number", required: true },
+      BLUE: { role: "level.color.blue", type: "number", required: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true },
+      ON: { role: "switch.light", type: "boolean", required: true },
+      DIMMER: { role: "level.dimmer", type: "number", required: true },
+      TEMPERATURE: { role: "level.color.temperature", type: "number", required: true },
+      WHITE: { role: "level.color.white", type: "number", required: false }
     }
   },
   rbgSingle: {
-    RGB: {
-      role: "level.color.rgb",
-      type: "number",
-      required: true
-    },
-    ON: {
-      role: "switch.light",
-      type: "boolean",
-      required: true
-    },
-    DIMMER: {
-      role: "level.dimmer",
-      type: "number",
-      required: true
-    },
-    TEMPERATURE: {
-      role: "level.color.temperature",
-      type: "number",
-      required: true
-    },
-    ON_ACTUAL: {
-      role: "sensor.light",
-      type: "boolean",
-      required: true
+    name: "rbgSingle",
+    description: "",
+    data: {
+      RGB: { role: "level.color.rgb", type: "number", required: true },
+      ON: { role: "switch.light", type: "boolean", required: true },
+      DIMMER: { role: "level.dimmer", type: "number", required: true },
+      TEMPERATURE: { role: "level.color.temperature", type: "number", required: true },
+      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true }
     }
   },
   slider: {
-    SET: {
-      role: "level",
-      type: "number",
-      required: true
-    },
-    ACTUAL: {
-      role: "value",
-      type: "number",
-      required: true
+    name: "slider",
+    description: "",
+    data: {
+      SET: { role: "level", type: "number", required: true },
+      ACTUAL: { role: "value", type: "number", required: true }
     }
   },
-  button: {
-    SET: {
-      role: "button",
-      type: "boolean",
-      required: true
-    }
-  },
+  button: { name: "button", description: "", data: { SET: { role: "button", type: "boolean", required: true } } },
   buttonSensor: {
-    ACTUAL: {
-      role: "button.press",
-      type: "boolean",
-      required: true
-    }
+    name: "buttonSensor",
+    description: "",
+    data: { ACTUAL: { role: "button.press", type: "boolean", required: true } }
   },
   temperature: {
-    ACTUAL: {
-      role: "value.temperature",
-      type: "number",
-      required: true
-    },
-    SECOND: {
-      role: "value.humidity",
-      type: "number",
-      required: false
+    name: "temperature",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.temperature", type: "number", required: true },
+      SECOND: { role: "value.humidity", type: "number", required: false }
     }
   },
   "value.temperature": {
-    ACTUAL: {
-      role: "value.temperature",
-      type: "number",
-      required: true
-    },
-    SECOND: {
-      role: "value.humidity",
-      type: "number",
-      required: false
+    name: "value.temperature",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.temperature", type: "number", required: true },
+      SECOND: { role: "value.humidity", type: "number", required: false }
     }
   },
   gate: {
-    ACTUAL: {
-      role: "value.blind",
-      type: "number",
-      required: true,
-      writeable: false
-    },
-    SET: {
-      role: "switch.gate",
-      type: "boolean",
-      required: true,
-      writeable: true
-    },
-    STOP: {
-      role: "button.stop",
-      type: "boolean",
-      required: true,
-      writeable: true
+    name: "gate",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.blind", type: "number", required: true, writeable: false },
+      SET: { role: "switch.gate", type: "boolean", required: true, writeable: true },
+      STOP: { role: "button.stop", type: "boolean", required: true, writeable: true }
     }
   },
   thermostat: {
-    ACTUAL: {
-      role: "value.temperature",
-      type: "number",
-      required: true
-    },
-    SET: {
-      role: "level.temperature",
-      type: "number",
-      required: true
-    },
-    MODE: {
-      role: "level.mode.thermostat",
-      type: "number",
-      required: true
-    },
-    BOOST: {
-      role: "switch.boost",
-      type: "boolean",
-      required: false
-    },
-    AUTOMATIC: {
-      role: "switch.mode.auto",
-      type: "boolean",
-      required: true
-    },
-    ERROR: {
-      role: "indicator.error",
-      type: "boolean",
-      required: false
-    },
-    LOWBAT: {
-      role: "indicator.maintainance.lowbat",
-      type: "boolean",
-      required: false
-    },
-    MANUAL: {
-      role: "switch.mode.manual",
-      type: "boolean",
-      required: false
-    },
-    UNREACH: {
-      role: "indicator.maintainance",
-      type: "boolean",
-      required: false
-    },
-    HUMINITY: {
-      role: "value.humidity",
-      type: "number",
-      required: false
-    },
-    MAINTAIN: {
-      role: "indicator.maintainance",
-      type: "boolean",
-      required: false
-    },
-    PARTY: {
-      role: "switch.mode.party",
-      type: "boolean",
-      required: false
-    },
-    POWER: {
-      role: "switch.power",
-      type: "boolean",
-      required: false
-    },
-    VACATION: {
-      role: "switch",
-      type: "boolean",
-      required: false
-    },
-    WINDOWOPEN: {
-      role: "switch",
-      type: "boolean",
-      required: false
-    },
-    WORKING: {
-      role: "indicator.working",
-      type: "boolean",
-      required: false
+    name: "thermostat",
+    description: "",
+    data: {
+      ACTUAL: { role: "value.temperature", type: "number", required: true },
+      SET: { role: "level.temperature", type: "number", required: true },
+      MODE: { role: "level.mode.thermostat", type: "number", required: true },
+      BOOST: { role: "switch.boost", type: "boolean", required: false },
+      AUTOMATIC: { role: "switch.mode.auto", type: "boolean", required: true },
+      ERROR: { role: "indicator.error", type: "boolean", required: false },
+      LOWBAT: { role: "indicator.maintainance.lowbat", type: "boolean", required: false },
+      MANUAL: { role: "switch.mode.manual", type: "boolean", required: false },
+      UNREACH: { role: "indicator.maintainance", type: "boolean", required: false },
+      HUMINITY: { role: "value.humidity", type: "number", required: false },
+      MAINTAIN: { role: "indicator.maintainance", type: "boolean", required: false },
+      PARTY: { role: "switch.mode.party", type: "boolean", required: false },
+      POWER: { role: "switch.power", type: "boolean", required: false },
+      VACATION: { role: "switch", type: "boolean", required: false },
+      WINDOWOPEN: { role: "switch", type: "boolean", required: false },
+      WORKING: { role: "indicator.working", type: "boolean", required: false }
     }
   }
-  //
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CustomTemplates,
   defaultConfig,
   isConfig,
-  requiredDatapoints,
+  requiredFeatureDatapoints,
   requiredScriptDataPoints
 });
 //# sourceMappingURL=config-manager-const.js.map

@@ -4,7 +4,12 @@ import type * as typePageItem from '../types/type-pageItem';
 import type * as Types from '../types/types';
 import { Color, type RGB } from '../const/Color';
 import type * as pages from '../types/pages';
-import { defaultConfig, isConfig, requiredDatapoints, requiredScriptDataPoints } from '../const/config-manager-const';
+import {
+    defaultConfig,
+    isConfig,
+    requiredFeatureDatapoints,
+    requiredScriptDataPoints,
+} from '../const/config-manager-const';
 import type { panelConfigPartial } from '../controller/panel';
 import { exhaustiveCheck } from '../types/pages';
 import type { NavigationItemConfig } from './navigation';
@@ -497,7 +502,7 @@ export class ConfigManager extends BaseClass {
                 }
                 const role = obj.common.role as ScriptConfig.roles;
                 // check if role and types are correct
-                if (!requiredDatapoints[role] && !requiredScriptDataPoints[role]) {
+                if (!requiredFeatureDatapoints[role] && !requiredScriptDataPoints[role]) {
                     throw new Error(`Channel role ${role} not supported!`);
                 }
                 if (!(await this.checkRequiredDatapoints(role, item))) {
@@ -1630,26 +1635,26 @@ export class ConfigManager extends BaseClass {
             role: ScriptConfig.roles,
             item: ScriptConfig.PageItem,
         ): Promise<boolean> => {
-            for (const dp in requiredDatapoints[role]) {
+            for (const dp in requiredFeatureDatapoints[role]) {
                 const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
 
-                if (!o && !requiredScriptDataPoints[role][dp].required) {
+                if (!o && !requiredScriptDataPoints[role].data[dp].required) {
                     continue;
                 }
                 if (
                     !o ||
-                    o.common.role !== requiredScriptDataPoints[role][dp].role ||
-                    o.common.type !== requiredScriptDataPoints[role][dp].type ||
-                    (requiredScriptDataPoints[role][dp].writeable && !o.common.write)
+                    o.common.role !== requiredScriptDataPoints[role].data[dp].role ||
+                    o.common.type !== requiredScriptDataPoints[role].data[dp].type ||
+                    (requiredScriptDataPoints[role].data[dp].writeable && !o.common.write)
                 ) {
                     if (!o) {
                         throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
                     } else {
                         throw new Error(
                             `Datapoint ${item.id}.${dp} has wrong ` +
-                                `${o.common.role !== requiredScriptDataPoints[role][dp].role ? `role: ${o.common.role} should be ${requiredScriptDataPoints[role][dp].role}` : ''} ` +
-                                `${o.common.type !== requiredScriptDataPoints[role][dp].type ? ` type: ${o.common.type} should be ${requiredScriptDataPoints[role][dp].type}` : ''}` +
-                                ` ${!(requiredScriptDataPoints[role][dp].writeable && !o.common.write) ? ' - must be writeable!' : ''} `,
+                                `${o.common.role !== requiredScriptDataPoints[role].data[dp].role ? `role: ${o.common.role} should be ${requiredScriptDataPoints[role].data[dp].role}` : ''} ` +
+                                `${o.common.type !== requiredScriptDataPoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredScriptDataPoints[role].data[dp].type}` : ''}` +
+                                ` ${!(requiredScriptDataPoints[role].data[dp].writeable && !o.common.write) ? ' - must be writeable!' : ''} `,
                         );
                     }
                 }
@@ -1657,26 +1662,26 @@ export class ConfigManager extends BaseClass {
             return true;
         };
         const _checkDataPoints = async (role: ScriptConfig.roles, item: ScriptConfig.PageItem): Promise<boolean> => {
-            for (const dp in requiredDatapoints[role]) {
+            for (const dp in requiredFeatureDatapoints[role]) {
                 const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
 
-                if (!o && !requiredDatapoints[role][dp].required) {
+                if (!o && !requiredFeatureDatapoints[role].data[dp].required) {
                     continue;
                 }
 
                 if (
                     !o ||
-                    o.common.role !== requiredDatapoints[role][dp].role ||
-                    o.common.type !== requiredDatapoints[role][dp].type
+                    o.common.role !== requiredFeatureDatapoints[role].data[dp].role ||
+                    o.common.type !== requiredFeatureDatapoints[role].data[dp].type
                 ) {
                     if (!o) {
                         throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
                     } else {
                         throw new Error(
                             `Datapoint ${item.id}.${dp} has wrong ` +
-                                `${o.common.role !== requiredDatapoints[role][dp].role ? `role: ${o.common.role} should be ${requiredDatapoints[role][dp].role}` : ''} ` +
-                                `${o.common.type !== requiredDatapoints[role][dp].type ? ` type: ${o.common.type} should be ${requiredDatapoints[role][dp].type}` : ''}` +
-                                ` ${!(requiredDatapoints[role][dp].writeable && !o.common.write) ? ' - must be writeable!' : ''} `,
+                                `${o.common.role !== requiredFeatureDatapoints[role].data[dp].role ? `role: ${o.common.role} should be ${requiredFeatureDatapoints[role].data[dp].role}` : ''} ` +
+                                `${o.common.type !== requiredFeatureDatapoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredFeatureDatapoints[role].data[dp].type}` : ''}` +
+                                ` ${!(requiredFeatureDatapoints[role].data[dp].writeable && !o.common.write) ? ' - must be writeable!' : ''} `,
                         );
                     }
                 }

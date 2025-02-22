@@ -432,7 +432,7 @@ class ConfigManager extends import_library.BaseClass {
           throw new Error(`Role missing in ${item.id}!`);
         }
         const role = obj.common.role;
-        if (!import_config_manager_const.requiredDatapoints[role] && !import_config_manager_const.requiredScriptDataPoints[role]) {
+        if (!import_config_manager_const.requiredFeatureDatapoints[role] && !import_config_manager_const.requiredScriptDataPoints[role]) {
           throw new Error(`Channel role ${role} not supported!`);
         }
         if (!await this.checkRequiredDatapoints(role, item)) {
@@ -1339,17 +1339,17 @@ class ConfigManager extends import_library.BaseClass {
    */
   async checkRequiredDatapoints(role, item, mode = "both") {
     const _checkScriptDataPoints = async (role2, item2) => {
-      for (const dp in import_config_manager_const.requiredDatapoints[role2]) {
+      for (const dp in import_config_manager_const.requiredFeatureDatapoints[role2]) {
         const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
-        if (!o && !import_config_manager_const.requiredScriptDataPoints[role2][dp].required) {
+        if (!o && !import_config_manager_const.requiredScriptDataPoints[role2].data[dp].required) {
           continue;
         }
-        if (!o || o.common.role !== import_config_manager_const.requiredScriptDataPoints[role2][dp].role || o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2][dp].type || import_config_manager_const.requiredScriptDataPoints[role2][dp].writeable && !o.common.write) {
+        if (!o || o.common.role !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role || o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type || import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write) {
           if (!o) {
             throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
           } else {
             throw new Error(
-              `Datapoint ${item2.id}.${dp} has wrong ${o.common.role !== import_config_manager_const.requiredScriptDataPoints[role2][dp].role ? `role: ${o.common.role} should be ${import_config_manager_const.requiredScriptDataPoints[role2][dp].role}` : ""} ${o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2][dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredScriptDataPoints[role2][dp].type}` : ""} ${!(import_config_manager_const.requiredScriptDataPoints[role2][dp].writeable && !o.common.write) ? " - must be writeable!" : ""} `
+              `Datapoint ${item2.id}.${dp} has wrong ${o.common.role !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role ? `role: ${o.common.role} should be ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role}` : ""} ${o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type}` : ""} ${!(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write) ? " - must be writeable!" : ""} `
             );
           }
         }
@@ -1357,17 +1357,17 @@ class ConfigManager extends import_library.BaseClass {
       return true;
     };
     const _checkDataPoints = async (role2, item2) => {
-      for (const dp in import_config_manager_const.requiredDatapoints[role2]) {
+      for (const dp in import_config_manager_const.requiredFeatureDatapoints[role2]) {
         const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
-        if (!o && !import_config_manager_const.requiredDatapoints[role2][dp].required) {
+        if (!o && !import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].required) {
           continue;
         }
-        if (!o || o.common.role !== import_config_manager_const.requiredDatapoints[role2][dp].role || o.common.type !== import_config_manager_const.requiredDatapoints[role2][dp].type) {
+        if (!o || o.common.role !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role || o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type) {
           if (!o) {
             throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
           } else {
             throw new Error(
-              `Datapoint ${item2.id}.${dp} has wrong ${o.common.role !== import_config_manager_const.requiredDatapoints[role2][dp].role ? `role: ${o.common.role} should be ${import_config_manager_const.requiredDatapoints[role2][dp].role}` : ""} ${o.common.type !== import_config_manager_const.requiredDatapoints[role2][dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredDatapoints[role2][dp].type}` : ""} ${!(import_config_manager_const.requiredDatapoints[role2][dp].writeable && !o.common.write) ? " - must be writeable!" : ""} `
+              `Datapoint ${item2.id}.${dp} has wrong ${o.common.role !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role ? `role: ${o.common.role} should be ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role}` : ""} ${o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type}` : ""} ${!(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].writeable && !o.common.write) ? " - must be writeable!" : ""} `
             );
           }
         }

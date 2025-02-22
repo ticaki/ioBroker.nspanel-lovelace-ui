@@ -45,13 +45,46 @@ async function generateAliasDocumentation() {
     let readme = "";
     for (const folder in import_config_manager_const.requiredScriptDataPoints) {
       const data = import_config_manager_const.requiredScriptDataPoints[folder];
-      readme += `## ${folder}
+      readme += `### ${folder}
 `;
       readme += header;
       table += `* [${folder}](#${folder})
 `;
-      for (const key in data) {
-        const row = data[key];
+      for (const key in data.data) {
+        const row = data.data[key];
+        readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${row.role}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
+`;
+        lastFolder = folder;
+      }
+    }
+    let first = true;
+    for (const folder in import_config_manager_const.requiredFeatureDatapoints) {
+      const data = import_config_manager_const.requiredFeatureDatapoints[folder];
+      const data2 = import_config_manager_const.requiredScriptDataPoints[folder];
+      let next = true;
+      for (const key in data.data) {
+        if (!data2.data[key] || data2.data[key].type != data.data[key].type || data2.data[key].role != data.data[key].role || !!data2.data[key].required != !!data.data[key].required || !!data2.data[key].writeable != !!data.data[key].writeable) {
+          next = false;
+          break;
+        }
+      }
+      if (next) {
+        continue;
+      }
+      if (first) {
+        table += `## Feature
+`;
+        readme += `# Feature datapoints
+`;
+      }
+      first = false;
+      readme += `### Feature: ${folder}
+`;
+      readme += header;
+      table += `* [${folder}](#feature-${folder})
+`;
+      for (const key in data.data) {
+        const row = data.data[key];
         readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${row.role}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
 `;
         lastFolder = folder;
