@@ -29,7 +29,7 @@ var import_config = require("./lib/config");
 var import_controller = require("./lib/controller/controller");
 var import_icon_mapping = require("./lib/const/icon_mapping");
 var import_definition = require("./lib/const/definition");
-var import_config_manager = require("./lib/controller/config-manager");
+var import_config_manager = require("./lib/classes/config-manager");
 var import_readme = require("./lib/tools/readme");
 class NspanelLovelaceUi extends utils.Adapter {
   library;

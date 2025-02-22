@@ -1,13 +1,13 @@
-import { BaseClass } from '../classes/library';
+import { BaseClass } from './library';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as typePageItem from '../types/type-pageItem';
 import type * as Types from '../types/types';
 import { Color, type RGB } from '../const/Color';
 import type * as pages from '../types/pages';
-import { defaultConfig, isConfig, requiredDatapoints, requiredOutdatedDataPoints } from '../const/config-manager-const';
-import type { panelConfigPartial } from './panel';
+import { defaultConfig, isConfig, requiredDatapoints, requiredScriptDataPoints } from '../const/config-manager-const';
+import type { panelConfigPartial } from '../controller/panel';
 import { exhaustiveCheck } from '../types/pages';
-import type { NavigationItemConfig } from '../classes/navigation';
+import type { NavigationItemConfig } from './navigation';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -497,7 +497,7 @@ export class ConfigManager extends BaseClass {
                 }
                 const role = obj.common.role as ScriptConfig.roles;
                 // check if role and types are correct
-                if (!requiredDatapoints[role] && !requiredOutdatedDataPoints[role]) {
+                if (!requiredDatapoints[role] && !requiredScriptDataPoints[role]) {
                     throw new Error(`Channel role ${role} not supported!`);
                 }
                 if (!(await this.checkRequiredDatapoints(role, item))) {
@@ -888,13 +888,100 @@ export class ConfigManager extends BaseClass {
                     }
                     case 'gate': {
                         /*
-                        No idea what to do with this role
                         const iconOn = 'garage-open';
                         const iconOff = 'garage';
                         const iconUnstable = '';
-                        role = 'gate';
                         const textOn = 'Opened';
-                        const textOff = 'Closed';*/
+                        const textOff = 'Closed';
+                        let checked = false;
+                        let legacy = false;
+                        if (await this.existsState(`${item.id}.ACTUAL`)) {
+                            const obj = await this.adapter.getForeignObjectAsync(`${item.id}.ACTUAL`);
+                            if (obj) {
+                                if (
+                                    obj.common &&
+                                    obj.common.role === requiredDatapoints.gate.ACTUAL.role &&
+                                    obj.common.type === requiredDatapoints.gate.ACTUAL.type
+                                ) {
+                                    legacy = true;
+                                    checked = true;
+                                } else if (
+                                    obj.common &&
+                                    obj.common.role === requiredScriptDataPoints.gate.ACTUAL.role &&
+                                    obj.common.type === requiredScriptDataPoints.gate.ACTUAL.type
+                                ) {
+                                    legacy = false;
+                                    if (
+                                        (await this.existsState(`${item.id}.SET`)) &&
+                                        (await this.existsState(`${item.id}.STOP`))
+                                    ) {
+                                        checked = true;
+                                    } else {
+                                    }
+                                }
+                            }
+
+                            const tempItem: typePageItem.PageItemDataItemsOptions = {
+                                type: 'shutter',
+                                role: 'gate',
+                                data: {
+                                    icon: {
+                                        true: {
+                                            value: {
+                                                type: 'const',
+                                                constVal: item.icon || 'window-shutter-open',
+                                            },
+                                            color: {
+                                                type: 'const',
+                                                constVal: item.onColor || Color.activated,
+                                            },
+                                        },
+                                        false: {
+                                            value: {
+                                                type: 'const',
+                                                constVal: item.icon2 || 'window-shutter',
+                                            },
+                                            color: {
+                                                type: 'const',
+                                                constVal: item.offColor || Color.deactivated,
+                                            },
+                                        },
+                                        unstable: {
+                                            value: {
+                                                type: 'const',
+                                                constVal: item.icon3 || 'window-shutter-alert',
+                                            },
+                                        },
+                                        scale: undefined,
+                                        maxBri: undefined,
+                                        minBri: undefined,
+                                    },
+                                    text: {
+                                        true: { type: 'const', constVal: 'Position' },
+                                    },
+                                    headline: item.name
+                                        ? await this.getFieldAsDataItemConfig(item.name)
+                                        : { type: 'const', constVal: commonName ?? 'Blind' },
+
+                                    entity1: {
+                                        value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                                        set: { type: 'state', dp: `${item.id}.SET` },
+                                    },
+                                    entity2: {
+                                        value: { type: 'triggered', dp: `${item.id}.TILT_ACTUAL` },
+                                        set: { type: 'state', dp: `${item.id}.TILT_SET` },
+                                    },
+                                    up: { type: 'state', dp: `${item.id}.OPEN` },
+                                    down: { type: 'state', dp: `${item.id}.CLOSE` },
+                                    stop: { type: 'state', dp: `${item.id}.STOP` },
+                                    up2: { type: 'state', dp: `${item.id}.TILT_OPEN` },
+                                    down2: { type: 'state', dp: `${item.id}.TILT_CLOSE` },
+                                    stop2: { type: 'state', dp: `${item.id}.TILT_STOP` },
+                                },
+                            };
+                            itemConfig = tempItem;
+                            break;
+                        }*/
                         break;
                     }
                     case 'motion':
@@ -1524,19 +1611,59 @@ export class ConfigManager extends BaseClass {
             pageItems: pageItems,
         };
     }
-    async checkRequiredDatapoints(role: ScriptConfig.roles, item: ScriptConfig.PageItem): Promise<boolean> {
-        for (const dp in requiredDatapoints[role]) {
-            const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
 
-            if (!o && !requiredOutdatedDataPoints[role][dp].required && !requiredDatapoints[role][dp].required) {
-                continue;
+    /**
+     * Checks if the required datapoints for a given role and item are present and valid.
+     *
+     * @param role - The role to check the datapoints for.
+     * @param item - The item to check the datapoints for.
+     * @param mode - The mode of checking, can be 'both', 'script', or 'feature'. Defaults to 'both'. 'script' and 'feature' will only check the respective datapoints.
+     * @returns A promise that resolves to true if all required datapoints are present and valid, otherwise throws an error with mode='both'. Return false if mode='feature' or 'script'.
+     * @throws Will throw an error if a required datapoint is missing or invalid and mode='both'.
+     */
+    async checkRequiredDatapoints(
+        role: ScriptConfig.roles,
+        item: ScriptConfig.PageItem,
+        mode: 'both' | 'script' | 'feature' = 'both',
+    ): Promise<boolean> {
+        const _checkScriptDataPoints = async (
+            role: ScriptConfig.roles,
+            item: ScriptConfig.PageItem,
+        ): Promise<boolean> => {
+            for (const dp in requiredDatapoints[role]) {
+                const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
+
+                if (!o && !requiredScriptDataPoints[role][dp].required) {
+                    continue;
+                }
+                if (
+                    !o ||
+                    o.common.role !== requiredScriptDataPoints[role][dp].role ||
+                    o.common.type !== requiredScriptDataPoints[role][dp].type ||
+                    (requiredScriptDataPoints[role][dp].writeable && !o.common.write)
+                ) {
+                    if (!o) {
+                        throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
+                    } else {
+                        throw new Error(
+                            `Datapoint ${item.id}.${dp} has wrong ` +
+                                `${o.common.role !== requiredScriptDataPoints[role][dp].role ? `role: ${o.common.role} should be ${requiredScriptDataPoints[role][dp].role}` : ''} ` +
+                                `${o.common.type !== requiredScriptDataPoints[role][dp].type ? ` type: ${o.common.type} should be ${requiredScriptDataPoints[role][dp].type}` : ''}` +
+                                ` ${!(requiredScriptDataPoints[role][dp].writeable && !o.common.write) ? ' - must be writeable!' : ''} `,
+                        );
+                    }
+                }
             }
-            if (
-                !o ||
-                o.common.role !== requiredOutdatedDataPoints[role][dp].role ||
-                o.common.type !== requiredOutdatedDataPoints[role][dp].type ||
-                (requiredOutdatedDataPoints[role][dp].writeable && !o.common.write)
-            ) {
+            return true;
+        };
+        const _checkDataPoints = async (role: ScriptConfig.roles, item: ScriptConfig.PageItem): Promise<boolean> => {
+            for (const dp in requiredDatapoints[role]) {
+                const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
+
+                if (!o && !requiredDatapoints[role][dp].required) {
+                    continue;
+                }
+
                 if (
                     !o ||
                     o.common.role !== requiredDatapoints[role][dp].role ||
@@ -1547,15 +1674,48 @@ export class ConfigManager extends BaseClass {
                     } else {
                         throw new Error(
                             `Datapoint ${item.id}.${dp} has wrong ` +
-                                `${o.common.role !== requiredOutdatedDataPoints[role][dp].role ? `role: ${o.common.role} should be ${requiredOutdatedDataPoints[role][dp].role}` : ''} ` +
-                                `${o.common.type !== requiredOutdatedDataPoints[role][dp].type ? ` type: ${o.common.type} should be ${requiredOutdatedDataPoints[role][dp].type}` : ''}` +
-                                ` ${!(requiredOutdatedDataPoints[role][dp].writeable && !o.common.write) ? ' - must be writeable!' : ''} `,
+                                `${o.common.role !== requiredDatapoints[role][dp].role ? `role: ${o.common.role} should be ${requiredDatapoints[role][dp].role}` : ''} ` +
+                                `${o.common.type !== requiredDatapoints[role][dp].type ? ` type: ${o.common.type} should be ${requiredDatapoints[role][dp].type}` : ''}` +
+                                ` ${!(requiredDatapoints[role][dp].writeable && !o.common.write) ? ' - must be writeable!' : ''} `,
                         );
                     }
+                }
+            }
+            return true;
+        };
+        if (mode === 'both' || mode === 'script') {
+            try {
+                if (await _checkScriptDataPoints(role, item)) {
+                    return true;
+                }
+            } catch (error: any) {
+                try {
+                    if (await _checkDataPoints(role, item)) {
+                        return true;
+                    }
+                } catch {
+                    if (mode === 'both') {
+                        throw new Error(error);
+                    } else {
+                        return false;
+                    }
+                }
+                throw new Error(error);
+            }
+        } else {
+            try {
+                if (await _checkDataPoints(role, item)) {
+                    return true;
+                }
+            } catch (error: any) {
+                if (mode === 'feature') {
+                    throw new Error(error);
+                } else {
                     return false;
                 }
             }
         }
+
         return true;
     }
     async getMrEntityData(

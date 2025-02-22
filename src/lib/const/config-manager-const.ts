@@ -131,7 +131,7 @@ export const defaultConfig: ScriptConfig.Config = {
     },
 };
 
-export const requiredOutdatedDataPoints: {
+export const requiredScriptDataPoints: {
     [key: string]: {
         [key: string]: {
             role: ScriptConfig.roles | ConfigManager.ioBrokerRoles;
@@ -629,7 +629,8 @@ export const requiredOutdatedDataPoints: {
         },
     },
     buttonSensor: {
-        ACTUAL: { //PRESS lt. Device
+        ACTUAL: {
+            //PRESS lt. Device - correct but not backward compatible
             role: 'button.press',
             type: 'boolean',
             required: true,
@@ -923,6 +924,8 @@ export const requiredDatapoints: {
             role: ScriptConfig.roles | ConfigManager.ioBrokerRoles;
             required: boolean;
             type: ioBroker.StateCommon['type'];
+            writeable?: boolean;
+            description?: string;
         };
     };
 } = {
@@ -1361,6 +1364,26 @@ export const requiredDatapoints: {
             role: 'value.humidity',
             type: 'number',
             required: false,
+        },
+    },
+    gate: {
+        ACTUAL: {
+            role: 'value.blind',
+            type: 'number',
+            required: true,
+            writeable: false,
+        },
+        SET: {
+            role: 'switch.gate',
+            type: 'boolean',
+            required: true,
+            writeable: true,
+        },
+        STOP: {
+            role: 'button.stop',
+            type: 'boolean',
+            required: true,
+            writeable: true,
         },
     },
     thermostat: {

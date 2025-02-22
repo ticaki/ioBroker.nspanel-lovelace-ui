@@ -14,7 +14,7 @@ import { testCaseConfig, Testconfig } from './lib/config';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import { genericStateObjects } from './lib/const/definition';
-import { ConfigManager } from './lib/controller/config-manager';
+import { ConfigManager } from './lib/classes/config-manager';
 import type { panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
 import type { STATUS0 } from './lib/types/types';
