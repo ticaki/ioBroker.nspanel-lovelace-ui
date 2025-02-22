@@ -66,9 +66,9 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [ ] warning
 - [ ] cie
 - [ ] gate
-- [ ] motion
+- [x] motion
 - [ ] buttonSensor
-- [ ] button
+- [x] button
 - [ ] value.time
 - [ ] level.timer
 - [ ] value.alarmtime
@@ -77,7 +77,7 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [ ] slider
 - [ ] switch.mode.wlan
 - [ ] media
-- [ ] timeTable
+- [x] timeTable
 - [ ] airCondition
 
 ### PageItems Navigation
@@ -88,19 +88,17 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [x] rgb
 - [x] rgbSingle
 - [x] ct
-- [ ] blind
+- [x] blind
 - [ ] door
 - [ ] window
 - [ ] volumeGroup
 - [ ] volume
 - [ ] info
-- [ ] humidity
-- [ ] temperature
-- [ ] value.temperature
-- [ ] value.humidity
-- [ ] sensor.door
-- [ ] sensor.window
-- [ ] thermostat
+- [x] humidity
+- [x] temperature
+- [x] value.temperature
+- [x] value.humidity
+- [x] thermostat
 - [ ] warning
 - [ ] cie
 - [ ] gate

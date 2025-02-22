@@ -8,6 +8,7 @@
             "source.organizeImports": "explicit",
         }
     },*/
+    "eslint.codeActionsOnSave.mode": "problems",
     "json.schemas": [
         {
             "fileMatch": [
