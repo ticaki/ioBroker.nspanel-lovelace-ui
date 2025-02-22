@@ -131,7 +131,7 @@ export const defaultConfig: ScriptConfig.Config = {
     },
 };
 
-export const requiredScriptDataPoints: {
+type requiredDatapoints = {
     [key: string]: {
         [key: string]: {
             role: ScriptConfig.roles | ConfigManager.ioBrokerRoles;
@@ -141,7 +141,9 @@ export const requiredScriptDataPoints: {
             description?: string;
         };
     };
-} = {
+};
+
+export const requiredScriptDataPoints: requiredDatapoints = {
     motion: {
         ACTUAL: {
             role: 'sensor.motion',
@@ -918,17 +920,7 @@ export const requiredScriptDataPoints: {
     },
 };
 
-export const requiredDatapoints: {
-    [key: string]: {
-        [key: string]: {
-            role: ScriptConfig.roles | ConfigManager.ioBrokerRoles;
-            required: boolean;
-            type: ioBroker.StateCommon['type'];
-            writeable?: boolean;
-            description?: string;
-        };
-    };
-} = {
+export const requiredDatapoints: requiredDatapoints = {
     motion: {
         ACTUAL: {
             role: 'sensor.motion',
