@@ -71,55 +71,55 @@ export const textTemplates: TemplateItems = {
         },
     },
     'text.temperature': {
-            role: '',
-            adapter: '',
-            type: 'text',
-    
-            data: {
-                icon: {
-                    true: {
-                        value: { type: 'const', constVal: 'temperature-celsius' },
-                        text: {
-                            value: {
-                                type: 'triggered',
-                                mode: 'auto',
-                                role: 'value.temperature',
-                                dp: '',
-                                read: 'return Math.round(val*10)/10',
-                            },
+        role: '',
+        adapter: '',
+        type: 'text',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'temperature-celsius' },
+                    text: {
+                        value: {
+                            type: 'triggered',
+                            mode: 'auto',
+                            role: 'value.temperature',
+                            dp: '',
+                            read: 'return Math.round(val*10)/10',
                         },
-                        color: { type: 'const', constVal: Color.Red },
                     },
-                    false: {
-                        value: { type: 'const', constVal: 'temperature-celsius' },
-                        color: { type: 'const', constVal: Color.Blue },
-                    },
-                    scale: { type: 'const', constVal: { min: 0, max: 30 } },
+                    color: { type: 'const', constVal: Color.Red },
                 },
-                entity1: {
-                    value: {
-                        type: 'triggered',
-                        mode: 'auto',
-                        role: 'value.temperature',
-                        dp: '',
-                    },
+                false: {
+                    value: { type: 'const', constVal: 'temperature-celsius' },
+                    color: { type: 'const', constVal: Color.Blue },
                 },
-                text: {
-                    true: { type: 'const', constVal: 'Temperature' },
-                    false: undefined,
-                },
-                text1: {
-                    true: {
-                        type: 'triggered',
-                        mode: 'auto',
-                        role: 'value.temperature',
-                        dp: '',
-                        read: 'return Math.round(parseFloat(val)*10)/10',
-                    },
-                    false: undefined,
+                scale: { type: 'const', constVal: { min: 0, max: 30 } },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.temperature',
+                    dp: '',
                 },
             },
+            text: {
+                true: { type: 'const', constVal: 'Temperature' },
+                false: undefined,
+            },
+            text1: {
+                true: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.temperature',
+                    dp: '',
+                    read: 'return Math.round(parseFloat(val)*10)/10',
+                },
+                false: undefined,
+            },
         },
+    },
     'text.battery': {
         /**
          * entity1 enthält den Füllstand
