@@ -147,33 +147,39 @@ export const requiredOutdatedDataPoints: {
             role: 'sensor.motion',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
     },
     cie: {
         CIE: {
             role: 'level.color.cie',
-            type: 'number',
+            type: 'string',
             required: true,
+            writeable: true,
         },
         DIMMER: {
             role: 'level.dimmer',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
         ON: {
             role: 'switch.light',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
         ON_ACTUAL: {
-            role: 'state.light',
+            role: 'sensor.light',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
         TEMPERATURE: {
             role: 'level.color.temperature',
             type: 'number',
             required: true,
+            writeable: true,
         },
     },
     dimmer: {
@@ -181,21 +187,25 @@ export const requiredOutdatedDataPoints: {
             role: 'level.dimmer',
             type: 'number',
             required: true,
+            writeable: true,
         },
         ACTUAL: {
             role: 'value.dimmer',
             type: 'number',
             required: true,
+            writeable: false,
         },
         ON_SET: {
             role: 'switch.light',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
         ON_ACTUAL: {
-            role: 'switch.light',
+            role: 'sensor.light',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
     },
     timeTable: {
@@ -203,21 +213,25 @@ export const requiredOutdatedDataPoints: {
             role: 'state',
             type: 'string',
             required: true,
+            writeable: false,
         },
         VEHICLE: {
             role: 'state',
             type: 'string',
             required: true,
+            writeable: false,
         },
         DIRECTION: {
             role: 'state',
             type: 'string',
             required: true,
+            writeable: false,
         },
         DELAY: {
             role: 'state',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
     },
     ct: {
@@ -225,16 +239,25 @@ export const requiredOutdatedDataPoints: {
             role: 'level.dimmer',
             type: 'number',
             required: true,
+            writeable: true,
         },
         ON: {
             role: 'switch.light',
             type: 'boolean',
             required: true,
+            writeable: true,
+        },
+        ON_ACTUAL: {
+            role: 'sensor.light',
+            type: 'boolean',
+            required: true,
+            writeable: false,
         },
         TEMPERATURE: {
             role: 'level.color.temperature',
             type: 'number',
             required: true,
+            writeable: true,
         },
     },
     window: {
@@ -242,6 +265,7 @@ export const requiredOutdatedDataPoints: {
             role: 'sensor.window',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
     },
     humidity: {
@@ -249,6 +273,7 @@ export const requiredOutdatedDataPoints: {
             role: 'value.humidity',
             type: 'number',
             required: true,
+            writeable: false,
         },
     },
     hue: {
@@ -256,26 +281,31 @@ export const requiredOutdatedDataPoints: {
             role: 'level.dimmer',
             type: 'number',
             required: true,
+            writeable: true,
         },
         ON: {
             role: 'switch.light',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
         ON_ACTUAL: {
-            role: 'state.light',
+            role: 'sensor.light',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
         TEMPERATURE: {
             role: 'level.color.temperature',
             type: 'number',
             required: true,
+            writeable: true,
         },
         HUE: {
             role: 'level.color.hue',
             type: 'number',
             required: false,
+            writeable: true,
         },
     },
     info: {
@@ -283,6 +313,7 @@ export const requiredOutdatedDataPoints: {
             role: 'state',
             type: 'string',
             required: true,
+            writeable: false,
         },
     },
     blind: {
@@ -290,6 +321,7 @@ export const requiredOutdatedDataPoints: {
             role: 'value.blind',
             type: 'number',
             required: true,
+            writeable: false,
         },
         SET: {
             role: 'level.blind',
@@ -301,41 +333,49 @@ export const requiredOutdatedDataPoints: {
             role: 'button.close.blind',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
         OPEN: {
             role: 'button.open.blind',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
         STOP: {
             role: 'button.stop.blind',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
         TILT_ACTUAL: {
             role: 'value.tilt',
             type: 'number',
             required: false,
+            writeable: false,
         },
         TILT_SET: {
             role: 'level.tilt',
             type: 'number',
             required: false,
+            writeable: true,
         },
         TILT_CLOSE: {
             role: 'button.close.tilt',
             type: 'boolean',
             required: false,
+            writeable: true,
         },
         TILT_OPEN: {
             role: 'button.open.tilt',
             type: 'boolean',
             required: false,
+            writeable: true,
         },
         TILT_STOP: {
             role: 'button.stop.tilt',
             type: 'boolean',
             required: false,
+            writeable: true,
         },
     },
     airCondition: {
@@ -343,6 +383,7 @@ export const requiredOutdatedDataPoints: {
             role: 'value.temperature',
             type: 'number',
             required: true,
+            writeable: false,
         },
         SET: {
             role: 'level.temperature',
@@ -360,66 +401,79 @@ export const requiredOutdatedDataPoints: {
             role: 'state',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         COOL: {
             role: 'state',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         BOOST: {
             role: 'switch.boost',
             type: 'boolean',
             required: false,
+            writeable: true,
         },
         ERROR: {
             role: 'indicator.error',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         HEAT: {
             role: 'state',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         HUMINITY: {
             role: 'value.humidity',
             type: 'number',
             required: false,
+            writeable: false,
         },
         MAINTAIN: {
             role: 'indicator.maintainance',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         MODE: {
             role: 'level.mode.aircondition',
             type: 'number',
             required: true,
+            writeable: true,
         },
         OFF: {
             role: 'state',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
         POWER: {
-            role: 'state',
+            role: 'switch.power',
             type: 'boolean',
             required: false,
+            writeable: true,
         },
         SPEED: {
             role: 'level.mode.fan',
             type: 'number',
             required: false,
+            writeable: true,
         },
         SWING: {
             role: 'switch.mode.swing',
             type: 'boolean',
             required: false,
+            writeable: true,
         },
         UNREACH: {
             role: 'indicator.maintainance',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
     },
     socket: {
@@ -427,23 +481,27 @@ export const requiredOutdatedDataPoints: {
             role: 'switch',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         SET: {
             role: 'switch',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
     },
     light: {
         ACTUAL: {
-            role: 'switch.light',
+            role: 'sensor.light',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         SET: {
             role: 'switch.light',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
     },
     volume: {
@@ -451,16 +509,19 @@ export const requiredOutdatedDataPoints: {
             role: 'value.volume',
             type: 'number',
             required: true,
+            writeable: false,
         },
         SET: {
             role: 'level.volume',
             type: 'number',
             required: true,
+            writeable: true,
         },
         MUTE: {
             role: 'media.mute',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
     },
     rgb: {
@@ -468,68 +529,81 @@ export const requiredOutdatedDataPoints: {
             role: 'level.color.red',
             type: 'number',
             required: true,
+            writeable: true,
         },
         GREEN: {
             role: 'level.color.green',
             type: 'number',
             required: true,
+            writeable: true,
         },
         BLUE: {
             role: 'level.color.blue',
             type: 'number',
             required: true,
+            writeable: true,
         },
         ON_ACTUAL: {
-            role: 'state.light',
+            role: 'sensor.light',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
         ON: {
             role: 'switch.light',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
         DIMMER: {
             role: 'level.dimmer',
             type: 'number',
             required: true,
+            writeable: true,
         },
         TEMPERATURE: {
             role: 'level.color.temperature',
             type: 'number',
             required: true,
+            writeable: true,
         },
         WHITE: {
             role: 'level.color.white',
             type: 'number',
             required: false,
+            writeable: true,
         },
     },
     rbgSingle: {
         RGB: {
             role: 'level.color.rgb',
-            type: 'number',
+            type: 'string',
             required: true,
+            writeable: true,
         },
         ON: {
             role: 'switch.light',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
         DIMMER: {
             role: 'level.dimmer',
             type: 'number',
             required: true,
+            writeable: true,
         },
         TEMPERATURE: {
             role: 'level.color.temperature',
             type: 'number',
             required: true,
+            writeable: true,
         },
         ON_ACTUAL: {
-            role: 'state.light',
+            role: 'sensor.light',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
     },
     slider: {
@@ -537,11 +611,13 @@ export const requiredOutdatedDataPoints: {
             role: 'level',
             type: 'number',
             required: true,
+            writeable: true,
         },
         ACTUAL: {
             role: 'value',
             type: 'number',
             required: true,
+            writeable: false,
         },
     },
     button: {
@@ -549,13 +625,15 @@ export const requiredOutdatedDataPoints: {
             role: 'button',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
     },
     buttonSensor: {
-        ACTUAL: {
-            role: 'state',
+        ACTUAL: { //PRESS lt. Device
+            role: 'button.press',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
     },
     temperature: {
@@ -563,11 +641,13 @@ export const requiredOutdatedDataPoints: {
             role: 'value.temperature',
             type: 'number',
             required: true,
+            writeable: false,
         },
         SECOND: {
             role: 'value.humidity',
             type: 'number',
             required: false,
+            writeable: false,
         },
     },
     'value.temperature': {
@@ -575,11 +655,13 @@ export const requiredOutdatedDataPoints: {
             role: 'value.temperature',
             type: 'number',
             required: true,
+            writeable: false,
         },
         SECOND: {
             role: 'value.humidity',
             type: 'number',
             required: false,
+            writeable: false,
         },
     },
     thermostat: {
@@ -587,16 +669,19 @@ export const requiredOutdatedDataPoints: {
             role: 'value.temperature',
             type: 'number',
             required: true,
+            writeable: false,
         },
         SET: {
             role: 'level.temperature',
             type: 'number',
             required: true,
+            writeable: true,
         },
         MODE: {
             role: 'level.mode.thermostat',
             type: 'number',
             required: true,
+            writeable: true,
         },
         BOOST: {
             role: 'state',
@@ -612,11 +697,13 @@ export const requiredOutdatedDataPoints: {
             role: 'indicator.error',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         LOWBAT: {
             role: 'indicator.maintainance',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         MANUAL: {
             role: 'state',
@@ -627,16 +714,19 @@ export const requiredOutdatedDataPoints: {
             role: 'indicator.maintainance',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         HUMINITY: {
             role: 'value.humidity',
             type: 'number',
             required: false,
+            writeable: false,
         },
         MAINTAIN: {
             role: 'indicator.maintainance',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         PARTY: {
             role: 'state',
@@ -644,9 +734,10 @@ export const requiredOutdatedDataPoints: {
             required: false,
         },
         POWER: {
-            role: 'state',
+            role: 'switch.power',
             type: 'boolean',
             required: false,
+            writeable: true,
         },
         VACATION: {
             role: 'state',
@@ -657,11 +748,13 @@ export const requiredOutdatedDataPoints: {
             role: 'state',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
         WORKING: {
             role: 'state',
             type: 'boolean',
             required: false,
+            writeable: false,
         },
     },
     // hier gehts weiter
@@ -670,35 +763,62 @@ export const requiredOutdatedDataPoints: {
             role: 'timestamp',
             type: 'number',
             required: true,
+            writeable: false,
         },
-        SET: {
+        STATE: {
             role: 'state',
             type: 'string',
             required: true,
         },
     },
     gate: {
+        /* Aktuell lt.Script nur ACTUAL 
+        Im Device:
         ACTUAL: {
-            role: 'switch.gate',
-            type: 'boolean',
+            role: 'value.blind',
+            type: 'number',
             required: true,
+            writeable: false,
         },
-        SET: {
+        /*SET: {
             role: 'switch.gate',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
         STOP: {
             role: 'button.stop',
             type: 'boolean',
             required: true,
+            writeable: true,
+        }
+        
+        */
+        ACTUAL: {
+            role: 'switch.gate',
+            type: 'boolean',
+            required: true,
+            writeable: false,
         },
+        /*SET: {
+            role: 'switch.gate',
+            type: 'boolean',
+            required: true,
+            writeable: true,
+        },
+        STOP: {
+            role: 'button.stop',
+            type: 'boolean',
+            required: true,
+            writeable: true,
+        },*/
     },
     door: {
         ACTUAL: {
             role: 'sensor.door',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
     },
     'level.mode.fan': {
@@ -706,21 +826,25 @@ export const requiredOutdatedDataPoints: {
             role: 'state',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
         MODE: {
             role: 'state',
             type: 'number',
             required: true,
+            writeable: true,
         },
         SET: {
             role: 'state',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
         SPEED: {
             role: 'state',
             type: 'number',
             required: true,
+            writeable: true,
         },
     },
     lock: {
@@ -728,16 +852,19 @@ export const requiredOutdatedDataPoints: {
             role: 'state',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
         OPEN: {
-            role: 'button',
+            role: 'state',
             type: 'boolean',
             required: true,
+            writeable: false,
         },
         SET: {
             role: 'switch.lock',
             type: 'boolean',
             required: true,
+            writeable: true,
         },
     },
     warning: {
@@ -745,16 +872,19 @@ export const requiredOutdatedDataPoints: {
             role: 'weather.title',
             type: 'string',
             required: true,
+            writeable: false,
         },
         LEVEL: {
             role: 'value.warning',
             type: 'number',
             required: true,
+            writeable: false,
         },
         TITLE: {
             role: 'weather.title.short',
             type: 'string',
             required: true,
+            writeable: false,
         },
     },
     weatherforecast: {
@@ -762,11 +892,13 @@ export const requiredOutdatedDataPoints: {
             role: 'weather.icon.forecast',
             type: 'string',
             required: true,
+            writeable: false,
         },
         TEMP: {
             role: 'value.temperature',
             type: 'number',
             required: true,
+            writeable: false,
         },
     },
     WIFI: {
@@ -774,6 +906,13 @@ export const requiredOutdatedDataPoints: {
             role: 'state',
             type: 'string',
             required: true,
+            writeable: false,
+        },
+        SWITCH: {
+            role: 'switch',
+            type: 'boolean',
+            required: false,
+            writeable: true,
         },
     },
 };
@@ -811,7 +950,7 @@ export const requiredDatapoints: {
             required: true,
         },
         ON_ACTUAL: {
-            role: 'state.light',
+            role: 'sensor.light',
             type: 'boolean',
             required: true,
         },
@@ -838,7 +977,7 @@ export const requiredDatapoints: {
             required: true,
         },
         ON_ACTUAL: {
-            role: 'switch.light',
+            role: 'sensor.light',
             type: 'boolean',
             required: true,
         },
@@ -873,6 +1012,11 @@ export const requiredDatapoints: {
         },
         ON: {
             role: 'switch.light',
+            type: 'boolean',
+            required: true,
+        },
+        ON_ACTUAL: {
+            role: 'sensor.light',
             type: 'boolean',
             required: true,
         },
