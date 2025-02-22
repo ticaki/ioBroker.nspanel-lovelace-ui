@@ -135,6 +135,9 @@ const stateRoleArray = arrayOfAllStateRole([
   "date.sunrise.forecast.1",
   "date.sunset.forecast.1",
   "value.humidity",
+  "switch.gate",
+  "sensor.door",
+  "value.blind",
   ""
 ]);
 function isStateRole(F) {

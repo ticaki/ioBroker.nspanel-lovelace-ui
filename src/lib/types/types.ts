@@ -20,6 +20,8 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'text.door.isOpen'
+    | 'text.gate.isOpen'
     | 'generic.shutter'
     | 'shutter.shelly.2PM'
     | 'light.shelly.rgbw2'

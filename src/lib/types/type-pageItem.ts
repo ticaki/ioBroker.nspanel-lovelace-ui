@@ -169,6 +169,7 @@ export type PageItemDataItemsOptions =
           template: Types.TemplateIdent;
           dpInit?: string | RegExp;
           appendix?: string;
+          color?: { true?: RGB; false?: RGB };
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &
               pages.ChangeDeepPartial<

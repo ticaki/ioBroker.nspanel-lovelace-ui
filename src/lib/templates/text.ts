@@ -1003,4 +1003,70 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.door.isOpen': {
+        role: 'text',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'door-open' },
+                    color: { type: 'const', constVal: Color.open },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'door-closed' },
+                    color: { type: 'const', constVal: Color.close },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: ['sensor.door', 'sensor.open'],
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'door' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'opened' },
+                false: { type: 'const', constVal: 'closed' },
+            },
+        },
+    },
+    'text.gate.isOpen': {
+        role: 'text',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'garage-open' },
+                    color: { type: 'const', constVal: Color.open },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'garage' },
+                    color: { type: 'const', constVal: Color.close },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: ['sensor.door', 'switch.gate', 'sensor.open'],
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'door' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'opened' },
+                false: { type: 'const', constVal: 'closed' },
+            },
+        },
+    },
 };

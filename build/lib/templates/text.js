@@ -1015,6 +1015,72 @@ const textTemplates = {
         false: void 0
       }
     }
+  },
+  "text.door.isOpen": {
+    role: "text",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "door-open" },
+          color: { type: "const", constVal: import_Color.Color.open }
+        },
+        false: {
+          value: { type: "const", constVal: "door-closed" },
+          color: { type: "const", constVal: import_Color.Color.close }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: ["sensor.door", "sensor.open"],
+          dp: ""
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "door" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "opened" },
+        false: { type: "const", constVal: "closed" }
+      }
+    }
+  },
+  "text.gate.isOpen": {
+    role: "text",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "garage-open" },
+          color: { type: "const", constVal: import_Color.Color.open }
+        },
+        false: {
+          value: { type: "const", constVal: "garage" },
+          color: { type: "const", constVal: import_Color.Color.close }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: ["sensor.door", "switch.gate", "sensor.open"],
+          dp: ""
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "door" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "opened" },
+        false: { type: "const", constVal: "closed" }
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

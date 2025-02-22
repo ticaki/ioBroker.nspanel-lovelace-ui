@@ -65,7 +65,7 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [x] thermostat
 - [ ] warning
 - [ ] cie
-- [ ] gate
+- [x] gate
 - [x] motion
 - [ ] buttonSensor
 - [x] button
@@ -89,8 +89,8 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [x] rgbSingle
 - [x] ct
 - [x] blind
-- [ ] door
-- [ ] window
+- [x] door
+- [x] window
 - [ ] volumeGroup
 - [ ] volume
 - [ ] info
@@ -101,7 +101,7 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [x] thermostat
 - [ ] warning
 - [ ] cie
-- [ ] gate
+- [x] gate
 - [ ] motion
 - [ ] buttonSensor
 - [ ] button

@@ -276,7 +276,7 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 color: {
                   type: "const",
-                  constVal: item.onColor || import_Color.Color.activated
+                  constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
                 }
               },
               false: {
@@ -286,7 +286,7 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 color: {
                   type: "const",
-                  constVal: item.offColor || import_Color.Color.deactivated
+                  constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
                 }
               },
               scale: void 0,
@@ -294,7 +294,7 @@ class ConfigManager extends import_library.BaseClass {
               minBri: void 0
             },
             text: {
-              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : void 0
+              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
             },
             text1: {
               true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
@@ -325,7 +325,7 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 color: {
                   type: "const",
-                  constVal: item.onColor || import_Color.Color.activated
+                  constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
                 }
               },
               false: {
@@ -335,7 +335,7 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 color: {
                   type: "const",
-                  constVal: item.offColor || import_Color.Color.deactivated
+                  constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
                 }
               },
               scale: void 0,
@@ -343,7 +343,7 @@ class ConfigManager extends import_library.BaseClass {
               minBri: void 0
             },
             text: {
-              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : void 0
+              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
             },
             text1: {
               true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
@@ -364,8 +364,18 @@ class ConfigManager extends import_library.BaseClass {
             type: "button",
             dpInit: item.id,
             role: specialRole,
+            color: {
+              true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
+              false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+            },
             template: "button.humidity",
             data: {
+              text: {
+                true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
+              },
+              text1: {
+                true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+              },
               setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
             }
           };
@@ -381,21 +391,122 @@ class ConfigManager extends import_library.BaseClass {
           dpInit: item.id,
           role: specialRole,
           template: "button.temperature",
+          color: {
+            true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
+            false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+          },
           data: {
+            text: {
+              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
+            },
+            text1: {
+              true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+            },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
         };
         break;
       }
-      case "blind":
-      case "door":
-      case "window":
+      case "gate": {
+        if (await this.checkRequiredDatapoints("gate", item, "feature")) {
+          itemConfig = {
+            template: "text.gate.isOpen",
+            dpInit: item.id,
+            type: "button",
+            color: {
+              true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
+              false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+            },
+            data: {
+              text: {
+                true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
+              },
+              text1: {
+                true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+              },
+              entity1: {
+                value: {
+                  type: "triggered",
+                  mode: "auto",
+                  role: "value.blind",
+                  read: "return val >= 1",
+                  forceType: "boolean",
+                  dp: ""
+                }
+              },
+              setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+            }
+          };
+        } else {
+          itemConfig = {
+            template: "text.gate.isOpen",
+            dpInit: item.id,
+            type: "button",
+            color: {
+              true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
+              false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+            },
+            data: {
+              text: {
+                true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
+              },
+              text1: {
+                true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+              },
+              setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+            }
+          };
+        }
+        break;
+      }
+      case "door": {
+        itemConfig = {
+          template: "text.door.isOpen",
+          dpInit: item.id,
+          type: "button",
+          color: {
+            true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
+            false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+          },
+          data: {
+            text: {
+              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
+            },
+            text1: {
+              true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+            },
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
+      case "window": {
+        itemConfig = {
+          template: "text.window.isOpen",
+          dpInit: item.id,
+          type: "button",
+          color: {
+            true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
+            false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+          },
+          data: {
+            text: {
+              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
+            },
+            text1: {
+              true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+            },
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
       case "volumeGroup":
       case "volume":
       case "info":
       case "warning":
       case "cie":
-      case "gate":
+      case "blind":
       case "motion":
       case "buttonSensor":
       case "value.time":
@@ -408,14 +519,13 @@ class ConfigManager extends import_library.BaseClass {
       case "media":
       case "timeTable":
       case "airCondition": {
-        throw new Error(`Navigation for ${role} not implemented yet!!`);
+        throw new Error(`DP: ${item.id} - Navigation for channel: ${role} not implemented yet!!`);
       }
       default:
         (0, import_pages.exhaustiveCheck)(role);
-        throw new Error(`Role ${role} not implemented yet!!!`);
+        throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
     }
     return itemConfig;
-    return void 0;
   }
   async getPageItemConfig(item, page) {
     let itemConfig = void 0;
@@ -461,7 +571,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: {
                       type: "const",
-                      constVal: item.onColor || import_Color.Color.activated
+                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
                     }
                   },
                   false: {
@@ -471,7 +581,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: {
                       type: "const",
-                      constVal: item.offColor || import_Color.Color.deactivated
+                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
                     }
                   },
                   scale: void 0,
@@ -502,7 +612,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: {
                       type: "const",
-                      constVal: item.onColor || import_Color.Color.activated
+                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
                     }
                   },
                   false: {
@@ -512,7 +622,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: {
                       type: "const",
-                      constVal: item.offColor || import_Color.Color.deactivated
+                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
                     }
                   },
                   scale: void 0,
@@ -558,7 +668,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: {
                       type: "const",
-                      constVal: item.onColor || import_Color.Color.activated
+                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
                     }
                   },
                   false: {
@@ -568,7 +678,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: {
                       type: "const",
-                      constVal: item.offColor || import_Color.Color.deactivated
+                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
                     }
                   },
                   scale: void 0,
@@ -655,7 +765,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: {
                       type: "const",
-                      constVal: item.onColor || import_Color.Color.activated
+                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
                     }
                   },
                   false: {
@@ -665,7 +775,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: {
                       type: "const",
-                      constVal: item.offColor || import_Color.Color.deactivated
+                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
                     }
                   },
                   scale: void 0,
@@ -700,7 +810,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: {
                       type: "const",
-                      constVal: item.onColor || import_Color.Color.activated
+                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
                     }
                   },
                   false: {
@@ -710,7 +820,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: {
                       type: "const",
-                      constVal: item.offColor || import_Color.Color.deactivated
+                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
                     }
                   },
                   unstable: {
@@ -747,6 +857,66 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "gate": {
+            if (await this.checkRequiredDatapoints("gate", item, "feature")) {
+              itemConfig = {
+                type: "shutter",
+                role: "gate",
+                data: {
+                  icon: {
+                    true: {
+                      value: {
+                        type: "const",
+                        constVal: item.icon || "garage-open"
+                      },
+                      color: {
+                        type: "const",
+                        constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
+                      }
+                    },
+                    false: {
+                      value: {
+                        type: "const",
+                        constVal: item.icon2 || "garage"
+                      },
+                      color: {
+                        type: "const",
+                        constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+                      }
+                    },
+                    unstable: {
+                      value: {
+                        type: "const",
+                        constVal: item.icon3 || "garage-alert"
+                      }
+                    },
+                    scale: void 0,
+                    maxBri: void 0,
+                    minBri: void 0
+                  },
+                  text: {
+                    true: { type: "const", constVal: "Position" }
+                  },
+                  headline: item.name ? await this.getFieldAsDataItemConfig(item.name) : { type: "const", constVal: commonName != null ? commonName : "Garage" },
+                  entity1: {
+                    value: { type: "triggered", dp: `${item.id}.ACTUAL` }
+                  },
+                  entity2: void 0,
+                  up: { type: "state", dp: `${item.id}.SET`, write: "return true;" },
+                  down: { type: "state", dp: `${item.id}.SET`, write: "return false;" },
+                  stop: { type: "state", dp: `${item.id}.STOP` }
+                }
+              };
+              break;
+            } else {
+              itemConfig = {
+                template: "text.gate.isOpen",
+                dpInit: item.id,
+                color: {
+                  true: this.colorOn,
+                  false: this.colorOff
+                }
+              };
+            }
             break;
           }
           case "motion":
@@ -828,7 +998,7 @@ class ConfigManager extends import_library.BaseClass {
                     value: await this.getFieldAsDataItemConfig(item.icon || iconOn),
                     color: {
                       type: "const",
-                      constVal: item.onColor ? await this.getFieldAsDataItemConfig(item.onColor) : import_Color.Color.activated
+                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
                     },
                     text: {
                       value: { type: "state", dp: `${item.id}.ACTUAL` },
@@ -839,7 +1009,7 @@ class ConfigManager extends import_library.BaseClass {
                     value: await this.getFieldAsDataItemConfig(item.icon2 || iconOff),
                     color: {
                       type: "const",
-                      constVal: item.offColor ? await this.getFieldAsDataItemConfig(item.offColor) : import_Color.Color.deactivated
+                      constVal: item.offColor ? await this.getFieldAsDataItemConfig(item.offColor) : this.colorOff
                     },
                     text: {
                       value: { type: "state", dp: `${item.id}.ACTUAL` },
@@ -866,7 +1036,9 @@ class ConfigManager extends import_library.BaseClass {
                 entity2: role === "temperature" || role === "value.temperature" || role === "humidity" || role === "value.humidity" ? {
                   value: { type: "state", dp: `${item.id}.ACTUAL` },
                   unit: commonUnit ? { type: "const", constVal: commonUnit } : void 0
-                } : void 0
+                } : {
+                  value: { type: "state", dp: `${item.id}.ACTUAL` }
+                }
               }
             };
             itemConfig = tempItem;
@@ -888,12 +1060,12 @@ class ConfigManager extends import_library.BaseClass {
           case "switch.mode.wlan":
           case "media":
           case "airCondition": {
-            throw new Error(`Role ${role} not implemented yet!!`);
+            throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
             break;
           }
           default:
             (0, import_pages.exhaustiveCheck)(role);
-            throw new Error(`Role ${role} not implemented yet!!!`);
+            throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
         }
         return itemConfig;
       }
@@ -1339,7 +1511,7 @@ class ConfigManager extends import_library.BaseClass {
    */
   async checkRequiredDatapoints(role, item, mode = "both") {
     const _checkScriptDataPoints = async (role2, item2) => {
-      for (const dp in import_config_manager_const.requiredFeatureDatapoints[role2]) {
+      for (const dp in (import_config_manager_const.requiredFeatureDatapoints[role2] || {}).data) {
         const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
         if (!o && !import_config_manager_const.requiredScriptDataPoints[role2].data[dp].required) {
           continue;
@@ -1357,7 +1529,7 @@ class ConfigManager extends import_library.BaseClass {
       return true;
     };
     const _checkDataPoints = async (role2, item2) => {
-      for (const dp in import_config_manager_const.requiredFeatureDatapoints[role2]) {
+      for (const dp in (import_config_manager_const.requiredFeatureDatapoints[role2] || {}).data) {
         const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
         if (!o && !import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].required) {
           continue;

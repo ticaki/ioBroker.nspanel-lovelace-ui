@@ -135,13 +135,19 @@ export class Page extends BaseClassPage {
 
             const newTemplate = structuredClone(template) as Partial<PageItemOptionsTemplate>;
             delete newTemplate.adapter;
-            if (options.type && options.type !== template.type) {
+            if (
+                options.type &&
+                options.type !== template.type &&
+                !(options.type == 'button' && template.type == 'text')
+            ) {
                 // eslint-disable-next-line @typescript-eslint/no-base-to-string
                 this.log.error(`Type: ${String(options.type)}is not equal with ${template.type}`);
                 return undefined;
             }
-            options.type = template.type;
-            options.role = template.role;
+            const colorTrue = (options.color || {}).true;
+            const colorFalse = (options.color || {}).false;
+            options.type = options.type || template.type;
+            options.role = options.role || template.role;
             if (options.appendix) {
                 this.log.debug('c');
             }
@@ -157,6 +163,14 @@ export class Page extends BaseClassPage {
                     options = o;
                 } else {
                     this.log.warn(`Dont get a template from ${template.template} for ${name}`);
+                }
+            }
+            if (options.data && options.data.icon) {
+                if (colorTrue && options.data.icon.true && options.data.icon.true.color) {
+                    options.data.icon.true.color = { type: 'const', constVal: colorTrue };
+                }
+                if (colorFalse && options.data.icon.false && options.data.icon.false.color) {
+                    options.data.icon.false.color = { type: 'const', constVal: colorFalse };
                 }
             }
         }
