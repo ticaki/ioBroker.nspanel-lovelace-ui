@@ -61,9 +61,12 @@ async function generateAliasDocumentation() {
     for (const folder in import_config_manager_const.requiredFeatureDatapoints) {
       const data = import_config_manager_const.requiredFeatureDatapoints[folder];
       const data2 = import_config_manager_const.requiredScriptDataPoints[folder];
+      if (!data2) {
+        console.log(`Feature ${folder} not found in requiredScriptDataPoints`);
+      }
       let next = true;
       for (const key in data.data) {
-        if (!data2.data[key] || data2.data[key].type != data.data[key].type || data2.data[key].role != data.data[key].role || !!data2.data[key].required != !!data.data[key].required || !!data2.data[key].writeable != !!data.data[key].writeable) {
+        if (!data2 || !data2.data[key] || data2.data[key].type != data.data[key].type || data2.data[key].role != data.data[key].role || !!data2.data[key].required != !!data.data[key].required || !!data2.data[key].writeable != !!data.data[key].writeable) {
           next = false;
           break;
         }

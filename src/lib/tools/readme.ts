@@ -26,9 +26,14 @@ export async function generateAliasDocumentation(): Promise<void> {
         for (const folder in requiredFeatureDatapoints) {
             const data = requiredFeatureDatapoints[folder];
             const data2 = requiredScriptDataPoints[folder];
+            if (!data2) {
+                console.log(`Feature ${folder} not found in requiredScriptDataPoints`);
+            }
+
             let next = true;
             for (const key in data.data) {
                 if (
+                    !data2 ||
                     !data2.data[key] ||
                     data2.data[key].type != data.data[key].type ||
                     data2.data[key].role != data.data[key].role ||
