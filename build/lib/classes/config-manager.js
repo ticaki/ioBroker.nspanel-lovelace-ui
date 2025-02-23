@@ -34,6 +34,24 @@ class ConfigManager extends import_library.BaseClass {
   constructor(adapter) {
     super(adapter, "config-manager");
   }
+  /**
+   * Sets the script configuration for the panel.
+   *
+   * @param configuration - The configuration object to set.
+   * @returns - A promise that resolves to an array of messages indicating the result of the operation.
+   *
+   * This method performs the following steps:
+   * 1. Merges the provided configuration with the default configuration.
+   * 2. Validates the configuration.
+   * 3. Checks if the script version meets the required version.
+   * 4. Configures the panel settings including topic, name, and colors.
+   * 5. Configures the screensaver and pages.
+   * 6. Sets up navigation for the panel.
+   * 7. Ensures unique page names and handles duplicates.
+   * 8. Updates the adapter's foreign object with the new configuration.
+   *
+   * If any errors occur during the process, they are logged and included in the returned messages...
+   */
   async setScriptConfig(configuration) {
     const config = Object.assign(import_config_manager_const.defaultConfig, configuration);
     if (!config || !(0, import_config_manager_const.isConfig)(config)) {
@@ -98,6 +116,14 @@ class ConfigManager extends import_library.BaseClass {
           page: uniqueID
         });
       }
+      const nav = panelConfig.navigation;
+      if (nav && nav.length > 0) {
+        const index = nav.findIndex((item) => item.name === "main");
+        if (index !== -1) {
+          const item = nav.splice(index, 1)[0];
+          nav.unshift(item);
+        }
+      }
       if (panelConfig.navigation.length > 1) {
         panelConfig.navigation = panelConfig.navigation.map((item, index, array) => {
           if (index === 0) {
@@ -115,6 +141,7 @@ class ConfigManager extends import_library.BaseClass {
             right: { single: array[index + 1].name }
           };
         });
+        panelConfig.navigation[panelConfig.navigation.length - 1].right = { single: "///service" };
       }
     }
     const names = [];
@@ -185,7 +212,7 @@ class ConfigManager extends import_library.BaseClass {
           const navItem = {
             name: page.uniqueName,
             left: left ? { single: left } : void 0,
-            right: right ? { single: right } : void 0,
+            right: right ? page.home ? { single: right } : { double: right } : void 0,
             page: page.uniqueName
           };
           panelConfig.navigation.push(navItem);
@@ -203,6 +230,9 @@ class ConfigManager extends import_library.BaseClass {
           },
           pageItems: []
         };
+        if (gridItem.config.card === "cardGrid" || gridItem.config.card === "cardGrid2" || gridItem.config.card === "cardGrid3" || gridItem.config.card === "cardEntities") {
+          gridItem.config.scrollType = "page";
+        }
         if (page.type === "cardThermo") {
           ({ gridItem, messages } = await this.getPageThermo(page, gridItem, messages));
         }
@@ -282,14 +312,14 @@ class ConfigManager extends import_library.BaseClass {
               true: {
                 value: {
                   type: "const",
-                  constVal: item.icon || role === "socket" ? "power-socket-de" : "lightbulb"
+                  constVal: item.icon || (role === "socket" ? "power-socket-de" : "lightbulb")
                 },
                 color: await this.getIconColor(item.onColor, this.colorOn)
               },
               false: {
                 value: {
                   type: "const",
-                  constVal: item.icon2 || role === "socket" ? "power-socket-de" : "lightbulb-outline"
+                  constVal: item.icon2 || item.icon || (role === "socket" ? "power-socket-de" : "lightbulb-outline")
                 },
                 color: await this.getIconColor(item.offColor, this.colorOff)
               },
@@ -299,7 +329,8 @@ class ConfigManager extends import_library.BaseClass {
             },
             text: defaultNav.data.text,
             text1: {
-              true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+              true: { type: "const", constVal: "on" },
+              false: { type: "const", constVal: "off" }
             },
             entity1: {
               value: {
@@ -330,7 +361,7 @@ class ConfigManager extends import_library.BaseClass {
               false: {
                 value: {
                   type: "const",
-                  constVal: item.icon2 || "gesture-tap-button"
+                  constVal: item.icon2 || item.icon || "gesture-tap-button"
                 },
                 color: await this.getIconColor(item.offColor, this.colorOff)
               },
@@ -389,9 +420,6 @@ class ConfigManager extends import_library.BaseClass {
           },
           data: {
             text: defaultNav.data.text,
-            text1: {
-              true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
-            },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
         };

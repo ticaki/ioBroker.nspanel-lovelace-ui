@@ -49,6 +49,11 @@
                             "disabled": "_changed"
                         }
                     ]
+                },
+                "pw1": {
+                    "type": "password",
+                    "label": "Pin",
+                    "newLine": true
                 }
             }
         },
@@ -111,11 +116,6 @@
                 "Testconfig2": {
                     "type": "jsonEditor",
                     "label": "Testconfig2"
-                },
-                "pw1": {
-                    "type": "password",
-                    "label": "Pin",
-                    "newLine": true
                 },
                 "logUnknownTokens": {
                     "type": "checkbox",
