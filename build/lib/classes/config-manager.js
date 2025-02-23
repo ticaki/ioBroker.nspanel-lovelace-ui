@@ -247,6 +247,7 @@ class ConfigManager extends import_library.BaseClass {
     let itemConfig = void 0;
     const obj = item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
     const role = obj && obj.common.role ? obj.common.role : void 0;
+    const commonName = obj && obj.common ? typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()] : void 0;
     if (obj && (!obj.common || !obj.common.role)) {
       throw new Error(`Role missing in ${item.id}!`);
     }
@@ -259,8 +260,8 @@ class ConfigManager extends import_library.BaseClass {
       type: "button",
       data: {
         text: {
-          true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item.id}.BUTTONTEXT` } : { type: "triggered", dp: `${item.id}.ACTUAL` },
-          false: item.buttonTextOff ? await this.getFieldAsDataItemConfig(item.buttonTextOff) : await this.existsState(`${item.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item.id}.BUTTONTEXTOFF` } : item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item.id}.BUTTONTEXT` } : { type: "triggered", dp: `${item.id}.ACTUAL` }
+          true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item.id}.BUTTONTEXT` } : commonName ? { type: "const", constVal: commonName } : { type: "triggered", dp: `${item.id}.ACTUAL` },
+          false: item.buttonTextOff ? await this.getFieldAsDataItemConfig(item.buttonTextOff) : await this.existsState(`${item.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item.id}.BUTTONTEXTOFF` } : item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item.id}.BUTTONTEXT` } : void 0
         }
       }
     };

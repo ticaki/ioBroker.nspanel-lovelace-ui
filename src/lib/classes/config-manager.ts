@@ -293,12 +293,12 @@ export class ConfigManager extends BaseClass {
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
         const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
         const role = obj && obj.common.role ? (obj.common.role as ScriptConfig.roles) : undefined;
-        /*const commonName =
+        const commonName =
             obj && obj.common
                 ? typeof obj.common.name === 'string'
                     ? obj.common.name
                     : obj.common.name[this.library.getLocalLanguage()]
-                : undefined;*/
+                : undefined;
 
         if (obj && (!obj.common || !obj.common.role)) {
             throw new Error(`Role missing in ${item.id}!`);
@@ -319,7 +319,9 @@ export class ConfigManager extends BaseClass {
                         ? await this.getFieldAsDataItemConfig(item.buttonText)
                         : (await this.existsState(`${item.id}.BUTTONTEXT`))
                           ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                          : { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                          : commonName
+                            ? { type: 'const', constVal: commonName }
+                            : { type: 'triggered', dp: `${item.id}.ACTUAL` },
                     false: item.buttonTextOff
                         ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
                         : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
@@ -328,7 +330,7 @@ export class ConfigManager extends BaseClass {
                             ? await this.getFieldAsDataItemConfig(item.buttonText)
                             : (await this.existsState(`${item.id}.BUTTONTEXT`))
                               ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                              : { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                              : undefined,
                 },
             },
         };
