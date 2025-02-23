@@ -151,10 +151,11 @@ type requiredDatapoints = {
 export const requiredScriptDataPoints: requiredDatapoints = {
     motion: {
         name: 'motion',
-        description: '',
+        description: 'Status des Bewegungssensors bzw Präsenzmelders (Bewegung oder Anwesenheit erkannt)',
         data: { ACTUAL: { role: 'sensor.motion', type: 'boolean', required: true, writeable: false } },
     },
-    cie: {
+    //läuft im Script mit unter RGBsingle, muss nochmal geprüft werden ob sinnvoll
+    /* cie: {
         name: 'cie',
         description: '',
         data: {
@@ -164,20 +165,21 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true, writeable: false },
             TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true, writeable: true },
         },
-    },
+    }, */
     dimmer: {
         name: 'dimmer',
-        description: '',
+        description: 'Licht ein- / ausschalten und dimmen',
         data: {
             SET: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
             ACTUAL: { role: 'value.dimmer', type: 'number', required: true, writeable: false },
             ON_SET: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
             ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true, writeable: false },
+            VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
     timeTable: {
         name: 'timeTable',
-        description: '',
+        description: 'Für die Anzeige der Abfahrtstafel / Route des Fahrplanadapters',
         data: {
             ACTUAL: { role: 'state', type: 'string', required: true, writeable: false },
             VEHICLE: { role: 'state', type: 'string', required: true, writeable: false },
@@ -187,18 +189,23 @@ export const requiredScriptDataPoints: requiredDatapoints = {
     },
     ct: {
         name: 'ct',
-        description: '',
+        description: 'für Lampen die das weiße Licht zwischen kalt und warm ändern können',
         data: {
             DIMMER: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
             ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true, writeable: false },
             TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true, writeable: true },
+            VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
     window: {
         name: 'window',
         description: '',
-        data: { ACTUAL: { role: 'sensor.window', type: 'boolean', required: true, writeable: false } },
+        data: {
+            ACTUAL: { role: 'sensor.window', type: 'boolean', required: true, writeable: false },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
+            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false },
+        },
     },
     humidity: {
         name: 'humidity',
@@ -214,12 +221,18 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true, writeable: false },
             TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true, writeable: true },
             HUE: { role: 'level.color.hue', type: 'number', required: false, writeable: true },
+            VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
     info: {
         name: 'info',
-        description: '',
-        data: { ACTUAL: { role: 'state', type: 'string', required: true, writeable: false } },
+        description: 'Universal Datenpunkt für diverse Anwendungen',
+        data: {
+            ACTUAL: { role: 'state', type: 'mixed', required: true, writeable: false },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
+            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false },
+            USERICON: { role: 'state', type: 'string', required: false, writeable: false },
+        },
     },
     blind: {
         name: 'blind',
@@ -261,18 +274,24 @@ export const requiredScriptDataPoints: requiredDatapoints = {
     },
     socket: {
         name: 'socket',
-        description: '',
+        description: 'Steckdosen, Schalter, Relais, usw. schalten',
         data: {
             ACTUAL: { role: 'switch', type: 'boolean', required: false, writeable: false },
             SET: { role: 'switch', type: 'boolean', required: true, writeable: true },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
+            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false },
+            STATE: { role: 'state', type: 'boolean', required: false, writeable: true }, // für monobutton
         },
     },
     light: {
         name: 'light',
-        description: '',
+        description: 'ein Lichtschalter',
         data: {
             ACTUAL: { role: 'sensor.light', type: 'boolean', required: false, writeable: false },
             SET: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
+            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false },
+            VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
     volume: {
@@ -286,7 +305,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
     },
     rgb: {
         name: 'rgb',
-        description: '',
+        description: 'Farblicht mit einzelnen Farbkanälen',
         data: {
             RED: { role: 'level.color.red', type: 'number', required: true, writeable: true },
             GREEN: { role: 'level.color.green', type: 'number', required: true, writeable: true },
@@ -296,22 +315,24 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             DIMMER: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
             TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true, writeable: true },
             WHITE: { role: 'level.color.white', type: 'number', required: false, writeable: true },
+            VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
     rbgSingle: {
         name: 'rbgSingle',
-        description: '',
+        description: 'Farblicht ohne Farbkanäle',
         data: {
             RGB: { role: 'level.color.rgb', type: 'string', required: true, writeable: true },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
             DIMMER: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
             TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true, writeable: true },
             ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true, writeable: false },
+            VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
     slider: {
         name: 'slider',
-        description: '',
+        description: 'Schieberegler zum Zahlenwert festlegen',
         data: {
             SET: { role: 'level', type: 'number', required: true, writeable: true },
             ACTUAL: { role: 'value', type: 'number', required: true, writeable: false },
@@ -319,13 +340,13 @@ export const requiredScriptDataPoints: requiredDatapoints = {
     },
     button: {
         name: 'button',
-        description: '',
+        description: 'Schalter',
         data: { SET: { role: 'button', type: 'boolean', required: true, writeable: true } },
     },
     buttonSensor: {
         name: 'buttonSensor',
-        description: '',
-        data: { ACTUAL: { role: 'button.press', type: 'boolean', required: true, writeable: false } },
+        description: 'Taster',
+        data: { ACTUAL: { role: 'button.press', type: 'boolean', required: true, writeable: true } },
     },
     temperature: {
         name: 'temperature',
@@ -381,7 +402,11 @@ export const requiredScriptDataPoints: requiredDatapoints = {
     door: {
         name: 'door',
         description: '',
-        data: { ACTUAL: { role: 'sensor.door', type: 'boolean', required: true, writeable: false } },
+        data: {
+            ACTUAL: { role: 'sensor.door', type: 'boolean', required: true, writeable: false },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
+            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false },
+        },
     },
     'level.mode.fan': {
         name: 'level.mode.fan',
