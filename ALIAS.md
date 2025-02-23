@@ -125,13 +125,13 @@
 | **"** | ERROR | boolean| indicator.error  |  |  |  | 
 | **"** | HEAT | boolean| state  |  |  |  | 
 | **"** | HUMINITY | number| value.humidity  |  |  |  | 
-| **"** | MAINTAIN | boolean| indicator.maintainance  |  |  |  | 
+| **"** | MAINTAIN | boolean| indicator.maintenance  |  |  |  | 
 | **"** | MODE | number| level.mode.aircondition  | X | X |  | 
 | **"** | OFF | boolean| state  | X |  |  | 
 | **"** | POWER | boolean| switch.power  |  | X |  | 
 | **"** | SPEED | number| level.mode.fan  |  | X |  | 
 | **"** | SWING | boolean| switch.mode.swing  |  | X |  | 
-| **"** | UNREACH | boolean| indicator.maintainance  |  |  |  | 
+| **"** | UNREACH | boolean| indicator.maintenance  |  |  |  | 
 ### socket
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -199,11 +199,11 @@
 | **"** | BOOST | boolean| state  |  |  |  | 
 | **"** | AUTOMATIC | boolean| state  | X |  |  | 
 | **"** | ERROR | boolean| indicator.error  |  |  |  | 
-| **"** | LOWBAT | boolean| indicator.maintainance  |  |  |  | 
+| **"** | LOWBAT | boolean| indicator.maintenance  |  |  |  | 
 | **"** | MANUAL | boolean| state  |  |  |  | 
-| **"** | UNREACH | boolean| indicator.maintainance  |  |  |  | 
+| **"** | UNREACH | boolean| indicator.maintenance  |  |  |  | 
 | **"** | HUMINITY | number| value.humidity  |  |  |  | 
-| **"** | MAINTAIN | boolean| indicator.maintainance  |  |  |  | 
+| **"** | MAINTAIN | boolean| indicator.maintenance  |  |  |  | 
 | **"** | PARTY | boolean| state  |  |  |  | 
 | **"** | POWER | boolean| switch.power  |  | X |  | 
 | **"** | VACATION | boolean| state  |  |  |  | 
@@ -317,7 +317,7 @@
 | **"** | ERROR | boolean| indicator.error  |  |  |  | 
 | **"** | HEAT | boolean| switch  |  |  |  | 
 | **"** | HUMINITY | number| value.humidity  |  |  |  | 
-| **"** | MAINTAIN | boolean| indicator.maintainance  |  |  |  | 
+| **"** | MAINTAIN | boolean| indicator.maintenance  |  |  |  | 
 | **"** | MODE | number| level.mode.aircondition  | X |  |  | 
 | **"** | OFF | boolean| switch  | X |  |  | 
 | **"** | POWER | boolean| switch  |  |  |  | 
@@ -383,11 +383,11 @@
 | **"** | BOOST | boolean| switch.boost  |  |  |  | 
 | **"** | AUTOMATIC | boolean| switch.mode.auto  | X |  |  | 
 | **"** | ERROR | boolean| indicator.error  |  |  |  | 
-| **"** | LOWBAT | boolean| indicator.maintainance.lowbat  |  |  |  | 
+| **"** | LOWBAT | boolean| indicator.maintenance.lowbat  |  |  |  | 
 | **"** | MANUAL | boolean| switch.mode.manual  |  |  |  | 
-| **"** | UNREACH | boolean| indicator.maintainance  |  |  |  | 
+| **"** | UNREACH | boolean| indicator.maintenance  |  |  |  | 
 | **"** | HUMINITY | number| value.humidity  |  |  |  | 
-| **"** | MAINTAIN | boolean| indicator.maintainance  |  |  |  | 
+| **"** | MAINTAIN | boolean| indicator.maintenance  |  |  |  | 
 | **"** | PARTY | boolean| switch.mode.party  |  |  |  | 
 | **"** | POWER | boolean| switch.power  |  |  |  | 
 | **"** | VACATION | boolean| switch  |  |  |  | 
