@@ -20,6 +20,9 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'number.volume'
+    | 'button.volume'
+    | 'text.motion'
     | 'text.door.isOpen'
     | 'text.gate.isOpen'
     | 'generic.shutter'

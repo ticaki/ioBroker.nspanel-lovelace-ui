@@ -51,7 +51,6 @@ class NspanelLovelaceUi extends utils.Adapter {
             common: { name: { en: 'Nspanel Instance', de: 'Nspanel Instanze' }, type: 'meta.folder' },
             native: {},
         });
-
         this.library = new Library(this);
         await this.delay(2000);
 

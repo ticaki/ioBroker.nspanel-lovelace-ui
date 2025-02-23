@@ -1081,6 +1081,39 @@ const textTemplates = {
         false: { type: "const", constVal: "closed" }
       }
     }
+  },
+  "text.motion": {
+    role: "text",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "motion-sensor" },
+          color: { type: "const", constVal: import_Color.Color.open }
+        },
+        false: {
+          value: { type: "const", constVal: "motion-sensor" },
+          color: { type: "const", constVal: import_Color.Color.close }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: ["sensor.motion"],
+          dp: ""
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "motion" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "On" },
+        false: { type: "const", constVal: "Off" }
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

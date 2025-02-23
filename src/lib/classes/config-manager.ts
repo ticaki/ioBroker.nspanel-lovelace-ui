@@ -311,6 +311,28 @@ export class ConfigManager extends BaseClass {
             }
         }
 
+        const defaultNav: typePageItem.PageItemDataItemsOptions = {
+            type: 'button',
+            data: {
+                text: {
+                    true: item.buttonText
+                        ? await this.getFieldAsDataItemConfig(item.buttonText)
+                        : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                          ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
+                          : { type: 'state', dp: `${item.id}.ACTUAL` },
+                    false: item.buttonTextOff
+                        ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
+                        : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
+                          ? { type: 'state', dp: `${item.id}.BUTTONTEXTOFF` }
+                          : item.buttonText
+                            ? await this.getFieldAsDataItemConfig(item.buttonText)
+                            : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                              ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
+                              : { type: 'state', dp: `${item.id}.ACTUAL` },
+                },
+            },
+        };
+
         const specialRole: pages.DeviceRole =
             page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
                 ? 'textNotIcon'
@@ -346,13 +368,7 @@ export class ConfigManager extends BaseClass {
                             maxBri: undefined,
                             minBri: undefined,
                         },
-                        text: {
-                            true: item.buttonText
-                                ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                  ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                  : { type: 'state', dp: `${item.id}.ACTUAL` },
-                        },
+                        text: defaultNav.data.text,
                         text1: {
                             true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
                         },
@@ -393,13 +409,7 @@ export class ConfigManager extends BaseClass {
                             maxBri: undefined,
                             minBri: undefined,
                         },
-                        text: {
-                            true: item.buttonText
-                                ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                  ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                  : { type: 'state', dp: `${item.id}.ACTUAL` },
-                        },
+                        text: defaultNav.data.text,
                         text1: {
                             true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
                         },
@@ -428,13 +438,7 @@ export class ConfigManager extends BaseClass {
                         },
                         template: 'button.humidity',
                         data: {
-                            text: {
-                                true: item.buttonText
-                                    ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                    : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                      ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                      : { type: 'state', dp: `${item.id}.ACTUAL` },
-                            },
+                            text: defaultNav.data.text,
                             text1: {
                                 true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
                             },
@@ -458,13 +462,7 @@ export class ConfigManager extends BaseClass {
                         false: await this.getIconColor(item.offColor, this.colorOff),
                     },
                     data: {
-                        text: {
-                            true: item.buttonText
-                                ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                  ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                  : { type: 'state', dp: `${item.id}.ACTUAL` },
-                        },
+                        text: defaultNav.data.text,
                         text1: {
                             true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
                         },
@@ -484,13 +482,7 @@ export class ConfigManager extends BaseClass {
                             false: await this.getIconColor(item.offColor, this.colorOff),
                         },
                         data: {
-                            text: {
-                                true: item.buttonText
-                                    ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                    : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                      ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                      : { type: 'state', dp: `${item.id}.ACTUAL` },
-                            },
+                            text: defaultNav.data.text,
                             text1: {
                                 true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
                             },
@@ -517,13 +509,7 @@ export class ConfigManager extends BaseClass {
                             false: await this.getIconColor(item.offColor, this.colorOff),
                         },
                         data: {
-                            text: {
-                                true: item.buttonText
-                                    ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                    : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                      ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                      : { type: 'state', dp: `${item.id}.ACTUAL` },
-                            },
+                            text: defaultNav.data.text,
                             text1: {
                                 true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
                             },
@@ -543,13 +529,7 @@ export class ConfigManager extends BaseClass {
                         false: await this.getIconColor(item.offColor, this.colorOff),
                     },
                     data: {
-                        text: {
-                            true: item.buttonText
-                                ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                  ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                  : { type: 'state', dp: `${item.id}.ACTUAL` },
-                        },
+                        text: defaultNav.data.text,
                         text1: {
                             true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
                         },
@@ -568,13 +548,27 @@ export class ConfigManager extends BaseClass {
                         false: await this.getIconColor(item.offColor, this.colorOff),
                     },
                     data: {
-                        text: {
-                            true: item.buttonText
-                                ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                  ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                  : { type: 'state', dp: `${item.id}.ACTUAL` },
+                        text: defaultNav.data.text,
+                        text1: {
+                            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
                         },
+
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
+                break;
+            }
+            case 'motion': {
+                itemConfig = {
+                    template: 'text.motion',
+                    dpInit: item.id!,
+                    type: 'button',
+                    color: {
+                        true: await this.getIconColor(item.onColor, this.colorOn),
+                        false: await this.getIconColor(item.offColor, this.colorOff),
+                    },
+                    data: {
+                        text: defaultNav.data.text,
                         text1: {
                             true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
                         },
@@ -585,12 +579,30 @@ export class ConfigManager extends BaseClass {
                 break;
             }
             case 'volumeGroup':
-            case 'volume':
+            case 'volume': {
+                itemConfig = {
+                    template: 'button.volume',
+                    dpInit: item.id!,
+                    type: 'button',
+                    color: {
+                        true: await this.getIconColor(item.onColor, this.colorOn),
+                        false: await this.getIconColor(item.offColor, this.colorOff),
+                    },
+                    data: {
+                        text: defaultNav.data.text,
+                        text1: {
+                            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                        },
+
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
+                break;
+            }
             case 'info':
             case 'warning':
             case 'cie':
             case 'blind':
-            case 'motion':
             case 'buttonSensor':
             case 'value.time':
             case 'level.timer':
@@ -1205,7 +1217,24 @@ export class ConfigManager extends BaseClass {
                     case 'thermostat':
                         break;
                     case 'volumeGroup':
-                    case 'volume':
+                    case 'volume': {
+                        itemConfig = {
+                            template: 'number.volume',
+                            dpInit: item.id,
+                            type: 'number',
+                            role: specialRole,
+                            color: {
+                                true: await this.getIconColor(item.onColor, this.colorOn),
+                                false: await this.getIconColor(item.offColor, this.colorOff),
+                            },
+                            data: {
+                                text: {
+                                    true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                                },
+                            },
+                        };
+                        break;
+                    }
                     case 'warning':
                     case 'cie':
                     case 'buttonSensor':

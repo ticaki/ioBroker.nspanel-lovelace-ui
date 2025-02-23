@@ -277,4 +277,80 @@ export const buttonTemplates: TemplateItems = {
             },
         },
     },
+    'button.volume': {
+        role: '',
+        adapter: '',
+        type: 'button',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'volume-mute' },
+                    text: {
+                        value: {
+                            type: 'triggered',
+                            mode: 'auto',
+                            role: 'value.volume',
+                            dp: '',
+                        },
+                        unit: { type: 'const', constVal: '%' },
+                    },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+                false: {
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.volume',
+                        dp: '',
+                        read: `{
+                            if (val > 66) {
+                                return 'volume-high';
+                            }
+                            if (val > 33) {
+                                return 'volume-medium';
+                            }
+                            if (val > 0) {
+                                return 'volume-low';
+                            }
+                            return 'volume-mute';
+                        }`,
+                    },
+                    text: {
+                        value: {
+                            type: 'triggered',
+                            mode: 'auto',
+                            role: 'value.volume',
+                            dp: '',
+                        },
+                        unit: { type: 'const', constVal: '%' },
+                    },
+                    color: { type: 'const', constVal: Color.Blue },
+                },
+                scale: { type: 'const', constVal: { min: 0, max: 100 } },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'media.mute',
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'volume' },
+                false: undefined,
+            },
+            text1: {
+                true: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.volume',
+                    dp: '',
+                    read: 'return Math.round(parseFloat(val))',
+                },
+                false: undefined,
+            },
+        },
+    },
 };

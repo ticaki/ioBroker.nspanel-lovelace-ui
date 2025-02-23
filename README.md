@@ -55,8 +55,8 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [x] blind
 - [x] door
 - [x] window
-- [ ] volumeGroup
-- [ ] volume
+- [x] volumeGroup
+- [x] volume
 - [x] info
 - [x] humidity
 - [x] temperature
@@ -91,8 +91,8 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [x] blind
 - [x] door
 - [x] window
-- [ ] volumeGroup
-- [ ] volume
+- [x] volumeGroup
+- [x] volume
 - [ ] info
 - [x] humidity
 - [x] temperature

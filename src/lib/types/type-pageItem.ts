@@ -254,7 +254,7 @@ export type PageItemTextDataItems = {
     data: pages.ChangeTypeOfKeys<PageItemText, dataItem.Dataitem | undefined>;
 };
 
-export type PageItemNumber = Pick<PageItemBase, 'entity1' | 'text' | 'icon'>;
+export type PageItemNumber = Pick<PageItemBase, 'entity1' | 'text' | 'icon' | 'minValue1' | 'maxValue1'>;
 export type PageItemNumberDataItemsOptions = {
     type: 'number';
     data: pages.ChangeTypeOfKeys<PageItemNumber, Types.DataItemsOptions | undefined>;

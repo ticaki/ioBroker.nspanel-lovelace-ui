@@ -1069,4 +1069,37 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.motion': {
+        role: 'text',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'motion-sensor' },
+                    color: { type: 'const', constVal: Color.open },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'motion-sensor' },
+                    color: { type: 'const', constVal: Color.close },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: ['sensor.motion'],
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'motion' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'On' },
+                false: { type: 'const', constVal: 'Off' },
+            },
+        },
+    },
 };

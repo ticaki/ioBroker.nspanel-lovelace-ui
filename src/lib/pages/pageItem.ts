@@ -253,6 +253,9 @@ export class PageItem extends BaseClassTriggerd {
 
                 case 'number': {
                     if (entry.type === 'number') {
+                        // This code handles the 'number' type entry for the PageItem.
+                        // It retrieves the necessary data and constructs a message payload for the number entry.
+                        // The min and max values are used to define the range for the number display.
                         const item = entry.data;
                         message.type = 'number';
                         const number = (await tools.getValueEntryNumber(item.entity1, false)) ?? 0;
@@ -261,10 +264,10 @@ export class PageItem extends BaseClassTriggerd {
                         );
                         message.icon = (await tools.getIconEntryValue(item.icon, true, '')) ?? '';
                         message.iconColor = (await tools.getIconEntryColor(item.icon, true, Color.HMIOn)) ?? '';
-                        const min =
-                            (item.entity1 && item.entity1.minScale && (await item.entity1.minScale.getNumber())) ?? 0;
-                        const max =
-                            (item.entity1 && item.entity1.maxScale && (await item.entity1.maxScale.getNumber())) ?? 100;
+                        let min = item.entity1 && item.entity1.value && item.entity1.value.common.min;
+                        let max = item.entity1 && item.entity1.value && item.entity1.value.common.max;
+                        min = (item.minValue1 && (await item.minValue1.getNumber())) ?? min ?? 0;
+                        max = (item.maxValue1 && (await item.maxValue1.getNumber())) ?? max ?? 100;
                         return tools.getPayload(
                             message.type,
                             message.intNameEntity,

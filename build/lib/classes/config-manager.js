@@ -255,6 +255,15 @@ class ConfigManager extends import_library.BaseClass {
         return;
       }
     }
+    const defaultNav = {
+      type: "button",
+      data: {
+        text: {
+          true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` },
+          false: item.buttonTextOff ? await this.getFieldAsDataItemConfig(item.buttonTextOff) : await this.existsState(`${item.id}.BUTTONTEXTOFF`) ? { type: "state", dp: `${item.id}.BUTTONTEXTOFF` } : item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
+        }
+      }
+    };
     const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
     switch (role) {
       case "socket":
@@ -287,9 +296,7 @@ class ConfigManager extends import_library.BaseClass {
               maxBri: void 0,
               minBri: void 0
             },
-            text: {
-              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
-            },
+            text: defaultNav.data.text,
             text1: {
               true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
             },
@@ -330,9 +337,7 @@ class ConfigManager extends import_library.BaseClass {
               maxBri: void 0,
               minBri: void 0
             },
-            text: {
-              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
-            },
+            text: defaultNav.data.text,
             text1: {
               true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
             },
@@ -358,9 +363,7 @@ class ConfigManager extends import_library.BaseClass {
             },
             template: "button.humidity",
             data: {
-              text: {
-                true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
-              },
+              text: defaultNav.data.text,
               text1: {
                 true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
               },
@@ -384,9 +387,7 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor, this.colorOff)
           },
           data: {
-            text: {
-              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
-            },
+            text: defaultNav.data.text,
             text1: {
               true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
             },
@@ -406,9 +407,7 @@ class ConfigManager extends import_library.BaseClass {
               false: await this.getIconColor(item.offColor, this.colorOff)
             },
             data: {
-              text: {
-                true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
-              },
+              text: defaultNav.data.text,
               text1: {
                 true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
               },
@@ -435,9 +434,7 @@ class ConfigManager extends import_library.BaseClass {
               false: await this.getIconColor(item.offColor, this.colorOff)
             },
             data: {
-              text: {
-                true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
-              },
+              text: defaultNav.data.text,
               text1: {
                 true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
               },
@@ -457,9 +454,7 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor, this.colorOff)
           },
           data: {
-            text: {
-              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
-            },
+            text: defaultNav.data.text,
             text1: {
               true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
             },
@@ -478,9 +473,26 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor, this.colorOff)
           },
           data: {
-            text: {
-              true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
+            text: defaultNav.data.text,
+            text1: {
+              true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
             },
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
+      case "motion": {
+        itemConfig = {
+          template: "text.motion",
+          dpInit: item.id,
+          type: "button",
+          color: {
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff)
+          },
+          data: {
+            text: defaultNav.data.text,
             text1: {
               true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
             },
@@ -490,12 +502,29 @@ class ConfigManager extends import_library.BaseClass {
         break;
       }
       case "volumeGroup":
-      case "volume":
+      case "volume": {
+        itemConfig = {
+          template: "button.volume",
+          dpInit: item.id,
+          type: "button",
+          color: {
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff)
+          },
+          data: {
+            text: defaultNav.data.text,
+            text1: {
+              true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+            },
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
       case "info":
       case "warning":
       case "cie":
       case "blind":
-      case "motion":
       case "buttonSensor":
       case "value.time":
       case "level.timer":
@@ -993,7 +1022,24 @@ class ConfigManager extends import_library.BaseClass {
           case "thermostat":
             break;
           case "volumeGroup":
-          case "volume":
+          case "volume": {
+            itemConfig = {
+              template: "number.volume",
+              dpInit: item.id,
+              type: "number",
+              role: specialRole,
+              color: {
+                true: await this.getIconColor(item.onColor, this.colorOn),
+                false: await this.getIconColor(item.offColor, this.colorOff)
+              },
+              data: {
+                text: {
+                  true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+                }
+              }
+            };
+            break;
+          }
           case "warning":
           case "cie":
           case "buttonSensor":

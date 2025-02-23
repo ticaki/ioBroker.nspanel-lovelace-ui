@@ -26,12 +26,14 @@ var import_light = require("./light");
 var import_shutter = require("./shutter");
 var import_text = require("./text");
 var import_script = require("./script");
+var import_number = require("./number");
 const pageItemTemplates = Object.assign(
   import_text.textTemplates,
   import_shutter.shutterTemplates,
   import_light.lightTemplates,
   import_button.buttonTemplates,
-  import_script.scriptTemplates
+  import_script.scriptTemplates,
+  import_number.numberTemplates
 );
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

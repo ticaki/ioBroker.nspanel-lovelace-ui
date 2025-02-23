@@ -133,10 +133,14 @@ export const stateRoleArray = arrayOfAllStateRole([
     'switch.gate',
     'sensor.door',
     'value.blind',
+    'value.volume',
+    'sensor.motion',
     '',
 ]);
 
 export type StateRole =
+    | 'sensor.motion'
+    | 'value.volume'
     | 'value.blind'
     | 'sensor.door'
     | 'switch.gate'

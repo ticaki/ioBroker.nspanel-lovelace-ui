@@ -62,8 +62,11 @@ export async function setValueEntry(
     }
     if (i.set && i.set.writeable) {
         await i.set.setStateAsync(res);
-    } else {
+    } else if (i.value.writeable) {
         await i.value.setStateAsync(res);
+    } else if (i.set || i.value) {
+        const t = i.set || i.value;
+        t.log.warn(t.name || '???' + ' is not writeable');
     }
 }
 export async function getValueEntryNumber(

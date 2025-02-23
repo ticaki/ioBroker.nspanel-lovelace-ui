@@ -138,6 +138,8 @@ const stateRoleArray = arrayOfAllStateRole([
   "switch.gate",
   "sensor.door",
   "value.blind",
+  "value.volume",
+  "sensor.motion",
   ""
 ]);
 function isStateRole(F) {
