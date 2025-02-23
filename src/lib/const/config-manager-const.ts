@@ -203,8 +203,8 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: '',
         data: {
             ACTUAL: { role: 'sensor.window', type: 'boolean', required: true, writeable: false },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
-            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP steuern
+            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false }, //Button-Text über DP steuern
         },
     },
     humidity: {
@@ -229,9 +229,9 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: 'Universal Datenpunkt für diverse Anwendungen',
         data: {
             ACTUAL: { role: 'state', type: 'mixed', required: true, writeable: false },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
-            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false },
-            USERICON: { role: 'state', type: 'string', required: false, writeable: false },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP senden
+            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false }, //Button-Text über DP senden bei cardEntity
+            USERICON: { role: 'state', type: 'string', required: false, writeable: false }, //Benutzerdefinierte Iconnamen über DP senden
         },
     },
     blind: {
@@ -259,17 +259,17 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             SET2: { role: 'level.temperature', type: 'number', required: true, writeable: true },
             AUTO: { role: 'state', type: 'boolean', required: false, writeable: false },
             COOL: { role: 'state', type: 'boolean', required: false, writeable: false },
-            BOOST: { role: 'switch.boost', type: 'boolean', required: false, writeable: true },
+            BOOST: { role: 'switch.mode.boost', type: 'boolean', required: false, writeable: true },
             ERROR: { role: 'indicator.error', type: 'boolean', required: false, writeable: false },
             HEAT: { role: 'state', type: 'boolean', required: false, writeable: false },
             HUMINITY: { role: 'value.humidity', type: 'number', required: false, writeable: false },
-            MAINTAIN: { role: 'indicator.maintainance', type: 'boolean', required: false, writeable: false },
-            MODE: { role: 'level.mode.aircondition', type: 'number', required: true, writeable: true },
+            MAINTAIN: { role: 'indicator.maintenance', type: 'boolean', required: false, writeable: false },
+            MODE: { role: 'level.mode.airconditioner', type: 'number', required: true, writeable: true },
             OFF: { role: 'state', type: 'boolean', required: true, writeable: false },
             POWER: { role: 'switch.power', type: 'boolean', required: false, writeable: true },
             SPEED: { role: 'level.mode.fan', type: 'number', required: false, writeable: true },
             SWING: { role: 'switch.mode.swing', type: 'boolean', required: false, writeable: true },
-            UNREACH: { role: 'indicator.maintainance', type: 'boolean', required: false, writeable: false },
+            UNREACH: { role: 'indicator.maintenance', type: 'boolean', required: false, writeable: false },
         },
     },
     socket: {
@@ -278,8 +278,8 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         data: {
             ACTUAL: { role: 'switch', type: 'boolean', required: false, writeable: false },
             SET: { role: 'switch', type: 'boolean', required: true, writeable: true },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
-            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP steuern
+            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false }, //Button-Text über DP steuern bei cardEntity
             STATE: { role: 'state', type: 'boolean', required: false, writeable: true }, // für monobutton
         },
     },
@@ -289,8 +289,8 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         data: {
             ACTUAL: { role: 'sensor.light', type: 'boolean', required: false, writeable: false },
             SET: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
-            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP steuern
+            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false }, //Button-Text über DP steuern bei cardEntity
             VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
@@ -362,6 +362,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         data: {
             ACTUAL: { role: 'value.temperature', type: 'number', required: true, writeable: false },
             SECOND: { role: 'value.humidity', type: 'number', required: false, writeable: false },
+            USERICON: { role: 'state', type: 'string', required: false, writeable: false }, // benutzerdefinierter Iconname über DP senden
         },
     },
     thermostat: {
@@ -371,27 +372,28 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             ACTUAL: { role: 'value.temperature', type: 'number', required: true, writeable: false },
             SET: { role: 'level.temperature', type: 'number', required: true, writeable: true },
             MODE: { role: 'level.mode.thermostat', type: 'number', required: true, writeable: true },
-            BOOST: { role: 'state', type: 'boolean', required: false },
+            BOOST: { role: 'switch.mode.boost', type: 'boolean', required: false, writeable: true },
             AUTOMATIC: { role: 'state', type: 'boolean', required: true },
             ERROR: { role: 'indicator.error', type: 'boolean', required: false, writeable: false },
-            LOWBAT: { role: 'indicator.maintainance', type: 'boolean', required: false, writeable: false },
+            LOWBAT: { role: 'indicator.maintenance.lowbat', type: 'boolean', required: false, writeable: false },
             MANUAL: { role: 'state', type: 'boolean', required: false },
-            UNREACH: { role: 'indicator.maintainance', type: 'boolean', required: false, writeable: false },
+            UNREACH: { role: 'indicator.maintenance.unreach', type: 'boolean', required: false, writeable: false },
             HUMINITY: { role: 'value.humidity', type: 'number', required: false, writeable: false },
-            MAINTAIN: { role: 'indicator.maintainance', type: 'boolean', required: false, writeable: false },
-            PARTY: { role: 'state', type: 'boolean', required: false },
+            MAINTAIN: { role: 'indicator.maintenance', type: 'boolean', required: false, writeable: false },
+            PARTY: { role: 'switch.mode.party', type: 'boolean', required: false },
             POWER: { role: 'switch.power', type: 'boolean', required: false, writeable: true },
             VACATION: { role: 'state', type: 'boolean', required: false },
             WINDOWOPEN: { role: 'state', type: 'boolean', required: false, writeable: false },
-            WORKING: { role: 'state', type: 'boolean', required: false, writeable: false },
+            WORKING: { role: 'indicator.working', type: 'boolean', required: false, writeable: false },
+            USERICON: { role: 'state', type: 'string', required: false, writeable: false }, // benutzerdefinierter Iconname über DP senden
         },
     },
     'level.timer': {
         name: 'level.timer',
         description: '',
         data: {
-            ACTUAL: { role: 'timestamp', type: 'number', required: true, writeable: false },
-            STATE: { role: 'state', type: 'string', required: true },
+            ACTUAL: { role: 'timestamp', type: 'number', required: true, writeable: true },
+            STATE: { role: 'state', type: 'string', required: true, writeable: true },
         },
     },
     gate: {
@@ -404,8 +406,8 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: '',
         data: {
             ACTUAL: { role: 'sensor.door', type: 'boolean', required: true, writeable: false },
-            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false },
-            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false },
+            COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, // Farbcode über DP steuern
+            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false }, // Button-Text über DP steuern
         },
     },
     'level.mode.fan': {
@@ -420,10 +422,10 @@ export const requiredScriptDataPoints: requiredDatapoints = {
     },
     lock: {
         name: 'lock',
-        description: '',
+        description: 'Türschloss',
         data: {
             ACTUAL: { role: 'state', type: 'boolean', required: true, writeable: false },
-            OPEN: { role: 'state', type: 'boolean', required: true, writeable: false },
+            OPEN: { role: 'state', type: 'boolean', required: false, writeable: false },
             SET: { role: 'switch.lock', type: 'boolean', required: true, writeable: true },
         },
     },
@@ -547,12 +549,12 @@ export const requiredFeatureDatapoints: requiredDatapoints = {
             SET: { role: 'level.temperature', type: 'number', required: true },
             AUTO: { role: 'switch', type: 'boolean', required: false },
             COOL: { role: 'switch', type: 'boolean', required: false },
-            BOOST: { role: 'switch.boost', type: 'boolean', required: false },
+            BOOST: { role: 'switch.mode.boost', type: 'boolean', required: false },
             ERROR: { role: 'indicator.error', type: 'boolean', required: false },
             HEAT: { role: 'switch', type: 'boolean', required: false },
             HUMINITY: { role: 'value.humidity', type: 'number', required: false },
-            MAINTAIN: { role: 'indicator.maintainance', type: 'boolean', required: false },
-            MODE: { role: 'level.mode.aircondition', type: 'number', required: true },
+            MAINTAIN: { role: 'indicator.maintenance', type: 'boolean', required: false },
+            MODE: { role: 'level.mode.airconditioner', type: 'number', required: true },
             OFF: { role: 'switch', type: 'boolean', required: true },
             POWER: { role: 'switch', type: 'boolean', required: false },
             SPEED: { role: 'level.mode.fan', type: 'number', required: false },
@@ -656,14 +658,14 @@ export const requiredFeatureDatapoints: requiredDatapoints = {
             ACTUAL: { role: 'value.temperature', type: 'number', required: true },
             SET: { role: 'level.temperature', type: 'number', required: true },
             MODE: { role: 'level.mode.thermostat', type: 'number', required: true },
-            BOOST: { role: 'switch.boost', type: 'boolean', required: false },
+            BOOST: { role: 'switch.mode.boost', type: 'boolean', required: false },
             AUTOMATIC: { role: 'switch.mode.auto', type: 'boolean', required: true },
             ERROR: { role: 'indicator.error', type: 'boolean', required: false },
-            LOWBAT: { role: 'indicator.maintainance.lowbat', type: 'boolean', required: false },
+            LOWBAT: { role: 'indicator.maintenance.lowbat', type: 'boolean', required: false },
             MANUAL: { role: 'switch.mode.manual', type: 'boolean', required: false },
-            UNREACH: { role: 'indicator.maintainance', type: 'boolean', required: false },
+            UNREACH: { role: 'indicator.maintenance', type: 'boolean', required: false },
             HUMINITY: { role: 'value.humidity', type: 'number', required: false },
-            MAINTAIN: { role: 'indicator.maintainance', type: 'boolean', required: false },
+            MAINTAIN: { role: 'indicator.maintenance', type: 'boolean', required: false },
             PARTY: { role: 'switch.mode.party', type: 'boolean', required: false },
             POWER: { role: 'switch.power', type: 'boolean', required: false },
             VACATION: { role: 'switch', type: 'boolean', required: false },
