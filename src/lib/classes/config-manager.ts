@@ -986,10 +986,22 @@ export class ConfigManager extends BaseClass {
 
                                 entity1: {
                                     value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                                    minScale: item.minValueLevel
+                                        ? { type: 'const', constVal: item.minValueLevel }
+                                        : undefined,
+                                    maxScale: item.maxValueLevel
+                                        ? { type: 'const', constVal: item.maxValueLevel }
+                                        : undefined,
                                     set: { type: 'state', dp: `${item.id}.SET` },
                                 },
                                 entity2: {
                                     value: { type: 'triggered', dp: `${item.id}.TILT_ACTUAL` },
+                                    minScale: item.minValueTilt
+                                        ? { type: 'const', constVal: item.minValueTilt }
+                                        : undefined,
+                                    maxScale: item.maxValueTilt
+                                        ? { type: 'const', constVal: item.maxValueTilt }
+                                        : undefined,
                                     set: { type: 'state', dp: `${item.id}.TILT_SET` },
                                 },
                                 up: { type: 'state', dp: `${item.id}.OPEN` },
