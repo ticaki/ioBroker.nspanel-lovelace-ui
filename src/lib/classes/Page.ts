@@ -167,10 +167,10 @@ export class Page extends BaseClassPage {
             }
             if (options.data && options.data.icon) {
                 if (colorTrue && options.data.icon.true && options.data.icon.true.color) {
-                    options.data.icon.true.color = { type: 'const', constVal: colorTrue };
+                    options.data.icon.true.color = colorTrue;
                 }
                 if (colorFalse && options.data.icon.false && options.data.icon.false.color) {
-                    options.data.icon.false.color = { type: 'const', constVal: colorFalse };
+                    options.data.icon.false.color = colorFalse;
                 }
             }
         }

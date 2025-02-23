@@ -274,20 +274,14 @@ class ConfigManager extends import_library.BaseClass {
                   type: "const",
                   constVal: item.icon || role === "socket" ? "power-socket-de" : "lightbulb"
                 },
-                color: {
-                  type: "const",
-                  constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
-                }
+                color: await this.getIconColor(item.onColor, this.colorOn)
               },
               false: {
                 value: {
                   type: "const",
                   constVal: item.icon2 || role === "socket" ? "power-socket-de" : "lightbulb-outline"
                 },
-                color: {
-                  type: "const",
-                  constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
-                }
+                color: await this.getIconColor(item.offColor, this.colorOff)
               },
               scale: void 0,
               maxBri: void 0,
@@ -323,20 +317,14 @@ class ConfigManager extends import_library.BaseClass {
                   type: "const",
                   constVal: item.icon || "gesture-tap-button"
                 },
-                color: {
-                  type: "const",
-                  constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
-                }
+                color: await this.getIconColor(item.onColor, this.colorOn)
               },
               false: {
                 value: {
                   type: "const",
                   constVal: item.icon2 || "gesture-tap-button"
                 },
-                color: {
-                  type: "const",
-                  constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
-                }
+                color: await this.getIconColor(item.offColor, this.colorOff)
               },
               scale: void 0,
               maxBri: void 0,
@@ -365,8 +353,8 @@ class ConfigManager extends import_library.BaseClass {
             dpInit: item.id,
             role: specialRole,
             color: {
-              true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
-              false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+              true: await this.getIconColor(item.onColor, this.colorOn),
+              false: await this.getIconColor(item.offColor, this.colorOff)
             },
             template: "button.humidity",
             data: {
@@ -392,8 +380,8 @@ class ConfigManager extends import_library.BaseClass {
           role: specialRole,
           template: "button.temperature",
           color: {
-            true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
-            false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff)
           },
           data: {
             text: {
@@ -414,8 +402,8 @@ class ConfigManager extends import_library.BaseClass {
             dpInit: item.id,
             type: "button",
             color: {
-              true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
-              false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+              true: await this.getIconColor(item.onColor, this.colorOn),
+              false: await this.getIconColor(item.offColor, this.colorOff)
             },
             data: {
               text: {
@@ -443,8 +431,8 @@ class ConfigManager extends import_library.BaseClass {
             dpInit: item.id,
             type: "button",
             color: {
-              true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
-              false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+              true: await this.getIconColor(item.onColor, this.colorOn),
+              false: await this.getIconColor(item.offColor, this.colorOff)
             },
             data: {
               text: {
@@ -465,8 +453,8 @@ class ConfigManager extends import_library.BaseClass {
           dpInit: item.id,
           type: "button",
           color: {
-            true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
-            false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff)
           },
           data: {
             text: {
@@ -486,8 +474,8 @@ class ConfigManager extends import_library.BaseClass {
           dpInit: item.id,
           type: "button",
           color: {
-            true: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn,
-            false: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff)
           },
           data: {
             text: {
@@ -569,20 +557,14 @@ class ConfigManager extends import_library.BaseClass {
                       type: "const",
                       constVal: item.icon || role === "socket" ? "power-socket-de" : "lightbulb"
                     },
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
-                    }
+                    color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
                     value: {
                       type: "const",
                       constVal: item.icon2 || role === "socket" ? "power-socket-de" : "lightbulb-outline"
                     },
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
-                    }
+                    color: await this.getIconColor(item.offColor, this.colorOff)
                   },
                   scale: void 0,
                   maxBri: void 0,
@@ -610,20 +592,14 @@ class ConfigManager extends import_library.BaseClass {
                       type: "const",
                       constVal: item.icon || "lightbulb"
                     },
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
-                    }
+                    color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
                     value: {
                       type: "const",
                       constVal: item.icon2 || "lightbulb-outline"
                     },
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
-                    }
+                    color: await this.getIconColor(item.offColor, this.colorOff)
                   },
                   scale: void 0,
                   maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
@@ -666,20 +642,14 @@ class ConfigManager extends import_library.BaseClass {
                       type: "const",
                       constVal: item.icon || "lightbulb"
                     },
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
-                    }
+                    color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
                     value: {
                       type: "const",
                       constVal: item.icon2 || "lightbulb-outline"
                     },
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
-                    }
+                    color: await this.getIconColor(item.offColor, this.colorOff)
                   },
                   scale: void 0,
                   maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
@@ -763,20 +733,14 @@ class ConfigManager extends import_library.BaseClass {
                       type: "const",
                       constVal: item.icon || "gesture-tap-button"
                     },
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
-                    }
+                    color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
                     value: {
                       type: "const",
                       constVal: item.icon2 || "gesture-tap-button"
                     },
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
-                    }
+                    color: await this.getIconColor(item.offColor, this.colorOff)
                   },
                   scale: void 0,
                   maxBri: void 0,
@@ -808,20 +772,14 @@ class ConfigManager extends import_library.BaseClass {
                       type: "const",
                       constVal: item.icon || "window-shutter-open"
                     },
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
-                    }
+                    color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
                     value: {
                       type: "const",
                       constVal: item.icon2 || "window-shutter"
                     },
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
-                    }
+                    color: await this.getIconColor(item.offColor, this.colorOff)
                   },
                   unstable: {
                     value: {
@@ -868,20 +826,14 @@ class ConfigManager extends import_library.BaseClass {
                         type: "const",
                         constVal: item.icon || "garage-open"
                       },
-                      color: {
-                        type: "const",
-                        constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
-                      }
+                      color: await this.getIconColor(item.onColor, this.colorOn)
                     },
                     false: {
                       value: {
                         type: "const",
                         constVal: item.icon2 || "garage"
                       },
-                      color: {
-                        type: "const",
-                        constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
-                      }
+                      color: await this.getIconColor(item.offColor, this.colorOff)
                     },
                     unstable: {
                       value: {
@@ -912,8 +864,8 @@ class ConfigManager extends import_library.BaseClass {
                 template: "text.gate.isOpen",
                 dpInit: item.id,
                 color: {
-                  true: this.colorOn,
-                  false: this.colorOff
+                  true: await this.getIconColor(item.onColor, this.colorOn),
+                  false: await this.getIconColor(item.offColor, this.colorOff)
                 }
               };
             }
@@ -996,10 +948,7 @@ class ConfigManager extends import_library.BaseClass {
                 icon: {
                   true: {
                     value: await this.getFieldAsDataItemConfig(item.icon || iconOn),
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.onColor) && import_Color.Color.convertScriptRGBtoRGB(item.onColor) || this.colorOn
-                    },
+                    color: await this.getIconColor(item.onColor, this.colorOn),
                     text: {
                       value: { type: "state", dp: `${item.id}.ACTUAL` },
                       unit: commonUnit ? { type: "const", constVal: commonUnit } : void 0
@@ -1007,10 +956,7 @@ class ConfigManager extends import_library.BaseClass {
                   },
                   false: {
                     value: await this.getFieldAsDataItemConfig(item.icon2 || iconOff),
-                    color: {
-                      type: "const",
-                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
-                    },
+                    color: await this.getIconColor(item.offColor, this.colorOff),
                     text: {
                       value: { type: "state", dp: `${item.id}.ACTUAL` },
                       unit: commonUnit ? { type: "const", constVal: commonUnit } : void 0
@@ -1766,7 +1712,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     return { type: "const", constVal: possibleId };
   }
-  async getIconColor(item) {
+  async getIconColor(item, def = void 0) {
     if (isIconScaleElement(item)) {
     } else if (typeof item === "string") {
       return await this.getFieldAsDataItemConfig(item);
@@ -1774,6 +1720,10 @@ class ConfigManager extends import_library.BaseClass {
       return { type: "const", constVal: item };
     } else if (import_Color.Color.isScriptRGB(item)) {
       return { type: "const", constVal: import_Color.Color.convertScriptRGBtoRGB(item) };
+    } else if (import_Color.Color.isRGB(def)) {
+      return { type: "const", constVal: def };
+    } else if (import_Color.Color.isScriptRGB(def)) {
+      return { type: "const", constVal: import_Color.Color.convertScriptRGBtoRGB(def) };
     }
     this.adapter.log.error(`Invalid color value: ${JSON.stringify(item)}`);
     return void 0;
