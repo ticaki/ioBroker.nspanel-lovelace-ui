@@ -190,6 +190,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                 }
                 this.log.debug('Check configuration!');
+
+                if (!this.config.pw1 || typeof this.config.pw1 !== 'string') {
+                    this.log.warn('No pin entered for the service page! Please set a pin in the admin settings!');
+                }
+
                 if (this.config.mqttIp === '' && this.config.mqttPort && this.config.mqttUsername) {
                     this.config.mqttPassword = this.config.mqttPassword || '1234';
                     this.mqttServer = new MQTT.MQTTServerClass(
