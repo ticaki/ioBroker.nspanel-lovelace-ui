@@ -623,6 +623,9 @@ class StatesControler extends import_library.BaseClass {
         }
       }
     }
+    if (Object.keys(target).length === 0) {
+      return void 0;
+    }
     return target;
   }
   /**

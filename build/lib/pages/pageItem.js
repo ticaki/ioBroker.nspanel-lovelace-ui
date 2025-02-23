@@ -359,7 +359,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               }
             }
             message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
-            this.log.debug(`value ${value != null ? value : true} iconcolor: ${message.iconColor}`);
             return tools.getPayload(
               "button",
               message.intNameEntity,

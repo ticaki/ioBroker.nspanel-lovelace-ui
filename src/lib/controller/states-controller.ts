@@ -720,6 +720,9 @@ export class StatesControler extends BaseClass {
                 }
             }
         }
+        if (Object.keys(target).length === 0) {
+            return undefined;
+        }
         return target;
     }
 
