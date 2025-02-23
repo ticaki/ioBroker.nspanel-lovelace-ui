@@ -259,8 +259,8 @@ class ConfigManager extends import_library.BaseClass {
       type: "button",
       data: {
         text: {
-          true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` },
-          false: item.buttonTextOff ? await this.getFieldAsDataItemConfig(item.buttonTextOff) : await this.existsState(`${item.id}.BUTTONTEXTOFF`) ? { type: "state", dp: `${item.id}.BUTTONTEXTOFF` } : item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "state", dp: `${item.id}.BUTTONTEXT` } : { type: "state", dp: `${item.id}.ACTUAL` }
+          true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item.id}.BUTTONTEXT` } : { type: "triggered", dp: `${item.id}.ACTUAL` },
+          false: item.buttonTextOff ? await this.getFieldAsDataItemConfig(item.buttonTextOff) : await this.existsState(`${item.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item.id}.BUTTONTEXTOFF` } : item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : await this.existsState(`${item.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item.id}.BUTTONTEXT` } : { type: "triggered", dp: `${item.id}.ACTUAL` }
         }
       }
     };
@@ -826,10 +826,14 @@ class ConfigManager extends import_library.BaseClass {
                 headline: item.name ? await this.getFieldAsDataItemConfig(item.name) : { type: "const", constVal: commonName != null ? commonName : "Blind" },
                 entity1: {
                   value: { type: "triggered", dp: `${item.id}.ACTUAL` },
+                  minScale: item.minValueLevel ? { type: "const", constVal: item.minValueLevel } : void 0,
+                  maxScale: item.maxValueLevel ? { type: "const", constVal: item.maxValueLevel } : void 0,
                   set: { type: "state", dp: `${item.id}.SET` }
                 },
                 entity2: {
                   value: { type: "triggered", dp: `${item.id}.TILT_ACTUAL` },
+                  minScale: item.minValueTilt ? { type: "const", constVal: item.minValueTilt } : void 0,
+                  maxScale: item.maxValueTilt ? { type: "const", constVal: item.maxValueTilt } : void 0,
                   set: { type: "state", dp: `${item.id}.TILT_SET` }
                 },
                 up: { type: "state", dp: `${item.id}.OPEN` },

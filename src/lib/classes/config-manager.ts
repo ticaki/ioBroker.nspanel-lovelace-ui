@@ -318,17 +318,17 @@ export class ConfigManager extends BaseClass {
                     true: item.buttonText
                         ? await this.getFieldAsDataItemConfig(item.buttonText)
                         : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                          ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                          : { type: 'state', dp: `${item.id}.ACTUAL` },
+                          ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
+                          : { type: 'triggered', dp: `${item.id}.ACTUAL` },
                     false: item.buttonTextOff
                         ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
                         : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
-                          ? { type: 'state', dp: `${item.id}.BUTTONTEXTOFF` }
+                          ? { type: 'triggered', dp: `${item.id}.BUTTONTEXTOFF` }
                           : item.buttonText
                             ? await this.getFieldAsDataItemConfig(item.buttonText)
                             : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                              ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                              : { type: 'state', dp: `${item.id}.ACTUAL` },
+                              ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
+                              : { type: 'triggered', dp: `${item.id}.ACTUAL` },
                 },
             },
         };
