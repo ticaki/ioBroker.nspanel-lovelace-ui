@@ -137,7 +137,7 @@ export const stateRoleArray = arrayOfAllStateRole([
 ]);
 
 export type StateRole =
-|'value.blind'
+    | 'value.blind'
     | 'sensor.door'
     | 'switch.gate'
     | 'button'

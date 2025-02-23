@@ -406,7 +406,9 @@ export class PageItem extends BaseClassTriggerd {
                                     )) ?? '';
                             }
                         }
+
                         message.iconColor = await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOn);
+                        this.log.debug(`value ${value ?? true} iconcolor: ${message.iconColor}`);
                         return tools.getPayload(
                             'button',
                             message.intNameEntity,

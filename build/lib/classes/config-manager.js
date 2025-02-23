@@ -1009,7 +1009,7 @@ class ConfigManager extends import_library.BaseClass {
                     value: await this.getFieldAsDataItemConfig(item.icon2 || iconOff),
                     color: {
                       type: "const",
-                      constVal: item.offColor ? await this.getFieldAsDataItemConfig(item.offColor) : this.colorOff
+                      constVal: import_Color.Color.isScriptRGB(item.offColor) && import_Color.Color.convertScriptRGBtoRGB(item.offColor) || this.colorOff
                     },
                     text: {
                       value: { type: "state", dp: `${item.id}.ACTUAL` },
