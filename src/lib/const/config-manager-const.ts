@@ -312,8 +312,8 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             BLUE: { role: 'level.color.blue', type: 'number', required: true, writeable: true },
             ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true, writeable: false },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            DIMMER: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
-            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true, writeable: true },
+            DIMMER: { role: 'level.dimmer', type: 'number', required: false, writeable: true },
+            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: false, writeable: true },
             WHITE: { role: 'level.color.white', type: 'number', required: false, writeable: true },
             VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
@@ -324,8 +324,8 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         data: {
             RGB: { role: 'level.color.rgb', type: 'string', required: true, writeable: true },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            DIMMER: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
-            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true, writeable: true },
+            DIMMER: { role: 'level.dimmer', type: 'number', required: false, writeable: true },
+            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: false, writeable: true },
             ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true, writeable: false },
             VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
