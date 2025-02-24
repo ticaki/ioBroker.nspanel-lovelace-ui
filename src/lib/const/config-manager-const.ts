@@ -318,8 +318,8 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
-    rbgSingle: {
-        name: 'rbgSingle',
+    rgbSingle: {
+        name: 'rgbSingle',
         description: 'Farblicht ohne Farbkanäle',
         data: {
             RGB: { role: 'level.color.rgb', type: 'string', required: true, writeable: true },
