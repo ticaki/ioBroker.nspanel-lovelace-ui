@@ -14,7 +14,7 @@ export async function generateAliasDocumentation(): Promise<void> {
             const data = requiredScriptDataPoints[folder];
             readme += `### ${folder}\n`;
             readme += header;
-            table += `* [${folder}](#${folder})\n`;
+            table += `* [${folder}](#${folder.toLowerCase().replace(/[^a-z0-9]+/g, '')})\n`;
 
             for (const key in data.data) {
                 const row = data.data[key];
@@ -55,7 +55,7 @@ export async function generateAliasDocumentation(): Promise<void> {
             readme += `### Feature: ${folder}\n`;
             readme += header;
 
-            table += `* [${folder}](#feature-${folder})\n`;
+            table += `* [${folder}](#feature-${folder.toLowerCase().replace(/[^a-z0-9]+/g, '')})\n`;
 
             for (const key in data.data) {
                 const row = data.data[key];

@@ -48,7 +48,7 @@ async function generateAliasDocumentation() {
       readme += `### ${folder}
 `;
       readme += header;
-      table += `* [${folder}](#${folder})
+      table += `* [${folder}](#${folder.toLowerCase().replace(/[^a-z0-9]+/g, "")})
 `;
       for (const key in data.data) {
         const row = data.data[key];
@@ -84,7 +84,7 @@ async function generateAliasDocumentation() {
       readme += `### Feature: ${folder}
 `;
       readme += header;
-      table += `* [${folder}](#feature-${folder})
+      table += `* [${folder}](#feature-${folder.toLowerCase().replace(/[^a-z0-9]+/g, "")})
 `;
       for (const key in data.data) {
         const row = data.data[key];
