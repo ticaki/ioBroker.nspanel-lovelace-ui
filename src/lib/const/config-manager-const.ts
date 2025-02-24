@@ -151,7 +151,7 @@ type requiredDatapoints = {
 export const requiredScriptDataPoints: requiredDatapoints = {
     motion: {
         name: 'motion',
-        description: 'Status des Bewegungssensors bzw Präsenzmelders (Bewegung oder Anwesenheit erkannt)',
+        description: 'Status of the motion sensor or presence detector (motion or presence detected)',
         data: { ACTUAL: { role: 'sensor.motion', type: 'boolean', required: true, writeable: false } },
     },
     //läuft im Script mit unter RGBsingle, muss nochmal geprüft werden ob sinnvoll
@@ -216,11 +216,11 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'hue',
         description: '',
         data: {
-            DIMMER: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
+            DIMMER: { role: 'level.dimmer', type: 'number', required: false, writeable: true },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
             ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true, writeable: false },
-            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true, writeable: true },
-            HUE: { role: 'level.color.hue', type: 'number', required: false, writeable: true },
+            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: false, writeable: true },
+            HUE: { role: 'level.color.hue', type: 'number', required: true, writeable: true },
             VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
@@ -457,16 +457,11 @@ export const requiredScriptDataPoints: requiredDatapoints = {
 };
 
 export const requiredFeatureDatapoints: requiredDatapoints = {
-    motion: {
-        name: 'motion',
-        description: '',
-        data: { ACTUAL: { role: 'sensor.motion', type: 'boolean', required: true } },
-    },
     cie: {
         name: 'cie',
         description: '',
         data: {
-            CIE: { role: 'level.color.cie', type: 'number', required: true },
+            CIE: { role: 'level.color.cie', type: 'string', required: true },
             DIMMER: { role: 'level.dimmer', type: 'boolean', required: true },
             ON: { role: 'switch.light', type: 'boolean', required: true },
             ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true },
@@ -521,26 +516,10 @@ export const requiredFeatureDatapoints: requiredDatapoints = {
             ON: { role: 'switch.light', type: 'boolean', required: true },
             ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true },
             TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true },
-            HUE: { role: 'level.color.hue', type: 'number', required: false },
+            HUE: { role: 'level.color.hue', type: 'number', required: true },
         },
     },
     info: { name: 'info', description: '', data: { ACTUAL: { role: 'text', type: 'string', required: true } } },
-    blind: {
-        name: 'blind',
-        description: '',
-        data: {
-            ACTUAL: { role: 'value.blind', type: 'number', required: true },
-            SET: { role: 'level.blind', type: 'number', required: true },
-            CLOSE: { role: 'button.close.blind', type: 'boolean', required: true },
-            OPEN: { role: 'button.open.blind', type: 'boolean', required: true },
-            STOP: { role: 'button.stop.blind', type: 'boolean', required: true },
-            TILT_ACTUAL: { role: 'value.tilt', type: 'number', required: false },
-            TILT_SET: { role: 'level.tilt', type: 'number', required: false },
-            TILT_CLOSE: { role: 'button.close.tilt', type: 'boolean', required: false },
-            TILT_OPEN: { role: 'button.open.tilt', type: 'boolean', required: false },
-            TILT_STOP: { role: 'button.stop.tilt', type: 'boolean', required: false },
-        },
-    },
     airCondition: {
         name: 'airCondition',
         description: '',
