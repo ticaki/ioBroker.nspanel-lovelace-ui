@@ -77,7 +77,7 @@ class Controller extends Library.BaseClass {
     this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
   };
   /**
-   * Update Date every hour....
+   * Update Date every day at 0:00:01....
    *
    * @returns void
    */

@@ -504,7 +504,6 @@ class Panel extends import_library.BaseClass {
       } else {
         this.log.warn("is offline!");
       }
-      this.restartLoops();
     }
     this._isOnline = s;
   }

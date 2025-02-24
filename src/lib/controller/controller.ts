@@ -58,7 +58,7 @@ export class Controller extends Library.BaseClass {
     };
 
     /**
-     * Update Date every hour....
+     * Update Date every day at 0:00:01....
      *
      * @returns void
      */

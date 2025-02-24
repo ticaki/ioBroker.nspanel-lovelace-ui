@@ -533,7 +533,7 @@ export class Panel extends BaseClass {
             } else {
                 this.log.warn('is offline!');
             }
-            this.restartLoops();
+            //this.restartLoops();
         }
         this._isOnline = s;
     }

@@ -24,6 +24,7 @@ export default [
             'node_modules',
             'templates',
             '.dev-data',
+            'script/**/*.ts',
         ]
     },
 
