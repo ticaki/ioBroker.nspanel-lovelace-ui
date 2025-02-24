@@ -522,7 +522,7 @@ const requiredFeatureDatapoints = {
     name: "gate",
     description: "",
     data: {
-      ACTUAL: { role: "value.blind", type: "number", required: true, writeable: false },
+      ACTUAL: { role: ["value.blind", "value.blind"], type: "number", required: true, writeable: false },
       SET: { role: "switch.gate", type: "boolean", required: true, writeable: true },
       STOP: { role: "button.stop", type: "boolean", required: true, writeable: true }
     }

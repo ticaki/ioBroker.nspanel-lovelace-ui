@@ -25,6 +25,8 @@ var import_library = require("./library");
 var import_Color = require("../const/Color");
 var import_config_manager_const = require("../const/config-manager-const");
 var import_pages = require("../types/pages");
+var import_navigation = require("./navigation");
+var import_readme = require("../tools/readme");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   colorOn = import_Color.Color.On;
@@ -161,8 +163,13 @@ class ConfigManager extends import_library.BaseClass {
       return messages;
     }
     ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
-    if (config.navigation != null) {
-      panelConfig.navigation = config.navigation;
+    const nav1 = config.navigation;
+    const nav2 = panelConfig.navigation;
+    if (nav1 != null && (0, import_navigation.isNavigationItemConfigArray)(nav1) && (0, import_navigation.isNavigationItemConfigArray)(nav2)) {
+      panelConfig.navigation = nav1.concat(nav2);
+      panelConfig.navigation = panelConfig.navigation.filter(
+        (a, p) => a && panelConfig.navigation.findIndex((b) => b && a && b.name === a.name) === p
+      );
     }
     const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
     if (obj) {
@@ -1541,12 +1548,12 @@ class ConfigManager extends import_library.BaseClass {
         if (!o && !import_config_manager_const.requiredScriptDataPoints[role2].data[dp].required) {
           continue;
         }
-        if (!o || o.common.role !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role || o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type || import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write) {
+        if (!o || !this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) || import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type === "mixed" && o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type || import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write) {
           if (!o) {
             throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
           } else {
             throw new Error(
-              `Datapoint ${item2.id}.${dp} has wrong ${o.common.role !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role ? `role: ${o.common.role} should be ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role}` : ""} ${o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type}` : ""} ${!(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write) ? " - must be writeable!" : ""} `
+              `Datapoint ${item2.id}.${dp}:${this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role)})` : ""} ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type === "mixed" || o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type}` : ""}${!(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write) ? " must be writeable!" : ""} `
             );
           }
         }
@@ -1559,12 +1566,12 @@ class ConfigManager extends import_library.BaseClass {
         if (!o && !import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].required) {
           continue;
         }
-        if (!o || o.common.role !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role || o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type) {
+        if (!o || !this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) || import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type === "mixed" && o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type) {
           if (!o) {
             throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
           } else {
             throw new Error(
-              `Datapoint ${item2.id}.${dp} has wrong ${o.common.role !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role ? `role: ${o.common.role} should be ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role}` : ""} ${o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type}` : ""} ${!(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].writeable && !o.common.write) ? " - must be writeable!" : ""} `
+              `Datapoint ${item2.id}.${dp}:${this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role)}` : ""} ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type === "mixed" || o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type}` : ""}${!(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].writeable && !o.common.write) ? " must be writeable!" : ""} `
             );
           }
         }
@@ -1604,6 +1611,15 @@ class ConfigManager extends import_library.BaseClass {
       }
     }
     return true;
+  }
+  checkStringVsStringOrArray(item, test) {
+    if (test === void 0) {
+      return false;
+    }
+    if (Array.isArray(item)) {
+      return item.includes(test);
+    }
+    return item === test;
   }
   async getMrEntityData(entity, mode, nr) {
     const result = {

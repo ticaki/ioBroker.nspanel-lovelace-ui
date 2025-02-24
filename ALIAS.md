@@ -292,7 +292,7 @@
 ### Feature: gate
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **gate** | ACTUAL | number| value.blind  | X |  |  | 
+| **gate** | ACTUAL | number| value.blind, value.blind  | X |  |  | 
 | **"** | SET | boolean| switch.gate  | X | X |  | 
 | **"** | STOP | boolean| button.stop  | X | X |  | 
 ### Feature: thermostat

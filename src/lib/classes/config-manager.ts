@@ -12,7 +12,8 @@ import {
 } from '../const/config-manager-const';
 import type { panelConfigPartial } from '../controller/panel';
 import { exhaustiveCheck } from '../types/pages';
-import type { NavigationItemConfig } from './navigation';
+import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
+import { getStringOrArray } from '../tools/readme';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -171,9 +172,14 @@ export class ConfigManager extends BaseClass {
 
         ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
 
-        // if navigation is set in config, overwrite the generated navigation
-        if (config.navigation != null) {
-            panelConfig.navigation = config.navigation;
+        // merge both navigations. Remove duplicates from panelConfig.navigation
+        const nav1 = config.navigation as NavigationItemConfig[];
+        const nav2 = panelConfig.navigation;
+        if (nav1 != null && isNavigationItemConfigArray(nav1) && isNavigationItemConfigArray(nav2)) {
+            panelConfig.navigation = nav1.concat(nav2);
+            panelConfig.navigation = panelConfig.navigation.filter(
+                (a, p) => a && panelConfig.navigation.findIndex(b => b && a && b.name === a.name) === p,
+            );
         }
         //this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
         const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
@@ -1777,18 +1783,19 @@ export class ConfigManager extends BaseClass {
                 }
                 if (
                     !o ||
-                    o.common.role !== requiredScriptDataPoints[role].data[dp].role ||
-                    o.common.type !== requiredScriptDataPoints[role].data[dp].type ||
+                    !this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ||
+                    (requiredScriptDataPoints[role].data[dp].type === 'mixed' &&
+                        o.common.type !== requiredScriptDataPoints[role].data[dp].type) ||
                     (requiredScriptDataPoints[role].data[dp].writeable && !o.common.write)
                 ) {
                     if (!o) {
                         throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
                     } else {
                         throw new Error(
-                            `Datapoint ${item.id}.${dp} has wrong ` +
-                                `${o.common.role !== requiredScriptDataPoints[role].data[dp].role ? `role: ${o.common.role} should be ${requiredScriptDataPoints[role].data[dp].role}` : ''} ` +
-                                `${o.common.type !== requiredScriptDataPoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredScriptDataPoints[role].data[dp].type}` : ''}` +
-                                ` ${!(requiredScriptDataPoints[role].data[dp].writeable && !o.common.write) ? ' - must be writeable!' : ''} `,
+                            `Datapoint ${item.id}.${dp}:` +
+                                `${this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${getStringOrArray(requiredScriptDataPoints[role].data[dp].role)})` : ''} ` +
+                                `${requiredScriptDataPoints[role].data[dp].type === 'mixed' || o.common.type !== requiredScriptDataPoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredScriptDataPoints[role].data[dp].type}` : ''}` +
+                                `${!(requiredScriptDataPoints[role].data[dp].writeable && !o.common.write) ? ' must be writeable!' : ''} `,
                         );
                     }
                 }
@@ -1805,17 +1812,18 @@ export class ConfigManager extends BaseClass {
 
                 if (
                     !o ||
-                    o.common.role !== requiredFeatureDatapoints[role].data[dp].role ||
-                    o.common.type !== requiredFeatureDatapoints[role].data[dp].type
+                    !this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ||
+                    (requiredFeatureDatapoints[role].data[dp].type === 'mixed' &&
+                        o.common.type !== requiredFeatureDatapoints[role].data[dp].type)
                 ) {
                     if (!o) {
                         throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
                     } else {
                         throw new Error(
-                            `Datapoint ${item.id}.${dp} has wrong ` +
-                                `${o.common.role !== requiredFeatureDatapoints[role].data[dp].role ? `role: ${o.common.role} should be ${requiredFeatureDatapoints[role].data[dp].role}` : ''} ` +
-                                `${o.common.type !== requiredFeatureDatapoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredFeatureDatapoints[role].data[dp].type}` : ''}` +
-                                ` ${!(requiredFeatureDatapoints[role].data[dp].writeable && !o.common.write) ? ' - must be writeable!' : ''} `,
+                            `Datapoint ${item.id}.${dp}:` +
+                                `${this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${getStringOrArray(requiredFeatureDatapoints[role].data[dp].role)}` : ''} ` +
+                                `${requiredFeatureDatapoints[role].data[dp].type === 'mixed' || o.common.type !== requiredFeatureDatapoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredFeatureDatapoints[role].data[dp].type}` : ''}` +
+                                `${!(requiredFeatureDatapoints[role].data[dp].writeable && !o.common.write) ? ' must be writeable!' : ''} `,
                         );
                     }
                 }
@@ -1858,6 +1866,15 @@ export class ConfigManager extends BaseClass {
         return true;
     }
 
+    checkStringVsStringOrArray(item: string | string[], test: string | undefined): boolean {
+        if (test === undefined) {
+            return false;
+        }
+        if (Array.isArray(item)) {
+            return item.includes(test);
+        }
+        return item === test;
+    }
     async getMrEntityData(
         entity: ScriptConfig.ScreenSaverMRElement,
         mode: Types.ScreenSaverPlaces,

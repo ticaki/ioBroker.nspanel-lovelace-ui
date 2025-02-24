@@ -28,7 +28,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var readme_exports = {};
 __export(readme_exports, {
-  generateAliasDocumentation: () => generateAliasDocumentation
+  generateAliasDocumentation: () => generateAliasDocumentation,
+  getStringOrArray: () => getStringOrArray
 });
 module.exports = __toCommonJS(readme_exports);
 var fs = __toESM(require("fs"));
@@ -52,7 +53,7 @@ async function generateAliasDocumentation() {
 `;
       for (const key in data.data) {
         const row = data.data[key];
-        readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${row.role}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
+        readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${getStringOrArray(row.role)}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
 `;
         lastFolder = folder;
       }
@@ -88,7 +89,7 @@ async function generateAliasDocumentation() {
 `;
       for (const key in data.data) {
         const row = data.data[key];
-        readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${row.role}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
+        readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${getStringOrArray(row.role)}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
 `;
         lastFolder = folder;
       }
@@ -96,8 +97,15 @@ async function generateAliasDocumentation() {
     fs.writeFileSync("ALIAS.md", table + readme);
   }
 }
+function getStringOrArray(item) {
+  if (Array.isArray(item)) {
+    return item.join(", ") || "";
+  }
+  return item;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  generateAliasDocumentation
+  generateAliasDocumentation,
+  getStringOrArray
 });
 //# sourceMappingURL=readme.js.map

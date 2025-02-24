@@ -18,7 +18,9 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var navigation_exports = {};
 __export(navigation_exports, {
-  Navigation: () => Navigation
+  Navigation: () => Navigation,
+  isNavigationItemConfig: () => isNavigationItemConfig,
+  isNavigationItemConfigArray: () => isNavigationItemConfigArray
 });
 module.exports = __toCommonJS(navigation_exports);
 var import_library = require("./library");
@@ -26,6 +28,44 @@ var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
 var import_definition = require("../const/definition");
+function isNavigationItemConfigArray(a) {
+  if (!a) {
+    return false;
+  }
+  for (const n of a) {
+    if (!isNavigationItemConfig(n)) {
+      return false;
+    }
+  }
+  return true;
+}
+function isNavigationItemConfig(a) {
+  if (a === void 0) {
+    return false;
+  }
+  if (a === null) {
+    return true;
+  }
+  if (typeof a !== "object" || !a.name || typeof a.name !== "string") {
+    return false;
+  }
+  if (a.left && typeof a.left !== "object") {
+    return false;
+  }
+  if (a.right && typeof a.right !== "object") {
+    return false;
+  }
+  if (!a.page || typeof a.page !== "string") {
+    return false;
+  }
+  if (a.right && (a.right.single && typeof a.right.single !== "string" || a.right.double && typeof a.right.double !== "string")) {
+    return false;
+  }
+  if (a.left && (a.left.single && typeof a.left.single !== "string" || a.left.double && typeof a.left.double !== "string")) {
+    return false;
+  }
+  return true;
+}
 class Navigation extends import_library.BaseClass {
   panel;
   database = [];
@@ -324,6 +364,8 @@ class Navigation extends import_library.BaseClass {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Navigation
+  Navigation,
+  isNavigationItemConfig,
+  isNavigationItemConfigArray
 });
 //# sourceMappingURL=navigation.js.map

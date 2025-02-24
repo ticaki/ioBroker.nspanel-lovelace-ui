@@ -18,7 +18,7 @@ export async function generateAliasDocumentation(): Promise<void> {
 
             for (const key in data.data) {
                 const row = data.data[key];
-                readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${row.role}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
+                readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${getStringOrArray(row.role)}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
                 lastFolder = folder;
             }
         }
@@ -59,7 +59,7 @@ export async function generateAliasDocumentation(): Promise<void> {
 
             for (const key in data.data) {
                 const row = data.data[key];
-                readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${row.role}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
+                readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${getStringOrArray(row.role)}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
                 lastFolder = folder;
             }
         }
@@ -106,3 +106,10 @@ export async function testTypeDetector(adapter: NspanelLovelaceUi): Promise<void
         console.log(`Nothing found for ${options.id}`);
     }
 }*/
+
+export function getStringOrArray(item: string | string[]): string {
+    if (Array.isArray(item)) {
+        return item.join(', ') || '';
+    }
+    return item;
+}

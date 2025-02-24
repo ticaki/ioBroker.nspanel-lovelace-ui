@@ -19,6 +19,53 @@ export type NavigationItemConfig = {
     page: string;
     optional?: optionalActionsType;
 } | null;
+
+export function isNavigationItemConfigArray(a: any[]): a is NavigationItemConfig[] {
+    if (!a) {
+        return false;
+    }
+    for (const n of a) {
+        if (!isNavigationItemConfig(n)) {
+            return false;
+        }
+    }
+    return true;
+}
+export function isNavigationItemConfig(a: any): a is NavigationItemConfig {
+    if (a === undefined) {
+        return false;
+    }
+    if (a === null) {
+        return true;
+    }
+    if (typeof a !== 'object' || !a.name || typeof a.name !== 'string') {
+        return false;
+    }
+    if (a.left && typeof a.left !== 'object') {
+        return false;
+    }
+    if (a.right && typeof a.right !== 'object') {
+        return false;
+    }
+    if (!a.page || typeof a.page !== 'string') {
+        return false;
+    }
+    if (
+        a.right &&
+        ((a.right.single && typeof a.right.single !== 'string') ||
+            (a.right.double && typeof a.right.double !== 'string'))
+    ) {
+        return false;
+    }
+    if (
+        a.left &&
+        ((a.left.single && typeof a.left.single !== 'string') || (a.left.double && typeof a.left.double !== 'string'))
+    ) {
+        return false;
+    }
+
+    return true;
+}
 export type NavigationItemConfigNonNull = NonNullable<NavigationItemConfig>;
 type NavigationItem = {
     left: {
