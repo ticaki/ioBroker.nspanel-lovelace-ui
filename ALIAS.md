@@ -13,7 +13,7 @@
 * [light](#light)
 * [volume](#volume)
 * [rgb](#rgb)
-* [rgbSingle](#rgbSingle)
+* [rgbSingle](#rgbsingle)
 * [slider](#slider)
 * [button](#button)
 * [buttonSensor](#buttonsensor)
@@ -30,9 +30,9 @@
 * [WIFI](#wifi)
 ## Feature
 * [cie](#feature-cie)
-* [timeTable](#feature-timeTable)
+* [timeTable](#feature-timetable)
 * [info](#feature-info)
-* [airCondition](#feature-airCondition)
+* [airCondition](#feature-aircondition)
 * [gate](#feature-gate)
 * [thermostat](#feature-thermostat)
 ### motion
