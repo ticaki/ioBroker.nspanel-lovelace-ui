@@ -989,7 +989,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.parent = void 0;
   }
   async onCommand(action, value) {
-    var _a, _b;
+    var _a, _b, _c;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -1029,7 +1029,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             this.panel.navigation.setTargetPageByName(value2);
             break;
           }
-          value2 = (_b = item.setValue1 && await item.setValue1.getBoolean()) != null ? _b : null;
+          value2 = (_b = item.entity1 && item.entity1.set && await item.entity1.set.getBoolean()) != null ? _b : null;
+          if (value2 !== null && item.entity1 && item.entity1.set) {
+            await item.entity1.set.setStateFlip();
+          }
+          value2 = (_c = item.setValue1 && await item.setValue1.getBoolean()) != null ? _c : null;
           if (value2 !== null && item.setValue1) {
             await item.setValue1.setStateFlip();
           }

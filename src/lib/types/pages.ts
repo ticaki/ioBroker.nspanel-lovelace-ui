@@ -135,10 +135,16 @@ export const stateRoleArray = arrayOfAllStateRole([
     'value.blind',
     'value.volume',
     'sensor.motion',
+    'value.warning',
+    'switch.mode.manual',
+    'switch.mode.auto',
     '',
 ]);
 
 export type StateRole =
+    | 'switch.mode.manual'
+    | 'switch.mode.auto'
+    | 'value.warning'
     | 'sensor.motion'
     | 'value.volume'
     | 'value.blind'

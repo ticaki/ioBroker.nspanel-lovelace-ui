@@ -1102,4 +1102,83 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.info': {
+        role: 'text',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'information-outline' },
+                    color: {
+                        mode: 'auto',
+                        role: 'state',
+                        type: 'state',
+                        dp: '',
+                        regexp: /\.COLORDEC$/,
+                        def: Color.activated,
+                    },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'information-outline' },
+                    color: {
+                        mode: 'auto',
+                        role: 'state',
+                        type: 'state',
+                        dp: '',
+                        regexp: /\.COLORDEC$/,
+                        def: Color.deactivated,
+                    },
+                },
+            },
+            entity1: undefined,
+
+            text: {
+                true: { mode: 'auto', role: 'state', type: 'state', dp: '', regexp: /\.BUTTONTEXT$/, def: 'info' },
+            },
+            text1: {
+                true: { type: 'const', constVal: 'name' },
+            },
+        },
+    },
+    'text.warning': {
+        role: 'text',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'gesture-tap-button' },
+                    color: {
+                        mode: 'auto',
+                        role: 'value.warning',
+                        type: 'state',
+                        dp: '',
+                        regexp: /\.LEVEL$/,
+                        def: Color.deactivated,
+                    },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'gesture-tap-button' },
+                    color: {
+                        mode: 'auto',
+                        role: 'value.warning',
+                        type: 'state',
+                        dp: '',
+                        regexp: /\.LEVEL$/,
+                        def: Color.deactivated,
+                    },
+                },
+            },
+            entity1: undefined,
+            text: {
+                true: { type: 'const', constVal: 'window' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'opened' },
+                false: { type: 'const', constVal: 'closed' },
+            },
+        },
+    },
 };

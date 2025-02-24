@@ -746,8 +746,9 @@ class StatesControler extends import_library.BaseClass {
             }
           }
           if (!found) {
+            d.mode = "fail";
             data[i] = void 0;
-            this.log.warn(
+            console.warn(
               `No state found for role ${JSON.stringify(d.role)} in ${dpInit.toString()} with with .dp: ${d.dp ? d.dp.toString() : "empty"} and .regexp: ${d.regexp ? d.regexp.toString() : "empty"}`
             );
           }

@@ -20,6 +20,8 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'text.info'
+    | 'text.warning'
     | 'number.volume'
     | 'button.volume'
     | 'text.motion'
@@ -354,9 +356,11 @@ export type DataItemsOptions = {
 );
 
 type DataItemsOptionsAuto = {
-    mode: 'auto' | 'done'; // not set means custom
+    mode: 'auto' | 'done' | 'fail'; // not set means custom
     role: pages.StateRole | pages.StateRole[];
     regexp?: RegExp;
+    def?: string | number | boolean | RGB;
+    required?: boolean;
 };
 type DataItemsOptionsCustom = {
     mode?: 'custom'; // not set means custom

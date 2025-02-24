@@ -1114,6 +1114,84 @@ const textTemplates = {
         false: { type: "const", constVal: "Off" }
       }
     }
+  },
+  "text.info": {
+    role: "text",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "information-outline" },
+          color: {
+            mode: "auto",
+            role: "state",
+            type: "state",
+            dp: "",
+            regexp: /\.COLORDEC$/,
+            def: import_Color.Color.activated
+          }
+        },
+        false: {
+          value: { type: "const", constVal: "information-outline" },
+          color: {
+            mode: "auto",
+            role: "state",
+            type: "state",
+            dp: "",
+            regexp: /\.COLORDEC$/,
+            def: import_Color.Color.deactivated
+          }
+        }
+      },
+      entity1: void 0,
+      text: {
+        true: { mode: "auto", role: "state", type: "state", dp: "", regexp: /\.BUTTONTEXT$/, def: "info" }
+      },
+      text1: {
+        true: { type: "const", constVal: "name" }
+      }
+    }
+  },
+  "text.warning": {
+    role: "text",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "gesture-tap-button" },
+          color: {
+            mode: "auto",
+            role: "value.warning",
+            type: "state",
+            dp: "",
+            regexp: /\.LEVEL$/,
+            def: import_Color.Color.deactivated
+          }
+        },
+        false: {
+          value: { type: "const", constVal: "gesture-tap-button" },
+          color: {
+            mode: "auto",
+            role: "value.warning",
+            type: "state",
+            dp: "",
+            regexp: /\.LEVEL$/,
+            def: import_Color.Color.deactivated
+          }
+        }
+      },
+      entity1: void 0,
+      text: {
+        true: { type: "const", constVal: "window" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "opened" },
+        false: { type: "const", constVal: "closed" }
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

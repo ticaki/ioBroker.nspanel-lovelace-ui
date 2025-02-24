@@ -1168,6 +1168,10 @@ export class PageItem extends BaseClassTriggerd {
                         this.panel.navigation.setTargetPageByName(value);
                         break;
                     }
+                    value = (item.entity1 && item.entity1.set && (await item.entity1.set.getBoolean())) ?? null;
+                    if (value !== null && item.entity1 && item.entity1.set) {
+                        await item.entity1.set.setStateFlip();
+                    }
                     value = (item.setValue1 && (await item.setValue1.getBoolean())) ?? null;
                     if (value !== null && item.setValue1) {
                         await item.setValue1.setStateFlip();

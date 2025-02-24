@@ -873,8 +873,9 @@ export class StatesControler extends BaseClass {
                         }
                     }
                     if (!found) {
+                        d.mode = 'fail';
                         data[i] = undefined;
-                        this.log.warn(
+                        console.warn(
                             `No state found for role ${JSON.stringify(d.role)} in ${dpInit.toString()} with with .dp: ${
                                 d.dp ? d.dp.toString() : 'empty'
                             } and .regexp: ${d.regexp ? d.regexp.toString() : 'empty'}`,

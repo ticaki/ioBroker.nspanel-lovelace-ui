@@ -644,8 +644,48 @@ export class ConfigManager extends BaseClass {
                 };
                 break;
             }
-            case 'info':
-            case 'warning':
+            case 'warning': {
+                itemConfig = {
+                    template: 'text.warning',
+                    dpInit: item.id!,
+                    type: 'button',
+                    color: {
+                        true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
+                        false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
+                        scale: item.colorScale,
+                    },
+                    data: {
+                        text: defaultNav.data.text,
+                        text1: {
+                            true: await this.getFieldAsDataItemConfig(item.name || `${item.id}.INFO`),
+                        },
+
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
+                break;
+            }
+            case 'info': {
+                itemConfig = {
+                    template: 'text.info',
+                    dpInit: item.id!,
+                    type: 'button',
+                    color: {
+                        true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
+                        false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
+                        scale: item.colorScale,
+                    },
+                    data: {
+                        text: defaultNav.data.text,
+                        text1: {
+                            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                        },
+
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
+                break;
+            }
             case 'cie':
             case 'blind':
             case 'buttonSensor':

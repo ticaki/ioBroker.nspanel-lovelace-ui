@@ -94,7 +94,10 @@ export class PageThermo extends Page {
         if (this.items) {
             const item = this.items;
             if (this.pageItems) {
-                const pageItems = this.pageItems.filter(a => a && a.dataItems && a.dataItems.type === 'button');
+                const pageItems = this.pageItems.filter(
+                    a => a && a.dataItems && a.dataItems.type === 'button' && a.dataItems.data.entity1,
+                );
+
                 const localStep = pageItems.length > 9 ? 7 : 8;
                 if (pageItems.length - 1 <= localStep * (this.step - 1)) {
                     this.step = 1;

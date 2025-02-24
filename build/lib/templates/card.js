@@ -2432,21 +2432,20 @@ const cardTemplates = {
           entity1: {
             value: {
               mode: "auto",
-              role: "",
+              role: "switch.mode.auto",
               type: "triggered",
               dp: "",
-              regexp: /\.MODE$/,
-              read: `return val == 'AUTOMATIC' ? true : false`,
-              forceType: "boolean"
+              regexp: /\.AUTOMATIC$/,
+              forceType: "boolean",
+              required: true
+            },
+            set: {
+              mode: "auto",
+              role: "switch.mode.auto",
+              type: "state",
+              dp: "",
+              regexp: /\.AUTOMATIC$/
             }
-          },
-          setValue1: {
-            mode: "auto",
-            role: "",
-            type: "state",
-            dp: "",
-            regexp: /\.MODE$/,
-            write: `return val != true ? 'AUTOMATIC' : 'MANUAL'`
           }
         }
       },
@@ -2469,20 +2468,21 @@ const cardTemplates = {
           entity1: {
             value: {
               mode: "auto",
-              role: "",
+              role: "switch.mode.manual",
               type: "triggered",
               dp: "",
-              regexp: /\.MODE$/,
-              read: `return val == 'MANUAL' ? true : false`
+              regexp: /\.MANUAL$/,
+              read: `return val == 'MANUAL' ? true : false`,
+              required: true
+            },
+            set: {
+              mode: "auto",
+              role: "switch.mode.manual",
+              type: "state",
+              dp: "",
+              regexp: /\.MANUAL$/,
+              write: `return val = true ? 'MANUAL' : 'AUTOMATIC'`
             }
-          },
-          setValue1: {
-            mode: "auto",
-            role: "",
-            type: "state",
-            dp: "",
-            regexp: /\.MODE$/,
-            write: `return val = true ? 'MANUAL' : 'AUTOMATIC'`
           }
         }
       },

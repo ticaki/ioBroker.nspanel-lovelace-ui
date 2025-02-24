@@ -146,6 +146,8 @@ export class Page extends BaseClassPage {
             }
             const colorTrue = (options.color || {}).true;
             const colorFalse = (options.color || {}).false;
+            const colorScale = (options.color || {}).scale;
+
             options.type = options.type || template.type;
             options.role = options.role || template.role;
             if (options.appendix) {
@@ -171,6 +173,9 @@ export class Page extends BaseClassPage {
                 }
                 if (colorFalse && options.data.icon.false && options.data.icon.false.color) {
                     options.data.icon.false.color = colorFalse;
+                }
+                if (colorScale) {
+                    options.data.icon.scale = { type: 'const', constVal: colorScale };
                 }
             }
         }
