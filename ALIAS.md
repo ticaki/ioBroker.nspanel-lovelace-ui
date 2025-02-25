@@ -204,7 +204,7 @@
 | **"** | PARTY | boolean| switch.mode.party  |  |  |  | 
 | **"** | POWER | boolean| switch.power  |  | X |  | 
 | **"** | VACATION | boolean| state  |  |  |  | 
-| **"** | WINDOWOPEN | boolean| state  |  |  |  | 
+| **"** | WINDOWOPEN | boolean| state, sensor.window  |  |  |  | 
 | **"** | WORKING | boolean| indicator.working  |  |  |  | 
 | **"** | USERICON | string| state  |  |  |  | 
 ### level.timer

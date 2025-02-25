@@ -46,7 +46,7 @@
                             "jsonData": "{\"id\": \"${data.id}\", \"name\": \"${data.name}\", \"topic\": \"${data.topic}\" }",
                             "showProcess": true,
                             "useNative": true,
-                            "disabled": "_changed"
+                            "disabled": "!data.topic || !data.name"
                         }
                     ]
                 },

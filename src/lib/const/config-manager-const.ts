@@ -385,7 +385,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             PARTY: { role: 'switch.mode.party', type: 'boolean', required: false },
             POWER: { role: 'switch.power', type: 'boolean', required: false, writeable: true },
             VACATION: { role: 'state', type: 'boolean', required: false },
-            WINDOWOPEN: { role: 'state', type: 'boolean', required: false, writeable: false },
+            WINDOWOPEN: { role: ['state', 'sensor.window'], type: 'boolean', required: false, writeable: false },
             WORKING: { role: 'indicator.working', type: 'boolean', required: false, writeable: false },
             USERICON: { role: 'state', type: 'string', required: false, writeable: false }, // benutzerdefinierter Iconname über DP senden
         },
