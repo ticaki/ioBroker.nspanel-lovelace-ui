@@ -51,5 +51,6 @@
     "Humidity": "Umidità",
     "panelName": "Nome pannello (univoco)",
     "panelTopic": "Argomento mqtt (unico)",
-    "mustBeUnique": "deve essere unico"
+    "mustBeUnique": "deve essere unico",
+    "Refresh Device": "Aggiorna dispositivo"
 }

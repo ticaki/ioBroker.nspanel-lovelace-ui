@@ -51,5 +51,6 @@
     "Humidity": "Humidité",
     "panelName": "Nom du panneau (unique)",
     "panelTopic": "Sujet MQTT (unique)",
-    "mustBeUnique": "Doit être unique"
+    "mustBeUnique": "Doit être unique",
+    "Refresh Device": "Dispositif de rafraîchissement"
 }

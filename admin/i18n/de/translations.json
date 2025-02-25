@@ -50,6 +50,7 @@
     "StateObjects.buttons.indicator": "Indikator",
     "Humidity": "Luftfeuchtigkeit",
     "panelName": "Panelname (eindeutig)",
-    "panelTopic": "MQTT -Thema (einzigartig)",
-    "mustBeUnique": "Muss einzigartig sein"
+    "panelTopic": "MQTT-Topic (einzigartig)",
+    "mustBeUnique": "Muss einzigartig sein",
+    "Refresh Device": "Gerät aktualisieren"
 }

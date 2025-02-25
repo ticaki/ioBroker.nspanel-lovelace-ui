@@ -51,5 +51,6 @@
     "Humidity": "Vochtigheid",
     "panelName": "Paneelnaam (uniek)",
     "panelTopic": "MQTT Topic (uniek)",
-    "mustBeUnique": "moet uniek zijn"
+    "mustBeUnique": "moet uniek zijn",
+    "Refresh Device": "Vernieuwingsapparaat"
 }

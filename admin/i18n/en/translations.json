@@ -51,5 +51,6 @@
     "Humidity": "Humidity",
     "panelName": "Panel name(unique)",
     "panelTopic": "Mqtt topic(unique)",
-    "mustBeUnique": "must be unique"
+    "mustBeUnique": "must be unique",
+    "Refresh Device": "Refresh device"
 }

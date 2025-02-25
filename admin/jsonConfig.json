@@ -18,6 +18,8 @@
                             "type": "text",
                             "attr": "id",
                             "label": "Id",
+                            "validator": "data.id",
+                            "validatorNoSaveOnError": true,
                             "readOnly": true
                         },
                         {
@@ -25,8 +27,6 @@
                             "attr": "name",
                             "label": "panelName",
                             "readOnly": false,
-                            //"validator": "const x={};for (const c of globalData.panels) {if (x[c.name]==='x') return false; x[c.name]='x';}; return true;",
-                            //"validatorNoSaveOnError": true,
                             "validatorErrorText": "mustBeUnique"
                         },
                         {
@@ -34,14 +34,12 @@
                             "attr": "topic",
                             "label": "panelTopic",
                             "readOnly": false,
-                            //"validator": "const x={};for (const c of globalData.panels) {if (x[c.topic]==='x') return false; x[c.topic]='x';}; return true;",
-                            //"validatorNoSaveOnError": true,
                             "validatorErrorText": "mustBeUnique"
                         },
                         {
                             "attr": "_RefreshDevices",
                             "type": "sendTo",
-                            "label": "Refresh Devices",
+                            "label": "Refresh Device",
                             "command": "RefreshDevices",
                             "jsonData": "{\"id\": \"${data.id}\", \"name\": \"${data.name}\", \"topic\": \"${data.topic}\" }",
                             "showProcess": true,

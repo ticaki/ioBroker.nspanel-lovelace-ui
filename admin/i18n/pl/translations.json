@@ -51,5 +51,6 @@
     "Humidity": "Wilgotność",
     "panelName": "Nazwa panelu (unikalna)",
     "panelTopic": "MQTT Temat (unikalny)",
-    "mustBeUnique": "Musi być wyjątkowy"
+    "mustBeUnique": "Musi być wyjątkowy",
+    "Refresh Device": "Odśwież urządzenie"
 }
