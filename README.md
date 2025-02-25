@@ -19,12 +19,46 @@ NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in th
 
 Entwickleränderungen / Erklärung
 
-Merkhilfe:
-- Das icon.*.value anpassen an das val_min/max verhalten von ion.*.color
 
 Immer wenn ich Zeit und lust habe Dokumentiere ich hier Sachen.
 
 Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
+
+Mit der aktuellen Version 0.1.0 sind schon ein paar Test möglich.
+
+Ablauf:
+- Installieren
+- Im Admin Mqtt einstellen und speichern
+- Im Admin unter Overview in der Tabelle einen neu Zeile einfügen und dort den Mqtt Topic unter dem das panel lauscht und einen Namen vergeben. Anschließend Geräte aktualisieren. Wenn alles bis hin hin richtig ist, erscheint nun einen MAC Adresse mit _ im ID Feld. Speichern und beenden
+
+Nächster Schritt:
+- Dieses [Skript](script/example_sendTo_script_iobroker.ts) als RAW downloaden und ein neues TS-Skript im Javascript-Adapter anlegen [Beispiel Konfigurationsskript](script/example_sendTo_script_iobroker.ts)
+- Anschauen und die Konfiguration aus einem vorhandenen aktuellen Nspanel-Skript hinein kopieren. Alle Servicepages aus dem alten Skript nicht übernehmen.
+- Der Topic hier muß identisch sein mit einem der Topics aus dem Admin.
+- Jede Seite braucht eine Eigenschaft `uniqueName`
+
+z.B. 
+```
+const main: PageType = {
+    'type': 'cardGrid',
+    uniqueName:'main',
+    'heading': 'Wohnzimmer',
+    'useColor': true,
+    'items': [
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Wohnzimmer', targetPage: 'this_Thermostat',name: 'Wohnzimmer', onColor: MSRed, offColor: Blue, useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 19} },
+        { id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.Wohnzimmer.room', onColor: MSRed, offColor: MSGreen},
+        //{ navigate: true, id: '', targetPage: 'Alexa_Schlafzimmer', onColor: White},
+        { navigate: true, icon:'home', name:'Haus', targetPage: 'MenuGrid', onColor: White},
+    ]};
+```
+- Die Hauptseite muß main heißen
+- `next`, `prev`, `home`, `parent` müssen Strings sein die auf einen der `uniqueName` verweist.
+- Seiten die in `pages` eingetragen werden, werden im Kreis miteinander verlinkt, alle anderen Seiten die verwendet werden sollen müssen in `subPages` aufgeführt sein
+- `button1` und `button2` müssen aktuell noch da sein, werden aber nicht verwendet
+- `useValue` wird nicht verwendet.
+
+Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
+
 
 [Alias Tabelle](ALIAS.md)
 
@@ -93,7 +127,7 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [x] window
 - [x] volumeGroup
 - [x] volume
-- [ ] info
+- [x] info
 - [x] humidity
 - [x] temperature
 - [x] value.temperature
@@ -102,9 +136,9 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [ ] warning
 - [ ] cie
 - [x] gate
-- [ ] motion
+- [x] motion
 - [ ] buttonSensor
-- [ ] button
+- [x] button
 - [ ] value.time
 - [ ] level.timer
 - [ ] value.alarmtime
@@ -113,7 +147,7 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 - [ ] slider
 - [ ] switch.mode.wlan
 - [ ] media
-- [ ] timeTable
+- [x] timeTable
 - [ ] airCondition
 
 
