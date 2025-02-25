@@ -52,5 +52,10 @@
     "panelName": "Paneelnaam (uniek)",
     "panelTopic": "MQTT Topic (uniek)",
     "mustBeUnique": "moet uniek zijn",
-    "Refresh Device": "Vernieuwingsapparaat"
+    "Refresh Device": "Vernieuwingsapparaat",
+    "mqttServer": "Gebruik de eigen MQTT -server van de adapter",
+    "mqttIp": "IP naar de externe MQTT -server",
+    "mqttPort": "MQTT -poort",
+    "mqttUser": "MQTT -gebruikersnaam",
+    "mqttPassword": "MQTT -wachtwoord"
 }

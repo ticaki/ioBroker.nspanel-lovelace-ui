@@ -1,7 +1,98 @@
 {
     "i18n": true,
     "type": "tabs",
-    "items": {
+    "items": {      
+        "general": {
+            "type": "panel",
+            "label": "general",
+            "items": {
+                "mqttServer": {
+                    "type": "checkbox",
+                    "label": "mqttServer",
+                    "default": true,
+                    "newLine": true
+                },
+                "mqttIp": {
+                    "type": "text",
+                    "label": "mqttIp",
+                    "newLine": true,
+                    "disabled": "data.mqttServer"
+                },
+                "mqttPort": {
+                    "type": "text",
+                    "label": "mqttPort",
+                    "newLine": false
+                },
+                "mqttUsername": {
+                    "type": "text",
+                    "label": "mqttUser",
+                    "newLine": true
+                },
+                "mqttPassword": {
+                    "type": "password",
+                    "label": "mqttPassword",
+                    "newLine": false
+                },
+                "_header": {
+                    "type": "header",
+                    "label": "Not used",
+                    "size": 3,
+                    "text": "Not used",
+                    "hidden": "true"
+                },
+                "topic": {
+                    "type": "text",
+                    "label": "topic",
+                    "newLine": true,
+                    "hidden": "true"
+                },
+                "name": {
+                    "type": "text",
+                    "label": "name",
+                    "newLine": false,
+                    "hidden": "true"
+                },
+                "timeout": {
+                    "type": "number",
+                    "label": "timeout",
+                    "newLine": true,
+                    "hidden": "true"
+                },
+                "mediaid": {
+                    "type": "text",
+                    "label": "mediaid",
+                    "newLine": false,
+                    "hidden": "true"
+                },
+                "onlyStartFromSystemConfig": {
+                    "type": "checkbox",
+                    "label": "onlyStartFromSystemConfig",
+                    "default": true,
+                    "newLine": true,
+                    "hidden": "true"
+                },
+                "Testconfig2": {
+                    "type": "jsonEditor",
+                    "label": "Testconfig2",
+                    "hidden": "true"
+                },
+                "logUnknownTokens": {
+                    "type": "checkbox",
+                    "label": "logUnknownTokens",
+                    "default": false,
+                    "newLine": true,
+                    "hidden": "true"
+                },
+                "doubleClickTime": {
+                    "type": "number",
+                    "label": "doubleClickTime",
+                    "default": 350,
+                    "min": 1,
+                    "max": 2000,
+                    "newLine": true
+                }
+            }
+        },
         "overview": {
             "type": "panel",
             "label": "overview",
@@ -50,7 +141,7 @@
                 },
                 "pw1": {
                     "type": "password",
-                    "label": "Pin (numbers only)",
+                    "label": "Service-Pin (numbers only)",
                     "newLine": true,
                     "validator": "data.pw1.search(/[^0-9]+/g) === -1",
                     "validatorNoSaveOnError": true,
@@ -60,82 +151,6 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 3
-                }
-            }
-        },
-        "general": {
-            "type": "panel",
-            "label": "general",
-            "items": {
-                "mqttIp": {
-                    "type": "text",
-                    "label": "mqttIp",
-                    "newLine": true
-                },
-                "mqttPort": {
-                    "type": "text",
-                    "label": "mqttPort",
-                    "newLine": false
-                },
-                "mqttUsername": {
-                    "type": "text",
-                    "label": "mqttUsername",
-                    "newLine": true
-                },
-                "mqttPassword": {
-                    "type": "password",
-                    "label": "mqttPassword",
-                    "newLine": false
-                },
-                "_header": {
-                    "type": "header",
-                    "label": "Not used",
-                    "size": 3,
-                    "text": "Not used"
-                },
-                "topic": {
-                    "type": "text",
-                    "label": "topic",
-                    "newLine": true
-                },
-                "name": {
-                    "type": "text",
-                    "label": "name",
-                    "newLine": false
-                },
-                "timeout": {
-                    "type": "number",
-                    "label": "timeout",
-                    "newLine": true
-                },
-                "mediaid": {
-                    "type": "text",
-                    "label": "mediaid",
-                    "newLine": false
-                },
-                "onlyStartFromSystemConfig": {
-                    "type": "checkbox",
-                    "label": "onlyStartFromSystemConfig",
-                    "default": true,
-                    "newLine": true
-                },
-                "Testconfig2": {
-                    "type": "jsonEditor",
-                    "label": "Testconfig2"
-                },
-                "logUnknownTokens": {
-                    "type": "checkbox",
-                    "label": "logUnknownTokens",
-                    "default": false,
-                    "newLine": true
-                },
-                "doubleClickTime": {
-                    "type": "number",
-                    "label": "doubleClickTime",
-                    "default": 350,
-                    "min": 1,
-                    "max": 2000,
-                    "newLine": true
                 }
             }
         },

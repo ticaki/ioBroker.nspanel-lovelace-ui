@@ -62,29 +62,11 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.library = new import_library.Library(this);
     await this.delay(2e3);
     await (0, import_readme.generateAliasDocumentation)();
-    if (!this.config.Testconfig2) {
-      if (this.config.onlyStartFromSystemConfig) {
-        this.log.warn("No configuration stopped!");
-        return;
-      }
-      this.log.warn("No configuration use dev test config!");
-      let testconfig = import_config.Testconfig;
-      try {
-        const path = "./lib/config-custom.js";
-        testconfig = (await Promise.resolve().then(() => __toESM(require(path)))).Testconfig;
-      } catch {
-      }
-      this.config.Testconfig2 = testconfig;
-    }
-    if (!this.config.Testconfig2 || !Array.isArray(this.config.Testconfig2) || !this.config.Testconfig2[0] || !this.config.Testconfig2[0].pages) {
-      this.log.warn("Adapter on hold, user restart needed!");
-      return;
-    }
     try {
+      this.config.Testconfig2 = [];
       const obj = await this.getForeignObjectAsync(this.namespace);
       if (obj && obj.native && obj.native.scriptConfig) {
         const scriptConfig = obj.native.scriptConfig;
-        this.config.Testconfig2 = [];
         for (let b = 0; b < scriptConfig.length; b++) {
           const s = scriptConfig[b];
           if (!s || !s.pages) {
@@ -128,7 +110,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       return;
     }
     if (this.config.doubleClickTime === void 0 || typeof this.config.doubleClickTime !== "number" || !(this.config.doubleClickTime > 0)) {
-      this.config.doubleClickTime = 400;
+      this.config.doubleClickTime = 350;
     }
     this.setTimeout(async () => {
       try {
@@ -145,7 +127,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         if (!this.config.pw1 || typeof this.config.pw1 !== "string") {
           this.log.warn("No pin entered for the service page! Please set a pin in the admin settings!");
         }
-        if (this.config.mqttIp === "" && this.config.mqttPort && this.config.mqttUsername) {
+        if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
           this.config.mqttPassword = this.config.mqttPassword || "1234";
           this.mqttServer = new MQTT.MQTTServerClass(
             this,
@@ -228,6 +210,10 @@ class NspanelLovelaceUi extends utils.Adapter {
               );
             }
           });
+        }
+        if (!this.config.Testconfig2 || !Array.isArray(this.config.Testconfig2) || this.config.Testconfig2.length === 0) {
+          this.log.warn("No configuration stopped!");
+          return;
         }
         const testconfig = structuredClone(this.config.Testconfig2);
         let counter = 0;

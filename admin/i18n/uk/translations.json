@@ -52,5 +52,10 @@
     "panelName": "Назва панелі (унікальна)",
     "panelTopic": "Тема MQTT (унікальна)",
     "mustBeUnique": "Має бути унікальним",
-    "Refresh Device": "Оновити пристрій"
+    "Refresh Device": "Оновити пристрій",
+    "mqttServer": "Використовуйте власний сервер MQTT Adapter",
+    "mqttIp": "IP на зовнішній сервер MQTT",
+    "mqttPort": "Порт MQTT",
+    "mqttUser": "MQTT Ім'я користувача",
+    "mqttPassword": "Пароль MQTT"
 }

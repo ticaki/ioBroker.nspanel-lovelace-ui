@@ -206,6 +206,9 @@ class ConfigManager extends import_library.BaseClass {
           continue;
         }
         if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo") {
+          const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!`;
+          messages.push(msg);
+          this.log.warn(msg);
           continue;
         }
         if (!page.uniqueName) {

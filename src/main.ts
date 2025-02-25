@@ -10,7 +10,7 @@ import 'source-map-support/register';
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 import * as MQTT from './lib/classes/mqtt';
-import { testCaseConfig, Testconfig } from './lib/config';
+import { testCaseConfig } from './lib/config';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import { genericStateObjects } from './lib/const/definition';
@@ -56,7 +56,7 @@ class NspanelLovelaceUi extends utils.Adapter {
 
         await generateAliasDocumentation();
 
-        if (!this.config.Testconfig2) {
+        /*if (!this.config.Testconfig2) {
             if (this.config.onlyStartFromSystemConfig) {
                 this.log.warn('No configuration stopped!');
                 return;
@@ -79,8 +79,9 @@ class NspanelLovelaceUi extends utils.Adapter {
         ) {
             this.log.warn('Adapter on hold, user restart needed!');
             return;
-        }
+        }*/
         try {
+            this.config.Testconfig2 = [];
             const obj = await this.getForeignObjectAsync(this.namespace);
             if (obj && obj.native && obj.native.scriptConfig) {
                 const scriptConfig = obj.native.scriptConfig as Partial<panelConfigPartial>[];
@@ -114,7 +115,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 if (changed) {
                     await this.setForeignObjectAsync(this.namespace, obj);
                 }*/
-                this.config.Testconfig2 = [];
+
                 for (let b = 0; b < scriptConfig.length; b++) {
                     const s = scriptConfig[b];
                     if (!s || !s.pages) {
@@ -169,7 +170,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             typeof this.config.doubleClickTime !== 'number' ||
             !(this.config.doubleClickTime > 0)
         ) {
-            this.config.doubleClickTime = 400;
+            this.config.doubleClickTime = 350;
         }
         //this.log.debug(JSON.stringify(this.config.Testconfig2[0].dpInit))
 
@@ -195,7 +196,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.log.warn('No pin entered for the service page! Please set a pin in the admin settings!');
                 }
 
-                if (this.config.mqttIp === '' && this.config.mqttPort && this.config.mqttUsername) {
+                if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
                     this.config.mqttPassword = this.config.mqttPassword || '1234';
                     this.mqttServer = new MQTT.MQTTServerClass(
                         this,
@@ -314,6 +315,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                             );
                         }
                     });
+                }
+                if (
+                    !this.config.Testconfig2 ||
+                    !Array.isArray(this.config.Testconfig2) ||
+                    this.config.Testconfig2.length === 0
+                ) {
+                    this.log.warn('No configuration stopped!');
+                    return;
                 }
                 const testconfig = structuredClone(this.config.Testconfig2);
                 let counter = 0;

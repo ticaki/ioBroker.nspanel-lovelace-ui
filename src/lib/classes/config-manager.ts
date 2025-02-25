@@ -241,6 +241,9 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardEntities' &&
                     page.type !== 'cardThermo'
                 ) {
+                    const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!`;
+                    messages.push(msg);
+                    this.log.warn(msg);
                     continue;
                 }
                 if (!page.uniqueName) {

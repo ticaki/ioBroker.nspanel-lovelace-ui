@@ -52,5 +52,10 @@
     "panelName": "Panel name(unique)",
     "panelTopic": "Mqtt topic(unique)",
     "mustBeUnique": "must be unique",
-    "Refresh Device": "Refresh device"
+    "Refresh Device": "Refresh device",
+    "mqttServer": "Use the adapter's own MQTT server",
+    "mqttIp": "IP to the external MQTT server",
+    "mqttPort": "MQTT port",
+    "mqttUser": "MQTT username",
+    "mqttPassword": "MQTT password"
 }

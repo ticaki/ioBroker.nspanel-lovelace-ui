@@ -52,5 +52,10 @@
     "panelName": "Nazwa panelu (unikalna)",
     "panelTopic": "MQTT Temat (unikalny)",
     "mustBeUnique": "Musi być wyjątkowy",
-    "Refresh Device": "Odśwież urządzenie"
+    "Refresh Device": "Odśwież urządzenie",
+    "mqttServer": "Użyj własnego serwera MQTT adaptera",
+    "mqttIp": "IP do zewnętrznego serwera MQTT",
+    "mqttPort": "Port MQTT",
+    "mqttUser": "Nazwa użytkownika MQTT",
+    "mqttPassword": "Hasło MQTT"
 }

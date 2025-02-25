@@ -34,6 +34,7 @@ tests.integration(path.join(__dirname, '..'), {
             it('Test: Start with testdata', () => new Promise(async (resolve, reject) => {
                 await harness.objects.getObject('system.adapter.nspanel-lovelace-ui.0', async (err, obj) => {
                     obj.native.testCase = true;
+                    obj.native.mqttServer = true;
                     obj.native.mqttPassword = '';
                     obj.native.mqttUsername = 'test';
                     obj.native.mqttIp = '';

@@ -52,5 +52,10 @@
     "panelName": "Nom du panneau (unique)",
     "panelTopic": "Sujet MQTT (unique)",
     "mustBeUnique": "Doit être unique",
-    "Refresh Device": "Dispositif de rafraîchissement"
+    "Refresh Device": "Dispositif de rafraîchissement",
+    "mqttServer": "Utilisez le propre serveur MQTT de l'adaptateur",
+    "mqttIp": "IP au serveur MQTT externe",
+    "mqttPort": "Port MQTT",
+    "mqttUser": "Nom d'utilisateur MQTT",
+    "mqttPassword": "Mot de passe MQTT"
 }
