@@ -284,7 +284,46 @@ class ConfigManager extends import_library.BaseClass {
     return { gridItem, messages };
   }
   async getPageNaviItemConfig(item, page) {
+    if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities") || !item.targetPage || !item.navigate) {
+      this.log.warn(`Page type ${page.type} not supported for navigation item!`);
+      return void 0;
+    }
     let itemConfig = void 0;
+    const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
+    if (!item.id) {
+      return {
+        type: "button",
+        data: {
+          setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0,
+          icon: {
+            true: {
+              value: {
+                type: "const",
+                constVal: item.icon || "gesture-tap-button"
+              },
+              color: await this.getIconColor(item.onColor, this.colorOn)
+            },
+            false: {
+              value: {
+                type: "const",
+                constVal: item.icon2 || item.icon || "gesture-tap-button"
+              },
+              color: await this.getIconColor(item.offColor, this.colorOff)
+            },
+            scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+            maxBri: void 0,
+            minBri: void 0
+          },
+          text1: {
+            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+          },
+          text: {
+            true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : void 0,
+            false: item.buttonTextOff ? await this.getFieldAsDataItemConfig(item.buttonTextOff) : item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : void 0
+          }
+        }
+      };
+    }
     const obj = item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
     const role = obj && obj.common.role ? obj.common.role : void 0;
     const commonName = obj && obj.common ? typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()] : void 0;
@@ -305,7 +344,6 @@ class ConfigManager extends import_library.BaseClass {
         }
       }
     };
-    const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
     switch (role) {
       case "socket":
       case "light":

@@ -701,20 +701,31 @@ export class StatesControler extends BaseClass {
      * @param data Json with configuration to create dataitems
      * @param parent Page etc.
      * @param target optional target
+     * @param path
      * @returns then json with values dataitem or undefined
      */
-    async createDataItems(data: any, parent: any, target: any = {}): Promise<any> {
+    async createDataItems(data: any, parent: any, target: any = {}, path: string = 'data'): Promise<any> {
         for (const i in data) {
             const d = data[i];
             if (d === undefined) {
                 continue;
             }
             if (typeof d === 'object' && !('type' in d)) {
-                target[i] = await this.createDataItems(d, parent, (target[i] ?? Array.isArray(d)) ? [] : {});
+                target[i] = await this.createDataItems(
+                    d,
+                    parent,
+                    (target[i] ?? Array.isArray(d)) ? [] : {},
+                    `${path}.${i}`,
+                );
             } else if (typeof d === 'object' && 'type' in d) {
                 target[i] =
                     data[i] !== undefined
-                        ? new Dataitem(this.adapter, { ...d, name: `${this.name}.${parent.name}.${i}` }, parent, this)
+                        ? new Dataitem(
+                              this.adapter,
+                              { ...d, name: `${this.name}.${parent.name}.${i}/${path}` },
+                              parent,
+                              this,
+                          )
                         : undefined;
                 if (target[i] !== undefined && !(await target[i].isValidAndInit())) {
                     target[i] = undefined;

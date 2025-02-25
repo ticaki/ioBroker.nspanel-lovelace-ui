@@ -606,9 +606,10 @@ class StatesControler extends import_library.BaseClass {
    * @param data Json with configuration to create dataitems
    * @param parent Page etc.
    * @param target optional target
+   * @param path
    * @returns then json with values dataitem or undefined
    */
-  async createDataItems(data, parent, target = {}) {
+  async createDataItems(data, parent, target = {}, path = "data") {
     var _a;
     for (const i in data) {
       const d = data[i];
@@ -616,9 +617,19 @@ class StatesControler extends import_library.BaseClass {
         continue;
       }
       if (typeof d === "object" && !("type" in d)) {
-        target[i] = await this.createDataItems(d, parent, ((_a = target[i]) != null ? _a : Array.isArray(d)) ? [] : {});
+        target[i] = await this.createDataItems(
+          d,
+          parent,
+          ((_a = target[i]) != null ? _a : Array.isArray(d)) ? [] : {},
+          `${path}.${i}`
+        );
       } else if (typeof d === "object" && "type" in d) {
-        target[i] = data[i] !== void 0 ? new import_data_item.Dataitem(this.adapter, { ...d, name: `${this.name}.${parent.name}.${i}` }, parent, this) : void 0;
+        target[i] = data[i] !== void 0 ? new import_data_item.Dataitem(
+          this.adapter,
+          { ...d, name: `${this.name}.${parent.name}.${i}/${path}` },
+          parent,
+          this
+        ) : void 0;
         if (target[i] !== void 0 && !await target[i].isValidAndInit()) {
           target[i] = void 0;
         }

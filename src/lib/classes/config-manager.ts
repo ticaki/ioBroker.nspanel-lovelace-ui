@@ -335,7 +335,63 @@ export class ConfigManager extends BaseClass {
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
     ): Promise<typePageItem.PageItemDataItemsOptions | undefined> {
+        if (
+            !(
+                page.type === 'cardGrid' ||
+                page.type === 'cardGrid2' ||
+                page.type === 'cardGrid3' ||
+                page.type === 'cardEntities'
+            ) ||
+            !item.targetPage ||
+            !item.navigate
+        ) {
+            this.log.warn(`Page type ${page.type} not supported for navigation item!`);
+            return undefined;
+        }
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
+        const specialRole: pages.DeviceRole =
+            page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
+                ? 'textNotIcon'
+                : 'iconNotText';
+
+        if (!item.id) {
+            return {
+                type: 'button',
+                data: {
+                    setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    icon: {
+                        true: {
+                            value: {
+                                type: 'const',
+                                constVal: item.icon || 'gesture-tap-button',
+                            },
+                            color: await this.getIconColor(item.onColor, this.colorOn),
+                        },
+                        false: {
+                            value: {
+                                type: 'const',
+                                constVal: item.icon2 || item.icon || 'gesture-tap-button',
+                            },
+                            color: await this.getIconColor(item.offColor, this.colorOff),
+                        },
+                        scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
+                    },
+                    text1: {
+                        true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                    },
+                    text: {
+                        true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : undefined,
+                        false: item.buttonTextOff
+                            ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
+                            : item.buttonText
+                              ? await this.getFieldAsDataItemConfig(item.buttonText)
+                              : undefined,
+                    },
+                },
+            };
+        }
         const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
         const role = obj && obj.common.role ? (obj.common.role as ScriptConfig.roles) : undefined;
         const commonName =
@@ -380,10 +436,6 @@ export class ConfigManager extends BaseClass {
             },
         };
 
-        const specialRole: pages.DeviceRole =
-            page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
-                ? 'textNotIcon'
-                : 'iconNotText';
         switch (role) {
             case 'socket':
             case 'light':
@@ -481,7 +533,7 @@ export class ConfigManager extends BaseClass {
                 {
                     itemConfig = {
                         type: 'button',
-                        dpInit: item.id!,
+                        dpInit: item.id,
                         role: specialRole,
                         color: {
                             true: await this.getIconColor(item.onColor, this.colorOn),
@@ -505,7 +557,7 @@ export class ConfigManager extends BaseClass {
             case 'value.temperature': {
                 itemConfig = {
                     type: 'button',
-                    dpInit: item.id!,
+                    dpInit: item.id,
                     role: specialRole,
                     template: 'button.temperature',
                     color: {
@@ -523,7 +575,7 @@ export class ConfigManager extends BaseClass {
                 if (await this.checkRequiredDatapoints('gate', item, 'feature')) {
                     itemConfig = {
                         template: 'text.gate.isOpen',
-                        dpInit: item.id!,
+                        dpInit: item.id,
                         type: 'button',
                         color: {
                             true: await this.getIconColor(item.onColor, this.colorOn),
@@ -550,7 +602,7 @@ export class ConfigManager extends BaseClass {
                 } else {
                     itemConfig = {
                         template: 'text.gate.isOpen',
-                        dpInit: item.id!,
+                        dpInit: item.id,
                         type: 'button',
                         color: {
                             true: await this.getIconColor(item.onColor, this.colorOn),
@@ -570,7 +622,7 @@ export class ConfigManager extends BaseClass {
             case 'door': {
                 itemConfig = {
                     template: 'text.door.isOpen',
-                    dpInit: item.id!,
+                    dpInit: item.id,
                     type: 'button',
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
@@ -589,7 +641,7 @@ export class ConfigManager extends BaseClass {
             case 'window': {
                 itemConfig = {
                     template: 'text.window.isOpen',
-                    dpInit: item.id!,
+                    dpInit: item.id,
                     type: 'button',
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
@@ -609,7 +661,7 @@ export class ConfigManager extends BaseClass {
             case 'motion': {
                 itemConfig = {
                     template: 'text.motion',
-                    dpInit: item.id!,
+                    dpInit: item.id,
                     type: 'button',
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
@@ -630,7 +682,7 @@ export class ConfigManager extends BaseClass {
             case 'volume': {
                 itemConfig = {
                     template: 'button.volume',
-                    dpInit: item.id!,
+                    dpInit: item.id,
                     type: 'button',
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
@@ -650,7 +702,7 @@ export class ConfigManager extends BaseClass {
             case 'warning': {
                 itemConfig = {
                     template: 'text.warning',
-                    dpInit: item.id!,
+                    dpInit: item.id,
                     type: 'button',
                     color: {
                         true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
@@ -671,7 +723,7 @@ export class ConfigManager extends BaseClass {
             case 'info': {
                 itemConfig = {
                     template: 'text.info',
-                    dpInit: item.id!,
+                    dpInit: item.id,
                     type: 'button',
                     color: {
                         true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
