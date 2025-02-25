@@ -143,10 +143,14 @@ export const stateRoleArray = arrayOfAllStateRole([
     'indicator.maintenance',
     'switch.mode.boost',
     'switch.mode.party',
+    'indicator.error',
+    'switch.power',
     '',
 ]);
 
 export type StateRole =
+    | 'switch.power'
+    | 'indicator.error'
     | 'switch.mode.party'
     | 'switch.mode.boost'
     | 'indicator.maintenance'

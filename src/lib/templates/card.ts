@@ -2475,6 +2475,39 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     },
                 },
             },
+            {
+                role: 'button',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'power-standby' },
+                            color: { type: 'const', constVal: Color.activated },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'power-standby' },
+                            color: { type: 'const', constVal: Color.deactivated },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: 'switch.power',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.POWER$/,
+                        },
+                        set: {
+                            mode: 'auto',
+                            role: 'switch.power',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.POWER$/,
+                        },
+                    },
+                },
+            },
             //Boost
             {
                 role: 'button',
@@ -2577,11 +2610,11 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                 data: {
                     icon: {
                         true: {
-                            value: { type: 'const', constVal: 'alert-circle' },
+                            value: { type: 'const', constVal: 'account-wrench' },
                             color: { type: 'const', constVal: Color.bad },
                         },
                         false: {
-                            value: { type: 'const', constVal: 'alert-circle-outline' },
+                            value: { type: 'const', constVal: 'account-wrench' },
                             color: { type: 'const', constVal: Color.deactivated },
                         },
                     },
@@ -2670,6 +2703,84 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                             type: 'triggered',
                             dp: '',
                             regexp: /\.LOWBAT$/,
+                        },
+                    },
+                },
+            },
+            {
+                role: 'indicator',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'alert-circle' },
+                            color: { type: 'const', constVal: Color.bad },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'alert-circle' },
+                            color: { type: 'const', constVal: Color.deactivated },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: 'indicator.error',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.ERROR$/,
+                        },
+                    },
+                },
+            },
+            {
+                role: 'indicator',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'palm-tree' },
+                            color: { type: 'const', constVal: Color.activated },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'palm-tree' },
+                            color: { type: 'const', constVal: Color.deactivated },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: 'state',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.VACATION$/,
+                        },
+                    },
+                },
+            },
+            {
+                role: 'indicator',
+                type: 'button',
+                dpInit: '',
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: 'briefcase-check' },
+                            color: { type: 'const', constVal: Color.activated },
+                        },
+                        false: {
+                            value: { type: 'const', constVal: 'briefcase-check' },
+                            color: { type: 'const', constVal: Color.deactivated },
+                        },
+                    },
+                    entity1: {
+                        value: {
+                            mode: 'auto',
+                            role: 'state',
+                            type: 'triggered',
+                            dp: '',
+                            regexp: /\.WORKING$/,
                         },
                     },
                 },

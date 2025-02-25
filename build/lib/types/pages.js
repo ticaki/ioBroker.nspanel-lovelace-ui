@@ -148,6 +148,8 @@ const stateRoleArray = arrayOfAllStateRole([
   "indicator.maintenance",
   "switch.mode.boost",
   "switch.mode.party",
+  "indicator.error",
+  "switch.power",
   ""
 ]);
 function isStateRole(F) {
