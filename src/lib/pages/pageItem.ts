@@ -1147,10 +1147,12 @@ export class PageItem extends BaseClassTriggerd {
                 if (entry.type === 'button') {
                     if (entry.role === 'indicator') {
                         if (this.parent && this.parent.card === 'cardThermo') {
+                            this.log.debug(`Button indicator ${this.id} was pressed!`);
                             await this.parent.update();
                         }
                         break;
                     }
+                    this.log.debug(`Button ${this.id} was pressed!`);
                     const item = entry.data;
                     if (item.confirm) {
                         if (this.confirmClick === 'lock') {

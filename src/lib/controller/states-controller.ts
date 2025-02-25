@@ -40,6 +40,7 @@ export class BaseClassTriggerd extends BaseClass {
     private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
     public panel: Panel;
+    protected filterDuplicateMessages: boolean = true;
     neverDeactivateTrigger: boolean = false;
     sleep: boolean = true;
     parent: BaseClassTriggerd | undefined = undefined;
@@ -51,7 +52,7 @@ export class BaseClassTriggerd extends BaseClass {
         payload: string,
         opt?: IClientPublishOptions,
     ) => {
-        if (payload == this.lastMessage) {
+        if (this.filterDuplicateMessages && payload == this.lastMessage) {
             return;
         }
         this.lastMessage = payload;

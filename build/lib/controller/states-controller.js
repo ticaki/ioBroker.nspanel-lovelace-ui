@@ -39,6 +39,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   alwaysOnState;
   lastMessage = "";
   panel;
+  filterDuplicateMessages = true;
   neverDeactivateTrigger = false;
   sleep = true;
   parent = void 0;
@@ -47,7 +48,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   enums = "";
   device = "";
   sendToPanel = (payload, opt) => {
-    if (payload == this.lastMessage) {
+    if (this.filterDuplicateMessages && payload == this.lastMessage) {
       return;
     }
     this.lastMessage = payload;

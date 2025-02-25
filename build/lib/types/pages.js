@@ -143,6 +143,11 @@ const stateRoleArray = arrayOfAllStateRole([
   "value.warning",
   "switch.mode.manual",
   "switch.mode.auto",
+  "indicator.maintenance.unreach",
+  "indicator.maintenance.lowbat",
+  "indicator.maintenance",
+  "switch.mode.boost",
+  "switch.mode.party",
   ""
 ]);
 function isStateRole(F) {

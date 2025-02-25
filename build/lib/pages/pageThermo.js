@@ -80,6 +80,7 @@ class PageThermo extends import_Page.Page {
     if (options.items && options.items.card == "cardThermo") {
       this.items = options.items;
     }
+    this.filterDuplicateMessages = false;
     this.minUpdateInterval = 2e3;
   }
   async init() {

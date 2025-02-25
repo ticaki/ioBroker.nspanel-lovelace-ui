@@ -2436,8 +2436,7 @@ const cardTemplates = {
               type: "triggered",
               dp: "",
               regexp: /\.AUTOMATIC$/,
-              forceType: "boolean",
-              required: true
+              forceType: "boolean"
             },
             set: {
               mode: "auto",
@@ -2471,17 +2470,14 @@ const cardTemplates = {
               role: "switch.mode.manual",
               type: "triggered",
               dp: "",
-              regexp: /\.MANUAL$/,
-              read: `return val == 'MANUAL' ? true : false`,
-              required: true
+              regexp: /\.MANUAL$/
             },
             set: {
               mode: "auto",
               role: "switch.mode.manual",
               type: "state",
               dp: "",
-              regexp: /\.MANUAL$/,
-              write: `return val = true ? 'MANUAL' : 'AUTOMATIC'`
+              regexp: /\.MANUAL$/
             }
           }
         }
@@ -2505,13 +2501,19 @@ const cardTemplates = {
           entity1: {
             value: {
               mode: "auto",
-              role: "",
+              role: "switch.mode.boost",
               type: "triggered",
               dp: "",
               regexp: /\.BOOST$/
+            },
+            set: {
+              mode: "auto",
+              role: "switch.mode.boost",
+              type: "state",
+              dp: "",
+              regexp: /\.BOOST$/
             }
-          },
-          setValue1: { mode: "auto", type: "state", role: "switch", dp: "", regexp: /\.boostMode$/ }
+          }
         }
       },
       //Fenster
@@ -2533,7 +2535,7 @@ const cardTemplates = {
           entity1: {
             value: {
               mode: "auto",
-              role: "",
+              role: ["state", "sensor.window"],
               type: "triggered",
               dp: "",
               regexp: /\.WINDOWOPEN$/
@@ -2543,7 +2545,7 @@ const cardTemplates = {
       },
       //Party
       {
-        role: "indicator",
+        role: "button",
         type: "button",
         dpInit: "",
         data: {
@@ -2560,8 +2562,15 @@ const cardTemplates = {
           entity1: {
             value: {
               mode: "auto",
-              role: "",
+              role: "switch.mode.party",
               type: "triggered",
+              dp: "",
+              regexp: /\.PARTY$/
+            },
+            set: {
+              mode: "auto",
+              role: "switch.mode.boost",
+              type: "state",
               dp: "",
               regexp: /\.PARTY$/
             }
@@ -2586,7 +2595,7 @@ const cardTemplates = {
           entity1: {
             value: {
               mode: "auto",
-              role: "",
+              role: "indicator.maintenance",
               type: "triggered",
               dp: "",
               regexp: /\.MAINTAIN$/
@@ -2612,7 +2621,7 @@ const cardTemplates = {
           entity1: {
             value: {
               mode: "auto",
-              role: "",
+              role: "indicator.maintenance.unreach",
               type: "triggered",
               dp: "",
               regexp: /\.UNREACH$/
@@ -2638,7 +2647,7 @@ const cardTemplates = {
           entity1: {
             value: {
               mode: "auto",
-              role: "",
+              role: "indicator.maintenance",
               type: "triggered",
               dp: "",
               regexp: /\.MAINTAIN$/
@@ -2664,7 +2673,7 @@ const cardTemplates = {
           entity1: {
             value: {
               mode: "auto",
-              role: "",
+              role: "indicator.maintenance.lowbat",
               type: "triggered",
               dp: "",
               regexp: /\.LOWBAT$/

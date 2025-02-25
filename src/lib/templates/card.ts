@@ -2430,7 +2430,6 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                             dp: '',
                             regexp: /\.AUTOMATIC$/,
                             forceType: 'boolean',
-                            required: true,
                         },
                         set: {
                             mode: 'auto',
@@ -2465,8 +2464,6 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                             type: 'triggered',
                             dp: '',
                             regexp: /\.MANUAL$/,
-                            read: `return val == 'MANUAL' ? true : false`,
-                            required: true,
                         },
                         set: {
                             mode: 'auto',
@@ -2474,7 +2471,6 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                             type: 'state',
                             dp: '',
                             regexp: /\.MANUAL$/,
-                            write: `return val = true ? 'MANUAL' : 'AUTOMATIC'`,
                         },
                     },
                 },
@@ -2498,13 +2494,19 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     entity1: {
                         value: {
                             mode: 'auto',
-                            role: '',
+                            role: 'switch.mode.boost',
                             type: 'triggered',
                             dp: '',
                             regexp: /\.BOOST$/,
                         },
+                        set: {
+                            mode: 'auto',
+                            role: 'switch.mode.boost',
+                            type: 'state',
+                            dp: '',
+                            regexp: /\.BOOST$/,
+                        },
                     },
-                    setValue1: { mode: 'auto', type: 'state', role: 'switch', dp: '', regexp: /\.boostMode$/ },
                 },
             },
             //Fenster
@@ -2526,7 +2528,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     entity1: {
                         value: {
                             mode: 'auto',
-                            role: '',
+                            role: ['state', 'sensor.window'],
                             type: 'triggered',
                             dp: '',
                             regexp: /\.WINDOWOPEN$/,
@@ -2536,7 +2538,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
             },
             //Party
             {
-                role: 'indicator',
+                role: 'button',
                 type: 'button',
                 dpInit: '',
                 data: {
@@ -2553,8 +2555,15 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     entity1: {
                         value: {
                             mode: 'auto',
-                            role: '',
+                            role: 'switch.mode.party',
                             type: 'triggered',
+                            dp: '',
+                            regexp: /\.PARTY$/,
+                        },
+                        set: {
+                            mode: 'auto',
+                            role: 'switch.mode.boost',
+                            type: 'state',
                             dp: '',
                             regexp: /\.PARTY$/,
                         },
@@ -2579,7 +2588,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     entity1: {
                         value: {
                             mode: 'auto',
-                            role: '',
+                            role: 'indicator.maintenance',
                             type: 'triggered',
                             dp: '',
                             regexp: /\.MAINTAIN$/,
@@ -2605,7 +2614,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     entity1: {
                         value: {
                             mode: 'auto',
-                            role: '',
+                            role: 'indicator.maintenance.unreach',
                             type: 'triggered',
                             dp: '',
                             regexp: /\.UNREACH$/,
@@ -2631,7 +2640,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     entity1: {
                         value: {
                             mode: 'auto',
-                            role: '',
+                            role: 'indicator.maintenance',
                             type: 'triggered',
                             dp: '',
                             regexp: /\.MAINTAIN$/,
@@ -2657,7 +2666,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     entity1: {
                         value: {
                             mode: 'auto',
-                            role: '',
+                            role: 'indicator.maintenance.lowbat',
                             type: 'triggered',
                             dp: '',
                             regexp: /\.LOWBAT$/,

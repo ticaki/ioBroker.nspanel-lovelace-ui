@@ -62,6 +62,7 @@ export class PageThermo extends Page {
         if (options.items && options.items.card == 'cardThermo') {
             this.items = options.items;
         }
+        this.filterDuplicateMessages = false;
         this.minUpdateInterval = 2000;
     }
 
