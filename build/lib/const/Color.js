@@ -225,6 +225,73 @@ class Color extends ColorBase {
     }
     return outMax + outMin - ((number - inMax) * (outMax - outMin) / (inMin - inMax) + outMin);
   }
+  static rgbToHsb(r, g, b) {
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const d = max - min, s = max === 0 ? 0 : d / max;
+    let h = 0;
+    if (d !== 0) {
+      if (max === r) {
+        h = (g - b) / d % 6;
+      } else if (max === g) {
+        h = (b - r) / d + 2;
+      } else {
+        h = (r - g) / d + 4;
+      }
+      h *= 60;
+      if (h < 0) {
+        h += 360;
+      }
+    }
+    return { h, s, b: max / 255 };
+  }
+  static fadeColor(startRGB, endRGB, min, max, val_best, current) {
+    if (max < min) {
+      const temp = endRGB;
+      endRGB = startRGB;
+      startRGB = temp;
+      const temp2 = max;
+      max = min;
+      min = temp2;
+    }
+    if (max < current) {
+      return endRGB;
+    }
+    if (min > current) {
+      return startRGB;
+    }
+    const startHSB = this.rgbToHsb(startRGB.r, startRGB.g, startRGB.b);
+    const endHSB = this.rgbToHsb(endRGB.r, endRGB.g, endRGB.b);
+    const t = Math.min(current / max - min, 1);
+    const deltaH = (endHSB.h - startHSB.h + 540) % 360 - 180;
+    const h = (startHSB.h + t * deltaH + 360) % 360;
+    const s = startHSB.s + t * (endHSB.s - startHSB.s);
+    const b = startHSB.b + t * (endHSB.b - startHSB.b);
+    return this.hsbToRgb(h, s, b);
+  }
+  static hsbToRgb(h, s, b) {
+    const c = b * s, x = c * (1 - Math.abs(h / 60 % 2 - 1)), m = b - c;
+    let r = 0, g = 0, b2 = 0;
+    if (h < 60) {
+      r = c;
+      g = x;
+    } else if (h < 120) {
+      r = x;
+      g = c;
+    } else if (h < 180) {
+      g = c;
+      b2 = x;
+    } else if (h < 240) {
+      g = x;
+      b2 = c;
+    } else if (h < 300) {
+      r = x;
+      b2 = c;
+    } else {
+      r = c;
+      g = x;
+    }
+    return { r: Math.round((r + m) * 255), g: Math.round((g + m) * 255), b: Math.round((b2 + m) * 255) };
+  }
   static HandleColorScale(valueScaletemp) {
     switch (valueScaletemp) {
       case "0":

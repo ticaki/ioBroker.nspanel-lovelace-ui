@@ -385,7 +385,9 @@ export class Panel extends BaseClass {
         }
         for (const page of this.pages) {
             if (page) {
-                this.log.info(`Initialisation of page ${page.name} pageitems: ${(page.pageItemConfig || []).length}`);
+                this.log.info(
+                    `Initialisation of page ${page.name} - card: ${page.card} - pageItems: ${(page.pageItemConfig || []).length}`,
+                );
                 await page.init();
             }
         }

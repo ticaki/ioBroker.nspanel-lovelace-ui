@@ -994,7 +994,7 @@ export class ConfigManager extends BaseClass {
                                         : {
                                               true: {
                                                   type: 'triggered',
-                                                  dp: `${item.id}.COLOR`,
+                                                  dp: `${item.id}.RGB`,
                                               },
                                           },
                                 ct: {

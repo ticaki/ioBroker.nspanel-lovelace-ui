@@ -1183,6 +1183,7 @@ export class PageItem extends BaseClassTriggerd {
                     }
                 } else if (entry.type === 'light') {
                     const item = entry.data;
+                    item.entity1 && item.entity1.set && (await item.entity1.set.setStateFlip());
                     item.setValue1 && (await item.setValue1.setStateFlip());
                 }
                 break;

@@ -831,7 +831,7 @@ class ConfigManager extends import_library.BaseClass {
                 color: role !== "rgbSingle" ? void 0 : {
                   true: {
                     type: "triggered",
-                    dp: `${item.id}.COLOR`
+                    dp: `${item.id}.RGB`
                   }
                 },
                 ct: {

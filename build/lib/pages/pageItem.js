@@ -1044,6 +1044,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           }
         } else if (entry.type === "light") {
           const item = entry.data;
+          item.entity1 && item.entity1.set && await item.entity1.set.setStateFlip();
           item.setValue1 && await item.setValue1.setStateFlip();
         }
         break;
