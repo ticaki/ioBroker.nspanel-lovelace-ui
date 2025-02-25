@@ -237,7 +237,7 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.1.0 (2025-02-25)
 - (ticaki) alot changes
 
 ### 0.1.0-preAlpha.0 (2024-03-09)
