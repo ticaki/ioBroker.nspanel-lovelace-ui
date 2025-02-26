@@ -57,6 +57,10 @@ const main: PageType = {
 - `button1` und `button2` müssen aktuell noch da sein, werden aber nicht verwendet
 - `useValue` wird nicht verwendet.
 
+Wenn alles eingestellt ist, skript starten und auf die Rückmeldung warten, dann beenden und in den Alias die gefunden Fehler beheben.
+
+Dabei bedeutet die Phrase: `not implemented yet!` das wir es noch nicht eingebaut habe und `not supported` das wir das auch nicht werde :)
+
 Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
 
 
