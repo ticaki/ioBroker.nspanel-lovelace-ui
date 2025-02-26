@@ -381,15 +381,23 @@ export async function getIconEntryColor(
                 } else if (vBest === undefined) {
                     factor = (value - vMin) / (vMax - vMin);
                     factor = getLogFromIconScale(scale, factor);
-                    rColor = Color.mixColor(cfrom, cto, factor);
+                    const func = scale.mode === 'hue' ? Color.mixColorHue : Color.mixColorCie;
+                    rColor = func(cfrom, cto, factor);
                 } else if (value >= vBest) {
                     factor = (value - vBest) / (vMax - vBest);
                     factor = getLogFromIconScale(scale, factor);
-                    rColor = Color.mixColor(cto, cfrom, factor);
+                    rColor =
+                        scale.mode === 'hue'
+                            ? Color.mixColorHue(cto, cfrom, factor)
+                            : scale.mode === 'cie'
+                            ? Color.mixColorCie(cto, cfrom, factor) : Color.mixColor(cto, cfrom, factor);
                 } else {
                     factor = (value - vMin) / (vBest - vMin);
                     factor = 1 - getLogFromIconScale(scale, 1 - factor);
-                    rColor = Color.mixColor(cfrom, cto, factor);
+                    rColor =
+                        scale.mode === 'hue'
+                            ? Color.mixColorHue(cfrom, cto, factor)
+                            : Color.mixColorCie(cfrom, cto, factor);
                 }
                 return String(Color.rgb_dec565(rColor));
             } else if (isPartialIconScaleElement(scale)) {

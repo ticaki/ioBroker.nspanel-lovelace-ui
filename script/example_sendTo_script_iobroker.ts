@@ -1,6 +1,9 @@
 async function configuration (): Promise<void> {
 
 
+    // Diese Konfiguration für den Fahrplan ist ein Beispiel was die interne Adapterkonfiguration benutzt, diese 
+    // ist recht komplex und wird nicht weiter erläutert. Da gibts später fertige Templates die man hier verwenden kann.
+    // wie am Fahrplan Beispiel zu sehen ist.
     const fahrplan: any = {
         heading: 'Fahrplan Script',
         native: {
@@ -10,12 +13,38 @@ async function configuration (): Promise<void> {
             template: 'entities.fahrplan.routes',
         }
     };
-    const grid1: ScriptConfig.PageBaseType = {
-        uniqueName: 'main', // keine Navigation, am besten uniqueName von config.ts übernehmen
+
+    // Ein Beispiel für eine Gridseite mit verschiedenen Farbskalen
+    const irgendeinName: PageType = {
+        type: 'cardGrid',
+        uniqueName:'main',
+        heading: 'Wohnzimmer',
+        useColor: true,
+        items: [
+            { id: 'alias.0.Temperatur',name: 'standard', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40} },
+            { id: 'alias.0.Temperatur',name: 'hue', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue'} },
+            { id: 'alias.0.Temperatur',name: 'cie', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie'} },
+            { id: 'alias.0.Temperatur',name: 'standard log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, log10: 'min'} },
+            { id: 'alias.0.Temperatur',name: 'hue log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue',log10: 'min'} },
+            { id: 'alias.0.Temperatur',name: 'cie log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie',log10: 'min'} },
+            { id: 'alias.0.Temperatur',name: 'standard', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40} },
+            { id: 'alias.0.Temperatur',name: 'hue', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue'} },
+            { id: 'alias.0.Temperatur',name: 'cie', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie'} },
+            { id: 'alias.0.Temperatur',name: 'standard log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, log10: 'max'} },
+            { id: 'alias.0.Temperatur',name: 'hue log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue',log10: 'max'} },
+            { id: 'alias.0.Temperatur',name: 'cie log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie',log10: 'max'} },     
+        ]};
+        
+    const grid1: PageType = {
+        uniqueName: 'grid1', // keine Navigation, am besten uniqueName von config.ts übernehmen
         heading: 'Grid 1',
         items: [
-            {id: 'alias.0.Licht.lights.Gerät_1'}, {id: 'alias.0.Licht.lights.Gerät_2'}, {id: '0_userdata.0.Einzelne_Geräte.dimmer'}, {id: 'alias.0.NSPanel.allgemein.hue', colormode: 'true'},
-            {navigate: true, targetPage:'fahrplanrouten'}, {id:'alias.0.NSPanel.allgemein.shutter'}
+            {id: 'alias.0.Licht.lights.Gerät_1'}, 
+            {id: 'alias.0.Licht.lights.Gerät_2'}, 
+            {id: '0_userdata.0.Einzelne_Geräte.dimmer'}, 
+            {id: 'alias.0.NSPanel.allgemein.hue',},
+            {navigate: true, targetPage:'fahrplanrouten'}, 
+            {id:'alias.0.NSPanel.allgemein.shutter'}
         ],
         type: 'cardGrid',
         useColor: true
@@ -36,13 +65,13 @@ async function configuration (): Promise<void> {
         // Seiteneinteilung / Page division
         // Hauptseiten / Mainpages
         pages: [
-            fahrplan,
+            irgendeinName,
             grid1,
-            //Unlock_Service            //Auto-Alias Service Page (Service Pages used with cardUnlock)
+            
         ],
         // Unterseiten / Subpages
         subPages: [
-
+            fahrplan
         ],
 
         /***********************************************************************
@@ -277,14 +306,29 @@ async function configuration (): Promise<void> {
 
 
     /**
-     *  END STOP END STOP END - No more configuration - END STOP END STOP END
-     *  For a update copy and paste the code below from orginal file.
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     *  END STOP END STOP END - No more configuration - END STOP END STOP END       *
+     ********************************************************************************
+     *  For a update copy and paste the code below from orginal file.               *
+     * ******************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
      */
 
     log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version}))
 }
 
-const version = '0.2.0';
+const version = '0.2.1';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -371,6 +415,26 @@ const swSnowyRainy = {red: 150, green: 150, blue: 255};
 const swSunny = {red: 255, green: 255, blue: 0};
 const swWindy = {red: 150, green: 150, blue: 150};
 
+type PageType = ScriptConfig.PageType;
+type Config = ScriptConfig.Config;
+type PageBaseType = ScriptConfig.PageBaseType;
+type PageItem = ScriptConfig.PageItem;
+type PageBaseItem = ScriptConfig.PageBaseItem;
+type PageMediaItem = ScriptConfig.PageMediaItem;
+type PageThermoItem = ScriptConfig.PageThermoItem;
+type PageEntities = ScriptConfig.PageEntities;
+type PageGrid = ScriptConfig.PageGrid;
+type PageGrid2 = ScriptConfig.PageGrid2;
+type PageGrid3 = ScriptConfig.PageGrid3;
+type PageThermo = ScriptConfig.PageThermo;
+type PageMedia = ScriptConfig.PageMedia;
+type PageAlarm = ScriptConfig.PageAlarm;
+type PageUnlock = ScriptConfig.PageUnlock;
+type PageQR = ScriptConfig.PageQR;
+type PagePower = ScriptConfig.PagePower;
+type PageChart = ScriptConfig.PageChart;
+type PagetypeType = ScriptConfig.PagetypeType;
+type NavigationItemConfig = ScriptConfig.NavigationItemConfig;
 declare namespace ScriptConfig {
     export type PopupType =
         | 'popupFan'
@@ -576,22 +640,22 @@ declare namespace ScriptConfig {
 
     export type PageEntities = {
         type: 'cardEntities';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[];
     } & PageBaseType;
 
     export type PageGrid = {
         type: 'cardGrid';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[];
     } & PageBaseType;
 
     export type PageGrid2 = {
         type: 'cardGrid2';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[];
     } & PageBaseType;
 
     export type PageGrid3 = {
         type: 'cardGrid3';
-        items: [PageItem?, PageItem?, PageItem?, PageItem?];
+        items: PageItem[];
     } & PageBaseType;
 
     export type PageThermo = {
@@ -856,6 +920,17 @@ declare namespace ScriptConfig {
         val_min: number;
         val_max: number;
         val_best?: number;
+        /**
+         * The color mix mode. Default is 'mixed'.
+         * ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
+         * 'cie': the target colour is achieved by mixing according to the CIE colour table. 
+         * 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
+         */
+        mode?: 'mixed' | 'hue' | 'cie';
+        /**
+         * The logarithm scaling to max, min or leave undefined for linear scaling.
+         */
+        log10?: 'max' | 'min';
     };
     /** we need this to have a nice order when using switch() */
     export type adapterPlayerInstanceType =

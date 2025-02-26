@@ -54,6 +54,9 @@ class PanelSend extends import_library.BaseClass {
         this.losingMessageCount = 0;
         const msg2 = this.messageDb.shift();
         if (msg2) {
+          if (msg2.payload === "pageType~pageStartup") {
+            this.messageDb = [];
+          }
           this.log.debug(`Receive ack for ${JSON.stringify(msg2)}`);
         }
         this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 250);
@@ -67,6 +70,9 @@ class PanelSend extends import_library.BaseClass {
     return this._panel;
   }
   addMessage = (payload, opt) => {
+    if (this.messageTimeout !== void 0 && this.messageDb.length > 0 && this.messageDb.some((a) => a.payload === payload && a.opt === opt)) {
+      return;
+    }
     this.messageDb.push({ payload, opt });
     if (this.messageTimeout === void 0) {
       void this.sendMessageLoop();

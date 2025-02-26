@@ -44,6 +44,9 @@ export class PanelSend extends BaseClass {
                 this.losingMessageCount = 0;
                 const msg = this.messageDb.shift();
                 if (msg) {
+                    if (msg.payload === 'pageType~pageStartup') {
+                        this.messageDb = [];
+                    }
                     this.log.debug(`Receive ack for ${JSON.stringify(msg)}`);
                 }
                 this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 250);
@@ -58,6 +61,13 @@ export class PanelSend extends BaseClass {
     }
 
     readonly addMessage = (payload: string, opt?: IClientPublishOptions): void => {
+        if (
+            this.messageTimeout !== undefined &&
+            this.messageDb.length > 0 &&
+            this.messageDb.some(a => a.payload === payload && a.opt === opt)
+        ) {
+            return;
+        }
         this.messageDb.push({ payload: payload, opt: opt });
         if (this.messageTimeout === undefined) {
             void this.sendMessageLoop();
