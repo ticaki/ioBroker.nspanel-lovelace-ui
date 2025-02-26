@@ -376,28 +376,26 @@ export async function getIconEntryColor(
                 }
                 const vBest = scale.val_best ?? undefined;
                 let factor = 1;
+                const func =
+                    scale.mode === 'hue'
+                        ? Color.mixColorHue
+                        : scale.mode === 'cie'
+                          ? Color.mixColorCie
+                          : Color.mixColor;
                 if (vMin == vMax) {
                     rColor = cto;
                 } else if (vBest === undefined) {
                     factor = (value - vMin) / (vMax - vMin);
                     factor = getLogFromIconScale(scale, factor);
-                    const func = scale.mode === 'hue' ? Color.mixColorHue : Color.mixColorCie;
                     rColor = func(cfrom, cto, factor);
                 } else if (value >= vBest) {
                     factor = (value - vBest) / (vMax - vBest);
                     factor = getLogFromIconScale(scale, factor);
-                    rColor =
-                        scale.mode === 'hue'
-                            ? Color.mixColorHue(cto, cfrom, factor)
-                            : scale.mode === 'cie'
-                            ? Color.mixColorCie(cto, cfrom, factor) : Color.mixColor(cto, cfrom, factor);
+                    rColor = func(cto, cfrom, factor);
                 } else {
                     factor = (value - vMin) / (vBest - vMin);
                     factor = 1 - getLogFromIconScale(scale, 1 - factor);
-                    rColor =
-                        scale.mode === 'hue'
-                            ? Color.mixColorHue(cfrom, cto, factor)
-                            : Color.mixColorCie(cfrom, cto, factor);
+                    rColor = func(cfrom, cto, factor);
                 }
                 return String(Color.rgb_dec565(rColor));
             } else if (isPartialIconScaleElement(scale)) {
