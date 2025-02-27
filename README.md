@@ -19,10 +19,35 @@ NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in th
 
 Entwickleränderungen / Erklärung
 
+**Nicht installieren wenn da oben bei Tests failed steht**
 
 Immer wenn ich Zeit und lust habe Dokumentiere ich hier Sachen.
 
 Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
+**Solange das hier einfach nur Fortschritte aufzählt, ist oben neuer als unten**
+
+Fragen gerne im [Forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)
+
+Der Adapter reagiert in 0_userdata.0 und alias.0 auf jede Änderung `ack=true` oder `ack=false` eines abonnierten Datenpunktes. Ansonsten gilt nachfolgendes:
+- Auserhalb vom Adapter namespace(`nspanel-lovelace-ui.0`) reagiert dieser Adapter auf `ack=true` und setzt Datenpunkte mit `ack=false`
+- Innerhalb des Adapter namespace reagiert dieser Adapter auf `ack=false` und setzt Datenpunkte mit `ack=true`
+
+Beim Farbscalieren `colorScale` gibt es die unteren Zusatzoptionen
+```
+/**
+* The color mix mode. Default is 'mixed'.
+* ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
+* 'cie': the target colour is achieved by mixing according to the CIE colour table. 
+* 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
+*/
+mode?: 'mixed' | 'hue' | 'cie';
+/**
+* The logarithm scaling to max, min or leave undefined for linear scaling.
+*/
+log10?: 'max' | 'min';
+```
+
+---
 
 Mit der aktuellen Version 0.1.0 sind schon ein paar Test möglich.
 
@@ -275,6 +300,14 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) fixed nav service right
+
+### 0.1.1 (2025-02-27)
+- (ticaki) fixed color fading
+- (ticaki) fixed config script
+- (ticaki) added message for missing states
+
 ### 0.1.0 (2025-02-25)
 - (ticaki) alot changes
 

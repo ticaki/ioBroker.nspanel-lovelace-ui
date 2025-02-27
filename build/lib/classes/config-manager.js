@@ -32,7 +32,7 @@ class ConfigManager extends import_library.BaseClass {
   colorOn = import_Color.Color.On;
   colorOff = import_Color.Color.Off;
   colorDefault = import_Color.Color.Off;
-  scriptVersion = "0.2.0";
+  scriptVersion = "0.2.1";
   constructor(adapter) {
     super(adapter, "config-manager");
   }
@@ -52,7 +52,7 @@ class ConfigManager extends import_library.BaseClass {
    * 7. Ensures unique page names and handles duplicates.
    * 8. Updates the adapter's foreign object with the new configuration.
    *
-   * If any errors occur during the process, they are logged and included in the returned messages...
+   * If any errors occur during the process, they are logged and included in the returned messages.
    */
   async setScriptConfig(configuration) {
     const config = Object.assign(import_config_manager_const.defaultConfig, configuration);
@@ -144,6 +144,7 @@ class ConfigManager extends import_library.BaseClass {
           };
         });
         panelConfig.navigation[panelConfig.navigation.length - 1].right = { single: "///service" };
+        panelConfig.navigation[0].left = { single: "///service" };
       }
     }
     const names = [];
@@ -185,7 +186,7 @@ class ConfigManager extends import_library.BaseClass {
       await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
     }
     messages.push(`done`);
-    return messages;
+    return messages.map((a) => a.replace("Error: ", ""));
   }
   async getPageConfig(config, panelConfig, messages) {
     if (panelConfig.pages === void 0) {
@@ -371,7 +372,7 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 color: await this.getIconColor(item.offColor, this.colorOff)
               },
-              scale: void 0,
+              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
               maxBri: void 0,
               minBri: void 0
             },
@@ -413,7 +414,7 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 color: await this.getIconColor(item.offColor, this.colorOff)
               },
-              scale: void 0,
+              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
               maxBri: void 0,
               minBri: void 0
             },
@@ -439,7 +440,8 @@ class ConfigManager extends import_library.BaseClass {
             role: specialRole,
             color: {
               true: await this.getIconColor(item.onColor, this.colorOn),
-              false: await this.getIconColor(item.offColor, this.colorOff)
+              false: await this.getIconColor(item.offColor, this.colorOff),
+              scale: item.colorScale ? item.colorScale : void 0
             },
             template: "button.humidity",
             data: {
@@ -464,7 +466,8 @@ class ConfigManager extends import_library.BaseClass {
           template: "button.temperature",
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
-            false: await this.getIconColor(item.offColor, this.colorOff)
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: item.colorScale ? item.colorScale : void 0
           },
           data: {
             text: defaultNav.data.text,
@@ -481,7 +484,8 @@ class ConfigManager extends import_library.BaseClass {
             type: "button",
             color: {
               true: await this.getIconColor(item.onColor, this.colorOn),
-              false: await this.getIconColor(item.offColor, this.colorOff)
+              false: await this.getIconColor(item.offColor, this.colorOff),
+              scale: item.colorScale ? item.colorScale : void 0
             },
             data: {
               text: defaultNav.data.text,
@@ -508,7 +512,8 @@ class ConfigManager extends import_library.BaseClass {
             type: "button",
             color: {
               true: await this.getIconColor(item.onColor, this.colorOn),
-              false: await this.getIconColor(item.offColor, this.colorOff)
+              false: await this.getIconColor(item.offColor, this.colorOff),
+              scale: item.colorScale ? item.colorScale : void 0
             },
             data: {
               text: defaultNav.data.text,
@@ -528,7 +533,8 @@ class ConfigManager extends import_library.BaseClass {
           type: "button",
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
-            false: await this.getIconColor(item.offColor, this.colorOff)
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: item.colorScale ? item.colorScale : void 0
           },
           data: {
             text: defaultNav.data.text,
@@ -547,7 +553,8 @@ class ConfigManager extends import_library.BaseClass {
           type: "button",
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
-            false: await this.getIconColor(item.offColor, this.colorOff)
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: item.colorScale ? item.colorScale : void 0
           },
           data: {
             text: defaultNav.data.text,
@@ -566,7 +573,8 @@ class ConfigManager extends import_library.BaseClass {
           type: "button",
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
-            false: await this.getIconColor(item.offColor, this.colorOff)
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: item.colorScale ? item.colorScale : void 0
           },
           data: {
             text: defaultNav.data.text,
@@ -586,7 +594,8 @@ class ConfigManager extends import_library.BaseClass {
           type: "button",
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
-            false: await this.getIconColor(item.offColor, this.colorOff)
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: item.colorScale ? item.colorScale : void 0
           },
           data: {
             text: defaultNav.data.text,
@@ -606,7 +615,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
             false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
-            scale: item.colorScale
+            scale: item.colorScale ? item.colorScale : void 0
           },
           data: {
             text: defaultNav.data.text,
@@ -710,7 +719,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
-                  scale: void 0,
+                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -745,7 +754,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
-                  scale: void 0,
+                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
                   minBri: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
                 },
@@ -795,7 +804,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
-                  scale: void 0,
+                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
                   minBri: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
                 },
@@ -886,7 +895,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
-                  scale: void 0,
+                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -931,7 +940,7 @@ class ConfigManager extends import_library.BaseClass {
                       constVal: item.icon3 || "window-shutter-alert"
                     }
                   },
-                  scale: void 0,
+                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -989,7 +998,7 @@ class ConfigManager extends import_library.BaseClass {
                         constVal: item.icon3 || "garage-alert"
                       }
                     },
-                    scale: void 0,
+                    scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
                     maxBri: void 0,
                     minBri: void 0
                   },
@@ -1013,7 +1022,8 @@ class ConfigManager extends import_library.BaseClass {
                 dpInit: item.id,
                 color: {
                   true: await this.getIconColor(item.onColor, this.colorOn),
-                  false: await this.getIconColor(item.offColor, this.colorOff)
+                  false: await this.getIconColor(item.offColor, this.colorOff),
+                  scale: item.colorScale
                 }
               };
             }
@@ -1113,7 +1123,7 @@ class ConfigManager extends import_library.BaseClass {
                   unstable: {
                     value: await this.getFieldAsDataItemConfig(item.icon3 || iconUnstable)
                   },
-                  scale: void 0,
+                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -1149,7 +1159,8 @@ class ConfigManager extends import_library.BaseClass {
               role: specialRole,
               color: {
                 true: await this.getIconColor(item.onColor, this.colorOn),
-                false: await this.getIconColor(item.offColor, this.colorOff)
+                false: await this.getIconColor(item.offColor, this.colorOff),
+                scale: item.colorScale
               },
               data: {
                 text: {
@@ -1180,6 +1191,7 @@ class ConfigManager extends import_library.BaseClass {
         }
         return itemConfig;
       }
+      throw new Error(`Object ${item.id} not found!`);
     }
     return void 0;
   }
@@ -1622,38 +1634,54 @@ class ConfigManager extends import_library.BaseClass {
    */
   async checkRequiredDatapoints(role, item, mode = "both") {
     const _checkScriptDataPoints = async (role2, item2) => {
+      let error = "";
       for (const dp in (import_config_manager_const.requiredFeatureDatapoints[role2] || {}).data) {
-        const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
-        if (!o && !import_config_manager_const.requiredScriptDataPoints[role2].data[dp].required) {
-          continue;
-        }
-        if (!o || !this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) || import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type === "mixed" && o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type || import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write) {
-          if (!o) {
-            throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
-          } else {
-            throw new Error(
-              `Datapoint ${item2.id}.${dp}:${this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role)})` : ""} ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type === "mixed" || o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type}` : ""}${!(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write) ? " must be writeable!" : ""} `
-            );
+        try {
+          const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
+          if (!o && !import_config_manager_const.requiredScriptDataPoints[role2].data[dp].required) {
+            continue;
           }
+          if (!o || !this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) || import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type === "mixed" && o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type || import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write) {
+            if (!o) {
+              throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
+            } else {
+              throw new Error(
+                `Datapoint ${item2.id}.${dp}:${this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role)})` : ""} ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type === "mixed" || o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type}` : ""}${!(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write) ? " must be writeable!" : ""} `
+              );
+            }
+          }
+        } catch (err) {
+          error += err;
         }
+      }
+      if (error) {
+        throw new Error(error);
       }
       return true;
     };
     const _checkDataPoints = async (role2, item2) => {
+      let error = "";
       for (const dp in (import_config_manager_const.requiredFeatureDatapoints[role2] || {}).data) {
-        const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
-        if (!o && !import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].required) {
-          continue;
-        }
-        if (!o || !this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) || import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type === "mixed" && o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type) {
-          if (!o) {
-            throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
-          } else {
-            throw new Error(
-              `Datapoint ${item2.id}.${dp}:${this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role)}` : ""} ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type === "mixed" || o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type}` : ""}${!(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].writeable && !o.common.write) ? " must be writeable!" : ""} `
-            );
+        try {
+          const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
+          if (!o && !import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].required) {
+            continue;
           }
+          if (!o || !this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) || import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type === "mixed" && o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type) {
+            if (!o) {
+              throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
+            } else {
+              throw new Error(
+                `Datapoint ${item2.id}.${dp}:${this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role)}` : ""} ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type === "mixed" || o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type}` : ""}${!(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].writeable && !o.common.write) ? " must be writeable!" : ""} `
+              );
+            }
+          }
+        } catch (err) {
+          error += err;
         }
+      }
+      if (error) {
+        throw new Error(error);
       }
       return true;
     };

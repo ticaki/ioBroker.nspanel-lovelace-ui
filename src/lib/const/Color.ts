@@ -229,87 +229,21 @@ export class Color extends ColorBase {
         }
         return outMax + outMin - (((number - inMax) * (outMax - outMin)) / (inMin - inMax) + outMin);
     }
-    static rgbToHsb(r: number, g: number, b: number): { h: number; s: number; b: number } {
-        const max = Math.max(r, g, b),
-            min = Math.min(r, g, b);
-        const d = max - min,
-            s = max === 0 ? 0 : d / max;
-        let h = 0;
 
-        if (d !== 0) {
-            if (max === r) {
-                h = ((g - b) / d) % 6;
-            } else if (max === g) {
-                h = (b - r) / d + 2;
-            } else {
-                h = (r - g) / d + 4;
-            }
-            h *= 60;
-            if (h < 0) {
-                h += 360;
-            }
-        }
+    static mixColorHue(startRGB: RGB, endRGB: RGB, t: number): RGB {
+        const startHSB = colord(startRGB).toHsv();
+        const endHSB = colord(endRGB).toHsv();
 
-        return { h: h, s: s, b: max / 255 };
-    }
-    static fadeColor(startRGB: RGB, endRGB: RGB, min: number, max: number, val_best: number, current: number): RGB {
-        if (max < min) {
-            const temp = endRGB;
-            endRGB = startRGB;
-            startRGB = temp;
-            const temp2 = max;
-            max = min;
-            min = temp2;
-        }
-        if (max < current) {
-            return endRGB;
-        }
-        if (min > current) {
-            return startRGB;
-        }
-        const startHSB = this.rgbToHsb(startRGB.r, startRGB.g, startRGB.b);
-        const endHSB = this.rgbToHsb(endRGB.r, endRGB.g, endRGB.b);
-
-        const t = Math.min(current / max - min, 1);
+        t = Math.min(1, Math.max(0, t));
 
         // Hue muss über den kürzesten Weg interpoliert werden
         const deltaH = ((endHSB.h - startHSB.h + 540) % 360) - 180;
         const h = (startHSB.h + t * deltaH + 360) % 360;
 
         const s = startHSB.s + t * (endHSB.s - startHSB.s);
-        const b = startHSB.b + t * (endHSB.b - startHSB.b);
+        const v = startHSB.v + t * (endHSB.v - startHSB.v);
 
-        return this.hsbToRgb(h, s, b);
-    }
-    static hsbToRgb(h: number, s: number, b: number): RGB {
-        const c = b * s,
-            x = c * (1 - Math.abs(((h / 60) % 2) - 1)),
-            m = b - c;
-        let r = 0,
-            g = 0,
-            b2 = 0;
-
-        if (h < 60) {
-            r = c;
-            g = x;
-        } else if (h < 120) {
-            r = x;
-            g = c;
-        } else if (h < 180) {
-            g = c;
-            b2 = x;
-        } else if (h < 240) {
-            g = x;
-            b2 = c;
-        } else if (h < 300) {
-            r = x;
-            b2 = c;
-        } else {
-            r = c;
-            g = x;
-        }
-
-        return { r: Math.round((r + m) * 255), g: Math.round((g + m) * 255), b: Math.round((b2 + m) * 255) };
+        return colord({ h, s, v }).toRgb();
     }
 
     static HandleColorScale(valueScaletemp: string): number {
@@ -354,8 +288,22 @@ export class Color extends ColorBase {
      * @param r 0-1 mix value
      * @returns RGB
      */
-    static mixColor(c1: RGB, c2: RGB, r: number): RGB {
+    static mixColorCie(c1: RGB, c2: RGB, r: number): RGB {
         return colord(c1).mix(c2, r).toRgb();
+    }
+
+    /**
+     *
+     * @param c1 from this color
+     * @param c2 to this
+     * @param x 0-1 mix value
+     * @returns RGB
+     */
+    static mixColor(c1: RGB, c2: RGB, x: number): RGB {
+        const r = Math.round(c1.r + (c2.r - c1.r) * x);
+        const g = Math.round(c1.g + (c2.g - c1.g) * x);
+        const b = Math.round(c1.b + (c2.b - c1.b) * x);
+        return { r, g, b };
     }
     static InterpolateNum(d1: number, d2: number, fraction: number): number {
         return d1 + (d2 - d1) * fraction;

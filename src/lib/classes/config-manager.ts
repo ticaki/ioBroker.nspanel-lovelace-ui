@@ -21,7 +21,7 @@ export class ConfigManager extends BaseClass {
     private colorOff: RGB = Color.Off;
     private colorDefault: RGB = Color.Off;
 
-    private readonly scriptVersion = '0.2.0';
+    private readonly scriptVersion = '0.2.1';
 
     constructor(adapter: NspanelLovelaceUi) {
         super(adapter, 'config-manager');
@@ -43,7 +43,7 @@ export class ConfigManager extends BaseClass {
      * 7. Ensures unique page names and handles duplicates.
      * 8. Updates the adapter's foreign object with the new configuration.
      *
-     * If any errors occur during the process, they are logged and included in the returned messages...
+     * If any errors occur during the process, they are logged and included in the returned messages.
      */
     async setScriptConfig(configuration: any): Promise<string[]> {
         const config = Object.assign(defaultConfig, configuration);
@@ -151,6 +151,7 @@ export class ConfigManager extends BaseClass {
                     };
                 });
                 panelConfig.navigation[panelConfig.navigation.length - 1]!.right = { single: '///service' };
+                panelConfig.navigation[0]!.left = { single: '///service' };
             }
         }
         const names: string[] = [];
@@ -200,7 +201,7 @@ export class ConfigManager extends BaseClass {
             await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
         }
         messages.push(`done`);
-        return messages;
+        return messages.map(a => a.replace('Error: ', ''));
     }
 
     async getPageConfig(
@@ -466,7 +467,7 @@ export class ConfigManager extends BaseClass {
                                 },
                                 color: await this.getIconColor(item.offColor, this.colorOff),
                             },
-                            scale: undefined,
+                            scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                             maxBri: undefined,
                             minBri: undefined,
                         },
@@ -508,7 +509,7 @@ export class ConfigManager extends BaseClass {
                                 },
                                 color: await this.getIconColor(item.offColor, this.colorOff),
                             },
-                            scale: undefined,
+                            scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                             maxBri: undefined,
                             minBri: undefined,
                         },
@@ -538,6 +539,7 @@ export class ConfigManager extends BaseClass {
                         color: {
                             true: await this.getIconColor(item.onColor, this.colorOn),
                             false: await this.getIconColor(item.offColor, this.colorOff),
+                            scale: item.colorScale ? item.colorScale : undefined,
                         },
                         template: 'button.humidity',
                         data: {
@@ -563,6 +565,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
+                        scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
                         text: defaultNav.data.text,
@@ -580,6 +583,7 @@ export class ConfigManager extends BaseClass {
                         color: {
                             true: await this.getIconColor(item.onColor, this.colorOn),
                             false: await this.getIconColor(item.offColor, this.colorOff),
+                            scale: item.colorScale ? item.colorScale : undefined,
                         },
                         data: {
                             text: defaultNav.data.text,
@@ -607,6 +611,7 @@ export class ConfigManager extends BaseClass {
                         color: {
                             true: await this.getIconColor(item.onColor, this.colorOn),
                             false: await this.getIconColor(item.offColor, this.colorOff),
+                            scale: item.colorScale ? item.colorScale : undefined,
                         },
                         data: {
                             text: defaultNav.data.text,
@@ -627,6 +632,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
+                        scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
                         text: defaultNav.data.text,
@@ -646,6 +652,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
+                        scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
                         text: defaultNav.data.text,
@@ -666,6 +673,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
+                        scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
                         text: defaultNav.data.text,
@@ -687,6 +695,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
+                        scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
                         text: defaultNav.data.text,
@@ -707,7 +716,7 @@ export class ConfigManager extends BaseClass {
                     color: {
                         true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
                         false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
-                        scale: item.colorScale,
+                        scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
                         text: defaultNav.data.text,
@@ -829,7 +838,7 @@ export class ConfigManager extends BaseClass {
                                         },
                                         color: await this.getIconColor(item.offColor, this.colorOff),
                                     },
-                                    scale: undefined,
+                                    scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
@@ -865,7 +874,7 @@ export class ConfigManager extends BaseClass {
                                         },
                                         color: await this.getIconColor(item.offColor, this.colorOff),
                                     },
-                                    scale: undefined,
+                                    scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                                     maxBri: item.maxValueBrightness
                                         ? { type: 'const', constVal: item.maxValueBrightness }
                                         : undefined,
@@ -930,7 +939,7 @@ export class ConfigManager extends BaseClass {
                                         },
                                         color: await this.getIconColor(item.offColor, this.colorOff),
                                     },
-                                    scale: undefined,
+                                    scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                                     maxBri: item.maxValueBrightness
                                         ? { type: 'const', constVal: item.maxValueBrightness }
                                         : undefined,
@@ -1056,7 +1065,7 @@ export class ConfigManager extends BaseClass {
                                         },
                                         color: await this.getIconColor(item.offColor, this.colorOff),
                                     },
-                                    scale: undefined,
+                                    scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
@@ -1113,7 +1122,7 @@ export class ConfigManager extends BaseClass {
                                             constVal: item.icon3 || 'window-shutter-alert',
                                         },
                                     },
-                                    scale: undefined,
+                                    scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
@@ -1182,7 +1191,9 @@ export class ConfigManager extends BaseClass {
                                                 constVal: item.icon3 || 'garage-alert',
                                             },
                                         },
-                                        scale: undefined,
+                                        scale: item.colorScale
+                                            ? { type: 'const', constVal: item.colorScale }
+                                            : undefined,
                                         maxBri: undefined,
                                         minBri: undefined,
                                     },
@@ -1210,6 +1221,7 @@ export class ConfigManager extends BaseClass {
                                 color: {
                                     true: await this.getIconColor(item.onColor, this.colorOn),
                                     false: await this.getIconColor(item.offColor, this.colorOff),
+                                    scale: item.colorScale,
                                 },
                             };
                         }
@@ -1315,7 +1327,7 @@ export class ConfigManager extends BaseClass {
                                     unstable: {
                                         value: await this.getFieldAsDataItemConfig(item.icon3 || iconUnstable),
                                     },
-                                    scale: undefined,
+                                    scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
@@ -1378,6 +1390,7 @@ export class ConfigManager extends BaseClass {
                             color: {
                                 true: await this.getIconColor(item.onColor, this.colorOn),
                                 false: await this.getIconColor(item.offColor, this.colorOff),
+                                scale: item.colorScale,
                             },
                             data: {
                                 text: {
@@ -1409,6 +1422,7 @@ export class ConfigManager extends BaseClass {
                 }
                 return itemConfig;
             }
+            throw new Error(`Object ${item.id} not found!`);
         }
         return undefined;
     }
@@ -1870,58 +1884,75 @@ export class ConfigManager extends BaseClass {
             role: ScriptConfig.roles,
             item: ScriptConfig.PageItem,
         ): Promise<boolean> => {
-            for (const dp in (requiredFeatureDatapoints[role] || {}).data) {
-                const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
+            let error = '';
 
-                if (!o && !requiredScriptDataPoints[role].data[dp].required) {
-                    continue;
-                }
-                if (
-                    !o ||
-                    !this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ||
-                    (requiredScriptDataPoints[role].data[dp].type === 'mixed' &&
-                        o.common.type !== requiredScriptDataPoints[role].data[dp].type) ||
-                    (requiredScriptDataPoints[role].data[dp].writeable && !o.common.write)
-                ) {
-                    if (!o) {
-                        throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
-                    } else {
-                        throw new Error(
-                            `Datapoint ${item.id}.${dp}:` +
-                                `${this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${getStringOrArray(requiredScriptDataPoints[role].data[dp].role)})` : ''} ` +
-                                `${requiredScriptDataPoints[role].data[dp].type === 'mixed' || o.common.type !== requiredScriptDataPoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredScriptDataPoints[role].data[dp].type}` : ''}` +
-                                `${!(requiredScriptDataPoints[role].data[dp].writeable && !o.common.write) ? ' must be writeable!' : ''} `,
-                        );
+            for (const dp in (requiredFeatureDatapoints[role] || {}).data) {
+                try {
+                    const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
+
+                    if (!o && !requiredScriptDataPoints[role].data[dp].required) {
+                        continue;
                     }
+                    if (
+                        !o ||
+                        !this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ||
+                        (requiredScriptDataPoints[role].data[dp].type === 'mixed' &&
+                            o.common.type !== requiredScriptDataPoints[role].data[dp].type) ||
+                        (requiredScriptDataPoints[role].data[dp].writeable && !o.common.write)
+                    ) {
+                        if (!o) {
+                            throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
+                        } else {
+                            throw new Error(
+                                `Datapoint ${item.id}.${dp}:` +
+                                    `${this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${getStringOrArray(requiredScriptDataPoints[role].data[dp].role)})` : ''} ` +
+                                    `${requiredScriptDataPoints[role].data[dp].type === 'mixed' || o.common.type !== requiredScriptDataPoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredScriptDataPoints[role].data[dp].type}` : ''}` +
+                                    `${!(requiredScriptDataPoints[role].data[dp].writeable && !o.common.write) ? ' must be writeable!' : ''} `,
+                            );
+                        }
+                    }
+                } catch (err: any) {
+                    error += err;
                 }
+            }
+            if (error) {
+                throw new Error(error);
             }
             return true;
         };
         const _checkDataPoints = async (role: ScriptConfig.roles, item: ScriptConfig.PageItem): Promise<boolean> => {
+            let error = '';
             for (const dp in (requiredFeatureDatapoints[role] || {}).data) {
-                const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
+                try {
+                    const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
 
-                if (!o && !requiredFeatureDatapoints[role].data[dp].required) {
-                    continue;
-                }
-
-                if (
-                    !o ||
-                    !this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ||
-                    (requiredFeatureDatapoints[role].data[dp].type === 'mixed' &&
-                        o.common.type !== requiredFeatureDatapoints[role].data[dp].type)
-                ) {
-                    if (!o) {
-                        throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
-                    } else {
-                        throw new Error(
-                            `Datapoint ${item.id}.${dp}:` +
-                                `${this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${getStringOrArray(requiredFeatureDatapoints[role].data[dp].role)}` : ''} ` +
-                                `${requiredFeatureDatapoints[role].data[dp].type === 'mixed' || o.common.type !== requiredFeatureDatapoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredFeatureDatapoints[role].data[dp].type}` : ''}` +
-                                `${!(requiredFeatureDatapoints[role].data[dp].writeable && !o.common.write) ? ' must be writeable!' : ''} `,
-                        );
+                    if (!o && !requiredFeatureDatapoints[role].data[dp].required) {
+                        continue;
                     }
+
+                    if (
+                        !o ||
+                        !this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ||
+                        (requiredFeatureDatapoints[role].data[dp].type === 'mixed' &&
+                            o.common.type !== requiredFeatureDatapoints[role].data[dp].type)
+                    ) {
+                        if (!o) {
+                            throw new Error(`Datapoint ${item.id}.${dp} is missing and is required for role ${role}!`);
+                        } else {
+                            throw new Error(
+                                `Datapoint ${item.id}.${dp}:` +
+                                    `${this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${getStringOrArray(requiredFeatureDatapoints[role].data[dp].role)}` : ''} ` +
+                                    `${requiredFeatureDatapoints[role].data[dp].type === 'mixed' || o.common.type !== requiredFeatureDatapoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredFeatureDatapoints[role].data[dp].type}` : ''}` +
+                                    `${!(requiredFeatureDatapoints[role].data[dp].writeable && !o.common.write) ? ' must be writeable!' : ''} `,
+                            );
+                        }
+                    }
+                } catch (err: any) {
+                    error += err;
                 }
+            }
+            if (error) {
+                throw new Error(error);
             }
             return true;
         };

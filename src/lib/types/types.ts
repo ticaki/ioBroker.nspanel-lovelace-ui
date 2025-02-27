@@ -327,7 +327,17 @@ export type IconScaleElement = {
     val_min: number;
     val_max: number;
     val_best?: number;
+    /**
+     * The logarithm scaling to max, min or leave undefined for linear scaling.
+     */
     log10?: 'max' | 'min';
+    /**
+     * The color mix mode. Default is 'mixed'.
+     * ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
+     * 'cie': the target colour is achieved by mixing according to the CIE colour table.
+     * 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
+     */
+    mode?: 'mixed' | 'hue' | 'cie';
 };
 
 export function isIconScaleElement(F: any): F is IconScaleElement {

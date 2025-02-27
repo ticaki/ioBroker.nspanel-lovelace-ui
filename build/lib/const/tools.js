@@ -357,20 +357,21 @@ async function getIconEntryColor(i, value, def, defOff = null) {
         }
         const vBest = (_d = scale.val_best) != null ? _d : void 0;
         let factor = 1;
+        const func = scale.mode === "hue" ? import_Color.Color.mixColorHue : scale.mode === "cie" ? import_Color.Color.mixColorCie : import_Color.Color.mixColor;
         if (vMin == vMax) {
           rColor = cto;
         } else if (vBest === void 0) {
           factor = (value - vMin) / (vMax - vMin);
           factor = getLogFromIconScale(scale, factor);
-          rColor = import_Color.Color.mixColor(cfrom, cto, factor);
+          rColor = func(cfrom, cto, factor);
         } else if (value >= vBest) {
           factor = (value - vBest) / (vMax - vBest);
           factor = getLogFromIconScale(scale, factor);
-          rColor = import_Color.Color.mixColor(cto, cfrom, factor);
+          rColor = func(cto, cfrom, factor);
         } else {
           factor = (value - vMin) / (vBest - vMin);
           factor = 1 - getLogFromIconScale(scale, 1 - factor);
-          rColor = import_Color.Color.mixColor(cfrom, cto, factor);
+          rColor = func(cfrom, cto, factor);
         }
         return String(import_Color.Color.rgb_dec565(rColor));
       } else if ((0, import_types.isPartialIconScaleElement)(scale)) {
