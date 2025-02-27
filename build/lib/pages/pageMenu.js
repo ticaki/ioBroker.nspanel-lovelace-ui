@@ -139,7 +139,8 @@ class PageMenu extends import_Page.Page {
     }
     const pageScroll = this.config.scrollType === "page";
     const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-    if (!pageScroll ? ++this.step + this.maxItems > length : ++this.step * this.maxItems >= length) {
+    const maxItemsPage = this.config.card === "cardEntities" ? this.maxItems : this.maxItems / 2;
+    if (!pageScroll ? ++this.step + this.maxItems > length : ++this.step * maxItemsPage + maxItemsPage >= length) {
       this.step--;
       this.panel.navigation.goRight();
     } else {
@@ -160,7 +161,8 @@ class PageMenu extends import_Page.Page {
     if (this.step <= 0) {
       left = this.panel.navigation.buildNavigationString("left");
     }
-    if (!pageScroll ? this.step + this.maxItems >= length : (this.step + 1) * this.maxItems >= length) {
+    const maxItemsPage = this.config.card === "cardEntities" ? this.maxItems : this.maxItems / 2;
+    if (!pageScroll ? this.step + this.maxItems >= length : (this.step + 1) * maxItemsPage + maxItemsPage >= length) {
       right = this.panel.navigation.buildNavigationString("right");
     }
     if (!left) {

@@ -308,6 +308,8 @@ Sind natürlich alles Dataitems
 ### **WORK IN PROGRESS**
 - (ticaki) fixed nav service right
 - (ticaki) screensaver rotation time added
+- (ticaki) grid scrolling improved
+- (ticaki) Feedback from the script improved
 
 ### 0.1.1 (2025-02-27)
 - (ticaki) fixed color fading

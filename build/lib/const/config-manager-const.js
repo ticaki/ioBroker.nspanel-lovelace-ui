@@ -297,7 +297,7 @@ const requiredScriptDataPoints = {
     name: "light",
     description: "ein Lichtschalter",
     data: {
-      ACTUAL: { role: "sensor.light", type: "boolean", required: false, writeable: false },
+      ACTUAL: { role: "sensor.light", type: "boolean", required: true, writeable: false },
       SET: { role: "switch.light", type: "boolean", required: true, writeable: true },
       COLORDEC: { role: "state", type: "number", required: false, writeable: false },
       //Farbcode über DP steuern
