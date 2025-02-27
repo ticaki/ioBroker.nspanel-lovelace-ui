@@ -10,78 +10,143 @@
                     "type": "checkbox",
                     "label": "mqttServer",
                     "default": true,
-                    "newLine": true
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "mqttIp": {
                     "type": "text",
                     "label": "mqttIp",
                     "newLine": true,
-                    "disabled": "data.mqttServer"
+                    "disabled": "data.mqttServer",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "mqttPort": {
                     "type": "text",
                     "label": "mqttPort",
-                    "newLine": false
+                    "newLine": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "mqttUsername": {
                     "type": "text",
                     "label": "mqttUser",
-                    "newLine": true
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "mqttPassword": {
                     "type": "password",
                     "label": "mqttPassword",
-                    "newLine": false
+                    "newLine": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "_header": {
                     "type": "header",
                     "label": "Not used",
                     "size": 3,
                     "text": "Not used",
-                    "hidden": "true"
+                    "hidden": "true",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "topic": {
                     "type": "text",
                     "label": "topic",
                     "newLine": true,
-                    "hidden": "true"
+                    "hidden": "true",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "name": {
                     "type": "text",
                     "label": "name",
                     "newLine": false,
-                    "hidden": "true"
+                    "hidden": "true",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "timeout": {
                     "type": "number",
                     "label": "timeout",
                     "newLine": true,
-                    "hidden": "true"
+                    "hidden": "true",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "mediaid": {
                     "type": "text",
                     "label": "mediaid",
                     "newLine": false,
-                    "hidden": "true"
+                    "hidden": "true",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "onlyStartFromSystemConfig": {
                     "type": "checkbox",
                     "label": "onlyStartFromSystemConfig",
                     "default": true,
                     "newLine": true,
-                    "hidden": "true"
+                    "hidden": "true",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "Testconfig2": {
                     "type": "jsonEditor",
                     "label": "Testconfig2",
-                    "hidden": "true"
+                    "hidden": "true",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "logUnknownTokens": {
                     "type": "checkbox",
                     "label": "logUnknownTokens",
                     "default": false,
                     "newLine": true,
-                    "hidden": "true"
+                    "hidden": "true",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "doubleClickTime": {
                     "type": "number",
@@ -89,7 +154,12 @@
                     "default": 350,
                     "min": 1,
                     "max": 2000,
-                    "newLine": true
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },
@@ -174,36 +244,66 @@
                             "label": "URL",
                             "value": 2
                         }
-                    ]
+                    ],
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "pageQRwlantype": {
                     "type": "text",
                     "label": "Verschlüssselung",
                     "hidden": "data.pageQRselType !== 1",
-                    "newLine": true
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "pageQRssid": {
                     "type": "text",
                     "label": "SSID",
-                    "hidden": "data.pageQRselType !== 1"
+                    "hidden": "data.pageQRselType !== 1",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "pageQRpwd": {
                     "type": "password",
                     "label": "Password",
-                    "hidden": "data.pageQRselType !== 1"
+                    "hidden": "data.pageQRselType !== 1",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "pageQRwlanhidden": {
                     "type": "checkbox",
                     "label": "verstecktes Wlan",
                     "hidden": "data.pageQRselType !== 1",
-                    "default": false
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "pageQRurl": {
                     "type": "text",
                     "label": "URL",
                     "default": "https://",
                     "hidden": "data.pageQRselType !== 2",
-                    "newLine": true
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         }
