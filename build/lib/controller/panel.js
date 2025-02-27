@@ -430,8 +430,8 @@ class Panel extends import_library.BaseClass {
       );
       state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
       let temp = 0;
-      if (state && state.val) {
-        temp = state.val;
+      if (state && state.val && typeof state.val === "number") {
+        temp = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
         if (this.screenSaver) {
           this.screenSaver.rotationTime = temp * 1e3;
         }
@@ -976,7 +976,10 @@ class Panel extends import_library.BaseClass {
         case "cmd/screenSaverRotationTime": {
           if (this.screenSaver && typeof state.val === "number") {
             const val = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
-            this.screenSaver.rotationTime = val * 1e3;
+            if (this.screenSaver.rotationTime !== val * 1e3) {
+              this.screenSaver.rotationTime = val * 1e3;
+              await this.screenSaver.restartRotationLoop();
+            }
             await this.library.writedp(`panels.${this.name}.cmd.screenSaverRotationTime`, val);
           }
           break;

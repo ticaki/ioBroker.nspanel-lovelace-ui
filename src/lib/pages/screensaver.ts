@@ -184,7 +184,7 @@ export class Screensaver extends Page {
 
     async onVisibilityChange(v: boolean): Promise<void> {
         //await super.onVisibilityChange(v);
-        this.step = -1;
+        this.step = 0;
         if (v) {
             this.sendType();
             //await this.update();
@@ -195,6 +195,12 @@ export class Screensaver extends Page {
             }
         }
     }
+    async restartRotationLoop(): Promise<void> {
+        if (this.timoutRotation) {
+            this.adapter.clearTimeout(this.timoutRotation);
+        }
+        await this.rotationLoop();
+    }
     rotationLoop = async (): Promise<void> => {
         if (this.unload) {
             return;
@@ -203,13 +209,13 @@ export class Screensaver extends Page {
         if (!this.visibility) {
             return;
         }
-        this.step++ > 100;
-
         await this.update();
 
         if (this.rotationTime === 0) {
+            this.step = 0;
             return;
         }
+        this.step = this.step > 10000 ? 0 : this.step + 1;
         this.timoutRotation = this.adapter.setTimeout(
             this.rotationLoop,
             this.rotationTime < 3000 ? 3000 : this.rotationTime,
@@ -262,14 +268,16 @@ export class Screensaver extends Page {
     };
     async HandleTime(): Promise<void> {
         const message = await this.getData(['time']);
-        if (message === null || !message.options.time[0]) {
+        if (message === null || !message.options.time[0] || this.panel.isOnline === false) {
+            this.log.debug('HandleTime: no message, no time or panel is offline');
             return;
         }
         this.sendToPanel(`time~${message.options.time[0].split('~')[5]}`);
     }
     async HandleDate(): Promise<void> {
         const message = await this.getData(['date']);
-        if (message === null || !message.options.date[0]) {
+        if (message === null || !message.options.date[0] || this.panel.isOnline === false) {
+            this.log.debug('HandleDate: no message, no date or panel is offline');
             return;
         }
         this.sendToPanel(`date~${message.options.date[0].split('~')[5]}`);

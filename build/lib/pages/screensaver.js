@@ -182,7 +182,7 @@ class Screensaver extends import_Page.Page {
     await this.HandleScreensaverStatusIcons();
   }
   async onVisibilityChange(v) {
-    this.step = -1;
+    this.step = 0;
     if (v) {
       this.sendType();
       await this.rotationLoop();
@@ -192,6 +192,12 @@ class Screensaver extends import_Page.Page {
       }
     }
   }
+  async restartRotationLoop() {
+    if (this.timoutRotation) {
+      this.adapter.clearTimeout(this.timoutRotation);
+    }
+    await this.rotationLoop();
+  }
   rotationLoop = async () => {
     if (this.unload) {
       return;
@@ -199,11 +205,12 @@ class Screensaver extends import_Page.Page {
     if (!this.visibility) {
       return;
     }
-    this.step++ > 100;
     await this.update();
     if (this.rotationTime === 0) {
+      this.step = 0;
       return;
     }
+    this.step = this.step > 1e4 ? 0 : this.step + 1;
     this.timoutRotation = this.adapter.setTimeout(
       this.rotationLoop,
       this.rotationTime < 3e3 ? 3e3 : this.rotationTime
@@ -255,14 +262,16 @@ class Screensaver extends import_Page.Page {
   };
   async HandleTime() {
     const message = await this.getData(["time"]);
-    if (message === null || !message.options.time[0]) {
+    if (message === null || !message.options.time[0] || this.panel.isOnline === false) {
+      this.log.debug("HandleTime: no message, no time or panel is offline");
       return;
     }
     this.sendToPanel(`time~${message.options.time[0].split("~")[5]}`);
   }
   async HandleDate() {
     const message = await this.getData(["date"]);
-    if (message === null || !message.options.date[0]) {
+    if (message === null || !message.options.date[0] || this.panel.isOnline === false) {
+      this.log.debug("HandleDate: no message, no date or panel is offline");
       return;
     }
     this.sendToPanel(`date~${message.options.date[0].split("~")[5]}`);
