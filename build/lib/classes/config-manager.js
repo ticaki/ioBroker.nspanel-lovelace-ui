@@ -186,7 +186,7 @@ class ConfigManager extends import_library.BaseClass {
       await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
     }
     messages.push(`done`);
-    return messages.map((a) => a.replace("Error: ", ""));
+    return messages.map((a) => a.replaceAll("Error: ", ""));
   }
   async getPageConfig(config, panelConfig, messages) {
     if (panelConfig.pages === void 0) {

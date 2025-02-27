@@ -201,7 +201,7 @@ export class ConfigManager extends BaseClass {
             await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
         }
         messages.push(`done`);
-        return messages.map(a => a.replace('Error: ', ''));
+        return messages.map(a => a.replaceAll('Error: ', ''));
     }
 
     async getPageConfig(
