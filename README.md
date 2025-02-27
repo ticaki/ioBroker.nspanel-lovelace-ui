@@ -36,9 +36,11 @@ Beim Farbscalieren `colorScale` gibt es die unteren Zusatzoptionen
 ```
 /**
 * The color mix mode. Default is 'mixed'.
-* 'mixed': the target colour is achieved by mixing according to the CIE colour table. 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
+* ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
+* 'cie': the target colour is achieved by mixing according to the CIE colour table. 
+* 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
 */
-mode?: 'mixed' | 'hue';
+mode?: 'mixed' | 'hue' | 'cie';
 /**
 * The logarithm scaling to max, min or leave undefined for linear scaling.
 */
