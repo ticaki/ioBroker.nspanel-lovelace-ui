@@ -1896,7 +1896,7 @@ export class ConfigManager extends BaseClass {
                     if (
                         !o ||
                         !this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ||
-                        (requiredScriptDataPoints[role].data[dp].type === 'mixed' &&
+                        (requiredScriptDataPoints[role].data[dp].type !== 'mixed' &&
                             o.common.type !== requiredScriptDataPoints[role].data[dp].type) ||
                         (requiredScriptDataPoints[role].data[dp].writeable && !o.common.write)
                     ) {
@@ -1933,7 +1933,7 @@ export class ConfigManager extends BaseClass {
                     if (
                         !o ||
                         !this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ||
-                        (requiredFeatureDatapoints[role].data[dp].type === 'mixed' &&
+                        (requiredFeatureDatapoints[role].data[dp].type !== 'mixed' &&
                             o.common.type !== requiredFeatureDatapoints[role].data[dp].type)
                     ) {
                         if (!o) {
