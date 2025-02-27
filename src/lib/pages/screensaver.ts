@@ -21,7 +21,7 @@ export class Screensaver extends Page {
     items: undefined;
     private step: number = 0;
     private blockButtons: ioBroker.Timeout | undefined;
-    private rotationTime: number = 300000;
+    rotationTime: number = 300000;
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
     //readonly mode: Types.ScreensaverModeType = 'standard';
     constructor(config: PageInterface, options: pages.PageBaseConfig) {

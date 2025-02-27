@@ -352,6 +352,7 @@ export class Panel extends BaseClass {
         if (state && state.val) {
             this.dimMode.high = state.val as number;
         }
+
         await this.library.writedp(
             `panels.${this.name}.cmd.dimStandby`,
             this.dimMode.low,
@@ -450,6 +451,19 @@ export class Panel extends BaseClass {
                 `panels.${this.name}.cmd.screenSaver`,
                 this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : 'none',
                 genericStateObjects.panel.panels.cmd.screenSaver,
+            );
+            state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
+            let temp: any = 0;
+            if (state && state.val) {
+                temp = state.val as number;
+                if (this.screenSaver) {
+                    this.screenSaver.rotationTime = temp * 1000;
+                }
+            }
+            await this.library.writedp(
+                `panels.${this.name}.cmd.screenSaverRotationTime`,
+                temp,
+                genericStateObjects.panel.panels.cmd.screenSaverRotationTime,
             );
         }
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
@@ -722,6 +736,16 @@ export class Panel extends BaseClass {
                             await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, state.val);
                         }
                     }
+                    break;
+                }
+                case 'screenSaverRotationTime': {
+                    await this.statesControler.setInternalState(
+                        `${this.name}/cmd/screenSaverRotationTime`,
+                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                        parseInt(String(state.val)),
+                        false,
+                    );
+                    break;
                 }
             }
         }
@@ -1028,6 +1052,15 @@ export class Panel extends BaseClass {
                     this.isOnline = false;
                     break;
                 }
+                case 'cmd/screenSaverRotationTime': {
+                    if (this.screenSaver && typeof state.val === 'number') {
+                        const val =
+                            state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
+                        this.screenSaver.rotationTime = val * 1000;
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaverRotationTime`, val);
+                    }
+                    break;
+                }
             }
             await this.statesControler.setInternalState(id, state.val, true);
         }
@@ -1074,6 +1107,12 @@ export class Panel extends BaseClass {
             }
             case 'info/Tasmota': {
                 return this.info.tasmota;
+            }
+            case 'cmd/screenSaverRotationTime': {
+                if (this.screenSaver) {
+                    return this.screenSaver.rotationTime;
+                }
+                break;
             }
         }
         return null;

@@ -43,6 +43,7 @@ export const genericStateObjects: {
                 screensaverTimeout: ioBroker.StateObject;
                 dimActive: ioBroker.StateObject;
                 dimStandby: ioBroker.StateObject;
+                screenSaverRotationTime: ioBroker.StateObject;
                 goToNavigationPoint: ioBroker.StateObject;
                 mainNavigationPoint: ioBroker.StateObject;
                 screenSaver: ioBroker.StateObject;
@@ -160,7 +161,7 @@ export const genericStateObjects: {
                     common: {
                         name: 'StateObjects.screenSaver',
                         type: 'string',
-                        role: 'value.text',
+                        role: 'level.text',
                         read: true,
                         write: true,
                         states: {},
@@ -173,7 +174,7 @@ export const genericStateObjects: {
                     common: {
                         name: 'StateObjects.mainNavigationPoint',
                         type: 'string',
-                        role: 'value.text',
+                        role: 'level.text',
                         read: true,
                         write: true,
                         states: {},
@@ -186,7 +187,7 @@ export const genericStateObjects: {
                     common: {
                         name: 'StateObjects.navigateToPage',
                         type: 'string',
-                        role: 'value.text',
+                        role: 'level.text',
                         read: true,
                         write: true,
                         states: {},
@@ -247,7 +248,7 @@ export const genericStateObjects: {
                     common: {
                         name: 'StateObjects.screensaverTimeout',
                         type: 'number',
-                        role: 'value',
+                        role: 'level',
                         unit: 's',
                         read: true,
                         write: true,
@@ -260,7 +261,7 @@ export const genericStateObjects: {
                     common: {
                         name: 'StateObjects.dimStandby',
                         type: 'number',
-                        role: 'value',
+                        role: 'level',
                         unit: '%',
                         read: true,
                         write: true,
@@ -273,8 +274,24 @@ export const genericStateObjects: {
                     common: {
                         name: 'StateObjects.dimActive',
                         type: 'number',
-                        role: 'value',
+                        role: 'level',
                         unit: '%',
+                        read: true,
+                        write: true,
+                    },
+                    native: {},
+                },
+                screenSaverRotationTime: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.screenSaverRotationTime',
+                        type: 'number',
+                        role: 'level',
+                        unit: 's',
+                        min: 0,
+                        max: 3600,
+                        step: 1,
                         read: true,
                         write: true,
                     },
@@ -1307,6 +1324,17 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
                 type: 'boolean',
                 role: 'switch',
                 read: false,
+                write: true,
+            },
+        },
+        'cmd/screenSaverRotationTime': {
+            val: 0,
+            ack: true,
+            common: {
+                name: '',
+                type: 'number',
+                role: 'value',
+                read: true,
                 write: true,
             },
         },

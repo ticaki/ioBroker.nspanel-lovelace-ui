@@ -428,6 +428,19 @@ class Panel extends import_library.BaseClass {
         this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : "none",
         import_definition.genericStateObjects.panel.panels.cmd.screenSaver
       );
+      state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
+      let temp = 0;
+      if (state && state.val) {
+        temp = state.val;
+        if (this.screenSaver) {
+          this.screenSaver.rotationTime = temp * 1e3;
+        }
+      }
+      await this.library.writedp(
+        `panels.${this.name}.cmd.screenSaverRotationTime`,
+        temp,
+        import_definition.genericStateObjects.panel.panels.cmd.screenSaverRotationTime
+      );
     }
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
@@ -669,6 +682,16 @@ class Panel extends import_library.BaseClass {
               await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, state.val);
             }
           }
+          break;
+        }
+        case "screenSaverRotationTime": {
+          await this.statesControler.setInternalState(
+            `${this.name}/cmd/screenSaverRotationTime`,
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+            parseInt(String(state.val)),
+            false
+          );
+          break;
         }
       }
     }
@@ -950,6 +973,14 @@ class Panel extends import_library.BaseClass {
           this.isOnline = false;
           break;
         }
+        case "cmd/screenSaverRotationTime": {
+          if (this.screenSaver && typeof state.val === "number") {
+            const val = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
+            this.screenSaver.rotationTime = val * 1e3;
+            await this.library.writedp(`panels.${this.name}.cmd.screenSaverRotationTime`, val);
+          }
+          break;
+        }
       }
       await this.statesControler.setInternalState(id, state.val, true);
     }
@@ -997,6 +1028,12 @@ ${this.info.tasmota.onlineVersion}`;
       }
       case "info/Tasmota": {
         return this.info.tasmota;
+      }
+      case "cmd/screenSaverRotationTime": {
+        if (this.screenSaver) {
+          return this.screenSaver.rotationTime;
+        }
+        break;
       }
     }
     return null;

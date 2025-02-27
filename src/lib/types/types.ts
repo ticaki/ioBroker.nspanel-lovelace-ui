@@ -114,7 +114,8 @@ export type PanelInternalCommand =
     | 'info/displayVersion'
     | 'info/tasmotaVersion'
     | 'info/Tasmota'
-    | 'cmd/TasmotaRestart';
+    | 'cmd/TasmotaRestart'
+    | 'cmd/screenSaverRotationTime';
 
 export function isPopupType(F: any): F is PopupType {
     switch (F as PopupType) {
