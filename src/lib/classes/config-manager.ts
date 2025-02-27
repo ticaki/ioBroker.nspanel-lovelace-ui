@@ -151,6 +151,7 @@ export class ConfigManager extends BaseClass {
                     };
                 });
                 panelConfig.navigation[panelConfig.navigation.length - 1]!.right = { single: '///service' };
+                panelConfig.navigation[0]!.left = { single: '///service' };
             }
         }
         const names: string[] = [];

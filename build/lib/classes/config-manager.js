@@ -144,6 +144,7 @@ class ConfigManager extends import_library.BaseClass {
           };
         });
         panelConfig.navigation[panelConfig.navigation.length - 1].right = { single: "///service" };
+        panelConfig.navigation[0].left = { single: "///service" };
       }
     }
     const names = [];
