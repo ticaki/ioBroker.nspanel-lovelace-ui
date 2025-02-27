@@ -26,6 +26,8 @@ Immer wenn ich Zeit und lust habe Dokumentiere ich hier Sachen.
 Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 **Solange das hier einfach nur Fortschritte aufzählt, ist oben neuer als unten**
 
+Fragen gerne im [Forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)
+
 Der Adapter reagiert in 0_userdata.0 und alias.0 auf jede Änderung `ack=true` oder `ack=false` eines abonnierten Datenpunktes. Ansonsten gilt nachfolgendes:
 - Auserhalb vom Adapter namespace(`nspanel-lovelace-ui.0`) reagiert dieser Adapter auf `ack=true` und setzt Datenpunkte mit `ack=false`
 - Innerhalb des Adapter namespace reagiert dieser Adapter auf `ack=false` und setzt Datenpunkte mit `ack=true`
@@ -296,6 +298,11 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### 0.1.1 (2025-02-27)
+- (ticaki) fixed color fading
+- (ticaki) fixed config script
+- (ticaki) added message for missing states
+
 ### 0.1.0 (2025-02-25)
 - (ticaki) alot changes
 
