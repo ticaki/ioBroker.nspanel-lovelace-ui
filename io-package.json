@@ -28,71 +28,6 @@
         "pl": "znaczne zmiany",
         "uk": "змін",
         "zh-cn": "很多变化"
-      },
-      "0.1.0-preAlpha.0": {
-        "en": "alot :)",
-        "de": "alot :)",
-        "ru": "alot :)",
-        "pt": ":",
-        "nl": "veel:)",
-        "fr": "beaucoup :)",
-        "it": "alot:)",
-        "es": "alot :)",
-        "pl": "alot:)",
-        "uk": "вся в соку :)",
-        "zh-cn": "数量 :)"
-      },
-      "0.0.4-preAlpha.3": {
-        "en": "testversion",
-        "de": "testversion",
-        "ru": "тест-версия",
-        "pt": "versão de teste",
-        "nl": "testversie",
-        "fr": "testversion",
-        "it": "prova",
-        "es": "testversion",
-        "pl": "testversion",
-        "uk": "тестування",
-        "zh-cn": "测试版本"
-      },
-      "0.0.4-preAlpha.2": {
-        "en": "Add button flip to cardThermo",
-        "de": "Knopf-Flip zur Karte hinzufügen Thermothermometer",
-        "ru": "Добавить флажок на кнопку Thermo",
-        "pt": "Adicionar botão virar para o cartão Termo",
-        "nl": "Knop aan kaart toevoegen Thermo",
-        "fr": "Ajouter le bouton flip à la carte Thermo",
-        "it": "Aggiungi pulsante flip alla scheda Termometro",
-        "es": "Agregue el botón de la tarjeta Thermo",
-        "pl": "Dodaj przycisk flip do karty Thermo",
-        "uk": "Додати кнопку фліп на картку Термообробка",
-        "zh-cn": "向卡片添加按钮翻转 热力"
-      },
-      "0.0.4-preAlpha.1": {
-        "en": "cardThermo, script config",
-        "de": "karte Thermo, Skript config",
-        "ru": "карт Термо, настройка скрипта",
-        "pt": "cartão Termo, configuração de script",
-        "nl": "kaart Thermo-, scriptconfiguratie",
-        "fr": "carte Thermo, configuration du script",
-        "it": "carta Thermo, script config",
-        "es": "tarjeta Thermo, script config",
-        "pl": "karta Thermo, skrypt konfiguracyjny",
-        "uk": "кошик Термо, Налаштування скриптів",
-        "zh-cn": "纸牌 热, 脚本配置"
-      },
-      "0.0.4-preAlpha.0": {
-        "en": "admin save - still deep alpha",
-        "de": "admin speichern - noch tief alpha",
-        "ru": "admin save - все еще глубокая альфа",
-        "pt": "admin save - ainda deep alfa",
-        "nl": "admin opslaan - nog steeds diep alfa",
-        "fr": "admin save - encore profonde alpha",
-        "it": "admin salvare - ancora alfa profondo",
-        "es": "admin guardar - todavía profundo alfa",
-        "pl": "admin save - nadal głęboko alfa",
-        "uk": "admin зберегти - ще глибокий альфа",
-        "zh-cn": "管理员保存 - 仍然深 alpha"
       }
     },
     "title": "NSPanel-Lovelace-UI Next Level",
@@ -149,8 +84,7 @@
     "connectionType": "local",
     "dataSource": "push",
     "adminUI": {
-      "config": "json",
-      "custom": "json"
+      "config": "json"
     },
     "dependencies": [
       {
@@ -159,7 +93,7 @@
     ],
     "globalDependencies": [
       {
-        "admin": ">=5.1.13"
+        "admin": ">=7.4.10"
       }
     ],
     "messagebox": true,

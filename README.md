@@ -310,6 +310,7 @@ Sind natürlich alles Dataitems
 - (ticaki) screensaver rotation time added
 - (ticaki) grid scrolling improved
 - (ticaki) Feedback from the script improved
+- (Kuckuckmann:) new adapter logo
 
 ### 0.1.1 (2025-02-27)
 - (ticaki) fixed color fading
