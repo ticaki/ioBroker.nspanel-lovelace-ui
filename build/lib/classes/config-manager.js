@@ -1646,7 +1646,7 @@ class ConfigManager extends import_library.BaseClass {
               throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
             } else {
               throw new Error(
-                `Datapoint ${item2.id}.${dp}:${this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role)})` : ""} ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type !== "mixed" && o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type}` : ""}${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write ? " must be writeable!" : ""} `
+                `Datapoint ${item2.id}.${dp}:${!this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role)})` : ""} ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type !== "mixed" && o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type}` : ""}${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write ? " must be writeable!" : ""} `
               );
             }
           }
@@ -1667,12 +1667,15 @@ class ConfigManager extends import_library.BaseClass {
           if (!o && !import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].required) {
             continue;
           }
-          if (!o || !this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) || import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type !== "mixed" && o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type) {
+          if (!o || !this.checkStringVsStringOrArray(
+            import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role,
+            o.common.role
+          ) || import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type !== "mixed" && o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type) {
             if (!o) {
               throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
             } else {
               throw new Error(
-                `Datapoint ${item2.id}.${dp}:${this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role)}` : ""} ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type !== "mixed" && o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type}` : ""}${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].writeable && !o.common.write ? " must be writeable!" : ""} `
+                `Datapoint ${item2.id}.${dp}:${!this.checkStringVsStringOrArray(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role)}` : ""} ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type !== "mixed" && o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type}` : ""}${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].writeable && !o.common.write ? " must be writeable!" : ""} `
               );
             }
           }
