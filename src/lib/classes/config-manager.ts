@@ -1906,8 +1906,8 @@ export class ConfigManager extends BaseClass {
                             throw new Error(
                                 `Datapoint ${item.id}.${dp}:` +
                                     `${this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${getStringOrArray(requiredScriptDataPoints[role].data[dp].role)})` : ''} ` +
-                                    `${requiredScriptDataPoints[role].data[dp].type === 'mixed' || o.common.type !== requiredScriptDataPoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredScriptDataPoints[role].data[dp].type}` : ''}` +
-                                    `${!(requiredScriptDataPoints[role].data[dp].writeable && !o.common.write) ? ' must be writeable!' : ''} `,
+                                    `${requiredScriptDataPoints[role].data[dp].type !== 'mixed' && o.common.type !== requiredScriptDataPoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredScriptDataPoints[role].data[dp].type}` : ''}` +
+                                    `${requiredScriptDataPoints[role].data[dp].writeable && !o.common.write ? ' must be writeable!' : ''} `,
                             );
                         }
                     }
@@ -1942,8 +1942,8 @@ export class ConfigManager extends BaseClass {
                             throw new Error(
                                 `Datapoint ${item.id}.${dp}:` +
                                     `${this.checkStringVsStringOrArray(requiredScriptDataPoints[role].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${getStringOrArray(requiredFeatureDatapoints[role].data[dp].role)}` : ''} ` +
-                                    `${requiredFeatureDatapoints[role].data[dp].type === 'mixed' || o.common.type !== requiredFeatureDatapoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredFeatureDatapoints[role].data[dp].type}` : ''}` +
-                                    `${!(requiredFeatureDatapoints[role].data[dp].writeable && !o.common.write) ? ' must be writeable!' : ''} `,
+                                    `${requiredFeatureDatapoints[role].data[dp].type !== 'mixed' && o.common.type !== requiredFeatureDatapoints[role].data[dp].type ? ` type: ${o.common.type} should be ${requiredFeatureDatapoints[role].data[dp].type}` : ''}` +
+                                    `${requiredFeatureDatapoints[role].data[dp].writeable && !o.common.write ? ' must be writeable!' : ''} `,
                             );
                         }
                     }
