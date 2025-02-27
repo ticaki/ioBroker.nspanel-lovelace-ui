@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "news": {
+      "0.1.2": {
+        "en": "fixed nav service right\nscreensaver rotation time added\ngrid scrolling improved\nFeedback from the script improved\n(Kuckuckmann:) new adapter logo",
+        "de": "fester nav service rechts\nbildschirmschoner drehzeit hinzugefügt\ngrid scrolling verbessert\nFeedback aus dem Skript verbessert\n(Kuckmann:) neues Adapter-Logo",
+        "ru": "право фиксированной службы\nскринсейвер время вращения добавлено\nсетка прокрутки улучшилась\nОбратная связь со сценарием улучшилась\n(Kuckuckmann: новый логотип адаптера)",
+        "pt": "serviço de navegação fixa direita\ntempo de rotação do screensaver adicionado\nrolagem de grade melhorada\nFeedback do script melhorado\n(Kuckuckmann:) novo logotipo do adaptador",
+        "nl": "vaste navigatie rechts\nscreensaver rotatietijd toegevoegd\ngrid scrollen verbeterd\nFeedback van het script verbeterd\n(Kuckuckmann:) nieuw adapterlogo",
+        "fr": "droit de service fixe nav\nscreensaver temps de rotation ajouté\namélioration du défilement de la grille\nLa rétroaction du script s'est améliorée\n(Kuckuckmann:) nouveau logo d'adaptateur",
+        "it": "servizio nav fisso\ntempo di rotazione screensaver aggiunto\ngriglia di scorrimento migliorato\nIl feedback dallo script è migliorato\n(Kuckuckuckmann:) nuovo logo adattatore",
+        "es": "servicio fijo nav derecho\ntiempo de rotación añadido\npergaminos mejorados\nLa retroalimentación del script mejoró\n(Kuckuckmann:) nuevo logo adaptador",
+        "pl": "prawo do stałej nawigacji\ndodano czas rotacji wygaszacza ekranu\nulepszone przewijanie sieci\nInformacje zwrotne ze skryptu poprawiły się\n(Kuckuckmann:) nowe logo adaptera",
+        "uk": "фіксована послуга nav\nекранисереднього часу обертання додано\nрозкручування сітки поліпшена\nЗворотній зв'язок з скриптом поліпшений\n(Kuckmann:) новий логотип адаптера",
+        "zh-cn": "固定导航服务右侧\n添加屏幕保护旋转时间\n网格滚动改进\n改进了对脚本的反馈\n(Kuckuckmann:) 新的适配器标志"
+      },
       "0.1.1": {
         "en": "fixed color fading\nfixed config script\nadded message for missing states",
         "de": "feste farbe fading\nfestes config skript\nzusätzliche nachricht für fehlende staaten",

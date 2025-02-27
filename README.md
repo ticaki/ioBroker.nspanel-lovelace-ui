@@ -305,7 +305,7 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.1.2 (2025-02-27)
 - (ticaki) fixed nav service right
 - (ticaki) screensaver rotation time added
 - (ticaki) grid scrolling improved
