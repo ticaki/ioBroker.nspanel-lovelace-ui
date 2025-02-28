@@ -861,7 +861,8 @@ export class ConfigManager extends BaseClass {
                                     true: {
                                         value: {
                                             type: 'const',
-                                            constVal: item.icon || role === 'socket' ? 'power-socket-de' : 'lightbulb',
+                                            constVal:
+                                                item.icon || (role === 'socket' ? 'power-socket-de' : 'lightbulb'),
                                         },
                                         color: await this.getIconColor(item.onColor, this.colorOn),
                                     },
@@ -869,9 +870,8 @@ export class ConfigManager extends BaseClass {
                                         value: {
                                             type: 'const',
                                             constVal:
-                                                item.icon2 || role === 'socket'
-                                                    ? 'power-socket-de'
-                                                    : 'lightbulb-outline',
+                                                item.icon2 ||
+                                                (role === 'socket' ? 'power-socket-de' : 'lightbulb-outline'),
                                         },
                                         color: await this.getIconColor(item.offColor, this.colorOff),
                                     },

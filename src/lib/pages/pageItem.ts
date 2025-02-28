@@ -716,6 +716,7 @@ export class PageItem extends BaseClassTriggerd {
                 switch (this.config.role) {
                     case 'light':
                     case 'socket':
+                        return null;
                     case 'dimmer':
                     case 'hue':
                     case 'ct':
@@ -760,8 +761,8 @@ export class PageItem extends BaseClassTriggerd {
                             )) ?? 'disable';
                         let rgb = null;
                         switch (this.config.role) {
-                            case 'socket':
-                            case 'light':
+                            //case 'socket':
+                            //case 'light':
                             case 'dimmer':
                             case 'ct':
                                 break;

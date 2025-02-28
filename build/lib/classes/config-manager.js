@@ -743,14 +743,14 @@ class ConfigManager extends import_library.BaseClass {
                   true: {
                     value: {
                       type: "const",
-                      constVal: item.icon || role === "socket" ? "power-socket-de" : "lightbulb"
+                      constVal: item.icon || (role === "socket" ? "power-socket-de" : "lightbulb")
                     },
                     color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
                     value: {
                       type: "const",
-                      constVal: item.icon2 || role === "socket" ? "power-socket-de" : "lightbulb-outline"
+                      constVal: item.icon2 || (role === "socket" ? "power-socket-de" : "lightbulb-outline")
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },

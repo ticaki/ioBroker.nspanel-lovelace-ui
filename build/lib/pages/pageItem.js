@@ -646,6 +646,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         switch (this.config.role) {
           case "light":
           case "socket":
+            return null;
           case "dimmer":
           case "hue":
           case "ct":
@@ -686,8 +687,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             )) != null ? _c : "disable";
             let rgb = null;
             switch (this.config.role) {
-              case "socket":
-              case "light":
               case "dimmer":
               case "ct":
                 break;
