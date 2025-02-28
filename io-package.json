@@ -77,8 +77,7 @@
       "NSPanel",
       "Lovelace",
       "Sonoff",
-      "Lovelace UI",
-      "ioBroker"
+      "Lovelace UI"
     ],
     "licenseInformation": {
       "license": "MIT",
@@ -157,7 +156,9 @@
     "pw8": "",
     "pw9": "",
     "pw0": "",
-    "panels": []
+    "panels": [],
+    "pageQRpwd": "",
+    "pageQRssid": ""
   },
   "objects": [],
   "instanceObjects": [
