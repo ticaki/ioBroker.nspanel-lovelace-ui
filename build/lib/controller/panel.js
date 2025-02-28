@@ -1213,6 +1213,7 @@ class Panel extends import_library.BaseClass {
         case "cmd/NotificationCleared": {
           await this.controller.systemNotification.clearNotification(this.notifyIndex);
         }
+        // eslint-disable-next-line no-fallthrough
         case "cmd/NotificationNext2":
         case "cmd/NotificationNext": {
           this.notifyIndex = this.controller.systemNotification.getNotificationIndex(++this.notifyIndex);

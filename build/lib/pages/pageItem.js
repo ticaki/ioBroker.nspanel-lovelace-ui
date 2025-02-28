@@ -254,6 +254,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           }
           break;
         }
+        /**
+         * entity1 is value to calculate color
+         * entity2 is display value
+         */
         case "text":
         case "button": {
           if (entry.type === "text" || entry.type === "button") {
@@ -1141,6 +1145,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           break;
         }
       }
+      // eslint-disable-next-line no-fallthrough
       case "tiltClose": {
         if (entry.type !== "shutter") {
           break;
@@ -1150,6 +1155,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           break;
         }
       }
+      // eslint-disable-next-line no-fallthrough
       case "tiltStop": {
         if (entry.type !== "shutter") {
           break;
@@ -1225,6 +1231,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           break;
         }
       }
+      // eslint-disable-next-line no-fallthrough
       case "stop": {
         if (entry.type !== "shutter") {
           break;
@@ -1234,6 +1241,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           break;
         }
       }
+      // eslint-disable-next-line no-fallthrough
       case "down": {
         if (entry.type === "shutter") {
           if (action === "down" && entry.data.down && entry.data.down.writeable) {
@@ -1299,6 +1307,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         }
         break;
       }
+      /**
+       * 100 is right 0 left
+       */
       case "positionSlider": {
         if (entry.type === "shutter") {
           const items = entry.data;
@@ -1308,6 +1319,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         }
         break;
       }
+      /**
+       * zu 100% geschlossen zu 0% geschlossen
+       */
       case "tiltSlider": {
         if (entry.type === "shutter") {
           const items = entry.data;

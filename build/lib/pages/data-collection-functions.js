@@ -27,6 +27,9 @@ async function handleCardRole(adapter, cardRole, page) {
     return null;
   }
   switch (cardRole) {
+    /**
+     * only for enabled adapters
+     */
     case "AdapterConnection":
     case "AdapterStopped": {
       const list = await adapter.getObjectViewAsync("system", "instance", {
