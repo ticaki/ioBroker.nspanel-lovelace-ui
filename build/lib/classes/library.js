@@ -502,7 +502,7 @@ class Library extends BaseClass {
         this.setdb(
           dp,
           "state",
-          states[state] && states[state].val ? states[state].val : void 0,
+          states[state] ? states[state].val : void 0,
           obj && obj.common && obj.common.type ? obj.common.type : void 0,
           states[state] && states[state].ack,
           states[state] && states[state].ts ? states[state].ts : Date.now(),

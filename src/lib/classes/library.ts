@@ -549,7 +549,7 @@ export class Library extends BaseClass {
                 this.setdb(
                     dp,
                     'state',
-                    states[state] && states[state].val ? states[state].val : undefined,
+                    states[state] ? states[state].val : undefined,
                     obj && obj.common && obj.common.type ? obj.common.type : undefined,
                     states[state] && states[state].ack,
                     states[state] && states[state].ts ? states[state].ts : Date.now(),

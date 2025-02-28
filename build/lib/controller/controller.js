@@ -61,6 +61,13 @@ class Controller extends Library.BaseClass {
       if (panelConfig === void 0) {
         continue;
       }
+      const index = this.adapter.config.panels.findIndex((panel2) => panel2.topic === panelConfig.topic);
+      if (index === -1) {
+        this.adapter.log.error(`Panel ${panelConfig.name} with topic ${panelConfig.topic} not found in config`);
+        continue;
+      }
+      panelConfig.name = this.adapter.config.panels[index].id;
+      panelConfig.friendlyName = this.adapter.config.panels[index].name;
       panelConfig.controller = this;
       this.adapter.log.info(`Create panel ${panelConfig.name} with topic ${panelConfig.topic}`);
       const panel = new Panel.Panel(adapter, panelConfig);
@@ -71,6 +78,12 @@ class Controller extends Library.BaseClass {
   minuteLoop = async () => {
     if (this.unload) {
       return;
+    }
+    const minute = (/* @__PURE__ */ new Date()).getMinutes();
+    if (minute === 0) {
+      this.panels.forEach((panel) => {
+        panel.sendDimmode();
+      });
     }
     await this.statesControler.setInternalState("///time", await this.getCurrentTime(), true);
     const diff = 6e4 - Date.now() % 6e4 + 10;

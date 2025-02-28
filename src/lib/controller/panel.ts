@@ -29,6 +29,7 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     controller: Controller;
     topic: string;
     name: string;
+    friendlyName?: string;
     pages: PageConfigAll[];
     navigation: NavigationConfig['navigationConfig'];
     config: ScreensaverConfigType;
@@ -76,7 +77,18 @@ export class Panel extends BaseClass {
     readonly sendToTasmota: (topic: string, payload: string, opt?: IClientPublishOptions) => void = () => {};
 
     timeout: number;
-    dimMode: { low: number; high: number };
+    dimMode: {
+        low: number;
+        high: number;
+        delay: number;
+        dayMode: boolean;
+        lowNight: number;
+        highNight: number;
+        startNight: number;
+        endNight: number;
+        dimSchedule: boolean;
+    };
+    screenSaverDoubleClick: boolean = true;
     detach: { left: boolean; right: boolean } = { left: false, right: false };
     public persistentPageItems: Record<string, PageItem> = {};
 
@@ -154,7 +166,7 @@ export class Panel extends BaseClass {
 
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
         super(adapter, options.name);
-        this.friendlyName = options.name;
+        this.friendlyName = options.friendlyName ?? options.name;
         this.configName = options.name;
         this.panelSend = new PanelSend(adapter, {
             name: `${options.name}-SendClass`,
@@ -177,7 +189,17 @@ export class Panel extends BaseClass {
 
         this.statesControler = options.controller.statesControler;
 
-        this.dimMode = { low: options.dimLow ?? 70, high: options.dimHigh ?? 90 };
+        this.dimMode = {
+            low: options.dimLow ?? 70,
+            high: options.dimHigh ?? 90,
+            delay: 5,
+            dayMode: true,
+            lowNight: 0,
+            highNight: 50,
+            startNight: 22,
+            endNight: 6,
+            dimSchedule: false,
+        };
 
         options.pages = options.pages.concat(systemPages);
         options.navigation = (options.navigation || []).concat(systemNavigation);
@@ -296,22 +318,7 @@ export class Panel extends BaseClass {
         this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
         this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
         this.isOnline = false;
-        this.restartLoops();
-    };
-    start = async (): Promise<void> => {
-        this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
-        this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
 
-        for (const id in InternalStates.panel) {
-            const obj = InternalStates.panel[id as keyof typeof InternalStates.panel];
-            await this.statesControler.setInternalState(
-                `${this.name}/${id}`,
-                obj.val,
-                obj.ack,
-                obj.common,
-                obj.noTrigger ? undefined : this.onInternalCommand,
-            );
-        }
         const channelObj = this.library.cloneObject(genericStateObjects.panel.panels._channel);
 
         channelObj.common.name = this.friendlyName;
@@ -323,6 +330,11 @@ export class Panel extends BaseClass {
         };
         await this.library.writedp(`panels.${this.name}`, undefined, channelObj);
         await this.library.writedp(`panels.${this.name}.cmd`, undefined, genericStateObjects.panel.panels.cmd._channel);
+        await this.library.writedp(
+            `panels.${this.name}.cmd.dim`,
+            undefined,
+            genericStateObjects.panel.panels.cmd.dim._channel,
+        );
         await this.library.writedp(
             `panels.${this.name}.alarm`,
             undefined,
@@ -343,45 +355,140 @@ export class Panel extends BaseClass {
             true,
             genericStateObjects.panel.panels.buttons.right,
         );
-
-        let state = this.library.readdb(`panels.${this.name}.cmd.dimStandby`);
-        if (state && state.val) {
+        let state = this.library.readdb(`panels.${this.name}.cmd.dim.standby`);
+        if (state && state.val != null) {
             this.dimMode.low = state.val as number;
         }
-        state = this.library.readdb(`panels.${this.name}.cmd.dimActive`);
-        if (state && state.val) {
+        state = this.library.readdb(`panels.${this.name}.cmd.dim.active`);
+        if (state && state.val != null) {
             this.dimMode.high = state.val as number;
         }
-
+        state = this.library.readdb(`panels.${this.name}.cmd.dim.dayMode`);
+        if (state && state.val != null) {
+            this.dimMode.dayMode = !!state.val;
+        }
+        state = this.library.readdb(`panels.${this.name}.cmd.dim.schedule`);
+        if (state && state.val != null) {
+            this.dimMode.dimSchedule = !!state.val;
+        }
+        state = this.library.readdb(`panels.${this.name}.cmd.dim.nightActive`);
+        if (state && state.val != null) {
+            this.dimMode.highNight = state.val as number;
+        }
+        state = this.library.readdb(`panels.${this.name}.cmd.dim.nightStandby`);
+        if (state && state.val != null) {
+            this.dimMode.lowNight = state.val as number;
+        }
+        state = this.library.readdb(`panels.${this.name}.cmd.dim.nightHourStart`);
+        if (state && state.val != null && typeof state.val === 'number') {
+            this.dimMode.startNight = state.val;
+        }
+        state = this.library.readdb(`panels.${this.name}.cmd.dim.nightHourEnd`);
+        if (state && state.val != null && typeof state.val === 'number') {
+            this.dimMode.endNight = state.val;
+        }
+        state = this.library.readdb(`panels.${this.name}.cmd.dim.delay`);
+        if (state && state.val != null) {
+            this.dimMode.delay = state.val as number;
+        }
         await this.library.writedp(
-            `panels.${this.name}.cmd.dimStandby`,
+            `panels.${this.name}.cmd.dim.standby`,
             this.dimMode.low,
-            genericStateObjects.panel.panels.cmd.dimStandby,
+            genericStateObjects.panel.panels.cmd.dim.standby,
         );
         await this.library.writedp(
-            `panels.${this.name}.cmd.dimActive`,
+            `panels.${this.name}.cmd.dim.active`,
             this.dimMode.high,
-            genericStateObjects.panel.panels.cmd.dimActive,
+            genericStateObjects.panel.panels.cmd.dim.active,
+        );
+        await this.library.writedp(
+            `panels.${this.name}.cmd.dim.dayMode`,
+            this.dimMode.dayMode,
+            genericStateObjects.panel.panels.cmd.dim.dayMode,
+        );
+        await this.library.writedp(
+            `panels.${this.name}.cmd.dim.schedule`,
+            this.dimMode.dimSchedule,
+            genericStateObjects.panel.panels.cmd.dim.schedule,
+        );
+        await this.library.writedp(
+            `panels.${this.name}.cmd.dim.nightActive`,
+            this.dimMode.highNight,
+            genericStateObjects.panel.panels.cmd.dim.nightActive,
+        );
+        await this.library.writedp(
+            `panels.${this.name}.cmd.dim.nightStandby`,
+            this.dimMode.lowNight,
+            genericStateObjects.panel.panels.cmd.dim.nightStandby,
+        );
+        await this.library.writedp(
+            `panels.${this.name}.cmd.dim.nightHourStart`,
+            String(this.dimMode.startNight),
+            genericStateObjects.panel.panels.cmd.dim.nightHourStart,
+        );
+        await this.library.writedp(
+            `panels.${this.name}.cmd.dim.nightHourEnd`,
+            String(this.dimMode.endNight),
+            genericStateObjects.panel.panels.cmd.dim.nightHourEnd,
+        );
+        await this.library.writedp(
+            `panels.${this.name}.cmd.dim.delay`,
+            this.dimMode.delay,
+            genericStateObjects.panel.panels.cmd.dim.delay,
+        );
+        state = this.library.readdb(`panels.${this.name}.cmd.screenSaverDoubleClick`);
+        if (state && state.val != null) {
+            this.screenSaverDoubleClick = !!state.val;
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaverDoubleClick`,
+            this.screenSaverDoubleClick,
+            genericStateObjects.panel.panels.cmd.screenSaverDoubleClick,
         );
 
-        {
-            let state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
-            if (state && state.val) {
-                this.detach.right = !!state.val;
-            }
-            state = this.library.readdb(`panels.${this.name}.cmd.detachLeft`);
-            if (state && state.val) {
-                this.detach.left = !!state.val;
-            }
-            await this.library.writedp(
-                `panels.${this.name}.cmd.detachRight`,
-                this.detach.right,
-                genericStateObjects.panel.panels.cmd.detachRight,
-            );
-            await this.library.writedp(
-                `panels.${this.name}.cmd.detachLeft`,
-                this.detach.left,
-                genericStateObjects.panel.panels.cmd.detachLeft,
+        state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
+        if (state && state.val != null) {
+            this.detach.right = !!state.val;
+        }
+        state = this.library.readdb(`panels.${this.name}.cmd.detachLeft`);
+        if (state && state.val != null) {
+            this.detach.left = !!state.val;
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.detachRight`,
+            this.detach.right,
+            genericStateObjects.panel.panels.cmd.detachRight,
+        );
+        await this.library.writedp(
+            `panels.${this.name}.cmd.detachLeft`,
+            this.detach.left,
+            genericStateObjects.panel.panels.cmd.detachLeft,
+        );
+        state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
+        if (state) {
+            this.timeout = parseInt(String(state.val));
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screensaverTimeout`,
+            this.timeout,
+            genericStateObjects.panel.panels.cmd.screensaverTimeout,
+        );
+
+        this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
+        this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
+
+        this.restartLoops();
+    };
+
+    start = async (): Promise<void> => {
+        for (const id in InternalStates.panel) {
+            const obj = InternalStates.panel[id as keyof typeof InternalStates.panel];
+            await this.statesControler.setInternalState(
+                `${this.name}/${id}`,
+                obj.val,
+                obj.ack,
+                obj.common,
+                obj.noTrigger ? undefined : this.onInternalCommand,
             );
         }
         for (const page of this.pages) {
@@ -393,15 +500,6 @@ export class Panel extends BaseClass {
             }
         }
 
-        state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
-        if (state) {
-            this.timeout = parseInt(String(state.val));
-        }
-        await this.library.writedp(
-            `panels.${this.name}.cmd.screensaverTimeout`,
-            this.timeout,
-            genericStateObjects.panel.panels.cmd.screensaverTimeout,
-        );
         this.navigation.init();
 
         {
@@ -419,59 +517,52 @@ export class Panel extends BaseClass {
                 genericStateObjects.panel.panels.cmd.mainNavigationPoint,
             );
         }
-        {
-            const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
-            const scs: Page[] = this.pages.filter(
-                a => a && (a.card === 'screensaver' || a.card === 'screensaver2'),
-            ) as Page[];
-            //const s = scs.filter(a => currentScreensaver && a.name === currentScreensaver.val);
-            if (currentScreensaver && currentScreensaver.val) {
-                if (scs && scs[0]) {
-                    this.screenSaver = scs[0] as Screensaver;
-                    if (pages.isScreenSaverMode(currentScreensaver.val)) {
-                        this.screenSaver.overwriteModel(currentScreensaver.val, true);
-                    }
+
+        const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
+        const scs: Page[] = this.pages.filter(
+            a => a && (a.card === 'screensaver' || a.card === 'screensaver2'),
+        ) as Page[];
+        //const s = scs.filter(a => currentScreensaver && a.name === currentScreensaver.val);
+        if (currentScreensaver && currentScreensaver.val) {
+            if (scs && scs[0]) {
+                this.screenSaver = scs[0] as Screensaver;
+                if (pages.isScreenSaverMode(currentScreensaver.val)) {
+                    this.screenSaver.overwriteModel(currentScreensaver.val, true);
                 }
             }
-
-            const states: Record<Types.ScreensaverModeType, string> = {
-                standard: 'Standard',
-                advanced: 'Advanced',
-                alternate: 'Alternate',
-                easyview: 'Easyview',
-            };
-
-            /*  scs.forEach(a => {
-                if (a) {
-                    states[a.name] = a.name.slice(1);
-                }
-            });*/
-            genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;
-            await this.library.writedp(
-                `panels.${this.name}.cmd.screenSaver`,
-                this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : 'none',
-                genericStateObjects.panel.panels.cmd.screenSaver,
-            );
-            state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
-            let temp: any = 0;
-            if (state && state.val && typeof state.val === 'number') {
-                temp = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
-                if (this.screenSaver) {
-                    this.screenSaver.rotationTime = temp * 1000;
-                }
-            }
-            await this.library.writedp(
-                `panels.${this.name}.cmd.screenSaverRotationTime`,
-                temp,
-                genericStateObjects.panel.panels.cmd.screenSaverRotationTime,
-            );
         }
+
+        const states: Record<Types.ScreensaverModeType, string> = {
+            standard: 'Standard',
+            advanced: 'Advanced',
+            alternate: 'Alternate',
+            easyview: 'Easyview',
+        };
+
+        genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver`,
+            this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : 'none',
+            genericStateObjects.panel.panels.cmd.screenSaver,
+        );
+        let state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
+        let temp: any = 0;
+        if (state && typeof state.val === 'number') {
+            temp = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
+            if (this.screenSaver) {
+                this.screenSaver.rotationTime = temp * 1000;
+            }
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaverRotationTime`,
+            temp,
+            genericStateObjects.panel.panels.cmd.screenSaverRotationTime,
+        );
+
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
         this.info.nspanel.bigIconRight = state ? !!state.val : false;
-
-        //done with states
 
         this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
         this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
@@ -604,7 +695,10 @@ export class Panel extends BaseClass {
                             return;
                         }
                         const data = JSON.parse(message) as Types.STATUS0;
-                        this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
+                        if (this.name !== this.library.cleandp(data.StatusNET.Mac, false, true)) {
+                            this.log.error(`Receive wrong mac address ${data.StatusNET.Mac}! Update ur config!`);
+                        }
+
                         const i = this.InitProcess === 'done';
                         if (this.InitProcess === '') {
                             this.InitProcess = 'awaiting';
@@ -697,7 +791,7 @@ export class Panel extends BaseClass {
                     );
                     break;
                 }
-                case 'dimStandby': {
+                case 'dim.standby': {
                     await this.statesControler.setInternalState(
                         `${this.name}/cmd/dimStandby`,
                         // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -706,12 +800,111 @@ export class Panel extends BaseClass {
                     );
                     break;
                 }
-                case 'dimActive': {
+                case 'dim.sctive': {
                     await this.statesControler.setInternalState(
                         `${this.name}/cmd/dimActive`,
                         // eslint-disable-next-line @typescript-eslint/no-base-to-string
                         parseInt(String(state.val)),
                         false,
+                    );
+                    break;
+                }
+                case 'dim.dayMode': {
+                    if (this.dimMode.dimSchedule) {
+                        this.log.warn('Timer is active - User input overwritten!');
+                    } else {
+                        this.dimMode.dayMode = !!state.val;
+                        this.sendDimmode();
+                    }
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.dim.dayMode`,
+                        this.dimMode.dayMode,
+                        genericStateObjects.panel.panels.cmd.dim.dayMode,
+                    );
+                    break;
+                }
+                case 'dim.schedule': {
+                    this.dimMode.dimSchedule = !!state.val;
+
+                    if (this.dimMode.dimSchedule) {
+                        this.sendDimmode();
+                    }
+
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.dayMode`,
+                        this.dimMode.dimSchedule,
+                        genericStateObjects.panel.panels.cmd.dim.schedule,
+                    );
+                    break;
+                }
+                case 'dim.nightActive': {
+                    if (state && state.val != null) {
+                        this.dimMode.highNight = state.val as number;
+                        this.sendDimmode();
+                        await this.library.writedp(
+                            `panels.${this.name}.cmd.dim.nightActive`,
+                            this.dimMode.highNight,
+                            genericStateObjects.panel.panels.cmd.dim.nightActive,
+                        );
+                    }
+                    break;
+                }
+                case 'dim.nightStandby': {
+                    if (state && state.val != null) {
+                        this.dimMode.lowNight = state.val as number;
+                        this.sendDimmode();
+                        await this.library.writedp(
+                            `panels.${this.name}.cmd.dim.nightStandby`,
+                            this.dimMode.lowNight,
+                            genericStateObjects.panel.panels.cmd.dim.nightStandby,
+                        );
+                    }
+                    break;
+                }
+                case 'dim.nightHourStart': {
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        this.dimMode.startNight = state.val;
+                        this.sendDimmode();
+                        await this.library.writedp(
+                            `panels.${this.name}.cmd.dim.nightHourStart`,
+                            String(this.dimMode.startNight),
+                            genericStateObjects.panel.panels.cmd.dim.nightHourStart,
+                        );
+                    }
+                    break;
+                }
+                case 'dim.nightHourEnd': {
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        this.dimMode.endNight = state.val;
+                        this.sendDimmode();
+                        await this.library.writedp(
+                            `panels.${this.name}.cmd.dim.nightHourEnd`,
+                            String(this.dimMode.endNight),
+                            genericStateObjects.panel.panels.cmd.dim.nightHourEnd,
+                        );
+                    }
+                    break;
+                }
+                case 'dim.delay': {
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        this.dimMode.delay = state.val;
+                        this.sendDimmode();
+                        await this.library.writedp(
+                            `panels.${this.name}.cmd.dim.delay`,
+                            this.dimMode.delay,
+                            genericStateObjects.panel.panels.cmd.dim.delay,
+                        );
+                    }
+                    break;
+                }
+                case 'screenSaverDoubleClick': {
+                    if (state && state.val != null) {
+                        this.screenSaverDoubleClick = !!state.val;
+                    }
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.screenSaverDoubleClick`,
+                        this.screenSaverDoubleClick,
+                        genericStateObjects.panel.panels.cmd.screenSaverDoubleClick,
                     );
                     break;
                 }
@@ -762,7 +955,27 @@ export class Panel extends BaseClass {
     }
 
     sendDimmode(): void {
-        this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${String(1)}`);
+        const hour = new Date().getHours();
+        if (this.dimMode.dimSchedule) {
+            if (this.dimMode.startNight > this.dimMode.endNight) {
+                if (hour >= this.dimMode.startNight || hour < this.dimMode.endNight) {
+                    this.dimMode.dayMode = false;
+                } else {
+                    this.dimMode.dayMode = true;
+                }
+            } else {
+                if (hour >= this.dimMode.startNight && hour < this.dimMode.endNight) {
+                    this.dimMode.dayMode = false;
+                } else {
+                    this.dimMode.dayMode = true;
+                }
+            }
+        }
+        if (this.dimMode.dayMode) {
+            this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${this.dimMode.delay}`);
+        } else {
+            this.sendToPanel(`dimmode~${this.dimMode.lowNight}~${this.dimMode.highNight}~${this.dimMode.delay}`);
+        }
     }
 
     restartLoops(): void {
@@ -892,8 +1105,10 @@ export class Panel extends BaseClass {
             }
             case 'buttonPress2': {
                 if (event.id == 'screensaver') {
-                    this.navigation.resetPosition();
-                    await this.navigation.setCurrentPage();
+                    if ((this.screenSaverDoubleClick && parseInt(event.opt) > 1) || !this.screenSaverDoubleClick) {
+                        this.navigation.resetPosition();
+                        await this.navigation.setCurrentPage();
+                    }
                 } else if (event.action === 'bExit' && event.id !== 'popupNotify') {
                     await this.setActivePage(true);
                 } else {
@@ -943,7 +1158,7 @@ export class Panel extends BaseClass {
             return null;
         }
         const token: Types.PanelInternalCommand = id.replace(`${this.name}/`, '') as Types.PanelInternalCommand;
-        if (state && !state.ack && state.val !== null) {
+        if (state && !state.ack && state.val != null) {
             switch (token) {
                 case 'cmd/power1': {
                     this.sendToTasmota(`${this.topic}/cmnd/POWER1`, state.val ? 'ON' : 'OFF');
@@ -1006,7 +1221,7 @@ export class Panel extends BaseClass {
                     const val = parseInt(String(state.val));
                     this.dimMode.low = val;
                     this.sendDimmode();
-                    await this.library.writedp(`panels.${this.name}.cmd.dimStandby`, this.dimMode.low);
+                    await this.library.writedp(`panels.${this.name}.cmd.dim.standby`, this.dimMode.low);
                     break;
                 }
                 case 'cmd/dimActive': {
@@ -1014,7 +1229,7 @@ export class Panel extends BaseClass {
                     const val = parseInt(String(state.val));
                     this.dimMode.high = val;
                     this.sendDimmode();
-                    await this.library.writedp(`panels.${this.name}.cmd.dimActive`, this.dimMode.high);
+                    await this.library.writedp(`panels.${this.name}.cmd.dim.active`, this.dimMode.high);
                     break;
                 }
                 case 'cmd/NotificationCleared2':

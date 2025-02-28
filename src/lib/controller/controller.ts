@@ -40,6 +40,13 @@ export class Controller extends Library.BaseClass {
             if (panelConfig === undefined) {
                 continue;
             }
+            const index = this.adapter.config.panels.findIndex(panel => panel.topic === panelConfig.topic);
+            if (index === -1) {
+                this.adapter.log.error(`Panel ${panelConfig.name} with topic ${panelConfig.topic} not found in config`);
+                continue;
+            }
+            panelConfig.name = this.adapter.config.panels[index].id;
+            panelConfig.friendlyName = this.adapter.config.panels[index].name;
             panelConfig.controller = this;
             this.adapter.log.info(`Create panel ${panelConfig.name} with topic ${panelConfig.topic}`);
             const panel = new Panel.Panel(adapter, panelConfig as Panel.panelConfigPartial);
@@ -51,6 +58,12 @@ export class Controller extends Library.BaseClass {
     minuteLoop = async (): Promise<void> => {
         if (this.unload) {
             return;
+        }
+        const minute = new Date().getMinutes();
+        if (minute === 0) {
+            this.panels.forEach(panel => {
+                panel.sendDimmode();
+            });
         }
         await this.statesControler.setInternalState('///time', await this.getCurrentTime(), true);
         const diff = 60000 - (Date.now() % 60000) + 10;

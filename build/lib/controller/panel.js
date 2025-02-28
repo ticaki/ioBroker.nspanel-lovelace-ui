@@ -83,6 +83,7 @@ class Panel extends import_library.BaseClass {
   };
   timeout;
   dimMode;
+  screenSaverDoubleClick = true;
   detach = { left: false, right: false };
   persistentPageItems = {};
   info = {
@@ -156,9 +157,9 @@ class Panel extends import_library.BaseClass {
   friendlyName = "";
   configName = "";
   constructor(adapter, options) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     super(adapter, options.name);
-    this.friendlyName = options.name;
+    this.friendlyName = (_a = options.friendlyName) != null ? _a : options.name;
     this.configName = options.name;
     this.panelSend = new import_panel_message.PanelSend(adapter, {
       name: `${options.name}-SendClass`,
@@ -166,7 +167,7 @@ class Panel extends import_library.BaseClass {
       topic: options.topic
     });
     this.timeout = options.timeout || 15;
-    this.CustomFormat = (_a = options.CustomFormat) != null ? _a : "";
+    this.CustomFormat = (_b = options.CustomFormat) != null ? _b : "";
     this.config = options.config;
     this.format = Object.assign(DefaultOptions.format, options.format);
     this.controller = options.controller;
@@ -178,7 +179,17 @@ class Panel extends import_library.BaseClass {
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     }
     this.statesControler = options.controller.statesControler;
-    this.dimMode = { low: (_b = options.dimLow) != null ? _b : 70, high: (_c = options.dimHigh) != null ? _c : 90 };
+    this.dimMode = {
+      low: (_c = options.dimLow) != null ? _c : 70,
+      high: (_d = options.dimHigh) != null ? _d : 90,
+      delay: 5,
+      dayMode: true,
+      lowNight: 0,
+      highNight: 50,
+      startNight: 22,
+      endNight: 6,
+      dimSchedule: false
+    };
     options.pages = options.pages.concat(import_system_templates.systemPages);
     options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
     let scsFound = 0;
@@ -289,21 +300,6 @@ class Panel extends import_library.BaseClass {
     this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
     this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
     this.isOnline = false;
-    this.restartLoops();
-  };
-  start = async () => {
-    this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
-    this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
-    for (const id in import_definition.InternalStates.panel) {
-      const obj = import_definition.InternalStates.panel[id];
-      await this.statesControler.setInternalState(
-        `${this.name}/${id}`,
-        obj.val,
-        obj.ack,
-        obj.common,
-        obj.noTrigger ? void 0 : this.onInternalCommand
-      );
-    }
     const channelObj = this.library.cloneObject(import_definition.genericStateObjects.panel.panels._channel);
     channelObj.common.name = this.friendlyName;
     channelObj.native = {
@@ -314,6 +310,11 @@ class Panel extends import_library.BaseClass {
     };
     await this.library.writedp(`panels.${this.name}`, void 0, channelObj);
     await this.library.writedp(`panels.${this.name}.cmd`, void 0, import_definition.genericStateObjects.panel.panels.cmd._channel);
+    await this.library.writedp(
+      `panels.${this.name}.cmd.dim`,
+      void 0,
+      import_definition.genericStateObjects.panel.panels.cmd.dim._channel
+    );
     await this.library.writedp(
       `panels.${this.name}.alarm`,
       void 0,
@@ -334,42 +335,136 @@ class Panel extends import_library.BaseClass {
       true,
       import_definition.genericStateObjects.panel.panels.buttons.right
     );
-    let state = this.library.readdb(`panels.${this.name}.cmd.dimStandby`);
-    if (state && state.val) {
+    let state = this.library.readdb(`panels.${this.name}.cmd.dim.standby`);
+    if (state && state.val != null) {
       this.dimMode.low = state.val;
     }
-    state = this.library.readdb(`panels.${this.name}.cmd.dimActive`);
-    if (state && state.val) {
+    state = this.library.readdb(`panels.${this.name}.cmd.dim.active`);
+    if (state && state.val != null) {
       this.dimMode.high = state.val;
     }
+    state = this.library.readdb(`panels.${this.name}.cmd.dim.dayMode`);
+    if (state && state.val != null) {
+      this.dimMode.dayMode = !!state.val;
+    }
+    state = this.library.readdb(`panels.${this.name}.cmd.dim.schedule`);
+    if (state && state.val != null) {
+      this.dimMode.dimSchedule = !!state.val;
+    }
+    state = this.library.readdb(`panels.${this.name}.cmd.dim.nightActive`);
+    if (state && state.val != null) {
+      this.dimMode.highNight = state.val;
+    }
+    state = this.library.readdb(`panels.${this.name}.cmd.dim.nightStandby`);
+    if (state && state.val != null) {
+      this.dimMode.lowNight = state.val;
+    }
+    state = this.library.readdb(`panels.${this.name}.cmd.dim.nightHourStart`);
+    if (state && state.val != null && typeof state.val === "number") {
+      this.dimMode.startNight = state.val;
+    }
+    state = this.library.readdb(`panels.${this.name}.cmd.dim.nightHourEnd`);
+    if (state && state.val != null && typeof state.val === "number") {
+      this.dimMode.endNight = state.val;
+    }
+    state = this.library.readdb(`panels.${this.name}.cmd.dim.delay`);
+    if (state && state.val != null) {
+      this.dimMode.delay = state.val;
+    }
     await this.library.writedp(
-      `panels.${this.name}.cmd.dimStandby`,
+      `panels.${this.name}.cmd.dim.standby`,
       this.dimMode.low,
-      import_definition.genericStateObjects.panel.panels.cmd.dimStandby
+      import_definition.genericStateObjects.panel.panels.cmd.dim.standby
     );
     await this.library.writedp(
-      `panels.${this.name}.cmd.dimActive`,
+      `panels.${this.name}.cmd.dim.active`,
       this.dimMode.high,
-      import_definition.genericStateObjects.panel.panels.cmd.dimActive
+      import_definition.genericStateObjects.panel.panels.cmd.dim.active
     );
-    {
-      let state2 = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
-      if (state2 && state2.val) {
-        this.detach.right = !!state2.val;
-      }
-      state2 = this.library.readdb(`panels.${this.name}.cmd.detachLeft`);
-      if (state2 && state2.val) {
-        this.detach.left = !!state2.val;
-      }
-      await this.library.writedp(
-        `panels.${this.name}.cmd.detachRight`,
-        this.detach.right,
-        import_definition.genericStateObjects.panel.panels.cmd.detachRight
-      );
-      await this.library.writedp(
-        `panels.${this.name}.cmd.detachLeft`,
-        this.detach.left,
-        import_definition.genericStateObjects.panel.panels.cmd.detachLeft
+    await this.library.writedp(
+      `panels.${this.name}.cmd.dim.dayMode`,
+      this.dimMode.dayMode,
+      import_definition.genericStateObjects.panel.panels.cmd.dim.dayMode
+    );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.dim.schedule`,
+      this.dimMode.dimSchedule,
+      import_definition.genericStateObjects.panel.panels.cmd.dim.schedule
+    );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.dim.nightActive`,
+      this.dimMode.highNight,
+      import_definition.genericStateObjects.panel.panels.cmd.dim.nightActive
+    );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.dim.nightStandby`,
+      this.dimMode.lowNight,
+      import_definition.genericStateObjects.panel.panels.cmd.dim.nightStandby
+    );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.dim.nightHourStart`,
+      String(this.dimMode.startNight),
+      import_definition.genericStateObjects.panel.panels.cmd.dim.nightHourStart
+    );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.dim.nightHourEnd`,
+      String(this.dimMode.endNight),
+      import_definition.genericStateObjects.panel.panels.cmd.dim.nightHourEnd
+    );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.dim.delay`,
+      this.dimMode.delay,
+      import_definition.genericStateObjects.panel.panels.cmd.dim.delay
+    );
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaverDoubleClick`);
+    if (state && state.val != null) {
+      this.screenSaverDoubleClick = !!state.val;
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaverDoubleClick`,
+      this.screenSaverDoubleClick,
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaverDoubleClick
+    );
+    state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
+    if (state && state.val != null) {
+      this.detach.right = !!state.val;
+    }
+    state = this.library.readdb(`panels.${this.name}.cmd.detachLeft`);
+    if (state && state.val != null) {
+      this.detach.left = !!state.val;
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.detachRight`,
+      this.detach.right,
+      import_definition.genericStateObjects.panel.panels.cmd.detachRight
+    );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.detachLeft`,
+      this.detach.left,
+      import_definition.genericStateObjects.panel.panels.cmd.detachLeft
+    );
+    state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
+    if (state) {
+      this.timeout = parseInt(String(state.val));
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screensaverTimeout`,
+      this.timeout,
+      import_definition.genericStateObjects.panel.panels.cmd.screensaverTimeout
+    );
+    this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
+    this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
+    this.restartLoops();
+  };
+  start = async () => {
+    for (const id in import_definition.InternalStates.panel) {
+      const obj = import_definition.InternalStates.panel[id];
+      await this.statesControler.setInternalState(
+        `${this.name}/${id}`,
+        obj.val,
+        obj.ack,
+        obj.common,
+        obj.noTrigger ? void 0 : this.onInternalCommand
       );
     }
     for (const page of this.pages) {
@@ -380,15 +475,6 @@ class Panel extends import_library.BaseClass {
         await page.init();
       }
     }
-    state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
-    if (state) {
-      this.timeout = parseInt(String(state.val));
-    }
-    await this.library.writedp(
-      `panels.${this.name}.cmd.screensaverTimeout`,
-      this.timeout,
-      import_definition.genericStateObjects.panel.panels.cmd.screensaverTimeout
-    );
     this.navigation.init();
     {
       const currentPage = this.library.readdb(`panels.${this.name}.cmd.mainNavigationPoint`);
@@ -403,45 +489,43 @@ class Panel extends import_library.BaseClass {
         import_definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint
       );
     }
-    {
-      const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
-      const scs = this.pages.filter(
-        (a) => a && (a.card === "screensaver" || a.card === "screensaver2")
-      );
-      if (currentScreensaver && currentScreensaver.val) {
-        if (scs && scs[0]) {
-          this.screenSaver = scs[0];
-          if (pages.isScreenSaverMode(currentScreensaver.val)) {
-            this.screenSaver.overwriteModel(currentScreensaver.val, true);
-          }
+    const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
+    const scs = this.pages.filter(
+      (a) => a && (a.card === "screensaver" || a.card === "screensaver2")
+    );
+    if (currentScreensaver && currentScreensaver.val) {
+      if (scs && scs[0]) {
+        this.screenSaver = scs[0];
+        if (pages.isScreenSaverMode(currentScreensaver.val)) {
+          this.screenSaver.overwriteModel(currentScreensaver.val, true);
         }
       }
-      const states = {
-        standard: "Standard",
-        advanced: "Advanced",
-        alternate: "Alternate",
-        easyview: "Easyview"
-      };
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;
-      await this.library.writedp(
-        `panels.${this.name}.cmd.screenSaver`,
-        this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : "none",
-        import_definition.genericStateObjects.panel.panels.cmd.screenSaver
-      );
-      state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
-      let temp = 0;
-      if (state && state.val && typeof state.val === "number") {
-        temp = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
-        if (this.screenSaver) {
-          this.screenSaver.rotationTime = temp * 1e3;
-        }
-      }
-      await this.library.writedp(
-        `panels.${this.name}.cmd.screenSaverRotationTime`,
-        temp,
-        import_definition.genericStateObjects.panel.panels.cmd.screenSaverRotationTime
-      );
     }
+    const states = {
+      standard: "Standard",
+      advanced: "Advanced",
+      alternate: "Alternate",
+      easyview: "Easyview"
+    };
+    import_definition.genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver`,
+      this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : "none",
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaver
+    );
+    let state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
+    let temp = 0;
+    if (state && typeof state.val === "number") {
+      temp = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
+      if (this.screenSaver) {
+        this.screenSaver.rotationTime = temp * 1e3;
+      }
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaverRotationTime`,
+      temp,
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaverRotationTime
+    );
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
@@ -569,7 +653,9 @@ class Panel extends import_library.BaseClass {
               return;
             }
             const data = JSON.parse(message);
-            this.name = this.library.cleandp(data.StatusNET.Mac, false, true);
+            if (this.name !== this.library.cleandp(data.StatusNET.Mac, false, true)) {
+              this.log.error(`Receive wrong mac address ${data.StatusNET.Mac}! Update ur config!`);
+            }
             const i = this.InitProcess === "done";
             if (this.InitProcess === "") {
               this.InitProcess = "awaiting";
@@ -649,7 +735,7 @@ class Panel extends import_library.BaseClass {
           );
           break;
         }
-        case "dimStandby": {
+        case "dim.standby": {
           await this.statesControler.setInternalState(
             `${this.name}/cmd/dimStandby`,
             // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -658,12 +744,109 @@ class Panel extends import_library.BaseClass {
           );
           break;
         }
-        case "dimActive": {
+        case "dim.sctive": {
           await this.statesControler.setInternalState(
             `${this.name}/cmd/dimActive`,
             // eslint-disable-next-line @typescript-eslint/no-base-to-string
             parseInt(String(state.val)),
             false
+          );
+          break;
+        }
+        case "dim.dayMode": {
+          if (this.dimMode.dimSchedule) {
+            this.log.warn("Timer is active - User input overwritten!");
+          } else {
+            this.dimMode.dayMode = !!state.val;
+            this.sendDimmode();
+          }
+          await this.library.writedp(
+            `panels.${this.name}.cmd.dim.dayMode`,
+            this.dimMode.dayMode,
+            import_definition.genericStateObjects.panel.panels.cmd.dim.dayMode
+          );
+          break;
+        }
+        case "dim.schedule": {
+          this.dimMode.dimSchedule = !!state.val;
+          if (this.dimMode.dimSchedule) {
+            this.sendDimmode();
+          }
+          await this.library.writedp(
+            `panels.${this.name}.cmd.dayMode`,
+            this.dimMode.dimSchedule,
+            import_definition.genericStateObjects.panel.panels.cmd.dim.schedule
+          );
+          break;
+        }
+        case "dim.nightActive": {
+          if (state && state.val != null) {
+            this.dimMode.highNight = state.val;
+            this.sendDimmode();
+            await this.library.writedp(
+              `panels.${this.name}.cmd.dim.nightActive`,
+              this.dimMode.highNight,
+              import_definition.genericStateObjects.panel.panels.cmd.dim.nightActive
+            );
+          }
+          break;
+        }
+        case "dim.nightStandby": {
+          if (state && state.val != null) {
+            this.dimMode.lowNight = state.val;
+            this.sendDimmode();
+            await this.library.writedp(
+              `panels.${this.name}.cmd.dim.nightStandby`,
+              this.dimMode.lowNight,
+              import_definition.genericStateObjects.panel.panels.cmd.dim.nightStandby
+            );
+          }
+          break;
+        }
+        case "dim.nightHourStart": {
+          if (state && state.val != null && typeof state.val === "number") {
+            this.dimMode.startNight = state.val;
+            this.sendDimmode();
+            await this.library.writedp(
+              `panels.${this.name}.cmd.dim.nightHourStart`,
+              String(this.dimMode.startNight),
+              import_definition.genericStateObjects.panel.panels.cmd.dim.nightHourStart
+            );
+          }
+          break;
+        }
+        case "dim.nightHourEnd": {
+          if (state && state.val != null && typeof state.val === "number") {
+            this.dimMode.endNight = state.val;
+            this.sendDimmode();
+            await this.library.writedp(
+              `panels.${this.name}.cmd.dim.nightHourEnd`,
+              String(this.dimMode.endNight),
+              import_definition.genericStateObjects.panel.panels.cmd.dim.nightHourEnd
+            );
+          }
+          break;
+        }
+        case "dim.delay": {
+          if (state && state.val != null && typeof state.val === "number") {
+            this.dimMode.delay = state.val;
+            this.sendDimmode();
+            await this.library.writedp(
+              `panels.${this.name}.cmd.dim.delay`,
+              this.dimMode.delay,
+              import_definition.genericStateObjects.panel.panels.cmd.dim.delay
+            );
+          }
+          break;
+        }
+        case "screenSaverDoubleClick": {
+          if (state && state.val != null) {
+            this.screenSaverDoubleClick = !!state.val;
+          }
+          await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaverDoubleClick`,
+            this.screenSaverDoubleClick,
+            import_definition.genericStateObjects.panel.panels.cmd.screenSaverDoubleClick
           );
           break;
         }
@@ -706,7 +889,27 @@ class Panel extends import_library.BaseClass {
     this.sendToPanel(`timeout~${sec}`);
   }
   sendDimmode() {
-    this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${String(1)}`);
+    const hour = (/* @__PURE__ */ new Date()).getHours();
+    if (this.dimMode.dimSchedule) {
+      if (this.dimMode.startNight > this.dimMode.endNight) {
+        if (hour >= this.dimMode.startNight || hour < this.dimMode.endNight) {
+          this.dimMode.dayMode = false;
+        } else {
+          this.dimMode.dayMode = true;
+        }
+      } else {
+        if (hour >= this.dimMode.startNight && hour < this.dimMode.endNight) {
+          this.dimMode.dayMode = false;
+        } else {
+          this.dimMode.dayMode = true;
+        }
+      }
+    }
+    if (this.dimMode.dayMode) {
+      this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${this.dimMode.delay}`);
+    } else {
+      this.sendToPanel(`dimmode~${this.dimMode.lowNight}~${this.dimMode.highNight}~${this.dimMode.delay}`);
+    }
   }
   restartLoops() {
     if (this.loopTimeout) {
@@ -827,8 +1030,10 @@ class Panel extends import_library.BaseClass {
       }
       case "buttonPress2": {
         if (event.id == "screensaver") {
-          this.navigation.resetPosition();
-          await this.navigation.setCurrentPage();
+          if (this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
+            this.navigation.resetPosition();
+            await this.navigation.setCurrentPage();
+          }
         } else if (event.action === "bExit" && event.id !== "popupNotify") {
           await this.setActivePage(true);
         } else {
@@ -872,7 +1077,7 @@ class Panel extends import_library.BaseClass {
       return null;
     }
     const token = id.replace(`${this.name}/`, "");
-    if (state && !state.ack && state.val !== null) {
+    if (state && !state.ack && state.val != null) {
       switch (token) {
         case "cmd/power1": {
           this.sendToTasmota(`${this.topic}/cmnd/POWER1`, state.val ? "ON" : "OFF");
@@ -930,14 +1135,14 @@ class Panel extends import_library.BaseClass {
           const val = parseInt(String(state.val));
           this.dimMode.low = val;
           this.sendDimmode();
-          await this.library.writedp(`panels.${this.name}.cmd.dimStandby`, this.dimMode.low);
+          await this.library.writedp(`panels.${this.name}.cmd.dim.standby`, this.dimMode.low);
           break;
         }
         case "cmd/dimActive": {
           const val = parseInt(String(state.val));
           this.dimMode.high = val;
           this.sendDimmode();
-          await this.library.writedp(`panels.${this.name}.cmd.dimActive`, this.dimMode.high);
+          await this.library.writedp(`panels.${this.name}.cmd.dim.active`, this.dimMode.high);
           break;
         }
         case "cmd/NotificationCleared2":

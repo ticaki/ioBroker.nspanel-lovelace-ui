@@ -38,18 +38,30 @@ export const genericStateObjects: {
     panel: customChannelType & {
         panels: customChannelType & {
             cmd: customChannelType & {
+                dim: customChannelType & {
+                    active: ioBroker.StateObject;
+                    standby: ioBroker.StateObject;
+                    dayMode: ioBroker.StateObject;
+                    nightActive: ioBroker.StateObject;
+                    nightStandby: ioBroker.StateObject;
+                    nightHourStart: ioBroker.StateObject;
+                    nightHourEnd: ioBroker.StateObject;
+                    schedule: ioBroker.StateObject;
+                    delay: ioBroker.StateObject;
+                };
                 power1: ioBroker.StateObject;
                 power2: ioBroker.StateObject;
                 screensaverTimeout: ioBroker.StateObject;
-                dimActive: ioBroker.StateObject;
-                dimStandby: ioBroker.StateObject;
+
                 screenSaverRotationTime: ioBroker.StateObject;
                 goToNavigationPoint: ioBroker.StateObject;
                 mainNavigationPoint: ioBroker.StateObject;
                 screenSaver: ioBroker.StateObject;
                 detachRight: ioBroker.StateObject;
                 detachLeft: ioBroker.StateObject;
+                screenSaverDoubleClick: ioBroker.StateObject;
             };
+
             buttons: customChannelType & {
                 left: ioBroker.StateObject;
                 right: ioBroker.StateObject;
@@ -255,31 +267,138 @@ export const genericStateObjects: {
                     },
                     native: {},
                 },
-                dimStandby: {
-                    _id: '',
-                    type: 'state',
-                    common: {
-                        name: 'StateObjects.dimStandby',
-                        type: 'number',
-                        role: 'level',
-                        unit: '%',
-                        read: true,
-                        write: true,
+                dim: {
+                    _channel: {
+                        _id: '',
+                        type: 'folder',
+                        common: {
+                            name: 'StateObjects.dim',
+                        },
+                        native: {},
                     },
-                    native: {},
-                },
-                dimActive: {
-                    _id: '',
-                    type: 'state',
-                    common: {
-                        name: 'StateObjects.dimActive',
-                        type: 'number',
-                        role: 'level',
-                        unit: '%',
-                        read: true,
-                        write: true,
+                    standby: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.dimStandby',
+                            type: 'number',
+                            role: 'level',
+                            unit: '%',
+                            read: true,
+                            write: true,
+                        },
+                        native: {},
                     },
-                    native: {},
+                    active: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.dimActive',
+                            type: 'number',
+                            role: 'level',
+                            unit: '%',
+                            read: true,
+                            write: true,
+                        },
+                        native: {},
+                    },
+                    dayMode: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.dayMode',
+                            type: 'boolean',
+                            role: 'switch',
+                            read: true,
+                            write: true,
+                        },
+                        native: {},
+                    },
+                    nightStandby: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.dimNightStandby',
+                            type: 'number',
+                            role: 'level',
+                            unit: '%',
+                            read: true,
+                            write: true,
+                        },
+                        native: {},
+                    },
+                    nightActive: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.dimNightActive',
+                            type: 'number',
+                            role: 'level',
+                            unit: '%',
+                            read: true,
+                            write: true,
+                        },
+                        native: {},
+                    },
+                    nightHourStart: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.dimNightHourStart',
+                            type: 'number',
+                            role: 'level',
+                            read: true,
+                            write: true,
+                            min: -1,
+                            max: 23,
+                            step: 1,
+                            unit: 'h',
+                            def: 22,
+                        },
+                        native: {},
+                    },
+                    schedule: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.dimSchedule',
+                            type: 'boolean',
+                            role: 'switch',
+                            read: true,
+                            write: true,
+                        },
+                        native: {},
+                    },
+                    nightHourEnd: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.dimNightHourEnd',
+                            type: 'number',
+                            role: 'level',
+                            read: true,
+                            write: true,
+                            min: -1,
+                            max: 23,
+                            unit: 'h',
+                            step: 1,
+                            def: 7,
+                        },
+                        native: {},
+                    },
+                    delay: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.dimDelay',
+                            type: 'number',
+                            role: 'level',
+                            unit: 's',
+                            read: true,
+                            write: true,
+                        },
+                        native: {},
+                    },
                 },
                 screenSaverRotationTime: {
                     _id: '',
@@ -292,6 +411,18 @@ export const genericStateObjects: {
                         min: 0,
                         max: 3600,
                         step: 1,
+                        read: true,
+                        write: true,
+                    },
+                    native: {},
+                },
+                screenSaverDoubleClick: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.screenSaverDoubleClick',
+                        type: 'boolean',
+                        role: 'switch',
                         read: true,
                         write: true,
                     },

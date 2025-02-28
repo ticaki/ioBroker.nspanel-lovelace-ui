@@ -413,28 +413,27 @@ export class ConfigManager extends BaseClass {
             }
         }
 
-        const defaultNav: typePageItem.PageItemDataItemsOptions = {
-            type: 'button',
-            data: {
-                text: {
-                    true: item.buttonText
-                        ? await this.getFieldAsDataItemConfig(item.buttonText)
-                        : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                          ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                          : commonName
-                            ? { type: 'const', constVal: commonName }
-                            : { type: 'triggered', dp: `${item.id}.ACTUAL` },
-                    false: item.buttonTextOff
-                        ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
-                        : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
-                          ? { type: 'triggered', dp: `${item.id}.BUTTONTEXTOFF` }
-                          : item.buttonText
-                            ? await this.getFieldAsDataItemConfig(item.buttonText)
-                            : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                              ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                              : undefined,
-                },
-            },
+        const getButtonsTextTrue = async (item: ScriptConfig.PageItem, on: string): Promise<Types.DataItemsOptions> => {
+            return item.buttonText
+                ? await this.getFieldAsDataItemConfig(item.buttonText)
+                : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                  ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
+                  : { type: 'const', constVal: `${on}` };
+        };
+        const getButtonsTextFalse = async (
+            item: ScriptConfig.PageItem,
+            on: string,
+            off: string,
+        ): Promise<Types.DataItemsOptions> => {
+            return item.buttonTextOff
+                ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
+                : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
+                  ? { type: 'triggered', dp: `${item.id}.BUTTONTEXTOFF` }
+                  : item.buttonText
+                    ? await this.getFieldAsDataItemConfig(item.buttonText)
+                    : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                      ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
+                      : { type: 'const', constVal: `${off || on}` };
         };
 
         switch (role) {
@@ -471,10 +470,12 @@ export class ConfigManager extends BaseClass {
                             maxBri: undefined,
                             minBri: undefined,
                         },
-                        text: defaultNav.data.text,
                         text1: {
-                            true: { type: 'const', constVal: 'on' },
-                            false: { type: 'const', constVal: 'off' },
+                            true: await getButtonsTextTrue(item, 'on'),
+                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                        },
+                        text: {
+                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Light'),
                         },
                         entity1: {
                             value: {
@@ -513,9 +514,12 @@ export class ConfigManager extends BaseClass {
                             maxBri: undefined,
                             minBri: undefined,
                         },
-                        text: defaultNav.data.text,
                         text1: {
-                            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                            true: await getButtonsTextTrue(item, 'on'),
+                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                        },
+                        text: {
+                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Button'),
                         },
                         entity1:
                             role === undefined
@@ -543,9 +547,12 @@ export class ConfigManager extends BaseClass {
                         },
                         template: 'button.humidity',
                         data: {
-                            text: defaultNav.data.text,
+                            text: {
+                                true: await getButtonsTextTrue(item, 'on'),
+                                false: await getButtonsTextFalse(item, 'on', 'off'),
+                            },
                             text1: {
-                                true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                                true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Humidity'),
                             },
                             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                         },
@@ -568,7 +575,13 @@ export class ConfigManager extends BaseClass {
                         scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
-                        text: defaultNav.data.text,
+                        text1: {
+                            true: await getButtonsTextTrue(item, 'on'),
+                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                        },
+                        text: {
+                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Temperature'),
+                        },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
@@ -586,9 +599,12 @@ export class ConfigManager extends BaseClass {
                             scale: item.colorScale ? item.colorScale : undefined,
                         },
                         data: {
-                            text: defaultNav.data.text,
+                            text: {
+                                true: await getButtonsTextTrue(item, 'on'),
+                                false: await getButtonsTextFalse(item, 'on', 'off'),
+                            },
                             text1: {
-                                true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                                true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Gate'),
                             },
                             entity1: {
                                 value: {
@@ -614,9 +630,12 @@ export class ConfigManager extends BaseClass {
                             scale: item.colorScale ? item.colorScale : undefined,
                         },
                         data: {
-                            text: defaultNav.data.text,
+                            text: {
+                                true: await getButtonsTextTrue(item, 'on'),
+                                false: await getButtonsTextFalse(item, 'on', 'off'),
+                            },
                             text1: {
-                                true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                                true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Gate'),
                             },
                             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                         },
@@ -635,9 +654,12 @@ export class ConfigManager extends BaseClass {
                         scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
-                        text: defaultNav.data.text,
                         text1: {
-                            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                            true: await getButtonsTextTrue(item, 'on'),
+                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                        },
+                        text: {
+                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Door'),
                         },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -655,9 +677,12 @@ export class ConfigManager extends BaseClass {
                         scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
-                        text: defaultNav.data.text,
                         text1: {
-                            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                            true: await getButtonsTextTrue(item, 'on'),
+                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                        },
+                        text: {
+                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Window'),
                         },
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
@@ -676,9 +701,12 @@ export class ConfigManager extends BaseClass {
                         scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
-                        text: defaultNav.data.text,
                         text1: {
-                            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                            true: await getButtonsTextTrue(item, 'yes'),
+                            false: await getButtonsTextFalse(item, 'yes', 'no'),
+                        },
+                        text: {
+                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Motion'),
                         },
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
@@ -698,9 +726,12 @@ export class ConfigManager extends BaseClass {
                         scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
-                        text: defaultNav.data.text,
                         text1: {
-                            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                            true: await getButtonsTextTrue(item, 'on'),
+                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                        },
+                        text: {
+                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Volume'),
                         },
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
@@ -719,9 +750,12 @@ export class ConfigManager extends BaseClass {
                         scale: item.colorScale ? item.colorScale : undefined,
                     },
                     data: {
-                        text: defaultNav.data.text,
                         text1: {
-                            true: await this.getFieldAsDataItemConfig(item.name || `${item.id}.INFO`),
+                            true: await getButtonsTextTrue(item, 'on'),
+                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                        },
+                        text: {
+                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Warning'),
                         },
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
@@ -740,9 +774,12 @@ export class ConfigManager extends BaseClass {
                         scale: item.colorScale,
                     },
                     data: {
-                        text: defaultNav.data.text,
                         text1: {
-                            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                            true: await getButtonsTextTrue(item, 'on'),
+                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                        },
+                        text: {
+                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Light'),
                         },
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
