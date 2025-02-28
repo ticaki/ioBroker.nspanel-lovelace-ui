@@ -467,7 +467,8 @@ export type STATUS0 = {
         FriendlyName: Array<string>;
         Topic: string;
         ButtonTopic: string;
-        Power: number;
+        Power: string;
+        PowerLock: string;
         PowerOnState: number;
         LedState: number;
         LedMask: string;
@@ -510,6 +511,7 @@ export type STATUS0 = {
         SerialLog: number;
         WebLog: number;
         MqttLog: number;
+        FileLog: number;
         SysLog: number;
         LogHost: string;
         LogPort: number;
@@ -568,6 +570,7 @@ export type STATUS0 = {
         MqttClient: string;
         MqttUser: string;
         MqttCount: number;
+        MqttTLS: number;
         MAX_PACKET_SIZE: number;
         KEEPALIVE: number;
         SOCKET_TIMEOUT: number;
