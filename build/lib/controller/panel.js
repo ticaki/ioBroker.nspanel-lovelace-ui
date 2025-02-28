@@ -425,6 +425,19 @@ class Panel extends import_library.BaseClass {
       this.screenSaverDoubleClick,
       import_definition.genericStateObjects.panel.panels.cmd.screenSaverDoubleClick
     );
+    if (state && !state.val) {
+      await this.library.writedp(
+        `panels.${this.name}.buttons.screensaverGesture`,
+        0,
+        import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+      );
+    } else {
+      await this.library.writedp(
+        `panels.${this.name}.buttons.screensaverGesture`,
+        void 0,
+        import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+      );
+    }
     state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
     if (state && state.val != null) {
       this.detach.right = !!state.val;
@@ -848,6 +861,13 @@ class Panel extends import_library.BaseClass {
             this.screenSaverDoubleClick,
             import_definition.genericStateObjects.panel.panels.cmd.screenSaverDoubleClick
           );
+          if (!this.screenSaverDoubleClick) {
+            await this.library.writedp(
+              `panels.${this.name}.buttons.screensaverGesture`,
+              0,
+              import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+            );
+          }
           break;
         }
         case "detachLeft": {
@@ -1030,6 +1050,50 @@ class Panel extends import_library.BaseClass {
       }
       case "buttonPress2": {
         if (event.id == "screensaver") {
+          if (this.screenSaverDoubleClick) {
+            switch (event.action) {
+              case "bExit": {
+                await this.library.writedp(
+                  `panels.${this.name}.buttons.screensaverGesture`,
+                  1,
+                  import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+                );
+                break;
+              }
+              case "swipeUp": {
+                await this.library.writedp(
+                  `panels.${this.name}.buttons.screensaverGesture`,
+                  2,
+                  import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+                );
+                break;
+              }
+              case "swipeDown": {
+                await this.library.writedp(
+                  `panels.${this.name}.buttons.screensaverGesture`,
+                  3,
+                  import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+                );
+                break;
+              }
+              case "swipeLeft": {
+                await this.library.writedp(
+                  `panels.${this.name}.buttons.screensaverGesture`,
+                  4,
+                  import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+                );
+                break;
+              }
+              case "swipeRight": {
+                await this.library.writedp(
+                  `panels.${this.name}.buttons.screensaverGesture`,
+                  4,
+                  import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+                );
+                break;
+              }
+            }
+          }
           if (this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
             this.navigation.resetPosition();
             await this.navigation.setCurrentPage();

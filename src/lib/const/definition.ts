@@ -66,6 +66,7 @@ export const genericStateObjects: {
                 left: ioBroker.StateObject;
                 right: ioBroker.StateObject;
                 indicator: ioBroker.StateObject;
+                screensaverGesture: ioBroker.StateObject;
             };
             info: customChannelType & {
                 status: ioBroker.StateObject;
@@ -154,6 +155,19 @@ export const genericStateObjects: {
                         role: 'button.press',
                         read: true,
                         write: false,
+                    },
+                    native: {},
+                },
+                screensaverGesture: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.buttons.screensaverGesture',
+                        type: 'number',
+                        role: 'value',
+                        read: true,
+                        write: false,
+                        states: ['inactiv', 'exit', 'swipeUp', 'swipeDown', 'swipeLeft', 'swipeRight'],
                     },
                     native: {},
                 },

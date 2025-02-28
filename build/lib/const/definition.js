@@ -114,6 +114,19 @@ const genericStateObjects = {
             write: false
           },
           native: {}
+        },
+        screensaverGesture: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.buttons.screensaverGesture",
+            type: "number",
+            role: "value",
+            read: true,
+            write: false,
+            states: ["inactiv", "exit", "swipeUp", "swipeDown", "swipeLeft", "swipeRight"]
+          },
+          native: {}
         }
       },
       cmd: {
