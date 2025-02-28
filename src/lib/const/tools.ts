@@ -374,7 +374,8 @@ export async function getIconEntryColor(
                     cto = cfrom;
                     cfrom = temp2;
                 }
-                const vBest = scale.val_best ?? undefined;
+                let vBest = scale.val_best ?? undefined;
+                vBest = vBest !== undefined ? Math.min(vMax, Math.max(vMin, vBest)) : undefined;
                 let factor = 1;
                 const func =
                     scale.mode === 'hue'
@@ -386,14 +387,17 @@ export async function getIconEntryColor(
                     rColor = cto;
                 } else if (vBest === undefined) {
                     factor = (value - vMin) / (vMax - vMin);
+                    factor = Math.min(1, Math.max(0, factor));
                     factor = getLogFromIconScale(scale, factor);
                     rColor = func(cfrom, cto, factor);
                 } else if (value >= vBest) {
-                    factor = (value - vBest) / (vMax - vBest);
+                    factor = 1 - (value - vBest) / (vMax - vBest);
+                    factor = Math.min(1, Math.max(0, factor));
                     factor = getLogFromIconScale(scale, factor);
-                    rColor = func(cto, cfrom, factor);
+                    rColor = func(cfrom, cto, factor);
                 } else {
                     factor = (value - vMin) / (vBest - vMin);
+                    factor = Math.min(1, Math.max(0, factor));
                     factor = 1 - getLogFromIconScale(scale, 1 - factor);
                     rColor = func(cfrom, cto, factor);
                 }

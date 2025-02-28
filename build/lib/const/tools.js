@@ -355,21 +355,25 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           cto = cfrom;
           cfrom = temp2;
         }
-        const vBest = (_d = scale.val_best) != null ? _d : void 0;
+        let vBest = (_d = scale.val_best) != null ? _d : void 0;
+        vBest = vBest !== void 0 ? Math.min(vMax, Math.max(vMin, vBest)) : void 0;
         let factor = 1;
         const func = scale.mode === "hue" ? import_Color.Color.mixColorHue : scale.mode === "cie" ? import_Color.Color.mixColorCie : import_Color.Color.mixColor;
         if (vMin == vMax) {
           rColor = cto;
         } else if (vBest === void 0) {
           factor = (value - vMin) / (vMax - vMin);
+          factor = Math.min(1, Math.max(0, factor));
           factor = getLogFromIconScale(scale, factor);
           rColor = func(cfrom, cto, factor);
         } else if (value >= vBest) {
-          factor = (value - vBest) / (vMax - vBest);
+          factor = 1 - (value - vBest) / (vMax - vBest);
+          factor = Math.min(1, Math.max(0, factor));
           factor = getLogFromIconScale(scale, factor);
-          rColor = func(cto, cfrom, factor);
+          rColor = func(cfrom, cto, factor);
         } else {
           factor = (value - vMin) / (vBest - vMin);
+          factor = Math.min(1, Math.max(0, factor));
           factor = 1 - getLogFromIconScale(scale, 1 - factor);
           rColor = func(cfrom, cto, factor);
         }
