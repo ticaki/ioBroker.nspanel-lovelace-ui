@@ -111,7 +111,8 @@ const genericStateObjects = {
             type: "boolean",
             role: "button.press",
             read: true,
-            write: false
+            write: false,
+            def: true
           },
           native: {}
         },
@@ -124,6 +125,7 @@ const genericStateObjects = {
             role: "value",
             read: true,
             write: false,
+            def: 0,
             states: ["inactiv", "exit", "swipeUp", "swipeDown", "swipeLeft", "swipeRight"]
           },
           native: {}

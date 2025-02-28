@@ -494,12 +494,14 @@ declare namespace ScriptConfig {
     export type Config = {
         version: string;
         panelName?: string;
-        model?: string;
-        panelTopic?: string;
+        /**
+         * The topic to receive and send messages to the panel.
+         */
+        panelTopic: string;
         weatherEntity: string;
-        leftScreensaverEntity: leftScreensaverEntityType;
+        leftScreensaverEntity: ScreenSaverElementWithUndefined[];
         bottomScreensaverEntity: ScreenSaverElement[];
-        indicatorScreensaverEntity: indicatorScreensaverEntityType;
+        indicatorScreensaverEntity: ScreenSaverElementWithUndefined[];
         mrIcon1ScreensaverEntity: ScreenSaverMRElement;
         mrIcon2ScreensaverEntity: ScreenSaverMRElement;
         defaultColor: RGB;
@@ -513,18 +515,7 @@ declare namespace ScriptConfig {
         nativePageItems?: typePageItem.PageItemDataItemsOptions[];
         navigation?: NavigationItemConfig[];
     };
-    export type leftScreensaverEntityType =
-        | [ScreenSaverElementWithUndefined?, ScreenSaverElementWithUndefined?, ScreenSaverElementWithUndefined?]
-        | [];
-    export type indicatorScreensaverEntityType =
-        | [
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-              ScreenSaverElementWithUndefined?,
-          ]
-        | [];
+
     export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
     export type ScreenSaverElement = {
         ScreensaverEntity: string;

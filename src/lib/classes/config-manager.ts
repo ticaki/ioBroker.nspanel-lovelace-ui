@@ -21,7 +21,7 @@ export class ConfigManager extends BaseClass {
     private colorOff: RGB = Color.Off;
     private colorDefault: RGB = Color.Off;
 
-    private readonly scriptVersion = '0.2.1';
+    private readonly scriptVersion = '0.2.2';
 
     constructor(adapter: NspanelLovelaceUi) {
         super(adapter, 'config-manager');

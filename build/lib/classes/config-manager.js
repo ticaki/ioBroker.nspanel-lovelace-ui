@@ -32,7 +32,7 @@ class ConfigManager extends import_library.BaseClass {
   colorOn = import_Color.Color.On;
   colorOff = import_Color.Color.Off;
   colorDefault = import_Color.Color.Off;
-  scriptVersion = "0.2.1";
+  scriptVersion = "0.2.2";
   constructor(adapter) {
     super(adapter, "config-manager");
   }
