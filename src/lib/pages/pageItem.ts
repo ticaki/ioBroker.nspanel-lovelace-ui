@@ -170,7 +170,7 @@ export class PageItem extends BaseClassTriggerd {
             switch (entry.type) {
                 case 'light': {
                     const item = entry.data;
-                    message.type = 'light';
+                    message.type = this.config.role === 'light' || this.config.role === 'socket' ? 'button' : 'light';
 
                     const v = await tools.getValueEntryBoolean(item.entity1);
                     const dimmer = (item.dimmer && item.dimmer.value && (await item.dimmer.value.getNumber())) ?? null;
@@ -716,7 +716,6 @@ export class PageItem extends BaseClassTriggerd {
                 switch (this.config.role) {
                     case 'light':
                     case 'socket':
-                        return null;
                     case 'dimmer':
                     case 'hue':
                     case 'ct':
@@ -761,8 +760,8 @@ export class PageItem extends BaseClassTriggerd {
                             )) ?? 'disable';
                         let rgb = null;
                         switch (this.config.role) {
-                            //case 'socket':
-                            //case 'light':
+                            case 'socket':
+                            case 'light':
                             case 'dimmer':
                             case 'ct':
                                 break;

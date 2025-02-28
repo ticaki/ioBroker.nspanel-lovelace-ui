@@ -738,6 +738,7 @@ class ConfigManager extends import_library.BaseClass {
           case "light": {
             const tempItem = {
               type: "light",
+              role: "light",
               data: {
                 icon: {
                   true: {
@@ -1670,9 +1671,12 @@ class ConfigManager extends import_library.BaseClass {
   async checkRequiredDatapoints(role, item, mode = "both") {
     const _checkScriptDataPoints = async (role2, item2) => {
       let error = "";
-      for (const dp in (import_config_manager_const.requiredFeatureDatapoints[role2] || {}).data) {
+      if (!import_config_manager_const.requiredScriptDataPoints[role2]) {
+        throw new Error(`Role ${role2} is not supported!`);
+      }
+      for (const dp in (import_config_manager_const.requiredScriptDataPoints[role2] || {}).data) {
         try {
-          const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
+          const o = dp !== "" && !dp.endsWith(".") ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
           if (!o && !import_config_manager_const.requiredScriptDataPoints[role2].data[dp].required) {
             continue;
           }
@@ -1696,6 +1700,9 @@ class ConfigManager extends import_library.BaseClass {
     };
     const _checkDataPoints = async (role2, item2) => {
       let error = "";
+      if (!import_config_manager_const.requiredFeatureDatapoints[role2]) {
+        return false;
+      }
       for (const dp in (import_config_manager_const.requiredFeatureDatapoints[role2] || {}).data) {
         try {
           const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;

@@ -206,7 +206,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         data: {
             ACTUAL: { role: 'sensor.window', type: 'boolean', required: true, writeable: false },
             COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP steuern
-            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false }, //Button-Text über DP steuern
+            BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false }, //Button-Text über DP steuern
         },
     },
     humidity: {
@@ -232,7 +232,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         data: {
             ACTUAL: { role: 'state', type: 'mixed', required: true, writeable: false },
             COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP senden
-            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false }, //Button-Text über DP senden bei cardEntity
+            BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false }, //Button-Text über DP senden bei cardEntity
             USERICON: { role: 'state', type: 'string', required: false, writeable: false }, //Benutzerdefinierte Iconnamen über DP senden
         },
     },
@@ -278,10 +278,10 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'socket',
         description: 'Steckdosen, Schalter, Relais, usw. schalten',
         data: {
-            ACTUAL: { role: 'switch', type: 'boolean', required: false, writeable: false },
-            SET: { role: 'switch', type: 'boolean', required: true, writeable: true },
+            ACTUAL: { role: 'switch', type: 'boolean', required: true, writeable: false },
+            SET: { role: 'switch', type: 'boolean', required: false, writeable: true },
             COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP steuern
-            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false }, //Button-Text über DP steuern bei cardEntity
+            BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false }, //Button-Text über DP steuern bei cardEntity
             STATE: { role: 'state', type: 'boolean', required: false, writeable: true }, // für monobutton
         },
     },
@@ -292,7 +292,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             ACTUAL: { role: 'sensor.light', type: 'boolean', required: true, writeable: false },
             SET: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
             COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP steuern
-            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false }, //Button-Text über DP steuern bei cardEntity
+            BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false }, //Button-Text über DP steuern bei cardEntity
             VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
@@ -409,7 +409,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         data: {
             ACTUAL: { role: 'sensor.door', type: 'boolean', required: true, writeable: false },
             COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, // Farbcode über DP steuern
-            BUTTONTEXT: { role: 'state', type: 'string', required: false, writeable: false }, // Button-Text über DP steuern
+            BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false }, // Button-Text über DP steuern
         },
     },
     'level.mode.fan': {

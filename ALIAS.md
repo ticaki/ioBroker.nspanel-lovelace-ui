@@ -67,7 +67,7 @@
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **window** | ACTUAL | boolean| sensor.window  | X |  |  | 
 | **"** | COLORDEC | number| state  |  |  |  | 
-| **"** | BUTTONTEXT | string| state  |  |  |  | 
+| **"** | BUTTONTEXT | string| state, text  |  |  |  | 
 ### humidity
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -86,7 +86,7 @@
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **info** | ACTUAL | mixed| state  | X |  |  | 
 | **"** | COLORDEC | number| state  |  |  |  | 
-| **"** | BUTTONTEXT | string| state  |  |  |  | 
+| **"** | BUTTONTEXT | string| state, text  |  |  |  | 
 | **"** | USERICON | string| state  |  |  |  | 
 ### blind
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
@@ -123,10 +123,10 @@
 ### socket
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **socket** | ACTUAL | boolean| switch  |  |  |  | 
-| **"** | SET | boolean| switch  | X | X |  | 
+| **socket** | ACTUAL | boolean| switch  | X |  |  | 
+| **"** | SET | boolean| switch  |  | X |  | 
 | **"** | COLORDEC | number| state  |  |  |  | 
-| **"** | BUTTONTEXT | string| state  |  |  |  | 
+| **"** | BUTTONTEXT | string| state, text  |  |  |  | 
 | **"** | STATE | boolean| state  |  | X |  | 
 ### light
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
@@ -134,7 +134,7 @@
 | **light** | ACTUAL | boolean| sensor.light  | X |  |  | 
 | **"** | SET | boolean| switch.light  | X | X |  | 
 | **"** | COLORDEC | number| state  |  |  |  | 
-| **"** | BUTTONTEXT | string| state  |  |  |  | 
+| **"** | BUTTONTEXT | string| state, text  |  |  |  | 
 | **"** | VALUE | number| state  |  | X |  | 
 ### volume
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
@@ -221,7 +221,7 @@
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **door** | ACTUAL | boolean| sensor.door  | X |  |  | 
 | **"** | COLORDEC | number| state  |  |  |  | 
-| **"** | BUTTONTEXT | string| state  |  |  |  | 
+| **"** | BUTTONTEXT | string| state, text  |  |  |  | 
 ### level.mode.fan
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  

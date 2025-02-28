@@ -168,7 +168,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       switch (entry.type) {
         case "light": {
           const item = entry.data;
-          message.type = "light";
+          message.type = this.config.role === "light" || this.config.role === "socket" ? "button" : "light";
           const v = await tools.getValueEntryBoolean(item.entity1);
           const dimmer = (_a = item.dimmer && item.dimmer.value && await item.dimmer.value.getNumber()) != null ? _a : null;
           let rgb = (_c = (_b = await tools.getRGBfromRGBThree(item)) != null ? _b : item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _c : null;
@@ -646,7 +646,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         switch (this.config.role) {
           case "light":
           case "socket":
-            return null;
           case "dimmer":
           case "hue":
           case "ct":
@@ -687,6 +686,8 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             )) != null ? _c : "disable";
             let rgb = null;
             switch (this.config.role) {
+              case "socket":
+              case "light":
               case "dimmer":
               case "ct":
                 break;

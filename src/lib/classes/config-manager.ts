@@ -856,6 +856,7 @@ export class ConfigManager extends BaseClass {
                     case 'light': {
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'light',
+                            role: 'light',
                             data: {
                                 icon: {
                                     true: {
@@ -1922,10 +1923,15 @@ export class ConfigManager extends BaseClass {
             item: ScriptConfig.PageItem,
         ): Promise<boolean> => {
             let error = '';
-
-            for (const dp in (requiredFeatureDatapoints[role] || {}).data) {
+            if (!requiredScriptDataPoints[role]) {
+                throw new Error(`Role ${role} is not supported!`);
+            }
+            for (const dp in (requiredScriptDataPoints[role] || {}).data) {
                 try {
-                    const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
+                    const o =
+                        dp !== '' && !dp.endsWith('.')
+                            ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`)
+                            : undefined;
 
                     if (!o && !requiredScriptDataPoints[role].data[dp].required) {
                         continue;
@@ -1959,6 +1965,9 @@ export class ConfigManager extends BaseClass {
         };
         const _checkDataPoints = async (role: ScriptConfig.roles, item: ScriptConfig.PageItem): Promise<boolean> => {
             let error = '';
+            if (!requiredFeatureDatapoints[role]) {
+                return false;
+            }
             for (const dp in (requiredFeatureDatapoints[role] || {}).data) {
                 try {
                     const o = dp !== '' ? await this.adapter.getForeignObjectAsync(`${item.id}.${dp}`) : undefined;
