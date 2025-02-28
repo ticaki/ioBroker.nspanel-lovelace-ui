@@ -170,6 +170,10 @@
                 "panels": {
                     "type": "table",
                     "label": "panels",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
                     "uniqueColumns": [
                         "name",
                         "topic"
