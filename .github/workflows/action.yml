@@ -2,7 +2,7 @@ name: Auto Assign Issues/PRs
 on:
   issues:
     types: [opened, edited, labeled, unlabeled]
-  pull_request:
+  pull_request_target:
     types: [opened, edited, ready_for_review]
 jobs:
   run:
