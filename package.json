@@ -78,7 +78,8 @@
     "www/",
     "io-package.json",
     "LICENSE",
-    "/templates"
+    "/templates",
+    "lib"
   ],
   "scripts": {
     "prebuild": "clean-dir ./build",
