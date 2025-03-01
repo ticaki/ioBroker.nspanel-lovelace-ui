@@ -1,35 +1,17 @@
 repo-token: ${{ secrets.GITHUB_TOKEN }}
 
 # Number of days of inactivity before an Issue or Pull Request becomes stale
-daysUntilStale: 90
+days-before-stale: 90
 
 # Number of days of inactivity before an Issue or Pull Request with the stale label is closed.
 # Set to false to disable. If disabled, issues still need to be closed manually, but will remain marked as stale.
-daysUntilClose: 14
-
-# Only issues or pull requests with all of these labels are check if stale. Defaults to `[]` (disabled)
-onlyLabels: []
+days-before-close: 14
 
 # Issues or Pull Requests with these labels will never be considered stale. Set to `[]` to disable
-exemptLabels:
-  - enhancement
-  - security
-  - bug
-
-# Set to true to ignore issues in a project (defaults to false)
-exemptProjects: true
-
-# Set to true to ignore issues in a milestone (defaults to false)
-exemptMilestones: true
-
-# Set to true to ignore issues with an assignee (defaults to false)
-exemptAssignees: false
-
-# Label to use when marking as stale
-staleLabel: wontfix
+exempt-issue-labels: enhancement,security,bug
 
 # Comment to post when marking as stale. Set to `false` to disable
-markComment: >
+stale-issue-message: >
   This issue has been automatically marked as stale because it has not had
   recent activity. It will be closed if no further activity occurs within the next 7 days.
   Please check if the issue is still relevant in the most current version of the adapter
@@ -49,7 +31,7 @@ markComment: >
 #   Your comment here.
 
 # Comment to post when closing a stale Issue or Pull Request.
-closeComment: >
+close-issue-message: >
   This issue has been automatically closed because of inactivity. Please open a new
   issue if still relevant and make sure to include all relevant details, logs and
   reproduction steps.
@@ -61,10 +43,7 @@ closeComment: >
   Vielen Dank für Eure Unterstützung.
 
 # Limit the number of actions per hour, from 1-30. Default is 30
-limitPerRun: 30
-
-# Limit to only `issues` or `pulls`
-only: issues
+operations-per-run: 30
 
 # Optionally, specify configuration settings that are specific to just 'issues' or 'pulls':
 # pulls:
