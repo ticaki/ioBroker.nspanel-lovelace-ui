@@ -1,4 +1,9 @@
 name: 'Close stale issues and PRs'
+permissions:
+  #contents: write # only for delete-branch option
+  issues: write
+  #pull-requests: write
+
 on:
   schedule:
     - cron: '30 17 * * *'
