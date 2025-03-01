@@ -25,6 +25,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     mqttServer: MQTT.MQTTServerClass | undefined;
     controller: Controller | undefined;
     unload: boolean = false;
+    testSuccessful: boolean = true;
 
     timeoutAdmin: ioBroker.Timeout | undefined;
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
@@ -216,6 +217,7 @@ class NspanelLovelaceUi extends utils.Adapter {
 
             if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
                 this.log.error('Invalid admin configuration for mqtt!');
+                this.testSuccessful = false;
                 return;
             }
             /*const test = await this.getObjectViewAsync('system', 'instance', {
@@ -295,7 +297,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 '!17,!20,!21,24,26,!27,29,!34,!35,38,50,52,!59,!60,62,!63,!66,!67,!68,!73,!75,82,!86,!87,!88,!121","Sensors":"1,2,3,5,6,7,8,9,10,11,12,13,14,15,17,18,19,20,' +
                                 '21,22,26,31,34,37,39,40,42,43,45,51,52,55,56,58,59,64,66,67,74,85,92,95,98,103,105,109,127","I2CDriver":"7,8,9,10,11,12,13,14,15,17,18,20,24,29,31,36,41,42,44,46,48,58' +
                                 ',62,65,69,76,77,82,89"},"StatusNET":{"Hostname":"ns-panel4-0112","IPAddress":"192.168.178.174","Gateway":"192.168.178.1","Subnetmask":"255.255.254.0","DNSServer1":' +
-                                '"192.168.179.21","DNSServer2":"0.0.0.0","Mac":"A0:B7:65:54:C0:70","IP6Global":"","IP6Local":"xxx","Ethernet":{"Hostname":"","IPAddress":"0.0.0.0","Gateway":"0.0.0.0",' +
+                                '"192.168.179.21","DNSServer2":"0.0.0.0","Mac":"A0:B7:A5:54:C0:71","IP6Global":"","IP6Local":"xxx","Ethernet":{"Hostname":"","IPAddress":"0.0.0.0","Gateway":"0.0.0.0",' +
                                 '"Subnetmask":"0.0.0.0","DNSServer1":"192.168.179.21","DNSServer2":"0.0.0.0","Mac":"00:00:00:00:00:00","IP6Global":"","IP6Local":""},"Webserver":2,"HTTP_API":1,' +
                                 '"WifiConfig":4,"WifiPower":16.0},"StatusMQT":{"MqttHost":"xxx","MqttPort":1883,"MqttClientMask":"ns_panel4","MqttClient":"ns_panel4","MqttUser":"xxx","MqttCount":1,' +
                                 '"MAX_PACKET_SIZE":1200,"KEEPALIVE":30,"SOCKET_TIMEOUT":4},"StatusTIM":{"UTC":"2025-02-19T09:30:57Z","Local":"2025-02-19T10:30:57","StartDST":"2025-03-30T02:00:00",' +
@@ -354,6 +356,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     );
                 }, 60000);*/
         } catch (e: any) {
+            this.testSuccessful = false;
             this.log.error(`Error onReady: ${e}`);
         }
     }
@@ -536,6 +539,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                         mqtt,
                     );
 
+                    break;
+                }
+                case 'testCase': {
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { testSuccessful: this.testSuccessful }, obj.callback);
+                    }
                     break;
                 }
                 default: {

@@ -40,6 +40,9 @@ tests.integration(path.join(__dirname, '..'), {
                     obj.native.mqttIp = '';
                     obj.native.mqttPort = 1883;
                     obj.native.mqttTopic = 'test';
+                    obj.native.panels = [
+                        { id: 'A0_B7_A5_54_C0_71', name: 'test', topic: 'test/123456', removeIt: false },
+                    ];
 
                     harness.objects.setObject(obj._id, obj)
                 });
@@ -83,8 +86,14 @@ tests.integration(path.join(__dirname, '..'), {
                 await wait(20000);
                 
                 setTimeout(() => {
-                    harness.sendTo('nspanel-lovelace-ui.0', 'stillAlive', 'test', (res) => {
-                        resolve('ok');
+                    harness.sendTo('nspanel-lovelace-ui.0', 'testCase', 'test', (res) => {
+                        console.log(JSON.stringify(res));
+                        if (res.testSuccessful) {
+                            resolve('ok');
+                        }
+                        else {
+                            reject('Test failed');
+                        }
                     });
                 }, 10);
                 await wait(3000);

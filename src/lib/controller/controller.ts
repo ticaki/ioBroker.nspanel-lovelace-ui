@@ -42,6 +42,7 @@ export class Controller extends Library.BaseClass {
             }
             const index = this.adapter.config.panels.findIndex(panel => panel.topic === panelConfig.topic);
             if (index === -1) {
+                this.adapter.testSuccessful = false;
                 this.adapter.log.error(`Panel ${panelConfig.name} with topic ${panelConfig.topic} not found in config`);
                 continue;
             }
@@ -245,6 +246,7 @@ export class Controller extends Library.BaseClass {
                 await panel.init();
             } else {
                 await panel.delete();
+                this.adapter.testSuccessful = false;
                 this.log.error(`Panel ${panel.name} has a invalid configuration.`);
             }
         }

@@ -6701,7 +6701,7 @@ export const testCaseConfig: Partial<panelConfigPartial>[] = [
                 right: { single: 'main', double: 'not exist' },
             },
         ],
-        topic: 'nspanel/ns_panel4',
+        topic: 'test/123456',
         name: 'Wohnzimmer',
         config: {
             // dat hier hat noch keine bedeutung glaube ich :)
