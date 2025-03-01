@@ -1,0 +1,34 @@
+# This workflow will triage pull requests and apply a label based on the
+# paths that are modified in the pull request.
+
+name: Set labels
+
+#
+# WARNING: 
+#    ** Do NOT run untrusted code when using pull_request_target **
+# pull_request_target is needed as pull_request does not provide secrets and so no 
+# labeling of PR is possible.
+#
+on:
+  pull_request_target:
+    types: [opened, edited, ready_for_review, reopened, labeled, unlabeled]
+  issue_comment:
+    types: [created, edited]
+    
+jobs:
+  setLabels:
+    name: set labels
+    if: |
+      github.repository == 'ticaki/ioBroker.nspanel-lovelace-ui'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i
+      - run: npm run setLabels
+        env:
+          OWN_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
