@@ -27,6 +27,7 @@ var import_config_manager_const = require("../const/config-manager-const");
 var import_pages = require("../types/pages");
 var import_navigation = require("./navigation");
 var import_readme = require("../tools/readme");
+var import_pageQR = require("../pages/pageQR");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   colorOn = import_Color.Color.On;
@@ -194,7 +195,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     if (config.pages) {
       for (const page of config.pages.concat(config.subPages || [])) {
-        if (!page || page.type === void 0 && page.native && page.native.card === "cardQR" && this.adapter.config.pageQRselType === 0) {
+        if (!page) {
           continue;
         }
         if (page.type === void 0 && page.native) {
@@ -228,6 +229,16 @@ class ConfigManager extends import_library.BaseClass {
           };
           panelConfig.navigation.push(navItem);
         }
+        if (page.type === "cardQR") {
+          const index = this.adapter.config.pageQRdata.findIndex((item) => item.pageName === page.uniqueName);
+          if (index === -1) {
+            messages.push(`No pageQRdata found for ${page.uniqueName}`);
+            this.log.error(messages[messages.length - 1]);
+            continue;
+          }
+          panelConfig.pages.push(await import_pageQR.PageQR.getQRPageConfig(this.adapter, index, this));
+          continue;
+        }
         let gridItem = {
           dpInit: "",
           alwaysOn: "none",
@@ -246,8 +257,6 @@ class ConfigManager extends import_library.BaseClass {
         }
         if (page.type === "cardThermo") {
           ({ gridItem, messages } = await this.getPageThermo(page, gridItem, messages));
-        } else if (page.type === "cardQR") {
-          ({ gridItem, messages } = await this.getPageQR(page, gridItem, messages));
         }
         if (page.items) {
           for (const item of page.items) {
@@ -284,20 +293,6 @@ class ConfigManager extends import_library.BaseClass {
     }
     gridItem.template = "thermo.script";
     gridItem.dpInit = page.items[0].id;
-    return { gridItem, messages };
-  }
-  async getPageQR(page, gridItem, messages) {
-    if (page.type !== "cardQR" || !gridItem.config || gridItem.config.card !== "cardQR") {
-      return { gridItem, messages };
-    }
-    if (!page.items || !page.items[0]) {
-      const msg = "cardQR page has no items or item 0 has no id!";
-      messages.push(msg);
-      this.log.error(msg);
-      return { gridItem, messages };
-    }
-    gridItem.template = "thermo.script";
-    gridItem.dpInit = page.items[0].id || "";
     return { gridItem, messages };
   }
   async getPageNaviItemConfig(item, page) {
@@ -1992,6 +1987,9 @@ class ConfigManager extends import_library.BaseClass {
     return void 0;
   }
   async existsState(id) {
+    if (!id) {
+      return false;
+    }
     return await this.adapter.getForeignStateAsync(id) !== null;
   }
 }

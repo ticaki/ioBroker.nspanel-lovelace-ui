@@ -681,8 +681,7 @@ declare namespace ScriptConfig {
 
     export type PageQR = {
         type: 'cardQR';
-        items: [PageItem];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading'>;
 
     export type PagePower = {
         type: 'cardPower';

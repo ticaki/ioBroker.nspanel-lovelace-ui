@@ -1,7 +1,7 @@
 {
     "i18n": true,
     "type": "tabs",
-    "items": {      
+    "items": {
         "general": {
             "type": "panel",
             "label": "general",
@@ -232,77 +232,136 @@
             "type": "panel",
             "label": "+",
             "items": {
-                "pageQRselType": {
-                    "type": "select",
-                    "label": "QR Typ",
-                    "options": [
-                        {
-                            "label": "none",
-                            "value": 0
-                        },
-                        {
-                            "label": "Wifi",
-                            "value": 1
-                        },
-                        {
-                            "label": "URL",
-                            "value": 2
-                        }
+                "pageQRdata": {
+                    "type": "table",
+                    "label": "pageQRdata",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "uniqueColumns": [
+                        "pageName"
                     ],
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
+                    "items": [
+                        {
+                            "attr": "pageName",
+                            "type": "text",
+                            "label": "pageName",
+                            "width": "10%",
+                            "default": "Unique Name"
+                        },
+                        {
+                            "attr": "headline",
+                            "type": "text",
+                            "label": "Headline",
+                            "width": "10%",
+                            "default": ""
+                        },
+                        {
+                            "attr": "SSIDURLTEL",
+                            "type": "text",
+                            "label": "SSIDURLTEL",
+                            "width": "40%",
+                            "default": ""
+                        },
+                        {
+                            "attr": "selType",
+                            "type": "select",
+                            "label": "pageQRselType",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "FREE",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "Wifi",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "URL",
+                                    "value": 2
+                                }
+                                ,
+                                {
+                                    "label": "TEL",
+                                    "value": 3
+                                }       
+                            ]
+                        },
+                        {
+                            "type": "select",
+                            "label": "wlantype",
+                            "disabled": "data.selType !== 1",
+                            "attr": "wlantype",
+                            "options": [
+                                {"label": "nopass", "value": "nopass"},
+                                {"label": "WPA", "value": "WPA"},
+                                {"label": "WPA2", "value": "WPA2"},
+                                {"label": "WPA3", "value": "WPA3"},
+                                {"label": "WEP", "value": "WEP"}
+                            ]
+                        },
+                        {
+                            "attr": "qrPass",
+                            "type": "select",
+                            "label": "qrPass",
+                            "disabled": "data.selType !== 1",
+                            "options": [
+                                {
+                                    "label": "none",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "Password1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "Password2",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "Password3",
+                                    "value": 2
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "wlanhidden",
+                            "type": "checkbox",
+                            "label": "wlanhidden",
+                            "disabled": "data.selType !== 1",
+                            "default": false
+                        },
+                        {
+                            "attr": "setState",
+                            "type": "objectId",
+                            "label": "Switch",
+                            "filterFunc": "return obj.common.type === 'boolean' && obj.common.role === 'switch' && obj.common.write"
+                        }    
+                    ]
                 },
-                "pageQRwlantype": {
-                    "type": "text",
-                    "label": "Verschlüssselung",
-                    "hidden": "data.pageQRselType !== 1",
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "pageQRssid": {
-                    "type": "text",
-                    "label": "SSID",
-                    "hidden": "data.pageQRselType !== 1",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "pageQRpwd": {
+                "pageQRpwd1": {
                     "type": "password",
-                    "label": "Password",
-                    "hidden": "data.pageQRselType !== 1",
+                    "label": "Password1",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
                     "xl": 4
                 },
-                "pageQRwlanhidden": {
-                    "type": "checkbox",
-                    "label": "verstecktes Wlan",
-                    "hidden": "data.pageQRselType !== 1",
-                    "default": false,
+                "pageQRpwd2": {
+                    "type": "password",
+                    "label": "Password2",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
                     "xl": 4
                 },
-                "pageQRurl": {
-                    "type": "text",
-                    "label": "URL",
-                    "default": "https://",
-                    "hidden": "data.pageQRselType !== 2",
-                    "newLine": true,
+                "pageQRpwd3": {
+                    "type": "password",
+                    "label": "Password3",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,

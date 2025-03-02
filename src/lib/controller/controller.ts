@@ -11,7 +11,6 @@ import { Color } from '../const/Color';
 
 axios.defaults.timeout = 10000;
 
-
 /**
  * Controller Class
  */

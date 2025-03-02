@@ -14,12 +14,13 @@ import type { panelConfigPartial } from '../controller/panel';
 import { exhaustiveCheck } from '../types/pages';
 import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
 import { getStringOrArray } from '../tools/readme';
+import { PageQR } from '../pages/pageQR';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
-    private colorOn: RGB = Color.On;
-    private colorOff: RGB = Color.Off;
-    private colorDefault: RGB = Color.Off;
+    colorOn: RGB = Color.On;
+    colorOff: RGB = Color.Off;
+    colorDefault: RGB = Color.Off;
 
     private readonly scriptVersion = '0.2.2';
 
@@ -223,13 +224,7 @@ export class ConfigManager extends BaseClass {
         }
         if (config.pages) {
             for (const page of config.pages.concat(config.subPages || [])) {
-                if (
-                    !page ||
-                    (page.type === undefined &&
-                        page.native &&
-                        page.native.card === 'cardQR' &&
-                        this.adapter.config.pageQRselType === 0)
-                ) {
+                if (!page) {
                     continue;
                 }
                 if (page.type === undefined && page.native) {
@@ -272,6 +267,18 @@ export class ConfigManager extends BaseClass {
                     };
                     panelConfig.navigation.push(navItem);
                 }
+
+                if (page.type === 'cardQR') {
+                    const index = this.adapter.config.pageQRdata.findIndex(item => item.pageName === page.uniqueName);
+                    if (index === -1) {
+                        messages.push(`No pageQRdata found for ${page.uniqueName}`);
+                        this.log.error(messages[messages.length - 1]);
+                        continue;
+                    }
+                    panelConfig.pages.push(await PageQR.getQRPageConfig(this.adapter, index, this));
+                    continue;
+                }
+
                 let gridItem: pages.PageBaseConfig = {
                     dpInit: '',
                     alwaysOn: 'none',
@@ -295,8 +302,6 @@ export class ConfigManager extends BaseClass {
                 }
                 if (page.type === 'cardThermo') {
                     ({ gridItem, messages } = await this.getPageThermo(page, gridItem, messages));
-                } else if (page.type === 'cardQR') {
-                    ({ gridItem, messages } = await this.getPageQR(page, gridItem, messages));
                 }
                 if (page.items) {
                     for (const item of page.items) {
@@ -338,26 +343,6 @@ export class ConfigManager extends BaseClass {
 
         gridItem.template = 'thermo.script';
         gridItem.dpInit = page.items[0].id;
-
-        return { gridItem, messages };
-    }
-    async getPageQR(
-        page: ScriptConfig.PageType,
-        gridItem: pages.PageBaseConfig,
-        messages: string[],
-    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
-        if (page.type !== 'cardQR' || !gridItem.config || gridItem.config.card !== 'cardQR') {
-            return { gridItem, messages };
-        }
-        if (!page.items || !page.items[0]) {
-            const msg = 'cardQR page has no items or item 0 has no id!';
-            messages.push(msg);
-            this.log.error(msg);
-            return { gridItem, messages };
-        }
-
-        gridItem.template = 'thermo.script';
-        gridItem.dpInit = page.items[0].id || '';
 
         return { gridItem, messages };
     }
@@ -2328,6 +2313,9 @@ export class ConfigManager extends BaseClass {
         return undefined;
     }
     async existsState(id: string): Promise<boolean> {
+        if (!id) {
+            return false;
+        }
         return (await this.adapter.getForeignStateAsync(id)) !== null;
     }
 }

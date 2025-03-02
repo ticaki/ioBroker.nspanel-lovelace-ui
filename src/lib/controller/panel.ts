@@ -506,11 +506,13 @@ export class Panel extends BaseClass {
             );
         }
         for (const page of this.pages) {
-            if (page) {
+            if (page && page.name) {
                 this.log.info(
                     `Initialisation of page ${page.name} - card: ${page.card} - pageItems: ${(page.pageItemConfig || []).length}`,
                 );
                 await page.init();
+            } else {
+                this.log.error('Page failed or has no name!');
             }
         }
 

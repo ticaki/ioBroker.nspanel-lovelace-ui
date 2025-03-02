@@ -281,6 +281,7 @@ declare namespace ScriptConfig {
         homeIcon?: string;
         homeIconColor?: RGB;
         hiddenByTrigger?: boolean;
+        specialCase?: any;
     };
 
     export type PagetypeType =
