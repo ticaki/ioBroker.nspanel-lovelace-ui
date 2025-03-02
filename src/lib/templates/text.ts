@@ -1181,4 +1181,27 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.wlan': {
+        role: 'text',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'wlan' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+                false: undefined,
+            },
+            entity1: undefined,
+            text: {
+                true: { type: 'const', constVal: 'SSID' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'opened' },
+                false: undefined,
+            },
+        },
+    },
 };

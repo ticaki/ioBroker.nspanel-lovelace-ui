@@ -204,7 +204,7 @@ class PageQR extends import_Page.Page {
     this.log.info(`action: ${button}, value: ${value}`);
     if (pages.isQRButtonEvent(button)) {
       if (this.adapter.config.pageQRselType == 1) {
-        if (this.pageItems && this.pageItems[_event.id]) {
+        if (this.pageItems && this.pageItems[_event.id] && this.pageItems[_event.id].config && this.pageItems[_event.id].config.type == "button") {
           await this.pageItems[_event.id].onCommand("button", value);
         }
       }

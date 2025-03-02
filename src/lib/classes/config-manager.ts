@@ -223,7 +223,13 @@ export class ConfigManager extends BaseClass {
         }
         if (config.pages) {
             for (const page of config.pages.concat(config.subPages || [])) {
-                if (!page) {
+                if (
+                    !page ||
+                    (page.type === undefined &&
+                        page.native &&
+                        page.native.card === 'cardQR' &&
+                        this.adapter.config.pageQRselType === 0)
+                ) {
                     continue;
                 }
                 if (page.type === undefined && page.native) {
@@ -240,7 +246,8 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardGrid2' &&
                     page.type !== 'cardGrid3' &&
                     page.type !== 'cardEntities' &&
-                    page.type !== 'cardThermo'
+                    page.type !== 'cardThermo' &&
+                    page.type !== 'cardQR'
                 ) {
                     const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!`;
                     messages.push(msg);
@@ -259,8 +266,8 @@ export class ConfigManager extends BaseClass {
 
                     const navItem: NavigationItemConfig = {
                         name: page.uniqueName,
-                        left: left ? { single: left } : undefined,
-                        right: right ? (page.home ? { single: right } : { double: right }) : undefined,
+                        left: left ? (page.prev ? { single: left } : { double: left }) : undefined,
+                        right: right ? (page.next ? { single: right } : { double: right }) : undefined,
                         page: page.uniqueName,
                     };
                     panelConfig.navigation.push(navItem);
@@ -288,6 +295,8 @@ export class ConfigManager extends BaseClass {
                 }
                 if (page.type === 'cardThermo') {
                     ({ gridItem, messages } = await this.getPageThermo(page, gridItem, messages));
+                } else if (page.type === 'cardQR') {
+                    ({ gridItem, messages } = await this.getPageQR(page, gridItem, messages));
                 }
                 if (page.items) {
                     for (const item of page.items) {
@@ -332,6 +341,27 @@ export class ConfigManager extends BaseClass {
 
         return { gridItem, messages };
     }
+    async getPageQR(
+        page: ScriptConfig.PageType,
+        gridItem: pages.PageBaseConfig,
+        messages: string[],
+    ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
+        if (page.type !== 'cardQR' || !gridItem.config || gridItem.config.card !== 'cardQR') {
+            return { gridItem, messages };
+        }
+        if (!page.items || !page.items[0]) {
+            const msg = 'cardQR page has no items or item 0 has no id!';
+            messages.push(msg);
+            this.log.error(msg);
+            return { gridItem, messages };
+        }
+
+        gridItem.template = 'thermo.script';
+        gridItem.dpInit = page.items[0].id || '';
+
+        return { gridItem, messages };
+    }
+
     async getPageNaviItemConfig(
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,

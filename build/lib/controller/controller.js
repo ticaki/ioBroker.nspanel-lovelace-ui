@@ -39,7 +39,6 @@ var import_system_notifications = require("../classes/system-notifications");
 var import_tools = require("../const/tools");
 var import_axios = __toESM(require("axios"));
 var import_Color = require("../const/Color");
-var import_pages = require("../types/pages");
 import_axios.default.defaults.timeout = 1e4;
 class Controller extends Library.BaseClass {
   mqttClient;
@@ -56,7 +55,6 @@ class Controller extends Library.BaseClass {
     this.adapter.controller = this;
     this.mqttClient = options.mqttClient;
     this.statesControler = new import_states_controller.StatesControler(this.adapter);
-    this.adapter.log.info(JSON.stringify(import_pages.stateRoleArray));
     for (const panelConfig of options.panels) {
       if (panelConfig === void 0) {
         continue;

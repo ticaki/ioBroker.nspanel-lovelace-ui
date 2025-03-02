@@ -1192,6 +1192,29 @@ const textTemplates = {
         false: { type: "const", constVal: "closed" }
       }
     }
+  },
+  "text.wlan": {
+    role: "text",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "wlan" },
+          color: { type: "const", constVal: import_Color.Color.Green }
+        },
+        false: void 0
+      },
+      entity1: void 0,
+      text: {
+        true: { type: "const", constVal: "SSID" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "opened" },
+        false: void 0
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

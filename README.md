@@ -306,6 +306,10 @@ Sind natürlich alles Dataitems
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) parent added to navigation
+- (ticaki) cardQR wlan version
+
+### **WORK IN PROGRESS**
 - (ticaki) Data point generation changed
 - (ticaki) Dimming mode (data points) completed
 - (ticaki) Screensaver double-click added

@@ -179,7 +179,12 @@ export class PageQR extends Page {
         this.log.info(`action: ${button}, value: ${value}`);
         if (pages.isQRButtonEvent(button)) {
             if (this.adapter.config.pageQRselType == 1) {
-                if (this.pageItems && this.pageItems[_event.id as any]) {
+                if (
+                    this.pageItems &&
+                    this.pageItems[_event.id as any] &&
+                    this.pageItems[_event.id as any]!.config &&
+                    this.pageItems[_event.id as any]!.config!.type == 'button'
+                ) {
                     await this.pageItems[_event.id as any]!.onCommand('button', value);
                 }
             }

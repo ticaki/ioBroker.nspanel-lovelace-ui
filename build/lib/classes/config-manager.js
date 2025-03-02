@@ -194,7 +194,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     if (config.pages) {
       for (const page of config.pages.concat(config.subPages || [])) {
-        if (!page) {
+        if (!page || page.type === void 0 && page.native && page.native.card === "cardQR" && this.adapter.config.pageQRselType === 0) {
           continue;
         }
         if (page.type === void 0 && page.native) {
@@ -206,7 +206,7 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(page.native);
           continue;
         }
-        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo") {
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR") {
           const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!`;
           messages.push(msg);
           this.log.warn(msg);
@@ -222,8 +222,8 @@ class ConfigManager extends import_library.BaseClass {
           const right = page.next || page.home || void 0;
           const navItem = {
             name: page.uniqueName,
-            left: left ? { single: left } : void 0,
-            right: right ? page.home ? { single: right } : { double: right } : void 0,
+            left: left ? page.prev ? { single: left } : { double: left } : void 0,
+            right: right ? page.next ? { single: right } : { double: right } : void 0,
             page: page.uniqueName
           };
           panelConfig.navigation.push(navItem);
@@ -246,6 +246,8 @@ class ConfigManager extends import_library.BaseClass {
         }
         if (page.type === "cardThermo") {
           ({ gridItem, messages } = await this.getPageThermo(page, gridItem, messages));
+        } else if (page.type === "cardQR") {
+          ({ gridItem, messages } = await this.getPageQR(page, gridItem, messages));
         }
         if (page.items) {
           for (const item of page.items) {
@@ -282,6 +284,20 @@ class ConfigManager extends import_library.BaseClass {
     }
     gridItem.template = "thermo.script";
     gridItem.dpInit = page.items[0].id;
+    return { gridItem, messages };
+  }
+  async getPageQR(page, gridItem, messages) {
+    if (page.type !== "cardQR" || !gridItem.config || gridItem.config.card !== "cardQR") {
+      return { gridItem, messages };
+    }
+    if (!page.items || !page.items[0]) {
+      const msg = "cardQR page has no items or item 0 has no id!";
+      messages.push(msg);
+      this.log.error(msg);
+      return { gridItem, messages };
+    }
+    gridItem.template = "thermo.script";
+    gridItem.dpInit = page.items[0].id || "";
     return { gridItem, messages };
   }
   async getPageNaviItemConfig(item, page) {
