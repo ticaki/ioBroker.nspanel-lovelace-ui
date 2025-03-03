@@ -561,9 +561,11 @@ export type cardAlarmDataItems = {
 
 type PageQRBaseConfig = {
     headline: string;
+    entity1?: string;
 };
 export type cardQRDataItemOptions = {
     card: 'cardQR';
+    index: number;
     data: ChangeTypeOfKeys<PageQRBaseConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardQRDataItems = {

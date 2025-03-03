@@ -44,6 +44,10 @@ declare namespace ConfigManager {
          */
         states: Partial<Record<ioBrokerRoles, true | null>>[];
     }
+    export type PanelConfigManager = Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
+        navigation: NavigationItemConfig[];
+        pages: PageBaseConfig[];
+    };
     type ioBrokerRoles =
         | 'button.open.blind'
         | 'button.close.blind'
@@ -354,8 +358,7 @@ declare namespace ScriptConfig {
 
     export type PageQR = {
         type: 'cardQR';
-        items: [PageItem];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
 
     export type PagePower = {
         type: 'cardPower';
@@ -498,7 +501,16 @@ declare namespace ScriptConfig {
          * The topic to receive and send messages to the panel.
          */
         panelTopic: string;
+        /**
+         * The weather adapter and instance to use.
+         * example: accuweather.0
+         * supported: accuweather
+         */
         weatherEntity: string;
+        /**
+         * Adds standard icons to the bottom field of the screensaver.
+         */
+        weatherAddDefaultItems?: boolean;
         leftScreensaverEntity: ScreenSaverElementWithUndefined[];
         bottomScreensaverEntity: ScreenSaverElement[];
         indicatorScreensaverEntity: ScreenSaverElementWithUndefined[];

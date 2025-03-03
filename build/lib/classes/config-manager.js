@@ -27,14 +27,17 @@ var import_config_manager_const = require("../const/config-manager-const");
 var import_pages = require("../types/pages");
 var import_navigation = require("./navigation");
 var import_readme = require("../tools/readme");
+var import_pageQR = require("../pages/pageQR");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   colorOn = import_Color.Color.On;
   colorOff = import_Color.Color.Off;
   colorDefault = import_Color.Color.Off;
-  scriptVersion = "0.2.2";
-  constructor(adapter) {
+  dontWrite = false;
+  scriptVersion = "0.2.4";
+  constructor(adapter, dontWrite = false) {
     super(adapter, "config-manager");
+    this.dontWrite = dontWrite;
   }
   /**
    * Sets the script configuration for the panel.
@@ -52,13 +55,13 @@ class ConfigManager extends import_library.BaseClass {
    * 7. Ensures unique page names and handles duplicates.
    * 8. Updates the adapter's foreign object with the new configuration.
    *
-   * If any errors occur during the process, they are logged and included in the returned messages.
+   * If any errors occur during the process, they are logged and included in the returned messages..
    */
   async setScriptConfig(configuration) {
     const config = Object.assign(import_config_manager_const.defaultConfig, configuration);
     if (!config || !(0, import_config_manager_const.isConfig)(config)) {
       this.log.error(`Invalid configuration from Script: ${config ? JSON.stringify(config) : "undefined"}`);
-      return ["Invalid configuration"];
+      return { messages: ["Invalid configuration"], panelConfig: void 0 };
     }
     let messages = [`version: ${config.version}`];
     const version = config.version.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
@@ -71,7 +74,7 @@ class ConfigManager extends import_library.BaseClass {
     if (!config.panelTopic) {
       this.log.error(`Required field panelTopic is missing in ${config.panelName || "unknown"}!`);
       messages.push("Required field panelTopic is missing");
-      return messages;
+      return { messages, panelConfig: void 0 };
     }
     panelConfig.updated = true;
     if (config.panelTopic.endsWith(".cmnd.CustomSend")) {
@@ -97,7 +100,7 @@ class ConfigManager extends import_library.BaseClass {
       panelConfig.pages.push(await this.getScreensaverConfig(config));
     } catch (error) {
       messages.push(`Screensaver configuration error - ${error}`);
-      this.log.error(messages[messages.length - 1]);
+      this.log.warn(messages[messages.length - 1]);
     }
     if (config.pages.length > 1) {
       for (let a = 0; a < config.pages.length; a++) {
@@ -161,7 +164,7 @@ class ConfigManager extends import_library.BaseClass {
       }
     }
     if (double) {
-      return messages;
+      return { messages, panelConfig: void 0 };
     }
     ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
     const nav1 = config.navigation;
@@ -173,7 +176,19 @@ class ConfigManager extends import_library.BaseClass {
       );
     }
     const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
-    if (obj) {
+    if (obj && !this.dontWrite) {
+      if (!obj.native.scriptConfigRaw || !Array.isArray(obj.native.scriptConfigRaw)) {
+        obj.native.scriptConfigRaw = [];
+      }
+      obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
+        (item, i) => obj.native.scriptConfigRaw.findIndex((item2) => item2.topic === item.topic) === i
+      );
+      obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
+        (item) => item.topic !== configuration.topic
+      );
+      obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
+        (item) => this.adapter.config.panels.findIndex((a) => a.topic === item.topic) !== -1
+      );
       obj.native.scriptConfig = obj.native.scriptConfig || [];
       obj.native.scriptConfig = obj.native.scriptConfig.filter(
         (item, i) => obj.native.scriptConfig.findIndex((item2) => item2.topic === item.topic) === i
@@ -182,11 +197,12 @@ class ConfigManager extends import_library.BaseClass {
       obj.native.scriptConfig = obj.native.scriptConfig.filter(
         (item) => this.adapter.config.panels.findIndex((a) => a.topic === item.topic) !== -1
       );
+      obj.native.scriptConfigRaw.push(configuration);
       obj.native.scriptConfig.push(panelConfig);
       await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
     }
     messages.push(`done`);
-    return messages.map((a) => a.replaceAll("Error: ", ""));
+    return { messages: messages.map((a) => a.replaceAll("Error: ", "")), panelConfig };
   }
   async getPageConfig(config, panelConfig, messages) {
     if (panelConfig.pages === void 0) {
@@ -206,14 +222,16 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(page.native);
           continue;
         }
-        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo") {
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR") {
           const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!`;
           messages.push(msg);
           this.log.warn(msg);
           continue;
         }
         if (!page.uniqueName) {
-          messages.push(`Page ${page.heading || "unknown"} has no uniqueName!`);
+          messages.push(
+            `Page ${"heading" in page && page.heading ? page.heading : page.type || "unknown"} has no uniqueName!`
+          );
           this.log.error(messages[messages.length - 1]);
           continue;
         }
@@ -222,11 +240,21 @@ class ConfigManager extends import_library.BaseClass {
           const right = page.next || page.home || void 0;
           const navItem = {
             name: page.uniqueName,
-            left: left ? { single: left } : void 0,
-            right: right ? page.home ? { single: right } : { double: right } : void 0,
+            left: left ? page.prev ? { single: left } : { double: left } : void 0,
+            right: right ? page.next ? { single: right } : { double: right } : void 0,
             page: page.uniqueName
           };
           panelConfig.navigation.push(navItem);
+        }
+        if (page.type === "cardQR") {
+          const index = this.adapter.config.pageQRdata.findIndex((item) => item.pageName === page.uniqueName);
+          if (index === -1) {
+            messages.push(`No pageQRdata found for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          panelConfig.pages.push(await import_pageQR.PageQR.getQRPageConfig(this.adapter, index, this));
+          continue;
         }
         let gridItem = {
           dpInit: "",
@@ -261,7 +289,7 @@ class ConfigManager extends import_library.BaseClass {
               messages.push(
                 `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
               );
-              this.log.error(messages[messages.length - 1]);
+              this.log.warn(messages[messages.length - 1]);
             }
           }
           panelConfig.pages.push(gridItem);
@@ -277,7 +305,7 @@ class ConfigManager extends import_library.BaseClass {
     if (!page.items || !page.items[0] || page.items[0].id == null) {
       const msg = "Thermo page has no items or item 0 has no id!";
       messages.push(msg);
-      this.log.error(msg);
+      this.log.warn(msg);
       return { gridItem, messages };
     }
     gridItem.template = "thermo.script";
@@ -1252,312 +1280,313 @@ class ConfigManager extends import_library.BaseClass {
           dpInit: `/^accuweather\\.${instance}.+/`,
           modeScr: "favorit"
         });
-        pageItems = pageItems.concat([
-          // Bottom 1 - accuWeather.0. Forecast Day 1
-          {
-            template: "text.accuweather.sunriseset",
-            dpInit: `/^accuweather\\.${instance}.Daily.+/`,
-            modeScr: "bottom"
-          },
-          // Bottom 1 - accuWeather.0. Forecast Day 1
-          {
-            template: "text.accuweather.bot2values",
-            dpInit: `/^accuweather\\.${instance}.+?d1$/g`,
-            modeScr: "bottom"
-          },
-          // Bottom 2 - accuWeather.0. Forecast Day 2
-          {
-            template: "text.accuweather.bot2values",
-            dpInit: `/^accuweather\\.${instance}.+?d2$/`,
-            modeScr: "bottom"
-          },
-          // Bottom 3 - accuWeather.0. Forecast Day 3
-          {
-            template: "text.accuweather.bot2values",
-            dpInit: `/^accuweather\\.${instance}.+?d3$/`,
-            modeScr: "bottom"
-          },
-          // Bottom 4 - accuWeather.0. Forecast Day 4
-          {
-            template: "text.accuweather.bot2values",
-            dpInit: `/^accuweather\\.${instance}.+?d4$/`,
-            modeScr: "bottom"
-          },
-          // Bottom 5 - accuWeather.0. Forecast Day 5
-          {
-            template: "text.accuweather.bot2values",
-            dpInit: `/^accuweather\\.${instance}.+?d5$/`,
-            modeScr: "bottom"
-          },
-          // Bottom 7 - Sonnenaufgang - Sonnenuntergang im Wechsel
-          // Bottom 8 - Windgeschwindigkeit
-          {
-            role: "text",
-            dpInit: "",
-            type: "text",
-            modeScr: "bottom",
-            data: {
-              entity1: {
-                value: {
-                  type: "triggered",
-                  dp: `accuweather.${instance}.Current.WindSpeed`
+        if (config.weatherAddDefaultItems) {
+          pageItems = pageItems.concat([
+            // Bottom 1 - accuWeather.0. Forecast Day 1
+            {
+              template: "text.accuweather.sunriseset",
+              dpInit: `/^accuweather\\.${instance}.Daily.+/`,
+              modeScr: "bottom"
+            },
+            // Bottom 2 - accuWeather.0. Forecast Day 1
+            {
+              template: "text.accuweather.bot2values",
+              dpInit: `/^accuweather\\.${instance}.+?d1$/g`,
+              modeScr: "bottom"
+            },
+            // Bottom 3 - accuWeather.0. Forecast Day 2
+            {
+              template: "text.accuweather.bot2values",
+              dpInit: `/^accuweather\\.${instance}.+?d2$/`,
+              modeScr: "bottom"
+            },
+            // Bottom 4 - accuWeather.0. Forecast Day 3
+            {
+              template: "text.accuweather.bot2values",
+              dpInit: `/^accuweather\\.${instance}.+?d3$/`,
+              modeScr: "bottom"
+            },
+            // Bottom 5 - accuWeather.0. Forecast Day 4
+            {
+              template: "text.accuweather.bot2values",
+              dpInit: `/^accuweather\\.${instance}.+?d4$/`,
+              modeScr: "bottom"
+            },
+            // Bottom 6 - accuWeather.0. Forecast Day 5
+            {
+              template: "text.accuweather.bot2values",
+              dpInit: `/^accuweather\\.${instance}.+?d5$/`,
+              modeScr: "bottom"
+            },
+            // Bottom 7 - Windgeschwindigkeit
+            {
+              role: "text",
+              dpInit: "",
+              type: "text",
+              modeScr: "bottom",
+              data: {
+                entity1: {
+                  value: {
+                    type: "triggered",
+                    dp: `accuweather.${instance}.Current.WindSpeed`
+                  },
+                  decimal: {
+                    type: "const",
+                    constVal: 1
+                  },
+                  factor: {
+                    type: "const",
+                    constVal: 1e3 / 3600
+                  },
+                  unit: void 0
                 },
-                decimal: {
-                  type: "const",
-                  constVal: 1
+                entity2: {
+                  value: {
+                    type: "triggered",
+                    dp: `accuweather.${instance}.Current.WindSpeed`
+                  },
+                  decimal: {
+                    type: "const",
+                    constVal: 1
+                  },
+                  factor: {
+                    type: "const",
+                    constVal: 1e3 / 3600
+                  },
+                  unit: {
+                    type: "const",
+                    constVal: "m/s"
+                  }
                 },
-                factor: {
-                  type: "const",
-                  constVal: 1e3 / 3600
+                icon: {
+                  true: {
+                    value: {
+                      type: "const",
+                      constVal: "weather-windy"
+                    },
+                    color: {
+                      type: "const",
+                      constVal: import_Color.Color.MSRed
+                    }
+                  },
+                  false: {
+                    value: {
+                      type: "const",
+                      constVal: "weather-windy"
+                    },
+                    color: {
+                      type: "const",
+                      constVal: import_Color.Color.MSGreen
+                    }
+                  },
+                  scale: {
+                    type: "const",
+                    constVal: { val_min: 0, val_max: 80 }
+                  },
+                  maxBri: void 0,
+                  minBri: void 0
                 },
-                unit: void 0
-              },
-              entity2: {
-                value: {
-                  type: "triggered",
-                  dp: `accuweather.${instance}.Current.WindSpeed`
-                },
-                decimal: {
-                  type: "const",
-                  constVal: 1
-                },
-                factor: {
-                  type: "const",
-                  constVal: 1e3 / 3600
-                },
-                unit: {
-                  type: "const",
-                  constVal: "m/s"
+                text: {
+                  true: {
+                    type: "const",
+                    constVal: "Wind"
+                  },
+                  false: void 0
                 }
-              },
-              icon: {
-                true: {
-                  value: {
-                    type: "const",
-                    constVal: "weather-windy"
-                  },
-                  color: {
-                    type: "const",
-                    constVal: import_Color.Color.MSRed
-                  }
-                },
-                false: {
-                  value: {
-                    type: "const",
-                    constVal: "weather-windy"
-                  },
-                  color: {
-                    type: "const",
-                    constVal: import_Color.Color.MSGreen
-                  }
-                },
-                scale: {
-                  type: "const",
-                  constVal: { val_min: 0, val_max: 80 }
-                },
-                maxBri: void 0,
-                minBri: void 0
-              },
-              text: {
-                true: {
-                  type: "const",
-                  constVal: "Wind"
-                },
-                false: void 0
               }
-            }
-          },
-          // Bottom 9 - Böen
-          {
-            role: "text",
-            dpInit: "",
-            type: "text",
-            modeScr: "bottom",
-            data: {
-              entity1: {
-                value: {
-                  type: "triggered",
-                  dp: `accuweather.${instance}.Current.WindGust`
+            },
+            // Bottom 8 - Böen
+            {
+              role: "text",
+              dpInit: "",
+              type: "text",
+              modeScr: "bottom",
+              data: {
+                entity1: {
+                  value: {
+                    type: "triggered",
+                    dp: `accuweather.${instance}.Current.WindGust`
+                  },
+                  decimal: {
+                    type: "const",
+                    constVal: 1
+                  },
+                  factor: {
+                    type: "const",
+                    constVal: 1e3 / 3600
+                  },
+                  unit: void 0
                 },
-                decimal: {
-                  type: "const",
-                  constVal: 1
+                entity2: {
+                  value: {
+                    type: "triggered",
+                    dp: `accuweather.${instance}.Current.WindGust`
+                  },
+                  decimal: {
+                    type: "const",
+                    constVal: 1
+                  },
+                  factor: {
+                    type: "const",
+                    constVal: 1e3 / 3600
+                  },
+                  unit: {
+                    type: "const",
+                    constVal: "m/s"
+                  }
                 },
-                factor: {
-                  type: "const",
-                  constVal: 1e3 / 3600
+                icon: {
+                  true: {
+                    value: {
+                      type: "const",
+                      constVal: "weather-tornado"
+                    },
+                    color: {
+                      type: "const",
+                      constVal: import_Color.Color.MSRed
+                    }
+                  },
+                  false: {
+                    value: {
+                      type: "const",
+                      constVal: "weather-tornado"
+                    },
+                    color: {
+                      type: "const",
+                      constVal: import_Color.Color.MSGreen
+                    }
+                  },
+                  scale: {
+                    type: "const",
+                    constVal: { val_min: 0, val_max: 80 }
+                  },
+                  maxBri: void 0,
+                  minBri: void 0
                 },
-                unit: void 0
-              },
-              entity2: {
-                value: {
-                  type: "triggered",
-                  dp: `accuweather.${instance}.Current.WindGust`
-                },
-                decimal: {
-                  type: "const",
-                  constVal: 1
-                },
-                factor: {
-                  type: "const",
-                  constVal: 1e3 / 3600
-                },
-                unit: {
-                  type: "const",
-                  constVal: "m/s"
+                text: {
+                  true: {
+                    type: "const",
+                    constVal: "B\xF6en"
+                  },
+                  false: void 0
                 }
-              },
-              icon: {
-                true: {
-                  value: {
-                    type: "const",
-                    constVal: "weather-tornado"
-                  },
-                  color: {
-                    type: "const",
-                    constVal: import_Color.Color.MSRed
-                  }
-                },
-                false: {
-                  value: {
-                    type: "const",
-                    constVal: "weather-tornado"
-                  },
-                  color: {
-                    type: "const",
-                    constVal: import_Color.Color.MSGreen
-                  }
-                },
-                scale: {
-                  type: "const",
-                  constVal: { val_min: 0, val_max: 80 }
-                },
-                maxBri: void 0,
-                minBri: void 0
-              },
-              text: {
-                true: {
-                  type: "const",
-                  constVal: "B\xF6en"
-                },
-                false: void 0
               }
-            }
-          },
-          // Bottom 10 - Windrichtung
-          {
-            role: "text",
-            dpInit: "",
-            type: "text",
-            modeScr: "bottom",
-            data: {
-              entity2: {
-                value: {
-                  type: "triggered",
-                  dp: `accuweather.${instance}.Current.WindDirectionText`
+            },
+            // Bottom 9 - Windrichtung
+            {
+              role: "text",
+              dpInit: "",
+              type: "text",
+              modeScr: "bottom",
+              data: {
+                entity2: {
+                  value: {
+                    type: "triggered",
+                    dp: `accuweather.${instance}.Current.WindDirectionText`
+                  },
+                  decimal: {
+                    type: "const",
+                    constVal: 0
+                  },
+                  factor: void 0,
+                  unit: {
+                    type: "const",
+                    constVal: "\xB0"
+                  }
                 },
-                decimal: {
-                  type: "const",
-                  constVal: 0
+                icon: {
+                  true: {
+                    value: {
+                      type: "const",
+                      constVal: "windsock"
+                    },
+                    color: {
+                      type: "const",
+                      constVal: "#FFFFFF"
+                    }
+                  },
+                  false: {
+                    value: void 0,
+                    color: void 0
+                  },
+                  scale: void 0,
+                  maxBri: void 0,
+                  minBri: void 0
                 },
-                factor: void 0,
-                unit: {
-                  type: "const",
-                  constVal: "\xB0"
+                text: {
+                  true: {
+                    type: "const",
+                    constVal: "Windr."
+                  },
+                  false: void 0
                 }
-              },
-              icon: {
-                true: {
+              }
+            },
+            // Bottom 10 - UV-Index
+            {
+              role: "text",
+              dpInit: "",
+              type: "text",
+              modeScr: "bottom",
+              data: {
+                entity1: {
                   value: {
-                    type: "const",
-                    constVal: "windsock"
+                    type: "triggered",
+                    dp: `accuweather.${instance}.Current.UVIndex`
                   },
-                  color: {
+                  decimal: void 0,
+                  factor: void 0,
+                  unit: void 0
+                },
+                entity2: {
+                  value: {
+                    type: "triggered",
+                    dp: `accuweather.${instance}.Current.UVIndex`,
+                    forceType: "string"
+                  },
+                  decimal: void 0,
+                  factor: void 0,
+                  unit: void 0
+                },
+                icon: {
+                  true: {
+                    value: {
+                      type: "const",
+                      constVal: "solar-power"
+                    },
+                    color: {
+                      type: "const",
+                      constVal: import_Color.Color.MSRed
+                    }
+                  },
+                  false: {
+                    value: {
+                      type: "const",
+                      constVal: "solar-power"
+                    },
+                    color: {
+                      type: "const",
+                      constVal: import_Color.Color.MSGreen
+                    }
+                  },
+                  scale: {
                     type: "const",
-                    constVal: "#FFFFFF"
-                  }
+                    constVal: { val_min: 0, val_max: 9 }
+                  },
+                  maxBri: void 0,
+                  minBri: void 0
                 },
-                false: {
-                  value: void 0,
-                  color: void 0
-                },
-                scale: void 0,
-                maxBri: void 0,
-                minBri: void 0
-              },
-              text: {
-                true: {
-                  type: "const",
-                  constVal: "Windr."
-                },
-                false: void 0
+                text: {
+                  true: {
+                    type: "const",
+                    constVal: "UV"
+                  },
+                  false: void 0
+                }
               }
             }
-          },
-          // Bottom 12 - UV-Index
-          {
-            role: "text",
-            dpInit: "",
-            type: "text",
-            modeScr: "bottom",
-            data: {
-              entity1: {
-                value: {
-                  type: "triggered",
-                  dp: `accuweather.${instance}.Current.UVIndex`
-                },
-                decimal: void 0,
-                factor: void 0,
-                unit: void 0
-              },
-              entity2: {
-                value: {
-                  type: "triggered",
-                  dp: `accuweather.${instance}.Current.UVIndex`,
-                  forceType: "string"
-                },
-                decimal: void 0,
-                factor: void 0,
-                unit: void 0
-              },
-              icon: {
-                true: {
-                  value: {
-                    type: "const",
-                    constVal: "solar-power"
-                  },
-                  color: {
-                    type: "const",
-                    constVal: import_Color.Color.MSRed
-                  }
-                },
-                false: {
-                  value: {
-                    type: "const",
-                    constVal: "solar-power"
-                  },
-                  color: {
-                    type: "const",
-                    constVal: import_Color.Color.MSGreen
-                  }
-                },
-                scale: {
-                  type: "const",
-                  constVal: { val_min: 0, val_max: 9 }
-                },
-                maxBri: void 0,
-                minBri: void 0
-              },
-              text: {
-                true: {
-                  type: "const",
-                  constVal: "UV"
-                },
-                false: void 0
-              }
-            }
-          }
-        ]);
+          ]);
+        }
       }
     }
     if (config.indicatorScreensaverEntity) {
@@ -1584,14 +1613,14 @@ class ConfigManager extends import_library.BaseClass {
     }
     if (config.mrIcon1ScreensaverEntity) {
       try {
-        pageItems.push(await this.getMrEntityData(config.mrIcon1ScreensaverEntity, "mricon", "1"));
+        pageItems.push(await this.getMrEntityData(config.mrIcon1ScreensaverEntity, "mricon"));
       } catch (error) {
         throw new Error(`mrIcon1ScreensaverEntity - ${error}`);
       }
     }
     if (config.mrIcon2ScreensaverEntity) {
       try {
-        pageItems.push(await this.getMrEntityData(config.mrIcon2ScreensaverEntity, "mricon", "2"));
+        pageItems.push(await this.getMrEntityData(config.mrIcon2ScreensaverEntity, "mricon"));
       } catch (error) {
         throw new Error(`mrIcon2ScreensaverEntity - ${error}`);
       }
@@ -1773,18 +1802,18 @@ class ConfigManager extends import_library.BaseClass {
     }
     return item === test;
   }
-  async getMrEntityData(entity, mode, nr) {
+  async getMrEntityData(entity, mode) {
     const result = {
       modeScr: mode,
       type: "text",
       data: { entity1: {} }
     };
-    if (entity.ScreensaverEntity && entity.ScreensaverEntity.endsWith(`Relay.${nr}`)) {
+    if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith(`Relay.2`) && !!entity.ScreensaverEntity.endsWith(`Relay.1`)) {
       result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
-    } else {
+    } else if (entity.ScreensaverEntity) {
       result.data.entity1.value = {
         type: "internal",
-        dp: `cmd/power${nr}`
+        dp: `cmd/power${!entity.ScreensaverEntity.endsWith(`2`) ? 2 : 1}`
       };
     }
     result.data.icon = {
@@ -1863,7 +1892,7 @@ class ConfigManager extends import_library.BaseClass {
     if (entity.ScreensaverEntityFactor) {
       result.data.entity1.factor = { type: "const", constVal: entity.ScreensaverEntityFactor };
     }
-    if (entity.ScreensaverEntityDecimalPlaces) {
+    if (entity.ScreensaverEntityDecimalPlaces != null) {
       result.data.entity1.decimal = { type: "const", constVal: entity.ScreensaverEntityDecimalPlaces };
     }
     if (entity.ScreensaverEntityDateFormat) {
@@ -1972,10 +2001,13 @@ class ConfigManager extends import_library.BaseClass {
     } else if (import_Color.Color.isScriptRGB(def)) {
       return { type: "const", constVal: import_Color.Color.convertScriptRGBtoRGB(def) };
     }
-    this.adapter.log.error(`Invalid color value: ${JSON.stringify(item)}`);
+    this.adapter.log.warn(`Invalid color value: ${JSON.stringify(item)}`);
     return void 0;
   }
   async existsState(id) {
+    if (!id) {
+      return false;
+    }
     return await this.adapter.getForeignStateAsync(id) !== null;
   }
 }

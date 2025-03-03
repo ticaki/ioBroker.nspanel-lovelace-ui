@@ -15,30 +15,32 @@ declare global {
             mediaid: string;
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             scstype: string;
-            pw1: string;
-            pw2: string;
-            pw3: string;
-            pw4: string;
-            pw5: string;
-            pw6: string;
-            pw7: string;
-            pw8: string;
-            pw9: string;
-            pw0: string;
+
             onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;
             doubleClickTime: number;
-            pageQRselType: number;
-            pageQRwlantype: string;
-            pageQRssid: string;
-            pageQRpwd: string;
-            pageQRwlanhidden: boolean;
-            pageQRurl: string;
-            panels: {name: string, topic: string, id: string, removeIt: boolean }[];
+            
+            pageQRpwd1: string;
+            pageQRpwd2: string;
+            pageQRpwd3: string;
+            
+            panels: {name: string, topic: string, id: string, removeIt: boolean}[];
             mqttServer: boolean;
+            pw1: string;
+            pageQRdata: {
+                pageName: string,
+                headline: string,
+                optionalText: string,
+                SSIDURLTEL: string,
+                selType: 0 | 1 | 2 | 3,
+                wlantype?: "nopass" | "WPA" | "WPA2" | "WPA3" | "WEP",
+                qrPass?: number,
+                wlanhidden?: boolean,
+                setState?: string,
+            }[];
         }
     }
 }
 
 // this is required so the above AdapterConfig is found by TypeScript / type checking
-export {};
+export { };

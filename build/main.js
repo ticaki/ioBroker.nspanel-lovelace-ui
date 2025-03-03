@@ -52,7 +52,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.on("unload", this.onUnload.bind(this));
   }
   /**
-   * Is called when databases are connected and adapter received configuration...
+   * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
     await this.extendForeignObjectAsync(this.namespace, {
@@ -66,44 +66,62 @@ class NspanelLovelaceUi extends utils.Adapter {
     try {
       this.config.Testconfig2 = [];
       const obj = await this.getForeignObjectAsync(this.namespace);
-      if (obj && obj.native && obj.native.scriptConfig) {
-        const scriptConfig = obj.native.scriptConfig;
-        for (let b = 0; b < scriptConfig.length; b++) {
-          const s = scriptConfig[b];
-          if (!s || !s.pages) {
-            continue;
+      if (obj && obj.native) {
+        const configRaw = [];
+        if (obj.native.scriptConfigRaw) {
+          const manager = new import_config_manager.ConfigManager(this, true);
+          for (const a of obj.native.scriptConfigRaw) {
+            if (a && a.pages) {
+              const c = await manager.setScriptConfig(a);
+              if (c.panelConfig && this.config.panels.find(
+                (b) => c.panelConfig.topic && b.topic === c.panelConfig.topic
+              )) {
+                configRaw.push(c.panelConfig);
+              }
+            }
           }
-          const index = this.config.panels.findIndex((a) => a.topic === s.topic);
-          if (index == -1) {
-            continue;
-          }
-          this.config.Testconfig2[b] = {};
-          if (!this.config.Testconfig2[b].pages) {
-            this.config.Testconfig2[b].pages = [];
-          }
-          if (!this.config.Testconfig2[b].navigation) {
-            this.config.Testconfig2[b].navigation = [];
-          }
-          this.config.Testconfig2[b].pages = this.config.Testconfig2[b].pages.filter(
-            (a) => {
+        }
+        let scriptConfig = configRaw;
+        if (scriptConfig.length === 0) {
+          this.log.warn("No compatible raw script config found, try converted!");
+          scriptConfig = obj.native.scriptConfig;
+        }
+        if (scriptConfig) {
+          for (let b = 0; b < scriptConfig.length; b++) {
+            const s = scriptConfig[b];
+            if (!s || !s.pages) {
+              continue;
+            }
+            const index = this.config.panels.findIndex((a) => a.topic === s.topic);
+            if (index == -1) {
+              continue;
+            }
+            this.config.Testconfig2[b] = {};
+            if (!this.config.Testconfig2[b].pages) {
+              this.config.Testconfig2[b].pages = [];
+            }
+            if (!this.config.Testconfig2[b].navigation) {
+              this.config.Testconfig2[b].navigation = [];
+            }
+            this.config.Testconfig2[b].pages = this.config.Testconfig2[b].pages.filter((a) => {
               if (s.pages.find((b2) => b2.uniqueID === a.uniqueID)) {
                 return false;
               }
               return true;
-            }
-          );
-          this.config.Testconfig2[b].navigation = this.config.Testconfig2[b].navigation.filter((a) => {
-            if (s.navigation && s.navigation.find((b2) => a == null || b2 == null || b2.name === a.name)) {
-              return false;
-            }
-            return true;
-          });
-          s.navigation = (this.config.Testconfig2[b].navigation || []).concat(s.navigation || []);
-          s.pages = (this.config.Testconfig2[b].pages || []).concat(s.pages || []);
-          this.config.Testconfig2[b] = {
-            ...this.config.Testconfig2[b] || {},
-            ...s
-          };
+            });
+            this.config.Testconfig2[b].navigation = this.config.Testconfig2[b].navigation.filter((a) => {
+              if (s.navigation && s.navigation.find((b2) => a == null || b2 == null || b2.name === a.name)) {
+                return false;
+              }
+              return true;
+            });
+            s.navigation = (this.config.Testconfig2[b].navigation || []).concat(s.navigation || []);
+            s.pages = (this.config.Testconfig2[b].pages || []).concat(s.pages || []);
+            this.config.Testconfig2[b] = {
+              ...this.config.Testconfig2[b] || {},
+              ...s
+            };
+          }
         }
       }
     } catch (e) {
@@ -214,7 +232,10 @@ class NspanelLovelaceUi extends utils.Adapter {
         });
       }
       if (!this.config.Testconfig2 || !Array.isArray(this.config.Testconfig2) || this.config.Testconfig2.length === 0) {
-        this.log.warn("No configuration stopped!");
+        await this.delay(100);
+        this.mqttClient.destroy();
+        await this.delay(100);
+        this.log.error("No configuration - adapter on hold!");
         return;
       }
       const testconfig = structuredClone(this.config.Testconfig2);
@@ -337,7 +358,8 @@ class NspanelLovelaceUi extends utils.Adapter {
           let result = ["something went wrong"];
           if (obj.message) {
             const manager = new import_config_manager.ConfigManager(this);
-            result = await manager.setScriptConfig(obj.message);
+            const r = await manager.setScriptConfig(obj.message);
+            result = r.messages;
           }
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, result, obj.callback);

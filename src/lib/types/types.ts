@@ -20,6 +20,7 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'text.wlan'
     | 'text.info'
     | 'text.warning'
     | 'number.volume'

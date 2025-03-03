@@ -96,8 +96,7 @@
     "coverage": "nyc npm run test:ts",
     "lint": "eslint -c eslint.config.mjs .",
     "translate": "translate-adapter",
-    "release": "release-script",
-    "setLabels": "node lib/setLabels.js"
+    "release": "release-script"
   },
   "bugs": {
     "url": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues"

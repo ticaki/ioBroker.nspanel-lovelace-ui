@@ -364,7 +364,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             }
             message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             return tools.getPayload(
-              "button",
+              entry.type,
               message.intNameEntity,
               message.icon,
               message.iconColor,
@@ -1085,7 +1085,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         break;
       }
       case "OnOff": {
-        if (entry.type === "light") {
+        if (entry.type === "light" || entry.type === "button") {
           const item = entry.data;
           if (item && item.entity1) {
             await tools.setValueEntry(item.entity1, value === "1");
