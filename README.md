@@ -306,6 +306,7 @@ Sind natürlich alles Dataitems
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) fixes #133
 - (ticaki) Configuration is reconfigured at every start. If this fails, the saved conversion is used.
 - (ticaki) The raw version and a converted version are saved when the configuration is transferred.
 - (ticaki) parent added to navigation

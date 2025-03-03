@@ -1865,14 +1865,14 @@ export class ConfigManager extends BaseClass {
         }
         if (config.mrIcon1ScreensaverEntity) {
             try {
-                pageItems.push(await this.getMrEntityData(config.mrIcon1ScreensaverEntity, 'mricon', '1'));
+                pageItems.push(await this.getMrEntityData(config.mrIcon1ScreensaverEntity, 'mricon'));
             } catch (error: any) {
                 throw new Error(`mrIcon1ScreensaverEntity - ${error}`);
             }
         }
         if (config.mrIcon2ScreensaverEntity) {
             try {
-                pageItems.push(await this.getMrEntityData(config.mrIcon2ScreensaverEntity, 'mricon', '2'));
+                pageItems.push(await this.getMrEntityData(config.mrIcon2ScreensaverEntity, 'mricon'));
             } catch (error: any) {
                 throw new Error(`mrIcon2ScreensaverEntity - ${error}`);
             }
@@ -2091,19 +2091,22 @@ export class ConfigManager extends BaseClass {
     async getMrEntityData(
         entity: ScriptConfig.ScreenSaverMRElement,
         mode: Types.ScreenSaverPlaces,
-        nr: string,
     ): Promise<typePageItem.PageItemDataItemsOptions> {
         const result: Partial<typePageItem.PageItemDataItemsOptions> = {
             modeScr: mode,
             type: 'text',
             data: { entity1: {} },
         };
-        if (entity.ScreensaverEntity && entity.ScreensaverEntity.endsWith(`Relay.${nr}`)) {
+        if (
+            entity.ScreensaverEntity &&
+            !entity.ScreensaverEntity.endsWith(`Relay.2`) &&
+            !!entity.ScreensaverEntity.endsWith(`Relay.1`)
+        ) {
             result.data!.entity1!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
-        } else {
+        } else if (entity.ScreensaverEntity) {
             result.data!.entity1!.value = {
                 type: 'internal',
-                dp: `cmd/power${nr}`,
+                dp: `cmd/power${!entity.ScreensaverEntity.endsWith(`2`) ? 2 : 1}`,
             };
         }
         result.data!.icon = {
@@ -2198,7 +2201,7 @@ export class ConfigManager extends BaseClass {
             result.data.entity1.factor = { type: 'const', constVal: entity.ScreensaverEntityFactor };
         }
 
-        if (entity.ScreensaverEntityDecimalPlaces) {
+        if (entity.ScreensaverEntityDecimalPlaces != null) {
             result.data.entity1.decimal = { type: 'const', constVal: entity.ScreensaverEntityDecimalPlaces };
         }
         if (entity.ScreensaverEntityDateFormat) {
