@@ -305,7 +305,7 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
- ### **WORK IN PROGRESS**
+### 0.1.5 (2025-03-03)
 - (ticaki) fixes [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)
 - (ticaki) fixes #133
 - (ticaki) Configuration is reconfigured at every start. If this fails, the saved conversion is used.
@@ -315,7 +315,6 @@ Sind natürlich alles Dataitems
 
 ### 0.1.4 (2025-03-03)
 - (ticaki) fixes #131
-
 
 ### 0.1.3 (2025-03-02)
 - (ticaki) Data point generation changed
