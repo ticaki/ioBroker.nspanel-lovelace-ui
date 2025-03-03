@@ -310,6 +310,8 @@ Sind natürlich alles Dataitems
 - (ticaki) The raw version and a converted version are saved when the configuration is transferred.
 - (ticaki) parent added to navigation
 - (ticaki) cardQR added
+
+### 0.1.3 (2025-03-02)
 - (ticaki) Data point generation changed
 - (ticaki) Dimming mode (data points) completed
 - (ticaki) Screensaver double-click added
