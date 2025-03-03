@@ -32,6 +32,7 @@ __export(pageQR_exports, {
 });
 module.exports = __toCommonJS(pageQR_exports);
 var import_Page = require("../classes/Page");
+var import_Color = require("../const/Color");
 var import_tools = require("../const/tools");
 var pages = __toESM(require("../types/pages"));
 const PageQRMessageDefault = {
@@ -239,7 +240,7 @@ class PageQR extends import_Page.Page {
                 type: "const",
                 constVal: "wifi"
               },
-              color: await configManager.getIconColor(configManager.colorOn)
+              color: await configManager.getIconColor(import_Color.Color.Cyan, configManager.colorOn)
             },
             false: {
               value: {
@@ -272,7 +273,20 @@ class PageQR extends import_Page.Page {
           text = "";
           break;
         case 1: {
-          text1 = config.SSIDURLTEL;
+          switch (config.qrPass) {
+            case 1:
+              text1 = adapter.config.pageQRpwd1 || "";
+              break;
+            case 2:
+              text1 = adapter.config.pageQRpwd2 || "";
+              break;
+            case 3:
+              text1 = adapter.config.pageQRpwd3 || "";
+              break;
+            default:
+              text1 = "";
+              break;
+          }
           text = "Password";
           break;
         }

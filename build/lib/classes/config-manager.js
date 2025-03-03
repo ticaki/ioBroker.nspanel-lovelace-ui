@@ -33,9 +33,11 @@ class ConfigManager extends import_library.BaseClass {
   colorOn = import_Color.Color.On;
   colorOff = import_Color.Color.Off;
   colorDefault = import_Color.Color.Off;
-  scriptVersion = "0.2.2";
-  constructor(adapter) {
+  dontWrite = false;
+  scriptVersion = "0.2.3";
+  constructor(adapter, dontWrite = false) {
     super(adapter, "config-manager");
+    this.dontWrite = dontWrite;
   }
   /**
    * Sets the script configuration for the panel.
@@ -53,13 +55,13 @@ class ConfigManager extends import_library.BaseClass {
    * 7. Ensures unique page names and handles duplicates.
    * 8. Updates the adapter's foreign object with the new configuration.
    *
-   * If any errors occur during the process, they are logged and included in the returned messages.
+   * If any errors occur during the process, they are logged and included in the returned messages..
    */
   async setScriptConfig(configuration) {
     const config = Object.assign(import_config_manager_const.defaultConfig, configuration);
     if (!config || !(0, import_config_manager_const.isConfig)(config)) {
       this.log.error(`Invalid configuration from Script: ${config ? JSON.stringify(config) : "undefined"}`);
-      return ["Invalid configuration"];
+      return { messages: ["Invalid configuration"], panelConfig: void 0 };
     }
     let messages = [`version: ${config.version}`];
     const version = config.version.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
@@ -72,7 +74,7 @@ class ConfigManager extends import_library.BaseClass {
     if (!config.panelTopic) {
       this.log.error(`Required field panelTopic is missing in ${config.panelName || "unknown"}!`);
       messages.push("Required field panelTopic is missing");
-      return messages;
+      return { messages, panelConfig: void 0 };
     }
     panelConfig.updated = true;
     if (config.panelTopic.endsWith(".cmnd.CustomSend")) {
@@ -98,7 +100,7 @@ class ConfigManager extends import_library.BaseClass {
       panelConfig.pages.push(await this.getScreensaverConfig(config));
     } catch (error) {
       messages.push(`Screensaver configuration error - ${error}`);
-      this.log.error(messages[messages.length - 1]);
+      this.log.warn(messages[messages.length - 1]);
     }
     if (config.pages.length > 1) {
       for (let a = 0; a < config.pages.length; a++) {
@@ -162,7 +164,7 @@ class ConfigManager extends import_library.BaseClass {
       }
     }
     if (double) {
-      return messages;
+      return { messages, panelConfig: void 0 };
     }
     ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
     const nav1 = config.navigation;
@@ -174,7 +176,19 @@ class ConfigManager extends import_library.BaseClass {
       );
     }
     const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
-    if (obj) {
+    if (obj && !this.dontWrite) {
+      if (!obj.native.scriptConfigRaw || !Array.isArray(obj.native.scriptConfigRaw)) {
+        obj.native.scriptConfigRaw = [];
+      }
+      obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
+        (item, i) => obj.native.scriptConfigRaw.findIndex((item2) => item2.topic === item.topic) === i
+      );
+      obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
+        (item) => item.topic !== configuration.topic
+      );
+      obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
+        (item) => this.adapter.config.panels.findIndex((a) => a.topic === item.topic) !== -1
+      );
       obj.native.scriptConfig = obj.native.scriptConfig || [];
       obj.native.scriptConfig = obj.native.scriptConfig.filter(
         (item, i) => obj.native.scriptConfig.findIndex((item2) => item2.topic === item.topic) === i
@@ -183,11 +197,12 @@ class ConfigManager extends import_library.BaseClass {
       obj.native.scriptConfig = obj.native.scriptConfig.filter(
         (item) => this.adapter.config.panels.findIndex((a) => a.topic === item.topic) !== -1
       );
+      obj.native.scriptConfigRaw.push(configuration);
       obj.native.scriptConfig.push(panelConfig);
       await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
     }
     messages.push(`done`);
-    return messages.map((a) => a.replaceAll("Error: ", ""));
+    return { messages: messages.map((a) => a.replaceAll("Error: ", "")), panelConfig };
   }
   async getPageConfig(config, panelConfig, messages) {
     if (panelConfig.pages === void 0) {
@@ -214,7 +229,9 @@ class ConfigManager extends import_library.BaseClass {
           continue;
         }
         if (!page.uniqueName) {
-          messages.push(`Page ${page.heading || "unknown"} has no uniqueName!`);
+          messages.push(
+            `Page ${"heading" in page && page.heading ? page.heading : page.type || "unknown"} has no uniqueName!`
+          );
           this.log.error(messages[messages.length - 1]);
           continue;
         }
@@ -233,7 +250,7 @@ class ConfigManager extends import_library.BaseClass {
           const index = this.adapter.config.pageQRdata.findIndex((item) => item.pageName === page.uniqueName);
           if (index === -1) {
             messages.push(`No pageQRdata found for ${page.uniqueName}`);
-            this.log.error(messages[messages.length - 1]);
+            this.log.warn(messages[messages.length - 1]);
             continue;
           }
           panelConfig.pages.push(await import_pageQR.PageQR.getQRPageConfig(this.adapter, index, this));
@@ -272,7 +289,7 @@ class ConfigManager extends import_library.BaseClass {
               messages.push(
                 `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
               );
-              this.log.error(messages[messages.length - 1]);
+              this.log.warn(messages[messages.length - 1]);
             }
           }
           panelConfig.pages.push(gridItem);
@@ -288,7 +305,7 @@ class ConfigManager extends import_library.BaseClass {
     if (!page.items || !page.items[0] || page.items[0].id == null) {
       const msg = "Thermo page has no items or item 0 has no id!";
       messages.push(msg);
-      this.log.error(msg);
+      this.log.warn(msg);
       return { gridItem, messages };
     }
     gridItem.template = "thermo.script";
@@ -1983,7 +2000,7 @@ class ConfigManager extends import_library.BaseClass {
     } else if (import_Color.Color.isScriptRGB(def)) {
       return { type: "const", constVal: import_Color.Color.convertScriptRGBtoRGB(def) };
     }
-    this.adapter.log.error(`Invalid color value: ${JSON.stringify(item)}`);
+    this.adapter.log.warn(`Invalid color value: ${JSON.stringify(item)}`);
     return void 0;
   }
   async existsState(id) {

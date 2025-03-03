@@ -21,11 +21,13 @@ export class ConfigManager extends BaseClass {
     colorOn: RGB = Color.On;
     colorOff: RGB = Color.Off;
     colorDefault: RGB = Color.Off;
+    dontWrite: boolean = false;
 
-    private readonly scriptVersion = '0.2.2';
+    private readonly scriptVersion = '0.2.3';
 
-    constructor(adapter: NspanelLovelaceUi) {
+    constructor(adapter: NspanelLovelaceUi, dontWrite: boolean = false) {
         super(adapter, 'config-manager');
+        this.dontWrite = dontWrite;
     }
 
     /**
@@ -44,13 +46,16 @@ export class ConfigManager extends BaseClass {
      * 7. Ensures unique page names and handles duplicates.
      * 8. Updates the adapter's foreign object with the new configuration.
      *
-     * If any errors occur during the process, they are logged and included in the returned messages.
+     * If any errors occur during the process, they are logged and included in the returned messages..
      */
-    async setScriptConfig(configuration: any): Promise<string[]> {
+    async setScriptConfig(configuration: any): Promise<{
+        messages: string[];
+        panelConfig: ConfigManager.PanelConfigManager | undefined;
+    }> {
         const config = Object.assign(defaultConfig, configuration);
         if (!config || !isConfig(config)) {
             this.log.error(`Invalid configuration from Script: ${config ? JSON.stringify(config) : 'undefined'}`);
-            return ['Invalid configuration'];
+            return { messages: ['Invalid configuration'], panelConfig: undefined };
         }
         let messages: string[] = [`version: ${config.version}`];
 
@@ -68,15 +73,12 @@ export class ConfigManager extends BaseClass {
             messages.push(`Script version ${config.version} is lower than the required version ${this.scriptVersion}!`);
             this.log.warn(messages[messages.length - 1]);
         }
-        let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
-            navigation: NavigationItemConfig[];
-            pages: pages.PageBaseConfig[];
-        } = { pages: [], navigation: [] };
+        let panelConfig: ConfigManager.PanelConfigManager = { pages: [], navigation: [] };
 
         if (!config.panelTopic) {
             this.log.error(`Required field panelTopic is missing in ${config.panelName || 'unknown'}!`);
             messages.push('Required field panelTopic is missing');
-            return messages;
+            return { messages: messages, panelConfig: undefined };
         }
         panelConfig.updated = true;
         if (config.panelTopic.endsWith('.cmnd.CustomSend')) {
@@ -104,7 +106,7 @@ export class ConfigManager extends BaseClass {
             panelConfig.pages.push(await this.getScreensaverConfig(config));
         } catch (error: any) {
             messages.push(`Screensaver configuration error - ${error}`);
-            this.log.error(messages[messages.length - 1]);
+            this.log.warn(messages[messages.length - 1]);
         }
         if (config.pages.length > 1) {
             for (let a = 0; a < config.pages.length; a++) {
@@ -134,7 +136,6 @@ export class ConfigManager extends BaseClass {
                 }
             }
             if (panelConfig.navigation.length > 1) {
-                //@ts-expect-error Just look 4 lines aboe name CANT be undefined and same for ITEM...
                 panelConfig.navigation = panelConfig.navigation.map((item, index, array) => {
                     if (index === 0) {
                         return {
@@ -169,7 +170,7 @@ export class ConfigManager extends BaseClass {
             }
         }
         if (double) {
-            return messages;
+            return { messages, panelConfig: undefined };
         }
 
         ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
@@ -184,8 +185,27 @@ export class ConfigManager extends BaseClass {
             );
         }
         //this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
+
         const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
-        if (obj) {
+
+        if (obj && !this.dontWrite) {
+            if (!obj.native.scriptConfigRaw || !Array.isArray(obj.native.scriptConfigRaw)) {
+                obj.native.scriptConfigRaw = [];
+            }
+
+            // remove duplicates
+            obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
+                (item: any, i: number) =>
+                    obj.native.scriptConfigRaw.findIndex((item2: any) => item2.topic === item.topic) === i,
+            );
+            // remove config with same topic and different name
+            obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
+                (item: any) => item.topic !== configuration.topic,
+            );
+            obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
+                (item: any) => this.adapter.config.panels.findIndex(a => a.topic === item.topic) !== -1,
+            );
+
             obj.native.scriptConfig = obj.native.scriptConfig || [];
             // remove duplicates
             obj.native.scriptConfig = obj.native.scriptConfig.filter(
@@ -197,12 +217,13 @@ export class ConfigManager extends BaseClass {
             obj.native.scriptConfig = obj.native.scriptConfig.filter(
                 (item: any) => this.adapter.config.panels.findIndex(a => a.topic === item.topic) !== -1,
             );
-            obj.native.scriptConfig.push(panelConfig);
 
+            obj.native.scriptConfigRaw.push(configuration);
+            obj.native.scriptConfig.push(panelConfig);
             await this.adapter.setForeignObjectAsync(this.adapter.namespace, obj);
         }
         messages.push(`done`);
-        return messages.map(a => a.replaceAll('Error: ', ''));
+        return { messages: messages.map(a => a.replaceAll('Error: ', '')), panelConfig };
     }
 
     async getPageConfig(
@@ -250,7 +271,9 @@ export class ConfigManager extends BaseClass {
                     continue;
                 }
                 if (!page.uniqueName) {
-                    messages.push(`Page ${page.heading || 'unknown'} has no uniqueName!`);
+                    messages.push(
+                        `Page ${'heading' in page && page.heading ? page.heading : page.type || 'unknown'} has no uniqueName!`,
+                    );
                     this.log.error(messages[messages.length - 1]);
                     continue;
                 }
@@ -272,7 +295,7 @@ export class ConfigManager extends BaseClass {
                     const index = this.adapter.config.pageQRdata.findIndex(item => item.pageName === page.uniqueName);
                     if (index === -1) {
                         messages.push(`No pageQRdata found for ${page.uniqueName}`);
-                        this.log.error(messages[messages.length - 1]);
+                        this.log.warn(messages[messages.length - 1]);
                         continue;
                     }
                     panelConfig.pages.push(await PageQR.getQRPageConfig(this.adapter, index, this));
@@ -317,7 +340,7 @@ export class ConfigManager extends BaseClass {
                             messages.push(
                                 `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                             );
-                            this.log.error(messages[messages.length - 1]);
+                            this.log.warn(messages[messages.length - 1]);
                         }
                     }
                     panelConfig.pages.push(gridItem);
@@ -337,7 +360,7 @@ export class ConfigManager extends BaseClass {
         if (!page.items || !page.items[0] || page.items[0].id == null) {
             const msg = 'Thermo page has no items or item 0 has no id!';
             messages.push(msg);
-            this.log.error(msg);
+            this.log.warn(msg);
             return { gridItem, messages };
         }
 
@@ -2309,7 +2332,7 @@ export class ConfigManager extends BaseClass {
         } else if (Color.isScriptRGB(def)) {
             return { type: 'const', constVal: Color.convertScriptRGBtoRGB(def) };
         }
-        this.adapter.log.error(`Invalid color value: ${JSON.stringify(item)}`);
+        this.adapter.log.warn(`Invalid color value: ${JSON.stringify(item)}`);
         return undefined;
     }
     async existsState(id: string): Promise<boolean> {

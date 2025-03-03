@@ -1,5 +1,6 @@
 import type { ConfigManager } from '../classes/config-manager';
 import { Page, type PageInterface } from '../classes/Page';
+import { Color } from '../const/Color';
 import { getPayload } from '../const/tools';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import * as pages from '../types/pages';
@@ -218,7 +219,7 @@ export class PageQR extends Page {
                                 type: 'const',
                                 constVal: 'wifi',
                             },
-                            color: await configManager.getIconColor(configManager.colorOn),
+                            color: await configManager.getIconColor(Color.Cyan, configManager.colorOn),
                         },
                         false: {
                             value: {
@@ -254,7 +255,20 @@ export class PageQR extends Page {
                     text = '';
                     break;
                 case 1: {
-                    text1 = config.SSIDURLTEL;
+                    switch (config.qrPass) {
+                        case 1:
+                            text1 = adapter.config.pageQRpwd1 || '';
+                            break;
+                        case 2:
+                            text1 = adapter.config.pageQRpwd2 || '';
+                            break;
+                        case 3:
+                            text1 = adapter.config.pageQRpwd3 || '';
+                            break;
+                        default:
+                            text1 = '';
+                            break;
+                    }
                     text = 'Password';
                     break;
                 }
