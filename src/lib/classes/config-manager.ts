@@ -106,7 +106,7 @@ export class ConfigManager extends BaseClass {
             panelConfig.pages.push(await this.getScreensaverConfig(config));
         } catch (error: any) {
             messages.push(`Screensaver configuration error - ${error}`);
-            this.log.warn(messages[messages.length - 1]);
+            this.log.warn(messages[messages.length - 1].replaceAll('Error: ', ''));
         }
         if (config.pages.length > 1) {
             for (let a = 0; a < config.pages.length; a++) {
@@ -340,7 +340,7 @@ export class ConfigManager extends BaseClass {
                             messages.push(
                                 `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
                             );
-                            this.log.warn(messages[messages.length - 1]);
+                            this.log.warn(messages[messages.length - 1].replaceAll('Error: ', ''));
                         }
                     }
                     panelConfig.pages.push(gridItem);
