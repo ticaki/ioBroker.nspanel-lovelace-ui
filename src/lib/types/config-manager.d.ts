@@ -501,7 +501,15 @@ declare namespace ScriptConfig {
          * The topic to receive and send messages to the panel.
          */
         panelTopic: string;
+        /**
+         * The weather adapter and instance to use.
+         * example: accuweather.0
+         * supported: accuweather
+         */
         weatherEntity: string;
+        /**
+         * Adds standard icons to the bottom field of the screensaver.
+         */
         weatherAddDefaultItems?: boolean;
         leftScreensaverEntity: ScreenSaverElementWithUndefined[];
         bottomScreensaverEntity: ScreenSaverElement[];
