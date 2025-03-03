@@ -502,6 +502,7 @@ declare namespace ScriptConfig {
          */
         panelTopic: string;
         weatherEntity: string;
+        weatherAddDefaultItems?: boolean;
         leftScreensaverEntity: ScreenSaverElementWithUndefined[];
         bottomScreensaverEntity: ScreenSaverElement[];
         indicatorScreensaverEntity: ScreenSaverElementWithUndefined[];

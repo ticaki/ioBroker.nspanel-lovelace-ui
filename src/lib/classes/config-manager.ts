@@ -23,7 +23,7 @@ export class ConfigManager extends BaseClass {
     colorDefault: RGB = Color.Off;
     dontWrite: boolean = false;
 
-    private readonly scriptVersion = '0.2.3';
+    private readonly scriptVersion = '0.2.4';
 
     constructor(adapter: NspanelLovelaceUi, dontWrite: boolean = false) {
         super(adapter, 'config-manager');
@@ -1526,319 +1526,320 @@ export class ConfigManager extends BaseClass {
                     dpInit: `/^accuweather\\.${instance}.+/`,
                     modeScr: 'favorit',
                 });
-                pageItems = pageItems.concat([
-                    // Bottom 1 - accuWeather.0. Forecast Day 1
-                    {
-                        template: 'text.accuweather.sunriseset',
-                        dpInit: `/^accuweather\\.${instance}.Daily.+/`,
-                        modeScr: 'bottom',
-                    },
-                    // Bottom 1 - accuWeather.0. Forecast Day 1
-                    {
-                        template: 'text.accuweather.bot2values',
-                        dpInit: `/^accuweather\\.${instance}.+?d1$/g`,
-                        modeScr: 'bottom',
-                    },
+                if (config.weatherAddDefaultItems) {
+                    pageItems = pageItems.concat([
+                        // Bottom 1 - accuWeather.0. Forecast Day 1
+                        {
+                            template: 'text.accuweather.sunriseset',
+                            dpInit: `/^accuweather\\.${instance}.Daily.+/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 2 - accuWeather.0. Forecast Day 1
+                        {
+                            template: 'text.accuweather.bot2values',
+                            dpInit: `/^accuweather\\.${instance}.+?d1$/g`,
+                            modeScr: 'bottom',
+                        },
 
-                    // Bottom 2 - accuWeather.0. Forecast Day 2
-                    {
-                        template: 'text.accuweather.bot2values',
-                        dpInit: `/^accuweather\\.${instance}.+?d2$/`,
-                        modeScr: 'bottom',
-                    },
+                        // Bottom 3 - accuWeather.0. Forecast Day 2
+                        {
+                            template: 'text.accuweather.bot2values',
+                            dpInit: `/^accuweather\\.${instance}.+?d2$/`,
+                            modeScr: 'bottom',
+                        },
 
-                    // Bottom 3 - accuWeather.0. Forecast Day 3
-                    {
-                        template: 'text.accuweather.bot2values',
-                        dpInit: `/^accuweather\\.${instance}.+?d3$/`,
-                        modeScr: 'bottom',
-                    },
+                        // Bottom 4 - accuWeather.0. Forecast Day 3
+                        {
+                            template: 'text.accuweather.bot2values',
+                            dpInit: `/^accuweather\\.${instance}.+?d3$/`,
+                            modeScr: 'bottom',
+                        },
 
-                    // Bottom 4 - accuWeather.0. Forecast Day 4
-                    {
-                        template: 'text.accuweather.bot2values',
-                        dpInit: `/^accuweather\\.${instance}.+?d4$/`,
-                        modeScr: 'bottom',
-                    },
-                    // Bottom 5 - accuWeather.0. Forecast Day 5
-                    {
-                        template: 'text.accuweather.bot2values',
-                        dpInit: `/^accuweather\\.${instance}.+?d5$/`,
-                        modeScr: 'bottom',
-                    },
-                    // Bottom 7 - Sonnenaufgang - Sonnenuntergang im Wechsel
+                        // Bottom 5 - accuWeather.0. Forecast Day 4
+                        {
+                            template: 'text.accuweather.bot2values',
+                            dpInit: `/^accuweather\\.${instance}.+?d4$/`,
+                            modeScr: 'bottom',
+                        },
+                        // Bottom 6 - accuWeather.0. Forecast Day 5
+                        {
+                            template: 'text.accuweather.bot2values',
+                            dpInit: `/^accuweather\\.${instance}.+?d5$/`,
+                            modeScr: 'bottom',
+                        },
 
-                    // Bottom 8 - Windgeschwindigkeit
-                    {
-                        role: 'text',
-                        dpInit: '',
-                        type: 'text',
-                        modeScr: 'bottom',
-                        data: {
-                            entity1: {
-                                value: {
-                                    type: 'triggered',
-                                    dp: `accuweather.${instance}.Current.WindSpeed`,
-                                },
-                                decimal: {
-                                    type: 'const',
-                                    constVal: 1,
-                                },
-                                factor: {
-                                    type: 'const',
-                                    constVal: 1000 / 3600,
-                                },
-                                unit: undefined,
-                            },
-                            entity2: {
-                                value: {
-                                    type: 'triggered',
-                                    dp: `accuweather.${instance}.Current.WindSpeed`,
-                                },
-                                decimal: {
-                                    type: 'const',
-                                    constVal: 1,
-                                },
-                                factor: {
-                                    type: 'const',
-                                    constVal: 1000 / 3600,
-                                },
-                                unit: {
-                                    type: 'const',
-                                    constVal: 'm/s',
-                                },
-                            },
-                            icon: {
-                                true: {
+                        // Bottom 7 - Windgeschwindigkeit
+                        {
+                            role: 'text',
+                            dpInit: '',
+                            type: 'text',
+                            modeScr: 'bottom',
+                            data: {
+                                entity1: {
                                     value: {
-                                        type: 'const',
-                                        constVal: 'weather-windy',
+                                        type: 'triggered',
+                                        dp: `accuweather.${instance}.Current.WindSpeed`,
                                     },
-                                    color: {
+                                    decimal: {
                                         type: 'const',
-                                        constVal: Color.MSRed,
+                                        constVal: 1,
                                     },
+                                    factor: {
+                                        type: 'const',
+                                        constVal: 1000 / 3600,
+                                    },
+                                    unit: undefined,
                                 },
-                                false: {
+                                entity2: {
                                     value: {
-                                        type: 'const',
-                                        constVal: 'weather-windy',
+                                        type: 'triggered',
+                                        dp: `accuweather.${instance}.Current.WindSpeed`,
                                     },
-                                    color: {
+                                    decimal: {
                                         type: 'const',
-                                        constVal: Color.MSGreen,
+                                        constVal: 1,
+                                    },
+                                    factor: {
+                                        type: 'const',
+                                        constVal: 1000 / 3600,
+                                    },
+                                    unit: {
+                                        type: 'const',
+                                        constVal: 'm/s',
                                     },
                                 },
-                                scale: {
-                                    type: 'const',
-                                    constVal: { val_min: 0, val_max: 80 },
+                                icon: {
+                                    true: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: 'weather-windy',
+                                        },
+                                        color: {
+                                            type: 'const',
+                                            constVal: Color.MSRed,
+                                        },
+                                    },
+                                    false: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: 'weather-windy',
+                                        },
+                                        color: {
+                                            type: 'const',
+                                            constVal: Color.MSGreen,
+                                        },
+                                    },
+                                    scale: {
+                                        type: 'const',
+                                        constVal: { val_min: 0, val_max: 80 },
+                                    },
+                                    maxBri: undefined,
+                                    minBri: undefined,
                                 },
-                                maxBri: undefined,
-                                minBri: undefined,
-                            },
-                            text: {
-                                true: {
-                                    type: 'const',
-                                    constVal: 'Wind',
+                                text: {
+                                    true: {
+                                        type: 'const',
+                                        constVal: 'Wind',
+                                    },
+                                    false: undefined,
                                 },
-                                false: undefined,
                             },
                         },
-                    },
 
-                    // Bottom 9 - Böen
-                    {
-                        role: 'text',
-                        dpInit: '',
-                        type: 'text',
-                        modeScr: 'bottom',
-                        data: {
-                            entity1: {
-                                value: {
-                                    type: 'triggered',
-                                    dp: `accuweather.${instance}.Current.WindGust`,
-                                },
-                                decimal: {
-                                    type: 'const',
-                                    constVal: 1,
-                                },
-                                factor: {
-                                    type: 'const',
-                                    constVal: 1000 / 3600,
-                                },
-                                unit: undefined,
-                            },
-                            entity2: {
-                                value: {
-                                    type: 'triggered',
-                                    dp: `accuweather.${instance}.Current.WindGust`,
-                                },
-                                decimal: {
-                                    type: 'const',
-                                    constVal: 1,
-                                },
-                                factor: {
-                                    type: 'const',
-                                    constVal: 1000 / 3600,
-                                },
-                                unit: {
-                                    type: 'const',
-                                    constVal: 'm/s',
-                                },
-                            },
-                            icon: {
-                                true: {
+                        // Bottom 8 - Böen
+                        {
+                            role: 'text',
+                            dpInit: '',
+                            type: 'text',
+                            modeScr: 'bottom',
+                            data: {
+                                entity1: {
                                     value: {
-                                        type: 'const',
-                                        constVal: 'weather-tornado',
+                                        type: 'triggered',
+                                        dp: `accuweather.${instance}.Current.WindGust`,
                                     },
-                                    color: {
+                                    decimal: {
                                         type: 'const',
-                                        constVal: Color.MSRed,
+                                        constVal: 1,
                                     },
+                                    factor: {
+                                        type: 'const',
+                                        constVal: 1000 / 3600,
+                                    },
+                                    unit: undefined,
                                 },
-                                false: {
+                                entity2: {
                                     value: {
-                                        type: 'const',
-                                        constVal: 'weather-tornado',
+                                        type: 'triggered',
+                                        dp: `accuweather.${instance}.Current.WindGust`,
                                     },
-                                    color: {
+                                    decimal: {
                                         type: 'const',
-                                        constVal: Color.MSGreen,
+                                        constVal: 1,
+                                    },
+                                    factor: {
+                                        type: 'const',
+                                        constVal: 1000 / 3600,
+                                    },
+                                    unit: {
+                                        type: 'const',
+                                        constVal: 'm/s',
                                     },
                                 },
-                                scale: {
-                                    type: 'const',
-                                    constVal: { val_min: 0, val_max: 80 },
+                                icon: {
+                                    true: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: 'weather-tornado',
+                                        },
+                                        color: {
+                                            type: 'const',
+                                            constVal: Color.MSRed,
+                                        },
+                                    },
+                                    false: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: 'weather-tornado',
+                                        },
+                                        color: {
+                                            type: 'const',
+                                            constVal: Color.MSGreen,
+                                        },
+                                    },
+                                    scale: {
+                                        type: 'const',
+                                        constVal: { val_min: 0, val_max: 80 },
+                                    },
+                                    maxBri: undefined,
+                                    minBri: undefined,
                                 },
-                                maxBri: undefined,
-                                minBri: undefined,
-                            },
-                            text: {
-                                true: {
-                                    type: 'const',
-                                    constVal: 'Böen',
+                                text: {
+                                    true: {
+                                        type: 'const',
+                                        constVal: 'Böen',
+                                    },
+                                    false: undefined,
                                 },
-                                false: undefined,
                             },
                         },
-                    },
 
-                    // Bottom 10 - Windrichtung
-                    {
-                        role: 'text',
-                        dpInit: '',
-                        type: 'text',
-                        modeScr: 'bottom',
-                        data: {
-                            entity2: {
-                                value: {
-                                    type: 'triggered',
-                                    dp: `accuweather.${instance}.Current.WindDirectionText`,
-                                },
-                                decimal: {
-                                    type: 'const',
-                                    constVal: 0,
-                                },
-                                factor: undefined,
-                                unit: {
-                                    type: 'const',
-                                    constVal: '°',
-                                },
-                            },
-                            icon: {
-                                true: {
+                        // Bottom 9 - Windrichtung
+                        {
+                            role: 'text',
+                            dpInit: '',
+                            type: 'text',
+                            modeScr: 'bottom',
+                            data: {
+                                entity2: {
                                     value: {
-                                        type: 'const',
-                                        constVal: 'windsock',
+                                        type: 'triggered',
+                                        dp: `accuweather.${instance}.Current.WindDirectionText`,
                                     },
-                                    color: {
+                                    decimal: {
                                         type: 'const',
-                                        constVal: '#FFFFFF',
+                                        constVal: 0,
+                                    },
+                                    factor: undefined,
+                                    unit: {
+                                        type: 'const',
+                                        constVal: '°',
                                     },
                                 },
-                                false: {
-                                    value: undefined,
-                                    color: undefined,
+                                icon: {
+                                    true: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: 'windsock',
+                                        },
+                                        color: {
+                                            type: 'const',
+                                            constVal: '#FFFFFF',
+                                        },
+                                    },
+                                    false: {
+                                        value: undefined,
+                                        color: undefined,
+                                    },
+                                    scale: undefined,
+                                    maxBri: undefined,
+                                    minBri: undefined,
                                 },
-                                scale: undefined,
-                                maxBri: undefined,
-                                minBri: undefined,
-                            },
-                            text: {
-                                true: {
-                                    type: 'const',
-                                    constVal: 'Windr.',
+                                text: {
+                                    true: {
+                                        type: 'const',
+                                        constVal: 'Windr.',
+                                    },
+                                    false: undefined,
                                 },
-                                false: undefined,
                             },
                         },
-                    },
 
-                    // Bottom 12 - UV-Index
-                    {
-                        role: 'text',
-                        dpInit: '',
-                        type: 'text',
-                        modeScr: 'bottom',
-                        data: {
-                            entity1: {
-                                value: {
-                                    type: 'triggered',
-                                    dp: `accuweather.${instance}.Current.UVIndex`,
-                                },
-                                decimal: undefined,
-                                factor: undefined,
-                                unit: undefined,
-                            },
-                            entity2: {
-                                value: {
-                                    type: 'triggered',
-                                    dp: `accuweather.${instance}.Current.UVIndex`,
-                                    forceType: 'string',
-                                },
-                                decimal: undefined,
-                                factor: undefined,
-                                unit: undefined,
-                            },
-                            icon: {
-                                true: {
+                        // Bottom 10 - UV-Index
+                        {
+                            role: 'text',
+                            dpInit: '',
+                            type: 'text',
+                            modeScr: 'bottom',
+                            data: {
+                                entity1: {
                                     value: {
-                                        type: 'const',
-                                        constVal: 'solar-power',
+                                        type: 'triggered',
+                                        dp: `accuweather.${instance}.Current.UVIndex`,
                                     },
-                                    color: {
-                                        type: 'const',
-                                        constVal: Color.MSRed,
-                                    },
+                                    decimal: undefined,
+                                    factor: undefined,
+                                    unit: undefined,
                                 },
-                                false: {
+                                entity2: {
                                     value: {
-                                        type: 'const',
-                                        constVal: 'solar-power',
+                                        type: 'triggered',
+                                        dp: `accuweather.${instance}.Current.UVIndex`,
+                                        forceType: 'string',
                                     },
-                                    color: {
-                                        type: 'const',
-                                        constVal: Color.MSGreen,
+                                    decimal: undefined,
+                                    factor: undefined,
+                                    unit: undefined,
+                                },
+                                icon: {
+                                    true: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: 'solar-power',
+                                        },
+                                        color: {
+                                            type: 'const',
+                                            constVal: Color.MSRed,
+                                        },
                                     },
+                                    false: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: 'solar-power',
+                                        },
+                                        color: {
+                                            type: 'const',
+                                            constVal: Color.MSGreen,
+                                        },
+                                    },
+                                    scale: {
+                                        type: 'const',
+                                        constVal: { val_min: 0, val_max: 9 },
+                                    },
+                                    maxBri: undefined,
+                                    minBri: undefined,
                                 },
-                                scale: {
-                                    type: 'const',
-                                    constVal: { val_min: 0, val_max: 9 },
+                                text: {
+                                    true: {
+                                        type: 'const',
+                                        constVal: 'UV',
+                                    },
+                                    false: undefined,
                                 },
-                                maxBri: undefined,
-                                minBri: undefined,
-                            },
-                            text: {
-                                true: {
-                                    type: 'const',
-                                    constVal: 'UV',
-                                },
-                                false: undefined,
                             },
                         },
-                    },
-                ]);
+                    ]);
+                }
             }
         }
         if (config.indicatorScreensaverEntity) {
