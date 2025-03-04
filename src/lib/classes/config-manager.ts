@@ -1882,14 +1882,18 @@ export class ConfigManager extends BaseClass {
             data: { entity1: {} },
         };
         if (entity.type === 'native') {
-            return entity.native as typePageItem.PageItemDataItemsOptions;
+            const temp = entity.native as typePageItem.PageItemDataItemsOptions;
+            temp.type = undefined;
+            return temp;
         } else if (entity.type === 'template') {
-            return entity as unknown as typePageItem.PageItemDataItemsOptions;
+            const temp = entity as unknown as typePageItem.PageItemDataItemsOptions;
+            temp.type = undefined;
+            return temp;
         }
         if (
             entity.ScreensaverEntity &&
             !entity.ScreensaverEntity.endsWith(`Relay.2`) &&
-            !!entity.ScreensaverEntity.endsWith(`Relay.1`)
+            !entity.ScreensaverEntity.endsWith(`Relay.1`)
         ) {
             result.data!.entity1!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
         } else if (entity.ScreensaverEntity) {
@@ -1970,9 +1974,13 @@ export class ConfigManager extends BaseClass {
             data: { entity1: {} },
         };
         if (entity.type === 'native') {
-            return entity.native as typePageItem.PageItemDataItemsOptions;
+            const temp = entity.native as typePageItem.PageItemDataItemsOptions;
+            temp.type = undefined;
+            return temp;
         } else if (entity.type === 'template') {
-            return entity as unknown as typePageItem.PageItemDataItemsOptions;
+            const temp = entity as unknown as typePageItem.PageItemDataItemsOptions;
+            temp.type = undefined;
+            return temp;
         }
         if (!result.data.entity1) {
             throw new Error('Invalid data');
