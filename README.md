@@ -305,6 +305,9 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+ ### **WORK IN PROGRESS**
+ - (ticaki) fixes #141
+
 ### 0.1.5 (2025-03-03)
 - (ticaki) fixes [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)
 - (ticaki) fixes #133

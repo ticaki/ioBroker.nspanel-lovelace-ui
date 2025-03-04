@@ -20,6 +20,10 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'text.accuweather.uvindex'
+    | 'text.accuweather.windspeed'
+    | 'text.accuweather.winddirection'
+    | 'text.accuweather.windgust'
     | 'text.wlan'
     | 'text.info'
     | 'text.warning'

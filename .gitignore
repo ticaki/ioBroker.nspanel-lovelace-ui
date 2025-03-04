@@ -11,7 +11,7 @@ nbproject
 iobroker.*.tgz
 
 Thumbs.db
-
+mqtt
 # NYC coverage files
 coverage
 src/lib/config-custom.ts

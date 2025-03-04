@@ -92,6 +92,7 @@ export const defaultConfig: ScriptConfig.Config = {
     leftScreensaverEntity: [],
     indicatorScreensaverEntity: [],
     mrIcon1ScreensaverEntity: {
+        type: 'script',
         ScreensaverEntity: null,
         ScreensaverEntityIconOn: null,
         ScreensaverEntityIconSelect: undefined,
@@ -111,6 +112,7 @@ export const defaultConfig: ScriptConfig.Config = {
         },
     },
     mrIcon2ScreensaverEntity: {
+        type: 'script',
         ScreensaverEntity: null,
         ScreensaverEntityIconOn: null,
         ScreensaverEntityIconSelect: undefined,

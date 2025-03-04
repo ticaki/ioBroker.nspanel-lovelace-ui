@@ -85,28 +85,49 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.config.Testconfig2 = [];
             const obj = await this.getForeignObjectAsync(this.namespace);
             if (obj && obj.native) {
-                const configRaw = [];
+                const config = [];
                 if (obj.native.scriptConfigRaw) {
                     const manager = new ConfigManager(this, true);
-                    for (const a of obj.native.scriptConfigRaw) {
-                        if (a && a.pages) {
-                            const c = await manager.setScriptConfig(a);
-                            if (
-                                c.panelConfig &&
-                                this.config.panels.find(
-                                    (b: { topic: string }) => c.panelConfig!.topic && b.topic === c.panelConfig!.topic,
-                                )
-                            ) {
-                                configRaw.push(c.panelConfig);
+                    manager.log.warn = function (_msg: string) {
+                        //nothing
+                    };
+                    for (const a of this.config.panels) {
+                        if (a && a.topic) {
+                            const page = (obj.native.scriptConfigRaw as any[]).find(
+                                (b: { panelTopic: string }) => b.panelTopic === a.topic,
+                            );
+                            if (page) {
+                                const c = await manager.setScriptConfig(page);
+                                if (c && c.messages && c.messages.length > 0) {
+                                    if (!c.messages[0].startsWith('Panel')) {
+                                        this.log.warn(c.messages[0]);
+                                    }
+                                }
+                                if (c && c.panelConfig) {
+                                    this.log.info(`Raw script config found for ${a.topic}`);
+                                    config.push(c.panelConfig);
+                                    continue;
+                                }
+                            }
+                            {
+                                const c = (obj.native.scriptConfig as any[]).find(
+                                    (b: { topic: string }) => b.topic === a.topic,
+                                );
+                                if (c) {
+                                    this.log.info(`Converted script config found for ${a.topic}`);
+                                    config.push(c);
+                                    continue;
+                                }
                             }
                         }
+                        this.log.warn(`No script config found for ${a.topic}`);
                     }
                 }
 
-                let scriptConfig: Partial<panelConfigPartial>[] = configRaw;
+                const scriptConfig: Partial<panelConfigPartial>[] = config;
                 if (scriptConfig.length === 0) {
-                    this.log.warn('No compatible raw script config found, try converted!');
-                    scriptConfig = obj.native.scriptConfig;
+                    this.log.error('No compatible config found, paused!');
+                    return;
                 }
                 if (scriptConfig) {
                     for (let b = 0; b < scriptConfig.length; b++) {
@@ -114,13 +135,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                         if (!s || !s.pages) {
                             continue;
                         }
-                        const index = this.config.panels.findIndex(a => a.topic === s.topic);
-                        if (index == -1) {
-                            continue;
-                        }
-                        //if (!this.config.Testconfig2[b]) {
+
                         this.config.Testconfig2[b] = {};
-                        //}
 
                         if (!this.config.Testconfig2[b].pages) {
                             this.config.Testconfig2[b].pages = [];
