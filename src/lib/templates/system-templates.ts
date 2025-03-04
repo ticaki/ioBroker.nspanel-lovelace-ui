@@ -505,7 +505,7 @@ const RelaisOption: PageBaseConfig = {
             data: {
                 icon: {
                     true: {
-                        value: { type: 'const', constVal: 'numeric-2-circle-outline' },
+                        value: { type: 'const', constVal: 'numeric-1-circle-outline' },
                         color: { type: 'const', constVal: Color.Gray },
                     },
                     false: {
@@ -544,7 +544,7 @@ const RelaisOption: PageBaseConfig = {
                         color: { type: 'const', constVal: Color.Gray },
                     },
                     false: {
-                        value: { type: 'const', constVal: 'numeric-1-circle' },
+                        value: { type: 'const', constVal: 'numeric-2-circle' },
                         color: { type: 'const', constVal: Color.Yellow },
                     },
                 },
