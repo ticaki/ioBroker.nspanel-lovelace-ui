@@ -116,7 +116,11 @@ export type PanelInternalCommand =
     | 'info/tasmotaVersion'
     | 'info/Tasmota'
     | 'cmd/TasmotaRestart'
-    | 'cmd/screenSaverRotationTime';
+    | 'cmd/screenSaverRotationTime'
+    | 'cmd/dimNightActive'
+    | 'cmd/dimNightStandby'
+    | 'cmd/dimNightHourStart'
+    | 'cmd/dimNightHourEnd';
 
 export function isPopupType(F: any): F is PopupType {
     switch (F as PopupType) {

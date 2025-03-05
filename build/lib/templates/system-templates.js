@@ -494,7 +494,7 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "dim/nightActive" },
+          value: { type: "internal", dp: "cmd/dimNightActive" },
           factor: { type: "const", constVal: 1 / 10 },
           minScale: { type: "const", constVal: 0 },
           maxScale: { type: "const", constVal: 10 }
@@ -506,7 +506,7 @@ const ScreensaverOptions = {
           },
           false: void 0
         },
-        text: { true: { type: "const", constVal: "dimnightActive" }, false: void 0 }
+        text: { true: { type: "const", constVal: "dimNightActive" }, false: void 0 }
       }
     },
     {
@@ -514,7 +514,7 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "dim/nightStandby" },
+          value: { type: "internal", dp: "cmd/dimNightStandby" },
           factor: { type: "const", constVal: 1 / 10 },
           minScale: { type: "const", constVal: 0 },
           maxScale: { type: "const", constVal: 10 }
@@ -526,7 +526,7 @@ const ScreensaverOptions = {
           },
           false: void 0
         },
-        text: { true: { type: "const", constVal: "dimnightStandby" }, false: void 0 }
+        text: { true: { type: "const", constVal: "dimNightStandby" }, false: void 0 }
       }
     },
     {
@@ -534,7 +534,7 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "dim/nightHourStart" },
+          value: { type: "internal", dp: "cmd/dimNightHourStart" },
           factor: { type: "const", constVal: 1 / 10 },
           minScale: { type: "const", constVal: 0 },
           maxScale: { type: "const", constVal: 10 }
@@ -546,7 +546,7 @@ const ScreensaverOptions = {
           },
           false: void 0
         },
-        text: { true: { type: "const", constVal: "dimnightHourStart" }, false: void 0 }
+        text: { true: { type: "const", constVal: "dimNightHourStart" }, false: void 0 }
       }
     },
     {
@@ -554,7 +554,7 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "dim/nightHourEnd" },
+          value: { type: "internal", dp: "cmd/dimNightHourEnd" },
           factor: { type: "const", constVal: 1 / 10 },
           minScale: { type: "const", constVal: 0 },
           maxScale: { type: "const", constVal: 10 }
@@ -566,7 +566,7 @@ const ScreensaverOptions = {
           },
           false: void 0
         },
-        text: { true: { type: "const", constVal: "dimnightHourEnd" }, false: void 0 }
+        text: { true: { type: "const", constVal: "dimNightHourEnd" }, false: void 0 }
       }
     }
   ],
