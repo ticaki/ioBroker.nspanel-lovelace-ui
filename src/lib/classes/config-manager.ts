@@ -1938,11 +1938,11 @@ export class ConfigManager extends BaseClass {
             result.data!.icon.true!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn);
         }
         if (entity.ScreensaverEntityIconOff) {
-            result.data!.icon.true!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff);
+            result.data!.icon.false!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff);
         }
         if (entity.ScreensaverEntityValue) {
             result.data!.icon.false!.text = {
-                value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValue),
+                value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValue, true),
                 unit: entity.ScreensaverEntityValueUnit
                     ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValueUnit)
                     : undefined,

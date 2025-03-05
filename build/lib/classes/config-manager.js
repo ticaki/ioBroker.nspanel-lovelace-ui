@@ -1642,7 +1642,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     if (entity.ScreensaverEntityValue) {
       result.data.icon.false.text = {
-        value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValue),
+        value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValue, true),
         unit: entity.ScreensaverEntityValueUnit ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValueUnit) : void 0,
         decimal: entity.ScreensaverEntityValueDecimalPlace ? { type: "const", constVal: entity.ScreensaverEntityValueDecimalPlace } : void 0,
         factor: void 0
