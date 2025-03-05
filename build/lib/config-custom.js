@@ -3842,7 +3842,9 @@ const pageScreensaverTest = {
     mode: "advanced",
     rotationTime: 0,
     model: "eu",
-    data: void 0
+    data: void 0,
+    screensaverSwipe: false,
+    screensaverIndicatorButtons: false
   },
   // Config of Entitys
   pageItems: [

@@ -3774,7 +3774,9 @@ const pageScreensaverTest = {
     mode: "advanced",
     rotationTime: 0,
     model: "eu",
-    data: void 0
+    data: void 0,
+    screensaverIndicatorButtons: false,
+    screensaverSwipe: false
   },
   // Config of Entitys
   pageItems: [
@@ -6031,7 +6033,9 @@ const testScr = {
     mode: "advanced",
     rotationTime: 0,
     model: "eu",
-    data: void 0
+    data: void 0,
+    screensaverIndicatorButtons: false,
+    screensaverSwipe: false
   },
   // Config of Entitys
   pageItems: [

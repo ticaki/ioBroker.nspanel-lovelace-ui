@@ -83,101 +83,101 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.warn('Adapter on hold, user restart needed!');
             return;
         }*/
-        try {
-            this.config.Testconfig2 = [];
-            const obj = await this.getForeignObjectAsync(this.namespace);
-            if (obj && obj.native) {
-                const config = [];
-                if (obj.native.scriptConfigRaw) {
-                    const manager = new ConfigManager(this, true);
-                    manager.log.warn = function (_msg: string) {
-                        //nothing
-                    };
-                    for (const a of this.config.panels) {
-                        if (a && a.topic) {
-                            const page = (obj.native.scriptConfigRaw as any[]).find(
-                                (b: { panelTopic: string }) => b.panelTopic === a.topic,
+        //try {
+        this.config.Testconfig2 = [];
+        const obj = await this.getForeignObjectAsync(this.namespace);
+        if (obj && obj.native) {
+            const config = [];
+            if (obj.native.scriptConfigRaw) {
+                const manager = new ConfigManager(this, true);
+                manager.log.warn = function (_msg: string) {
+                    //nothing
+                };
+                for (const a of this.config.panels) {
+                    if (a && a.topic) {
+                        const page = (obj.native.scriptConfigRaw as any[]).find(
+                            (b: { panelTopic: string }) => b.panelTopic === a.topic,
+                        );
+                        if (page) {
+                            const c = await manager.setScriptConfig(page);
+                            if (c && c.messages && c.messages.length > 0) {
+                                if (!c.messages[0].startsWith('Panel')) {
+                                    this.log.warn(c.messages[0]);
+                                }
+                            }
+                            if (c && c.panelConfig) {
+                                this.log.info(`Raw script config found for ${a.topic}`);
+                                config.push(c.panelConfig);
+                                continue;
+                            }
+                        }
+                        {
+                            const c = (obj.native.scriptConfig as any[]).find(
+                                (b: { topic: string }) => b.topic === a.topic,
                             );
-                            if (page) {
-                                const c = await manager.setScriptConfig(page);
-                                if (c && c.messages && c.messages.length > 0) {
-                                    if (!c.messages[0].startsWith('Panel')) {
-                                        this.log.warn(c.messages[0]);
-                                    }
-                                }
-                                if (c && c.panelConfig) {
-                                    this.log.info(`Raw script config found for ${a.topic}`);
-                                    config.push(c.panelConfig);
-                                    continue;
-                                }
-                            }
-                            {
-                                const c = (obj.native.scriptConfig as any[]).find(
-                                    (b: { topic: string }) => b.topic === a.topic,
-                                );
-                                if (c) {
-                                    this.log.info(`Converted script config found for ${a.topic}`);
-                                    config.push(c);
-                                    continue;
-                                }
+                            if (c) {
+                                this.log.info(`Converted script config found for ${a.topic}`);
+                                config.push(c);
+                                continue;
                             }
                         }
-                        this.log.warn(`No script config found for ${a.topic}`);
                     }
+                    this.log.warn(`No script config found for ${a.topic}`);
                 }
+            }
 
-                const scriptConfig: Partial<panelConfigPartial>[] = config;
-                if (scriptConfig.length === 0) {
-                    this.log.error('No compatible config found, paused!');
-                    if (!this.config.testCase) {
-                        return;
+            const scriptConfig: Partial<panelConfigPartial>[] = config;
+            if (scriptConfig.length === 0) {
+                this.log.error('No compatible config found, paused!');
+                if (!this.config.testCase) {
+                    return;
+                }
+            }
+            if (scriptConfig) {
+                for (let b = 0; b < scriptConfig.length; b++) {
+                    const s = scriptConfig[b];
+                    if (!s || !s.pages) {
+                        continue;
                     }
-                }
-                if (scriptConfig) {
-                    for (let b = 0; b < scriptConfig.length; b++) {
-                        const s = scriptConfig[b];
-                        if (!s || !s.pages) {
-                            continue;
-                        }
 
-                        this.config.Testconfig2[b] = {};
+                    this.config.Testconfig2[b] = {};
 
-                        if (!this.config.Testconfig2[b].pages) {
-                            this.config.Testconfig2[b].pages = [];
-                        }
-                        if (!this.config.Testconfig2[b].navigation) {
-                            this.config.Testconfig2[b].navigation = [];
-                        }
-                        this.config.Testconfig2[b].pages = (
-                            this.config.Testconfig2[b] as panelConfigPartial
-                        ).pages.filter(a => {
+                    if (!this.config.Testconfig2[b].pages) {
+                        this.config.Testconfig2[b].pages = [];
+                    }
+                    if (!this.config.Testconfig2[b].navigation) {
+                        this.config.Testconfig2[b].navigation = [];
+                    }
+                    this.config.Testconfig2[b].pages = (this.config.Testconfig2[b] as panelConfigPartial).pages.filter(
+                        a => {
                             if (s.pages!.find(b => b.uniqueID === a.uniqueID)) {
                                 return false;
                             }
                             return true;
-                        });
-                        this.config.Testconfig2[b].navigation = (
-                            this.config.Testconfig2[b] as panelConfigPartial
-                        ).navigation.filter(a => {
-                            if (s.navigation && s.navigation.find(b => a == null || b == null || b.name === a.name)) {
-                                return false;
-                            }
-                            return true;
-                        });
-                        s.navigation = (this.config.Testconfig2[b].navigation || []).concat(s.navigation || []);
-                        s.pages = (this.config.Testconfig2[b].pages || []).concat(s.pages || []);
-                        this.config.Testconfig2[b] = {
-                            ...((this.config.Testconfig2[b] as panelConfigPartial) || {}),
-                            ...s,
-                        };
-                    }
-                    //this.config.Testconfig2[0].timeout = this.config.timeout;
+                        },
+                    );
+                    this.config.Testconfig2[b].navigation = (
+                        this.config.Testconfig2[b] as panelConfigPartial
+                    ).navigation.filter(a => {
+                        if (s.navigation && s.navigation.find(b => a == null || b == null || b.name === a.name)) {
+                            return false;
+                        }
+                        return true;
+                    });
+                    s.navigation = (this.config.Testconfig2[b].navigation || []).concat(s.navigation || []);
+                    s.pages = (this.config.Testconfig2[b].pages || []).concat(s.pages || []);
+                    this.config.Testconfig2[b] = {
+                        ...((this.config.Testconfig2[b] as panelConfigPartial) || {}),
+                        ...s,
+                    };
                 }
+                //this.config.Testconfig2[0].timeout = this.config.timeout;
             }
-        } catch (e: any) {
+        }
+        /*} catch (e: any) {
             this.log.warn(`Invalid configuration stopped! ${e}`);
             return;
-        }
+        }*/
 
         if (
             this.config.doubleClickTime === undefined ||
@@ -535,7 +535,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             rCount--;
                                         },
                                     );
-                                    await mqtt.publish(`${device.topic}/cmnd/STATUS0`, '');
+                                    void mqtt.publish(`${device.topic}/cmnd/STATUS0`, '');
                                 }
 
                                 const _waitForFinish = (count: number): void => {

@@ -41,9 +41,12 @@ class Screensaver extends import_Page.Page {
   step = 0;
   blockButtons;
   rotationTime = 3e5;
+  screensaverIndicatorButtons = false;
+  screensaverSwipe = false;
   timoutRotation = void 0;
   //readonly mode: Types.ScreensaverModeType = 'standard';
   constructor(config, options) {
+    var _a, _b;
     if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2" && options.config.card !== "screensaver3") {
       config.adapter.log.error(
         `Invalid card for screensaver: ${options ? JSON.stringify(options) : "undefined"}`
@@ -67,6 +70,8 @@ class Screensaver extends import_Page.Page {
     }
     config.alwaysOn = "none";
     super(config, options);
+    this.screensaverIndicatorButtons = (_a = options.config.screensaverIndicatorButtons) != null ? _a : false;
+    this.screensaverSwipe = (_b = options.config.screensaverSwipe) != null ? _b : false;
     this.rotationTime = options.config.rotationTime !== 0 && options.config.rotationTime < 3 ? 3e3 : options.config.rotationTime * 1e3;
     this.neverDeactivateTrigger = true;
   }

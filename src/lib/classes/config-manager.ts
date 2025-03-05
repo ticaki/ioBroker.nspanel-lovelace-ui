@@ -23,7 +23,7 @@ export class ConfigManager extends BaseClass {
     colorDefault: RGB = Color.Off;
     dontWrite: boolean = false;
 
-    readonly scriptVersion = '0.4.0';
+    readonly scriptVersion = '0.4.1';
     readonly breakingVersion = '0.2.0';
 
     constructor(adapter: NspanelLovelaceUi, dontWrite: boolean = false) {
@@ -53,6 +53,10 @@ export class ConfigManager extends BaseClass {
         messages: string[];
         panelConfig: ConfigManager.PanelConfigManager | undefined;
     }> {
+        configuration.advancedOptions = Object.assign(
+            defaultConfig.advancedOptions || {},
+            configuration.advancedOptions || {},
+        );
         const config = Object.assign(defaultConfig, configuration);
         if (!config || !isConfig(config)) {
             this.log.error(
@@ -129,7 +133,19 @@ export class ConfigManager extends BaseClass {
 
         // Screensaver configuration
         try {
-            panelConfig.pages.push(await this.getScreensaverConfig(config));
+            const screensaver = await this.getScreensaverConfig(config);
+            if (
+                screensaver &&
+                screensaver.config &&
+                (screensaver.config.card === 'screensaver' ||
+                    screensaver.config.card === 'screensaver2' ||
+                    screensaver.config.card === 'screensaver3') &&
+                config.advancedOptions
+            ) {
+                screensaver.config.screensaverSwipe = !!config.advancedOptions.screensaverSwipe;
+                screensaver.config.screensaverIndicatorButtons = !!config.advancedOptions.screensaverIndicatorButtons;
+            }
+            panelConfig.pages.push(screensaver);
         } catch (error: any) {
             messages.push(`Screensaver configuration error - ${error}`);
             this.log.warn(messages[messages.length - 1]);
@@ -419,6 +435,29 @@ export class ConfigManager extends BaseClass {
                 ? 'textNotIcon'
                 : 'iconNotText';
 
+        const getButtonsTextTrue = async (item: ScriptConfig.PageItem, on: string): Promise<Types.DataItemsOptions> => {
+            return item.buttonText
+                ? await this.getFieldAsDataItemConfig(item.buttonText)
+                : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                  ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
+                  : { type: 'const', constVal: `${on}` };
+        };
+        const getButtonsTextFalse = async (
+            item: ScriptConfig.PageItem,
+            on: string,
+            off: string,
+        ): Promise<Types.DataItemsOptions> => {
+            return item.buttonTextOff
+                ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
+                : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
+                  ? { type: 'triggered', dp: `${item.id}.BUTTONTEXTOFF` }
+                  : item.buttonText
+                    ? await this.getFieldAsDataItemConfig(item.buttonText)
+                    : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                      ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
+                      : { type: 'const', constVal: `${off || on}` };
+        };
+
         if (!item.id) {
             return {
                 type: 'button',
@@ -444,15 +483,11 @@ export class ConfigManager extends BaseClass {
                         minBri: undefined,
                     },
                     text1: {
-                        true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                        true: await getButtonsTextTrue(item, 'on'),
+                        false: await getButtonsTextFalse(item, 'on', 'off'),
                     },
                     text: {
-                        true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : undefined,
-                        false: item.buttonTextOff
-                            ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
-                            : item.buttonText
-                              ? await this.getFieldAsDataItemConfig(item.buttonText)
-                              : undefined,
+                        true: await this.getFieldAsDataItemConfig(item.name || ''),
                     },
                 },
             };
@@ -476,29 +511,6 @@ export class ConfigManager extends BaseClass {
                 return;
             }
         }
-
-        const getButtonsTextTrue = async (item: ScriptConfig.PageItem, on: string): Promise<Types.DataItemsOptions> => {
-            return item.buttonText
-                ? await this.getFieldAsDataItemConfig(item.buttonText)
-                : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                  ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                  : { type: 'const', constVal: `${on}` };
-        };
-        const getButtonsTextFalse = async (
-            item: ScriptConfig.PageItem,
-            on: string,
-            off: string,
-        ): Promise<Types.DataItemsOptions> => {
-            return item.buttonTextOff
-                ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
-                : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
-                  ? { type: 'triggered', dp: `${item.id}.BUTTONTEXTOFF` }
-                  : item.buttonText
-                    ? await this.getFieldAsDataItemConfig(item.buttonText)
-                    : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                      ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                      : { type: 'const', constVal: `${off || on}` };
-        };
 
         switch (role) {
             case 'socket':
@@ -609,6 +621,10 @@ export class ConfigManager extends BaseClass {
                             false: await this.getIconColor(item.offColor, this.colorOff),
                             scale: item.colorScale ? item.colorScale : undefined,
                         },
+                        icon: {
+                            true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                            false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        },
                         template: 'button.humidity',
                         data: {
                             text: {
@@ -638,6 +654,10 @@ export class ConfigManager extends BaseClass {
                         false: await this.getIconColor(item.offColor, this.colorOff),
                         scale: item.colorScale ? item.colorScale : undefined,
                     },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                    },
                     data: {
                         text1: {
                             true: await getButtonsTextTrue(item, 'on'),
@@ -661,6 +681,10 @@ export class ConfigManager extends BaseClass {
                             true: await this.getIconColor(item.onColor, this.colorOn),
                             false: await this.getIconColor(item.offColor, this.colorOff),
                             scale: item.colorScale ? item.colorScale : undefined,
+                        },
+                        icon: {
+                            true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                            false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                         },
                         data: {
                             text: {
@@ -693,6 +717,10 @@ export class ConfigManager extends BaseClass {
                             false: await this.getIconColor(item.offColor, this.colorOff),
                             scale: item.colorScale ? item.colorScale : undefined,
                         },
+                        icon: {
+                            true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                            false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        },
                         data: {
                             text: {
                                 true: await getButtonsTextTrue(item, 'on'),
@@ -717,6 +745,10 @@ export class ConfigManager extends BaseClass {
                         false: await this.getIconColor(item.offColor, this.colorOff),
                         scale: item.colorScale ? item.colorScale : undefined,
                     },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                    },
                     data: {
                         text1: {
                             true: await getButtonsTextTrue(item, 'on'),
@@ -739,6 +771,10 @@ export class ConfigManager extends BaseClass {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
                         scale: item.colorScale ? item.colorScale : undefined,
+                    },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
                         text1: {
@@ -763,6 +799,10 @@ export class ConfigManager extends BaseClass {
                         true: await this.getIconColor(item.onColor, this.colorOn),
                         false: await this.getIconColor(item.offColor, this.colorOff),
                         scale: item.colorScale ? item.colorScale : undefined,
+                    },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
                         text1: {
@@ -789,6 +829,10 @@ export class ConfigManager extends BaseClass {
                         false: await this.getIconColor(item.offColor, this.colorOff),
                         scale: item.colorScale ? item.colorScale : undefined,
                     },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                    },
                     data: {
                         text1: {
                             true: await getButtonsTextTrue(item, 'on'),
@@ -813,6 +857,10 @@ export class ConfigManager extends BaseClass {
                         false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
                         scale: item.colorScale ? item.colorScale : undefined,
                     },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                    },
                     data: {
                         text1: {
                             true: await getButtonsTextTrue(item, 'on'),
@@ -836,6 +884,10 @@ export class ConfigManager extends BaseClass {
                         true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
                         false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
                         scale: item.colorScale,
+                    },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
                         text1: {
@@ -1745,6 +1797,8 @@ export class ConfigManager extends BaseClass {
                 rotationTime: 0,
                 model: 'eu',
                 data: undefined,
+                screensaverIndicatorButtons: false,
+                screensaverSwipe: false,
             },
             pageItems: pageItems,
         };

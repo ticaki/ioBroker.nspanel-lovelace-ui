@@ -816,7 +816,7 @@ export class Panel extends BaseClass {
                     );
                     break;
                 }
-                case 'dim.sctive': {
+                case 'dim.active': {
                     await this.statesControler.setInternalState(
                         `${this.name}/cmd/dimActive`,
                         // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -1128,7 +1128,7 @@ export class Panel extends BaseClass {
             }
             case 'buttonPress2': {
                 if (event.id == 'screensaver') {
-                    if (this.screenSaverDoubleClick) {
+                    if (this.screenSaverDoubleClick && this.screenSaver.screensaverSwipe) {
                         switch (event.action) {
                             case 'bExit': {
                                 await this.library.writedp(
@@ -1175,6 +1175,7 @@ export class Panel extends BaseClass {
                     if ((this.screenSaverDoubleClick && parseInt(event.opt) > 1) || !this.screenSaverDoubleClick) {
                         this.navigation.resetPosition();
                         await this.navigation.setCurrentPage();
+                        break;
                     }
                 } else if (event.action === 'bExit' && event.id !== 'popupNotify') {
                     await this.setActivePage(true);

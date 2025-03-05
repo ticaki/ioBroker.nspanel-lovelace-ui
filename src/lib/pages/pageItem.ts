@@ -8,6 +8,7 @@ import { BaseClassTriggerd } from '../controller/states-controller';
 import { Icons } from '../const/icon_mapping';
 import type { Dataitem } from '../classes/data-item';
 import type { ChangeTypeOfKeys, DeviceRole } from '../types/pages';
+import { Screensaver } from './screensaver';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseClassTriggerd {
@@ -1145,6 +1146,13 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             case 'button': {
                 if (entry.type === 'button') {
+                    if (this.parent && this.parent instanceof Screensaver) {
+                        if (!this.parent.screensaverIndicatorButtons) {
+                            this.panel.navigation.resetPosition();
+                            await this.panel.navigation.setCurrentPage();
+                            break;
+                        }
+                    }
                     if (entry.role === 'indicator') {
                         if (this.parent && this.parent.card === 'cardThermo') {
                             this.log.debug(`Button indicator ${this.id} was pressed!`);

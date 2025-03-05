@@ -22,6 +22,8 @@ export class Screensaver extends Page {
     private step: number = 0;
     private blockButtons: ioBroker.Timeout | undefined;
     rotationTime: number = 300000;
+    public screensaverIndicatorButtons: boolean = false;
+    public screensaverSwipe: boolean = false;
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
     //readonly mode: Types.ScreensaverModeType = 'standard';
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
@@ -53,7 +55,8 @@ export class Screensaver extends Page {
         }
         config.alwaysOn = 'none';
         super(config, options);
-
+        this.screensaverIndicatorButtons = options.config.screensaverIndicatorButtons ?? false;
+        this.screensaverSwipe = options.config.screensaverSwipe ?? false;
         this.rotationTime =
             options.config.rotationTime !== 0 && options.config.rotationTime < 3
                 ? 3000

@@ -308,6 +308,9 @@ Sind natürlich alles Dataitems
 ### **WORK IN PROGRESS**
 - (ticaki) fixes #143
 - (ticaki) fixes #147
+- (ticaki) fixes #146
+- (ticaki) fixes #144
+- (ticaki) fixes #148
 
 ### 0.1.6 (2025-03-05)
  - (ticaki) fixes #140

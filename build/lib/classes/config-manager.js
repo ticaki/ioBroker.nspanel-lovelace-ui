@@ -34,7 +34,7 @@ class ConfigManager extends import_library.BaseClass {
   colorOff = import_Color.Color.Off;
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
-  scriptVersion = "0.4.0";
+  scriptVersion = "0.4.1";
   breakingVersion = "0.2.0";
   constructor(adapter, dontWrite = false) {
     super(adapter, "config-manager");
@@ -59,6 +59,10 @@ class ConfigManager extends import_library.BaseClass {
    * If any errors occur during the process, they are logged and included in the returned messages..
    */
   async setScriptConfig(configuration) {
+    configuration.advancedOptions = Object.assign(
+      import_config_manager_const.defaultConfig.advancedOptions || {},
+      configuration.advancedOptions || {}
+    );
     const config = Object.assign(import_config_manager_const.defaultConfig, configuration);
     if (!config || !(0, import_config_manager_const.isConfig)(config)) {
       this.log.error(
@@ -118,7 +122,12 @@ class ConfigManager extends import_library.BaseClass {
       this.colorOff = import_Color.Color.convertScriptRGBtoRGB(config.defaultOffColor);
     }
     try {
-      panelConfig.pages.push(await this.getScreensaverConfig(config));
+      const screensaver = await this.getScreensaverConfig(config);
+      if (screensaver && screensaver.config && (screensaver.config.card === "screensaver" || screensaver.config.card === "screensaver2" || screensaver.config.card === "screensaver3") && config.advancedOptions) {
+        screensaver.config.screensaverSwipe = !!config.advancedOptions.screensaverSwipe;
+        screensaver.config.screensaverIndicatorButtons = !!config.advancedOptions.screensaverIndicatorButtons;
+      }
+      panelConfig.pages.push(screensaver);
     } catch (error) {
       messages.push(`Screensaver configuration error - ${error}`);
       this.log.warn(messages[messages.length - 1]);
@@ -340,6 +349,12 @@ class ConfigManager extends import_library.BaseClass {
     }
     let itemConfig = void 0;
     const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
+    const getButtonsTextTrue = async (item2, on) => {
+      return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : { type: "const", constVal: `${on}` };
+    };
+    const getButtonsTextFalse = async (item2, on, off) => {
+      return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff) : await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : { type: "const", constVal: `${off || on}` };
+    };
     if (!item.id) {
       return {
         type: "button",
@@ -365,11 +380,11 @@ class ConfigManager extends import_library.BaseClass {
             minBri: void 0
           },
           text1: {
-            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+            true: await getButtonsTextTrue(item, "on"),
+            false: await getButtonsTextFalse(item, "on", "off")
           },
           text: {
-            true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : void 0,
-            false: item.buttonTextOff ? await this.getFieldAsDataItemConfig(item.buttonTextOff) : item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : void 0
+            true: await this.getFieldAsDataItemConfig(item.name || "")
           }
         }
       };
@@ -385,12 +400,6 @@ class ConfigManager extends import_library.BaseClass {
         return;
       }
     }
-    const getButtonsTextTrue = async (item2, on) => {
-      return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : { type: "const", constVal: `${on}` };
-    };
-    const getButtonsTextFalse = async (item2, on, off) => {
-      return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff) : await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : { type: "const", constVal: `${off || on}` };
-    };
     switch (role) {
       case "socket":
       case "light":
@@ -494,6 +503,10 @@ class ConfigManager extends import_library.BaseClass {
               false: await this.getIconColor(item.offColor, this.colorOff),
               scale: item.colorScale ? item.colorScale : void 0
             },
+            icon: {
+              true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+              false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            },
             template: "button.humidity",
             data: {
               text: {
@@ -523,6 +536,10 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
           },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
           data: {
             text1: {
               true: await getButtonsTextTrue(item, "on"),
@@ -546,6 +563,10 @@ class ConfigManager extends import_library.BaseClass {
               true: await this.getIconColor(item.onColor, this.colorOn),
               false: await this.getIconColor(item.offColor, this.colorOff),
               scale: item.colorScale ? item.colorScale : void 0
+            },
+            icon: {
+              true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+              false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
             },
             data: {
               text: {
@@ -578,6 +599,10 @@ class ConfigManager extends import_library.BaseClass {
               false: await this.getIconColor(item.offColor, this.colorOff),
               scale: item.colorScale ? item.colorScale : void 0
             },
+            icon: {
+              true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+              false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            },
             data: {
               text: {
                 true: await getButtonsTextTrue(item, "on"),
@@ -602,6 +627,10 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
           },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
           data: {
             text1: {
               true: await getButtonsTextTrue(item, "on"),
@@ -625,6 +654,10 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
           },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
           data: {
             text1: {
               true: await getButtonsTextTrue(item, "on"),
@@ -647,6 +680,10 @@ class ConfigManager extends import_library.BaseClass {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
+          },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
           },
           data: {
             text1: {
@@ -672,6 +709,10 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
           },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
           data: {
             text1: {
               true: await getButtonsTextTrue(item, "on"),
@@ -695,6 +736,10 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
           },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
           data: {
             text1: {
               true: await getButtonsTextTrue(item, "on"),
@@ -717,6 +762,10 @@ class ConfigManager extends import_library.BaseClass {
             true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
             false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
             scale: item.colorScale
+          },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
           },
           data: {
             text1: {
@@ -1485,7 +1534,9 @@ class ConfigManager extends import_library.BaseClass {
         mode: "standard",
         rotationTime: 0,
         model: "eu",
-        data: void 0
+        data: void 0,
+        screensaverIndicatorButtons: false,
+        screensaverSwipe: false
       },
       pageItems
     };

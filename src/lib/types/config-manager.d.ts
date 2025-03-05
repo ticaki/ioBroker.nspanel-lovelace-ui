@@ -528,6 +528,10 @@ declare namespace ScriptConfig {
         button2: ConfigButtonFunction;
         nativePageItems?: any[];
         navigation?: NavigationItemConfig[];
+        advancedOptions?: {
+            screensaverSwipe?: boolean;
+            screensaverIndicatorButtons?: boolean;
+        };
     };
 
     export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
