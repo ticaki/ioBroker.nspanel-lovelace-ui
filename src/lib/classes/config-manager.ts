@@ -1882,18 +1882,18 @@ export class ConfigManager extends BaseClass {
             data: { entity1: {} },
         };
         if (entity.type === 'native') {
-            const temp = entity.native as typePageItem.PageItemDataItemsOptions;
+            const temp = JSON.parse(JSON.stringify(entity.native)) as typePageItem.PageItemDataItemsOptions;
             temp.type = undefined;
             return temp;
         } else if (entity.type === 'template') {
-            const temp = entity as unknown as typePageItem.PageItemDataItemsOptions;
+            const temp = JSON.parse(JSON.stringify(entity)) as unknown as typePageItem.PageItemDataItemsOptions;
             temp.type = undefined;
             return temp;
         }
         if (
             entity.ScreensaverEntity &&
-            !entity.ScreensaverEntity.endsWith(`Relay.2`) &&
-            !entity.ScreensaverEntity.endsWith(`Relay.1`)
+            entity.ScreensaverEntity !== `Relay.2` &&
+            entity.ScreensaverEntity !== `Relay.1`
         ) {
             result.data!.entity1!.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
         } else if (entity.ScreensaverEntity) {
@@ -1974,12 +1974,12 @@ export class ConfigManager extends BaseClass {
             data: { entity1: {} },
         };
         if (entity.type === 'native') {
-            const temp = entity.native as typePageItem.PageItemDataItemsOptions;
-            temp.type = undefined;
+            const temp = JSON.parse(JSON.stringify(entity.native)) as typePageItem.PageItemDataItemsOptions;
+            delete temp.type;
             return temp;
         } else if (entity.type === 'template') {
-            const temp = entity as unknown as typePageItem.PageItemDataItemsOptions;
-            temp.type = undefined;
+            const temp = JSON.parse(JSON.stringify(entity)) as unknown as typePageItem.PageItemDataItemsOptions;
+            delete temp.type;
             return temp;
         }
         if (!result.data.entity1) {

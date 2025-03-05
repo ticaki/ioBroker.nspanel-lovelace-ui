@@ -1587,15 +1587,15 @@ class ConfigManager extends import_library.BaseClass {
       data: { entity1: {} }
     };
     if (entity.type === "native") {
-      const temp = entity.native;
+      const temp = JSON.parse(JSON.stringify(entity.native));
       temp.type = void 0;
       return temp;
     } else if (entity.type === "template") {
-      const temp = entity;
+      const temp = JSON.parse(JSON.stringify(entity));
       temp.type = void 0;
       return temp;
     }
-    if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith(`Relay.2`) && !entity.ScreensaverEntity.endsWith(`Relay.1`)) {
+    if (entity.ScreensaverEntity && entity.ScreensaverEntity !== `Relay.2` && entity.ScreensaverEntity !== `Relay.1`) {
       result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
     } else if (entity.ScreensaverEntity) {
       result.data.entity1.value = {
@@ -1662,12 +1662,12 @@ class ConfigManager extends import_library.BaseClass {
       data: { entity1: {} }
     };
     if (entity.type === "native") {
-      const temp = entity.native;
-      temp.type = void 0;
+      const temp = JSON.parse(JSON.stringify(entity.native));
+      delete temp.type;
       return temp;
     } else if (entity.type === "template") {
-      const temp = entity;
-      temp.type = void 0;
+      const temp = JSON.parse(JSON.stringify(entity));
+      delete temp.type;
       return temp;
     }
     if (!result.data.entity1) {
