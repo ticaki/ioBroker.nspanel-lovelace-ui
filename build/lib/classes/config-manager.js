@@ -1678,6 +1678,7 @@ class ConfigManager extends import_library.BaseClass {
     if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith(".")) {
       obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
       result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
+      result.data.entity2.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
     }
     const dataType = obj && obj.common && obj.common.type ? obj.common.type : void 0;
     if (entity.ScreensaverEntityUnitText || entity.ScreensaverEntityUnitText === "") {

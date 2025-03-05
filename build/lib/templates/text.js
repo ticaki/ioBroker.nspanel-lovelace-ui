@@ -934,7 +934,7 @@ const textTemplates = {
         },
         decimal: {
           type: "const",
-          constVal: 1
+          constVal: 0
         },
         unit: void 0
       },
@@ -948,7 +948,7 @@ const textTemplates = {
         },
         decimal: {
           type: "const",
-          constVal: 1
+          constVal: 0
         },
         unit: {
           type: "const",
@@ -1128,11 +1128,7 @@ const textTemplates = {
         },
         decimal: {
           type: "const",
-          constVal: 1
-        },
-        factor: {
-          type: "const",
-          constVal: 1e3 / 3600
+          constVal: 0
         },
         unit: void 0
       },

@@ -922,7 +922,7 @@ export const textTemplates: TemplateItems = {
                 },
                 decimal: {
                     type: 'const',
-                    constVal: 1,
+                    constVal: 0,
                 },
                 unit: undefined,
             },
@@ -936,7 +936,7 @@ export const textTemplates: TemplateItems = {
                 },
                 decimal: {
                     type: 'const',
-                    constVal: 1,
+                    constVal: 0,
                 },
                 unit: {
                     type: 'const',
@@ -1116,11 +1116,7 @@ export const textTemplates: TemplateItems = {
                 },
                 decimal: {
                     type: 'const',
-                    constVal: 1,
-                },
-                factor: {
-                    type: 'const',
-                    constVal: 1000 / 3600,
+                    constVal: 0,
                 },
                 unit: undefined,
             },
