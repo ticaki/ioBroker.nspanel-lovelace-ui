@@ -56,7 +56,9 @@ class NspanelLovelaceUi extends utils.Adapter {
         await this.delay(2000);
 
         await generateAliasDocumentation();
-
+        if (this.config.testCase) {
+            this.log.warn('Testcase mode!');
+        }
         /*if (!this.config.Testconfig2) {
             if (this.config.onlyStartFromSystemConfig) {
                 this.log.warn('No configuration stopped!');
@@ -127,7 +129,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const scriptConfig: Partial<panelConfigPartial>[] = config;
                 if (scriptConfig.length === 0) {
                     this.log.error('No compatible config found, paused!');
-                    return;
+                    if (!this.config.testCase) {
+                        return;
+                    }
                 }
                 if (scriptConfig) {
                     for (let b = 0; b < scriptConfig.length; b++) {

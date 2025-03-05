@@ -63,6 +63,9 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.library = new import_library.Library(this);
     await this.delay(2e3);
     await (0, import_readme.generateAliasDocumentation)();
+    if (this.config.testCase) {
+      this.log.warn("Testcase mode!");
+    }
     try {
       this.config.Testconfig2 = [];
       const obj = await this.getForeignObjectAsync(this.namespace);
@@ -107,7 +110,9 @@ class NspanelLovelaceUi extends utils.Adapter {
         const scriptConfig = config;
         if (scriptConfig.length === 0) {
           this.log.error("No compatible config found, paused!");
-          return;
+          if (!this.config.testCase) {
+            return;
+          }
         }
         if (scriptConfig) {
           for (let b = 0; b < scriptConfig.length; b++) {

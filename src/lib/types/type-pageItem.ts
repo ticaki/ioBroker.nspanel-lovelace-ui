@@ -241,19 +241,6 @@ export type PageItemFanDataItems = {
     data: pages.ChangeTypeOfKeys<PageItemFan, dataItem.Dataitem | undefined>;
 };
 
-export type PageItemText = Pick<
-    PageItemBase,
-    'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'entity4' | 'icon'
->;
-export type PageItemTextDataItemsOptions = {
-    type: 'text';
-    data: pages.ChangeTypeOfKeys<PageItemText, Types.DataItemsOptions | undefined>;
-};
-export type PageItemTextDataItems = {
-    type: 'text';
-    data: pages.ChangeTypeOfKeys<PageItemText, dataItem.Dataitem | undefined>;
-};
-
 export type PageItemNumber = Pick<PageItemBase, 'entity1' | 'text' | 'icon' | 'minValue1' | 'maxValue1'>;
 export type PageItemNumberDataItemsOptions = {
     type: 'number';
@@ -285,6 +272,19 @@ export type PageItemButtonDataItemsOptions = {
 };
 export type PageItemButtonDataItems = {
     type: 'button';
+    data: pages.ChangeTypeOfKeys<PageItemButton, dataItem.Dataitem | undefined>;
+};
+
+export type PageItemText = Pick<
+    PageItemBase,
+    'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'entity4' | 'icon'
+>;
+export type PageItemTextDataItemsOptions = {
+    type: 'text';
+    data: pages.ChangeTypeOfKeys<PageItemButton, Types.DataItemsOptions | undefined>;
+};
+export type PageItemTextDataItems = {
+    type: 'text';
     data: pages.ChangeTypeOfKeys<PageItemButton, dataItem.Dataitem | undefined>;
 };
 

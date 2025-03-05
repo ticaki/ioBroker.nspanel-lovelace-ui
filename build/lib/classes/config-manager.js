@@ -34,7 +34,7 @@ class ConfigManager extends import_library.BaseClass {
   colorOff = import_Color.Color.Off;
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
-  scriptVersion = "0.3.0";
+  scriptVersion = "0.4.0";
   breakingVersion = "0.2.0";
   constructor(adapter, dontWrite = false) {
     super(adapter, "config-manager");
@@ -1282,6 +1282,28 @@ class ConfigManager extends import_library.BaseClass {
   }
   async getScreensaverConfig(config) {
     let pageItems = [];
+    if (config.favoritScreensaverEntity) {
+      for (const item of config.favoritScreensaverEntity) {
+        if (item) {
+          try {
+            pageItems.push(await this.getEntityData(item, "favorit", config));
+          } catch (error) {
+            throw new Error(`favoritScreensaverEntity - ${error}`);
+          }
+        }
+      }
+    }
+    if (config.alternateScreensaverEntity) {
+      for (const item of config.alternateScreensaverEntity) {
+        if (item) {
+          try {
+            pageItems.push(await this.getEntityData(item, "alternate", config));
+          } catch (error) {
+            throw new Error(`alternateScreensaverEntity - ${error}`);
+          }
+        }
+      }
+    }
     if (config.bottomScreensaverEntity) {
       for (const item of config.bottomScreensaverEntity) {
         if (item) {
@@ -1296,11 +1318,13 @@ class ConfigManager extends import_library.BaseClass {
     if (config.weatherEntity) {
       if (config.weatherEntity.startsWith("accuweather.") && config.weatherEntity.endsWith(".")) {
         const instance = config.weatherEntity.split(".")[1];
-        pageItems.push({
-          template: "text.accuweather.favorit",
-          dpInit: `/^accuweather\\.${instance}.+/`,
-          modeScr: "favorit"
-        });
+        if (pageItems.findIndex((x) => x.modeScr === "favorit") === -1) {
+          pageItems.push({
+            template: "text.accuweather.favorit",
+            dpInit: `/^accuweather\\.${instance}.+/`,
+            modeScr: "favorit"
+          });
+        }
         if (config.weatherAddDefaultItems) {
           pageItems = pageItems.concat([
             // Bottom 1 - accuWeather.0. Forecast Day 1
@@ -1673,6 +1697,9 @@ class ConfigManager extends import_library.BaseClass {
       throw new Error("Invalid data");
     }
     result.data.entity2 = result.data.entity1;
+    if (mode === "indicator") {
+      result.type = "button";
+    }
     let obj;
     if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith(".")) {
       obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);

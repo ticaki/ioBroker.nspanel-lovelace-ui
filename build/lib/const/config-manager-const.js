@@ -68,6 +68,8 @@ const defaultConfig = {
   panelTopic: "",
   weatherEntity: "",
   bottomScreensaverEntity: [],
+  favoritScreensaverEntity: [],
+  alternateScreensaverEntity: [],
   defaultColor: {
     red: 0,
     green: 0,

@@ -23,7 +23,7 @@ export class ConfigManager extends BaseClass {
     colorDefault: RGB = Color.Off;
     dontWrite: boolean = false;
 
-    readonly scriptVersion = '0.3.0';
+    readonly scriptVersion = '0.4.0';
     readonly breakingVersion = '0.2.0';
 
     constructor(adapter: NspanelLovelaceUi, dontWrite: boolean = false) {
@@ -1531,6 +1531,28 @@ export class ConfigManager extends BaseClass {
 
     async getScreensaverConfig(config: ScriptConfig.Config): Promise<pages.PageBaseConfig> {
         let pageItems: typePageItem.PageItemDataItemsOptions[] = [];
+        if (config.favoritScreensaverEntity) {
+            for (const item of config.favoritScreensaverEntity) {
+                if (item) {
+                    try {
+                        pageItems.push(await this.getEntityData(item, 'favorit', config));
+                    } catch (error: any) {
+                        throw new Error(`favoritScreensaverEntity - ${error}`);
+                    }
+                }
+            }
+        }
+        if (config.alternateScreensaverEntity) {
+            for (const item of config.alternateScreensaverEntity) {
+                if (item) {
+                    try {
+                        pageItems.push(await this.getEntityData(item, 'alternate', config));
+                    } catch (error: any) {
+                        throw new Error(`alternateScreensaverEntity - ${error}`);
+                    }
+                }
+            }
+        }
         if (config.bottomScreensaverEntity) {
             for (const item of config.bottomScreensaverEntity) {
                 if (item) {
@@ -1547,11 +1569,13 @@ export class ConfigManager extends BaseClass {
         if (config.weatherEntity) {
             if (config.weatherEntity.startsWith('accuweather.') && config.weatherEntity.endsWith('.')) {
                 const instance = config.weatherEntity.split('.')[1];
-                pageItems.push({
-                    template: 'text.accuweather.favorit',
-                    dpInit: `/^accuweather\\.${instance}.+/`,
-                    modeScr: 'favorit',
-                });
+                if (pageItems.findIndex(x => x.modeScr === 'favorit') === -1) {
+                    pageItems.push({
+                        template: 'text.accuweather.favorit',
+                        dpInit: `/^accuweather\\.${instance}.+/`,
+                        modeScr: 'favorit',
+                    });
+                }
                 if (config.weatherAddDefaultItems) {
                     pageItems = pageItems.concat([
                         // Bottom 1 - accuWeather.0. Forecast Day 1
@@ -1973,6 +1997,7 @@ export class ConfigManager extends BaseClass {
             type: 'text',
             data: { entity1: {} },
         };
+
         if (entity.type === 'native') {
             const temp = JSON.parse(JSON.stringify(entity.native)) as typePageItem.PageItemDataItemsOptions;
             return temp;
@@ -1986,6 +2011,10 @@ export class ConfigManager extends BaseClass {
         }
         result.data.entity2 = result.data.entity1;
 
+        if (mode === 'indicator') {
+            // @ts-expect-error ignore this button has all propertys of text
+            result.type = 'button';
+        }
         let obj;
         if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith('.')) {
             obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);

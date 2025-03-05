@@ -511,6 +511,8 @@ declare namespace ScriptConfig {
          * Adds standard icons to the bottom field of the screensaver.
          */
         weatherAddDefaultItems?: boolean;
+        favoritScreensaverEntity: ScreenSaverElement[];
+        alternateScreensaverEntity: ScreenSaverElement[];
         leftScreensaverEntity: ScreenSaverElementWithUndefined[];
         bottomScreensaverEntity: ScreenSaverElement[];
         indicatorScreensaverEntity: ScreenSaverElementWithUndefined[];
@@ -524,7 +526,7 @@ declare namespace ScriptConfig {
         subPages: PageType[];
         button1: ConfigButtonFunction;
         button2: ConfigButtonFunction;
-        nativePageItems?: typePageItem.PageItemDataItemsOptions[];
+        nativePageItems?: any[];
         navigation?: NavigationItemConfig[];
     };
 
@@ -572,7 +574,7 @@ declare namespace ScriptConfig {
               type: 'template';
               template: string;
               dpInit: string;
-              modeScr: 'bottom';
+              modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
           }
     );
     export type ScreenSaverMRElement = { type: ScreenSaverType } & (

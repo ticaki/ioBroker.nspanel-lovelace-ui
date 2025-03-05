@@ -51,6 +51,8 @@ export const defaultConfig: ScriptConfig.Config = {
     panelTopic: '',
     weatherEntity: '',
     bottomScreensaverEntity: [],
+    favoritScreensaverEntity: [],
+    alternateScreensaverEntity: [],
     defaultColor: {
         red: 0,
         green: 0,

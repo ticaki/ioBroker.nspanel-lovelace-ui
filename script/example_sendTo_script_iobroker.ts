@@ -87,6 +87,20 @@ async function configuration (): Promise<void> {
          **                    Screensaver Configuration                      **
          **                                                                   **
          ***********************************************************************/
+
+
+         favoritScreensaverEntity: [
+            {
+                type: 'template',
+                template: 'text.accuweather.favorit',
+                dpInit: `/^accuweather\\.0.+/`,
+                modeScr: 'favorit',
+            }
+         ],
+         alternateScreensaverEntity: [
+            // only used with alternate Screensaver
+         ],
+
         indicatorScreensaverEntity: [
             // indicatorScreensaverEntity 1 (only Advanced Screensaver)
             {
@@ -435,7 +449,7 @@ async function configuration (): Promise<void> {
     log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version}))
 }
 
-const version = '0.3.0';
+const version = '0.4.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -940,6 +954,8 @@ declare namespace ScriptConfig {
          * Adds standard icons to the bottom field of the screensaver.
          */
         weatherAddDefaultItems?: boolean;
+        favoritScreensaverEntity: ScreenSaverElement[]
+        alternateScreensaverEntity: ScreenSaverElement[]
         leftScreensaverEntity: ScreenSaverElementWithUndefined[];
         bottomScreensaverEntity: ScreenSaverElement[];
         indicatorScreensaverEntity: ScreenSaverElementWithUndefined[];
@@ -953,7 +969,7 @@ declare namespace ScriptConfig {
         subPages: PageType[];
         button1: ConfigButtonFunction;
         button2: ConfigButtonFunction;
-        nativePageItems?: any[];
+        nativePages?: any[];
         navigation?: NavigationItemConfig[];
     };
     export type leftScreensaverEntityType =
@@ -1012,7 +1028,7 @@ declare namespace ScriptConfig {
               type: 'template';
               template: string;
               dpInit: string;
-              modeScr: 'bottom';
+              modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
           }
     );
     export type ScreenSaverMRElement = { type: ScreenSaverType } & (
@@ -1027,14 +1043,7 @@ declare namespace ScriptConfig {
               ScreensaverEntityValueUnit: string | null;
               ScreensaverEntityOnColor: RGB;
               ScreensaverEntityOffColor: RGB;
-          }
-        | { type: 'native'; native: any }
-        | {
-              type: 'template';
-              template: string;
-              dpInit: string;
-              modeScr: 'bottom';
-          }
+          }  
     );
 
     type ScreenSaverType = 'template' | 'script' | 'native';
