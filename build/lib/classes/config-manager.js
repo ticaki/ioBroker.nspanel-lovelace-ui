@@ -1638,7 +1638,7 @@ class ConfigManager extends import_library.BaseClass {
       result.data.icon.true.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn);
     }
     if (entity.ScreensaverEntityIconOff) {
-      result.data.icon.true.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff);
+      result.data.icon.false.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff);
     }
     if (entity.ScreensaverEntityValue) {
       result.data.icon.false.text = {
