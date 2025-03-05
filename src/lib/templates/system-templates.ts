@@ -477,6 +477,86 @@ const ScreensaverOptions: PageBaseConfig = {
                 text: { true: { type: 'const', constVal: 'dimActive' }, false: undefined },
             },
         },
+        {
+            role: '',
+            type: 'number',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'dim/nightActive' },
+                    factor: { type: 'const', constVal: 1 / 10 },
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 10 },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'dimnightActive' }, false: undefined },
+            },
+        },
+        {
+            role: '',
+            type: 'number',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'dim/nightStandby' },
+                    factor: { type: 'const', constVal: 1 / 10 },
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 10 },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'dimnightStandby' }, false: undefined },
+            },
+        },
+        {
+            role: '',
+            type: 'number',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'dim/nightHourStart' },
+                    factor: { type: 'const', constVal: 1 / 10 },
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 10 },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'dimnightHourStart' }, false: undefined },
+            },
+        },
+        {
+            role: '',
+            type: 'number',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'dim/nightHourEnd' },
+                    factor: { type: 'const', constVal: 1 / 10 },
+                    minScale: { type: 'const', constVal: 0 },
+                    maxScale: { type: 'const', constVal: 10 },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'dimnightHourEnd' }, false: undefined },
+            },
+        },
     ],
     items: undefined,
 };
