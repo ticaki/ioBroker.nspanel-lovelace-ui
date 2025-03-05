@@ -1600,7 +1600,7 @@ class ConfigManager extends import_library.BaseClass {
     } else if (entity.ScreensaverEntity) {
       result.data.entity1.value = {
         type: "internal",
-        dp: `cmd/power${!entity.ScreensaverEntity.endsWith(`2`) ? 2 : 1}`
+        dp: `cmd/power${entity.ScreensaverEntity === `Relay.2` ? 2 : 1}`
       };
     }
     result.data.icon = {
