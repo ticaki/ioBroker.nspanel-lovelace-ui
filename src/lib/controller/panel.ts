@@ -809,7 +809,7 @@ export class Panel extends BaseClass {
                 }
                 case 'dim.standby': {
                     await this.statesControler.setInternalState(
-                        `${this.name}/cmd/dim/standby`,
+                        `${this.name}/cmd/dimStandby`,
                         // eslint-disable-next-line @typescript-eslint/no-base-to-string
                         parseInt(String(state.val)),
                         false,
@@ -818,7 +818,7 @@ export class Panel extends BaseClass {
                 }
                 case 'dim.active': {
                     await this.statesControler.setInternalState(
-                        `${this.name}/cmd/dim/active`,
+                        `${this.name}/cmd/dimActive`,
                         // eslint-disable-next-line @typescript-eslint/no-base-to-string
                         parseInt(String(state.val)),
                         false,
