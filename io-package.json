@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "news": {
+      "0.1.6": {
+        "en": "fixes #140\nfixes #141",
+        "de": "fixes #140\nfixes #141",
+        "ru": "обсуждение #140\nремонт #141",
+        "pt": "correções #140\ncorreções #141",
+        "nl": "fixes #140\nfixes #141",
+        "fr": "correctifs #140\ncorrige #141",
+        "it": "correzioni #140\ncorrezioni #141",
+        "es": "fijaciones #140\nfijaciones #141",
+        "pl": "poprawki # 140\npoprawki # 141",
+        "uk": "застібки #140\nфіксатори #141",
+        "zh-cn": "修正 # 140\n修正 # 141"
+      },
       "0.1.5": {
         "en": "fixes [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfixes #133\nConfiguration is reconfigured at every start. If this fails, the saved conversion is used.\nThe raw version and a converted version are saved when the configuration is transferred.\nparent added to navigation\ncardQR added",
         "de": "[#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfixes #133\nDie Konfiguration wird zu jedem Start neu konfiguriert. Wenn dies ausfällt, wird die gespeicherte Konvertierung verwendet.\nDie Rohversion und eine konvertierte Version werden beim Übertragen der Konfiguration gespeichert.\nzur navigation hinzugefügt\ncardQR hinzugefügt",

@@ -1663,7 +1663,6 @@ class ConfigManager extends import_library.BaseClass {
     };
     if (entity.type === "native") {
       const temp = JSON.parse(JSON.stringify(entity.native));
-      delete temp.type;
       return temp;
     } else if (entity.type === "template") {
       const temp = JSON.parse(JSON.stringify(entity));
