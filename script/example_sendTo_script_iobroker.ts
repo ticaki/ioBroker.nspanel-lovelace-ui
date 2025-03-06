@@ -961,7 +961,11 @@ declare namespace ScriptConfig {
         indicatorScreensaverEntity: ScreenSaverElementWithUndefined[];
         mrIcon1ScreensaverEntity: ScreenSaverMRElement;
         mrIcon2ScreensaverEntity: ScreenSaverMRElement;
-        defaultColor: RGB;
+        /**
+         * The default color for the panel.
+         * @deprecated use defaultOnColor and defaultOffColor
+         */
+        defaultColor?: RGB;
         defaultOnColor: RGB;
         defaultOffColor: RGB;
         defaultBackgroundColor: RGB;

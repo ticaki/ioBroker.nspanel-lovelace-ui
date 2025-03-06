@@ -112,9 +112,6 @@ class ConfigManager extends import_library.BaseClass {
     } else {
       panelConfig.name = `NSPanel-${config.panelTopic}`;
     }
-    if (config.defaultColor) {
-      this.colorDefault = import_Color.Color.convertScriptRGBtoRGB(config.defaultColor);
-    }
     if (config.defaultOnColor) {
       this.colorOn = import_Color.Color.convertScriptRGBtoRGB(config.defaultOnColor);
     }

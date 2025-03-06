@@ -121,9 +121,6 @@ export class ConfigManager extends BaseClass {
         } else {
             panelConfig.name = `NSPanel-${config.panelTopic}`;
         }
-        if (config.defaultColor) {
-            this.colorDefault = Color.convertScriptRGBtoRGB(config.defaultColor);
-        }
         if (config.defaultOnColor) {
             this.colorOn = Color.convertScriptRGBtoRGB(config.defaultOnColor);
         }

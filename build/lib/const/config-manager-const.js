@@ -70,11 +70,6 @@ const defaultConfig = {
   bottomScreensaverEntity: [],
   favoritScreensaverEntity: [],
   alternateScreensaverEntity: [],
-  defaultColor: {
-    red: 0,
-    green: 0,
-    blue: 0
-  },
   defaultOnColor: {
     red: 0,
     green: 0,
