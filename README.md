@@ -306,6 +306,7 @@ Sind natürlich alles Dataitems
     ### **WORK IN PROGRESS**
 -->
  ### **WORK IN PROGRESS**
+- (tt-tom17) completed servicepages
 - (ticaki) fixes [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)
 - (ticaki) fixes #133
 - (ticaki) Configuration is reconfigured at every start. If this fails, the saved conversion is used.
