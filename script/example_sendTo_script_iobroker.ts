@@ -62,7 +62,6 @@ async function configuration (): Promise<void> {
         weatherEntity: 'accuweather.0.',
         defaultOffColor: Off,
         defaultOnColor: On,
-        defaultColor: Off,
         defaultBackgroundColor: HMIDark,
         weatherAddDefaultItems: false,
 
