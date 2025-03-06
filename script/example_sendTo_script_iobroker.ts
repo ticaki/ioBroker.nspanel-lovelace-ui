@@ -449,7 +449,7 @@ async function configuration (): Promise<void> {
     log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version}))
 }
 
-const version = '0.4.1';
+const version = '0.5.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color

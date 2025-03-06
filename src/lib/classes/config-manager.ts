@@ -23,7 +23,7 @@ export class ConfigManager extends BaseClass {
     colorDefault: RGB = Color.Off;
     dontWrite: boolean = false;
 
-    readonly scriptVersion = '0.4.1';
+    readonly scriptVersion = '0.5.0';
     readonly breakingVersion = '0.2.0';
 
     constructor(adapter: NspanelLovelaceUi, dontWrite: boolean = false) {
