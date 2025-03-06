@@ -488,6 +488,84 @@ const ScreensaverOptions = {
         },
         text: { true: { type: "const", constVal: "dimActive" }, false: void 0 }
       }
+    },
+    {
+      role: "",
+      type: "number",
+      data: {
+        entity1: {
+          value: { type: "internal", dp: "cmd/dimNightActive" },
+          factor: { type: "const", constVal: 1 / 10 },
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 10 }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "clock-time-twelve-outline" },
+            color: { type: "const", constVal: import_Color.Color.White }
+          },
+          false: void 0
+        },
+        text: { true: { type: "const", constVal: "dimNightActive" }, false: void 0 }
+      }
+    },
+    {
+      role: "",
+      type: "number",
+      data: {
+        entity1: {
+          value: { type: "internal", dp: "cmd/dimNightStandby" },
+          factor: { type: "const", constVal: 1 / 10 },
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 10 }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "clock-time-twelve-outline" },
+            color: { type: "const", constVal: import_Color.Color.White }
+          },
+          false: void 0
+        },
+        text: { true: { type: "const", constVal: "dimNightStandby" }, false: void 0 }
+      }
+    },
+    {
+      role: "",
+      type: "number",
+      data: {
+        entity1: {
+          value: { type: "internal", dp: "cmd/dimNightHourStart" },
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 23 }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "clock-time-twelve-outline" },
+            color: { type: "const", constVal: import_Color.Color.White }
+          },
+          false: void 0
+        },
+        text: { true: { type: "const", constVal: "dimNightHourStart" }, false: void 0 }
+      }
+    },
+    {
+      role: "",
+      type: "number",
+      data: {
+        entity1: {
+          value: { type: "internal", dp: "cmd/dimNightHourEnd" },
+          minScale: { type: "const", constVal: 0 },
+          maxScale: { type: "const", constVal: 23 }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "clock-time-twelve-outline" },
+            color: { type: "const", constVal: import_Color.Color.White }
+          },
+          false: void 0
+        },
+        text: { true: { type: "const", constVal: "dimNightHourEnd" }, false: void 0 }
+      }
     }
   ],
   items: void 0
@@ -515,7 +593,7 @@ const RelaisOption = {
       data: {
         icon: {
           true: {
-            value: { type: "const", constVal: "numeric-2-circle-outline" },
+            value: { type: "const", constVal: "numeric-1-circle-outline" },
             color: { type: "const", constVal: import_Color.Color.Gray }
           },
           false: {
@@ -553,7 +631,7 @@ const RelaisOption = {
             color: { type: "const", constVal: import_Color.Color.Gray }
           },
           false: {
-            value: { type: "const", constVal: "numeric-1-circle" },
+            value: { type: "const", constVal: "numeric-2-circle" },
             color: { type: "const", constVal: import_Color.Color.Yellow }
           }
         },

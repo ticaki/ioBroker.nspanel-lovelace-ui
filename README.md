@@ -307,6 +307,7 @@ Sind natürlich alles Dataitems
 -->
 ### **WORK IN PROGRESS**
 - (ticaki)  'switch' added
+- (tt-tom17) completed servicepages
 
 ### 0.1.7 (2025-03-06)
 - (ticaki) cardGrid Number values -> Show an icon if user has defined one, otherwise number
@@ -330,6 +331,7 @@ Sind natürlich alles Dataitems
 
 ### 0.1.4 (2025-03-03)
 - (ticaki) fixes #131
+
 
 ### 0.1.3 (2025-03-02)
 - (ticaki) Data point generation changed

@@ -1331,6 +1331,50 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
                 write: true,
             },
         },
+        'cmd/dimNightActive': {
+            val: 0,
+            ack: true,
+            common: {
+                name: '',
+                type: 'number',
+                role: 'value',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/dimNightStandby': {
+            val: 0,
+            ack: true,
+            common: {
+                name: '',
+                type: 'number',
+                role: 'value',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/dimNightHourStart': {
+            val: 0,
+            ack: true,
+            common: {
+                name: '',
+                type: 'number',
+                role: 'value',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/dimNightHourEnd': {
+            val: 0,
+            ack: true,
+            common: {
+                name: '',
+                type: 'number',
+                role: 'value',
+                read: true,
+                write: true,
+            },
+        },
         'cmd/screensaverTimeout': {
             val: 0,
             ack: true,
