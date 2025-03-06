@@ -854,51 +854,39 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'dim.nightActive': {
-                    if (state && state.val != null) {
-                        this.dimMode.highNight = state.val as number;
-                        this.sendDimmode();
-                        await this.library.writedp(
-                            `panels.${this.name}.cmd.dim.nightActive`,
-                            this.dimMode.highNight,
-                            genericStateObjects.panel.panels.cmd.dim.nightActive,
-                        );
-                    }
+                    await this.statesControler.setInternalState(
+                        `${this.name}/cmd/dimNightActive`,
+                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                        parseInt(String(state.val)),
+                        false,
+                    );
                     break;
                 }
                 case 'dim.nightStandby': {
-                    if (state && state.val != null) {
-                        this.dimMode.lowNight = state.val as number;
-                        this.sendDimmode();
-                        await this.library.writedp(
-                            `panels.${this.name}.cmd.dim.nightStandby`,
-                            this.dimMode.lowNight,
-                            genericStateObjects.panel.panels.cmd.dim.nightStandby,
-                        );
-                    }
+                    await this.statesControler.setInternalState(
+                        `${this.name}/cmd/dimNightStandby`,
+                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                        parseInt(String(state.val)),
+                        false,
+                    );
                     break;
                 }
                 case 'dim.nightHourStart': {
-                    if (state && state.val != null && typeof state.val === 'number') {
-                        this.dimMode.startNight = state.val;
-                        this.sendDimmode();
-                        await this.library.writedp(
-                            `panels.${this.name}.cmd.dim.nightHourStart`,
-                            String(this.dimMode.startNight),
-                            genericStateObjects.panel.panels.cmd.dim.nightHourStart,
-                        );
-                    }
+                    await this.statesControler.setInternalState(
+                        `${this.name}/cmd/dimNightHourStart`,
+                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                        parseInt(String(state.val)),
+                        false,
+                    );
                     break;
                 }
                 case 'dim.nightHourEnd': {
-                    if (state && state.val != null && typeof state.val === 'number') {
-                        this.dimMode.endNight = state.val;
-                        this.sendDimmode();
-                        await this.library.writedp(
-                            `panels.${this.name}.cmd.dim.nightHourEnd`,
-                            String(this.dimMode.endNight),
-                            genericStateObjects.panel.panels.cmd.dim.nightHourEnd,
-                        );
-                    }
+                    await this.statesControler.setInternalState(
+                        `${this.name}/cmd/dimNightHourEnd`,
+                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                        parseInt(String(state.val)),
+                        false,
+                    );
                     break;
                 }
                 case 'dim.delay': {
@@ -1299,6 +1287,38 @@ export class Panel extends BaseClass {
                     await this.library.writedp(`panels.${this.name}.cmd.dim.active`, this.dimMode.high);
                     break;
                 }
+                case 'cmd/dimNightActive': {
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                    const val = parseInt(String(state.val));
+                    this.dimMode.highNight = val;
+                    this.sendDimmode();
+                    await this.library.writedp(`panels.${this.name}.cmd.dim.nightActive`, this.dimMode.highNight);
+                    break;
+                }
+                case 'cmd/dimNightStandby': {
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                    const val = parseInt(String(state.val));
+                    this.dimMode.lowNight = val;
+                    this.sendDimmode();
+                    await this.library.writedp(`panels.${this.name}.cmd.dim.nightStandby`, this.dimMode.lowNight);
+                    break;
+                }
+                case 'cmd/dimNightHourStart': {
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                    const val = parseInt(String(state.val));
+                    this.dimMode.startNight = val;
+                    this.sendDimmode();
+                    await this.library.writedp(`panels.${this.name}.cmd.dim.nightHourStart`, this.dimMode.startNight);
+                    break;
+                }
+                case 'cmd/dimNightHourEnd': {
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                    const val = parseInt(String(state.val));
+                    this.dimMode.endNight = val;
+                    this.sendDimmode();
+                    await this.library.writedp(`panels.${this.name}.cmd.dim.nightHourEnd`, this.dimMode.endNight);
+                    break;
+                }
                 case 'cmd/NotificationCleared2':
                 case 'cmd/NotificationCleared': {
                     await this.controller.systemNotification.clearNotification(this.notifyIndex);
@@ -1364,6 +1384,18 @@ export class Panel extends BaseClass {
             }
             case 'cmd/dimActive': {
                 return this.dimMode.high;
+            }
+            case 'cmd/dimNightActive': {
+                return this.dimMode.highNight;
+            }
+            case 'cmd/dimNightStandby': {
+                return this.dimMode.lowNight;
+            }
+            case 'cmd/dimNightHourStart': {
+                return this.dimMode.startNight;
+            }
+            case 'cmd/dimNightHourEnd': {
+                return this.dimMode.endNight;
             }
             case 'cmd/detachLeft': {
                 return this.detach.left;

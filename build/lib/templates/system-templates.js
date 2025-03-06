@@ -535,9 +535,8 @@ const ScreensaverOptions = {
       data: {
         entity1: {
           value: { type: "internal", dp: "cmd/dimNightHourStart" },
-          factor: { type: "const", constVal: 1 / 10 },
           minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 10 }
+          maxScale: { type: "const", constVal: 23 }
         },
         icon: {
           true: {
@@ -555,9 +554,8 @@ const ScreensaverOptions = {
       data: {
         entity1: {
           value: { type: "internal", dp: "cmd/dimNightHourEnd" },
-          factor: { type: "const", constVal: 1 / 10 },
           minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 10 }
+          maxScale: { type: "const", constVal: 23 }
         },
         icon: {
           true: {
