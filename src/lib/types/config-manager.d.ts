@@ -511,12 +511,13 @@ declare namespace ScriptConfig {
          * Adds standard icons to the bottom field of the screensaver.
          */
         weatherAddDefaultItems?: boolean;
+        favoritScreensaverEntity: ScreenSaverElement[];
+        alternateScreensaverEntity: ScreenSaverElement[];
         leftScreensaverEntity: ScreenSaverElementWithUndefined[];
         bottomScreensaverEntity: ScreenSaverElement[];
         indicatorScreensaverEntity: ScreenSaverElementWithUndefined[];
         mrIcon1ScreensaverEntity: ScreenSaverMRElement;
         mrIcon2ScreensaverEntity: ScreenSaverMRElement;
-        defaultColor: RGB;
         defaultOnColor: RGB;
         defaultOffColor: RGB;
         defaultBackgroundColor: RGB;
@@ -524,35 +525,41 @@ declare namespace ScriptConfig {
         subPages: PageType[];
         button1: ConfigButtonFunction;
         button2: ConfigButtonFunction;
-        nativePageItems?: typePageItem.PageItemDataItemsOptions[];
+        nativePageItems?: any[];
         navigation?: NavigationItemConfig[];
+        advancedOptions?: {
+            screensaverSwipe?: boolean;
+            screensaverIndicatorButtons?: boolean;
+        };
     };
 
     export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
-    export type ScreenSaverElement = {
-        ScreensaverEntity: string;
-        ScreensaverEntityText: string;
-        /**
-         * Value wird mit diesem Factor multipliziert.
-         */
-        ScreensaverEntityFactor?: number;
-        ScreensaverEntityDecimalPlaces?: number;
-        ScreensaverEntityDateFormat?: Intl.DateTimeFormatOptions;
-        ScreensaverEntityIconOn?: string | null;
-        ScreensaverEntityIconOff?: string | null;
-        ScreensaverEntityUnitText?: string;
-        ScreensaverEntityIconColor?: RGB | IconScaleElement | string;
-        ScreensaverEntityOnColor?: RGB;
-        ScreensaverEntityOffColor?: RGB;
-        ScreensaverEntityOnText?: string | null;
-        ScreensaverEntityOffText?: string | null;
-        ScreensaverEntityNaviToPage?: PageType;
-        /**
-         * To show different icons for different values in the screensaver
-         * 
-         * Value is the threshold for the icon. Lower values are first.
-         * Example:
-         * [
+    export type ScreenSaverElement = { type: ScreenSaverType } & (
+        | {
+              type: 'script';
+              ScreensaverEntity: string;
+              ScreensaverEntityText: string;
+              /**
+               * Value wird mit diesem Factor multipliziert.
+               */
+              ScreensaverEntityFactor?: number;
+              ScreensaverEntityDecimalPlaces?: number;
+              ScreensaverEntityDateFormat?: Intl.DateTimeFormatOptions;
+              ScreensaverEntityIconOn?: string | null;
+              ScreensaverEntityIconOff?: string | null;
+              ScreensaverEntityUnitText?: string;
+              ScreensaverEntityIconColor?: RGB | IconScaleElement | string;
+              ScreensaverEntityOnColor?: RGB;
+              ScreensaverEntityOffColor?: RGB;
+              ScreensaverEntityOnText?: string | null;
+              ScreensaverEntityOffText?: string | null;
+              ScreensaverEntityNaviToPage?: PageType;
+              /**
+               * To show different icons for different values in the screensaver
+               * 
+               * Value is the threshold for the icon. Lower values are first.
+               * Example:
+               * [
                     {icon: 'sun-thermometer', value:40},
                     {icon: 'sun-thermometer-outline', value: 35},
                     {icon: 'thermometer-high', value: 30},
@@ -562,33 +569,40 @@ declare namespace ScriptConfig {
                     {icon: 'snowflake-thermometer', value: -2},
                     {icon: 'snowflake', value: -10},
                     ]
-         */
-        ScreensaverEntityIconSelect?: { icon: string; value: number }[] | null;
-    };
+               */
+              ScreensaverEntityIconSelect?: { icon: string; value: number }[] | null;
+          }
+        | { type: 'native'; native: any }
+        | {
+              type: 'template';
+              template: string;
+              dpInit: string;
+              modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
+          }
+    );
+    export type ScreenSaverMRElement = { type: ScreenSaverType } & (
+        | {
+              type: 'script';
+              ScreensaverEntity: string | null;
+              ScreensaverEntityIconOn: string | null;
+              ScreensaverEntityIconSelect?: { [key: string]: string } | null | undefined;
+              ScreensaverEntityIconOff: string | null;
+              ScreensaverEntityValue: string | null;
+              ScreensaverEntityValueDecimalPlace: number | null;
+              ScreensaverEntityValueUnit: string | null;
+              ScreensaverEntityOnColor: RGB;
+              ScreensaverEntityOffColor: RGB;
+          }
+        | { type: 'native'; native: any }
+        | {
+              type: 'template';
+              template: string;
+              dpInit: string;
+              modeScr: 'bottom';
+          }
+    );
 
-    export type ScreenSaverMRElement = {
-        ScreensaverEntity: string | null;
-        ScreensaverEntityIconOn: string | null;
-        ScreensaverEntityIconSelect?: { [key: string]: string } | null | undefined;
-        ScreensaverEntityIconOff: string | null;
-        ScreensaverEntityValue: string | null;
-        ScreensaverEntityValueDecimalPlace: number | null;
-        ScreensaverEntityValueUnit: string | null;
-        ScreensaverEntityOnColor: RGB;
-        ScreensaverEntityOffColor: RGB;
-    };
-    export type ScreenSaverMRDataElement = {
-        ScreensaverEntity: string | number | boolean | null;
-        ScreensaverEntityIconOn: string | null;
-        ScreensaverEntityIconOff: string | null;
-        ScreensaverEntityValue: string | number | boolean | null;
-        ScreensaverEntityValueDecimalPlace: number | null;
-        ScreensaverEntityValueUnit: string | null;
-        ScreensaverEntityOnColor: RGB;
-        ScreensaverEntityOffColor: RGB;
-        ScreensaverEntityIconSelect: { [key: string]: string } | null;
-    };
-
+    type ScreenSaverType = 'template' | 'script' | 'native';
     export type IconScaleElement = {
         val_min: number;
         val_max: number;

@@ -636,6 +636,8 @@ export type screensaverDataItemOptions = {
     mode: Types.ScreensaverModeType;
     rotationTime: number;
     model: Types.NSpanelModel;
+    screensaverSwipe: boolean;
+    screensaverIndicatorButtons: boolean;
     data: undefined;
 };
 type Extends<T, U extends T> = U;

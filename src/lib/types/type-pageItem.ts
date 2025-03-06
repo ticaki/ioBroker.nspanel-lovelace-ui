@@ -170,6 +170,8 @@ export type PageItemDataItemsOptions =
           dpInit?: string | RegExp;
           appendix?: string;
           color?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions; scale?: Types.IconScaleElement };
+          icon?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions };
+          iconText?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions };
       } & Partial<
           Omit<PageItemUnion, 'template' | 'data' | 'type'> &
               pages.ChangeDeepPartial<
@@ -241,19 +243,6 @@ export type PageItemFanDataItems = {
     data: pages.ChangeTypeOfKeys<PageItemFan, dataItem.Dataitem | undefined>;
 };
 
-export type PageItemText = Pick<
-    PageItemBase,
-    'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'entity4' | 'icon'
->;
-export type PageItemTextDataItemsOptions = {
-    type: 'text';
-    data: pages.ChangeTypeOfKeys<PageItemText, Types.DataItemsOptions | undefined>;
-};
-export type PageItemTextDataItems = {
-    type: 'text';
-    data: pages.ChangeTypeOfKeys<PageItemText, dataItem.Dataitem | undefined>;
-};
-
 export type PageItemNumber = Pick<PageItemBase, 'entity1' | 'text' | 'icon' | 'minValue1' | 'maxValue1'>;
 export type PageItemNumberDataItemsOptions = {
     type: 'number';
@@ -280,11 +269,24 @@ export type PageItemButton = Pick<
     | 'entity4'
 >;
 export type PageItemButtonDataItemsOptions = {
-    type: 'button';
+    type: 'button' | 'switch';
     data: pages.ChangeTypeOfKeys<PageItemButton, Types.DataItemsOptions | undefined>;
 };
 export type PageItemButtonDataItems = {
-    type: 'button';
+    type: 'button' | 'switch';
+    data: pages.ChangeTypeOfKeys<PageItemButton, dataItem.Dataitem | undefined>;
+};
+
+export type PageItemText = Pick<
+    PageItemBase,
+    'entity1' | 'text' | 'text1' | 'entity2' | 'entity3' | 'entity4' | 'icon'
+>;
+export type PageItemTextDataItemsOptions = {
+    type: 'text';
+    data: pages.ChangeTypeOfKeys<PageItemButton, Types.DataItemsOptions | undefined>;
+};
+export type PageItemTextDataItems = {
+    type: 'text';
     data: pages.ChangeTypeOfKeys<PageItemButton, dataItem.Dataitem | undefined>;
 };
 

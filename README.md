@@ -305,8 +305,23 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
- ### **WORK IN PROGRESS**
+### **WORK IN PROGRESS**
+- (ticaki)  'switch' added
 - (tt-tom17) completed servicepages
+
+### 0.1.7 (2025-03-06)
+- (ticaki) cardGrid Number values -> Show an icon if user has defined one, otherwise number
+- (ticaki) fixes #143
+- (ticaki) fixes #147
+- (ticaki) fixes #146
+- (ticaki) fixes #144
+- (ticaki) fixes #148
+
+### 0.1.6 (2025-03-05)
+ - (ticaki) fixes #140
+ - (ticaki) fixes #141
+
+### 0.1.5 (2025-03-03)
 - (ticaki) fixes [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)
 - (ticaki) fixes #133
 - (ticaki) Configuration is reconfigured at every start. If this fails, the saved conversion is used.

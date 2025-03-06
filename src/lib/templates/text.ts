@@ -905,6 +905,275 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+
+    'text.accuweather.windspeed': {
+        role: 'text',
+        type: 'text',
+        modeScr: 'bottom',
+        adapter: 'accuweather',
+        data: {
+            entity1: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /^accuweather\.[0-9]+\.Current\.WindSpeed/,
+                    dp: ``,
+                },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                unit: undefined,
+            },
+            entity2: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /^accuweather\.[0-9]+\.Current\.WindSpeed/,
+                    dp: ``,
+                },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                unit: {
+                    type: 'const',
+                    constVal: 'km/h',
+                },
+            },
+            icon: {
+                true: {
+                    value: {
+                        type: 'const',
+                        constVal: 'weather-windy',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSRed,
+                    },
+                },
+                false: {
+                    value: {
+                        type: 'const',
+                        constVal: 'weather-windy',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSGreen,
+                    },
+                },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 0, val_max: 80 },
+                },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: {
+                true: {
+                    type: 'const',
+                    constVal: 'Wind',
+                },
+                false: undefined,
+            },
+        },
+    },
+    'text.accuweather.winddirection': {
+        role: 'text',
+        type: 'text',
+        modeScr: 'bottom',
+        adapter: 'accuweather',
+        data: {
+            entity2: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /^accuweather\.[0-9]+\.Current\.WindDirectionText/,
+                    dp: ``,
+                },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                factor: undefined,
+                unit: {
+                    type: 'const',
+                    constVal: '°',
+                },
+            },
+            icon: {
+                true: {
+                    value: {
+                        type: 'const',
+                        constVal: 'windsock',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: '#FFFFFF',
+                    },
+                },
+                false: {
+                    value: undefined,
+                    color: undefined,
+                },
+                scale: undefined,
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: {
+                true: {
+                    type: 'const',
+                    constVal: 'Windr.',
+                },
+                false: undefined,
+            },
+        },
+    },
+    'text.accuweather.uvindex': {
+        role: 'text',
+        type: 'text',
+        adapter: 'accuweather',
+        data: {
+            entity1: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /^accuweather\.[0-9]+\.Current\.UVIndex/,
+                    dp: ``,
+                    forceType: 'string',
+                },
+                decimal: undefined,
+                factor: undefined,
+                unit: undefined,
+            },
+            entity2: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /^accuweather\.[0-9]+\.Current\.UVIndex/,
+                    dp: ``,
+                    forceType: 'string',
+                },
+                decimal: undefined,
+                factor: undefined,
+                unit: undefined,
+            },
+            icon: {
+                true: {
+                    value: {
+                        type: 'const',
+                        constVal: 'solar-power',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSRed,
+                    },
+                },
+                false: {
+                    value: {
+                        type: 'const',
+                        constVal: 'solar-power',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSGreen,
+                    },
+                },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 0, val_max: 9 },
+                },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: {
+                true: {
+                    type: 'const',
+                    constVal: 'UV',
+                },
+                false: undefined,
+            },
+        },
+    },
+    'text.accuweather.windgust': {
+        role: 'text',
+        type: 'text',
+        modeScr: 'bottom',
+        adapter: 'accuweather',
+        data: {
+            entity1: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /^accuweather\.[0-9]+\.Current\.WindGust/,
+                    dp: ``,
+                },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                unit: undefined,
+            },
+            entity2: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /^accuweather\.[0-9]+\.Current\.WindGust/,
+                    dp: ``,
+                },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                unit: {
+                    type: 'const',
+                    constVal: 'km/h',
+                },
+            },
+            icon: {
+                true: {
+                    value: {
+                        type: 'const',
+                        constVal: 'weather-tornado',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSRed,
+                    },
+                },
+                false: {
+                    value: {
+                        type: 'const',
+                        constVal: 'weather-tornado',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSGreen,
+                    },
+                },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 0, val_max: 80 },
+                },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: {
+                true: {
+                    type: 'const',
+                    constVal: 'Böen',
+                },
+                false: undefined,
+            },
+        },
+    },
     'text.fahrplan.departure': {
         role: 'text.list',
         type: 'text',

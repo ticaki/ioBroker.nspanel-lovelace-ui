@@ -34,7 +34,10 @@ class ConfigManager extends import_library.BaseClass {
   colorOff = import_Color.Color.Off;
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
-  scriptVersion = "0.2.4";
+
+  scriptVersion = "0.5.0";
+  breakingVersion = "0.2.0";
+
   constructor(adapter, dontWrite = false) {
     super(adapter, "config-manager");
     this.dontWrite = dontWrite;
@@ -58,17 +61,43 @@ class ConfigManager extends import_library.BaseClass {
    * If any errors occur during the process, they are logged and included in the returned messages..
    */
   async setScriptConfig(configuration) {
+    configuration.advancedOptions = Object.assign(
+      import_config_manager_const.defaultConfig.advancedOptions || {},
+      configuration.advancedOptions || {}
+    );
     const config = Object.assign(import_config_manager_const.defaultConfig, configuration);
     if (!config || !(0, import_config_manager_const.isConfig)(config)) {
-      this.log.error(`Invalid configuration from Script: ${config ? JSON.stringify(config) : "undefined"}`);
+
+      this.log.error(
+        `Invalid configuration from Script: ${config ? config.panelName || config.panelTopic || JSON.stringify(config) : "undefined"}`
+      );
+
       return { messages: ["Invalid configuration"], panelConfig: void 0 };
     }
-    let messages = [`version: ${config.version}`];
+    let messages = [];
+    this.log.info(`Start converting configuration for ${config.panelName || config.panelTopic}`);
     const version = config.version.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
     const requiredVersion = this.scriptVersion.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
+    const breakingVersion = this.breakingVersion.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
+    if (version < breakingVersion) {
+      messages.push(
+        `Update Script! Panel for Topic: ${config.panelTopic} Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`
+      );
+      this.log.error(messages[messages.length - 1]);
+      return { messages: ["Invalid configuration"], panelConfig: void 0 };
+    }
     if (version < requiredVersion) {
-      messages.push(`Script version ${config.version} is lower than the required version ${this.scriptVersion}!`);
+      messages.push(
+        `Update Script! Panel for Topic: ${config.panelTopic} Script version ${config.version} is lower than the required version ${this.scriptVersion}!`
+      );
       this.log.warn(messages[messages.length - 1]);
+    } else if (version > requiredVersion) {
+      messages.push(
+        `Update Adapter! Panel for Topic: ${config.panelTopic} Script version ${config.version} is higher than the required version ${this.scriptVersion}!`
+      );
+      this.log.warn(messages[messages.length - 1]);
+    } else {
+      messages.push(`Panel for Topic: ${config.panelTopic} Script version ${config.version} is correct!`);
     }
     let panelConfig = { pages: [], navigation: [] };
     if (!config.panelTopic) {
@@ -87,9 +116,6 @@ class ConfigManager extends import_library.BaseClass {
     } else {
       panelConfig.name = `NSPanel-${config.panelTopic}`;
     }
-    if (config.defaultColor) {
-      this.colorDefault = import_Color.Color.convertScriptRGBtoRGB(config.defaultColor);
-    }
     if (config.defaultOnColor) {
       this.colorOn = import_Color.Color.convertScriptRGBtoRGB(config.defaultOnColor);
     }
@@ -97,10 +123,16 @@ class ConfigManager extends import_library.BaseClass {
       this.colorOff = import_Color.Color.convertScriptRGBtoRGB(config.defaultOffColor);
     }
     try {
-      panelConfig.pages.push(await this.getScreensaverConfig(config));
+      const screensaver = await this.getScreensaverConfig(config);
+      if (screensaver && screensaver.config && (screensaver.config.card === "screensaver" || screensaver.config.card === "screensaver2" || screensaver.config.card === "screensaver3") && config.advancedOptions) {
+        screensaver.config.screensaverSwipe = !!config.advancedOptions.screensaverSwipe;
+        screensaver.config.screensaverIndicatorButtons = !!config.advancedOptions.screensaverIndicatorButtons;
+      }
+      panelConfig.pages.push(screensaver);
     } catch (error) {
       messages.push(`Screensaver configuration error - ${error}`);
       this.log.warn(messages[messages.length - 1].replaceAll("Error: ", ""));
+
     }
     if (config.pages.length > 1) {
       for (let a = 0; a < config.pages.length; a++) {
@@ -181,6 +213,7 @@ class ConfigManager extends import_library.BaseClass {
         obj.native.scriptConfigRaw = [];
       }
       obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
+
         (item, i) => obj.native.scriptConfigRaw.findIndex((item2) => item2.topic === item.topic) === i
       );
       obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
@@ -188,6 +221,7 @@ class ConfigManager extends import_library.BaseClass {
       );
       obj.native.scriptConfigRaw = obj.native.scriptConfigRaw.filter(
         (item) => this.adapter.config.panels.findIndex((a) => a.topic === item.topic) !== -1
+
       );
       obj.native.scriptConfig = obj.native.scriptConfig || [];
       obj.native.scriptConfig = obj.native.scriptConfig.filter(
@@ -289,7 +323,9 @@ class ConfigManager extends import_library.BaseClass {
               messages.push(
                 `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
               );
+
               this.log.warn(messages[messages.length - 1].replaceAll("Error: ", ""));
+
             }
           }
           panelConfig.pages.push(gridItem);
@@ -318,7 +354,13 @@ class ConfigManager extends import_library.BaseClass {
       return void 0;
     }
     let itemConfig = void 0;
-    const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
+    const specialRole = (page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3") && !item.icon && !item.icon2 ? "textNotIcon" : "iconNotText";
+    const getButtonsTextTrue = async (item2, on) => {
+      return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : { type: "const", constVal: `${on}` };
+    };
+    const getButtonsTextFalse = async (item2, on, off) => {
+      return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff) : await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : { type: "const", constVal: `${off || on}` };
+    };
     if (!item.id) {
       return {
         type: "button",
@@ -344,11 +386,11 @@ class ConfigManager extends import_library.BaseClass {
             minBri: void 0
           },
           text1: {
-            true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
+            true: await getButtonsTextTrue(item, "on"),
+            false: await getButtonsTextFalse(item, "on", "off")
           },
           text: {
-            true: item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : void 0,
-            false: item.buttonTextOff ? await this.getFieldAsDataItemConfig(item.buttonTextOff) : item.buttonText ? await this.getFieldAsDataItemConfig(item.buttonText) : void 0
+            true: await this.getFieldAsDataItemConfig(item.name || "")
           }
         }
       };
@@ -364,12 +406,6 @@ class ConfigManager extends import_library.BaseClass {
         return;
       }
     }
-    const getButtonsTextTrue = async (item2, on) => {
-      return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : { type: "const", constVal: `${on}` };
-    };
-    const getButtonsTextFalse = async (item2, on, off) => {
-      return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff) : await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : { type: "const", constVal: `${off || on}` };
-    };
     switch (role) {
       case "socket":
       case "light":
@@ -473,6 +509,10 @@ class ConfigManager extends import_library.BaseClass {
               false: await this.getIconColor(item.offColor, this.colorOff),
               scale: item.colorScale ? item.colorScale : void 0
             },
+            icon: {
+              true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+              false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            },
             template: "button.humidity",
             data: {
               text: {
@@ -502,6 +542,10 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
           },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
           data: {
             text1: {
               true: await getButtonsTextTrue(item, "on"),
@@ -525,6 +569,10 @@ class ConfigManager extends import_library.BaseClass {
               true: await this.getIconColor(item.onColor, this.colorOn),
               false: await this.getIconColor(item.offColor, this.colorOff),
               scale: item.colorScale ? item.colorScale : void 0
+            },
+            icon: {
+              true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+              false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
             },
             data: {
               text: {
@@ -557,6 +605,10 @@ class ConfigManager extends import_library.BaseClass {
               false: await this.getIconColor(item.offColor, this.colorOff),
               scale: item.colorScale ? item.colorScale : void 0
             },
+            icon: {
+              true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+              false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+            },
             data: {
               text: {
                 true: await getButtonsTextTrue(item, "on"),
@@ -581,6 +633,10 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
           },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
           data: {
             text1: {
               true: await getButtonsTextTrue(item, "on"),
@@ -604,6 +660,10 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
           },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
           data: {
             text1: {
               true: await getButtonsTextTrue(item, "on"),
@@ -626,6 +686,10 @@ class ConfigManager extends import_library.BaseClass {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
+          },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
           },
           data: {
             text1: {
@@ -651,6 +715,10 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
           },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
           data: {
             text1: {
               true: await getButtonsTextTrue(item, "on"),
@@ -674,6 +742,10 @@ class ConfigManager extends import_library.BaseClass {
             false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
             scale: item.colorScale ? item.colorScale : void 0
           },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
           data: {
             text1: {
               true: await getButtonsTextTrue(item, "on"),
@@ -696,6 +768,10 @@ class ConfigManager extends import_library.BaseClass {
             true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
             false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
             scale: item.colorScale
+          },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
           },
           data: {
             text1: {
@@ -752,7 +828,7 @@ class ConfigManager extends import_library.BaseClass {
         if (!await this.checkRequiredDatapoints(role, item)) {
           return;
         }
-        const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
+        const specialRole = (page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3") && !item.icon && !item.icon2 ? "textNotIcon" : "iconNotText";
         const commonName = typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()];
         switch (role) {
           case "timeTable": {
@@ -1226,6 +1302,10 @@ class ConfigManager extends import_library.BaseClass {
                 false: await this.getIconColor(item.offColor, this.colorOff),
                 scale: item.colorScale
               },
+              icon: {
+                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+              },
               data: {
                 text: {
                   true: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0
@@ -1261,6 +1341,28 @@ class ConfigManager extends import_library.BaseClass {
   }
   async getScreensaverConfig(config) {
     let pageItems = [];
+    if (config.favoritScreensaverEntity) {
+      for (const item of config.favoritScreensaverEntity) {
+        if (item) {
+          try {
+            pageItems.push(await this.getEntityData(item, "favorit", config));
+          } catch (error) {
+            throw new Error(`favoritScreensaverEntity - ${error}`);
+          }
+        }
+      }
+    }
+    if (config.alternateScreensaverEntity) {
+      for (const item of config.alternateScreensaverEntity) {
+        if (item) {
+          try {
+            pageItems.push(await this.getEntityData(item, "alternate", config));
+          } catch (error) {
+            throw new Error(`alternateScreensaverEntity - ${error}`);
+          }
+        }
+      }
+    }
     if (config.bottomScreensaverEntity) {
       for (const item of config.bottomScreensaverEntity) {
         if (item) {
@@ -1320,6 +1422,7 @@ class ConfigManager extends import_library.BaseClass {
             },
             // Bottom 7 - Windgeschwindigkeit
             {
+
               role: "text",
               dpInit: "",
               type: "text",
@@ -1683,7 +1786,9 @@ class ConfigManager extends import_library.BaseClass {
         mode: "standard",
         rotationTime: 0,
         model: "eu",
-        data: void 0
+        data: void 0,
+        screensaverIndicatorButtons: false,
+        screensaverSwipe: false
       },
       pageItems
     };
@@ -1851,11 +1956,11 @@ class ConfigManager extends import_library.BaseClass {
       result.data.icon.true.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn);
     }
     if (entity.ScreensaverEntityIconOff) {
-      result.data.icon.true.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff);
+      result.data.icon.false.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOff);
     }
     if (entity.ScreensaverEntityValue) {
       result.data.icon.false.text = {
-        value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValue),
+        value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValue, true),
         unit: entity.ScreensaverEntityValueUnit ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValueUnit) : void 0,
         decimal: entity.ScreensaverEntityValueDecimalPlace ? { type: "const", constVal: entity.ScreensaverEntityValueDecimalPlace } : void 0,
         factor: void 0
@@ -1874,14 +1979,26 @@ class ConfigManager extends import_library.BaseClass {
       type: "text",
       data: { entity1: {} }
     };
+    if (entity.type === "native") {
+      const temp = JSON.parse(JSON.stringify(entity.native));
+      return temp;
+    } else if (entity.type === "template") {
+      const temp = JSON.parse(JSON.stringify(entity));
+      delete temp.type;
+      return temp;
+    }
     if (!result.data.entity1) {
       throw new Error("Invalid data");
     }
     result.data.entity2 = result.data.entity1;
+    if (mode === "indicator") {
+      result.type = "button";
+    }
     let obj;
     if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith(".")) {
       obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
       result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
+      result.data.entity2.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
     }
     const dataType = obj && obj.common && obj.common.type ? obj.common.type : void 0;
     if (entity.ScreensaverEntityUnitText || entity.ScreensaverEntityUnitText === "") {

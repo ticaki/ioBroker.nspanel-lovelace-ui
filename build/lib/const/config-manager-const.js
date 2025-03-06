@@ -68,11 +68,8 @@ const defaultConfig = {
   panelTopic: "",
   weatherEntity: "",
   bottomScreensaverEntity: [],
-  defaultColor: {
-    red: 0,
-    green: 0,
-    blue: 0
-  },
+  favoritScreensaverEntity: [],
+  alternateScreensaverEntity: [],
   defaultOnColor: {
     red: 0,
     green: 0,
@@ -109,6 +106,7 @@ const defaultConfig = {
   leftScreensaverEntity: [],
   indicatorScreensaverEntity: [],
   mrIcon1ScreensaverEntity: {
+    type: "script",
     ScreensaverEntity: null,
     ScreensaverEntityIconOn: null,
     ScreensaverEntityIconSelect: void 0,
@@ -128,6 +126,7 @@ const defaultConfig = {
     }
   },
   mrIcon2ScreensaverEntity: {
+    type: "script",
     ScreensaverEntity: null,
     ScreensaverEntityIconOn: null,
     ScreensaverEntityIconSelect: void 0,

@@ -51,11 +51,8 @@ export const defaultConfig: ScriptConfig.Config = {
     panelTopic: '',
     weatherEntity: '',
     bottomScreensaverEntity: [],
-    defaultColor: {
-        red: 0,
-        green: 0,
-        blue: 0,
-    },
+    favoritScreensaverEntity: [],
+    alternateScreensaverEntity: [],
     defaultOnColor: {
         red: 0,
         green: 0,
@@ -92,6 +89,7 @@ export const defaultConfig: ScriptConfig.Config = {
     leftScreensaverEntity: [],
     indicatorScreensaverEntity: [],
     mrIcon1ScreensaverEntity: {
+        type: 'script',
         ScreensaverEntity: null,
         ScreensaverEntityIconOn: null,
         ScreensaverEntityIconSelect: undefined,
@@ -111,6 +109,7 @@ export const defaultConfig: ScriptConfig.Config = {
         },
     },
     mrIcon2ScreensaverEntity: {
+        type: 'script',
         ScreensaverEntity: null,
         ScreensaverEntityIconOn: null,
         ScreensaverEntityIconSelect: undefined,

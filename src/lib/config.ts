@@ -3833,6 +3833,8 @@ const pageScreensaverTest: pages.PageBaseConfig = {
         rotationTime: 0,
         model: 'eu',
         data: undefined,
+        screensaverIndicatorButtons: false,
+        screensaverSwipe: false,
     },
 
     // Config of Entitys
@@ -6136,6 +6138,8 @@ const testScr: pages.PageBaseConfig = {
         rotationTime: 0,
         model: 'eu',
         data: undefined,
+        screensaverIndicatorButtons: false,
+        screensaverSwipe: false,
     },
 
     // Config of Entitys

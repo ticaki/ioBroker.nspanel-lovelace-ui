@@ -62,8 +62,8 @@ async function configuration (): Promise<void> {
         weatherEntity: 'accuweather.0.',
         defaultOffColor: Off,
         defaultOnColor: On,
-        defaultColor: Off,
         defaultBackgroundColor: HMIDark,
+        weatherAddDefaultItems: false,
 
         // Als Gedankenstütze, die Hauptseite muß main heißen!
         //panelName: 'NSPanel', //unique name for the panel
@@ -86,9 +86,24 @@ async function configuration (): Promise<void> {
          **                    Screensaver Configuration                      **
          **                                                                   **
          ***********************************************************************/
+
+
+         favoritScreensaverEntity: [
+            {
+                type: 'template',
+                template: 'text.accuweather.favorit',
+                dpInit: `/^accuweather\\.0.+/`,
+                modeScr: 'favorit',
+            }
+         ],
+         alternateScreensaverEntity: [
+            // only used with alternate Screensaver
+         ],
+
         indicatorScreensaverEntity: [
             // indicatorScreensaverEntity 1 (only Advanced Screensaver)
             {
+                type: 'script',
                 ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Fenster.ACTUAL',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
@@ -100,6 +115,7 @@ async function configuration (): Promise<void> {
             },
             // indicatorScreensaverEntity 2 (only Advanced Screensaver)
             {
+                type: 'script',
                 ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Tuer.ACTUAL',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
@@ -111,6 +127,7 @@ async function configuration (): Promise<void> {
             },
             // indicatorScreensaverEntity 3 (only Advanced Screensaver)
             {
+                type: 'script',
                 ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_Licht_An.ACTUAL',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
@@ -122,6 +139,7 @@ async function configuration (): Promise<void> {
             },
             // indicatorScreensaverEntity 4 (only Advanced Screensaver)
             {
+                type: 'script',
                 ScreensaverEntity: 'alias.0.Türschloss.ACTUAL',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
@@ -133,6 +151,7 @@ async function configuration (): Promise<void> {
             },
             // indicatorScreensaverEntity 5 (only Advanced Screensaver)
             {
+                type: 'script',
                 ScreensaverEntity: 'alias.0.NSPanel.allgemein.Auto.Safety.ACTUAL',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
@@ -147,6 +166,7 @@ async function configuration (): Promise<void> {
         bottomScreensaverEntity: [
             // bottomScreensaverEntity 1
             {
+                type: 'script',
                 ScreensaverEntity: 'accuweather.0.Daily.Day1.Sunrise',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
@@ -159,6 +179,7 @@ async function configuration (): Promise<void> {
             },
             // bottomScreensaverEntity 2
             {
+                type: 'script',
                 ScreensaverEntity: 'accuweather.0.Current.WindSpeed',
                 ScreensaverEntityFactor: (1000 / 3600),
                 ScreensaverEntityDecimalPlaces: 1,
@@ -170,6 +191,7 @@ async function configuration (): Promise<void> {
             },
             // bottomScreensaverEntity 3
             {
+                type: 'script',
                 ScreensaverEntity: 'accuweather.0.Current.WindGust',
                 ScreensaverEntityFactor: (1000 / 3600),
                 ScreensaverEntityDecimalPlaces: 1,
@@ -181,6 +203,7 @@ async function configuration (): Promise<void> {
             },
             // bottomScreensaverEntity 4
             {
+                type: 'script',
                 ScreensaverEntity: 'accuweather.0.Current.WindDirectionText',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
@@ -192,6 +215,7 @@ async function configuration (): Promise<void> {
             },
             // bottomScreensaverEntity 5 (for Alternative and Advanced Screensaver)
             {
+                type: 'script',
                 ScreensaverEntity: 'accuweather.0.Current.RelativeHumidity',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 1,
@@ -203,6 +227,7 @@ async function configuration (): Promise<void> {
             },
             // bottomScreensaverEntity 6 (for Advanced Screensaver)
             {
+                type: 'script',
                 ScreensaverEntity: 'Relay.1',
                 ScreensaverEntityIconOn: 'coach-lamp-variant',
                 ScreensaverEntityText: 'Street',
@@ -212,11 +237,95 @@ async function configuration (): Promise<void> {
                 ScreensaverEntityOffText: 'Not ON'
             },
             // Examples for Advanced-Screensaver: https://github.com/joBr99/nspanel-lovelace-ui/wiki/ioBroker-Config-Screensaver#entity-status-icons-ab-v400 
+
+            // Some templates for the screensaver uncomment the lines to use them
+            // If u use an other instance for the weather data, change the instance in the following lines
+            // If you want to have them all, set weatherAddDefaultItems=true in the config and leave the following lines as they are!
+            /*
+            // Bottom 1 - accuWeather.0. sunrise/set
+            {
+                type: 'template',
+                template: 'text.accuweather.sunriseset',
+                dpInit: `/^accuweather\\.0.Daily.+/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 2 - accuWeather.0. Forecast Day 1
+            {
+                type: 'template',
+                template: 'text.accuweather.bot2values',
+                dpInit: `/^accuweather\\.0.+?d1$/g`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 3 - accuWeather.0. Forecast Day 2
+            {
+                type: 'template',
+                template: 'text.accuweather.bot2values',
+                dpInit: `/^accuweather\\.0.+?d2$/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 4 - accuWeather.0. Forecast Day 3
+            {
+                type: 'template',
+                template: 'text.accuweather.bot2values',
+                dpInit: `/^accuweather\\.0.+?d3$/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 5 - accuWeather.0. Forecast Day 4
+            {
+                type: 'template',
+                template: 'text.accuweather.bot2values',
+                dpInit: `/^accuweather\\.0.+?d4$/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 6 - accuWeather.0. Forecast Day 5
+            {
+                type: 'template',
+                template: 'text.accuweather.bot2values',
+                dpInit: `/^accuweather\\.0.+?d5$/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 7 - Windgeschwindigkeit
+            {
+                type: 'template',
+                template: 'text.accuweather.windspeed',
+                dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 8 - Böen
+            {
+                type: 'template',
+                template: 'text.accuweather.windgust',
+                dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 9 - Windrichtung
+            {
+                type: 'template',
+                template: 'text.accuweather.winddirection',
+                dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 10 - UV-Index
+            {
+                type: 'template',
+                template: 'text.accuweather.uvindex',
+                dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+            */
         ],
 
         leftScreensaverEntity: [
             // leftScreensaverEntity 1 (only Advanced Screensaver)
             {
+                type: 'script',
                 ScreensaverEntity: 'alias.0.NSPanel.Flur.Sensor.ANALOG.Temperature.ACTUAL',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 1,
@@ -228,6 +337,7 @@ async function configuration (): Promise<void> {
             },
             // leftScreensaverEntity 2 (only Advanced Screensaver)
             {
+                type: 'script',
                 ScreensaverEntity: 'alias.0.Heizung.WärmeTagesVerbrauch.ACTUAL',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 1,
@@ -239,6 +349,7 @@ async function configuration (): Promise<void> {
             },
             // leftScreensaverEntity 3 (only Advanced Screensaver)
             {
+                type: 'script',
                 ScreensaverEntity: 'alias.0.NSPanel.allgemein.Abfall.event1.INFO',
                 ScreensaverEntityFactor: 1,
                 ScreensaverEntityDecimalPlaces: 0,
@@ -253,6 +364,7 @@ async function configuration (): Promise<void> {
 
         // Status Icon 
         mrIcon1ScreensaverEntity: {
+            type: 'script',
             ScreensaverEntity: 'Relay.1',
             ScreensaverEntityIconOn: 'lightbulb',
             ScreensaverEntityIconOff: null,
@@ -263,6 +375,7 @@ async function configuration (): Promise<void> {
             ScreensaverEntityOffColor: HMIOff
         },
         mrIcon2ScreensaverEntity: {
+            type: 'script',
             ScreensaverEntity: 'Relay.2',
             ScreensaverEntityIconOn: 'lightbulb',
             ScreensaverEntityIconOff: null,
@@ -335,7 +448,7 @@ async function configuration (): Promise<void> {
     log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version}))
 }
 
-const version = '0.2.4';
+const version = '0.5.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -824,19 +937,35 @@ declare namespace ScriptConfig {
     };
 
     export type Config = {
+        version?: string;
         panelName?: string;
         /**
          * The topic to receive and send messages to the panel.
          */
         panelTopic: string;
+        /**
+         * The weather adapter and instance to use.
+         * example: accuweather.0
+         * supported: accuweather
+         */
         weatherEntity: string;
+
+        /**
+         * Adds standard icons to the bottom field of the screensaver.
+         */
         weatherAddDefaultItems?: boolean;
-        leftScreensaverEntity: leftScreensaverEntityType;
+        favoritScreensaverEntity: ScreenSaverElement[]
+        alternateScreensaverEntity: ScreenSaverElement[]
+        leftScreensaverEntity: ScreenSaverElementWithUndefined[];
         bottomScreensaverEntity: ScreenSaverElement[];
         indicatorScreensaverEntity: indicatorScreensaverEntityType;
         mrIcon1ScreensaverEntity: ScreenSaverMRElement;
         mrIcon2ScreensaverEntity: ScreenSaverMRElement;
-        defaultColor: RGB;
+        /**
+         * The default color for the panel.
+         * @deprecated use defaultOnColor and defaultOffColor
+         */
+        defaultColor?: RGB;
         defaultOnColor: RGB;
         defaultOffColor: RGB;
         defaultBackgroundColor: RGB;
@@ -844,11 +973,18 @@ declare namespace ScriptConfig {
         subPages: PageType[];
         button1: ConfigButtonFunction;
         button2: ConfigButtonFunction;
-        /**
-         * Native page items for the panel
-         */
-        nativePageItems?: any;
+        nativePages?: any[];
         navigation?: NavigationItemConfig[];
+        advancedOptions?: {
+            /**
+             * active the swipe function for the screensaver
+             */
+            screensaverSwipe?: boolean;
+            /**
+             * active the button function for the indicator of the screensaver
+             */
+            screensaverIndicatorButtons?: boolean;
+        };
     };
     export type leftScreensaverEntityType =
         | [ScreenSaverElementWithUndefined?, ScreenSaverElementWithUndefined?, ScreenSaverElementWithUndefined?]
@@ -863,30 +999,33 @@ declare namespace ScriptConfig {
         ]
         | [];
     export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
-    export type ScreenSaverElement = {
-        ScreensaverEntity: string;
-        ScreensaverEntityText: string;
-        /**
-         * Value wird mit diesem Factor multipliziert.
-         */
-        ScreensaverEntityFactor?: number;
-        ScreensaverEntityDecimalPlaces?: number;
-        ScreensaverEntityDateFormat?: Intl.DateTimeFormatOptions;
-        ScreensaverEntityIconOn?: string | null;
-        ScreensaverEntityIconOff?: string | null;
-        ScreensaverEntityUnitText?: string;
-        ScreensaverEntityIconColor?: RGB | IconScaleElement | string;
-        ScreensaverEntityOnColor?: RGB;
-        ScreensaverEntityOffColor?: RGB;
-        ScreensaverEntityOnText?: string | null;
-        ScreensaverEntityOffText?: string | null;
-        ScreensaverEntityNaviToPage?: PageType;
-        /**
-         * To show different icons for different values in the screensaver
-         * 
-         * Value is the threshold for the icon. Lower values are first.
-         * Example:
-         * [
+
+    export type ScreenSaverElement = { type: ScreenSaverType } & (
+        | {
+              type: 'script';
+              ScreensaverEntity: string;
+              ScreensaverEntityText: string;
+              /**
+               * Value wird mit diesem Factor multipliziert.
+               */
+              ScreensaverEntityFactor?: number;
+              ScreensaverEntityDecimalPlaces?: number;
+              ScreensaverEntityDateFormat?: Intl.DateTimeFormatOptions;
+              ScreensaverEntityIconOn?: string | null;
+              ScreensaverEntityIconOff?: string | null;
+              ScreensaverEntityUnitText?: string;
+              ScreensaverEntityIconColor?: RGB | IconScaleElement | string;
+              ScreensaverEntityOnColor?: RGB;
+              ScreensaverEntityOffColor?: RGB;
+              ScreensaverEntityOnText?: string | null;
+              ScreensaverEntityOffText?: string | null;
+              ScreensaverEntityNaviToPage?: PageType;
+              /**
+               * To show different icons for different values in the screensaver
+               * 
+               * Value is the threshold for the icon. Lower values are first.
+               * Example:
+               * [
                     {icon: 'sun-thermometer', value:40},
                     {icon: 'sun-thermometer-outline', value: 35},
                     {icon: 'thermometer-high', value: 30},
@@ -896,33 +1035,33 @@ declare namespace ScriptConfig {
                     {icon: 'snowflake-thermometer', value: -2},
                     {icon: 'snowflake', value: -10},
                     ]
-         */
-        ScreensaverEntityIconSelect?: {icon: string; value: number}[] | null;
-    };
+               */
+              ScreensaverEntityIconSelect?: { icon: string; value: number }[] | null;
+          }
+        | { type: 'native'; native: any }
+        | {
+              type: 'template';
+              template: string;
+              dpInit: string;
+              modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
+          }
+    );
+    export type ScreenSaverMRElement = { type: ScreenSaverType } & (
+        | {
+              type: 'script';
+              ScreensaverEntity: string | null;
+              ScreensaverEntityIconOn: string | null;
+              ScreensaverEntityIconSelect?: { [key: string]: string } | null | undefined;
+              ScreensaverEntityIconOff: string | null;
+              ScreensaverEntityValue: string | null;
+              ScreensaverEntityValueDecimalPlace: number | null;
+              ScreensaverEntityValueUnit: string | null;
+              ScreensaverEntityOnColor: RGB;
+              ScreensaverEntityOffColor: RGB;
+          }  
+    );
 
-    export type ScreenSaverMRElement = {
-        ScreensaverEntity: string | null;
-        ScreensaverEntityIconOn: string | null;
-        ScreensaverEntityIconSelect?: {[key: string]: string} | null | undefined;
-        ScreensaverEntityIconOff: string | null;
-        ScreensaverEntityValue: string | null;
-        ScreensaverEntityValueDecimalPlace: number | null;
-        ScreensaverEntityValueUnit: string | null;
-        ScreensaverEntityOnColor: RGB;
-        ScreensaverEntityOffColor: RGB;
-    };
-    export type ScreenSaverMRDataElement = {
-        ScreensaverEntity: string | number | boolean | null;
-        ScreensaverEntityIconOn: string | null;
-        ScreensaverEntityIconOff: string | null;
-        ScreensaverEntityValue: string | number | boolean | null;
-        ScreensaverEntityValueDecimalPlace: number | null;
-        ScreensaverEntityValueUnit: string | null;
-        ScreensaverEntityOnColor: RGB;
-        ScreensaverEntityOffColor: RGB;
-        ScreensaverEntityIconSelect: {[key: string]: string} | null;
-    };
-
+    type ScreenSaverType = 'template' | 'script' | 'native';
     export type IconScaleElement = {
         val_min: number;
         val_max: number;

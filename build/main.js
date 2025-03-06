@@ -79,6 +79,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 configRaw.push(c.panelConfig);
               }
             }
+
           }
         }
         let scriptConfig = configRaw;
@@ -124,9 +125,6 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
         }
       }
-    } catch (e) {
-      this.log.warn(`Invalid configuration stopped! ${e}`);
-      return;
     }
     if (this.config.doubleClickTime === void 0 || typeof this.config.doubleClickTime !== "number" || !(this.config.doubleClickTime > 0)) {
       this.config.doubleClickTime = 350;
@@ -394,7 +392,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                       rCount--;
                     }
                   );
-                  await mqtt2.publish(`${device.topic}/cmnd/STATUS0`, "");
+                  void mqtt2.publish(`${device.topic}/cmnd/STATUS0`, "");
                 }
                 const _waitForFinish = (count) => {
                   if (count > 10 || rCount === 0) {

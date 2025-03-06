@@ -918,6 +918,274 @@ const textTemplates = {
       }
     }
   },
+  "text.accuweather.windspeed": {
+    role: "text",
+    type: "text",
+    modeScr: "bottom",
+    adapter: "accuweather",
+    data: {
+      entity1: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^accuweather\.[0-9]+\.Current\.WindSpeed/,
+          dp: ``
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        unit: void 0
+      },
+      entity2: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^accuweather\.[0-9]+\.Current\.WindSpeed/,
+          dp: ``
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        unit: {
+          type: "const",
+          constVal: "km/h"
+        }
+      },
+      icon: {
+        true: {
+          value: {
+            type: "const",
+            constVal: "weather-windy"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSRed
+          }
+        },
+        false: {
+          value: {
+            type: "const",
+            constVal: "weather-windy"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSGreen
+          }
+        },
+        scale: {
+          type: "const",
+          constVal: { val_min: 0, val_max: 80 }
+        },
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: {
+          type: "const",
+          constVal: "Wind"
+        },
+        false: void 0
+      }
+    }
+  },
+  "text.accuweather.winddirection": {
+    role: "text",
+    type: "text",
+    modeScr: "bottom",
+    adapter: "accuweather",
+    data: {
+      entity2: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^accuweather\.[0-9]+\.Current\.WindDirectionText/,
+          dp: ``
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        factor: void 0,
+        unit: {
+          type: "const",
+          constVal: "\xB0"
+        }
+      },
+      icon: {
+        true: {
+          value: {
+            type: "const",
+            constVal: "windsock"
+          },
+          color: {
+            type: "const",
+            constVal: "#FFFFFF"
+          }
+        },
+        false: {
+          value: void 0,
+          color: void 0
+        },
+        scale: void 0,
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: {
+          type: "const",
+          constVal: "Windr."
+        },
+        false: void 0
+      }
+    }
+  },
+  "text.accuweather.uvindex": {
+    role: "text",
+    type: "text",
+    adapter: "accuweather",
+    data: {
+      entity1: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^accuweather\.[0-9]+\.Current\.UVIndex/,
+          dp: ``,
+          forceType: "string"
+        },
+        decimal: void 0,
+        factor: void 0,
+        unit: void 0
+      },
+      entity2: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^accuweather\.[0-9]+\.Current\.UVIndex/,
+          dp: ``,
+          forceType: "string"
+        },
+        decimal: void 0,
+        factor: void 0,
+        unit: void 0
+      },
+      icon: {
+        true: {
+          value: {
+            type: "const",
+            constVal: "solar-power"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSRed
+          }
+        },
+        false: {
+          value: {
+            type: "const",
+            constVal: "solar-power"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSGreen
+          }
+        },
+        scale: {
+          type: "const",
+          constVal: { val_min: 0, val_max: 9 }
+        },
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: {
+          type: "const",
+          constVal: "UV"
+        },
+        false: void 0
+      }
+    }
+  },
+  "text.accuweather.windgust": {
+    role: "text",
+    type: "text",
+    modeScr: "bottom",
+    adapter: "accuweather",
+    data: {
+      entity1: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^accuweather\.[0-9]+\.Current\.WindGust/,
+          dp: ``
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        unit: void 0
+      },
+      entity2: {
+        value: {
+          mode: "auto",
+          role: "",
+          type: "triggered",
+          regexp: /^accuweather\.[0-9]+\.Current\.WindGust/,
+          dp: ``
+        },
+        decimal: {
+          type: "const",
+          constVal: 0
+        },
+        unit: {
+          type: "const",
+          constVal: "km/h"
+        }
+      },
+      icon: {
+        true: {
+          value: {
+            type: "const",
+            constVal: "weather-tornado"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSRed
+          }
+        },
+        false: {
+          value: {
+            type: "const",
+            constVal: "weather-tornado"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.MSGreen
+          }
+        },
+        scale: {
+          type: "const",
+          constVal: { val_min: 0, val_max: 80 }
+        },
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: {
+          type: "const",
+          constVal: "B\xF6en"
+        },
+        false: void 0
+      }
+    }
+  },
   "text.fahrplan.departure": {
     role: "text.list",
     type: "text",
