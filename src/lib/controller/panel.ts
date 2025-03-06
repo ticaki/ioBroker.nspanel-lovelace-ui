@@ -957,12 +957,14 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'screenSaverRotationTime': {
-                    await this.statesControler.setInternalState(
-                        `${this.name}/cmd/screenSaverRotationTime`,
-                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                        parseInt(String(state.val)),
-                        false,
-                    );
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/screenSaverRotationTime`,
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                            parseInt(String(state.val)),
+                            false,
+                        );
+                    }
                     break;
                 }
             }
