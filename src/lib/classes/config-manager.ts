@@ -431,7 +431,9 @@ export class ConfigManager extends BaseClass {
         }
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
         const specialRole: pages.DeviceRole =
-            page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
+            (page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3') &&
+            !item.icon &&
+            !item.icon2
                 ? 'textNotIcon'
                 : 'iconNotText';
 
@@ -953,7 +955,9 @@ export class ConfigManager extends BaseClass {
                     return;
                 }
                 const specialRole: pages.DeviceRole =
-                    page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
+                    (page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3') &&
+                    !item.icon &&
+                    !item.icon2
                         ? 'textNotIcon'
                         : 'iconNotText';
                 const commonName =
@@ -1545,6 +1549,10 @@ export class ConfigManager extends BaseClass {
                                 true: await this.getIconColor(item.onColor, this.colorOn),
                                 false: await this.getIconColor(item.offColor, this.colorOff),
                                 scale: item.colorScale,
+                            },
+                            icon: {
+                                true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                                false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                             },
                             data: {
                                 text: {

@@ -348,7 +348,7 @@ class ConfigManager extends import_library.BaseClass {
       return void 0;
     }
     let itemConfig = void 0;
-    const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
+    const specialRole = (page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3") && !item.icon && !item.icon2 ? "textNotIcon" : "iconNotText";
     const getButtonsTextTrue = async (item2, on) => {
       return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : { type: "const", constVal: `${on}` };
     };
@@ -822,7 +822,7 @@ class ConfigManager extends import_library.BaseClass {
         if (!await this.checkRequiredDatapoints(role, item)) {
           return;
         }
-        const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
+        const specialRole = (page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3") && !item.icon && !item.icon2 ? "textNotIcon" : "iconNotText";
         const commonName = typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()];
         switch (role) {
           case "timeTable": {
@@ -1208,7 +1208,7 @@ class ConfigManager extends import_library.BaseClass {
               }
               case "info": {
                 iconOn = "information-outline";
-                iconOff = "information-outline";
+                iconOff = "wifi";
                 adapterRole = specialRole;
                 break;
               }
@@ -1295,6 +1295,10 @@ class ConfigManager extends import_library.BaseClass {
                 true: await this.getIconColor(item.onColor, this.colorOn),
                 false: await this.getIconColor(item.offColor, this.colorOff),
                 scale: item.colorScale
+              },
+              icon: {
+                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
               },
               data: {
                 text: {
