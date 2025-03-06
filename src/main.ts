@@ -288,14 +288,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                 }
 
-                test.subscript('nspanel/ns_panel4/cmnd/#', async (topic, message) => {
+                test.subscript('test/123456/cmnd/#', async (topic, message) => {
                     this.log.debug(`Testcase ${topic}`);
                     if (message === 'pageType~pageStartup') {
-                        await test.publish('nspanel/ns_panel4/stat/RESULT', '{"CustomSend": "Done"}');
-                        await test.publish('nspanel/ns_panel4/tele/RESULT', '{"CustomRecv":"event,startup,54,eu"}');
-                    } else if (topic === 'nspanel/ns_panel4/cmnd/STATUS0') {
+                        await test.publish('test/123456/stat/RESULT', '{"CustomSend": "Done"}');
+                        await test.publish('test/123456/tele/RESULT', '{"CustomRecv":"event,startup,54,eu"}');
+                    } else if (topic === 'test/123456/cmnd/STATUS0') {
                         await test.publish(
-                            'nspanel/ns_panel4/stat/STATUS0',
+                            'test/123456/stat/STATUS0',
                             '{"Status":{"Module":0,"DeviceName":"NSPanel 4 Test","FriendlyName":["Tasmota",""],"Topic":"ns_panel4","ButtonTopic":"0","Power":"00","PowerLock":"00",' +
                                 '"PowerOnState":3,"LedState":1,"LedMask":"FFFF","SaveData":1,"SaveState":1,"SwitchTopic":"0","SwitchMode":' +
                                 '[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"ButtonRetain":0,"SwitchRetain":0,"SensorRetain":0,"PowerRetain":0,"InfoRetain":0,' +
