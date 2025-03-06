@@ -430,9 +430,13 @@ export class StatesControler extends BaseClass {
     }
 
     async getStateVal(id: string): Promise<nsPanelState['val'] | null> {
-        const state = await this.getState(id, 'now');
-        if (state) {
-            return state.val ?? null;
+        try {
+            const state = await this.getState(id, 'now');
+            if (state) {
+                return state.val ?? null;
+            }
+        } catch (e: any) {
+            this.log.error(`Error 1004: ${e.replaceAll('Error: ', '')}`);
         }
         return null;
     }
