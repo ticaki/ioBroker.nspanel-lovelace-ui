@@ -949,7 +949,6 @@ declare namespace ScriptConfig {
          * supported: accuweather
          */
         weatherEntity: string;
-
         /**
          * Adds standard icons to the bottom field of the screensaver.
          */
@@ -958,7 +957,7 @@ declare namespace ScriptConfig {
         alternateScreensaverEntity: ScreenSaverElement[]
         leftScreensaverEntity: ScreenSaverElementWithUndefined[];
         bottomScreensaverEntity: ScreenSaverElement[];
-        indicatorScreensaverEntity: indicatorScreensaverEntityType;
+        indicatorScreensaverEntity: ScreenSaverElementWithUndefined[];
         mrIcon1ScreensaverEntity: ScreenSaverMRElement;
         mrIcon2ScreensaverEntity: ScreenSaverMRElement;
         /**
@@ -999,7 +998,6 @@ declare namespace ScriptConfig {
         ]
         | [];
     export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
-
     export type ScreenSaverElement = { type: ScreenSaverType } & (
         | {
               type: 'script';
