@@ -42,6 +42,7 @@ export class MQTTClientClass extends BaseClass {
             this.ready = true;
         });
         this.client.on('disconnect', () => {
+            this.log.info(`Disconnected.`);
             this.ready = false;
             void this.adapter.setState('info.connection', false, true);
             this.log.debug(`disconnected`);

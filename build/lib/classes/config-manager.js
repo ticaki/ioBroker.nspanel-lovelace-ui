@@ -1208,7 +1208,7 @@ class ConfigManager extends import_library.BaseClass {
               }
               case "info": {
                 iconOn = "information-outline";
-                iconOff = "wifi";
+                iconOff = "information-outline";
                 adapterRole = specialRole;
                 break;
               }

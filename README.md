@@ -305,7 +305,8 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.1.7 (2025-03-06)
+- (ticaki) cardGrid Number values -> Show an icon if user has defined one, otherwise number
 - (ticaki) fixes #143
 - (ticaki) fixes #147
 - (ticaki) fixes #146
