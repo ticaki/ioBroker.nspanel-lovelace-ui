@@ -113,32 +113,41 @@ class Dataitem extends import_library.BaseClass {
         } else if (this.options.type == "internalState") {
           await this.stateDB.setTrigger(this.options.dp, this.parent, true, false);
         }
-        const value = await this.stateDB.getState(
-          this.options.dp,
-          this.options.type == "triggered" || this.options.type == "internal" || this.options.type == "internalState" ? "medium" : this.options.response
-        );
-        return value !== null && value !== void 0;
+        try {
+          const value = await this.stateDB.getState(
+            this.options.dp,
+            this.options.type == "triggered" || this.options.type == "internal" || this.options.type == "internalState" ? "medium" : this.options.response
+          );
+          return value !== null && value !== void 0;
+        } catch (e) {
+          this.log.error(`Error 1001: ${e.replaceAll("Error: ", "")}`);
+          return false;
+        }
       }
     }
     return false;
   }
   async getRawState() {
-    switch (this.options.type) {
-      case "const":
-        return { val: this.options.constVal, ack: true, ts: Date.now(), lc: Date.now(), from: "" };
-      case "state":
-      case "triggered":
-        if (!this.options.dp) {
-          throw new Error(`Error 1002 type is ${this.options.type} but dp is undefined`);
+    try {
+      switch (this.options.type) {
+        case "const":
+          return { val: this.options.constVal, ack: true, ts: Date.now(), lc: Date.now(), from: "" };
+        case "state":
+        case "triggered":
+          if (!this.options.dp) {
+            throw new Error(`Error 1002 type is ${this.options.type} but dp is undefined`);
+          }
+          return await this.stateDB.getState(
+            this.options.dp,
+            this.options.type == "triggered" ? "medium" : this.options.response
+          );
+        case "internalState":
+        case "internal": {
+          return await this.stateDB.getState(this.options.dp, "now");
         }
-        return await this.stateDB.getState(
-          this.options.dp,
-          this.options.type == "triggered" ? "medium" : this.options.response
-        );
-      case "internalState":
-      case "internal": {
-        return await this.stateDB.getState(this.options.dp, "now");
       }
+    } catch (e) {
+      this.log.error(`Error 1003: ${e.replaceAll("Error: ", "")}`);
     }
     return null;
   }

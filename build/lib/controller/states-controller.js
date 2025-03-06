@@ -382,9 +382,13 @@ class StatesControler extends import_library.BaseClass {
   }
   async getStateVal(id) {
     var _a;
-    const state = await this.getState(id, "now");
-    if (state) {
-      return (_a = state.val) != null ? _a : null;
+    try {
+      const state = await this.getState(id, "now");
+      if (state) {
+        return (_a = state.val) != null ? _a : null;
+      }
+    } catch (e) {
+      this.log.error(`Error 1004: ${e.replaceAll("Error: ", "")}`);
     }
     return null;
   }
