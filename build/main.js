@@ -63,66 +63,89 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.library = new import_library.Library(this);
     await this.delay(2e3);
     await (0, import_readme.generateAliasDocumentation)();
-    try {
-      this.config.Testconfig2 = [];
-      const obj = await this.getForeignObjectAsync(this.namespace);
-      if (obj && obj.native) {
-        const configRaw = [];
-        if (obj.native.scriptConfigRaw) {
-          const manager = new import_config_manager.ConfigManager(this, true);
-          for (const a of obj.native.scriptConfigRaw) {
-            if (a && a.pages) {
-              const c = await manager.setScriptConfig(a);
-              if (c.panelConfig && this.config.panels.find(
-                (b) => c.panelConfig.topic && b.topic === c.panelConfig.topic
-              )) {
-                configRaw.push(c.panelConfig);
+    if (this.config.testCase) {
+      this.log.warn("Testcase mode!");
+    }
+    this.config.Testconfig2 = [];
+    const obj = await this.getForeignObjectAsync(this.namespace);
+    if (obj && obj.native) {
+      const config = [];
+      if (obj.native.scriptConfigRaw) {
+        const manager = new import_config_manager.ConfigManager(this, true);
+        manager.log.warn = function(_msg) {
+        };
+        for (const a of this.config.panels) {
+          if (a && a.topic) {
+            const page = obj.native.scriptConfigRaw.find(
+              (b) => b.panelTopic === a.topic
+            );
+            if (page) {
+              const c = await manager.setScriptConfig(page);
+              if (c && c.messages && c.messages.length > 0) {
+                if (!c.messages[0].startsWith("Panel")) {
+                  this.log.warn(c.messages[0]);
+                }
+              }
+              if (c && c.panelConfig) {
+                this.log.info(`Raw script config found for ${a.topic}`);
+                config.push(c.panelConfig);
+                continue;
               }
             }
-
+            {
+              const c = obj.native.scriptConfig.find(
+                (b) => b.topic === a.topic
+              );
+              if (c) {
+                this.log.info(`Converted script config found for ${a.topic}`);
+                config.push(c);
+                continue;
+              }
+            }
           }
+          this.log.warn(`No script config found for ${a.topic}`);
         }
-        let scriptConfig = configRaw;
-        if (scriptConfig.length === 0) {
-          this.log.warn("No compatible raw script config found, try converted!");
-          scriptConfig = obj.native.scriptConfig;
+      }
+      const scriptConfig = config;
+      if (scriptConfig.length === 0) {
+        this.log.error("No compatible config found, paused!");
+        if (!this.config.testCase) {
+          return;
         }
-        if (scriptConfig) {
-          for (let b = 0; b < scriptConfig.length; b++) {
-            const s = scriptConfig[b];
-            if (!s || !s.pages) {
-              continue;
-            }
-            const index = this.config.panels.findIndex((a) => a.topic === s.topic);
-            if (index == -1) {
-              continue;
-            }
-            this.config.Testconfig2[b] = {};
-            if (!this.config.Testconfig2[b].pages) {
-              this.config.Testconfig2[b].pages = [];
-            }
-            if (!this.config.Testconfig2[b].navigation) {
-              this.config.Testconfig2[b].navigation = [];
-            }
-            this.config.Testconfig2[b].pages = this.config.Testconfig2[b].pages.filter((a) => {
+      }
+      if (scriptConfig) {
+        for (let b = 0; b < scriptConfig.length; b++) {
+          const s = scriptConfig[b];
+          if (!s || !s.pages) {
+            continue;
+          }
+          this.config.Testconfig2[b] = {};
+          if (!this.config.Testconfig2[b].pages) {
+            this.config.Testconfig2[b].pages = [];
+          }
+          if (!this.config.Testconfig2[b].navigation) {
+            this.config.Testconfig2[b].navigation = [];
+          }
+          this.config.Testconfig2[b].pages = this.config.Testconfig2[b].pages.filter(
+            (a) => {
               if (s.pages.find((b2) => b2.uniqueID === a.uniqueID)) {
                 return false;
               }
               return true;
-            });
-            this.config.Testconfig2[b].navigation = this.config.Testconfig2[b].navigation.filter((a) => {
-              if (s.navigation && s.navigation.find((b2) => a == null || b2 == null || b2.name === a.name)) {
-                return false;
-              }
-              return true;
-            });
-            s.navigation = (this.config.Testconfig2[b].navigation || []).concat(s.navigation || []);
-            s.pages = (this.config.Testconfig2[b].pages || []).concat(s.pages || []);
-            this.config.Testconfig2[b] = {
-              ...this.config.Testconfig2[b] || {},
-              ...s
-            };
-          }
+            }
+          );
+          this.config.Testconfig2[b].navigation = this.config.Testconfig2[b].navigation.filter((a) => {
+            if (s.navigation && s.navigation.find((b2) => a == null || b2 == null || b2.name === a.name)) {
+              return false;
+            }
+            return true;
+          });
+          s.navigation = (this.config.Testconfig2[b].navigation || []).concat(s.navigation || []);
+          s.pages = (this.config.Testconfig2[b].pages || []).concat(s.pages || []);
+          this.config.Testconfig2[b] = {
+            ...this.config.Testconfig2[b] || {},
+            ...s
+          };
         }
       }
     }

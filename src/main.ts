@@ -142,39 +142,39 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                     this.config.Testconfig2[b] = {};
 
-                        if (!this.config.Testconfig2[b].pages) {
-                            this.config.Testconfig2[b].pages = [];
-                        }
-                        if (!this.config.Testconfig2[b].navigation) {
-                            this.config.Testconfig2[b].navigation = [];
-                        }
-                        this.config.Testconfig2[b].pages = (
-                            this.config.Testconfig2[b] as panelConfigPartial
-                        ).pages.filter(a => {
+                    if (!this.config.Testconfig2[b].pages) {
+                        this.config.Testconfig2[b].pages = [];
+                    }
+                    if (!this.config.Testconfig2[b].navigation) {
+                        this.config.Testconfig2[b].navigation = [];
+                    }
+                    this.config.Testconfig2[b].pages = (this.config.Testconfig2[b] as panelConfigPartial).pages.filter(
+                        a => {
                             if (s.pages!.find(b => b.uniqueID === a.uniqueID)) {
                                 return false;
                             }
                             return true;
-                        });
-                        this.config.Testconfig2[b].navigation = (
-                            this.config.Testconfig2[b] as panelConfigPartial
-                        ).navigation.filter(a => {
-                            if (s.navigation && s.navigation.find(b => a == null || b == null || b.name === a.name)) {
-                                return false;
-                            }
-                            return true;
-                        });
-                        s.navigation = (this.config.Testconfig2[b].navigation || []).concat(s.navigation || []);
-                        s.pages = (this.config.Testconfig2[b].pages || []).concat(s.pages || []);
-                        this.config.Testconfig2[b] = {
-                            ...((this.config.Testconfig2[b] as panelConfigPartial) || {}),
-                            ...s,
-                        };
-                    }
-                    //this.config.Testconfig2[0].timeout = this.config.timeout;
+                        },
+                    );
+                    this.config.Testconfig2[b].navigation = (
+                        this.config.Testconfig2[b] as panelConfigPartial
+                    ).navigation.filter(a => {
+                        if (s.navigation && s.navigation.find(b => a == null || b == null || b.name === a.name)) {
+                            return false;
+                        }
+                        return true;
+                    });
+                    s.navigation = (this.config.Testconfig2[b].navigation || []).concat(s.navigation || []);
+                    s.pages = (this.config.Testconfig2[b].pages || []).concat(s.pages || []);
+                    this.config.Testconfig2[b] = {
+                        ...((this.config.Testconfig2[b] as panelConfigPartial) || {}),
+                        ...s,
+                    };
                 }
+                //this.config.Testconfig2[0].timeout = this.config.timeout;
             }
         }
+
         /*} catch (e: any) {
             this.log.warn(`Invalid configuration stopped! ${e}`);
             return;
