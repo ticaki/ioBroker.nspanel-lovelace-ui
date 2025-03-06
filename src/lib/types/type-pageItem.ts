@@ -269,11 +269,11 @@ export type PageItemButton = Pick<
     | 'entity4'
 >;
 export type PageItemButtonDataItemsOptions = {
-    type: 'button';
+    type: 'button' | 'switch';
     data: pages.ChangeTypeOfKeys<PageItemButton, Types.DataItemsOptions | undefined>;
 };
 export type PageItemButtonDataItems = {
-    type: 'button';
+    type: 'button' | 'switch';
     data: pages.ChangeTypeOfKeys<PageItemButton, dataItem.Dataitem | undefined>;
 };
 

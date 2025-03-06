@@ -169,7 +169,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       switch (entry.type) {
         case "light": {
           const item = entry.data;
-          message.type = this.config.role === "light" || this.config.role === "socket" ? "button" : "light";
+          message.type = this.parent && this.parent.card.startsWith("cardGrid") && (this.config.role === "light" || this.config.role === "socket") ? "switch" : "light";
           const v = await tools.getValueEntryBoolean(item.entity1);
           const dimmer = (_a = item.dimmer && item.dimmer.value && await item.dimmer.value.getNumber()) != null ? _a : null;
           let rgb = (_c = (_b = await tools.getRGBfromRGBThree(item)) != null ? _b : item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _c : null;
@@ -260,8 +260,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
          * entity2 is display value
          */
         case "text":
-        case "button": {
-          if (entry.type === "text" || entry.type === "button") {
+        case "button":
+        case "switch": {
+          if (entry.type === "text" || entry.type === "button" || entry.type === "switch") {
             const item = entry.data;
             let value = await tools.getValueEntryNumber(item.entity1, false);
             if (value === null) {
@@ -332,6 +333,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               } else {
                 this.confirmClick = "lock";
               }
+            }
+            if (entry.type === "button" && entry.data.entity1 && entry.data.entity1.set && entry.data.entity1.set.common && entry.data.entity1.set.common.role && entry.data.entity1.set.common.role.startsWith("switch") && entry.data.entity1.set.writeable) {
+              entry.type = "switch";
             }
             message.icon = await tools.getIconEntryValue(item.icon, value, "home");
             switch (entry.role) {
