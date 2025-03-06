@@ -799,30 +799,36 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'screensaverTimeout': {
-                    await this.statesControler.setInternalState(
-                        `${this.name}/cmd/screensaverTimeout`,
-                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                        parseInt(String(state.val)),
-                        false,
-                    );
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/screensaverTimeout`,
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                            parseInt(String(state.val)),
+                            false,
+                        );
+                    }
                     break;
                 }
                 case 'dim.standby': {
-                    await this.statesControler.setInternalState(
-                        `${this.name}/cmd/dimStandby`,
-                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                        parseInt(String(state.val)),
-                        false,
-                    );
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/dimStandby`,
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                            parseInt(String(state.val)),
+                            false,
+                        );
+                    }
                     break;
                 }
                 case 'dim.active': {
-                    await this.statesControler.setInternalState(
-                        `${this.name}/cmd/dimActive`,
-                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                        parseInt(String(state.val)),
-                        false,
-                    );
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/dimActive`,
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                            parseInt(String(state.val)),
+                            false,
+                        );
+                    }
                     break;
                 }
                 case 'dim.dayMode': {
@@ -854,39 +860,47 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'dim.nightActive': {
-                    await this.statesControler.setInternalState(
-                        `${this.name}/cmd/dimNightActive`,
-                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                        parseInt(String(state.val)),
-                        false,
-                    );
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/dimNightActive`,
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                            parseInt(String(state.val)),
+                            false,
+                        );
+                    }
                     break;
                 }
                 case 'dim.nightStandby': {
-                    await this.statesControler.setInternalState(
-                        `${this.name}/cmd/dimNightStandby`,
-                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                        parseInt(String(state.val)),
-                        false,
-                    );
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/dimNightStandby`,
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                            parseInt(String(state.val)),
+                            false,
+                        );
+                    }
                     break;
                 }
                 case 'dim.nightHourStart': {
-                    await this.statesControler.setInternalState(
-                        `${this.name}/cmd/dimNightHourStart`,
-                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                        parseInt(String(state.val)),
-                        false,
-                    );
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/dimNightHourStart`,
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                            parseInt(String(state.val)),
+                            false,
+                        );
+                    }
                     break;
                 }
                 case 'dim.nightHourEnd': {
-                    await this.statesControler.setInternalState(
-                        `${this.name}/cmd/dimNightHourEnd`,
-                        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                        parseInt(String(state.val)),
-                        false,
-                    );
+                    if (state && state.val != null && typeof state.val === 'number') {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/dimNightHourEnd`,
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                            parseInt(String(state.val)),
+                            false,
+                        );
+                    }
                     break;
                 }
                 case 'dim.delay': {
