@@ -378,6 +378,8 @@ export class PageItem extends BaseClassTriggerd {
                             }
                         }
                         if (
+                            this.parent &&
+                            !this.parent.card.startsWith('screensaver') &&
                             entry.type === 'button' &&
                             entry.data.entity1 &&
                             entry.data.entity1.set &&

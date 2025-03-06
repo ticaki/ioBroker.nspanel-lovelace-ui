@@ -334,7 +334,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 this.confirmClick = "lock";
               }
             }
-            if (entry.type === "button" && entry.data.entity1 && entry.data.entity1.set && entry.data.entity1.set.common && entry.data.entity1.set.common.role && entry.data.entity1.set.common.role.startsWith("switch") && entry.data.entity1.set.writeable) {
+            if (this.parent && !this.parent.card.startsWith("screensaver") && entry.type === "button" && entry.data.entity1 && entry.data.entity1.set && entry.data.entity1.set.common && entry.data.entity1.set.common.role && entry.data.entity1.set.common.role.startsWith("switch") && entry.data.entity1.set.writeable) {
               entry.type = "switch";
             }
             message.icon = await tools.getIconEntryValue(item.icon, value, "home");
