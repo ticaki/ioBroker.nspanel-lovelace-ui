@@ -59,7 +59,7 @@ class PanelSend extends import_library.BaseClass {
           }
           this.log.debug(`Receive ack for ${JSON.stringify(msg2)}`);
         }
-        this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 250);
+        this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 2);
       }
     }
   };
@@ -113,7 +113,7 @@ class PanelSend extends import_library.BaseClass {
     this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
     this.messageTimeoutTasmota = true;
     await this.mqttClient.publish(msg.topic, msg.payload, msg.opt);
-    this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 50);
+    this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 20);
   };
   async delete() {
     await super.delete();
