@@ -20,6 +20,8 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'value.temperature'
+    | 'level.temperature'
     | 'text.shutter.navigation'
     | 'text.accuweather.uvindex'
     | 'text.accuweather.windspeed'

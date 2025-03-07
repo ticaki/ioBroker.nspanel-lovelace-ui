@@ -1,7 +1,6 @@
 # Table of contents
 * [motion](#motion)
 * [dimmer](#dimmer)
-* [timeTable](#timetable)
 * [ct](#ct)
 * [window](#window)
 * [humidity](#humidity)
@@ -43,25 +42,16 @@
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **dimmer** | SET | number| level.dimmer  | X | X |  | 
-| **"** | ACTUAL | number| value.dimmer  | X |  |  | 
+| **"** | ACTUAL | number| value.dimmer, level.dimmer  |  |  |  | 
 | **"** | ON_SET | boolean| switch.light  | X | X |  | 
-| **"** | ON_ACTUAL | boolean| sensor.light  | X |  |  | 
-| **"** | VALUE | number| state  |  | X |  | 
-### timeTable
-| Channel role | State ID | common.type | common.role | required | common.write | description |  
-| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **timeTable** | ACTUAL | string| state  | X |  |  | 
-| **"** | VEHICLE | string| state  | X |  |  | 
-| **"** | DIRECTION | string| state  | X |  |  | 
-| **"** | DELAY | boolean| state  | X |  |  | 
+| **"** | ON_ACTUAL | boolean| sensor.light, switch.light  |  |  |  | 
 ### ct
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **ct** | DIMMER | number| level.dimmer  |  | X |  | 
+| **ct** | DIMMER | number| level.dimmer  | X | X |  | 
 | **"** | ON | boolean| switch.light  | X | X |  | 
-| **"** | ON_ACTUAL | boolean| sensor.light  | X |  |  | 
+| **"** | ON_ACTUAL | boolean| sensor.light, switch.light  |  |  |  | 
 | **"** | TEMPERATURE | number| level.color.temperature  | X | X |  | 
-| **"** | VALUE | number| state  |  | X |  | 
 ### window
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -75,28 +65,27 @@
 ### hue
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **hue** | DIMMER | number| level.dimmer  |  | X |  | 
+| **hue** | DIMMER | number| level.dimmer  | X | X |  | 
 | **"** | ON | boolean| switch.light  | X | X |  | 
-| **"** | ON_ACTUAL | boolean| sensor.light  | X |  |  | 
+| **"** | ON_ACTUAL | boolean| sensor.light, switch.light  |  |  |  | 
 | **"** | TEMPERATURE | number| level.color.temperature  |  | X |  | 
 | **"** | HUE | number| level.color.hue  | X | X |  | 
-| **"** | VALUE | number| state  |  | X |  | 
 ### info
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **info** | ACTUAL | mixed| state  | X |  |  | 
-| **"** | COLORDEC | number| state  |  |  |  | 
-| **"** | BUTTONTEXT | string| state, text  |  |  |  | 
+| **"** | COLORDEC | number| value.rgb  |  |  |  | 
+| **"** | BUTTONTEXT | string| text  |  |  |  | 
 | **"** | USERICON | string| state  |  |  |  | 
 ### blind
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **blind** | ACTUAL | number| value.blind  | X |  |  | 
+| **blind** | ACTUAL | number| value.blind, level.blind  |  |  |  | 
 | **"** | SET | number| level.blind  | X | X |  | 
 | **"** | CLOSE | boolean| button.close.blind  | X | X |  | 
 | **"** | OPEN | boolean| button.open.blind  | X | X |  | 
 | **"** | STOP | boolean| button.stop.blind  | X | X |  | 
-| **"** | TILT_ACTUAL | number| value.tilt  |  |  |  | 
+| **"** | TILT_ACTUAL | number| level.tilt, value.tilt  |  |  |  | 
 | **"** | TILT_SET | number| level.tilt  |  | X |  | 
 | **"** | TILT_CLOSE | boolean| button.close.tilt  |  | X |  | 
 | **"** | TILT_OPEN | boolean| button.open.tilt  |  | X |  | 
@@ -104,18 +93,18 @@
 ### airCondition
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **airCondition** | ACTUAL | number| value.temperature  | X |  |  | 
+| **airCondition** | ACTUAL | number| level.temperature, value.temperature  |  |  |  | 
 | **"** | SET | number| level.temperature  | X | X |  | 
-| **"** | SET2 | number| level.temperature  | X | X |  | 
+| **"** | SET2 | number| level.temperature  |  | X |  | 
 | **"** | AUTO | boolean| state  |  |  |  | 
 | **"** | COOL | boolean| state  |  |  |  | 
 | **"** | BOOST | boolean| switch.mode.boost  |  | X |  | 
 | **"** | ERROR | boolean| indicator.error  |  |  |  | 
 | **"** | HEAT | boolean| state  |  |  |  | 
-| **"** | HUMINITY | number| value.humidity  |  |  |  | 
+| **"** | HUMIDITY | number| value.humidity  |  |  |  | 
 | **"** | MAINTAIN | boolean| indicator.maintenance  |  |  |  | 
-| **"** | MODE | number| level.mode.airconditioner  | X | X |  | 
-| **"** | OFF | boolean| state  | X |  |  | 
+| **"** | MODE | number| level.mode.airconditioner  |  | X |  | 
+| **"** | OFF | boolean| state  |  |  |  | 
 | **"** | POWER | boolean| switch.power  |  | X |  | 
 | **"** | SPEED | number| level.mode.fan  |  | X |  | 
 | **"** | SWING | boolean| switch.mode.swing  |  | X |  | 
@@ -127,33 +116,30 @@
 | **"** | SET | boolean| switch  |  | X |  | 
 | **"** | COLORDEC | number| state  |  |  |  | 
 | **"** | BUTTONTEXT | string| state, text  |  |  |  | 
-| **"** | STATE | boolean| state  |  | X |  | 
 ### light
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **light** | ACTUAL | boolean| sensor.light  | X |  |  | 
-| **"** | SET | boolean| switch.light  | X | X |  | 
+| **light** | ACTUAL | boolean| switch.light, sensor.light  | X |  |  | 
+| **"** | SET | boolean| switch.light  |  | X |  | 
 | **"** | COLORDEC | number| state  |  |  |  | 
-| **"** | BUTTONTEXT | string| state, text  |  |  |  | 
-| **"** | VALUE | number| state  |  | X |  | 
+| **"** | BUTTONTEXT | string| text  |  |  |  | 
 ### volume
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **volume** | ACTUAL | number| value.volume  | X |  |  | 
+| **volume** | ACTUAL | number| value.volume, level.volume  |  |  |  | 
 | **"** | SET | number| level.volume  | X | X |  | 
-| **"** | MUTE | boolean| media.mute  | X | X |  | 
+| **"** | MUTE | boolean| media.mute  |  | X |  | 
 ### rgb
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **rgb** | RED | number| level.color.red  | X | X |  | 
 | **"** | GREEN | number| level.color.green  | X | X |  | 
 | **"** | BLUE | number| level.color.blue  | X | X |  | 
-| **"** | ON_ACTUAL | boolean| sensor.light  | X |  |  | 
+| **"** | ON_ACTUAL | boolean| sensor.light, switch.light  | X |  |  | 
 | **"** | ON | boolean| switch.light  | X | X |  | 
 | **"** | DIMMER | number| level.dimmer  |  | X |  | 
 | **"** | TEMPERATURE | number| level.color.temperature  |  | X |  | 
 | **"** | WHITE | number| level.color.white  |  | X |  | 
-| **"** | VALUE | number| state  |  | X |  | 
 ### rgbSingle
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -161,13 +147,12 @@
 | **"** | ON | boolean| switch.light  | X | X |  | 
 | **"** | DIMMER | number| level.dimmer  |  | X |  | 
 | **"** | TEMPERATURE | number| level.color.temperature  |  | X |  | 
-| **"** | ON_ACTUAL | boolean| sensor.light  | X |  |  | 
-| **"** | VALUE | number| state  |  | X |  | 
+| **"** | ON_ACTUAL | boolean| sensor.light, switch.light  |  |  |  | 
 ### slider
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **slider** | SET | number| level  | X | X |  | 
-| **"** | ACTUAL | number| value  | X |  |  | 
+| **"** | ACTUAL | number| value, level  |  |  |  | 
 ### button
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -175,17 +160,15 @@
 ### buttonSensor
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **buttonSensor** | ACTUAL | boolean| button.press  | X | X |  | 
+| **buttonSensor** | ACTUAL | boolean| button.press  | X |  |  | 
 ### temperature
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **temperature** | ACTUAL | number| value.temperature  | X |  |  | 
-| **"** | SECOND | number| value.humidity  |  |  |  | 
 ### value.temperature
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **value.temperature** | ACTUAL | number| value.temperature  | X |  |  | 
-| **"** | SECOND | number| value.humidity  |  |  |  | 
 | **"** | USERICON | string| state  |  |  |  | 
 ### thermostat
 | Channel role | State ID | common.type | common.role | required | common.write | description |  

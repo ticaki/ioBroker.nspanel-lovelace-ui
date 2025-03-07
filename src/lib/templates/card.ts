@@ -2317,7 +2317,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                             role: '',
                             type: 'triggered',
                             dp: '',
-                            regexp: /\.unreach$/,
+                            regexp: /\.UNREACH$/,
                         },
                     },
                 },

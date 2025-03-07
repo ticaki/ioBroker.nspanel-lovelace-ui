@@ -49,6 +49,7 @@ declare namespace ConfigManager {
         pages: PageBaseConfig[];
     };
     type ioBrokerRoles =
+        | 'value.rgb'
         | 'button.open.blind'
         | 'button.close.blind'
         | 'button.open.tilt'

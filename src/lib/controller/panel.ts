@@ -1113,7 +1113,7 @@ export class Panel extends BaseClass {
                 }
                 if (this.screenSaver) {
                     await this.screenSaver.createPageItems();
-                    this.controller && (await this.controller.statesControler.activateTrigger(this.screenSaver));
+                    //this.controller && (await this.controller.statesControler.activateTrigger(this.screenSaver));
                     await this.screenSaver.HandleDate();
                     await this.screenSaver.HandleTime();
                 }
@@ -1478,7 +1478,12 @@ export class Panel extends BaseClass {
         if (!Types.isEventType(temp[0])) {
             return null;
         }
-        if (!Types.isEventMethod(temp[1])) {
+        try {
+            if (!Types.isEventMethod(temp[1])) {
+                return null;
+            }
+        } catch (e: any) {
+            this.log.error(`Error at convertToEvent: ${e}`);
             return null;
         }
         let popup: undefined | string = undefined;

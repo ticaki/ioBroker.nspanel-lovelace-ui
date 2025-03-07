@@ -1029,7 +1029,6 @@ class Panel extends import_library.BaseClass {
         }
         if (this.screenSaver) {
           await this.screenSaver.createPageItems();
-          this.controller && await this.controller.statesControler.activateTrigger(this.screenSaver);
           await this.screenSaver.HandleDate();
           await this.screenSaver.HandleTime();
         }
@@ -1377,7 +1376,12 @@ ${this.info.tasmota.onlineVersion}`;
     if (!Types.isEventType(temp[0])) {
       return null;
     }
-    if (!Types.isEventMethod(temp[1])) {
+    try {
+      if (!Types.isEventMethod(temp[1])) {
+        return null;
+      }
+    } catch (e) {
+      this.log.error(`Error at convertToEvent: ${e}`);
       return null;
     }
     let popup = void 0;

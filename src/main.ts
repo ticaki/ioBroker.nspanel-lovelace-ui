@@ -1,7 +1,7 @@
 /*
  * Created with @iobroker/create-adapter v2.5.0..
  */
-
+//FlashNextion http://nspanel.de/nspanel-v4.6.0.tft ist die 55
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
@@ -19,6 +19,7 @@ import type { panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
 import type { STATUS0 } from './lib/types/types';
 import axios from 'axios';
+import { URL } from 'url';
 axios.defaults.timeout = 5000;
 
 class NspanelLovelaceUi extends utils.Adapter {
@@ -578,10 +579,20 @@ class NspanelLovelaceUi extends utils.Adapter {
                             obj.message.tasmotaTopic
                         ) {
                             const url =
-                                `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp}` +
-                                `&MqttPort ${obj.message.mqttPort}&MqttUser ${obj.message.mqttUsername}&MqttPassword ${obj.message.mqttPassword}&FullTopic ${obj.message.tasmotaTopic}`;
+                                ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp};` +
+                                ` MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword};` +
+                                ` FullTopic ${`${obj.message.tasmotaTopic}/%prefix%/`.replaceAll('//', '/')};` +
+                                ` MqttRetry 10; WebLog 2; template {"NAME":"NSPanel","GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1}; Module 0;` +
+                                ` Restart 1`;
+                            const u = new URL(
+                                `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog${url
+                                    //.replaceAll('?', '%3F')
+                                    .replaceAll('&', '%26')
+                                    .replaceAll('%', '%25')}`,
+                            ); //5*qzx>-y73|?%]=|pKh2b>kB,W*Ar*6>nF5|EM[V<BJz8qR5./saDQRuThK|H<_
+                            this.log.warn(`Send to ${u.href}`);
                             this.log.debug(`Send to ${url}`);
-                            const res = await axios.get(url);
+                            const res = await axios.get(u.href);
                             this.log.debug(`Response: ${JSON.stringify(res.data)}`);
                             if (obj.callback) {
                                 this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -596,6 +607,23 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (obj.message) {
                         if (obj.message.tasmotaIP) {
                             const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
+                            this.log.debug(`Send to ${url}`);
+                            const res = await axios.get(url);
+                            this.log.debug(`Response: ${JSON.stringify(res.data)}`);
+                            if (obj.callback) {
+                                this.sendTo(obj.from, obj.command, [], obj.callback);
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 'tftInstallSendTo': {
+                    if (obj.message) {
+                        if (obj.message.tasmotaIP) {
+                            const version = '4.5.2';
+                            const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog FlashNextion http://nspanel.de/nspanel-v${
+                                version
+                            }.tft; Restart 1`;
                             this.log.debug(`Send to ${url}`);
                             const res = await axios.get(url);
                             this.log.debug(`Response: ${JSON.stringify(res.data)}`);

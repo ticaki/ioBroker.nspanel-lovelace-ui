@@ -59,6 +59,19 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "pw1": {
+                    "type": "password",
+                    "label": "Service-Pin (numbers only)",
+                    "newLine": true,
+                    "validator": "data.pw1.search(/[^0-9]+/g) === -1",
+                    "validatorNoSaveOnError": true,
+                    "validatorErrorText": "mustBeNumber",
+                    "xs": 12,
+                    "sm": 8,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
+                },
                 "_header": {
                     "type": "header",
                     "label": "Not used",
@@ -205,81 +218,107 @@
                         }
                     ]
                 },
-                "pw1": {
-                    "type": "password",
-                    "label": "Service-Pin (numbers only)",
-                    "newLine": true,
-                    "validator": "data.pw1.search(/[^0-9]+/g) === -1",
-                    "validatorNoSaveOnError": true,
-                    "validatorErrorText": "mustBeNumber",
-                    "xs": 12,
-                    "sm": 8,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 3
-                },
-                "header2": {
+                "_header2": {
                     "type": "header",
-                    "label": "TasmotaMqttSettings",
-                    "text": "TasmotaMqttSettings",
+                    "label": "TasmotaDeviceTools",
+                    "text": "TasmotaDeviceTools",
                     "size": 3,
-                    
                     "newLine": true
                 },
-                "internalServerIp": {
+                "_selectTool": {
+                    "type": "select",
+                    "label": "SelectTool",
+                    "default": 0,
+                    "options": [
+                        {
+                            "label": "none",
+                            "value": "0"
+                        },
+                        {
+                            "label": "TasmotaTool",
+                            "value": "1"
+                        },
+                        {
+                            "label": "BerryTool",
+                            "value": "2"
+                        },
+                        {
+                            "label": "TFTTool",
+                            "value": "3"
+                        }
+                    ]
+                },
+                "_internalServerIp": {
                     "type": "ip",
                     "label": "internalServerIp",
                     "noInternal": true,
                     "listenOnAllPorts": false,
                     "onlyIp4": true,
                     "newLine": true,
-                    "validator": "(data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1 && data.internalServerIp !== '127.0.0.1' )|| !data.mqttServer",
-                    "hidden": "!data.mqttServer",
+                    "validator": "(data._internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1 && data._internalServerIp !== '127.0.0.1' )|| !data.mqttServer",
+                    "hidden": "!data.mqttServer || data._selectTool !== '1'",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
                     "xl": 4
                 },
-                "tasmotaIP": {
+                "_tasmotaIP": {
                     "type": "text",
                     "label": "tasmotaIP",
                     "newLine": true,
-                    "validator": "data.tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
+                    "validator": "data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
                     "validatorErrorText": "mustBeIp",
+                    "hidden": "data._selectTool == '0'",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
                     "xl": 4
                 },
-                "tasmotaTopic": {
+                "_tasmotaTopic": {
                     "type": "text",
                     "label": "tasmotaTopic",
-                    "validator": "data.tasmotaIP.search(/^[a-zA-Z][\\w/]+$/g) !== -1",
+                    "validator": "data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) !== -1",
+                    "hidden": "data._selectTool != '1'",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
                     "xl": 4
                 },
-                "tasmotaSendTo": {
+                "_tasmotaSendTo": {
                     "type": "sendTo",
                     "label": "tasmotaSendTo",
-                    "jsonData": "{\"tasmotaIP\": \"${data.tasmotaIP}\", \"tasmotaTopic\":\"data.tasmotaTopic\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": \"${data.mqttPort}\", \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
+                    "jsonData": "{\"tasmotaIP\": \"${data.tasmotaIP}\", \"tasmotaTopic\":\"${data.tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": \"${data.mqttPort}\", \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
                     "showProcess": true,
                     "command": "tasmotaSendTo",
-                    "disabled": "!((data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1 && data.internalServerIp !== '127.0.0.1' )|| !data.mqttServer) || data.tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || (data.mqttServer && !data.internalServerIp || !data.mqttServer && !data.mqttIp)",
-                    "newLine": true
+                    "disabled": "return data._tasmotaIP == null || !data._internalServerIp || data._internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data._internalServerIp === '127.0.0.1'|| !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || !data.mqttServer || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || data.mqttServer && !data._internalServerIp || !data.mqttServer && !data.mqttIp",
+                    "newLine": true,
+                    "variant": "contained",
+                    "hidden": "data._selectTool != '1'"
                 },
-                "berryInstallSendTo": {
+                "_berryInstallSendTo": {
                     "type": "sendTo",
                     "label": "berryInstallSendTo",
                     "jsonData": "{\"tasmotaIP\": \"${data.tasmotaIP}\"}",
                     "showProcess": true,
                     "command": "berryInstallSendTo",
-                    "disabled": "data.tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
-                    "newLine": true
+                    "disabled": "!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
+                    "newLine": true,
+                    "variant": "contained",
+                    "hidden": "data._selectTool != '2'"
+                },
+                "_tftInstallSendTo": {
+                    "type": "sendTo",
+                    "label": "tftInstallSendTo",
+                    "jsonData": "{\"tasmotaIP\": \"${data.tasmotaIP}\"}",
+                    "showProcess": true,
+                    "command": "tftInstallSendTo",
+                    "disabled": "!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
+                    "newLine": true,
+                    "variant": "contained",
+                    "hidden": "data._selectTool != '3'"
                 }
             }
         },
@@ -336,12 +375,11 @@
                                 {
                                     "label": "URL",
                                     "value": 2
-                                }
-                                ,
+                                },
                                 {
                                     "label": "TEL",
                                     "value": 3
-                                }       
+                                }
                             ]
                         },
                         {
@@ -350,11 +388,26 @@
                             "disabled": "data.selType !== 1",
                             "attr": "wlantype",
                             "options": [
-                                {"label": "nopass", "value": "nopass"},
-                                {"label": "WPA", "value": "WPA"},
-                                {"label": "WPA2", "value": "WPA2"},
-                                {"label": "WPA3", "value": "WPA3"},
-                                {"label": "WEP", "value": "WEP"}
+                                {
+                                    "label": "nopass",
+                                    "value": "nopass"
+                                },
+                                {
+                                    "label": "WPA",
+                                    "value": "WPA"
+                                },
+                                {
+                                    "label": "WPA2",
+                                    "value": "WPA2"
+                                },
+                                {
+                                    "label": "WPA3",
+                                    "value": "WPA3"
+                                },
+                                {
+                                    "label": "WEP",
+                                    "value": "WEP"
+                                }
                             ]
                         },
                         {
@@ -393,7 +446,7 @@
                             "type": "objectId",
                             "label": "Switch",
                             "filterFunc": "return obj.common.type === 'boolean' && obj.common.role === 'switch' && obj.common.write"
-                        }    
+                        }
                     ]
                 },
                 "pageQRpwd1": {

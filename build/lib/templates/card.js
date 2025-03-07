@@ -2322,7 +2322,7 @@ const cardTemplates = {
               role: "",
               type: "triggered",
               dp: "",
-              regexp: /\.unreach$/
+              regexp: /\.UNREACH$/
             }
           }
         }
