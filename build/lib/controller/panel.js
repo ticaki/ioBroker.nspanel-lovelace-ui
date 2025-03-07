@@ -1011,6 +1011,7 @@ class Panel extends import_library.BaseClass {
       return;
     }
     if (this.isOnline === false && event.method !== "startup") {
+      void this.restartLoops();
       return;
     }
     switch (event.method) {
@@ -1027,6 +1028,8 @@ class Panel extends import_library.BaseClass {
           await this.setActivePage(popup);
         }
         if (this.screenSaver) {
+          await this.screenSaver.createPageItems();
+          this.controller && await this.controller.statesControler.activateTrigger(this.screenSaver);
           await this.screenSaver.HandleDate();
           await this.screenSaver.HandleTime();
         }

@@ -60,7 +60,7 @@ export class Panel extends BaseClass {
     private loopTimeout: ioBroker.Timeout | undefined;
     private pages: (Page | undefined)[] = [];
     private _activePage: Page | undefined = undefined;
-    private screenSaver: Screensaver | undefined;
+    public screenSaver: Screensaver | undefined;
     private InitProcess: '' | 'awaiting' | 'done' = '';
     private _isOnline: boolean = false;
     public lastCard: string = '';
@@ -1090,6 +1090,7 @@ export class Panel extends BaseClass {
             return;
         }
         if (this.isOnline === false && event.method !== 'startup') {
+            void this.restartLoops();
             return;
         }
 
@@ -1111,6 +1112,8 @@ export class Panel extends BaseClass {
                     await this.setActivePage(popup);
                 }
                 if (this.screenSaver) {
+                    await this.screenSaver.createPageItems();
+                    this.controller && (await this.controller.statesControler.activateTrigger(this.screenSaver));
                     await this.screenSaver.HandleDate();
                     await this.screenSaver.HandleTime();
                 }

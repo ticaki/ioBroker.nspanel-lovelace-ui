@@ -313,7 +313,8 @@ export class PageItem extends BaseClassTriggerd {
                             message.optionalValue = (value ?? true) ? '1' : '0';
                             if (this.parent && this.parent.card === 'cardEntities') {
                                 message.optionalValue =
-                                    (await tools.getEntryTextOnOff(item.text1, !!value)) ?? message.optionalValue;
+                                    this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value)) ??
+                                    message.optionalValue;
                             }
                         } else {
                             switch (entry.role) {
@@ -1590,7 +1591,7 @@ export class PageItem extends BaseClassTriggerd {
         }
         return true;
     }
-    protected async onStateTrigger(): Promise<void> {
+    protected async onStateTrigger(id: string, from: BaseClassTriggerd): Promise<void> {
         if (this.lastPopupType) {
             if (this.lastPopupType === 'popupThermo') {
                 this.parent && (await this.parent.onPopupRequest(this.id, 'popupThermo', '', '', null));
@@ -1600,6 +1601,9 @@ export class PageItem extends BaseClassTriggerd {
             if (msg) {
                 this.sendToPanel(msg);
             }
+        }
+        if (this.panel.isOnline && this.parent === this.panel.screenSaver && this.panel.screenSaver) {
+            await this.panel.screenSaver.onStateTrigger(id, from);
         }
     }
     async getListCommands(setList: Dataitem | undefined): Promise<typePageItem.listCommand[] | null> {

@@ -57,5 +57,6 @@
     "mqttIp": "IP到外部MQTT服务器",
     "mqttPort": "MQTT端口",
     "mqttUser": "mqtt用户名",
-    "mqttPassword": "MQTT密码"
+    "mqttPassword": "MQTT密码",
+    "shutter": "快门"
 }

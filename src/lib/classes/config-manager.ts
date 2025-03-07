@@ -918,8 +918,8 @@ export class ConfigManager extends BaseClass {
                     },
                     data: {
                         text1: {
-                            true: await getButtonsTextTrue(item, 'open'),
-                            false: await getButtonsTextFalse(item, 'open', 'closed'),
+                            true: await getButtonsTextTrue(item, 'opened'),
+                            false: await getButtonsTextFalse(item, 'opened', 'closed'),
                         },
                         text: {
                             true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Light'),

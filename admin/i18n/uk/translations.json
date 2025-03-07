@@ -57,5 +57,6 @@
     "mqttIp": "IP на зовнішній сервер MQTT",
     "mqttPort": "Порт MQTT",
     "mqttUser": "MQTT Ім'я користувача",
-    "mqttPassword": "Пароль MQTT"
+    "mqttPassword": "Пароль MQTT",
+    "shutter": "Затвора"
 }

@@ -57,5 +57,6 @@
     "mqttIp": "IP naar de externe MQTT -server",
     "mqttPort": "MQTT -poort",
     "mqttUser": "MQTT -gebruikersnaam",
-    "mqttPassword": "MQTT -wachtwoord"
+    "mqttPassword": "MQTT -wachtwoord",
+    "shutter": "Luik"
 }

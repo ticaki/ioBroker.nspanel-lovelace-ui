@@ -241,7 +241,7 @@ export class Controller extends Library.BaseClass {
         for (const panel of this.panels) {
             if (await panel.isValid()) {
                 newPanels.push(panel);
-                await panel.init();
+                void panel.init();
             } else {
                 await panel.delete();
                 this.adapter.testSuccessful = false;

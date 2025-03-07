@@ -57,5 +57,6 @@
     "mqttIp": "IP al server MQTT esterno",
     "mqttPort": "Porta mqtt",
     "mqttUser": "Nome utente MQTT",
-    "mqttPassword": "Password MQTT"
+    "mqttPassword": "Password MQTT",
+    "shutter": "Otturatore"
 }

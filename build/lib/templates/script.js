@@ -583,7 +583,7 @@ const scriptTemplates = {
         false: void 0
       },
       text1: {
-        true: { type: "const", constVal: "open" },
+        true: { type: "const", constVal: "opened" },
         false: { type: "const", constVal: "closed" }
       }
     }
@@ -617,7 +617,7 @@ const scriptTemplates = {
         false: void 0
       },
       text1: {
-        true: { type: "const", constVal: "open" },
+        true: { type: "const", constVal: "opened" },
         false: { type: "const", constVal: "closed" }
       }
     }

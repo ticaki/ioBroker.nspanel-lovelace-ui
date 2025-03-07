@@ -66,7 +66,7 @@ export class BaseClassTriggerd extends BaseClass {
 
     constructor(card: BaseClassTriggerdInterface) {
         super(card.adapter, card.name);
-        this.minUpdateInterval = 250;
+        this.minUpdateInterval = 400;
         if (!this.adapter.controller) {
             throw new Error('No controller! bye bye');
         }
@@ -172,6 +172,7 @@ export class BaseClassTriggerd extends BaseClass {
                 } else {
                     this.panel.sendScreeensaverTimeout(this.panel.timeout);
                 }
+
                 this.log.debug(`Switch page to visible${force ? ' (forced)' : ''}!`);
                 this.resetLastMessage();
                 this.controller && (await this.controller.statesControler.activateTrigger(this));

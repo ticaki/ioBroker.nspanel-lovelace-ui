@@ -62,7 +62,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   constructor(card) {
     var _a;
     super(card.adapter, card.name);
-    this.minUpdateInterval = 250;
+    this.minUpdateInterval = 400;
     if (!this.adapter.controller) {
       throw new Error("No controller! bye bye");
     }

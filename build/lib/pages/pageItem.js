@@ -277,7 +277,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             if (entry.type === "button") {
               message.optionalValue = (value != null ? value : true) ? "1" : "0";
               if (this.parent && this.parent.card === "cardEntities") {
-                message.optionalValue = (_u = await tools.getEntryTextOnOff(item.text1, !!value)) != null ? _u : message.optionalValue;
+                message.optionalValue = (_u = this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value))) != null ? _u : message.optionalValue;
               }
             } else {
               switch (entry.role) {
@@ -1426,7 +1426,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     }
     return true;
   }
-  async onStateTrigger() {
+  async onStateTrigger(id, from) {
     if (this.lastPopupType) {
       if (this.lastPopupType === "popupThermo") {
         this.parent && await this.parent.onPopupRequest(this.id, "popupThermo", "", "", null);
@@ -1436,6 +1436,9 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       if (msg) {
         this.sendToPanel(msg);
       }
+    }
+    if (this.panel.isOnline && this.parent === this.panel.screenSaver && this.panel.screenSaver) {
+      await this.panel.screenSaver.onStateTrigger(id, from);
     }
   }
   async getListCommands(setList) {

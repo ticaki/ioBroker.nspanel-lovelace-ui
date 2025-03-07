@@ -57,5 +57,6 @@
     "mqttIp": "IP al servidor MQTT externo",
     "mqttPort": "Puerto MQTT",
     "mqttUser": "Nombre de usuario mqtt",
-    "mqttPassword": "Contraseña mqtt"
+    "mqttPassword": "Contraseña mqtt",
+    "shutter": "Obturador"
 }

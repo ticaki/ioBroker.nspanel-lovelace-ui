@@ -185,6 +185,9 @@ export class Screensaver extends Page {
         this.sendToPanel(msg);
         await this.HandleScreensaverStatusIcons();
     }
+    async createPageItems(): Promise<void> {
+        await super.createPageItems();
+    }
 
     async onVisibilityChange(v: boolean): Promise<void> {
         //await super.onVisibilityChange(v);

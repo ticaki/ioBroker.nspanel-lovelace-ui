@@ -562,7 +562,7 @@ export const scriptTemplates: TemplateItems = {
                 false: undefined,
             },
             text1: {
-                true: { type: 'const', constVal: 'open' },
+                true: { type: 'const', constVal: 'opened' },
                 false: { type: 'const', constVal: 'closed' },
             },
         },
@@ -596,7 +596,7 @@ export const scriptTemplates: TemplateItems = {
                 false: undefined,
             },
             text1: {
-                true: { type: 'const', constVal: 'open' },
+                true: { type: 'const', constVal: 'opened' },
                 false: { type: 'const', constVal: 'closed' },
             },
         },

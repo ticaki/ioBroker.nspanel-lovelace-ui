@@ -1,219 +1,218 @@
 {
     "common": {
-      "name": "nspanel-lovelace-ui",
-      "version": "0.1.7",
-      "news": {
-        "0.1.7": {
-          "en": "cardGrid Number values -> Show an icon if user has defined one, otherwise number\nfixes #143\nfixes #147\nfixes #146\nfixes #144\nfixes #148",
-          "de": "karte Grid Zahlenwerte -> Zeigen Sie ein Symbol, wenn der Benutzer eins definiert hat, andernfalls Nummer\nfixes #143\nfixes #147\nfixes #146\nfixes #144\nfixes #148",
-          "ru": "карточка Номера сетки -> Показать значок, если пользователь определил один, иначе номер\nобсуждение #143\nремонт #147\nремонт #146\nремонт #144\nобсуждение #148",
-          "pt": "cartão Valores do número de grade -> Mostrar um ícone se o usuário tiver definido um, número de outra forma\ncorreções #143\ncorreções #147\ncorreções #146\ncorreções #144\ncorreções #148",
-          "nl": "kaart Rasteraantalwaarden -> Een pictogram tonen als de gebruiker er een heeft gedefinieerd, anders nummer\nfixes #143\nfixes #147\nfixes #146\nfixes #144\nfixes #148",
-          "fr": "carte Valeurs du nombre de grilles -> Afficher une icône si l'utilisateur en a défini un, sinon numéro\ncorrige #143\ncorrige #147\ncorrige #146\ncorrectifs #144\ncorrectifs #148",
-          "it": "carta Valori numeri -> Mostra un'icona se l'utente ne ha definito uno, altrimenti numero\ncorrezioni #143\ncorrezioni #147\ncorrezioni #146\ncorrezioni #144\ncorrezioni #148",
-          "es": "tarjeta Valores de números de rejilla - título Mostrar un icono si el usuario ha definido uno, otro número\nfijaciones #143\nfijaciones #147\nfijaciones #146\nfijaciones #144\nfijaciones #148",
-          "pl": "karta Liczba siatki - > Pokaż ikonę, jeśli użytkownik zdefiniował jedną, w przeciwnym razie numer\npoprawki # 143\npoprawki # 147\npoprawki # 146\npoprawki # 144\npoprawki # 148",
-          "uk": "кошик Значення чисел Grid -> Показати іконку, якщо користувач визначився один, інший номер\nфіксатори #143\nзастібки #147\nфіксатори #146\nфіксатори #144\nфіксатори #148",
-          "zh-cn": "纸牌 网格数字值 - > 如果用户定义了图标, 显示图标, 否则数字\n修正 # 143\n修正 # 147\n修正 # 146\n修正 # 144\n修正 # 148"
+        "name": "nspanel-lovelace-ui",
+        "version": "0.1.7",
+        "news": {
+            "0.1.7": {
+                "en": "cardGrid Number values -> Show an icon if user has defined one, otherwise number\nfixes #143\nfixes #147\nfixes #146\nfixes #144\nfixes #148",
+                "de": "karte Grid Zahlenwerte -> Zeigen Sie ein Symbol, wenn der Benutzer eins definiert hat, andernfalls Nummer\nfixes #143\nfixes #147\nfixes #146\nfixes #144\nfixes #148",
+                "ru": "карточка Номера сетки -> Показать значок, если пользователь определил один, иначе номер\nобсуждение #143\nремонт #147\nремонт #146\nремонт #144\nобсуждение #148",
+                "pt": "cartão Valores do número de grade -> Mostrar um ícone se o usuário tiver definido um, número de outra forma\ncorreções #143\ncorreções #147\ncorreções #146\ncorreções #144\ncorreções #148",
+                "nl": "kaart Rasteraantalwaarden -> Een pictogram tonen als de gebruiker er een heeft gedefinieerd, anders nummer\nfixes #143\nfixes #147\nfixes #146\nfixes #144\nfixes #148",
+                "fr": "carte Valeurs du nombre de grilles -> Afficher une icône si l'utilisateur en a défini un, sinon numéro\ncorrige #143\ncorrige #147\ncorrige #146\ncorrectifs #144\ncorrectifs #148",
+                "it": "carta Valori numeri -> Mostra un'icona se l'utente ne ha definito uno, altrimenti numero\ncorrezioni #143\ncorrezioni #147\ncorrezioni #146\ncorrezioni #144\ncorrezioni #148",
+                "es": "tarjeta Valores de números de rejilla - título Mostrar un icono si el usuario ha definido uno, otro número\nfijaciones #143\nfijaciones #147\nfijaciones #146\nfijaciones #144\nfijaciones #148",
+                "pl": "karta Liczba siatki - > Pokaż ikonę, jeśli użytkownik zdefiniował jedną, w przeciwnym razie numer\npoprawki # 143\npoprawki # 147\npoprawki # 146\npoprawki # 144\npoprawki # 148",
+                "uk": "кошик Значення чисел Grid -> Показати іконку, якщо користувач визначився один, інший номер\nфіксатори #143\nзастібки #147\nфіксатори #146\nфіксатори #144\nфіксатори #148",
+                "zh-cn": "纸牌 网格数字值 - > 如果用户定义了图标, 显示图标, 否则数字\n修正 # 143\n修正 # 147\n修正 # 146\n修正 # 144\n修正 # 148"
+            },
+            "0.1.6": {
+                "en": "fixes #140\nfixes #141",
+                "de": "fixes #140\nfixes #141",
+                "ru": "обсуждение #140\nремонт #141",
+                "pt": "correções #140\ncorreções #141",
+                "nl": "fixes #140\nfixes #141",
+                "fr": "correctifs #140\ncorrige #141",
+                "it": "correzioni #140\ncorrezioni #141",
+                "es": "fijaciones #140\nfijaciones #141",
+                "pl": "poprawki # 140\npoprawki # 141",
+                "uk": "застібки #140\nфіксатори #141",
+                "zh-cn": "修正 # 140\n修正 # 141"
+            },
+            "0.1.5": {
+                "en": "fixes [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfixes #133\nConfiguration is reconfigured at every start. If this fails, the saved conversion is used.\nThe raw version and a converted version are saved when the configuration is transferred.\nparent added to navigation\ncardQR added",
+                "de": "[#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfixes #133\nDie Konfiguration wird zu jedem Start neu konfiguriert. Wenn dies ausfällt, wird die gespeicherte Konvertierung verwendet.\nDie Rohversion und eine konvertierte Version werden beim Übertragen der Konfiguration gespeichert.\nzur navigation hinzugefügt\ncardQR hinzugefügt",
+                "ru": "исправления [#135] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nобсуждение #133\nКонфигурация перенастраивается на каждом старте. Если это не удается, используется сохраненное преобразование.\nНеобработанная версия и преобразованная версия сохраняются при переносе конфигурации.\nродитель добавил в навигацию\ncardQR добавлен",
+                "pt": "correções [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135))\ncorreções #133\nA configuração é reconfigurada em cada início. Se isso falhar, a conversão salva é usada.\nA versão bruta e uma versão convertida são salvas quando a configuração é transferida.\npai adicionado à navegação\ncardQR adicionado",
+                "nl": "fixes [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfixes #133\nConfiguratie wordt bij elke start aangepast. Als dit mislukt, wordt de opgeslagen conversie gebruikt.\nDe raw versie en een geconverteerde versie worden opgeslagen wanneer de configuratie wordt overgedragen.\nouder toegevoegd aan navigatie\ncardQR toegevoegd",
+                "fr": "correctifs [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\ncorrectifs #133\nLa configuration est reconfigurée à chaque début. Si cela échoue, la conversion enregistrée est utilisée.\nLa version brute et une version convertie sont enregistrées lorsque la configuration est transférée.\nparent ajouté à la navigation\ncarteQR ajoutée",
+                "it": "[#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\ncorrezioni #133\nLa configurazione viene riconfigurata in ogni inizio. Se questo fallisce, viene utilizzata la conversione salvata.\nLa versione raw e una versione convertita vengono salvate quando la configurazione viene trasferita.\ngenitore aggiunto alla navigazione\ncardQR aggiunto",
+                "es": "fijaciones [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfijaciones #133\nLa configuración se reconfigura en cada principio. Si esto falla, se utiliza la conversión guardada.\nLa versión cruda y una versión convertida se guardan cuando se transfiere la configuración.\npadre añadido a la navegación\ncardQR añadido",
+                "pl": "fixes [# 135] (https: / / github.com / ticaki / ioBroker.nspanel- lovelace- ui / issues / 135)\npoprawki # 133\nKonfiguracja jest rekonfigurowana na każdym początku. Jeśli to się nie uda, zostanie zastosowana zapisana konwersja.\nWersja surowa i wersja skonwertowana są zapisywane po przeniesieniu konfiguracji.\nrodzic dodany do nawigacji\nkardQR dodany",
+                "uk": "[#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nзакріплення #133\nНалаштування переконфігурується на кожному старті. Якщо це не вдається, використовується збережена конвертація.\nПри перерахуванні на конфігурацію передається сира версія та конвертована версія.\nдодано до навігації\ncardQR додано",
+                "zh-cn": "校正 [# 135] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135) 互联网档案馆的存檔,存档日期2014-03-05\n修正 # 133\n每次启动时都会重新配置配置 。 如果失败, 则使用保存的转换 .\n原始版本和转换后的版本在配置转移时保存.\n父目录添加到导航中\n已添加卡QR"
+            },
+            "0.1.4": {
+                "en": "fixes #131",
+                "de": "fixes #131",
+                "ru": "обсуждение #131",
+                "pt": "correções #131",
+                "nl": "fixes #131",
+                "fr": "correctifs #131",
+                "it": "correzioni #131",
+                "es": "fijaciones #131",
+                "pl": "poprawki # 131",
+                "uk": "застібки #131",
+                "zh-cn": "修正 # 131"
+            },
+            "0.1.3": {
+                "en": "fixes #130\nData point generation changed\nDimming mode (data points) completed\nScreensaver double-click added",
+                "de": "fixes #130\nÄnderung der Datenpunkterzeugung\nDimmmodus (Datenpunkte) abgeschlossen\nScreensaver Doppelklick hinzugefügt",
+                "ru": "обсуждение #130\nГенерация точек данных изменилась\nРежим затемнения (точки данных) завершен\nДобавлен двойной клик Screensaver",
+                "pt": "correções #130\nA geração de pontos de dados mudou\nModo de escurecimento (pontos de dados) concluído\nScreensaver duplo clique adicionado",
+                "nl": "fixes #130\nAanmaken van gegevenspunten gewijzigd\nDimmenmodus (gegevenspunten) voltooid\nScreensaver dubbelklik toegevoegd",
+                "fr": "correctifs n°130\nChangement de génération de points de données\nMode de gradation (points de données) complété\nEcran de veille double-clic ajouté",
+                "it": "correzioni #130\nGenerazione dei punti di dati cambiata\nModalità di dimming (punti dati completati)\nScreensaver doppio clic aggiunto",
+                "es": "fijaciones #130\nCambio de la generación de puntos de datos\nModo de regulación (puntos de datos) completado\nScreensaver doble clic añadido",
+                "pl": "poprawki # 130\nZmieniona generacja punktów danych\nTryb przyciemniania (punkty danych) zakończony\nDwukrotne kliknięcie wygaszacza ekranu",
+                "uk": "застібки #130\nЗмінено генерацію точки даних\nРежим дозування (таблички даних) завершено\nScreensaver double-click додано",
+                "zh-cn": "修正 # 130\n数据点生成已改变\n缩小模式( 数据点)\n添加双击屏幕保护器"
+            },
+            "0.1.2": {
+                "en": "fixed nav service right\nscreensaver rotation time added\ngrid scrolling improved\nFeedback from the script improved\n(Kuckuckmann:) new adapter logo",
+                "de": "fester nav service rechts\nbildschirmschoner drehzeit hinzugefügt\ngrid scrolling verbessert\nFeedback aus dem Skript verbessert\n(Kuckmann:) neues Adapter-Logo",
+                "ru": "право фиксированной службы\nскринсейвер время вращения добавлено\nсетка прокрутки улучшилась\nОбратная связь со сценарием улучшилась\n(Kuckuckmann: новый логотип адаптера)",
+                "pt": "serviço de navegação fixa direita\ntempo de rotação do screensaver adicionado\nrolagem de grade melhorada\nFeedback do script melhorado\n(Kuckuckmann:) novo logotipo do adaptador",
+                "nl": "vaste navigatie rechts\nscreensaver rotatietijd toegevoegd\ngrid scrollen verbeterd\nFeedback van het script verbeterd\n(Kuckuckmann:) nieuw adapterlogo",
+                "fr": "droit de service fixe nav\nscreensaver temps de rotation ajouté\namélioration du défilement de la grille\nLa rétroaction du script s'est améliorée\n(Kuckuckmann:) nouveau logo d'adaptateur",
+                "it": "servizio nav fisso\ntempo di rotazione screensaver aggiunto\ngriglia di scorrimento migliorato\nIl feedback dallo script è migliorato\n(Kuckuckuckmann:) nuovo logo adattatore",
+                "es": "servicio fijo nav derecho\ntiempo de rotación añadido\npergaminos mejorados\nLa retroalimentación del script mejoró\n(Kuckuckmann:) nuevo logo adaptador",
+                "pl": "prawo do stałej nawigacji\ndodano czas rotacji wygaszacza ekranu\nulepszone przewijanie sieci\nInformacje zwrotne ze skryptu poprawiły się\n(Kuckuckmann:) nowe logo adaptera",
+                "uk": "фіксована послуга nav\nекранисереднього часу обертання додано\nрозкручування сітки поліпшена\nЗворотній зв'язок з скриптом поліпшений\n(Kuckmann:) новий логотип адаптера",
+                "zh-cn": "固定导航服务右侧\n添加屏幕保护旋转时间\n网格滚动改进\n改进了对脚本的反馈\n(Kuckuckmann:) 新的适配器标志"
+            },
+            "0.1.1": {
+                "en": "fixed color fading\nfixed config script\nadded message for missing states",
+                "de": "feste farbe fading\nfestes config skript\nzusätzliche nachricht für fehlende staaten",
+                "ru": "фиксированный цвет выцветает\nфиксированный скрипт конфигурирования\nдобавлено сообщение для пропавших без вести",
+                "pt": "desbotamento de cor fixa\nscript de configuração fixa\nmensagem adicionada para estados desaparecidos",
+                "nl": "vaste kleur vervagen\nvast configuratiescript\ntoegevoegd bericht voor ontbrekende statussen",
+                "fr": "décoloration de couleur fixe\nscript de configuration fixe\nmessage ajouté pour les états manquants",
+                "it": "colore fisso sfumatura\nscript di configurazione fisso\nmessaggio aggiunto per gli stati mancanti",
+                "es": "de color fijo\nscript de configuración fijo\nmensaje añadido para los estados desaparecidos",
+                "pl": "fixed color fading\npoprawiony skrypt konfiguracyjny\ndodana wiadomość dla brakujących stanów",
+                "uk": "фіксована кольорова завіса\nвиправлений скрипт налаштування\nдодано повідомлення про відсутні стани",
+                "zh-cn": "固定颜色淡出\n固定配置脚本\n为缺失状态添加消息"
+            }
         },
-        "0.1.6": {
-          "en": "fixes #140\nfixes #141",
-          "de": "fixes #140\nfixes #141",
-          "ru": "обсуждение #140\nремонт #141",
-          "pt": "correções #140\ncorreções #141",
-          "nl": "fixes #140\nfixes #141",
-          "fr": "correctifs #140\ncorrige #141",
-          "it": "correzioni #140\ncorrezioni #141",
-          "es": "fijaciones #140\nfijaciones #141",
-          "pl": "poprawki # 140\npoprawki # 141",
-          "uk": "застібки #140\nфіксатори #141",
-          "zh-cn": "修正 # 140\n修正 # 141"
+        "title": "NSPanel-Lovelace-UI Next Level",
+        "titleLang": {
+            "en": "NSPanel-Lovelace-UI Next Level",
+            "de": "NSPanel-Lovelace-UI Next Level",
+            "ru": "Пользовательский интерфейс NSPanel Lovelace",
+            "pt": "UI NSPanel Lovelace",
+            "nl": "NSPanel Lovelace-gebruikersinterface",
+            "fr": "Interface utilisateur NSPanel Lovelace",
+            "it": "Interfaccia utente NPanel Lovelace",
+            "es": "Interfaz de usuario de NSPanel Lovelace",
+            "pl": "Interfejs NSPanel Lovelace",
+            "uk": "Інтерфейс користувача NSPanel Lovelace",
+            "zh-cn": "NSPanel Lovelace UI"
         },
-        "0.1.5": {
-          "en": "fixes [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfixes #133\nConfiguration is reconfigured at every start. If this fails, the saved conversion is used.\nThe raw version and a converted version are saved when the configuration is transferred.\nparent added to navigation\ncardQR added",
-          "de": "[#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfixes #133\nDie Konfiguration wird zu jedem Start neu konfiguriert. Wenn dies ausfällt, wird die gespeicherte Konvertierung verwendet.\nDie Rohversion und eine konvertierte Version werden beim Übertragen der Konfiguration gespeichert.\nzur navigation hinzugefügt\ncardQR hinzugefügt",
-          "ru": "исправления [#135] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nобсуждение #133\nКонфигурация перенастраивается на каждом старте. Если это не удается, используется сохраненное преобразование.\nНеобработанная версия и преобразованная версия сохраняются при переносе конфигурации.\nродитель добавил в навигацию\ncardQR добавлен",
-          "pt": "correções [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135))\ncorreções #133\nA configuração é reconfigurada em cada início. Se isso falhar, a conversão salva é usada.\nA versão bruta e uma versão convertida são salvas quando a configuração é transferida.\npai adicionado à navegação\ncardQR adicionado",
-          "nl": "fixes [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfixes #133\nConfiguratie wordt bij elke start aangepast. Als dit mislukt, wordt de opgeslagen conversie gebruikt.\nDe raw versie en een geconverteerde versie worden opgeslagen wanneer de configuratie wordt overgedragen.\nouder toegevoegd aan navigatie\ncardQR toegevoegd",
-          "fr": "correctifs [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\ncorrectifs #133\nLa configuration est reconfigurée à chaque début. Si cela échoue, la conversion enregistrée est utilisée.\nLa version brute et une version convertie sont enregistrées lorsque la configuration est transférée.\nparent ajouté à la navigation\ncarteQR ajoutée",
-          "it": "[#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\ncorrezioni #133\nLa configurazione viene riconfigurata in ogni inizio. Se questo fallisce, viene utilizzata la conversione salvata.\nLa versione raw e una versione convertita vengono salvate quando la configurazione viene trasferita.\ngenitore aggiunto alla navigazione\ncardQR aggiunto",
-          "es": "fijaciones [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfijaciones #133\nLa configuración se reconfigura en cada principio. Si esto falla, se utiliza la conversión guardada.\nLa versión cruda y una versión convertida se guardan cuando se transfiere la configuración.\npadre añadido a la navegación\ncardQR añadido",
-          "pl": "fixes [# 135] (https: / / github.com / ticaki / ioBroker.nspanel- lovelace- ui / issues / 135)\npoprawki # 133\nKonfiguracja jest rekonfigurowana na każdym początku. Jeśli to się nie uda, zostanie zastosowana zapisana konwersja.\nWersja surowa i wersja skonwertowana są zapisywane po przeniesieniu konfiguracji.\nrodzic dodany do nawigacji\nkardQR dodany",
-          "uk": "[#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nзакріплення #133\nНалаштування переконфігурується на кожному старті. Якщо це не вдається, використовується збережена конвертація.\nПри перерахуванні на конфігурацію передається сира версія та конвертована версія.\nдодано до навігації\ncardQR додано",
-          "zh-cn": "校正 [# 135] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135) 互联网档案馆的存檔,存档日期2014-03-05\n修正 # 133\n每次启动时都会重新配置配置 。 如果失败, 则使用保存的转换 .\n原始版本和转换后的版本在配置转移时保存.\n父目录添加到导航中\n已添加卡QR"
+        "desc": {
+            "en": "NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.",
+            "de": "NsPanel Lovelace UI ist eine Firmware für den Nextion-Bildschirm innerhalb von NSPanel im Lovelace UI Design.",
+            "ru": "NsPanel Lovelace UI — это прошивка для следующего экрана внутри NSPanel в дизайне Lovelace UI Design.",
+            "pt": "NsPanel Lovelace UI é um firmware para a tela nextion dentro do NSPanel no Design of Lovelace UI Design.",
+            "nl": "NsPanel Lovelace UI is een firmware voor het volgende scherm binnen NSPanel in het ontwerp van Lovelace UI Design.",
+            "fr": "NsPanel Lovelace UI est un micrologiciel pour l'écran suivant à l'intérieur de NSPanel dans la conception de Lovelace UI Design.",
+            "it": "NsPanel Lovelace UI è un firmware per la schermata successiva all'interno di NPanel nel design di Lovelace UI Design.",
+            "es": "NsPanel Lovelace UI es un firmware para la siguiente pantalla dentro de NSPanel en el diseño de Lovelace UI Design.",
+            "pl": "NsPanel Lovelace UI to oprogramowanie sprzętowe dla kolejnego ekranu wewnątrz NSPanel w projekcie Lovelace UI Design.",
+            "uk": "NsPanel Lovelace UI — це прошивка для наступного екрана всередині NSPanel у дизайні Lovelace UI Design.",
+            "zh-cn": "NsPanel Lovelace UI 是 Lovelace UI 设计中 NSPanel 内部下一个屏幕的固件。"
         },
-        "0.1.4": {
-          "en": "fixes #131",
-          "de": "fixes #131",
-          "ru": "обсуждение #131",
-          "pt": "correções #131",
-          "nl": "fixes #131",
-          "fr": "correctifs #131",
-          "it": "correzioni #131",
-          "es": "fijaciones #131",
-          "pl": "poprawki # 131",
-          "uk": "застібки #131",
-          "zh-cn": "修正 # 131"
+        "authors": [
+            "ticaki <github@renopoint.de>"
+        ],
+        "keywords": [
+            "NSPanel",
+            "Lovelace",
+            "Sonoff",
+            "Lovelace UI"
+        ],
+        "licenseInformation": {
+            "license": "MIT",
+            "type": "free"
         },
-        "0.1.3": {
-          "en": "fixes #130\nData point generation changed\nDimming mode (data points) completed\nScreensaver double-click added",
-          "de": "fixes #130\nÄnderung der Datenpunkterzeugung\nDimmmodus (Datenpunkte) abgeschlossen\nScreensaver Doppelklick hinzugefügt",
-          "ru": "обсуждение #130\nГенерация точек данных изменилась\nРежим затемнения (точки данных) завершен\nДобавлен двойной клик Screensaver",
-          "pt": "correções #130\nA geração de pontos de dados mudou\nModo de escurecimento (pontos de dados) concluído\nScreensaver duplo clique adicionado",
-          "nl": "fixes #130\nAanmaken van gegevenspunten gewijzigd\nDimmenmodus (gegevenspunten) voltooid\nScreensaver dubbelklik toegevoegd",
-          "fr": "correctifs n°130\nChangement de génération de points de données\nMode de gradation (points de données) complété\nEcran de veille double-clic ajouté",
-          "it": "correzioni #130\nGenerazione dei punti di dati cambiata\nModalità di dimming (punti dati completati)\nScreensaver doppio clic aggiunto",
-          "es": "fijaciones #130\nCambio de la generación de puntos de datos\nModo de regulación (puntos de datos) completado\nScreensaver doble clic añadido",
-          "pl": "poprawki # 130\nZmieniona generacja punktów danych\nTryb przyciemniania (punkty danych) zakończony\nDwukrotne kliknięcie wygaszacza ekranu",
-          "uk": "застібки #130\nЗмінено генерацію точки даних\nРежим дозування (таблички даних) завершено\nScreensaver double-click додано",
-          "zh-cn": "修正 # 130\n数据点生成已改变\n缩小模式( 数据点)\n添加双击屏幕保护器"
+        "platform": "Javascript/Node.js",
+        "main": "build/main.js",
+        "icon": "nspanel-lovelace-ui.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/admin/nspanel-lovelace-ui.png",
+        "readme": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "hardware",
+        "compact": true,
+        "connectionType": "local",
+        "dataSource": "push",
+        "adminUI": {
+            "config": "json"
         },
-        "0.1.2": {
-          "en": "fixed nav service right\nscreensaver rotation time added\ngrid scrolling improved\nFeedback from the script improved\n(Kuckuckmann:) new adapter logo",
-          "de": "fester nav service rechts\nbildschirmschoner drehzeit hinzugefügt\ngrid scrolling verbessert\nFeedback aus dem Skript verbessert\n(Kuckmann:) neues Adapter-Logo",
-          "ru": "право фиксированной службы\nскринсейвер время вращения добавлено\nсетка прокрутки улучшилась\nОбратная связь со сценарием улучшилась\n(Kuckuckmann: новый логотип адаптера)",
-          "pt": "serviço de navegação fixa direita\ntempo de rotação do screensaver adicionado\nrolagem de grade melhorada\nFeedback do script melhorado\n(Kuckuckmann:) novo logotipo do adaptador",
-          "nl": "vaste navigatie rechts\nscreensaver rotatietijd toegevoegd\ngrid scrollen verbeterd\nFeedback van het script verbeterd\n(Kuckuckmann:) nieuw adapterlogo",
-          "fr": "droit de service fixe nav\nscreensaver temps de rotation ajouté\namélioration du défilement de la grille\nLa rétroaction du script s'est améliorée\n(Kuckuckmann:) nouveau logo d'adaptateur",
-          "it": "servizio nav fisso\ntempo di rotazione screensaver aggiunto\ngriglia di scorrimento migliorato\nIl feedback dallo script è migliorato\n(Kuckuckuckmann:) nuovo logo adattatore",
-          "es": "servicio fijo nav derecho\ntiempo de rotación añadido\npergaminos mejorados\nLa retroalimentación del script mejoró\n(Kuckuckmann:) nuevo logo adaptador",
-          "pl": "prawo do stałej nawigacji\ndodano czas rotacji wygaszacza ekranu\nulepszone przewijanie sieci\nInformacje zwrotne ze skryptu poprawiły się\n(Kuckuckmann:) nowe logo adaptera",
-          "uk": "фіксована послуга nav\nекранисереднього часу обертання додано\nрозкручування сітки поліпшена\nЗворотній зв'язок з скриптом поліпшений\n(Kuckmann:) новий логотип адаптера",
-          "zh-cn": "固定导航服务右侧\n添加屏幕保护旋转时间\n网格滚动改进\n改进了对脚本的反馈\n(Kuckuckmann:) 新的适配器标志"
-        },
-        "0.1.1": {
-          "en": "fixed color fading\nfixed config script\nadded message for missing states",
-          "de": "feste farbe fading\nfestes config skript\nzusätzliche nachricht für fehlende staaten",
-          "ru": "фиксированный цвет выцветает\nфиксированный скрипт конфигурирования\nдобавлено сообщение для пропавших без вести",
-          "pt": "desbotamento de cor fixa\nscript de configuração fixa\nmensagem adicionada para estados desaparecidos",
-          "nl": "vaste kleur vervagen\nvast configuratiescript\ntoegevoegd bericht voor ontbrekende statussen",
-          "fr": "décoloration de couleur fixe\nscript de configuration fixe\nmessage ajouté pour les états manquants",
-          "it": "colore fisso sfumatura\nscript di configurazione fisso\nmessaggio aggiunto per gli stati mancanti",
-          "es": "de color fijo\nscript de configuración fijo\nmensaje añadido para los estados desaparecidos",
-          "pl": "fixed color fading\npoprawiony skrypt konfiguracyjny\ndodana wiadomość dla brakujących stanów",
-          "uk": "фіксована кольорова завіса\nвиправлений скрипт налаштування\nдодано повідомлення про відсутні стани",
-          "zh-cn": "固定颜色淡出\n固定配置脚本\n为缺失状态添加消息"
-        }
-      },
-      "title": "NSPanel-Lovelace-UI Next Level",
-      "titleLang": {
-        "en": "NSPanel-Lovelace-UI Next Level",
-        "de": "NSPanel-Lovelace-UI Next Level",
-        "ru": "Пользовательский интерфейс NSPanel Lovelace",
-        "pt": "UI NSPanel Lovelace",
-        "nl": "NSPanel Lovelace-gebruikersinterface",
-        "fr": "Interface utilisateur NSPanel Lovelace",
-        "it": "Interfaccia utente NPanel Lovelace",
-        "es": "Interfaz de usuario de NSPanel Lovelace",
-        "pl": "Interfejs NSPanel Lovelace",
-        "uk": "Інтерфейс користувача NSPanel Lovelace",
-        "zh-cn": "NSPanel Lovelace UI"
-      },
-      "desc": {
-        "en": "NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.",
-        "de": "NsPanel Lovelace UI ist eine Firmware für den Nextion-Bildschirm innerhalb von NSPanel im Lovelace UI Design.",
-        "ru": "NsPanel Lovelace UI — это прошивка для следующего экрана внутри NSPanel в дизайне Lovelace UI Design.",
-        "pt": "NsPanel Lovelace UI é um firmware para a tela nextion dentro do NSPanel no Design of Lovelace UI Design.",
-        "nl": "NsPanel Lovelace UI is een firmware voor het volgende scherm binnen NSPanel in het ontwerp van Lovelace UI Design.",
-        "fr": "NsPanel Lovelace UI est un micrologiciel pour l'écran suivant à l'intérieur de NSPanel dans la conception de Lovelace UI Design.",
-        "it": "NsPanel Lovelace UI è un firmware per la schermata successiva all'interno di NPanel nel design di Lovelace UI Design.",
-        "es": "NsPanel Lovelace UI es un firmware para la siguiente pantalla dentro de NSPanel en el diseño de Lovelace UI Design.",
-        "pl": "NsPanel Lovelace UI to oprogramowanie sprzętowe dla kolejnego ekranu wewnątrz NSPanel w projekcie Lovelace UI Design.",
-        "uk": "NsPanel Lovelace UI — це прошивка для наступного екрана всередині NSPanel у дизайні Lovelace UI Design.",
-        "zh-cn": "NsPanel Lovelace UI 是 Lovelace UI 设计中 NSPanel 内部下一个屏幕的固件。"
-      },
-      "authors": [
-        "ticaki <github@renopoint.de>"
-      ],
-      "keywords": [
-        "NSPanel",
-        "Lovelace",
-        "Sonoff",
-        "Lovelace UI"
-      ],
-      "licenseInformation": {
-        "license": "MIT",
-        "type": "free"
-      },
-      "platform": "Javascript/Node.js",
-      "main": "build/main.js",
-      "icon": "nspanel-lovelace-ui.png",
-      "enabled": true,
-      "extIcon": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/admin/nspanel-lovelace-ui.png",
-      "readme": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/README.md",
-      "loglevel": "info",
-      "mode": "daemon",
-      "type": "hardware",
-      "compact": true,
-      "connectionType": "local",
-      "dataSource": "push",
-      "adminUI": {
-        "config": "json"
-      },
-      "dependencies": [
-        {
-          "js-controller": ">=6.0.11"
-        }
-      ],
-      "globalDependencies": [
-        {
-          "admin": ">=7.4.10"
-        }
-      ],
-      "messagebox": true,
-      "tier": 3
+        "dependencies": [
+            {
+                "js-controller": ">=6.0.11"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=7.4.10"
+            }
+        ],
+        "messagebox": true,
+        "tier": 3
     },
     "protectedNative": [
-      "mqttPassword",
-      "pageQRssid",
-      "pageQRpwd1",
-      "pageQRpwd2",
-      "pageQRpwd3",
-      "pw1"
+        "mqttPassword",
+        "pageQRssid",
+        "pageQRpwd1",
+        "pageQRpwd2",
+        "pageQRpwd3",
+        "pw1"
     ],
     "encryptedNative": [
-      "mqttPassword",
-      "pageQRssid",
-      "pageQRpwd1",
-      "pageQRpwd2",
-      "pageQRpwd3",
-      "pw1"
+        "mqttPassword",
+        "pageQRssid",
+        "pageQRpwd1",
+        "pageQRpwd2",
+        "pageQRpwd3",
+        "pw1"
     ],
     "native": {
-      "mqttPassword": "",
-      "mqttUsername": "",
-      "mqttIp": "mqtt.kiemen.com",
-      "mqttPort": 1883,
-      "panels": [],
-      "pageQRpwd1": "",
-      "pageQRpwd2": "",
-      "pageQRpwd3": "",
-      "pageQRssid": "",
-      "pw1": ""
+        "mqttPassword": "",
+        "mqttUsername": "",
+        "mqttIp": "mqtt.kiemen.com",
+        "mqttPort": 1883,
+        "panels": [],
+        "pageQRpwd1": "",
+        "pageQRpwd2": "",
+        "pageQRpwd3": "",
+        "pageQRssid": "",
+        "pw1": ""
     },
     "objects": [],
     "instanceObjects": [
-      {
-        "_id": "info",
-        "type": "channel",
-        "common": {
-          "name": "Information"
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
         },
-        "native": {}
-      },
-      {
-        "_id": "info.connection",
-        "type": "state",
-        "common": {
-          "role": "indicator.connected",
-          "name": "Device or service connected",
-          "type": "boolean",
-          "read": true,
-          "write": false,
-          "def": false
-        },
-        "native": {}
-      }
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "Device or service connected",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
     ]
-  }
-  
+}

@@ -187,6 +187,9 @@ class Screensaver extends import_Page.Page {
     this.sendToPanel(msg);
     await this.HandleScreensaverStatusIcons();
   }
+  async createPageItems() {
+    await super.createPageItems();
+  }
   async onVisibilityChange(v) {
     this.step = 0;
     if (v) {

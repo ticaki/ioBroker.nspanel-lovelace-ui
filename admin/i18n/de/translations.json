@@ -57,5 +57,6 @@
     "mqttIp": "IP zum externen MQTT-Server",
     "mqttPort": "MQTT-Port",
     "mqttUser": "MQTT-Benutzername",
-    "mqttPassword": "MQTT-Passwort"
+    "mqttPassword": "MQTT-Passwort",
+    "shutter": "Rollladen"
 }
