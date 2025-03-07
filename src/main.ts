@@ -18,6 +18,8 @@ import { ConfigManager } from './lib/classes/config-manager';
 import type { panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
 import type { STATUS0 } from './lib/types/types';
+import axios from 'axios';
+axios.defaults.timeout = 5000;
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -561,6 +563,46 @@ class NspanelLovelaceUi extends utils.Adapter {
                 case 'testCase': {
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, { testSuccessful: this.testSuccessful }, obj.callback);
+                    }
+                    break;
+                }
+                case 'tasmotaSendTo': {
+                    if (obj.message) {
+                        if (
+                            obj.message.tasmotaIP &&
+                            obj.message.mqttIp &&
+                            obj.message.mqttServer != null &&
+                            obj.message.mqttPort &&
+                            obj.message.mqttUsername &&
+                            obj.message.mqttPassword &&
+                            obj.message.tasmotaTopic
+                        ) {
+                            const url =
+                                `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp}` +
+                                `&MqttPort ${obj.message.mqttPort}&MqttUser ${obj.message.mqttUsername}&MqttPassword ${obj.message.mqttPassword}&FullTopic ${obj.message.tasmotaTopic}`;
+                            this.log.debug(`Send to ${url}`);
+                            const res = await axios.get(url);
+                            this.log.debug(`Response: ${JSON.stringify(res.data)}`);
+                            if (obj.callback) {
+                                this.sendTo(obj.from, obj.command, [], obj.callback);
+                            }
+                        }
+                    }
+                    break;
+                    //Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1
+                    //Backlog UpdateDriverVersion https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1
+                }
+                case 'berryInstallSendTo': {
+                    if (obj.message) {
+                        if (obj.message.tasmotaIP) {
+                            const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
+                            this.log.debug(`Send to ${url}`);
+                            const res = await axios.get(url);
+                            this.log.debug(`Response: ${JSON.stringify(res.data)}`);
+                            if (obj.callback) {
+                                this.sendTo(obj.from, obj.command, [], obj.callback);
+                            }
+                        }
                     }
                     break;
                 }

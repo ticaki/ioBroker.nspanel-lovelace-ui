@@ -52,6 +52,7 @@
                     "type": "password",
                     "label": "mqttPassword",
                     "newLine": false,
+                    "validator": "data.mqttPassword.length > 5",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -126,16 +127,6 @@
                     "lg": 4,
                     "xl": 4
                 },
-                "Testconfig2": {
-                    "type": "jsonEditor",
-                    "label": "Testconfig2",
-                    "hidden": "true",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
                 "logUnknownTokens": {
                     "type": "checkbox",
                     "label": "logUnknownTokens",
@@ -165,7 +156,7 @@
         },
         "overview": {
             "type": "panel",
-            "label": "overview",
+            "label": "Panels",
             "items": {
                 "panels": {
                     "type": "table",
@@ -226,6 +217,69 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 3
+                },
+                "header2": {
+                    "type": "header",
+                    "label": "TasmotaMqttSettings",
+                    "text": "TasmotaMqttSettings",
+                    "size": 3,
+                    
+                    "newLine": true
+                },
+                "internalServerIp": {
+                    "type": "ip",
+                    "label": "internalServerIp",
+                    "noInternal": true,
+                    "listenOnAllPorts": false,
+                    "onlyIp4": true,
+                    "newLine": true,
+                    "validator": "(data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1 && data.internalServerIp !== '127.0.0.1' )|| !data.mqttServer",
+                    "hidden": "!data.mqttServer",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "tasmotaIP": {
+                    "type": "text",
+                    "label": "tasmotaIP",
+                    "newLine": true,
+                    "validator": "data.tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
+                    "validatorErrorText": "mustBeIp",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "tasmotaTopic": {
+                    "type": "text",
+                    "label": "tasmotaTopic",
+                    "validator": "data.tasmotaIP.search(/^[a-zA-Z][\\w/]+$/g) !== -1",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "tasmotaSendTo": {
+                    "type": "sendTo",
+                    "label": "tasmotaSendTo",
+                    "jsonData": "{\"tasmotaIP\": \"${data.tasmotaIP}\", \"tasmotaTopic\":\"data.tasmotaTopic\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": \"${data.mqttPort}\", \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
+                    "showProcess": true,
+                    "command": "tasmotaSendTo",
+                    "disabled": "!((data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1 && data.internalServerIp !== '127.0.0.1' )|| !data.mqttServer) || data.tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || (data.mqttServer && !data.internalServerIp || !data.mqttServer && !data.mqttIp)",
+                    "newLine": true
+                },
+                "berryInstallSendTo": {
+                    "type": "sendTo",
+                    "label": "berryInstallSendTo",
+                    "jsonData": "{\"tasmotaIP\": \"${data.tasmotaIP}\"}",
+                    "showProcess": true,
+                    "command": "berryInstallSendTo",
+                    "disabled": "data.tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
+                    "newLine": true
                 }
             }
         },

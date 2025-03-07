@@ -31,6 +31,8 @@ var import_icon_mapping = require("./lib/const/icon_mapping");
 var import_definition = require("./lib/const/definition");
 var import_config_manager = require("./lib/classes/config-manager");
 var import_readme = require("./lib/tools/readme");
+var import_axios = __toESM(require("axios"));
+import_axios.default.defaults.timeout = 5e3;
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -438,6 +440,34 @@ class NspanelLovelaceUi extends utils.Adapter {
         case "testCase": {
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, { testSuccessful: this.testSuccessful }, obj.callback);
+          }
+          break;
+        }
+        case "tasmotaSendTo": {
+          if (obj.message) {
+            if (obj.message.tasmotaIP && obj.message.mqttIp && obj.message.mqttServer != null && obj.message.mqttPort && obj.message.mqttUsername && obj.message.mqttPassword && obj.message.tasmotaTopic) {
+              const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp}&MqttPort ${obj.message.mqttPort}&MqttUser ${obj.message.mqttUsername}&MqttPassword ${obj.message.mqttPassword}&FullTopic ${obj.message.tasmotaTopic}`;
+              this.log.debug(`Send to ${url}`);
+              const res = await import_axios.default.get(url);
+              this.log.debug(`Response: ${JSON.stringify(res.data)}`);
+              if (obj.callback) {
+                this.sendTo(obj.from, obj.command, [], obj.callback);
+              }
+            }
+          }
+          break;
+        }
+        case "berryInstallSendTo": {
+          if (obj.message) {
+            if (obj.message.tasmotaIP) {
+              const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
+              this.log.debug(`Send to ${url}`);
+              const res = await import_axios.default.get(url);
+              this.log.debug(`Response: ${JSON.stringify(res.data)}`);
+              if (obj.callback) {
+                this.sendTo(obj.from, obj.command, [], obj.callback);
+              }
+            }
           }
           break;
         }
