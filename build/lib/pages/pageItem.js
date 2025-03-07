@@ -1426,7 +1426,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     }
     return true;
   }
-  async onStateTrigger(id, from) {
+  async onStateTrigger(id = "", from) {
     if (this.lastPopupType) {
       if (this.lastPopupType === "popupThermo") {
         this.parent && await this.parent.onPopupRequest(this.id, "popupThermo", "", "", null);
@@ -1437,7 +1437,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         this.sendToPanel(msg);
       }
     }
-    if (this.panel.isOnline && this.parent === this.panel.screenSaver && this.panel.screenSaver) {
+    if (from && this.panel.isOnline && this.parent === this.panel.screenSaver && this.panel.screenSaver) {
       await this.panel.screenSaver.onStateTrigger(id, from);
     }
   }

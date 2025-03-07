@@ -1591,7 +1591,7 @@ export class PageItem extends BaseClassTriggerd {
         }
         return true;
     }
-    protected async onStateTrigger(id: string, from: BaseClassTriggerd): Promise<void> {
+    protected async onStateTrigger(id: string = '', from?: BaseClassTriggerd): Promise<void> {
         if (this.lastPopupType) {
             if (this.lastPopupType === 'popupThermo') {
                 this.parent && (await this.parent.onPopupRequest(this.id, 'popupThermo', '', '', null));
@@ -1602,7 +1602,7 @@ export class PageItem extends BaseClassTriggerd {
                 this.sendToPanel(msg);
             }
         }
-        if (this.panel.isOnline && this.parent === this.panel.screenSaver && this.panel.screenSaver) {
+        if (from && this.panel.isOnline && this.parent === this.panel.screenSaver && this.panel.screenSaver) {
             await this.panel.screenSaver.onStateTrigger(id, from);
         }
     }
