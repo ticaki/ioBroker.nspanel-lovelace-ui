@@ -368,35 +368,29 @@
             "label": "+",
             "items": {
                 "pageQRdata": {
-                    "type": "table",
+                    "type": "accordion",
                     "label": "pageQRdata",
                     "sm": 12,
                     "md": 12,
                     "lg": 12,
                     "xl": 12,
-                    "uniqueColumns": [
-                        "pageName"
-                    ],
                     "items": [
                         {
                             "attr": "pageName",
                             "type": "text",
                             "label": "pageName",
-                            "width": "10%",
                             "default": "Unique Name"
                         },
                         {
                             "attr": "headline",
                             "type": "text",
                             "label": "Headline",
-                            "width": "10%",
                             "default": ""
                         },
                         {
                             "attr": "SSIDURLTEL",
                             "type": "text",
-                            "label": "SSIDURLTEL",
-                            "width": "40%",
+                            "label": "SSID - URL - TEL",
                             "default": ""
                         },
                         {
@@ -426,7 +420,7 @@
                         {
                             "type": "select",
                             "label": "wlantype",
-                            "disabled": "data.selType !== 1",
+                            "hidden": "data.selType !== 1",
                             "attr": "wlantype",
                             "options": [
                                 {
@@ -455,7 +449,7 @@
                             "attr": "qrPass",
                             "type": "select",
                             "label": "qrPass",
-                            "disabled": "data.selType !== 1",
+                            "hidden": "data.selType !== 1",
                             "options": [
                                 {
                                     "label": "none",
@@ -479,13 +473,14 @@
                             "attr": "wlanhidden",
                             "type": "checkbox",
                             "label": "wlanhidden",
-                            "disabled": "data.selType !== 1",
+                            "hidden": "data.selType !== 1",
                             "default": false
                         },
                         {
                             "attr": "setState",
                             "type": "objectId",
                             "label": "Switch",
+                            "hidden": "data.selType !== 1",
                             "filterFunc": "return obj.common.type === 'boolean' && obj.common.role === 'switch' && obj.common.write"
                         }
                     ]
