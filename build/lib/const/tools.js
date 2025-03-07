@@ -106,7 +106,7 @@ async function getValueEntryNumber(i, s = true) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
       if (min !== null && max !== null) {
-        res = import_Color.Color.scale(res, max, min, 0, 100);
+        res = import_Color.Color.scale(res, min, max, 0, 100);
       }
     }
     const d = (_b = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _b : null;
@@ -295,7 +295,7 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
       return import_icon_mapping.Icons.GetIcon(
         (_h = (_g = i.unstable && i.unstable.value && await i.unstable.value.getString()) != null ? _g : icon) != null ? _h : def
       );
-    } else if (scale.val_min > on) {
+    } else if (scale.val_max > on) {
       return import_icon_mapping.Icons.GetIcon(
         (_k = (_j = (_i = i.false && i.false.value && await i.false.value.getString()) != null ? _i : defOff) != null ? _j : icon) != null ? _k : def
       );
@@ -486,6 +486,9 @@ async function getEntryTextOnOff(i, on) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i;
   if (!i) {
     return null;
+  }
+  if (typeof on === "number") {
+    on = on > 0;
   }
   let value = "";
   let v = null;

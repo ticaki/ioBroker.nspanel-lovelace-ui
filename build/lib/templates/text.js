@@ -1483,6 +1483,57 @@ const textTemplates = {
         false: void 0
       }
     }
+  },
+  "text.shutter.navigation": {
+    type: "text",
+    role: "blind",
+    adapter: "",
+    data: {
+      icon: {
+        true: {
+          value: {
+            type: "const",
+            constVal: "window-shutter-open"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.On
+          }
+        },
+        false: {
+          value: {
+            type: "const",
+            constVal: "window-shutter"
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.Off
+          }
+        },
+        unstable: {
+          value: {
+            type: "const",
+            constVal: "window-shutter-alert"
+          }
+        },
+        scale: void 0,
+        maxBri: void 0,
+        minBri: void 0
+      },
+      text: {
+        true: { type: "const", constVal: "Blind" }
+      },
+      text1: {
+        true: { type: "const", constVal: "opened" },
+        false: { type: "const", constVal: "closed" }
+      },
+      entity1: {
+        value: { mode: "auto", role: "", type: "triggered", dp: "", regexp: /\.ACTUAL$/ }
+      },
+      entity2: {
+        value: { mode: "auto", role: "", type: "triggered", dp: "", regexp: /\.TILT_ACTUAL$/ }
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

@@ -340,6 +340,7 @@ class ConfigManager extends import_library.BaseClass {
     return { gridItem, messages };
   }
   async getPageNaviItemConfig(item, page) {
+    var _a, _b, _c;
     if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities") || !item.targetPage || !item.navigate) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
@@ -777,19 +778,50 @@ class ConfigManager extends import_library.BaseClass {
         };
         break;
       }
-      case "cie":
-      case "blind":
+      case "blind": {
+        itemConfig = {
+          template: "text.shutter.navigation",
+          dpInit: item.id,
+          type: "button",
+          color: {
+            true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
+            false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
+            scale: (_a = item.colorScale) != null ? _a : { val_min: 0, val_max: 100 }
+          },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
+          data: {
+            text1: {
+              true: await getButtonsTextTrue(item, "open"),
+              false: await getButtonsTextFalse(item, "open", "closed")
+            },
+            text: {
+              true: await this.getFieldAsDataItemConfig(item.name || commonName || "Light")
+            },
+            entity1: {
+              value: { type: "triggered", dp: `${item.id}.ACTUAL` },
+              minScale: { type: "const", constVal: (_b = item.minValueLevel) != null ? _b : 0 },
+              maxScale: { type: "const", constVal: (_c = item.maxValueLevel) != null ? _c : 100 }
+            },
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
+      case "airCondition":
+      case "lock":
+      case "slider":
       case "buttonSensor":
       case "value.time":
       case "level.timer":
       case "value.alarmtime":
       case "level.mode.fan":
-      case "lock":
-      case "slider":
       case "switch.mode.wlan":
       case "media":
       case "timeTable":
-      case "airCondition": {
+      case "cie": {
         throw new Error(`DP: ${item.id} - Navigation for channel: ${role} not implemented yet!!`);
       }
       default:
@@ -799,6 +831,7 @@ class ConfigManager extends import_library.BaseClass {
     return itemConfig;
   }
   async getPageItemConfig(item, page) {
+    var _a, _b, _c, _d, _e;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -1071,7 +1104,7 @@ class ConfigManager extends import_library.BaseClass {
                       constVal: item.icon3 || "window-shutter-alert"
                     }
                   },
-                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+                  scale: { type: "const", constVal: (_a = item.colorScale) != null ? _a : { val_min: 0, val_max: 100 } },
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -1081,14 +1114,14 @@ class ConfigManager extends import_library.BaseClass {
                 headline: item.name ? await this.getFieldAsDataItemConfig(item.name) : { type: "const", constVal: commonName != null ? commonName : "Blind" },
                 entity1: {
                   value: { type: "triggered", dp: `${item.id}.ACTUAL` },
-                  minScale: item.minValueLevel ? { type: "const", constVal: item.minValueLevel } : void 0,
-                  maxScale: item.maxValueLevel ? { type: "const", constVal: item.maxValueLevel } : void 0,
+                  minScale: { type: "const", constVal: (_b = item.minValueLevel) != null ? _b : 0 },
+                  maxScale: { type: "const", constVal: (_c = item.maxValueLevel) != null ? _c : 100 },
                   set: { type: "state", dp: `${item.id}.SET` }
                 },
                 entity2: {
                   value: { type: "triggered", dp: `${item.id}.TILT_ACTUAL` },
-                  minScale: item.minValueTilt ? { type: "const", constVal: item.minValueTilt } : void 0,
-                  maxScale: item.maxValueTilt ? { type: "const", constVal: item.maxValueTilt } : void 0,
+                  minScale: { type: "const", constVal: (_d = item.minValueTilt) != null ? _d : 100 },
+                  maxScale: { type: "const", constVal: (_e = item.maxValueTilt) != null ? _e : 0 },
                   set: { type: "state", dp: `${item.id}.TILT_SET` }
                 },
                 up: { type: "state", dp: `${item.id}.OPEN` },
@@ -1865,7 +1898,7 @@ class ConfigManager extends import_library.BaseClass {
   }
   async getIconColor(item, def = void 0) {
     if (isIconScaleElement(item)) {
-    } else if (typeof item === "string") {
+    } else if (typeof item === "string" && await this.existsState(item)) {
       return await this.getFieldAsDataItemConfig(item);
     } else if (import_Color.Color.isRGB(item)) {
       return { type: "const", constVal: item };

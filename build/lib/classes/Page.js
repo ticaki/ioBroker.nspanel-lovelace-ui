@@ -89,6 +89,7 @@ class Page extends import_states_controller.BaseClassPage {
     }
   }
   async getItemFromTemplate(options, subtemplate = "", loop = 0) {
+    var _a, _b, _c, _d, _e;
     if ("template" in options && options.template) {
       const template = subtemplate ? import_templateArray.pageItemTemplates[subtemplate] : import_templateArray.pageItemTemplates[options.template];
       const name = options.template;
@@ -132,19 +133,28 @@ class Page extends import_states_controller.BaseClassPage {
           this.log.warn(`Dont get a template from ${template.template} for ${name}`);
         }
       }
-      if (options.data && options.data.icon) {
-        if (colorTrue && options.data.icon.true) {
+      if (options.data) {
+        options.data.icon = (_a = options.data.icon) != null ? _a : {};
+        if (colorTrue) {
+          options.data.icon.true = (_b = options.data.icon.true) != null ? _b : {};
           if (options.data.icon.true.color) {
             options.data.icon.true.color = colorTrue;
           }
+        }
+        if (iconTrue) {
+          options.data.icon.true = (_c = options.data.icon.true) != null ? _c : {};
           if (options.data.icon.true.value) {
             options.data.icon.true.value = iconTrue;
           }
         }
-        if (colorFalse && options.data.icon.false) {
+        if (colorFalse) {
+          options.data.icon.false = (_d = options.data.icon.false) != null ? _d : {};
           if (options.data.icon.false.color) {
             options.data.icon.false.color = colorFalse;
           }
+        }
+        if (iconFalse) {
+          options.data.icon.false = (_e = options.data.icon.false) != null ? _e : {};
           if (options.data.icon.false.value) {
             options.data.icon.false.value = iconFalse;
           }

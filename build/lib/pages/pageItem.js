@@ -264,7 +264,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         case "switch": {
           if (entry.type === "text" || entry.type === "button" || entry.type === "switch") {
             const item = entry.data;
-            let value = await tools.getValueEntryNumber(item.entity1, false);
+            let value = await tools.getValueEntryNumber(item.entity1, true);
             if (value === null) {
               value = await tools.getValueEntryBoolean(item.entity1);
             }
@@ -319,7 +319,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 }
                 default: {
                   message.optionalValue = this.library.getTranslation(
-                    (_w = (_v = await tools.getValueEntryString(item.entity2)) != null ? _v : await tools.getEntryTextOnOff(item.text1, !!value)) != null ? _w : ""
+                    (_w = (_v = await tools.getValueEntryString(item.entity2)) != null ? _v : await tools.getEntryTextOnOff(item.text1, value)) != null ? _w : ""
                   );
                 }
               }
@@ -340,11 +340,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.icon = await tools.getIconEntryValue(item.icon, value, "home");
             switch (entry.role) {
               case "textNotIcon": {
-                message.icon = (_y = await tools.getIconEntryValue(item.icon, !!value, "", null, true)) != null ? _y : "";
+                message.icon = (_y = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _y : "";
                 break;
               }
               case "iconNotText": {
-                message.icon = (_z = await tools.getIconEntryValue(item.icon, !!value, "", null, false)) != null ? _z : "";
+                message.icon = (_z = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _z : "";
                 break;
               }
               case "battery": {
@@ -353,8 +353,8 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
                 break;
               }
               case "combined": {
-                message.icon = (_C = await tools.getIconEntryValue(item.icon, !!value, "", null, false)) != null ? _C : "";
-                message.icon += (_D = await tools.getIconEntryValue(item.icon, !!value, "", null, true)) != null ? _D : "";
+                message.icon = (_C = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _C : "";
+                message.icon += (_D = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _D : "";
                 break;
               }
               default: {

@@ -1473,4 +1473,56 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.shutter.navigation': {
+        type: 'text',
+        role: 'blind',
+        adapter: '',
+        data: {
+            icon: {
+                true: {
+                    value: {
+                        type: 'const',
+                        constVal: 'window-shutter-open',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.On,
+                    },
+                },
+                false: {
+                    value: {
+                        type: 'const',
+                        constVal: 'window-shutter',
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.Off,
+                    },
+                },
+                unstable: {
+                    value: {
+                        type: 'const',
+                        constVal: 'window-shutter-alert',
+                    },
+                },
+                scale: undefined,
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: {
+                true: { type: 'const', constVal: 'Blind' },
+            },
+            text1: {
+                true: { type: 'const', constVal: 'opened' },
+                false: { type: 'const', constVal: 'closed' },
+            },
+
+            entity1: {
+                value: { mode: 'auto', role: '', type: 'triggered', dp: '', regexp: /\.ACTUAL$/ },
+            },
+            entity2: {
+                value: { mode: 'auto', role: '', type: 'triggered', dp: '', regexp: /\.TILT_ACTUAL$/ },
+            },
+        },
+    },
 };

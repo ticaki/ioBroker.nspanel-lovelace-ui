@@ -219,11 +219,11 @@ class Color extends ColorBase {
     }
     return result;
   }
-  static scale(number, inMax, inMin, outMin, outMax) {
+  static scale(number, inMin, inMax, outMin, outMax) {
     if (inMin === null || inMax === null) {
       return number;
     }
-    return outMax + outMin - ((number - inMax) * (outMax - outMin) / (inMin - inMax) + outMin);
+    return outMax + outMin - ((number - inMin) * (outMax - outMin) / (inMax - inMin) + outMin);
   }
   static mixColorHue(startRGB, endRGB, t) {
     const startHSB = (0, import_colord.colord)(startRGB).toHsv();

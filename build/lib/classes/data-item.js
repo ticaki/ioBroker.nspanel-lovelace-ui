@@ -114,10 +114,7 @@ class Dataitem extends import_library.BaseClass {
           await this.stateDB.setTrigger(this.options.dp, this.parent, true, false);
         }
         try {
-          const value = await this.stateDB.getState(
-            this.options.dp,
-            this.options.type == "triggered" || this.options.type == "internal" || this.options.type == "internalState" ? "medium" : this.options.response
-          );
+          const value = await this.stateDB.getState(this.options.dp);
           return value !== null && value !== void 0;
         } catch (e) {
           this.log.error(`Error 1001: ${e.replaceAll("Error: ", "")}`);
@@ -137,13 +134,10 @@ class Dataitem extends import_library.BaseClass {
           if (!this.options.dp) {
             throw new Error(`Error 1002 type is ${this.options.type} but dp is undefined`);
           }
-          return await this.stateDB.getState(
-            this.options.dp,
-            this.options.type == "triggered" ? "medium" : this.options.response
-          );
+          return await this.stateDB.getState(this.options.dp);
         case "internalState":
         case "internal": {
-          return await this.stateDB.getState(this.options.dp, "now");
+          return await this.stateDB.getState(this.options.dp);
         }
       }
     } catch (e) {

@@ -177,7 +177,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                         mode: 'auto',
                         type: 'state',
                         role: 'value',
-                        response: 'now',
+
                         scale: { min: 0, max: 100 },
                         dp: '.player.device.volume',
                     },
@@ -185,7 +185,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                         mode: 'auto',
                         type: 'state',
                         role: 'value',
-                        response: 'now',
+
                         scale: { min: 0, max: 100 },
                         dp: '.player.volume',
                     },

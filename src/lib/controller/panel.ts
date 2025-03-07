@@ -802,7 +802,7 @@ export class Panel extends BaseClass {
                     if (state && state.val != null && typeof state.val === 'number') {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/screensaverTimeout`,
-                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
                             parseInt(String(state.val)),
                             false,
                         );
@@ -813,7 +813,7 @@ export class Panel extends BaseClass {
                     if (state && state.val != null && typeof state.val === 'number') {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/dimStandby`,
-                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
                             parseInt(String(state.val)),
                             false,
                         );
@@ -824,7 +824,7 @@ export class Panel extends BaseClass {
                     if (state && state.val != null && typeof state.val === 'number') {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/dimActive`,
-                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
                             parseInt(String(state.val)),
                             false,
                         );
@@ -863,7 +863,7 @@ export class Panel extends BaseClass {
                     if (state && state.val != null && typeof state.val === 'number') {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/dimNightActive`,
-                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
                             parseInt(String(state.val)),
                             false,
                         );
@@ -874,7 +874,7 @@ export class Panel extends BaseClass {
                     if (state && state.val != null && typeof state.val === 'number') {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/dimNightStandby`,
-                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
                             parseInt(String(state.val)),
                             false,
                         );
@@ -886,7 +886,7 @@ export class Panel extends BaseClass {
                         if (state.val <= 23 && state.val >= 0 && state.val % 1 === 0) {
                             await this.statesControler.setInternalState(
                                 `${this.name}/cmd/dimNightHourStart`,
-                                // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
                                 parseInt(String(state.val)),
                                 false,
                             );
@@ -899,7 +899,7 @@ export class Panel extends BaseClass {
                         if (state.val <= 23 && state.val >= 0 && state.val % 1 === 0) {
                             await this.statesControler.setInternalState(
                                 `${this.name}/cmd/dimNightHourEnd`,
-                                // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
                                 parseInt(String(state.val)),
                                 false,
                             );
@@ -964,7 +964,7 @@ export class Panel extends BaseClass {
                     if (state && state.val != null && typeof state.val === 'number') {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/screenSaverRotationTime`,
-                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
                             parseInt(String(state.val)),
                             false,
                         );
@@ -1141,7 +1141,7 @@ export class Panel extends BaseClass {
                             case 'bExit': {
                                 await this.library.writedp(
                                     `panels.${this.name}.buttons.screensaverGesture`,
-                                    1,
+                                    2,
                                     genericStateObjects.panel.panels.buttons.screensaverGesture,
                                 );
                                 break;
@@ -1149,7 +1149,7 @@ export class Panel extends BaseClass {
                             case 'swipeUp': {
                                 await this.library.writedp(
                                     `panels.${this.name}.buttons.screensaverGesture`,
-                                    2,
+                                    3,
                                     genericStateObjects.panel.panels.buttons.screensaverGesture,
                                 );
                                 break;
@@ -1157,7 +1157,7 @@ export class Panel extends BaseClass {
                             case 'swipeDown': {
                                 await this.library.writedp(
                                     `panels.${this.name}.buttons.screensaverGesture`,
-                                    3,
+                                    4,
                                     genericStateObjects.panel.panels.buttons.screensaverGesture,
                                 );
                                 break;
@@ -1165,7 +1165,7 @@ export class Panel extends BaseClass {
                             case 'swipeLeft': {
                                 await this.library.writedp(
                                     `panels.${this.name}.buttons.screensaverGesture`,
-                                    4,
+                                    5,
                                     genericStateObjects.panel.panels.buttons.screensaverGesture,
                                 );
                                 break;
@@ -1173,7 +1173,7 @@ export class Panel extends BaseClass {
                             case 'swipeRight': {
                                 await this.library.writedp(
                                     `panels.${this.name}.buttons.screensaverGesture`,
-                                    4,
+                                    6,
                                     genericStateObjects.panel.panels.buttons.screensaverGesture,
                                 );
                                 break;
@@ -1526,6 +1526,17 @@ export class Panel extends BaseClass {
             action: pages.isButtonActionType(temp[3]) ? temp[3] : temp[3],
             opt: temp[4] ?? '',
         };
+    }
+
+    async setScreensaverSwipe(b: boolean): Promise<void> {
+        if (this.screenSaver) {
+            this.screenSaver.screensaverSwipe = b;
+            await this.library.writedp(
+                `panels.${this.name}.buttons.screensaverGesture`,
+                !this.screenSaver.screensaverSwipe ? 0 : 1,
+                genericStateObjects.panel.panels.buttons.screensaverGesture,
+            );
+        }
     }
 
     /*

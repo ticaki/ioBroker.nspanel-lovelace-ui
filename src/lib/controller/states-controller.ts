@@ -66,7 +66,7 @@ export class BaseClassTriggerd extends BaseClass {
 
     constructor(card: BaseClassTriggerdInterface) {
         super(card.adapter, card.name);
-        this.minUpdateInterval = 500;
+        this.minUpdateInterval = 250;
         if (!this.adapter.controller) {
             throw new Error('No controller! bye bye');
         }
@@ -431,7 +431,7 @@ export class StatesControler extends BaseClass {
 
     async getStateVal(id: string): Promise<nsPanelState['val'] | null> {
         try {
-            const state = await this.getState(id, 'now');
+            const state = await this.getState(id);
             if (state) {
                 return state.val ?? null;
             }
@@ -444,21 +444,12 @@ export class StatesControler extends BaseClass {
      * Read a state from DB or js-controller
      *
      * @param id state id with namespace
-     * @param response now or medium
      * @param internal if the state is internal
      * @returns nsPanelState or null
      */
-    async getState(
-        id: string,
-        response: 'now' | 'medium' = 'medium',
-        internal: boolean = false,
-    ): Promise<nsPanelState | null | undefined> {
+    async getState(id: string, internal: boolean = false): Promise<nsPanelState | null | undefined> {
         let timespan = this.timespan;
-        if (response === 'now') {
-            timespan = 10;
-        } else {
-            timespan = 1000;
-        }
+        timespan = 10;
         if (
             this.triggerDB[id] !== undefined &&
             (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some(a => a))

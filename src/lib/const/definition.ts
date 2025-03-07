@@ -169,7 +169,7 @@ export const genericStateObjects: {
                         read: true,
                         write: false,
                         def: 0,
-                        states: ['inactiv', 'exit', 'swipeUp', 'swipeDown', 'swipeLeft', 'swipeRight'],
+                        states: ['inactive', 'active', 'exit', 'swipeUp', 'swipeDown', 'swipeLeft', 'swipeRight'],
                     },
                     native: {},
                 },

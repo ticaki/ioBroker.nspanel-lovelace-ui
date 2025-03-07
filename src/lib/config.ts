@@ -706,7 +706,7 @@ export const pageMediaTest: pages.PageBaseConfig = {
                     mode: 'auto',
                     type: 'state',
                     role: ['level.volume'],
-                    response: 'now',
+
                     scale: { min: 0, max: 100 },
                     dp: '',
                 },
@@ -714,7 +714,7 @@ export const pageMediaTest: pages.PageBaseConfig = {
                     mode: 'auto',
                     type: 'state',
                     role: ['level.volume'],
-                    response: 'medium',
+
                     scale: { min: 0, max: 100 },
                     dp: '',
                 },
@@ -1183,7 +1183,7 @@ export const pageMediaTest2: pages.PageBaseConfig = {
                     mode: 'auto',
                     type: 'state',
                     role: ['level.volume'],
-                    response: 'now',
+
                     scale: { min: 0, max: 100 },
                     dp: '',
                 },
@@ -1191,7 +1191,7 @@ export const pageMediaTest2: pages.PageBaseConfig = {
                     mode: 'auto',
                     type: 'state',
                     role: ['level.volume'],
-                    response: 'medium',
+
                     scale: { min: 0, max: 100 },
                     dp: '',
                 },

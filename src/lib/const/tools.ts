@@ -83,7 +83,7 @@ export async function getValueEntryNumber(
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
             if (min !== null && max !== null) {
-                res = Color.scale(res, max, min, 0, 100);
+                res = Color.scale(res, min, max, 0, 100);
             }
         }
         const d = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
@@ -302,7 +302,7 @@ export async function getIconEntryValue(
             return Icons.GetIcon(
                 (i.unstable && i.unstable.value && (await i.unstable.value.getString())) ?? icon ?? def,
             );
-        } else if (scale.val_min > on) {
+        } else if (scale.val_max > on) {
             return Icons.GetIcon(
                 (i.false && i.false.value && (await i.false.value.getString())) ?? defOff ?? icon ?? def,
             );
@@ -524,10 +524,13 @@ export async function getEntryColor(
 }
 export async function getEntryTextOnOff(
     i: ChangeTypeOfKeys<TextEntryType | TextEntryType2, Dataitem | undefined> | undefined | Dataitem,
-    on: boolean | null,
+    on: boolean | number | null,
 ): Promise<string | null> {
     if (!i) {
         return null;
+    }
+    if (typeof on === 'number') {
+        on = on > 0;
     }
     let value = '';
     let v: string | null = null;

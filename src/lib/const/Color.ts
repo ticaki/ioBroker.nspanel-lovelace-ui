@@ -223,11 +223,11 @@ export class Color extends ColorBase {
         return result;
     }
 
-    static scale(number: number, inMax: number | null, inMin: number | null, outMin: number, outMax: number): number {
+    static scale(number: number, inMin: number | null, inMax: number | null, outMin: number, outMax: number): number {
         if (inMin === null || inMax === null) {
             return number;
         }
-        return outMax + outMin - (((number - inMax) * (outMax - outMin)) / (inMin - inMax) + outMin);
+        return outMax + outMin - (((number - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin);
     }
 
     static mixColorHue(startRGB: RGB, endRGB: RGB, t: number): RGB {

@@ -713,7 +713,6 @@ const pageMediaTest = {
           mode: "auto",
           type: "state",
           role: ["level.volume"],
-          response: "now",
           scale: { min: 0, max: 100 },
           dp: ""
         },
@@ -721,7 +720,6 @@ const pageMediaTest = {
           mode: "auto",
           type: "state",
           role: ["level.volume"],
-          response: "medium",
           scale: { min: 0, max: 100 },
           dp: ""
         }
@@ -1180,7 +1178,6 @@ const pageMediaTest2 = {
           mode: "auto",
           type: "state",
           role: ["level.volume"],
-          response: "now",
           scale: { min: 0, max: 100 },
           dp: ""
         },
@@ -1188,7 +1185,6 @@ const pageMediaTest2 = {
           mode: "auto",
           type: "state",
           role: ["level.volume"],
-          response: "medium",
           scale: { min: 0, max: 100 },
           dp: ""
         }

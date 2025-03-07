@@ -192,7 +192,6 @@ const cardTemplates = {
             mode: "auto",
             type: "state",
             role: "value",
-            response: "now",
             scale: { min: 0, max: 100 },
             dp: ".player.device.volume"
           },
@@ -200,7 +199,6 @@ const cardTemplates = {
             mode: "auto",
             type: "state",
             role: "value",
-            response: "now",
             scale: { min: 0, max: 100 },
             dp: ".player.volume"
           }

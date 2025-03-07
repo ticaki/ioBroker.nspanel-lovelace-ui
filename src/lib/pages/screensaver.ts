@@ -67,6 +67,7 @@ export class Screensaver extends Page {
     async init(): Promise<void> {
         await super.init();
         await this.createPageItems();
+        await this.panel.setScreensaverSwipe(this.screensaverSwipe);
         if (this.pageItems) {
             const indicators = this.pageItems.filter(x => x && x.config && x.config.modeScr === 'indicator');
             for (let a = 0; a < indicators.length; a++) {

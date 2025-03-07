@@ -902,19 +902,50 @@ export class ConfigManager extends BaseClass {
                 };
                 break;
             }
-            case 'cie':
-            case 'blind':
+            case 'blind': {
+                itemConfig = {
+                    template: 'text.shutter.navigation',
+                    dpInit: item.id,
+                    type: 'button',
+                    color: {
+                        true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
+                        false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
+                        scale: item.colorScale ?? { val_min: 0, val_max: 100 },
+                    },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                    },
+                    data: {
+                        text1: {
+                            true: await getButtonsTextTrue(item, 'open'),
+                            false: await getButtonsTextFalse(item, 'open', 'closed'),
+                        },
+                        text: {
+                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Light'),
+                        },
+                        entity1: {
+                            value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                            minScale: { type: 'const', constVal: item.minValueLevel ?? 0 },
+                            maxScale: { type: 'const', constVal: item.maxValueLevel ?? 100 },
+                        },
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
+                break;
+            }
+            case 'airCondition':
+            case 'lock':
+            case 'slider':
             case 'buttonSensor':
             case 'value.time':
             case 'level.timer':
             case 'value.alarmtime':
             case 'level.mode.fan':
-            case 'lock':
-            case 'slider':
             case 'switch.mode.wlan':
             case 'media':
             case 'timeTable':
-            case 'airCondition': {
+            case 'cie': {
                 throw new Error(`DP: ${item.id} - Navigation for channel: ${role} not implemented yet!!`);
             }
             default:
@@ -1277,7 +1308,7 @@ export class ConfigManager extends BaseClass {
                                             constVal: item.icon3 || 'window-shutter-alert',
                                         },
                                     },
-                                    scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
+                                    scale: { type: 'const', constVal: item.colorScale ?? { val_min: 0, val_max: 100 } },
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
@@ -1290,22 +1321,18 @@ export class ConfigManager extends BaseClass {
 
                                 entity1: {
                                     value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
-                                    minScale: item.minValueLevel
-                                        ? { type: 'const', constVal: item.minValueLevel }
-                                        : undefined,
-                                    maxScale: item.maxValueLevel
-                                        ? { type: 'const', constVal: item.maxValueLevel }
-                                        : undefined,
+                                    minScale: { type: 'const', constVal: item.minValueLevel ?? 0 },
+
+                                    maxScale: { type: 'const', constVal: item.maxValueLevel ?? 100 },
+
                                     set: { type: 'state', dp: `${item.id}.SET` },
                                 },
                                 entity2: {
                                     value: { type: 'triggered', dp: `${item.id}.TILT_ACTUAL` },
-                                    minScale: item.minValueTilt
-                                        ? { type: 'const', constVal: item.minValueTilt }
-                                        : undefined,
-                                    maxScale: item.maxValueTilt
-                                        ? { type: 'const', constVal: item.maxValueTilt }
-                                        : undefined,
+                                    minScale: { type: 'const', constVal: item.minValueTilt ?? 100 },
+
+                                    maxScale: { type: 'const', constVal: item.maxValueTilt ?? 0 },
+
                                     set: { type: 'state', dp: `${item.id}.TILT_SET` },
                                 },
                                 up: { type: 'state', dp: `${item.id}.OPEN` },
@@ -2214,7 +2241,7 @@ export class ConfigManager extends BaseClass {
     ): Promise<Types.DataItemsOptions | undefined> {
         if (isIconScaleElement(item)) {
             //later
-        } else if (typeof item === 'string') {
+        } else if (typeof item === 'string' && (await this.existsState(item))) {
             return await this.getFieldAsDataItemConfig(item);
         } else if (Color.isRGB(item)) {
             return { type: 'const', constVal: item };

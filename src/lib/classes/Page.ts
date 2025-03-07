@@ -169,19 +169,28 @@ export class Page extends BaseClassPage {
                     this.log.warn(`Dont get a template from ${template.template} for ${name}`);
                 }
             }
-            if (options.data && options.data.icon) {
-                if (colorTrue && options.data.icon.true) {
+            if (options.data) {
+                options.data.icon = options.data.icon ?? {};
+                if (colorTrue) {
+                    options.data.icon.true = options.data.icon.true ?? {};
                     if (options.data.icon.true.color) {
                         options.data.icon.true.color = colorTrue;
                     }
+                }
+                if (iconTrue) {
+                    options.data.icon.true = options.data.icon.true ?? {};
                     if (options.data.icon.true.value) {
                         options.data.icon.true.value = iconTrue;
                     }
                 }
-                if (colorFalse && options.data.icon.false) {
+                if (colorFalse) {
+                    options.data.icon.false = options.data.icon.false ?? {};
                     if (options.data.icon.false.color) {
                         options.data.icon.false.color = colorFalse;
                     }
+                }
+                if (iconFalse) {
+                    options.data.icon.false = options.data.icon.false ?? {};
                     if (options.data.icon.false.value) {
                         options.data.icon.false.value = iconFalse;
                     }

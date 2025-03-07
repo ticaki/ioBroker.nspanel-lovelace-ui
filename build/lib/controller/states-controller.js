@@ -62,7 +62,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   constructor(card) {
     var _a;
     super(card.adapter, card.name);
-    this.minUpdateInterval = 500;
+    this.minUpdateInterval = 250;
     if (!this.adapter.controller) {
       throw new Error("No controller! bye bye");
     }
@@ -383,7 +383,7 @@ class StatesControler extends import_library.BaseClass {
   async getStateVal(id) {
     var _a;
     try {
-      const state = await this.getState(id, "now");
+      const state = await this.getState(id);
       if (state) {
         return (_a = state.val) != null ? _a : null;
       }
@@ -396,17 +396,12 @@ class StatesControler extends import_library.BaseClass {
    * Read a state from DB or js-controller
    *
    * @param id state id with namespace
-   * @param response now or medium
    * @param internal if the state is internal
    * @returns nsPanelState or null
    */
-  async getState(id, response = "medium", internal = false) {
+  async getState(id, internal = false) {
     let timespan = this.timespan;
-    if (response === "now") {
-      timespan = 10;
-    } else {
-      timespan = 1e3;
-    }
+    timespan = 10;
     if (this.triggerDB[id] !== void 0 && (this.triggerDB[id].internal || this.triggerDB[id].subscribed.some((a) => a))) {
       let state = null;
       const f = this.triggerDB[id].f;

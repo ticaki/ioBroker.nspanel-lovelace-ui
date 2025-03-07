@@ -297,7 +297,7 @@ export class PageItem extends BaseClassTriggerd {
                      */
                     if (entry.type === 'text' || entry.type === 'button' || entry.type === 'switch') {
                         const item = entry.data;
-                        let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1, false);
+                        let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1, true);
                         if (value === null) {
                             value = await tools.getValueEntryBoolean(item.entity1);
                         }
@@ -360,7 +360,7 @@ export class PageItem extends BaseClassTriggerd {
                                 default: {
                                     message.optionalValue = this.library.getTranslation(
                                         (await tools.getValueEntryString(item.entity2)) ??
-                                            (await tools.getEntryTextOnOff(item.text1, !!value)) ??
+                                            (await tools.getEntryTextOnOff(item.text1, value)) ??
                                             '',
                                     );
                                 }
@@ -394,13 +394,11 @@ export class PageItem extends BaseClassTriggerd {
                         message.icon = await tools.getIconEntryValue(item.icon, value, 'home');
                         switch (entry.role) {
                             case 'textNotIcon': {
-                                message.icon =
-                                    (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
+                                message.icon = (await tools.getIconEntryValue(item.icon, value, '', null, true)) ?? '';
                                 break;
                             }
                             case 'iconNotText': {
-                                message.icon =
-                                    (await tools.getIconEntryValue(item.icon, !!value, '', null, false)) ?? '';
+                                message.icon = (await tools.getIconEntryValue(item.icon, value, '', null, false)) ?? '';
                                 break;
                             }
                             case 'battery': {
@@ -410,10 +408,8 @@ export class PageItem extends BaseClassTriggerd {
                                 break;
                             }
                             case 'combined': {
-                                message.icon =
-                                    (await tools.getIconEntryValue(item.icon, !!value, '', null, false)) ?? '';
-                                message.icon +=
-                                    (await tools.getIconEntryValue(item.icon, !!value, '', null, true)) ?? '';
+                                message.icon = (await tools.getIconEntryValue(item.icon, value, '', null, false)) ?? '';
+                                message.icon += (await tools.getIconEntryValue(item.icon, value, '', null, true)) ?? '';
                                 break;
                             }
                             default: {

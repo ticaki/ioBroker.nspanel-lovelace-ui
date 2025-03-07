@@ -20,6 +20,7 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'text.shutter.navigation'
     | 'text.accuweather.uvindex'
     | 'text.accuweather.windspeed'
     | 'text.accuweather.winddirection'
@@ -418,7 +419,6 @@ type DataItemsOptionsState = (DataItemsOptionsAuto | DataItemsOptionsCustom) & {
     forceType?: 'string' | 'number' | 'boolean'; // force a type
     read?: string | ((val: any) => any);
     write?: string | ((val: any) => any);
-    response?: 'now' | 'medium';
 };
 type DataItemsOptionsTriggered = (DataItemsOptionsAuto | DataItemsOptionsCustom) & {
     type: 'triggered';
