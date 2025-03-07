@@ -446,15 +446,20 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         case "tasmotaSendTo": {
           if (obj.message) {
-            if (obj.message.tasmotaIP && obj.message.mqttIp && obj.message.mqttServer != null && obj.message.mqttPort && obj.message.mqttUsername && obj.message.mqttPassword && obj.message.tasmotaTopic) {
-              const url = ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp}; MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword}; FullTopic ${`${obj.message.tasmotaTopic}/%prefix%/`.replaceAll("//", "/")}; MqttRetry 10; WebLog 2; template {"NAME":"NSPanel","GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1}; Module 0; Restart 1`;
-              const u = new import_url.URL(
-                `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog${url.replaceAll("&", "%26").replaceAll("%", "%25")}`
-              );
-              this.log.warn(`Send to ${u.href}`);
-              this.log.debug(`Send to ${url}`);
-              const res = await import_axios.default.get(u.href);
-              this.log.debug(`Response: ${JSON.stringify(res.data)}`);
+            try {
+              if (obj.message.tasmotaIP && obj.message.mqttIp && obj.message.mqttServer != null && obj.message.mqttPort && obj.message.mqttUsername && obj.message.mqttPassword && obj.message.tasmotaTopic) {
+                const url = ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp}; MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword}; FullTopic ${`${obj.message.tasmotaTopic}/%prefix%/`.replaceAll("//", "/")}; MqttRetry 10; WebLog 2; template {"NAME":"NSPanel","GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1}; Module 0; Restart 1`;
+                const u = new import_url.URL(
+                  `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog${url.replaceAll("&", "%26").replaceAll("%", "%25")}`
+                );
+                this.log.info(`Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP}`);
+                await import_axios.default.get(u.href);
+                if (obj.callback) {
+                  this.sendTo(obj.from, obj.command, [], obj.callback);
+                }
+              }
+            } catch (e) {
+              this.log.error(`Error: while sending mqtt config & base config to tasmota - ${e}`);
               if (obj.callback) {
                 this.sendTo(obj.from, obj.command, [], obj.callback);
               }
@@ -465,12 +470,18 @@ class NspanelLovelaceUi extends utils.Adapter {
         case "berryInstallSendTo": {
           if (obj.message) {
             if (obj.message.tasmotaIP) {
-              const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
-              this.log.debug(`Send to ${url}`);
-              const res = await import_axios.default.get(url);
-              this.log.debug(`Response: ${JSON.stringify(res.data)}`);
-              if (obj.callback) {
-                this.sendTo(obj.from, obj.command, [], obj.callback);
+              try {
+                const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
+                this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
+                await import_axios.default.get(url);
+                if (obj.callback) {
+                  this.sendTo(obj.from, obj.command, [], obj.callback);
+                }
+              } catch (e) {
+                this.log.error(`Error: while installing berry - ${e}`);
+                if (obj.callback) {
+                  this.sendTo(obj.from, obj.command, [], obj.callback);
+                }
               }
             }
           }
@@ -479,13 +490,31 @@ class NspanelLovelaceUi extends utils.Adapter {
         case "tftInstallSendTo": {
           if (obj.message) {
             if (obj.message.tasmotaIP) {
-              const version = "4.5.2";
-              const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog FlashNextion http://nspanel.de/nspanel-v${version}.tft; Restart 1`;
-              this.log.debug(`Send to ${url}`);
-              const res = await import_axios.default.get(url);
-              this.log.debug(`Response: ${JSON.stringify(res.data)}`);
-              if (obj.callback) {
-                this.sendTo(obj.from, obj.command, [], obj.callback);
+              try {
+                const result = await import_axios.default.get(
+                  "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/raw/refs/heads/main/json/version.json"
+                );
+                if (!result.data) {
+                  this.log.error("No version found!");
+                  if (obj.callback) {
+                    this.sendTo(obj.from, obj.command, [], obj.callback);
+                  }
+                  break;
+                }
+                const version = result.data.tft.split("_")[0];
+                this.log.info(
+                  `Installing version ${version} on tasmota with IP ${obj.message.tasmotaIP}`
+                );
+                const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog FlashNextion http://nspanel.de/nspanel-v${version}.tft`;
+                await import_axios.default.get(url);
+                if (obj.callback) {
+                  this.sendTo(obj.from, obj.command, [], obj.callback);
+                }
+              } catch (e) {
+                this.log.error(`Error: ${e}`);
+                if (obj.callback) {
+                  this.sendTo(obj.from, obj.command, [], obj.callback);
+                }
               }
             }
           }

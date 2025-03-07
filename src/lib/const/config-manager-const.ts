@@ -280,7 +280,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'light',
         description: 'ein Lichtschalter',
         data: {
-            ACTUAL: { role: ['switch.light','sensor.light'], type: 'boolean', required: true, writeable: false },
+            ACTUAL: { role: ['switch.light', 'sensor.light'], type: 'boolean', required: true, writeable: false },
             SET: { role: 'switch.light', type: 'boolean', required: false, writeable: true },
             COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP steuern
             BUTTONTEXT: { role: 'text', type: 'string', required: false, writeable: false }, //Button-Text über DP steuern bei cardEntity
@@ -319,7 +319,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             DIMMER: { role: 'level.dimmer', type: 'number', required: false, writeable: true },
             TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: false, writeable: true },
             ON_ACTUAL: { role: ['sensor.light', 'switch.light'], type: 'boolean', required: false, writeable: false },
-           // VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
+            // VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
     slider: {
