@@ -1412,12 +1412,14 @@ const textTemplates = {
           }
         }
       },
-      entity1: void 0,
+      entity1: {
+        value: { mode: "auto", role: "state", type: "triggered", dp: "", regexp: /\.ACTUAL$/, def: "info" }
+      },
       text: {
-        true: { mode: "auto", role: "state", type: "state", dp: "", regexp: /\.BUTTONTEXT$/, def: "info" }
+        true: { mode: "auto", role: "state", type: "triggered", dp: "", regexp: /\.BUTTONTEXT$/, def: "info" }
       },
       text1: {
-        true: { type: "const", constVal: "name" }
+        true: { mode: "auto", role: "state", type: "triggered", dp: "", regexp: /\.ACTUAL$/, def: "info" }
       }
     }
   },

@@ -436,17 +436,28 @@ export class ConfigManager extends BaseClass {
                 ? 'textNotIcon'
                 : 'iconNotText';
 
-        const getButtonsTextTrue = async (item: ScriptConfig.PageItem, on: string): Promise<Types.DataItemsOptions> => {
+        const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
+        const role = obj && obj.common.role ? (obj.common.role as ScriptConfig.roles) : undefined;
+        const commonName =
+            obj && obj.common
+                ? typeof obj.common.name === 'string'
+                    ? obj.common.name
+                    : obj.common.name[this.library.getLocalLanguage()]
+                : undefined;
+
+        const getButtonsTextTrue = async (
+            item: ScriptConfig.PageItem,
+            def1: string,
+        ): Promise<Types.DataItemsOptions> => {
             return item.buttonText
                 ? await this.getFieldAsDataItemConfig(item.buttonText)
                 : (await this.existsState(`${item.id}.BUTTONTEXT`))
                   ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                  : { type: 'const', constVal: `${on}` };
+                  : await this.getFieldAsDataItemConfig(item.name || commonName || def1);
         };
         const getButtonsTextFalse = async (
             item: ScriptConfig.PageItem,
-            on: string,
-            off: string,
+            def1: string = '',
         ): Promise<Types.DataItemsOptions> => {
             return item.buttonTextOff
                 ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
@@ -456,7 +467,11 @@ export class ConfigManager extends BaseClass {
                     ? await this.getFieldAsDataItemConfig(item.buttonText)
                     : (await this.existsState(`${item.id}.BUTTONTEXT`))
                       ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                      : { type: 'const', constVal: `${off || on}` };
+                      : await this.getFieldAsDataItemConfig(item.name || commonName || def1);
+        };
+        const text = {
+            true: await getButtonsTextTrue(item, role || ''),
+            false: await getButtonsTextFalse(item, role || ''),
         };
 
         if (!item.id) {
@@ -484,23 +499,13 @@ export class ConfigManager extends BaseClass {
                         minBri: undefined,
                     },
                     text1: {
-                        true: await getButtonsTextTrue(item, 'on'),
-                        false: await getButtonsTextFalse(item, 'on', 'off'),
+                        true: { type: 'const', constVal: 'on' },
+                        false: { type: 'const', constVal: 'off' },
                     },
-                    text: {
-                        true: await this.getFieldAsDataItemConfig(item.name || ''),
-                    },
+                    text: text,
                 },
             };
         }
-        const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
-        const role = obj && obj.common.role ? (obj.common.role as ScriptConfig.roles) : undefined;
-        const commonName =
-            obj && obj.common
-                ? typeof obj.common.name === 'string'
-                    ? obj.common.name
-                    : obj.common.name[this.library.getLocalLanguage()]
-                : undefined;
 
         if (obj && (!obj.common || !obj.common.role)) {
             throw new Error(`Role missing in ${item.id}!`);
@@ -548,12 +553,10 @@ export class ConfigManager extends BaseClass {
                             minBri: undefined,
                         },
                         text1: {
-                            true: await getButtonsTextTrue(item, 'on'),
-                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                            true: { type: 'const', constVal: 'on' },
+                            false: { type: 'const', constVal: 'off' },
                         },
-                        text: {
-                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Light'),
-                        },
+                        text: text,
                         entity1: {
                             value: {
                                 type: 'triggered',
@@ -592,12 +595,10 @@ export class ConfigManager extends BaseClass {
                             minBri: undefined,
                         },
                         text1: {
-                            true: await getButtonsTextTrue(item, 'on'),
-                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                            true: { type: 'const', constVal: 'on' },
+                            false: { type: 'const', constVal: 'off' },
                         },
-                        text: {
-                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Button'),
-                        },
+                        text: text,
                         entity1:
                             role === undefined
                                 ? undefined
@@ -628,13 +629,8 @@ export class ConfigManager extends BaseClass {
                         },
                         template: 'button.humidity',
                         data: {
-                            text: {
-                                true: await getButtonsTextTrue(item, 'on'),
-                                false: await getButtonsTextFalse(item, 'on', 'off'),
-                            },
-                            text1: {
-                                true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Humidity'),
-                            },
+                            text: text,
+
                             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                         },
                     };
@@ -660,13 +656,7 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
-                        text1: {
-                            true: await getButtonsTextTrue(item, 'on'),
-                            false: await getButtonsTextFalse(item, 'on', 'off'),
-                        },
-                        text: {
-                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Temperature'),
-                        },
+                        text: text,
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
@@ -688,12 +678,10 @@ export class ConfigManager extends BaseClass {
                             false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                         },
                         data: {
-                            text: {
-                                true: await getButtonsTextTrue(item, 'on'),
-                                false: await getButtonsTextFalse(item, 'on', 'off'),
-                            },
+                            text: text,
                             text1: {
-                                true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Gate'),
+                                true: { type: 'const', constVal: 'opened' },
+                                false: { type: 'const', constVal: 'closed' },
                             },
                             entity1: {
                                 value: {
@@ -723,12 +711,10 @@ export class ConfigManager extends BaseClass {
                             false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                         },
                         data: {
-                            text: {
-                                true: await getButtonsTextTrue(item, 'on'),
-                                false: await getButtonsTextFalse(item, 'on', 'off'),
-                            },
+                            text: text,
                             text1: {
-                                true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Gate'),
+                                true: { type: 'const', constVal: 'opened' },
+                                false: { type: 'const', constVal: 'closed' },
                             },
                             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                         },
@@ -752,12 +738,10 @@ export class ConfigManager extends BaseClass {
                     },
                     data: {
                         text1: {
-                            true: await getButtonsTextTrue(item, 'on'),
-                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                            true: { type: 'const', constVal: 'opened' },
+                            false: { type: 'const', constVal: 'closed' },
                         },
-                        text: {
-                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Door'),
-                        },
+                        text: text,
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
@@ -779,12 +763,10 @@ export class ConfigManager extends BaseClass {
                     },
                     data: {
                         text1: {
-                            true: await getButtonsTextTrue(item, 'on'),
-                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                            true: { type: 'const', constVal: 'opened' },
+                            false: { type: 'const', constVal: 'closed' },
                         },
-                        text: {
-                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Window'),
-                        },
+                        text: text,
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -807,12 +789,10 @@ export class ConfigManager extends BaseClass {
                     },
                     data: {
                         text1: {
-                            true: await getButtonsTextTrue(item, 'yes'),
-                            false: await getButtonsTextFalse(item, 'yes', 'no'),
+                            true: { type: 'const', constVal: 'motion' },
+                            false: { type: 'const', constVal: 'none' },
                         },
-                        text: {
-                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Motion'),
-                        },
+                        text: text,
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -835,13 +815,7 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
-                        text1: {
-                            true: await getButtonsTextTrue(item, 'on'),
-                            false: await getButtonsTextFalse(item, 'on', 'off'),
-                        },
-                        text: {
-                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Volume'),
-                        },
+                        text: text,
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -863,13 +837,7 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
-                        text1: {
-                            true: await getButtonsTextTrue(item, 'on'),
-                            false: await getButtonsTextFalse(item, 'on', 'off'),
-                        },
-                        text: {
-                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Warning'),
-                        },
+                        text: text,
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -881,6 +849,7 @@ export class ConfigManager extends BaseClass {
                     template: 'text.info',
                     dpInit: item.id,
                     type: 'button',
+                    role: 'info',
                     color: {
                         true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
                         false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
@@ -888,17 +857,29 @@ export class ConfigManager extends BaseClass {
                     },
                     icon: {
                         true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                        false: item.icon2
+                            ? { type: 'const', constVal: item.icon2 }
+                            : item.icon
+                              ? { type: 'const', constVal: item.icon }
+                              : undefined,
                     },
                     data: {
+                        text: text,
                         text1: {
-                            true: await getButtonsTextTrue(item, 'on'),
-                            false: await getButtonsTextFalse(item, 'on', 'off'),
+                            true: {
+                                type: 'triggered',
+                                dp: `${item.id}.ACTUAL`,
+                            },
+
+                            false: null,
                         },
-                        text: {
-                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Light'),
+                        entity1: {
+                            value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
                         },
 
+                        entity2: {
+                            value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                        },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
@@ -920,12 +901,10 @@ export class ConfigManager extends BaseClass {
                     },
                     data: {
                         text1: {
-                            true: await getButtonsTextTrue(item, 'opened'),
-                            false: await getButtonsTextFalse(item, 'opened', 'closed'),
+                            true: { type: 'const', constVal: 'opened' },
+                            false: { type: 'const', constVal: 'closed' },
                         },
-                        text: {
-                            true: await this.getFieldAsDataItemConfig(item.name || commonName || 'Light'),
-                        },
+                        text: text,
                         entity1: {
                             value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
                             minScale: { type: 'const', constVal: item.minValueLevel ?? 0 },
@@ -994,6 +973,37 @@ export class ConfigManager extends BaseClass {
                     typeof obj.common.name === 'string'
                         ? obj.common.name
                         : obj.common.name[this.library.getLocalLanguage()];
+
+                const getButtonsTextTrue = async (
+                    item: ScriptConfig.PageItem,
+                    def1: string,
+                ): Promise<Types.DataItemsOptions> => {
+                    return item.buttonText
+                        ? await this.getFieldAsDataItemConfig(item.buttonText)
+                        : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                          ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
+                          : await this.getFieldAsDataItemConfig(item.name || commonName || def1);
+                };
+                const getButtonsTextFalse = async (
+                    item: ScriptConfig.PageItem,
+                    def1: string = '',
+                ): Promise<Types.DataItemsOptions> => {
+                    return item.buttonTextOff
+                        ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
+                        : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
+                          ? { type: 'triggered', dp: `${item.id}.BUTTONTEXTOFF` }
+                          : item.buttonText
+                            ? await this.getFieldAsDataItemConfig(item.buttonText)
+                            : (await this.existsState(`${item.id}.BUTTONTEXT`))
+                              ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
+                              : await this.getFieldAsDataItemConfig(item.name || commonName || def1);
+                };
+                const text = {
+                    true: await getButtonsTextTrue(item, role || ''),
+                    false: await getButtonsTextFalse(item, role || ''),
+                };
+                const headline = await getButtonsTextTrue(item, role || '');
+
                 switch (role) {
                     case 'timeTable': {
                         itemConfig = {
@@ -1031,7 +1041,7 @@ export class ConfigManager extends BaseClass {
                                     minBri: undefined,
                                 },
                                 colorMode: { type: 'const', constVal: false },
-                                headline: await this.getFieldAsDataItemConfig(item.name || commonName || 'Light'),
+                                headline: headline,
                                 entity1: {
                                     value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
                                     set: { type: 'state', dp: `${item.id}.SET` },
@@ -1081,7 +1091,7 @@ export class ConfigManager extends BaseClass {
                                         ? { type: 'const', constVal: item.minValueBrightness }
                                         : undefined,
                                 },
-                                headline: await this.getFieldAsDataItemConfig(item.name || commonName || 'Dimmer'),
+                                headline: headline,
                                 text1: {
                                     true: {
                                         type: 'const',
@@ -1145,7 +1155,7 @@ export class ConfigManager extends BaseClass {
                                         ? { type: 'const', constVal: item.minValueBrightness }
                                         : undefined,
                                 },
-                                headline: await this.getFieldAsDataItemConfig(item.name || commonName || role),
+                                headline: headline,
                                 hue:
                                     role !== 'hue'
                                         ? undefined
@@ -1257,24 +1267,11 @@ export class ConfigManager extends BaseClass {
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
-                                text: {
-                                    true: item.buttonText
-                                        ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                        : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                          ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                          : { type: 'state', dp: `${item.id}.ACTUAL` },
-                                    false: item.buttonTextOff
-                                        ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
-                                        : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
-                                          ? { type: 'state', dp: `${item.id}.BUTTONTEXTOFF` }
-                                          : item.buttonText
-                                            ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                            : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                              ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                              : { type: 'state', dp: `${item.id}.ACTUAL` },
-                                },
+                                text: text,
+
                                 text1: {
-                                    true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                                    true: { type: 'const', constVal: 'on' },
+                                    false: { type: 'const', constVal: 'off' },
                                 },
                                 entity1: {
                                     value: { type: 'triggered', dp: `${item.id}.SET` },
@@ -1314,12 +1311,8 @@ export class ConfigManager extends BaseClass {
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
-                                text: {
-                                    true: { type: 'const', constVal: 'Position' },
-                                },
-                                headline: item.name
-                                    ? await this.getFieldAsDataItemConfig(item.name)
-                                    : { type: 'const', constVal: commonName ?? 'Blind' },
+                                text: text,
+                                headline: headline,
 
                                 entity1: {
                                     value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
@@ -1381,12 +1374,8 @@ export class ConfigManager extends BaseClass {
                                         maxBri: undefined,
                                         minBri: undefined,
                                     },
-                                    text: {
-                                        true: { type: 'const', constVal: 'Position' },
-                                    },
-                                    headline: item.name
-                                        ? await this.getFieldAsDataItemConfig(item.name)
-                                        : { type: 'const', constVal: commonName ?? 'Garage' },
+                                    text: text,
+                                    headline: headline,
 
                                     entity1: {
                                         value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
@@ -1431,27 +1420,27 @@ export class ConfigManager extends BaseClass {
                                 iconOn = 'motion-sensor';
                                 iconOff = 'motion-sensor';
                                 iconUnstable = '';
-                                adapterRole = 'iconNotText';
-                                textOn = 'On';
-                                textOff = 'Off';
+                                adapterRole = specialRole;
+                                textOn = 'on';
+                                textOff = 'off';
                                 break;
                             }
                             case 'door': {
-                                adapterRole = 'iconNotText';
+                                adapterRole = specialRole;
                                 iconOn = 'door-open';
                                 iconOff = 'door-closed';
                                 iconUnstable = 'door-closed';
-                                textOn = 'Opened';
-                                textOff = 'Closed';
+                                textOn = 'opened';
+                                textOff = 'closed';
                                 break;
                             }
                             case 'window': {
                                 iconOn = 'window-open-variant';
                                 iconOff = 'window-closed-variant';
                                 iconUnstable = 'window-closed-variant';
-                                adapterRole = 'iconNotText';
-                                textOn = 'Opened';
-                                textOff = 'Closed';
+                                adapterRole = specialRole;
+                                textOn = 'opened';
+                                textOff = 'closed';
                                 break;
                             }
                             case 'info': {
@@ -1495,18 +1484,26 @@ export class ConfigManager extends BaseClass {
                                         value: await this.getFieldAsDataItemConfig(item.icon || iconOn),
 
                                         color: await this.getIconColor(item.onColor, this.colorOn),
-                                        text: {
-                                            value: { type: 'state', dp: `${item.id}.ACTUAL` },
-                                            unit: commonUnit ? { type: 'const', constVal: commonUnit } : undefined,
-                                        },
+                                        text: (await this.existsState(`${item.id}.ACTUAL`))
+                                            ? {
+                                                  value: { type: 'state', dp: `${item.id}.ACTUAL` },
+                                                  unit: commonUnit
+                                                      ? { type: 'const', constVal: commonUnit }
+                                                      : undefined,
+                                              }
+                                            : undefined,
                                     },
                                     false: {
                                         value: await this.getFieldAsDataItemConfig(item.icon2 || iconOff),
                                         color: await this.getIconColor(item.offColor, this.colorOff),
-                                        text: {
-                                            value: { type: 'state', dp: `${item.id}.ACTUAL` },
-                                            unit: commonUnit ? { type: 'const', constVal: commonUnit } : undefined,
-                                        },
+                                        text: (await this.existsState(`${item.id}.ACTUAL`))
+                                            ? {
+                                                  value: { type: 'state', dp: `${item.id}.ACTUAL` },
+                                                  unit: commonUnit
+                                                      ? { type: 'const', constVal: commonUnit }
+                                                      : undefined,
+                                              }
+                                            : undefined,
                                     },
                                     unstable: {
                                         value: await this.getFieldAsDataItemConfig(item.icon3 || iconUnstable),
@@ -1515,33 +1512,13 @@ export class ConfigManager extends BaseClass {
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
-                                text1: {
-                                    true: item.buttonText
-                                        ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                        : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                          ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                          : textOn
-                                            ? { type: 'const', constVal: textOn }
-                                            : { type: 'state', dp: `${item.id}.ACTUAL` },
-                                    false: item.buttonTextOff
-                                        ? await this.getFieldAsDataItemConfig(item.buttonTextOff)
-                                        : (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
-                                          ? { type: 'state', dp: `${item.id}.BUTTONTEXTOFF` }
-                                          : textOff
-                                            ? { type: 'const', constVal: textOff }
-                                            : item.buttonText
-                                              ? await this.getFieldAsDataItemConfig(item.buttonText)
-                                              : (await this.existsState(`${item.id}.BUTTONTEXT`))
-                                                ? { type: 'state', dp: `${item.id}.BUTTONTEXT` }
-                                                : { type: 'state', dp: `${item.id}.ACTUAL` },
-                                },
-                                text: {
-                                    true: item.name
-                                        ? await this.getFieldAsDataItemConfig(item.name)
-                                        : commonName
-                                          ? { type: 'const', constVal: commonName }
-                                          : undefined,
-                                },
+                                text1: textOn
+                                    ? {
+                                          true: { type: 'const', constVal: textOn },
+                                          false: textOff ? { type: 'const', constVal: textOff } : undefined,
+                                      }
+                                    : undefined,
+                                text: text,
                                 entity1: {
                                     value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
                                 },
@@ -1581,9 +1558,7 @@ export class ConfigManager extends BaseClass {
                                 false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                             },
                             data: {
-                                text: {
-                                    true: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
-                                },
+                                text: text,
                             },
                         };
                         break;

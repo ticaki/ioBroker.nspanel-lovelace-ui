@@ -272,12 +272,12 @@ export async function getIconEntryValue(
     }
     on = on ?? true;
     if (!i) {
-        return Icons.GetIcon(on ? def : (defOff ?? def));
+        return Icons.GetIcon(on ? def : defOff || def);
     }
 
-    const text = getText ? ((i.true && i.true.text && (await getValueEntryString(i.true.text))) ?? null) : null;
+    const text = getText ? (i.true && i.true.text && (await getValueEntryString(i.true.text))) || null : null;
     if (text !== null) {
-        const textFalse = (i.false && i.false.text && (await getValueEntryString(i.false.text))) ?? null;
+        const textFalse = (i.false && i.false.text && (await getValueEntryString(i.false.text))) || null;
         if (typeof on === 'number' && textFalse !== null) {
             const scale = i.scale && (await i.scale.getObject());
             if (isPartialIconScaleElement(scale)) {
@@ -288,23 +288,23 @@ export async function getIconEntryValue(
             }
         }
         if (!on) {
-            return textFalse ?? text;
+            return textFalse || text;
         }
         return text;
     }
-    const icon = (i.true && i.true.value && (await i.true.value.getString())) ?? null;
+    const icon = (i.true && i.true.value && (await i.true.value.getString())) || null;
     if (typeof on === 'boolean' && !on) {
-        return Icons.GetIcon((i.false && i.false.value && (await i.false.value.getString())) ?? defOff ?? icon ?? def);
+        return Icons.GetIcon((i.false && i.false.value && (await i.false.value.getString())) || defOff || icon || def);
     } else if (typeof on === 'number') {
         const scaleM = i.scale && (await i.scale.getObject());
         const scale = isPartialIconScaleElement(scaleM) ? scaleM : { val_min: 0, val_max: 100 };
         if (scale.val_min < on && scale.val_max > on) {
             return Icons.GetIcon(
-                (i.unstable && i.unstable.value && (await i.unstable.value.getString())) ?? icon ?? def,
+                (i.unstable && i.unstable.value && (await i.unstable.value.getString())) || icon || def,
             );
         } else if (scale.val_max > on) {
             return Icons.GetIcon(
-                (i.false && i.false.value && (await i.false.value.getString())) ?? defOff ?? icon ?? def,
+                (i.false && i.false.value && (await i.false.value.getString())) || defOff || icon || def,
             );
         }
     }

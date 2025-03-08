@@ -489,11 +489,13 @@ class StatesControler extends import_library.BaseClass {
             const c = this.triggerDB[dp].to[i];
             if (oldState.val !== state.val || oldState.ack !== state.ack || this.triggerDB[dp].change[i] === "ts") {
               if (!c.neverDeactivateTrigger && !this.triggerDB[dp].subscribed[i] || !this.triggerDB[dp].triggerAllowed[i]) {
-                this.log.debug(`Ignore trigger from state ${dp} not subscribed or not allowed!`);
-                this.log.debug(
-                  `!c.neverDeactivateTrigger: ${!c.neverDeactivateTrigger} && !this.triggerDB[dp].subscribed[i]: ${!this.triggerDB[dp].subscribed[i]} || !this.triggerDB[dp].triggerAllowed[i]: ${!this.triggerDB[dp].triggerAllowed[i]}`
-                );
-                return;
+                if (i === this.triggerDB[dp].to.length - 1) {
+                  this.log.debug(`Ignore trigger from state ${dp} not subscribed or not allowed!`);
+                  this.log.debug(
+                    `!c.neverDeactivateTrigger: ${!c.neverDeactivateTrigger} && !this.triggerDB[dp].subscribed[i]: ${!this.triggerDB[dp].subscribed[i]} || !this.triggerDB[dp].triggerAllowed[i]: ${!this.triggerDB[dp].triggerAllowed[i]}`
+                  );
+                }
+                continue;
               }
               if (c.parent && c.triggerParent && !c.parent.unload && !c.parent.sleep) {
                 c.parent.onStateTriggerSuperDoNotOverride && await c.parent.onStateTriggerSuperDoNotOverride(dp, c);
@@ -770,13 +772,13 @@ class StatesControler extends import_library.BaseClass {
           if (d.type !== "triggered" && d.type !== "state" || !d.mode || d.mode !== "auto") {
             continue;
           }
+          if (tempObjectDB.keys.length === 0) {
+            this.log.warn(`Dont find states for ${dpInit}!`);
+          }
           for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
-            if (tempObjectDB.keys.length === 0) {
-              this.log.warn(`Dont find states for ${dpInit}!`);
-            }
             for (const id of tempObjectDB.keys) {
               const obj = tempObjectDB.data[id];
-              for (const commonType of Array.isArray(d.commonType) ? d.commonType : [d.commonType]) {
+              for (const commonType of Array.isArray(d.commonType) ? d.commonType : [d.commonType || ""]) {
                 if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp)) && (role === "" || obj.common.role === role) && (commonType === "" || obj.common.type === commonType) && (!d.regexp || id.match(d.regexp) !== null)) {
                   if (found) {
                     this.log.warn(

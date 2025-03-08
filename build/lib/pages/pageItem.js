@@ -84,7 +84,12 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     switch (this.dataItems.type) {
       case "number":
       case "button":
+      case "input_sel":
+      case "light":
+      case "text":
+      case "fan": {
         break;
+      }
       case "shutter": {
         const data = this.dataItems.data;
         this.tempData = [];
@@ -115,12 +120,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             this.tempData[5] = true;
           }
         }
-        break;
-      }
-      case "input_sel":
-      case "light":
-      case "text":
-      case "fan": {
         break;
       }
       case "timer": {

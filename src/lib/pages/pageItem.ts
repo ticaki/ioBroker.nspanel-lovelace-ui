@@ -66,7 +66,13 @@ export class PageItem extends BaseClassTriggerd {
         switch (this.dataItems.type) {
             case 'number':
             case 'button':
+            case 'input_sel':
+            case 'light':
+            case 'text':
+            case 'fan': {
                 break;
+            }
+
             case 'shutter': {
                 const data = this.dataItems.data;
                 this.tempData = [];
@@ -118,12 +124,7 @@ export class PageItem extends BaseClassTriggerd {
 
                 break;
             }
-            case 'input_sel':
-            case 'light':
-            case 'text':
-            case 'fan': {
-                break;
-            }
+
             case 'timer': {
                 if (this.dataItems.role === 'timer' && this.tempData === undefined) {
                     this.tempData = { status: 'pause', value: 0 };
