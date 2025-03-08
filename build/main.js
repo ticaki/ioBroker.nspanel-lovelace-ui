@@ -41,6 +41,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   controller;
   unload = false;
   testSuccessful = true;
+  httpServer = [];
   timeoutAdmin;
   constructor(options = {}) {
     super({
@@ -312,6 +313,17 @@ class NspanelLovelaceUi extends utils.Adapter {
       if (this.controller) {
         this.controller.delete;
       }
+      for (const server of this.httpServer) {
+        if (!server.unload) {
+          await server.delete();
+        }
+      }
+      if (this.mqttClient) {
+        this.mqttClient.destroy();
+      }
+      if (this.mqttServer) {
+        this.mqttServer.destroy();
+      }
       callback();
     } catch {
       callback();
@@ -489,7 +501,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         case "tftInstallSendTo": {
           if (obj.message) {
-            if (obj.message.tasmotaIP) {
+            if (obj.message.tasmotaIP && obj.message.internalServerIp) {
               try {
                 const result = await import_axios.default.get(
                   "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/raw/refs/heads/main/json/version.json"
@@ -502,21 +514,25 @@ class NspanelLovelaceUi extends utils.Adapter {
                   break;
                 }
                 const version = result.data.tft.split("_")[0];
-                this.log.info(
-                  `Installing version ${version} on tasmota with IP ${obj.message.tasmotaIP}`
-                );
-                const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog FlashNextion http://nspanel.de/nspanel-v${version}.tft`;
+                const fileName = `nspanel-v${version}.tft`;
+                const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog FlashNextion http://nspanel.de/${fileName}`;
+                this.log.debug(url);
                 await import_axios.default.get(url);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
+                  break;
                 }
               } catch (e) {
                 this.log.error(`Error: ${e}`);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
+                  break;
                 }
               }
             }
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, [], obj.callback);
           }
           break;
         }

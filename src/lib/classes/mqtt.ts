@@ -92,6 +92,7 @@ export class MQTTClientClass extends BaseClass {
         }
     }
     destroy(): void {
+        void this.delete();
         this.client.end();
     }
 }
@@ -126,6 +127,7 @@ export class MQTTServerClass extends BaseClass {
         };
     }
     destroy(): void {
+        void this.delete();
         this.aedes.close();
         this.server.close();
     }

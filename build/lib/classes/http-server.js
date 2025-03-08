@@ -33,15 +33,16 @@ __export(http_server_exports, {
 module.exports = __toCommonJS(http_server_exports);
 var import_http = __toESM(require("http"));
 var import_library = require("./library");
+var import_fs = __toESM(require("fs"));
 class HttpServer extends import_library.BaseClass {
-  fileVersion;
   server;
-  constructor(adapter, version, port) {
-    super(adapter);
-    this.fileVersion = version;
+  constructor(adapter, name, ip, port, fileName) {
+    super(adapter, name);
+    this.log.debug(`Starting http server on ${ip}:${port} to serve ${fileName}`);
     this.server = import_http.default.createServer((req, res) => {
-      res.writeHead(200, { "Content-Type": "application/tft" });
-      this.adapter.readFile(this.name, `nspanel-v${this.fileVersion}.tft`, (err, data) => {
+      this.log.debug(`Request received: ${req.url}`);
+      res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+      import_fs.default.readFile(fileName + req.url, (err, data) => {
         if (err) {
           res.writeHead(404);
           res.write("File not found!", (err2) => {
@@ -49,21 +50,25 @@ class HttpServer extends import_library.BaseClass {
               this.adapter.log.error(`Error writing file: ${err2}`);
             }
             res.end();
-            this.server.close();
           });
         } else {
+          res.writeHead(200, {
+            "Content-Type": "application/octet-stream",
+            "Content-Length": data.byteLength,
+            "Accept-Ranges": "bytes"
+          });
           res.write(data, (err2) => {
             if (err2) {
               this.adapter.log.error(`Error writing file: ${err2}`);
             }
             res.end();
-            this.server.close();
           });
         }
       });
-    }).listen(port);
+    }).listen(port, ip);
   }
   async delete() {
+    this.log.debug("Closing http server");
     this.server.close();
   }
 }

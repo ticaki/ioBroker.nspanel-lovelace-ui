@@ -20,6 +20,7 @@ import { generateAliasDocumentation } from './lib/tools/readme';
 import type { STATUS0 } from './lib/types/types';
 import axios from 'axios';
 import { URL } from 'url';
+import type { HttpServer } from './lib/classes/http-server';
 axios.defaults.timeout = 5000;
 
 class NspanelLovelaceUi extends utils.Adapter {
@@ -29,7 +30,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     controller: Controller | undefined;
     unload: boolean = false;
     testSuccessful: boolean = true;
-
+    httpServer: HttpServer[] = [];
     timeoutAdmin: ioBroker.Timeout | undefined;
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -62,6 +63,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         if (this.config.testCase) {
             this.log.warn('Testcase mode!');
         }
+
         /*if (!this.config.Testconfig2) {
             if (this.config.onlyStartFromSystemConfig) {
                 this.log.warn('No configuration stopped!');
@@ -399,6 +401,17 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (this.controller) {
                 this.controller.delete;
             }
+            for (const server of this.httpServer) {
+                if (!server.unload) {
+                    await server.delete();
+                }
+            }
+            if (this.mqttClient) {
+                this.mqttClient.destroy();
+            }
+            if (this.mqttServer) {
+                this.mqttServer.destroy();
+            }
             callback();
         } catch {
             callback();
@@ -630,7 +643,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 case 'tftInstallSendTo': {
                     if (obj.message) {
-                        if (obj.message.tasmotaIP) {
+                        if (obj.message.tasmotaIP && obj.message.internalServerIp) {
                             try {
                                 const result = await axios.get(
                                     'https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/raw/refs/heads/main/json/version.json',
@@ -644,25 +657,56 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
 
                                 const version = result.data.tft.split('_')[0];
+                                const fileName = `nspanel-v${version}.tft`;
+                                /*const path = `${utils.getAbsoluteInstanceDataDir(this)}/tft`;
+                                const absolutFileName = `${path}/${fileName}`;
+                                if (!fs.existsSync(path)) {
+                                    fs.mkdirSync(path, { recursive: true });
+                                }
+                                if (!fs.existsSync(fileName)) {
+                                    const downloadLink = `http://nspanel.de/nspanel-v${version}.tft`;
+                                    const response = await axios.get(downloadLink, { responseType: 'arraybuffer' });
+                                    const fileData = Buffer.from(response.data, 'binary');
+
+                                    fs.writeFileSync(absolutFileName, fileData);
+                                }
+                                const port = await this.getPortAsync(10000);
+                                const http = new HttpServer(
+                                    this,
+                                    `http-server-${this.httpServer.length}`,
+                                    obj.message.internalServerIp,
+                                    port,
+                                    path,
+                                );
+                                this.httpServer.push(http);
+                                this.httpServer = this.httpServer.filter(a => !a.unload);
                                 this.log.info(
                                     `Installing version ${version} on tasmota with IP ${obj.message.tasmotaIP}`,
                                 );
-                                const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog FlashNextion http://nspanel.de/nspanel-v${
-                                    version
-                                }.tft`;
-
+                                const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog FlashNextion http://${obj.message.internalServerIp}:${port}/${
+                                    fileName
+                                }`;*/
+                                const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog FlashNextion http://nspanel.de/${
+                                    fileName
+                                }`;
+                                this.log.debug(url);
                                 await axios.get(url);
 
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, [], obj.callback);
+                                    break;
                                 }
                             } catch (e: any) {
                                 this.log.error(`Error: ${e}`);
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, [], obj.callback);
+                                    break;
                                 }
                             }
                         }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, [], obj.callback);
                     }
                     break;
                 }

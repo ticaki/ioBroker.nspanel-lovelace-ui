@@ -101,6 +101,7 @@ class MQTTClientClass extends import_library.BaseClass {
     }
   }
   destroy() {
+    void this.delete();
     this.client.end();
   }
 }
@@ -128,6 +129,7 @@ class MQTTServerClass extends import_library.BaseClass {
     };
   }
   destroy() {
+    void this.delete();
     this.aedes.close();
     this.server.close();
   }

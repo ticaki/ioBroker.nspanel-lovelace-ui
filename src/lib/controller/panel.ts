@@ -680,6 +680,21 @@ export class Panel extends BaseClass {
             const event: Types.IncomingEvent | null = this.convertToEvent(message);
             if (event) {
                 await this.HandleIncomingMessage(event);
+            } else if (message) {
+                let msg: any = null;
+                try {
+                    msg = JSON.parse(message);
+                } catch {
+                    this.log.warn(`Receive a broken msg from mqtt: ${msg}`);
+                }
+                if (!msg) {
+                    return;
+                }
+                if ('Flashing' in msg) {
+                    this.isOnline = false;
+                    this.log.info(`Flashing: ${msg.Flashing.complete}%`);
+                    return;
+                }
             }
         } else {
             const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) ||
