@@ -297,14 +297,14 @@ export class Page extends BaseClassPage {
     }
 
     /**
-     * TODO rewrite
+     * Handles a popup request.
      *
-     * @param id
-     * @param popup
-     * @param action
-     * @param value
-     * @param _event
-     * @returns
+     * @param id - The ID of the item.
+     * @param popup - The popup type.
+     * @param action - The action to be performed.
+     * @param value - The value associated with the action.
+     * @param _event - The incoming event.
+     * @returns A promise that resolves when the popup request is handled.
      */
     public async onPopupRequest(
         id: number | string,

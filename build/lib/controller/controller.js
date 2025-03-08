@@ -109,11 +109,11 @@ class Controller extends Library.BaseClass {
     return new Promise((resolve) => resolve(Date.now()));
   };
   /**
-   *....
+   * Handles internal commands based on the provided id and state.
    *
-   * @param id
-   * @param _state
-   * @returns
+   * @param id - The identifier for the internal command.
+   * @param _state - The state associated with the command.
+   * @returns The value of the internal state or null if not applicable.
    */
   onInternalCommand = async (id, _state) => {
     if (!id.startsWith("///")) {

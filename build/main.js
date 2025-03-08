@@ -501,7 +501,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         case "tftInstallSendTo": {
           if (obj.message) {
-            if (obj.message.tasmotaIP && obj.message.internalServerIp) {
+            if (obj.message.tasmotaIP) {
               try {
                 const result = await import_axios.default.get(
                   "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/raw/refs/heads/main/json/version.json"

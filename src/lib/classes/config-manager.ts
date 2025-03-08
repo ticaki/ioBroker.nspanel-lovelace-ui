@@ -15,6 +15,7 @@ import { exhaustiveCheck } from '../types/pages';
 import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
 import { getStringOrArray } from '../tools/readme';
 import { PageQR } from '../pages/pageQR';
+import type { StatesControler } from '../controller/states-controller';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -26,6 +27,7 @@ export class ConfigManager extends BaseClass {
     readonly scriptVersion = '0.5.0';
     readonly breakingVersion = '0.2.0';
 
+    statesController: StatesControler | undefined;
     constructor(adapter: NspanelLovelaceUi, dontWrite: boolean = false) {
         super(adapter, 'config-manager');
         this.dontWrite = dontWrite;

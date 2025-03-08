@@ -306,7 +306,10 @@ Sind natürlich alles Dataitems
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki)  'switch' added
+- (ticaki) 
+- (ticaki) tools for tasmota added to admin
+- (ticaki) tweak panel response time 
+- (ticaki) 'switch' added
 - (tt-tom17) completed servicepages
 
 ### 0.1.7 (2025-03-06)

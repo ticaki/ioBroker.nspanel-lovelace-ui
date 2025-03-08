@@ -13,6 +13,7 @@ import type { PanelSend } from './panel-message';
 import { genericStateObjects } from '../const/definition';
 import { getRegExp } from '../const/tools';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
+import type { StateRole } from '../types/pages';
 
 export interface BaseClassTriggerdInterface {
     name: string;
@@ -697,7 +698,7 @@ export class StatesControler extends BaseClass {
      * @param data Json with configuration to create dataitems
      * @param parent Page etc.
      * @param target optional target
-     * @param path
+     * @param path optional path
      * @returns then json with values dataitem or undefined
      */
     async createDataItems(data: any, parent: any, target: any = {}, path: string = 'data'): Promise<any> {
@@ -820,11 +821,56 @@ export class StatesControler extends BaseClass {
         }
         return result;
     }
+
+    /**
+     * Retrieves the ID of a state automatically based on the provided parameters.
+     *
+     * @param dpInit - The initial data point, which can be a string or a regular expression.
+     * @param role - The role of the state, which can be a single StateRole or an array of StateRoles.
+     * @param enums - The enums associated with the state, which can be a single string or an array of strings.
+     * @param regExp - The regular expression to match the state ID.
+     * @param triggered - Whether the state is triggered.
+     * @returns A promise that resolves to the ID of the state if found, otherwise undefined.
+     */
+    async getIdbyAuto(
+        dpInit: string | RegExp = '',
+        role: StateRole | StateRole[] = '',
+        enums: string | string[] = '',
+        regExp?: RegExp,
+        triggered?: boolean,
+    ): Promise<DataItemsOptions | undefined> {
+        const status = { ok: true };
+        let item: DataItemsOptions | undefined;
+        if (triggered) {
+            item = {
+                type: 'triggered',
+                role: role,
+                dp: '',
+                mode: 'auto',
+                regexp: regExp,
+            };
+        } else {
+            item = {
+                type: 'state',
+                role: role,
+                dp: '',
+                mode: 'auto',
+                regexp: regExp,
+            };
+        }
+        const data = await this.getDataItemsFromAuto(dpInit, { item: item }, '', enums, status);
+        if (status.ok && data.item.dp) {
+            return item;
+        }
+        return undefined;
+    }
+
     async getDataItemsFromAuto(
         dpInit: string | RegExp,
         data: any,
         appendix?: string,
-        enums?: string | string[],
+        enums: string | string[] = '',
+        status?: { ok: boolean },
     ): Promise<any> {
         if (dpInit === '' && enums === undefined) {
             return data;
@@ -837,7 +883,7 @@ export class StatesControler extends BaseClass {
                     continue;
                 }
                 if (typeof t === 'object' && !('type' in t)) {
-                    data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix, enums);
+                    data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix, enums, status);
                 } else if (typeof t === 'object' && 'type' in t) {
                     const d = t as DataItemsOptions;
                     let found = false;
@@ -855,39 +901,44 @@ export class StatesControler extends BaseClass {
                         for (const id of tempObjectDB.keys) {
                             const obj: ioBroker.Object = tempObjectDB.data[id];
 
-                            if (
-                                obj &&
-                                obj.common &&
-                                obj.type === 'state' &&
-                                (d.dp === '' || id.includes(d.dp)) &&
-                                (role === '' || obj.common.role === role) &&
-                                (!d.regexp || id.match(d.regexp) !== null)
-                            ) {
-                                if (found) {
-                                    this.log.warn(
-                                        `Found more as 1 state for role ${role} in ${dpInit} with .dp: ${
-                                            d.dp ? d.dp.toString() : 'empty'
-                                        } and .regexp: ${d.regexp ? d.regexp.toString() : 'empty'}`,
-                                    );
-                                    break;
+                            for (const commonType of Array.isArray(d.commonType) ? d.commonType : [d.commonType]) {
+                                if (
+                                    obj &&
+                                    obj.common &&
+                                    obj.type === 'state' &&
+                                    (d.dp === '' || id.includes(d.dp)) &&
+                                    (role === '' || obj.common.role === role) &&
+                                    (commonType === '' || obj.common.type === commonType) &&
+                                    (!d.regexp || id.match(d.regexp) !== null)
+                                ) {
+                                    if (found) {
+                                        this.log.warn(
+                                            `Found more as 1 state for role ${role} in ${dpInit} with .dp: ${
+                                                d.dp ? d.dp.toString() : 'empty'
+                                            } and .regexp: ${d.regexp ? d.regexp.toString() : 'empty'}`,
+                                        );
+                                        break;
+                                    }
+                                    d.dp = id;
+                                    d.mode = 'done';
+                                    found = true;
                                 }
-                                d.dp = id;
-                                d.mode = 'done';
-                                found = true;
                             }
-                        }
-                        if (found) {
-                            break;
+                            if (found) {
+                                break;
+                            }
                         }
                     }
                     if (!found) {
-                        d.mode = 'fail';
+                        if (d.required) {
+                            status && (status.ok = false);
+                            this.log.warn(
+                                `No state found for role ${JSON.stringify(d.role)} in ${dpInit.toString()} with with .dp: ${
+                                    d.dp ? d.dp.toString() : 'empty'
+                                } and .regexp: ${d.regexp ? d.regexp.toString() : 'empty'}`,
+                            );
+                        }
                         data[i] = undefined;
-                        console.warn(
-                            `No state found for role ${JSON.stringify(d.role)} in ${dpInit.toString()} with with .dp: ${
-                                d.dp ? d.dp.toString() : 'empty'
-                            } and .regexp: ${d.regexp ? d.regexp.toString() : 'empty'}`,
-                        );
                     }
                 }
             }

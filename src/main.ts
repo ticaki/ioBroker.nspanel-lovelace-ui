@@ -21,6 +21,7 @@ import type { STATUS0 } from './lib/types/types';
 import axios from 'axios';
 import { URL } from 'url';
 import type { HttpServer } from './lib/classes/http-server';
+//import fs from 'fs';
 axios.defaults.timeout = 5000;
 
 class NspanelLovelaceUi extends utils.Adapter {
@@ -643,7 +644,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 case 'tftInstallSendTo': {
                     if (obj.message) {
-                        if (obj.message.tasmotaIP && obj.message.internalServerIp) {
+                        if (obj.message.tasmotaIP /*&& obj.message.internalServerIp*/) {
                             try {
                                 const result = await axios.get(
                                     'https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/raw/refs/heads/main/json/version.json',
@@ -658,7 +659,8 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                                 const version = result.data.tft.split('_')[0];
                                 const fileName = `nspanel-v${version}.tft`;
-                                /*const path = `${utils.getAbsoluteInstanceDataDir(this)}/tft`;
+                                /*
+                                const path = `${utils.getAbsoluteInstanceDataDir(this)}/tft`;
                                 const absolutFileName = `${path}/${fileName}`;
                                 if (!fs.existsSync(path)) {
                                     fs.mkdirSync(path, { recursive: true });

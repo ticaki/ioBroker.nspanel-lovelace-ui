@@ -36,6 +36,7 @@ class ConfigManager extends import_library.BaseClass {
   dontWrite = false;
   scriptVersion = "0.5.0";
   breakingVersion = "0.2.0";
+  statesController;
   constructor(adapter, dontWrite = false) {
     super(adapter, "config-manager");
     this.dontWrite = dontWrite;

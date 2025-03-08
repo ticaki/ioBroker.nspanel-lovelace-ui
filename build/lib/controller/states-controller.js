@@ -605,7 +605,7 @@ class StatesControler extends import_library.BaseClass {
    * @param data Json with configuration to create dataitems
    * @param parent Page etc.
    * @param target optional target
-   * @param path
+   * @param path optional path
    * @returns then json with values dataitem or undefined
    */
   async createDataItems(data, parent, target = {}, path = "data") {
@@ -715,7 +715,43 @@ class StatesControler extends import_library.BaseClass {
     }
     return result;
   }
-  async getDataItemsFromAuto(dpInit, data, appendix, enums) {
+  /**
+   * Retrieves the ID of a state automatically based on the provided parameters.
+   *
+   * @param dpInit - The initial data point, which can be a string or a regular expression.
+   * @param role - The role of the state, which can be a single StateRole or an array of StateRoles.
+   * @param enums - The enums associated with the state, which can be a single string or an array of strings.
+   * @param regExp - The regular expression to match the state ID.
+   * @param triggered - Whether the state is triggered.
+   * @returns A promise that resolves to the ID of the state if found, otherwise undefined.
+   */
+  async getIdbyAuto(dpInit = "", role = "", enums = "", regExp, triggered) {
+    const status = { ok: true };
+    let item;
+    if (triggered) {
+      item = {
+        type: "triggered",
+        role,
+        dp: "",
+        mode: "auto",
+        regexp: regExp
+      };
+    } else {
+      item = {
+        type: "state",
+        role,
+        dp: "",
+        mode: "auto",
+        regexp: regExp
+      };
+    }
+    const data = await this.getDataItemsFromAuto(dpInit, { item }, "", enums, status);
+    if (status.ok && data.item.dp) {
+      return item;
+    }
+    return void 0;
+  }
+  async getDataItemsFromAuto(dpInit, data, appendix, enums = "", status) {
     if (dpInit === "" && enums === void 0) {
       return data;
     }
@@ -727,7 +763,7 @@ class StatesControler extends import_library.BaseClass {
           continue;
         }
         if (typeof t === "object" && !("type" in t)) {
-          data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix, enums);
+          data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix, enums, status);
         } else if (typeof t === "object" && "type" in t) {
           const d = t;
           let found = false;
@@ -740,28 +776,32 @@ class StatesControler extends import_library.BaseClass {
             }
             for (const id of tempObjectDB.keys) {
               const obj = tempObjectDB.data[id];
-              if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp)) && (role === "" || obj.common.role === role) && (!d.regexp || id.match(d.regexp) !== null)) {
-                if (found) {
-                  this.log.warn(
-                    `Found more as 1 state for role ${role} in ${dpInit} with .dp: ${d.dp ? d.dp.toString() : "empty"} and .regexp: ${d.regexp ? d.regexp.toString() : "empty"}`
-                  );
-                  break;
+              for (const commonType of Array.isArray(d.commonType) ? d.commonType : [d.commonType]) {
+                if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp)) && (role === "" || obj.common.role === role) && (commonType === "" || obj.common.type === commonType) && (!d.regexp || id.match(d.regexp) !== null)) {
+                  if (found) {
+                    this.log.warn(
+                      `Found more as 1 state for role ${role} in ${dpInit} with .dp: ${d.dp ? d.dp.toString() : "empty"} and .regexp: ${d.regexp ? d.regexp.toString() : "empty"}`
+                    );
+                    break;
+                  }
+                  d.dp = id;
+                  d.mode = "done";
+                  found = true;
                 }
-                d.dp = id;
-                d.mode = "done";
-                found = true;
               }
-            }
-            if (found) {
-              break;
+              if (found) {
+                break;
+              }
             }
           }
           if (!found) {
-            d.mode = "fail";
+            if (d.required) {
+              status && (status.ok = false);
+              this.log.warn(
+                `No state found for role ${JSON.stringify(d.role)} in ${dpInit.toString()} with with .dp: ${d.dp ? d.dp.toString() : "empty"} and .regexp: ${d.regexp ? d.regexp.toString() : "empty"}`
+              );
+            }
             data[i] = void 0;
-            console.warn(
-              `No state found for role ${JSON.stringify(d.role)} in ${dpInit.toString()} with with .dp: ${d.dp ? d.dp.toString() : "empty"} and .regexp: ${d.regexp ? d.regexp.toString() : "empty"}`
-            );
           }
         }
       }

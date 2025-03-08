@@ -168,6 +168,9 @@ export type PageItemDataItemsOptions =
     | ({
           template: Types.TemplateIdent;
           dpInit?: string | RegExp;
+          /**
+           * not implemented yet
+           */
           appendix?: string;
           color?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions; scale?: Types.IconScaleElement };
           icon?: { true?: Types.DataItemsOptions; false?: Types.DataItemsOptions };
@@ -190,6 +193,9 @@ export type PageItemDataItemsOptions =
 export type PageItemOptionsTemplate = {
     template?: Types.TemplateIdent;
     role?: pages.DeviceRole;
+    /**
+     * check vs dpInit if the template is allowed
+     */
     adapter: string;
     modeScr?: string;
     dpInit?: string;

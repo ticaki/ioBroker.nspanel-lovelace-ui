@@ -1087,7 +1087,7 @@ export class Panel extends BaseClass {
      *  Handle incoming messages from panel
      *
      * @param event incoming event....
-     * @returns
+     * @returns void
      */
     async HandleIncomingMessage(event: Types.IncomingEvent): Promise<void> {
         if (this.InitProcess !== 'done') {
@@ -1477,8 +1477,8 @@ export class Panel extends BaseClass {
     /**
      * Convert incoming string to event msg object
      *
-     * @param msg
-     * @returns
+     * @param msg incoming string
+     * @returns event object
      */
     private convertToEvent(msg: string): Types.IncomingEvent | null {
         try {

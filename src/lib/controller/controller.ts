@@ -91,11 +91,11 @@ export class Controller extends Library.BaseClass {
     };
 
     /**
-     *....
+     * Handles internal commands based on the provided id and state.
      *
-     * @param id
-     * @param _state
-     * @returns
+     * @param id - The identifier for the internal command.
+     * @param _state - The state associated with the command.
+     * @returns The value of the internal state or null if not applicable.
      */
     onInternalCommand = async (id: string, _state: nsPanelState | undefined): Promise<nsPanelStateVal> => {
         if (!id.startsWith('///')) {

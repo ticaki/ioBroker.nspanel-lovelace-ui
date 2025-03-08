@@ -39,10 +39,9 @@ class HttpServer extends import_library.BaseClass {
   constructor(adapter, name, ip, port, fileName) {
     super(adapter, name);
     this.log.debug(`Starting http server on ${ip}:${port} to serve ${fileName}`);
-    this.server = import_http.default.createServer((req, res) => {
+    this.server = import_http.default.createServer({ keepAlive: true }, (req, res) => {
       this.log.debug(`Request received: ${req.url}`);
-      res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-      import_fs.default.readFile(fileName + req.url, (err, data) => {
+      import_fs.default.stat(fileName + req.url, (err, stats) => {
         if (err) {
           res.writeHead(404);
           res.write("File not found!", (err2) => {
@@ -52,17 +51,20 @@ class HttpServer extends import_library.BaseClass {
             res.end();
           });
         } else {
+          this.log.debug(`Content-Length: ${stats.size} bytes`);
           res.writeHead(200, {
-            "Content-Type": "application/octet-stream",
-            "Content-Length": data.byteLength,
+            Server: "nginx",
+            // Simuliere den Original-Server
+            Date: (/* @__PURE__ */ new Date()).toUTCString(),
+            // Muss korrekt sein
+            "Content-Length": stats.size,
+            Connection: "keep-alive",
+            "Last-Modified": stats.mtime.toUTCString(),
+            ETag: `"${stats.size.toString(16)}-${Date.now().toString(16)}"`,
             "Accept-Ranges": "bytes"
           });
-          res.write(data, (err2) => {
-            if (err2) {
-              this.adapter.log.error(`Error writing file: ${err2}`);
-            }
-            res.end();
-          });
+          const fileStream = import_fs.default.createReadStream(fileName + req.url, { highWaterMark: 64 * 1024 });
+          fileStream.pipe(res);
         }
       });
     }).listen(port, ip);

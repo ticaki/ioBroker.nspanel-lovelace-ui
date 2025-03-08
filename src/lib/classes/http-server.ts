@@ -9,11 +9,10 @@ export class HttpServer extends BaseClass {
         super(adapter, name);
         this.log.debug(`Starting http server on ${ip}:${port} to serve ${fileName}`);
         this.server = http
-            .createServer((req, res) => {
+            .createServer({ keepAlive: true }, (req, res) => {
                 this.log.debug(`Request received: ${req.url}`);
-                res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
-                fs.readFile(fileName + req.url, (err, data) => {
+                fs.stat(fileName + req.url, (err, stats) => {
                     if (err) {
                         res.writeHead(404);
                         res.write('File not found!', err => {
@@ -24,18 +23,20 @@ export class HttpServer extends BaseClass {
                             //void this.delete();
                         });
                     } else {
+                        this.log.debug(`Content-Length: ${stats.size} bytes`);
                         res.writeHead(200, {
-                            'Content-Type': 'application/octet-stream',
-                            'Content-Length': data.byteLength,
+                            Server: 'nginx', // Simuliere den Original-Server
+                            Date: new Date().toUTCString(), // Muss korrekt sein
+                            'Content-Length': stats.size,
+                            Connection: 'keep-alive',
+                            'Last-Modified': stats.mtime.toUTCString(),
+                            ETag: `"${stats.size.toString(16)}-${Date.now().toString(16)}"`,
                             'Accept-Ranges': 'bytes',
                         });
-                        res.write(data, err => {
-                            if (err) {
-                                this.adapter.log.error(`Error writing file: ${err}`);
-                            }
-                            res.end();
-                            //void this.delete();
-                        });
+                        const fileStream = fs.createReadStream(fileName + req.url, { highWaterMark: 64 * 1024 });
+                        fileStream.pipe(res);
+
+                        //void this.delete();
                     }
                 });
             })
