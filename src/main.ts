@@ -601,6 +601,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 obj.message.mqttPassword &&
                                 obj.message.tasmotaTopic
                             ) {
+                                if (obj.message.mqttServer == 'false' || !obj.message.mqttServer) {
+                                    obj.message.mqttServer = false;
+                                }
                                 const url =
                                     ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp};` +
                                     ` MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword};` +
@@ -620,7 +623,7 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                                 this.log.info(`Sending mqttip: ${obj.message.mqttIp}`);
 
-                                this.log.info(`Sending server enabled: ${obj.message.mqttServer}`);
+                                this.log.info(`Sending server enabled: ${obj.message.mqttServer == false}`);
                                 await axios.get(u.href);
 
                                 if (obj.callback) {
