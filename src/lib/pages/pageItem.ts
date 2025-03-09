@@ -161,7 +161,7 @@ export class PageItem extends BaseClassTriggerd {
     }
 
     async getPageItemPayload(): Promise<string> {
-        await this.controller.statesControler.activateTrigger(this);
+        //await this.controller.statesControler.activateTrigger(this);
         this.lastPopupType = undefined;
         if (this.dataItems && this.config) {
             this.visibility = false;

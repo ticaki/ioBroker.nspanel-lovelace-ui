@@ -492,6 +492,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog${url.replaceAll("&", "%26").replaceAll("%", "%25")}`
                 );
                 this.log.info(`Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP}`);
+                this.log.info(`Sending mqtt config to ${u.href}`);
                 await import_axios.default.get(u.href);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);

@@ -615,6 +615,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         .replaceAll('%', '%25')}`,
                                 );
                                 this.log.info(`Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP}`);
+                                this.log.info(`Sending mqtt config to ${u.href}`);
                                 await axios.get(u.href);
 
                                 if (obj.callback) {
