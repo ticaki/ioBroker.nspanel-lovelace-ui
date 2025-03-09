@@ -180,7 +180,8 @@
                     "xl": 12,
                     "uniqueColumns": [
                         "name",
-                        "topic"
+                        "topic",
+                        "ip"
                     ],
                     "items": [
                         {
@@ -189,6 +190,14 @@
                             "label": "Id",
                             "validator": "data.id",
                             "validatorNoSaveOnError": true,
+                            "readOnly": true
+                        },
+                        {
+                            "type": "text",
+                            "attr": "ip",
+                            "validator": "data.ip",
+                            "default": "",
+                            "label": "ip",
                             "readOnly": true
                         },
                         {
@@ -202,7 +211,7 @@
                             "type": "text",
                             "attr": "topic",
                             "label": "panelTopic",
-                            "readOnly": false,
+                            "readOnly": true,
                             "validatorErrorText": "mustBeUnique"
                         },
                         {
@@ -210,7 +219,7 @@
                             "type": "sendTo",
                             "label": "Refresh Device",
                             "command": "RefreshDevices",
-                            "jsonData": "{\"id\": \"${data.id}\", \"name\": \"${data.name}\", \"topic\": \"${data.topic}\" }",
+                            "jsonData": "{\"id\": \"${data.id}\", \"name\": \"${data.name}\", \"topic\": \"${data.topic}\", \"ip\": \"${data.ip}\"}",
                             "showProcess": true,
                             "useNative": true,
                             "timeout": 8000,
@@ -228,12 +237,8 @@
                 "_selectTool": {
                     "type": "select",
                     "label": "SelectTool",
-                    "default": 0,
+                    "default": 1,
                     "options": [
-                        {
-                            "label": "none",
-                            "value": "0"
-                        },
                         {
                             "label": "TasmotaTool",
                             "value": "1"
@@ -280,7 +285,7 @@
                     "type": "text",
                     "label": "_tasmotaName",
                     "validator": "",
-                    "hidden": "data._selectTool !== '1'",
+                    "hidden": "data._selectTool != '1'",
                     "default": "",
                     "xs": 12,
                     "sm": 12,
@@ -299,23 +304,6 @@
                     "lg": 4,
                     "xl": 4
                 },
-                "_tasmotaSendTo": {
-                    "type": "sendTo",
-                    "label": "tasmotaSendTo",
-                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": \"${data.mqttPort}\", \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
-                    "showProcess": true,
-                    "command": "tasmotaSendTo",
-                    "disabled": "return !data._tasmotaIP || \
-                     (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||\
-                     !data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || \
-                     !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || \
-                     (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || \
-                     !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
-
-                    "newLine": true,
-                    "variant": "contained",
-                    "hidden": "data._selectTool != '1'"
-                },
                 "_tasmotaAddTableSendTo": {
                     "type": "sendTo",
                     "label": "tasmotaAddTableSendTo",
@@ -333,6 +321,24 @@
                     "variant": "contained",
                     "hidden": "data._selectTool != '1'"
                 },
+                "_tasmotaSendTo": {
+                    "type": "sendTo",
+                    "label": "tasmotaSendTo",
+                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": \"${data.mqttPort}\", \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
+                    "showProcess": true,
+                    "command": "tasmotaSendTo",
+                    "disabled": "return !data._tasmotaIP || \
+                     (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||\
+                     !data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || \
+                     !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || \
+                     (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || \
+                     !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
+
+                    "newLine": true,
+                    "variant": "contained",
+                    "hidden": "data._selectTool != '1'"
+                },
+                
                 "_berryInstallSendTo": {
                     "type": "sendTo",
                     "label": "berryInstallSendTo",
