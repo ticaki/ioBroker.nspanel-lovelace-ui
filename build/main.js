@@ -68,7 +68,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
       this.config.mqttPassword = this.config.mqttPassword || "1234";
       const port = await this.getPortAsync(this.config.mqttPort);
-      if (port !== this.config.mqttPort) {
+      if (port != this.config.mqttPort) {
         this.log.error(`Port ${this.config.mqttPort} is already in use!`);
         this.log.error(`Please change the port in the admin settings to ${port}!`);
         this.log.error("Stopping adapter!");
