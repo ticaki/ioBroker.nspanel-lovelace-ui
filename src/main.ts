@@ -594,7 +594,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         try {
                             if (
                                 obj.message.tasmotaIP &&
-                                obj.message.mqttIp &&
+                                (obj.message.mqttIp || obj.message.internalServerIp) &&
                                 obj.message.mqttServer != null &&
                                 obj.message.mqttPort &&
                                 obj.message.mqttUsername &&
@@ -616,6 +616,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 );
                                 this.log.info(`Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP}`);
                                 this.log.info(`Sending mqtt config to ${u.href}`);
+                                this.log.info(`serverip: ${obj.message.internalServerIp}`);
+
+                                this.log.info(`Sending mqttip: ${obj.message.mqttIp}`);
+
+                                this.log.info(`Sending server enabled: ${obj.message.mqttServer}`);
                                 await axios.get(u.href);
 
                                 if (obj.callback) {
