@@ -497,7 +497,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.log.info(`Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP}`);
                 this.log.info(`Sending mqtt config to ${u.href}`);
                 this.log.info(`serverip: ${obj.message.internalServerIp}`);
-                this.log.info(`Sending mqttip: ${obj.message.mqttIp}`);
+                this.log.info(`typeof obj.message.mqttServer: ${typeof obj.message.mqttServer}`);
                 this.log.info(`Sending server enabled: ${obj.message.mqttServer == false}`);
                 await import_axios.default.get(u.href);
                 if (obj.callback) {

@@ -621,7 +621,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 this.log.info(`Sending mqtt config to ${u.href}`);
                                 this.log.info(`serverip: ${obj.message.internalServerIp}`);
 
-                                this.log.info(`Sending mqttip: ${obj.message.mqttIp}`);
+                                this.log.info(`typeof obj.message.mqttServer: ${typeof obj.message.mqttServer}`);
 
                                 this.log.info(`Sending server enabled: ${obj.message.mqttServer == false}`);
                                 await axios.get(u.href);
