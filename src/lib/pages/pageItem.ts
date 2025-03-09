@@ -135,7 +135,12 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
         }
-        if (this.parent && (this.parent.card === 'screensaver' || this.parent.card === 'screensaver2')) {
+        if (
+            this.parent &&
+            (this.parent.card === 'screensaver' ||
+                this.parent.card === 'screensaver2' ||
+                this.parent.card === 'screensaver3')
+        ) {
             if (!this.panel.persistentPageItems[this.id]) {
                 if (this.config.modeScr) {
                     switch (this.config.modeScr) {

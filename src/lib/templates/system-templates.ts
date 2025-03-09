@@ -125,7 +125,7 @@ const AdapterInformation: PageBaseConfig = {
                         color: { type: 'const', constVal: Color.Green },
                     },
                     false: {
-                        value: { type: 'const', constVal: 'bell-outlline' },
+                        value: { type: 'const', constVal: 'bell-outline' },
                         color: { type: 'const', constVal: Color.Blue },
                     },
                 },

@@ -349,7 +349,7 @@ export function isButtonActionType(F: string): F is Types.ButtonActionType {
 
 export type PageBaseConfigTemplate =
     | {
-          card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2'>;
+          card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2' | 'screensaver3'>;
           adapter: string;
           alwaysOn: 'none' | 'always' | 'action';
           useColor?: boolean;

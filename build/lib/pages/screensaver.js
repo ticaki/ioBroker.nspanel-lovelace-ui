@@ -234,7 +234,7 @@ class Screensaver extends import_Page.Page {
    */
   onStateTrigger = async (_dp, from) => {
     const config = this.config;
-    if (!config || config.card !== "screensaver" && config.card !== "screensaver2") {
+    if (!config || config.card !== "screensaver" && config.card !== "screensaver2" && config.card !== "screensaver3") {
       return;
     }
     if (from instanceof import_pageItem.PageItem && this.pageItems) {

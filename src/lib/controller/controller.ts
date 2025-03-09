@@ -239,6 +239,7 @@ export class Controller extends Library.BaseClass {
         await this.systemNotification.init();
 
         for (const panel of this.panels) {
+            await this.adapter.delay(100);
             if (await panel.isValid()) {
                 newPanels.push(panel);
                 void panel.init();

@@ -298,27 +298,31 @@ class StatesControler extends import_library.BaseClass {
     } else if (internal) {
       this.log.error("setInternal Trigger too early");
     } else {
+      this.triggerDB[id] = {
+        state: { val: null, ack: false, ts: Date.now(), from: "", lc: Date.now() },
+        to: [from],
+        ts: Date.now(),
+        subscribed: [false],
+        common: { name: id, type: "number", role: "state", write: false, read: true },
+        triggerAllowed: [trigger],
+        change: [change ? change : "ne"]
+      };
       const state = await this.adapter.getForeignStateAsync(id);
       if (state) {
-        await this.adapter.subscribeForeignStatesAsync(id);
         const obj = await this.getObjectAsync(id);
         if (!obj || !obj.common || obj.type !== "state") {
           throw new Error(`Got invalid object for ${id}`);
         }
-        this.triggerDB[id] = {
-          state,
-          to: [from],
-          ts: Date.now(),
-          subscribed: [false],
-          common: obj.common,
-          triggerAllowed: [trigger],
-          change: [change ? change : "ne"]
-        };
+        this.triggerDB[id].state = state;
+        this.triggerDB[id].common = obj.common;
+        await this.adapter.subscribeForeignStatesAsync(id);
         if (this.stateDB[id] !== void 0) {
           delete this.stateDB[id];
         }
+        this.log.debug(`Set a new trigger from ${from.name} to ${id}`);
+      } else {
+        delete this.triggerDB[id];
       }
-      this.log.debug(`Set a new trigger from ${from.name} to ${id}`);
     }
   }
   /**

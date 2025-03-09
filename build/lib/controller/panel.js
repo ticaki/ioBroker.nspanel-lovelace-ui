@@ -202,7 +202,7 @@ class Panel extends import_library.BaseClass {
         card: pageConfig.config.card,
         panel: this,
         id: String(a),
-        name: pageConfig.uniqueID,
+        name: `${pageConfig.uniqueID}`,
         alwaysOn: pageConfig.alwaysOn,
         adapter: this.adapter,
         panelSend: this.panelSend,
@@ -270,7 +270,7 @@ class Panel extends import_library.BaseClass {
             card: pageConfig.config.card,
             panel: this,
             id: String(a),
-            name: pageConfig.uniqueID,
+            name: `${pageConfig.uniqueID}`,
             adapter: this.adapter,
             panelSend: this.panelSend,
             dpInit: ""
@@ -506,7 +506,7 @@ class Panel extends import_library.BaseClass {
     }
     const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
     const scs = this.pages.filter(
-      (a) => a && (a.card === "screensaver" || a.card === "screensaver2")
+      (a) => a && (a.card === "screensaver" || a.card === "screensaver2" || a.card === "screensaver3")
     );
     if (currentScreensaver && currentScreensaver.val) {
       if (scs && scs[0]) {

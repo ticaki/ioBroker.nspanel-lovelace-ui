@@ -117,7 +117,7 @@ class Dataitem extends import_library.BaseClass {
           const value = await this.stateDB.getState(this.options.dp);
           return value !== null && value !== void 0;
         } catch (e) {
-          this.log.error(`Error 1001: ${e.replaceAll("Error: ", "")}`);
+          this.log.error(`Error 1001: ${typeof e === "string" ? e.replaceAll("Error: ", "") : e}`);
           return false;
         }
       }
