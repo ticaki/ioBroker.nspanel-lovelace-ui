@@ -830,37 +830,41 @@ export class StatesControler extends BaseClass {
      * @param dpInit - The initial data point, which can be a string or a regular expression.
      * @param role - The role of the state, which can be a single StateRole or an array of StateRoles.
      * @param enums - The enums associated with the state, which can be a single string or an array of strings.
-     * @param regExp - The regular expression to match the state ID.
+     * @param regexp - The regular expression to match the state ID.
      * @param triggered - Whether the state is triggered.
+     * @param writeable - Whether the state is writeable.
      * @returns A promise that resolves to the ID of the state if found, otherwise undefined.
      */
     async getIdbyAuto(
         dpInit: string | RegExp = '',
         role: StateRole | StateRole[] = '',
         enums: string | string[] = '',
-        regExp?: RegExp,
+        regexp?: RegExp,
         triggered?: boolean,
+        writeable?: boolean,
     ): Promise<DataItemsOptions | undefined> {
         const status = { ok: true };
         let item: DataItemsOptions | undefined;
         if (triggered) {
             item = {
                 type: 'triggered',
-                role: role,
+                role,
                 dp: '',
                 mode: 'auto',
-                regexp: regExp,
+                regexp,
+                writeable,
             };
         } else {
             item = {
                 type: 'state',
-                role: role,
+                role,
                 dp: '',
                 mode: 'auto',
-                regexp: regExp,
+                regexp,
+                writeable,
             };
         }
-        const data = await this.getDataItemsFromAuto(dpInit, { item: item }, '', enums, status);
+        const data = await this.getDataItemsFromAuto(dpInit, { item: item }, '', enums, status, true);
         if (status.ok && data.item.dp) {
             return item;
         }
@@ -873,6 +877,7 @@ export class StatesControler extends BaseClass {
         appendix?: string,
         enums: string | string[] = '',
         status?: { ok: boolean },
+        ignoreMultiple: boolean = false,
     ): Promise<any> {
         if (dpInit === '' && enums === undefined) {
             return data;
@@ -897,13 +902,10 @@ export class StatesControler extends BaseClass {
                     }
                     for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
                         //throw new Error(`${d.dp} has a unkowned role ${d.role}`);
+                        for (const commonType of Array.isArray(d.commonType) ? d.commonType : [d.commonType || '']) {
+                            for (const id of tempObjectDB.keys) {
+                                const obj: ioBroker.Object = tempObjectDB.data[id];
 
-                        for (const id of tempObjectDB.keys) {
-                            const obj: ioBroker.Object = tempObjectDB.data[id];
-
-                            for (const commonType of Array.isArray(d.commonType)
-                                ? d.commonType
-                                : [d.commonType || '']) {
                                 if (
                                     obj &&
                                     obj.common &&
@@ -911,14 +913,17 @@ export class StatesControler extends BaseClass {
                                     (d.dp === '' || id.includes(d.dp)) &&
                                     (role === '' || obj.common.role === role) &&
                                     (commonType === '' || obj.common.type === commonType) &&
+                                    (!d.writeable || obj.common.write === d.writeable) &&
                                     (!d.regexp || id.match(d.regexp) !== null)
                                 ) {
                                     if (found) {
-                                        this.log.warn(
-                                            `Found more as 1 state for role ${role} in ${dpInit} with .dp: ${
-                                                d.dp ? d.dp.toString() : 'empty'
-                                            } and .regexp: ${d.regexp ? d.regexp.toString() : 'empty'}`,
-                                        );
+                                        if (!ignoreMultiple) {
+                                            this.log.warn(
+                                                `Found more as 1 state for role ${role} in ${dpInit} with .dp: ${
+                                                    d.dp ? d.dp.toString() : 'empty'
+                                                } and .regexp: ${d.regexp ? d.regexp.toString() : 'empty'}`,
+                                            );
+                                        }
                                         break;
                                     }
                                     d.dp = id;
@@ -929,6 +934,9 @@ export class StatesControler extends BaseClass {
                             if (found) {
                                 break;
                             }
+                        }
+                        if (found) {
+                            break;
                         }
                     }
                     if (!found) {

@@ -385,6 +385,7 @@ type DataItemsOptionsAuto = {
     regexp?: RegExp;
     def?: string | number | boolean | RGB;
     required?: boolean;
+    writeable?: boolean;
 };
 type DataItemsOptionsCustom = {
     mode?: 'custom'; // not set means custom
@@ -435,6 +436,7 @@ type DataItemsOptionsTriggered = (DataItemsOptionsAuto | DataItemsOptionsCustom)
     read?: string | ((val: any) => any);
     write?: string | ((val: any) => any);
     change?: 'ts';
+    wirteable?: boolean;
 };
 
 //type internalDatapoints = 'Relais1' | 'Relais2';

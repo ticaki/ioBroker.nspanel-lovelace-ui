@@ -723,11 +723,12 @@ class StatesControler extends import_library.BaseClass {
    * @param dpInit - The initial data point, which can be a string or a regular expression.
    * @param role - The role of the state, which can be a single StateRole or an array of StateRoles.
    * @param enums - The enums associated with the state, which can be a single string or an array of strings.
-   * @param regExp - The regular expression to match the state ID.
+   * @param regexp - The regular expression to match the state ID.
    * @param triggered - Whether the state is triggered.
+   * @param writeable - Whether the state is writeable.
    * @returns A promise that resolves to the ID of the state if found, otherwise undefined.
    */
-  async getIdbyAuto(dpInit = "", role = "", enums = "", regExp, triggered) {
+  async getIdbyAuto(dpInit = "", role = "", enums = "", regexp, triggered, writeable) {
     const status = { ok: true };
     let item;
     if (triggered) {
@@ -736,7 +737,8 @@ class StatesControler extends import_library.BaseClass {
         role,
         dp: "",
         mode: "auto",
-        regexp: regExp
+        regexp,
+        writeable
       };
     } else {
       item = {
@@ -744,16 +746,17 @@ class StatesControler extends import_library.BaseClass {
         role,
         dp: "",
         mode: "auto",
-        regexp: regExp
+        regexp,
+        writeable
       };
     }
-    const data = await this.getDataItemsFromAuto(dpInit, { item }, "", enums, status);
+    const data = await this.getDataItemsFromAuto(dpInit, { item }, "", enums, status, true);
     if (status.ok && data.item.dp) {
       return item;
     }
     return void 0;
   }
-  async getDataItemsFromAuto(dpInit, data, appendix, enums = "", status) {
+  async getDataItemsFromAuto(dpInit, data, appendix, enums = "", status, ignoreMultiple = false) {
     if (dpInit === "" && enums === void 0) {
       return data;
     }
@@ -776,14 +779,16 @@ class StatesControler extends import_library.BaseClass {
             this.log.warn(`Dont find states for ${dpInit}!`);
           }
           for (const role of Array.isArray(d.role) ? d.role : [d.role]) {
-            for (const id of tempObjectDB.keys) {
-              const obj = tempObjectDB.data[id];
-              for (const commonType of Array.isArray(d.commonType) ? d.commonType : [d.commonType || ""]) {
-                if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp)) && (role === "" || obj.common.role === role) && (commonType === "" || obj.common.type === commonType) && (!d.regexp || id.match(d.regexp) !== null)) {
+            for (const commonType of Array.isArray(d.commonType) ? d.commonType : [d.commonType || ""]) {
+              for (const id of tempObjectDB.keys) {
+                const obj = tempObjectDB.data[id];
+                if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp)) && (role === "" || obj.common.role === role) && (commonType === "" || obj.common.type === commonType) && (!d.writeable || obj.common.write === d.writeable) && (!d.regexp || id.match(d.regexp) !== null)) {
                   if (found) {
-                    this.log.warn(
-                      `Found more as 1 state for role ${role} in ${dpInit} with .dp: ${d.dp ? d.dp.toString() : "empty"} and .regexp: ${d.regexp ? d.regexp.toString() : "empty"}`
-                    );
+                    if (!ignoreMultiple) {
+                      this.log.warn(
+                        `Found more as 1 state for role ${role} in ${dpInit} with .dp: ${d.dp ? d.dp.toString() : "empty"} and .regexp: ${d.regexp ? d.regexp.toString() : "empty"}`
+                      );
+                    }
                     break;
                   }
                   d.dp = id;
@@ -794,6 +799,9 @@ class StatesControler extends import_library.BaseClass {
               if (found) {
                 break;
               }
+            }
+            if (found) {
+              break;
             }
           }
           if (!found) {

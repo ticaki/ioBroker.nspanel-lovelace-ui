@@ -347,7 +347,7 @@ class ConfigManager extends import_library.BaseClass {
       return void 0;
     }
     let itemConfig = void 0;
-    const specialRole = (page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3") && !item.icon && !item.icon2 ? "textNotIcon" : "iconNotText";
+    const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
     const obj = item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
     const role = obj && obj.common.role ? obj.common.role : void 0;
     const commonName = obj && obj.common ? typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()] : void 0;
@@ -735,7 +735,7 @@ class ConfigManager extends import_library.BaseClass {
             text,
             text1: {
               true: {
-                type: "triggered",
+                type: "state",
                 dp: `${item.id}.ACTUAL`
               },
               false: null
@@ -744,7 +744,7 @@ class ConfigManager extends import_library.BaseClass {
               value: { type: "triggered", dp: `${item.id}.ACTUAL` }
             },
             entity2: {
-              value: { type: "triggered", dp: `${item.id}.ACTUAL` }
+              value: { type: "state", dp: `${item.id}.ACTUAL` }
             },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
@@ -823,7 +823,7 @@ class ConfigManager extends import_library.BaseClass {
         if (!await this.checkRequiredDatapoints(role, item)) {
           return;
         }
-        const specialRole = (page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3") && !item.icon && !item.icon2 ? "textNotIcon" : "iconNotText";
+        const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
         const commonName = typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()];
         const getButtonsTextTrue = async (item2, def1) => {
           return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
@@ -1189,13 +1189,13 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "motion-sensor";
                 iconOff = "motion-sensor";
                 iconUnstable = "";
-                adapterRole = specialRole;
+                adapterRole = "iconNotText";
                 textOn = "on";
                 textOff = "off";
                 break;
               }
               case "door": {
-                adapterRole = specialRole;
+                adapterRole = "iconNotText";
                 iconOn = "door-open";
                 iconOff = "door-closed";
                 iconUnstable = "door-closed";
@@ -1207,7 +1207,7 @@ class ConfigManager extends import_library.BaseClass {
                 iconOn = "window-open-variant";
                 iconOff = "window-closed-variant";
                 iconUnstable = "window-closed-variant";
-                adapterRole = specialRole;
+                adapterRole = "iconNotText";
                 textOn = "opened";
                 textOff = "closed";
                 break;
@@ -1275,12 +1275,10 @@ class ConfigManager extends import_library.BaseClass {
                 entity1: {
                   value: { type: "triggered", dp: `${item.id}.ACTUAL` }
                 },
-                entity2: role === "temperature" || role === "value.temperature" || role === "humidity" || role === "value.humidity" ? {
+                entity2: role === "temperature" || role === "value.temperature" || role === "humidity" || role === "value.humidity" || role === "info" ? {
                   value: { type: "state", dp: `${item.id}.ACTUAL` },
                   unit: commonUnit ? { type: "const", constVal: commonUnit } : void 0
-                } : {
-                  value: { type: "state", dp: `${item.id}.ACTUAL` }
-                }
+                } : void 0
               }
             };
             itemConfig = tempItem;

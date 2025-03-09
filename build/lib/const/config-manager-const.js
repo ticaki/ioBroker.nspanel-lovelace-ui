@@ -148,6 +148,7 @@ const defaultConfig = {
 };
 const requiredScriptDataPoints = {
   motion: {
+    updatedVersion: true,
     name: "motion",
     description: "Status of the motion sensor or presence detector (motion or presence detected)",
     data: { ACTUAL: { role: "sensor.motion", type: "boolean", required: true, writeable: false } }
@@ -165,6 +166,7 @@ const requiredScriptDataPoints = {
       },
   }, */
   dimmer: {
+    updatedVersion: true,
     name: "dimmer",
     description: "Licht ein- / ausschalten und dimmen",
     data: {
@@ -175,6 +177,7 @@ const requiredScriptDataPoints = {
     }
   },
   ct: {
+    updatedVersion: true,
     name: "ct",
     description: "f\xFCr Lampen die das wei\xDFe Licht zwischen kalt und warm \xE4ndern k\xF6nnen",
     data: {
@@ -185,6 +188,7 @@ const requiredScriptDataPoints = {
     }
   },
   window: {
+    updatedVersion: true,
     name: "window",
     description: "",
     data: {
@@ -196,11 +200,13 @@ const requiredScriptDataPoints = {
     }
   },
   humidity: {
+    updatedVersion: true,
     name: "humidity",
     description: "",
     data: { ACTUAL: { role: "value.humidity", type: "number", required: true, writeable: false } }
   },
   hue: {
+    updatedVersion: true,
     name: "hue",
     description: "",
     data: {
@@ -213,19 +219,21 @@ const requiredScriptDataPoints = {
     }
   },
   info: {
+    updatedVersion: true,
     name: "info",
     description: "Universal Datenpunkt f\xFCr diverse Anwendungen",
     data: {
-      ACTUAL: { role: "state", type: "mixed", required: true, writeable: false },
-      COLORDEC: { role: "value.rgb", type: "number", required: false, writeable: false },
+      ACTUAL: { role: "state", type: "mixed", required: true, writeable: false, useKey: true },
+      COLORDEC: { role: "value.rgb", type: "number", required: false, writeable: false, useKey: true },
       //Farbcode über DP senden
-      BUTTONTEXT: { role: ["text"], type: "string", required: false, writeable: false },
+      BUTTONTEXT: { role: ["text"], type: "string", required: false, writeable: false, useKey: true },
       //Button-Text über DP senden bei cardEntity
-      USERICON: { role: "state", type: "string", required: false, writeable: false }
+      USERICON: { role: "state", type: "string", required: false, writeable: false, useKey: true }
       //Benutzerdefinierte Iconnamen über DP senden
     }
   },
   blind: {
+    updatedVersion: true,
     name: "blind",
     description: "",
     data: {
@@ -271,6 +279,7 @@ const requiredScriptDataPoints = {
     }
   },
   socket: {
+    updatedVersion: true,
     name: "socket",
     description: "Steckdosen, Schalter, Relais, usw. schalten",
     data: {
@@ -283,6 +292,7 @@ const requiredScriptDataPoints = {
     }
   },
   light: {
+    updatedVersion: true,
     name: "light",
     description: "ein Lichtschalter",
     data: {
@@ -295,6 +305,7 @@ const requiredScriptDataPoints = {
     }
   },
   volume: {
+    updatedVersion: true,
     name: "volume",
     description: "",
     data: {
@@ -304,6 +315,7 @@ const requiredScriptDataPoints = {
     }
   },
   rgb: {
+    updatedVersion: true,
     name: "rgb",
     description: "Farblicht mit einzelnen Farbkan\xE4len",
     data: {
@@ -321,6 +333,7 @@ const requiredScriptDataPoints = {
     }
   },
   rgbSingle: {
+    updatedVersion: true,
     name: "rgbSingle",
     description: "Farblicht ohne Farbkan\xE4le",
     data: {
@@ -333,6 +346,7 @@ const requiredScriptDataPoints = {
     }
   },
   slider: {
+    updatedVersion: true,
     name: "slider",
     description: "Slider to set a numerical value",
     data: {
@@ -341,16 +355,19 @@ const requiredScriptDataPoints = {
     }
   },
   button: {
+    updatedVersion: true,
     name: "button",
     description: "Switch",
     data: { SET: { role: "button", type: "boolean", required: true, writeable: true } }
   },
   buttonSensor: {
+    updatedVersion: true,
     name: "buttonSensor",
     description: "Taster",
     data: { ACTUAL: { role: "button.press", type: "boolean", required: true, writeable: false } }
   },
   temperature: {
+    updatedVersion: true,
     name: "temperature",
     description: "",
     data: {
@@ -358,6 +375,7 @@ const requiredScriptDataPoints = {
     }
   },
   "value.temperature": {
+    updatedVersion: true,
     name: "value.temperature",
     description: "",
     data: {

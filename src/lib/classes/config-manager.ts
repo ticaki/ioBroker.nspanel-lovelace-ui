@@ -430,9 +430,7 @@ export class ConfigManager extends BaseClass {
         }
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
         const specialRole: pages.DeviceRole =
-            (page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3') &&
-            !item.icon &&
-            !item.icon2
+            page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
                 ? 'textNotIcon'
                 : 'iconNotText';
 
@@ -867,7 +865,7 @@ export class ConfigManager extends BaseClass {
                         text: text,
                         text1: {
                             true: {
-                                type: 'triggered',
+                                type: 'state',
                                 dp: `${item.id}.ACTUAL`,
                             },
 
@@ -878,7 +876,7 @@ export class ConfigManager extends BaseClass {
                         },
 
                         entity2: {
-                            value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                            value: { type: 'state', dp: `${item.id}.ACTUAL` },
                         },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -964,9 +962,7 @@ export class ConfigManager extends BaseClass {
                     return;
                 }
                 const specialRole: pages.DeviceRole =
-                    (page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3') &&
-                    !item.icon &&
-                    !item.icon2
+                    page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
                         ? 'textNotIcon'
                         : 'iconNotText';
                 const commonName =
@@ -1420,13 +1416,13 @@ export class ConfigManager extends BaseClass {
                                 iconOn = 'motion-sensor';
                                 iconOff = 'motion-sensor';
                                 iconUnstable = '';
-                                adapterRole = specialRole;
+                                adapterRole = 'iconNotText';
                                 textOn = 'on';
                                 textOff = 'off';
                                 break;
                             }
                             case 'door': {
-                                adapterRole = specialRole;
+                                adapterRole = 'iconNotText';
                                 iconOn = 'door-open';
                                 iconOff = 'door-closed';
                                 iconUnstable = 'door-closed';
@@ -1438,7 +1434,7 @@ export class ConfigManager extends BaseClass {
                                 iconOn = 'window-open-variant';
                                 iconOff = 'window-closed-variant';
                                 iconUnstable = 'window-closed-variant';
-                                adapterRole = specialRole;
+                                adapterRole = 'iconNotText';
                                 textOn = 'opened';
                                 textOff = 'closed';
                                 break;
@@ -1526,14 +1522,13 @@ export class ConfigManager extends BaseClass {
                                     role === 'temperature' ||
                                     role === 'value.temperature' ||
                                     role === 'humidity' ||
-                                    role === 'value.humidity'
+                                    role === 'value.humidity' ||
+                                    role === 'info'
                                         ? {
                                               value: { type: 'state', dp: `${item.id}.ACTUAL` },
                                               unit: commonUnit ? { type: 'const', constVal: commonUnit } : undefined,
                                           }
-                                        : {
-                                              value: { type: 'state', dp: `${item.id}.ACTUAL` },
-                                          },
+                                        : undefined,
                             },
                         };
                         itemConfig = tempItem;

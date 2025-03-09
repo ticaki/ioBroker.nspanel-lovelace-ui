@@ -10,6 +10,7 @@ export async function generateAliasDocumentation(): Promise<void> {
         let lastFolder = '';
         let table = '# Table of contents\n';
         let readme = '';
+        table += `* [Remarks](#feature-${'Remarks'.toLowerCase().replace(/[^a-z0-9]+/g, '')})\n`;
         for (const folder in requiredScriptDataPoints) {
             const data = requiredScriptDataPoints[folder];
             readme += `### ${folder}\n`;
@@ -18,7 +19,7 @@ export async function generateAliasDocumentation(): Promise<void> {
 
             for (const key in data.data) {
                 const row = data.data[key];
-                readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${getStringOrArray(row.role)}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
+                readme += `| **${folder == lastFolder ? '"' : folder}** | ${row.useKey ? key : `~~${key}~~`} | ${row.type}| ${getStringOrArray(row.role)}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
                 lastFolder = folder;
             }
         }
@@ -63,6 +64,9 @@ export async function generateAliasDocumentation(): Promise<void> {
                 lastFolder = folder;
             }
         }
+        table += `## Remarks\n`;
+        table +=
+            '\n -(not fully implemented) Crossed out DPs can be called whatever you want, only use the name if you have questions in issues or in the forum. \n';
         fs.writeFileSync('ALIAS.md', table + readme);
     }
 }

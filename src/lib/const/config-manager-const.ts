@@ -138,12 +138,13 @@ type requiredDatapoints = {
                     | (ScriptConfig.roles | ConfigManager.ioBrokerRoles)
                     | (ScriptConfig.roles | ConfigManager.ioBrokerRoles)[];
                 required: boolean;
+                useKey?: boolean;
                 type: ioBroker.StateCommon['type'];
                 writeable?: boolean;
                 description?: string;
             };
         };
-
+        updatedVersion?: boolean;
         name: string;
         description: string;
     };
@@ -151,6 +152,7 @@ type requiredDatapoints = {
 
 export const requiredScriptDataPoints: requiredDatapoints = {
     motion: {
+        updatedVersion: true,
         name: 'motion',
         description: 'Status of the motion sensor or presence detector (motion or presence detected)',
         data: { ACTUAL: { role: 'sensor.motion', type: 'boolean', required: true, writeable: false } },
@@ -168,6 +170,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     }, */
     dimmer: {
+        updatedVersion: true,
         name: 'dimmer',
         description: 'Licht ein- / ausschalten und dimmen',
         data: {
@@ -178,6 +181,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     ct: {
+        updatedVersion: true,
         name: 'ct',
         description: 'für Lampen die das weiße Licht zwischen kalt und warm ändern können',
         data: {
@@ -188,6 +192,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     window: {
+        updatedVersion: true,
         name: 'window',
         description: '',
         data: {
@@ -197,11 +202,13 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     humidity: {
+        updatedVersion: true,
         name: 'humidity',
         description: '',
         data: { ACTUAL: { role: 'value.humidity', type: 'number', required: true, writeable: false } },
     },
     hue: {
+        updatedVersion: true,
         name: 'hue',
         description: '',
         data: {
@@ -214,16 +221,18 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     info: {
+        updatedVersion: true,
         name: 'info',
         description: 'Universal Datenpunkt für diverse Anwendungen',
         data: {
-            ACTUAL: { role: 'state', type: 'mixed', required: true, writeable: false },
-            COLORDEC: { role: 'value.rgb', type: 'number', required: false, writeable: false }, //Farbcode über DP senden
-            BUTTONTEXT: { role: ['text'], type: 'string', required: false, writeable: false }, //Button-Text über DP senden bei cardEntity
-            USERICON: { role: 'state', type: 'string', required: false, writeable: false }, //Benutzerdefinierte Iconnamen über DP senden
+            ACTUAL: { role: 'state', type: 'mixed', required: true, writeable: false, useKey: true },
+            COLORDEC: { role: 'value.rgb', type: 'number', required: false, writeable: false, useKey: true }, //Farbcode über DP senden
+            BUTTONTEXT: { role: ['text'], type: 'string', required: false, writeable: false, useKey: true }, //Button-Text über DP senden bei cardEntity
+            USERICON: { role: 'state', type: 'string', required: false, writeable: false, useKey: true }, //Benutzerdefinierte Iconnamen über DP senden
         },
     },
     blind: {
+        updatedVersion: true,
         name: 'blind',
         description: '',
         data: {
@@ -267,6 +276,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     socket: {
+        updatedVersion: true,
         name: 'socket',
         description: 'Steckdosen, Schalter, Relais, usw. schalten',
         data: {
@@ -277,6 +287,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     light: {
+        updatedVersion: true,
         name: 'light',
         description: 'ein Lichtschalter',
         data: {
@@ -287,6 +298,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     volume: {
+        updatedVersion: true,
         name: 'volume',
         description: '',
         data: {
@@ -296,6 +308,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     rgb: {
+        updatedVersion: true,
         name: 'rgb',
         description: 'Farblicht mit einzelnen Farbkanälen',
         data: {
@@ -311,6 +324,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     rgbSingle: {
+        updatedVersion: true,
         name: 'rgbSingle',
         description: 'Farblicht ohne Farbkanäle',
         data: {
@@ -323,6 +337,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     slider: {
+        updatedVersion: true,
         name: 'slider',
         description: 'Slider to set a numerical value',
         data: {
@@ -331,16 +346,19 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     button: {
+        updatedVersion: true,
         name: 'button',
         description: 'Switch',
         data: { SET: { role: 'button', type: 'boolean', required: true, writeable: true } },
     },
     buttonSensor: {
+        updatedVersion: true,
         name: 'buttonSensor',
         description: 'Taster',
         data: { ACTUAL: { role: 'button.press', type: 'boolean', required: true, writeable: false } },
     },
     temperature: {
+        updatedVersion: true,
         name: 'temperature',
         description: '',
         data: {
@@ -348,6 +366,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     'value.temperature': {
+        updatedVersion: true,
         name: 'value.temperature',
         description: '',
         data: {
