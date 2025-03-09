@@ -24,7 +24,7 @@ declare global {
             pageQRpwd2: string;
             pageQRpwd3: string;
             
-            panels: {name: string, topic: string, id: string, removeIt: boolean}[];
+            panels: {name: string, topic: string, id: string, ip: string}[];
             mqttServer: boolean;
             pw1: string;
             pageQRdata: {

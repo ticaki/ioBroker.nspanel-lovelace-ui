@@ -573,7 +573,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp};` +
                                     ` MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword};` +
                                     ` FullTopic ${`${obj.message.tasmotaTopic}/%prefix%/`.replaceAll('//', '/')};` +
-                                    ` MqttRetry 10; FriendlyName ${obj.message.tasmotaName}; Hostname ${obj.message.tasmotaName}; WebLog 2; template {"NAME":"${obj.message.tasmotaName}","GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1}; Module 0;` +
+                                    ` MqttRetry 10; FriendlyName1 ${obj.message.tasmotaName}; Hostname ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, '_')};` +
+                                    ` WebLog 2; template {"NAME":"${obj.message.tasmotaName}", "GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1};` +
+                                    ` Module 0; MqttClient ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}%06X;` +
                                     ` Restart 1`;
                                 const u = new URL(
                                     `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog${url
@@ -590,16 +592,62 @@ class NspanelLovelaceUi extends utils.Adapter {
                         } catch (e: any) {
                             this.log.error(`Error: while sending mqtt config & base config to tasmota - ${e}`);
                             if (obj.callback) {
-                                this.sendTo(obj.from, obj.command, [], obj.callback);
+                                this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
                             }
                         }
+                        break;
                     }
                     if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
                     }
                     break;
                     //Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1
                     //Backlog UpdateDriverVersion https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1
+                }
+                case 'tasmotaAddTableSendTo': {
+                    if (obj.message) {
+                        try {
+                            if (obj.message.tasmotaIP && obj.message.tasmotaTopic && obj.message.tasmotaName) {
+                                const config = this.config;
+                                const panels = config.panels ?? [];
+                                const index = panels.findIndex(a => a.topic === obj.message.tasmotaTopic);
+                                const item = index === -1 ? { name: '', ip: '', topic: '', id: '' } : panels[index];
+                                const nameIndex = panels.findIndex(a => a.name === obj.message.tasmotaName);
+                                if (nameIndex !== -1 && index !== -1 && nameIndex !== index) {
+                                    this.log.error('Name already exists!');
+                                    if (obj.callback) {
+                                        this.sendTo(obj.from, obj.command, { error: 'sendToNameExist' }, obj.callback);
+                                    }
+                                    break;
+                                }
+                                item.name = obj.message.tasmotaName;
+                                item.ip = obj.message.tasmotaIP;
+                                item.topic = obj.message.tasmotaTopic;
+
+                                if (index === -1) {
+                                    panels.push(item);
+                                }
+                                const o = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
+                                if (o && o.native) {
+                                    o.native.panels = panels;
+                                    await this.setForeignObjectAsync(`system.adapter.${this.namespace}`, o);
+                                }
+
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, panels, obj.callback);
+                                }
+                            }
+                        } catch (e: any) {
+                            this.log.error(`Error: while sending mqtt config & base config to tasmota - ${e}`);
+                            if (obj.callback) {
+                                this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                            }
+                        }
+                        break;
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
                 }
                 case 'berryInstallSendTo': {
                     if (obj.message) {
@@ -614,13 +662,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                             } catch (e: any) {
                                 this.log.error(`Error: while installing berry - ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, [], obj.callback);
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
                                 }
                             }
+                            break;
                         }
                     }
                     if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
                     }
                     break;
                 }
@@ -634,7 +683,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 if (!result.data) {
                                     this.log.error('No version found!');
                                     if (obj.callback) {
-                                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                                        this.sendTo(
+                                            obj.from,
+                                            obj.command,
+                                            { error: 'sendToRequestFail' },
+                                            obj.callback,
+                                        );
                                     }
                                     break;
                                 }
@@ -678,26 +732,25 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, [], obj.callback);
-                                    break;
                                 }
                             } catch (e: any) {
                                 this.log.error(`Error: ${e}`);
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, [], obj.callback);
-                                    break;
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
                                 }
                             }
+                            break;
                         }
                     }
                     if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
                     }
                     break;
                 }
                 default: {
                     // Send response in callback if required
                     if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
                     }
                 }
             }
