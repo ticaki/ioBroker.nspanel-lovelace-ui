@@ -306,7 +306,9 @@ Sind natürlich alles Dataitems
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) 
+- (ticaki) check if port is free for mqtt server - and move it at start
+- (ticaki) check and tweak role info
+- (ticaki) fixed: entities and grid icons/text
 - (ticaki) tools for tasmota added to admin
 - (ticaki) tweak panel response time 
 - (ticaki) 'switch' added

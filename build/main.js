@@ -65,7 +65,36 @@ class NspanelLovelaceUi extends utils.Adapter {
       native: {}
     });
     this.library = new import_library.Library(this);
-    await this.delay(2e3);
+    if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
+      this.config.mqttPassword = this.config.mqttPassword || "1234";
+      const port = await this.getPortAsync(this.config.mqttPort);
+      if (port !== this.config.mqttPort) {
+        this.log.error(`Port ${this.config.mqttPort} is already in use!`);
+        this.log.error(`Please change the port in the admin settings!`);
+        this.log.error("Stopping adapter!");
+        if (this.stop) {
+          await this.stop();
+        }
+        return;
+      }
+      this.mqttServer = new MQTT.MQTTServerClass(
+        this,
+        this.config.mqttPort,
+        this.config.mqttUsername,
+        this.config.mqttPassword,
+        "./mqtt"
+      );
+      this.config.mqttIp = "127.0.0.1";
+      await this.delay(100);
+      let c = 0;
+      while (!this.mqttServer.ready) {
+        this.log.debug("Wait for mqttServer");
+        await this.delay(1e3);
+        if (c++ > 6) {
+          throw new Error("mqttServer not ready!");
+        }
+      }
+    }
     await (0, import_readme.generateAliasDocumentation)();
     if (this.config.testCase) {
       this.log.warn("Testcase mode!");
@@ -170,25 +199,6 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.log.debug("Check configuration!");
       if (!this.config.pw1 || typeof this.config.pw1 !== "string") {
         this.log.warn("No pin entered for the service page! Please set a pin in the admin settings!");
-      }
-      if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
-        this.config.mqttPassword = this.config.mqttPassword || "1234";
-        this.mqttServer = new MQTT.MQTTServerClass(
-          this,
-          this.config.mqttPort,
-          this.config.mqttUsername,
-          this.config.mqttPassword,
-          "./mqtt"
-        );
-        this.config.mqttIp = "127.0.0.1";
-        let c = 0;
-        while (!this.mqttServer.ready) {
-          this.log.debug("Wait for mqttServer");
-          await this.delay(1e3);
-          if (c++ > 6) {
-            throw new Error("mqttServer not ready!");
-          }
-        }
       }
       if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
         this.log.error("Invalid admin configuration for mqtt!");
@@ -361,7 +371,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
   // /**
-  //  * Somee message was sent to this instance over message box. Used by email, pushover, text2speech, ........
+  //  * Somee message was sent to this instance over message box. Used by email, pushover, text2speech, .
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
@@ -415,38 +425,29 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
           );
           this.timeoutAdmin = this.setTimeout(
-            async (mqtt2) => {
-              let rCount = 0;
+            async (mqtt2, obj2) => {
               if (mqtt2) {
                 if (!device.id) {
-                  rCount++;
                   mqtt2.subscript(
                     `${device.topic}/stat/STATUS0`,
                     (_topic, _message) => {
                       const msg = JSON.parse(_message);
                       if (msg.StatusNET) {
                         device.id = this.library.cleandp(msg.StatusNET.Mac, false, true);
+                        this.log.debug(`Device found: ${device.id}`);
                       }
-                      rCount--;
+                      if (obj2.callback) {
+                        this.sendTo(obj2.from, obj2.command, { native: device }, obj2.callback);
+                      }
                     }
                   );
                   void mqtt2.publish(`${device.topic}/cmnd/STATUS0`, "");
                 }
-                const _waitForFinish = (count) => {
-                  if (count > 10 || rCount === 0) {
-                    if (obj.callback) {
-                      this.sendTo(obj.from, obj.command, { native: device }, obj.callback);
-                    }
-                    mqtt2.destroy();
-                    return;
-                  }
-                  this.timeoutAdmin = this.setTimeout(_waitForFinish, 500, ++count);
-                };
-                _waitForFinish(0);
               }
             },
             500,
-            mqtt
+            mqtt,
+            obj
           );
           break;
         }
@@ -460,7 +461,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           if (obj.message) {
             try {
               if (obj.message.tasmotaIP && obj.message.mqttIp && obj.message.mqttServer != null && obj.message.mqttPort && obj.message.mqttUsername && obj.message.mqttPassword && obj.message.tasmotaTopic) {
-                const url = ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp}; MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword}; FullTopic ${`${obj.message.tasmotaTopic}/%prefix%/`.replaceAll("//", "/")}; MqttRetry 10; WebLog 2; template {"NAME":"NSPanel","GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1}; Module 0; Restart 1`;
+                const url = ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp}; MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword}; FullTopic ${`${obj.message.tasmotaTopic}/%prefix%/`.replaceAll("//", "/")}; MqttRetry 10; FriendlyName ${obj.message.tasmotaName}; Hostname ${obj.message.tasmotaName}; WebLog 2; template {"NAME":"${obj.message.tasmotaName}","GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1}; Module 0; Restart 1`;
                 const u = new import_url.URL(
                   `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog${url.replaceAll("&", "%26").replaceAll("%", "%25")}`
                 );
@@ -476,6 +477,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.sendTo(obj.from, obj.command, [], obj.callback);
               }
             }
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, [], obj.callback);
           }
           break;
         }
@@ -496,6 +500,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
               }
             }
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, [], obj.callback);
           }
           break;
         }

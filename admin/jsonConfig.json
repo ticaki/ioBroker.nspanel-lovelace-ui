@@ -276,6 +276,18 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "_tasmotaName":{
+                    "type": "text",
+                    "label": "_tasmotaName",
+                    "validator": "",
+                    "hidden": "data._selectTool !== '1'",
+                    "default": "",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "_tasmotaTopic": {
                     "type": "text",
                     "label": "tasmotaTopic",
@@ -290,7 +302,7 @@
                 "_tasmotaSendTo": {
                     "type": "sendTo",
                     "label": "tasmotaSendTo",
-                    "jsonData": "{\"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": \"${data.mqttPort}\", \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
+                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": \"${data.mqttPort}\", \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
                     "showProcess": true,
                     "command": "tasmotaSendTo",
                     "disabled": "return data._tasmotaIP == null || !data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1'|| !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || !data.mqttServer || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || data.mqttServer && !data.internalServerIp || !data.mqttServer && !data.mqttIp",
