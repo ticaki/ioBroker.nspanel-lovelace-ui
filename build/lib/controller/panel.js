@@ -606,6 +606,9 @@ class Panel extends import_library.BaseClass {
     return this._isOnline;
   }
   set isOnline(s) {
+    if (this.unload) {
+      return;
+    }
     this.info.isOnline = s;
     if (s !== this._isOnline) {
       void this.library.writedp(
@@ -972,22 +975,24 @@ class Panel extends import_library.BaseClass {
     this.loopTimeout = this.adapter.setTimeout(this.loop, t);
   };
   async delete() {
+    this.isOnline = false;
+    if (this.loopTimeout) {
+      this.adapter.clearTimeout(this.loopTimeout);
+    }
     await super.delete();
     await this.library.writedp(
       `panels.${this.name}.info.isOnline`,
       false,
       import_definition.genericStateObjects.panel.panels.info.isOnline
     );
+    await this.panelSend.delete();
+    await this.navigation.delete();
     for (const a of this.pages) {
       if (a) {
         await a.delete();
       }
     }
-    this.isOnline = false;
     this.persistentPageItems = {};
-    if (this.loopTimeout) {
-      this.adapter.clearTimeout(this.loopTimeout);
-    }
   }
   getPagebyUniqueID(uniqueID) {
     var _a;

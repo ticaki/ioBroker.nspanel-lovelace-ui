@@ -325,7 +325,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         this.clearTimeout(this.timeoutAdmin2);
       }
       if (this.controller) {
-        this.controller.delete;
+        await this.controller.delete();
       }
       for (const server of this.httpServer) {
         if (!server.unload) {

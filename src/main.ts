@@ -403,11 +403,6 @@ class NspanelLovelaceUi extends utils.Adapter {
     private async onUnload(callback: () => void): Promise<void> {
         try {
             this.unload = true;
-            // Here you must clear all timeouts or intervals that may still be active
-            // clearTimeout(timeout1);
-            // clearTimeout(timeout2);
-            // ...
-            // clearInterval(interval1);
             if (this.timeoutAdmin) {
                 this.clearTimeout(this.timeoutAdmin);
             }
@@ -415,7 +410,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.clearTimeout(this.timeoutAdmin2);
             }
             if (this.controller) {
-                this.controller.delete;
+                await this.controller.delete();
             }
             for (const server of this.httpServer) {
                 if (!server.unload) {

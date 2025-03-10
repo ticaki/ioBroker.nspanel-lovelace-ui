@@ -644,6 +644,9 @@ export class Panel extends BaseClass {
         return this._isOnline;
     }
     set isOnline(s: boolean) {
+        if (this.unload) {
+            return;
+        }
         this.info.isOnline = s;
         if (s !== this._isOnline) {
             void this.library.writedp(
@@ -1049,22 +1052,24 @@ export class Panel extends BaseClass {
     };
 
     async delete(): Promise<void> {
+        this.isOnline = false;
+        if (this.loopTimeout) {
+            this.adapter.clearTimeout(this.loopTimeout);
+        }
         await super.delete();
         await this.library.writedp(
             `panels.${this.name}.info.isOnline`,
             false,
             genericStateObjects.panel.panels.info.isOnline,
         );
+        await this.panelSend.delete();
+        await this.navigation.delete();
         for (const a of this.pages) {
             if (a) {
                 await a.delete();
             }
         }
-        this.isOnline = false;
         this.persistentPageItems = {};
-        if (this.loopTimeout) {
-            this.adapter.clearTimeout(this.loopTimeout);
-        }
     }
 
     getPagebyUniqueID(uniqueID: string): Page | null {
