@@ -443,7 +443,6 @@ const ScreensaverOptions: PageBaseConfig = {
             data: {
                 entity1: {
                     value: { type: 'internal', dp: 'cmd/dimStandby' },
-                    factor: { type: 'const', constVal: 1 / 10 },
                     minScale: { type: 'const', constVal: 0 },
                     maxScale: { type: 'const', constVal: 10 },
                 },
@@ -463,7 +462,6 @@ const ScreensaverOptions: PageBaseConfig = {
             data: {
                 entity1: {
                     value: { type: 'internal', dp: 'cmd/dimActive' },
-                    factor: { type: 'const', constVal: 1 / 10 },
                     minScale: { type: 'const', constVal: 0 },
                     maxScale: { type: 'const', constVal: 10 },
                 },
@@ -483,7 +481,6 @@ const ScreensaverOptions: PageBaseConfig = {
             data: {
                 entity1: {
                     value: { type: 'internal', dp: 'cmd/dimNightActive' },
-                    factor: { type: 'const', constVal: 1 / 10 },
                     minScale: { type: 'const', constVal: 0 },
                     maxScale: { type: 'const', constVal: 10 },
                 },
@@ -503,7 +500,6 @@ const ScreensaverOptions: PageBaseConfig = {
             data: {
                 entity1: {
                     value: { type: 'internal', dp: 'cmd/dimNightStandby' },
-                    factor: { type: 'const', constVal: 1 / 10 },
                     minScale: { type: 'const', constVal: 0 },
                     maxScale: { type: 'const', constVal: 10 },
                 },
