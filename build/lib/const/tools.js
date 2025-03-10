@@ -285,16 +285,30 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
     return text;
   }
   const icon = i.true && i.true.value && await i.true.value.getString() || null;
-  if (typeof on === "boolean" && !on) {
-    return import_icon_mapping.Icons.GetIcon(i.false && i.false.value && await i.false.value.getString() || defOff || icon || def);
+  const scaleM = i.scale && await i.scale.getObject();
+  if (typeof on === "boolean") {
+    const scale = (0, import_types.isPartialIconScaleElement)(scaleM) ? scaleM : { val_min: 0, val_max: 1 };
+    if (scale.val_min === 1 && scale.val_max === 0) {
+      on = !on;
+    }
+    if (scale.val_best !== void 0 && scale.val_best == 0) {
+      on = !on;
+    }
+    if (!on) {
+      return import_icon_mapping.Icons.GetIcon(
+        i.false && i.false.value && await i.false.value.getString() || defOff || icon || def
+      );
+    }
   } else if (typeof on === "number") {
-    const scaleM = i.scale && await i.scale.getObject();
     const scale = (0, import_types.isPartialIconScaleElement)(scaleM) ? scaleM : { val_min: 0, val_max: 100 };
-    if (scale.val_min < on && scale.val_max > on) {
+    const swap = scale.val_min > scale.val_max;
+    const min = swap ? scale.val_max : scale.val_min;
+    const max = swap ? scale.val_min : scale.val_max;
+    if (min < on && max > on) {
       return import_icon_mapping.Icons.GetIcon(
         i.unstable && i.unstable.value && await i.unstable.value.getString() || icon || def
       );
-    } else if (scale.val_max > on) {
+    } else if (!swap && max > on || swap && min < on) {
       return import_icon_mapping.Icons.GetIcon(
         i.false && i.false.value && await i.false.value.getString() || defOff || icon || def
       );
