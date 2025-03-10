@@ -1783,6 +1783,7 @@ class ConfigManager extends import_library.BaseClass {
     const dataType = obj && obj.common && obj.common.type ? obj.common.type : void 0;
     if (entity.ScreensaverEntityUnitText || entity.ScreensaverEntityUnitText === "") {
       result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityUnitText);
+      result.data.entity2.unit = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityUnitText);
     } else if (obj && obj.common && obj.common.unit) {
       result.data.entity1.unit = { type: "const", constVal: obj.common.unit };
       result.data.entity2.unit = { type: "const", constVal: obj.common.unit };
