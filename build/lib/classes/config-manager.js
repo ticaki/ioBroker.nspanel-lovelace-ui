@@ -1742,7 +1742,7 @@ class ConfigManager extends import_library.BaseClass {
       result.data.icon.false.text = {
         value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValue, true),
         unit: entity.ScreensaverEntityValueUnit ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityValueUnit) : void 0,
-        decimal: entity.ScreensaverEntityValueDecimalPlace ? { type: "const", constVal: entity.ScreensaverEntityValueDecimalPlace } : void 0,
+        decimal: entity.ScreensaverEntityValueDecimalPlace != null ? { type: "const", constVal: entity.ScreensaverEntityValueDecimalPlace } : void 0,
         factor: void 0
       };
       result.role = "combined";
@@ -1785,15 +1785,22 @@ class ConfigManager extends import_library.BaseClass {
       result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityUnitText);
     } else if (obj && obj.common && obj.common.unit) {
       result.data.entity1.unit = { type: "const", constVal: obj.common.unit };
+      result.data.entity2.unit = { type: "const", constVal: obj.common.unit };
     }
     if (entity.ScreensaverEntityFactor) {
       result.data.entity1.factor = { type: "const", constVal: entity.ScreensaverEntityFactor };
+      result.data.entity2.factor = { type: "const", constVal: entity.ScreensaverEntityFactor };
     }
     if (entity.ScreensaverEntityDecimalPlaces != null) {
       result.data.entity1.decimal = { type: "const", constVal: entity.ScreensaverEntityDecimalPlaces };
+      result.data.entity2.decimal = { type: "const", constVal: entity.ScreensaverEntityDecimalPlaces };
     }
     if (entity.ScreensaverEntityDateFormat) {
       result.data.entity1.dateFormat = {
+        type: "const",
+        constVal: { local: "de", format: entity.ScreensaverEntityDateFormat }
+      };
+      result.data.entity2.dateFormat = {
         type: "const",
         constVal: { local: "de", format: entity.ScreensaverEntityDateFormat }
       };
