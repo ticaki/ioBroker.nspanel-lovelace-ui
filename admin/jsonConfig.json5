@@ -365,36 +365,43 @@
         },
         "pageQR": {
             "type": "panel",
-            "label": "+",
+            "label": "Page QR",
             "items": {
                 "pageQRdata": {
                     "type": "accordion",
                     "label": "pageQRdata",
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 12,
-                    "xl": 12,
+                    "titleAttr" : "pageName",
                     "items": [
                         {
                             "attr": "pageName",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
                             "type": "text",
                             "label": "pageName",
                             "default": "Unique Name"
                         },
                         {
                             "attr": "headline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
                             "type": "text",
                             "label": "Headline",
                             "default": ""
                         },
                         {
-                            "attr": "SSIDURLTEL",
-                            "type": "text",
-                            "label": "SSID - URL - TEL",
-                            "default": ""
-                        },
-                        {
                             "attr": "selType",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "newLine": true,
                             "type": "select",
                             "label": "pageQRselType",
                             "default": 0,
@@ -418,7 +425,25 @@
                             ]
                         },
                         {
+                            "attr": "SSIDURLTEL",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "hidden": "data.selType < 1",
+                            "type": "text",
+                            "label": "SSID - URL - TEL",
+                            "default": ""
+                        },
+                        {
                             "type": "select",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "newLine": true,
                             "label": "wlantype",
                             "hidden": "data.selType !== 1",
                             "attr": "wlantype",
@@ -447,6 +472,11 @@
                         },
                         {
                             "attr": "qrPass",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
                             "type": "select",
                             "label": "qrPass",
                             "hidden": "data.selType !== 1",
@@ -471,6 +501,11 @@
                         },
                         {
                             "attr": "wlanhidden",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
                             "type": "checkbox",
                             "label": "wlanhidden",
                             "hidden": "data.selType !== 1",
@@ -478,6 +513,11 @@
                         },
                         {
                             "attr": "setState",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 8,
+                            "xl": 8,
                             "type": "objectId",
                             "label": "Switch",
                             "hidden": "data.selType !== 1",
