@@ -365,11 +365,12 @@
         },
         "pageQR": {
             "type": "panel",
-            "label": "+",
+            "label": "Page QR",
             "items": {
                 "pageQRdata": {
                     "type": "accordion",
                     "label": "pageQRdata",
+                    "titleAttr" : "pageName",
                     "sm": 12,
                     "md": 12,
                     "lg": 12,
