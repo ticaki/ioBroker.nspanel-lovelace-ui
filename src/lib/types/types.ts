@@ -336,7 +336,14 @@ export type ScreenSaverElement = {
 
 type ScreenSaverElementConfig = DataItemsOptions | undefined;
 
-export type IconScaleElement = {
+export type IconScaleElement = IconColorElement | IconSelectElement;
+
+export type IconSelectElement = {
+    valIcon_min: number;
+    valIcon_max: number;
+    valIcon_best?: number;
+};
+export type IconColorElement = {
     val_min: number;
     val_max: number;
     val_best?: number;
@@ -353,11 +360,18 @@ export type IconScaleElement = {
     mode?: 'mixed' | 'hue' | 'cie';
 };
 
-export function isIconScaleElement(F: any): F is IconScaleElement {
-    return F && 'val_min' in (F as IconScaleElement) && 'val_max' in (F as IconScaleElement);
+export function isIconColorScaleElement(F: any): F is IconColorElement {
+    return F && 'val_min' in (F as IconColorElement) && 'val_max' in (F as IconColorElement);
 }
-export function isPartialIconScaleElement(F: any): F is IconScaleElement {
-    return F && ('val_min' in (F as IconScaleElement) || 'val_max' in (F as IconScaleElement));
+export function isPartialIconColorScaleElement(F: any): F is IconColorElement {
+    return F && ('val_min' in (F as IconColorElement) || 'val_max' in (F as IconColorElement));
+}
+
+export function isIconSelectScaleElement(F: any): F is IconSelectElement {
+    return F && 'valIcon_min' in (F as IconSelectElement) && 'valIcon_max' in (F as IconSelectElement);
+}
+export function isPartialSelectColorScaleElement(F: any): F is IconSelectElement {
+    return F && ('valIcon_min' in (F as IconSelectElement) || 'valIcon_max' in (F as IconSelectElement));
 }
 
 export type DataItemstype = DataItemsOptions['type'];

@@ -21,8 +21,10 @@ __export(types_exports, {
   SerialTypeArray: () => SerialTypeArray,
   isEventMethod: () => isEventMethod,
   isEventType: () => isEventType,
-  isIconScaleElement: () => isIconScaleElement,
-  isPartialIconScaleElement: () => isPartialIconScaleElement,
+  isIconColorScaleElement: () => isIconColorScaleElement,
+  isIconSelectScaleElement: () => isIconSelectScaleElement,
+  isPartialIconColorScaleElement: () => isPartialIconColorScaleElement,
+  isPartialSelectColorScaleElement: () => isPartialSelectColorScaleElement,
   isPopupType: () => isPopupType,
   isValueDateFormat: () => isValueDateFormat
 });
@@ -79,11 +81,17 @@ const SerialTypeArray = [
 function isValueDateFormat(F) {
   return F && typeof F === "object" && F.local !== void 0 && F.format !== void 0;
 }
-function isIconScaleElement(F) {
+function isIconColorScaleElement(F) {
   return F && "val_min" in F && "val_max" in F;
 }
-function isPartialIconScaleElement(F) {
+function isPartialIconColorScaleElement(F) {
   return F && ("val_min" in F || "val_max" in F);
+}
+function isIconSelectScaleElement(F) {
+  return F && "valIcon_min" in F && "valIcon_max" in F;
+}
+function isPartialSelectColorScaleElement(F) {
+  return F && ("valIcon_min" in F || "valIcon_max" in F);
 }
 function isEventType(F) {
   return ["event"].indexOf(F) != -1;
@@ -93,8 +101,10 @@ function isEventType(F) {
   SerialTypeArray,
   isEventMethod,
   isEventType,
-  isIconScaleElement,
-  isPartialIconScaleElement,
+  isIconColorScaleElement,
+  isIconSelectScaleElement,
+  isPartialIconColorScaleElement,
+  isPartialSelectColorScaleElement,
   isPopupType,
   isValueDateFormat
 });

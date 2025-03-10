@@ -16,10 +16,10 @@ import { Color, type RGB } from '../const/Color';
 import { Icons } from './icon_mapping';
 import type { ChangeTypeOfKeys } from '../types/pages';
 import {
-    isIconScaleElement,
-    isPartialIconScaleElement,
+    type IconColorElement,
+    isIconColorScaleElement,
+    isPartialIconColorScaleElement,
     isValueDateFormat,
-    type IconScaleElement,
 } from '../types/types';
 
 export const messageItemDefault: MessageItem = {
@@ -280,7 +280,7 @@ export async function getIconEntryValue(
         const textFalse = (i.false && i.false.text && (await getValueEntryString(i.false.text))) || null;
         if (typeof on === 'number' && textFalse !== null) {
             const scale = i.scale && (await i.scale.getObject());
-            if (isPartialIconScaleElement(scale)) {
+            if (isPartialIconColorScaleElement(scale)) {
                 if ((scale.val_min && scale.val_min >= on) || (scale.val_max && scale.val_max <= on)) {
                     return text;
                 }
@@ -296,7 +296,7 @@ export async function getIconEntryValue(
     const scaleM = i.scale && (await i.scale.getObject());
 
     if (typeof on === 'boolean') {
-        const scale = isPartialIconScaleElement(scaleM) ? scaleM : { val_min: 0, val_max: 1 };
+        const scale = isPartialIconColorScaleElement(scaleM) ? scaleM : { val_min: 0, val_max: 1 };
 
         if (scale.val_min === 1 && scale.val_max === 0) {
             on = !on;
@@ -310,7 +310,7 @@ export async function getIconEntryValue(
             );
         }
     } else if (typeof on === 'number') {
-        const scale = isPartialIconScaleElement(scaleM) ? scaleM : { val_min: 0, val_max: 100 };
+        const scale = isPartialIconColorScaleElement(scaleM) ? scaleM : { val_min: 0, val_max: 100 };
         const swap = scale.val_min > scale.val_max;
         const min = swap ? scale.val_max : scale.val_min;
         const max = swap ? scale.val_min : scale.val_max;
@@ -355,7 +355,7 @@ export async function getIconEntryColor(
         const color = i.true && i.true.color && (await i.true.color.getRGBDec());
         const scale = i.scale && (await i.scale.getObject());
         if (scale) {
-            if (isIconScaleElement(scale)) {
+            if (isIconColorScaleElement(scale)) {
                 if (scale.val_min === 1 && scale.val_max === 0) {
                     value = !value;
                 }
@@ -379,7 +379,7 @@ export async function getIconEntryColor(
         const scale = i.scale && (await i.scale.getObject());
         if (cto && cfrom && scale) {
             let rColor: RGB = cto;
-            if (isIconScaleElement(scale)) {
+            if (isIconColorScaleElement(scale)) {
                 let vMin = scale.val_min < value ? scale.val_min : value;
                 let vMax = scale.val_max > value ? scale.val_max : value;
                 if (vMax < vMin) {
@@ -418,7 +418,7 @@ export async function getIconEntryColor(
                     rColor = func(cfrom, cto, factor);
                 }
                 return String(Color.rgb_dec565(rColor));
-            } else if (isPartialIconScaleElement(scale)) {
+            } else if (isPartialIconColorScaleElement(scale)) {
                 if ((scale.val_min && scale.val_min >= value) || (scale.val_max && scale.val_max <= value)) {
                     return String(Color.rgb_dec565(cto));
                 }
@@ -438,7 +438,7 @@ export async function getIconEntryColor(
     return String(Color.rgb_dec565(def));
 }
 
-function getLogFromIconScale(i: IconScaleElement, factor: number): number {
+function getLogFromIconScale(i: IconColorElement, factor: number): number {
     if (i.log10 !== undefined) {
         if (i.log10 === 'max') {
             factor = factor * (90 / 10) + 1;

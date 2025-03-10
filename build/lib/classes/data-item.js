@@ -216,7 +216,7 @@ class Dataitem extends import_library.BaseClass {
   async getIconScale() {
     const value = await this.getObject();
     if (value) {
-      if (NSPanel.isIconScaleElement(value)) {
+      if (NSPanel.isIconColorScaleElement(value)) {
         return value;
       }
     }

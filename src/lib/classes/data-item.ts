@@ -194,7 +194,7 @@ export class Dataitem extends BaseClass {
     async getIconScale(): Promise<NSPanel.IconScaleElement | null> {
         const value = await this.getObject();
         if (value) {
-            if (NSPanel.isIconScaleElement(value)) {
+            if (NSPanel.isIconColorScaleElement(value)) {
                 return value;
             }
         }
