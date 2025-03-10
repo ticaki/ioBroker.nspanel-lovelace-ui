@@ -23,12 +23,17 @@ import { PageAlarm } from '../pages/pageAlarm';
 import { PageChart } from '../pages/pageChart';
 import { PageLChart } from '../pages/pageLChart';
 import { PageQR } from '../pages/pageQR';
+import { Dataitem } from '../classes/data-item';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
     controller: Controller;
     topic: string;
     name: string;
+    buttons: {
+        left: Types.ConfigButtonFunction;
+        right: Types.ConfigButtonFunction;
+    } | null;
     friendlyName?: string;
     pages: PageConfigAll[];
     navigation: NavigationConfig['navigationConfig'];
@@ -65,6 +70,7 @@ export class Panel extends BaseClass {
     private _isOnline: boolean = false;
     public lastCard: string = '';
     public notifyIndex: number = -1;
+    readonly buttons: panelConfigPartial['buttons'];
     readonly navigation: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
     readonly controller: Controller;
@@ -174,7 +180,7 @@ export class Panel extends BaseClass {
             topic: options.topic,
         });
         this.timeout = options.timeout || 15;
-
+        this.buttons = options.buttons;
         this.CustomFormat = options.CustomFormat ?? '';
         this.config = options.config;
         this.format = Object.assign(DefaultOptions.format, options.format);
@@ -505,6 +511,7 @@ export class Panel extends BaseClass {
                 obj.noTrigger ? undefined : this.onInternalCommand,
             );
         }
+
         for (const page of this.pages) {
             if (page && page.name) {
                 this.log.info(
@@ -575,6 +582,37 @@ export class Panel extends BaseClass {
             genericStateObjects.panel.panels.cmd.screenSaverRotationTime,
         );
 
+        if (this.buttons) {
+            for (const b in this.buttons) {
+                const k = b as keyof typeof this.buttons;
+                const button = this.buttons[k];
+                if (button && this.screenSaver) {
+                    switch (button.mode) {
+                        case 'page': {
+                            break;
+                        }
+                        case 'switch':
+                        case 'button': {
+                            if (typeof button.state === 'string') {
+                                button.state = new Dataitem(
+                                    this.adapter,
+                                    {
+                                        type: 'state',
+                                        dp: button.state,
+                                    },
+                                    this.screenSaver,
+                                    this.statesControler,
+                                );
+                                if (!(await button.state.isValidAndInit())) {
+                                    this.buttons[k] = null;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
@@ -1238,12 +1276,11 @@ export class Panel extends BaseClass {
                 break;
             }
             case 'button1': {
-                await this.library.writedp(`panels.${this.name}.buttons.left`, true, null, true, true);
-
+                await this.onDetachButtonEvent('left');
                 break;
             }
             case 'button2': {
-                await this.library.writedp(`panels.${this.name}.buttons.right`, true, null, true, true);
+                await this.onDetachButtonEvent('right');
                 break;
             }
             default: {
@@ -1252,6 +1289,40 @@ export class Panel extends BaseClass {
         }
     }
 
+    onDetachButtonEvent = async (button: 'left' | 'right'): Promise<void> => {
+        const action: Types.ConfigButtonFunction = this.buttons
+            ? button === 'left'
+                ? this.buttons.left
+                : this.buttons.right
+            : null;
+        await this.library.writedp(`panels.${this.name}.buttons.${button}`, false, null, true, true);
+        if (action) {
+            switch (action.mode) {
+                case 'button': {
+                    if (typeof action.state === 'string') {
+                        this.log.error(`Button ${button} has no state!`);
+                        return;
+                    }
+                    await action.state.setStateTrue();
+                    break;
+                }
+                case 'page': {
+                    if (typeof action.page === 'string') {
+                        this.navigation.setTargetPageByName(action.page);
+                    }
+                    break;
+                }
+                case 'switch': {
+                    if (typeof action.state === 'string') {
+                        this.log.error(`Button ${button} has no state!`);
+                        return;
+                    }
+                    await action.state.setStateFlip();
+                    break;
+                }
+            }
+        }
+    };
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (!id.startsWith(this.name)) {
             return null;

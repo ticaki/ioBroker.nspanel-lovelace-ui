@@ -50,6 +50,7 @@ var import_pageAlarm = require("../pages/pageAlarm");
 var import_pageChart = require("../pages/pageChart");
 var import_pageLChart = require("../pages/pageLChart");
 var import_pageQR = require("../pages/pageQR");
+var import_data_item = require("../classes/data-item");
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -70,6 +71,7 @@ class Panel extends import_library.BaseClass {
   _isOnline = false;
   lastCard = "";
   notifyIndex = -1;
+  buttons;
   navigation;
   format;
   controller;
@@ -167,6 +169,7 @@ class Panel extends import_library.BaseClass {
       topic: options.topic
     });
     this.timeout = options.timeout || 15;
+    this.buttons = options.buttons;
     this.CustomFormat = (_b = options.CustomFormat) != null ? _b : "";
     this.config = options.config;
     this.format = Object.assign(DefaultOptions.format, options.format);
@@ -541,6 +544,37 @@ class Panel extends import_library.BaseClass {
       temp,
       import_definition.genericStateObjects.panel.panels.cmd.screenSaverRotationTime
     );
+    if (this.buttons) {
+      for (const b in this.buttons) {
+        const k = b;
+        const button = this.buttons[k];
+        if (button && this.screenSaver) {
+          switch (button.mode) {
+            case "page": {
+              break;
+            }
+            case "switch":
+            case "button": {
+              if (typeof button.state === "string") {
+                button.state = new import_data_item.Dataitem(
+                  this.adapter,
+                  {
+                    type: "state",
+                    dp: button.state
+                  },
+                  this.screenSaver,
+                  this.statesControler
+                );
+                if (!await button.state.isValidAndInit()) {
+                  this.buttons[k] = null;
+                }
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconLeft`);
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
@@ -1149,11 +1183,11 @@ class Panel extends import_library.BaseClass {
         break;
       }
       case "button1": {
-        await this.library.writedp(`panels.${this.name}.buttons.left`, true, null, true, true);
+        await this.onDetachButtonEvent("left");
         break;
       }
       case "button2": {
-        await this.library.writedp(`panels.${this.name}.buttons.right`, true, null, true, true);
+        await this.onDetachButtonEvent("right");
         break;
       }
       default: {
@@ -1161,6 +1195,36 @@ class Panel extends import_library.BaseClass {
       }
     }
   }
+  onDetachButtonEvent = async (button) => {
+    const action = this.buttons ? button === "left" ? this.buttons.left : this.buttons.right : null;
+    await this.library.writedp(`panels.${this.name}.buttons.${button}`, false, null, true, true);
+    if (action) {
+      switch (action.mode) {
+        case "button": {
+          if (typeof action.state === "string") {
+            this.log.error(`Button ${button} has no state!`);
+            return;
+          }
+          await action.state.setStateTrue();
+          break;
+        }
+        case "page": {
+          if (typeof action.page === "string") {
+            this.navigation.setTargetPageByName(action.page);
+          }
+          break;
+        }
+        case "switch": {
+          if (typeof action.state === "string") {
+            this.log.error(`Button ${button} has no state!`);
+            return;
+          }
+          await action.state.setStateFlip();
+          break;
+        }
+      }
+    }
+  };
   onInternalCommand = async (id, state) => {
     if (!id.startsWith(this.name)) {
       return null;

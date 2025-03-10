@@ -44,10 +44,7 @@ declare namespace ConfigManager {
          */
         states: Partial<Record<ioBrokerRoles, true | null>>[];
     }
-    export type PanelConfigManager = Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
-        navigation: NavigationItemConfig[];
-        pages: PageBaseConfig[];
-    };
+
     type ioBrokerRoles =
         | 'value.rgb'
         | 'button.open.blind'
@@ -114,6 +111,7 @@ declare namespace ConfigManager {
         | 'sensor.door';
 }
 declare namespace ScriptConfig {
+    import type { ConfigButtonFunction } from '../types/types';
     export type PopupType =
         | 'popupFan'
         | 'popupInSel'
@@ -475,26 +473,6 @@ declare namespace ScriptConfig {
         timeNight: string | undefined;
     };
 
-    export type ConfigButtonFunction = {
-        mode: 'page' | 'toggle' | 'set' | null;
-        page:
-            | PageThermo
-            | PageMedia
-            | PageAlarm
-            | PageQR
-            | PageEntities
-            | PageGrid
-            | PageGrid2
-            | PagePower
-            | PageChart
-            | PageUnlock
-            | null;
-        entity: string | null;
-        setValue: string | number | boolean | null;
-        setOn?: { dp: string; val: iobJS.StateValue };
-        setOff?: { dp: string; val: iobJS.StateValue };
-    };
-
     export type Config = {
         version: string;
         panelName?: string;
@@ -524,8 +502,23 @@ declare namespace ScriptConfig {
         defaultBackgroundColor: RGB;
         pages: PageType[];
         subPages: PageType[];
-        button1: ConfigButtonFunction;
-        button2: ConfigButtonFunction;
+        /* Represents the configuration for a button function.
+         * This type can be one of the following modes:
+         * - 'page': Navigates to a specified page.
+         * - 'toggle': Toggles the state of a datapoint.
+         * - 'push': Triggers a button datapoint with a true value.
+         * - null: Represents no configuration.
+         */
+        buttonLeft: ConfigButtonFunction;
+        /**
+         * Represents the configuration for a button function.
+         * This type can be one of the following modes:
+         * - 'page': Navigates to a specified page.
+         * - 'toggle': Toggles the state of a datapoint.
+         * - 'push': Triggers a button datapoint with a true value.
+         * - null: Represents no configuration.
+         */
+        buttonRight: ConfigButtonFunction;
         nativePageItems?: any[];
         navigation?: NavigationItemConfig[];
         advancedOptions?: {

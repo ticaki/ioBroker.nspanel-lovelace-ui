@@ -28,6 +28,34 @@ Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
 
 Fragen gerne im [Forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)
 
+---
+
+Das hat sich im Skript geändert button1 und button2 gibts nicht mehr - für mehr siehe beispiel skript
+```
+    /**
+     * Represents the configuration for a button function.
+     * This type can be one of the following modes:
+     * - 'page': Navigates to a specified page.
+     * - 'switch': Toggles the state of a datapoint.
+     * - 'button': Triggers a button datapoint with a true value.
+     * - null: Represents no configuration.
+     */
+        buttonLeft: ConfigButtonFunction;
+        /**
+     * Represents the configuration for a button function.
+     * This type can be one of the following modes:
+     * - 'page': Navigates to a specified page.
+     * - 'switch': Toggles the state of a datapoint.
+     * - 'button': Triggers a button datapoint with a true value.
+     * - null: Represents no configuration.
+     */
+        buttonRight: ConfigButtonFunction;
+```
+
+
+
+---
+
 Hab die Möglichkeit eingefügt die Bildschirmschoner roation über States zu aktiviern. `0=off`, `min=3s`, `max=3600s` 
 Damit kann man aktuell überall mehr Items hinzufügen und die werden dann rotiert. 
 

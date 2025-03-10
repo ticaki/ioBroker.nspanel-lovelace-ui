@@ -1,3 +1,5 @@
+import type { ConfigButtonFunction } from '../types/types';
+
 export const CustomTemplates: ConfigManager.CustomTemplate[] = [
     {
         device: 'shutter',
@@ -12,6 +14,20 @@ export const CustomTemplates: ConfigManager.CustomTemplate[] = [
         ],
     },
 ];
+
+export function isButton(F: any): F is ConfigButtonFunction {
+    if (F === undefined) {
+        return false;
+    }
+    if (F === null) {
+        return true;
+    }
+
+    return (
+        'mode' in F &&
+        ((F.mode === 'page' && F.page) || ('state' in F && (F.mode === 'switch' || F.mode === 'button') && F.state))
+    );
+}
 
 /**
  * Wenn ein State angelegt wird muss gleich ein Namen für das der Device und das Device selbst angegeben werden.
@@ -70,22 +86,8 @@ export const defaultConfig: ScriptConfig.Config = {
     },
     pages: [],
     subPages: [],
-    button1: {
-        mode: null,
-        page: null,
-        entity: null,
-        setValue: null,
-        setOn: undefined,
-        setOff: undefined,
-    },
-    button2: {
-        mode: null,
-        page: null,
-        entity: null,
-        setValue: null,
-        setOn: undefined,
-        setOff: undefined,
-    },
+    buttonLeft: null,
+    buttonRight: null,
     leftScreensaverEntity: [],
     indicatorScreensaverEntity: [],
     mrIcon1ScreensaverEntity: {

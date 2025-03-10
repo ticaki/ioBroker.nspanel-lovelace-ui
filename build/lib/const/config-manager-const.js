@@ -20,6 +20,7 @@ var config_manager_const_exports = {};
 __export(config_manager_const_exports, {
   CustomTemplates: () => CustomTemplates,
   defaultConfig: () => defaultConfig,
+  isButton: () => isButton,
   isConfig: () => isConfig,
   requiredFeatureDatapoints: () => requiredFeatureDatapoints,
   requiredScriptDataPoints: () => requiredScriptDataPoints
@@ -39,6 +40,15 @@ const CustomTemplates = [
     ]
   }
 ];
+function isButton(F) {
+  if (F === void 0) {
+    return false;
+  }
+  if (F === null) {
+    return true;
+  }
+  return "mode" in F && (F.mode === "page" && F.page || "state" in F && (F.mode === "switch" || F.mode === "button") && F.state);
+}
 function isConfig(F) {
   if (F === void 0) {
     return false;
@@ -87,22 +97,8 @@ const defaultConfig = {
   },
   pages: [],
   subPages: [],
-  button1: {
-    mode: null,
-    page: null,
-    entity: null,
-    setValue: null,
-    setOn: void 0,
-    setOff: void 0
-  },
-  button2: {
-    mode: null,
-    page: null,
-    entity: null,
-    setValue: null,
-    setOn: void 0,
-    setOff: void 0
-  },
+  buttonLeft: null,
+  buttonRight: null,
   leftScreensaverEntity: [],
   indicatorScreensaverEntity: [],
   mrIcon1ScreensaverEntity: {
@@ -557,6 +553,7 @@ const requiredFeatureDatapoints = {
 0 && (module.exports = {
   CustomTemplates,
   defaultConfig,
+  isButton,
   isConfig,
   requiredFeatureDatapoints,
   requiredScriptDataPoints

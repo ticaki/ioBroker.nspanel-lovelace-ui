@@ -6,6 +6,7 @@ import { Color, type RGB } from '../const/Color';
 import type * as pages from '../types/pages';
 import {
     defaultConfig,
+    isButton,
     isConfig,
     requiredFeatureDatapoints,
     requiredScriptDataPoints,
@@ -24,7 +25,7 @@ export class ConfigManager extends BaseClass {
     colorDefault: RGB = Color.Off;
     dontWrite: boolean = false;
 
-    readonly scriptVersion = '0.5.0';
+    readonly scriptVersion = '0.6.0';
     readonly breakingVersion = '0.2.0';
 
     statesController: StatesControler | undefined;
@@ -53,7 +54,12 @@ export class ConfigManager extends BaseClass {
      */
     async setScriptConfig(configuration: any): Promise<{
         messages: string[];
-        panelConfig: ConfigManager.PanelConfigManager | undefined;
+        panelConfig:
+            | (Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
+                  navigation: NavigationItemConfig[];
+                  pages: pages.PageBaseConfig[];
+              })
+            | undefined;
     }> {
         configuration.advancedOptions = Object.assign(
             defaultConfig.advancedOptions || {},
@@ -105,7 +111,10 @@ export class ConfigManager extends BaseClass {
         } else {
             messages.push(`Panel for Topic: ${config.panelTopic} Script version ${config.version} is correct!`);
         }
-        let panelConfig: ConfigManager.PanelConfigManager = { pages: [], navigation: [] };
+        let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
+            navigation: NavigationItemConfig[];
+            pages: pages.PageBaseConfig[];
+        } = { pages: [], navigation: [] };
 
         if (!config.panelTopic) {
             this.log.error(`Required field panelTopic is missing in ${config.panelName || 'unknown'}!`);
@@ -177,18 +186,23 @@ export class ConfigManager extends BaseClass {
                 }
             }
             if (panelConfig.navigation.length > 1) {
+                panelConfig.navigation = panelConfig.navigation.filter(item => item != null);
                 panelConfig.navigation = panelConfig.navigation.map((item, index, array) => {
                     if (index === 0) {
                         return {
-                            ...item,
+                            ...item!,
                             left: { single: array[array.length - 1]!.name },
                             right: { single: array[index + 1]!.name },
                         };
                     } else if (index === array.length - 1) {
-                        return { ...item, left: { single: array[index - 1]!.name }, right: { single: array[0]!.name } };
+                        return {
+                            ...item!,
+                            left: { single: array[index - 1]!.name },
+                            right: { single: array[0]!.name },
+                        };
                     }
                     return {
-                        ...item,
+                        ...item!,
                         left: { single: array[index - 1]!.name },
                         right: { single: array[index + 1]!.name },
                     };
@@ -225,7 +239,21 @@ export class ConfigManager extends BaseClass {
                 (a, p) => a && panelConfig.navigation.findIndex(b => b && a && b.name === a.name) === p,
             );
         }
-        //this.log.debug(`panelConfig: ${JSON.stringify(panelConfig)}`);
+        // buttons
+        if (isButton(config.buttonLeft)) {
+            panelConfig.buttons = panelConfig.buttons || { left: null, right: null };
+            panelConfig.buttons.left = config.buttonLeft;
+        } else {
+            messages.push(`Button left wrong configured!`);
+            this.log.warn(messages[messages.length - 1]);
+        }
+        if (isButton(config.buttonRight)) {
+            panelConfig.buttons = panelConfig.buttons || { left: null, right: null };
+            panelConfig.buttons.right = config.buttonRight;
+        } else {
+            messages.push(`Button right wrong configured!`);
+            this.log.warn(messages[messages.length - 1]);
+        }
 
         const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
 

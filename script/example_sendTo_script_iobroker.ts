@@ -88,17 +88,17 @@ async function configuration (): Promise<void> {
          ***********************************************************************/
 
 
-         favoritScreensaverEntity: [
+        favoritScreensaverEntity: [
             {
                 type: 'template',
                 template: 'text.accuweather.favorit',
                 dpInit: `/^accuweather\\.0.+/`,
                 modeScr: 'favorit',
             }
-         ],
-         alternateScreensaverEntity: [
+        ],
+        alternateScreensaverEntity: [
             // only used with alternate Screensaver
-         ],
+        ],
 
         indicatorScreensaverEntity: [
             // indicatorScreensaverEntity 1 (only Advanced Screensaver)
@@ -392,29 +392,22 @@ async function configuration (): Promise<void> {
         //-------EN: Start Settings for Hardware Button, if used in software (Rule2) --------------------------------------
         // DE: Konfiguration des linken Schalters des NSPanels
         // EN: Configuration of the left switch of the NSPanel
-        button1: {
+        buttonLeft: {
             // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'toggle', 'set' - Wenn nicht definiert --> mode: null
             // EN: Possible values if Rule2 defined: 'page', 'toggle', 'set' - If not defined --> mode: null
-            mode: null,
+            mode: 'page',
             // DE: Zielpage - Verwendet wenn mode = page
             // EN: Target page - Used if mode = page
-            page: null,
-            // DE: Zielentity - Verwendet wenn mode = set oder toggle
-            // EN: Target entity - Used if mode = set or toggle
-            entity: null,
-            // DE: Zielwert - Verwendet wenn mode = set
-            // EN: Target value - Used if mode = set
-            setValue: null
+            page: 'main',
         },
 
         // DE: Konfiguration des rechten Schalters des NSPanels
         // EN: Configuration of the right switch of the NSPanel
-        button2: {
-            mode: null,
-            page: null,
-            entity: null,
-            setValue: null
-        },
+        buttonRight: null/*{
+            mode: 'toggle',
+            page: '0_userdata.0.example',
+            
+        }*/,
 
         //--------- DE: Ende - Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
         //--------- EN: End - settings for hardware button if they are used in software (Rule2) ------------------------------
@@ -448,7 +441,7 @@ async function configuration (): Promise<void> {
     log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version}))
 }
 
-const version = '0.5.0';
+const version = '0.6.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -916,25 +909,53 @@ declare namespace ScriptConfig {
         timeNight: string | undefined;
     };
 
-    export type ConfigButtonFunction = {
-        mode: 'page' | 'toggle' | 'set' | null;
-        page:
-        | PageThermo
-        | PageMedia
-        | PageAlarm
-        | PageQR
-        | PageEntities
-        | PageGrid
-        | PageGrid2
-        | PagePower
-        | PageChart
-        | PageUnlock
+    /**
+     * Represents the configuration for a button function.
+     * This type can be one of the following modes:
+     * - 'page': Navigates to a specified page.
+     * - 'switch': Toggles the state of a datapoint.
+     * - 'button': Triggers a button datapoint with a true value.
+     * - null: Represents no configuration.
+     */
+    export type ConfigButtonFunction =
+        | {
+            /**
+             * Mode for navigating to a page.
+             *
+             */
+            mode: 'page';
+            /**
+             * The page to navigate to.
+             *
+             * @optional
+             */
+            page?: string;
+        }
+        | {
+            /**
+             * Mode for toggling a datapoint.
+             *
+             */
+            mode: 'switch';
+            /**
+             * The state of the datapoint to toggle.
+             *
+             */
+            state: string;
+        }
+        | {
+            /**
+             * Mode for triggering a button datapoint.
+             *
+             */
+            mode: 'button';
+            /**
+             * The state of the button datapoint to trigger.
+             *
+             */
+            state: string;
+        }
         | null;
-        entity: string | null;
-        setValue: string | number | boolean | null;
-        setOn?: {dp: string; val: iobJS.StateValue};
-        setOff?: {dp: string; val: iobJS.StateValue};
-    };
 
     export type Config = {
         version?: string;
@@ -970,8 +991,24 @@ declare namespace ScriptConfig {
         defaultBackgroundColor: RGB;
         pages: PageType[];
         subPages: PageType[];
-        button1: ConfigButtonFunction;
-        button2: ConfigButtonFunction;
+        /**
+     * Represents the configuration for a button function.
+     * This type can be one of the following modes:
+     * - 'page': Navigates to a specified page.
+     * - 'switch': Toggles the state of a datapoint.
+     * - 'button': Triggers a button datapoint with a true value.
+     * - null: Represents no configuration.
+     */
+        buttonLeft: ConfigButtonFunction;
+        /**
+     * Represents the configuration for a button function.
+     * This type can be one of the following modes:
+     * - 'page': Navigates to a specified page.
+     * - 'switch': Toggles the state of a datapoint.
+     * - 'button': Triggers a button datapoint with a true value.
+     * - null: Represents no configuration.
+     */
+        buttonRight: ConfigButtonFunction;
         nativePages?: any[];
         navigation?: NavigationItemConfig[];
         advancedOptions?: {
@@ -998,65 +1035,65 @@ declare namespace ScriptConfig {
         ]
         | [];
     export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
-    export type ScreenSaverElement = { type: ScreenSaverType } & (
+    export type ScreenSaverElement = {type: ScreenSaverType} & (
         | {
-              type: 'script';
-              ScreensaverEntity: string;
-              ScreensaverEntityText: string;
-              /**
-               * Value wird mit diesem Factor multipliziert.
-               */
-              ScreensaverEntityFactor?: number;
-              ScreensaverEntityDecimalPlaces?: number;
-              ScreensaverEntityDateFormat?: Intl.DateTimeFormatOptions;
-              ScreensaverEntityIconOn?: string | null;
-              ScreensaverEntityIconOff?: string | null;
-              ScreensaverEntityUnitText?: string;
-              ScreensaverEntityIconColor?: RGB | IconScaleElement | string;
-              ScreensaverEntityOnColor?: RGB;
-              ScreensaverEntityOffColor?: RGB;
-              ScreensaverEntityOnText?: string | null;
-              ScreensaverEntityOffText?: string | null;
-              ScreensaverEntityNaviToPage?: PageType;
-              /**
-               * To show different icons for different values in the screensaver
-               * 
-               * Value is the threshold for the icon. Lower values are first.
-               * Example:
-               * [
-                    {icon: 'sun-thermometer', value:40},
-                    {icon: 'sun-thermometer-outline', value: 35},
-                    {icon: 'thermometer-high', value: 30},
-                    {icon: 'thermometer', value: 25},
-                    {icon: 'thermometer-low', value: 15},
-                    {icon: 'snowflake-alert', value: 2},
-                    {icon: 'snowflake-thermometer', value: -2},
-                    {icon: 'snowflake', value: -10},
-                    ]
-               */
-              ScreensaverEntityIconSelect?: { icon: string; value: number }[] | null;
-          }
-        | { type: 'native'; native: any }
+            type: 'script';
+            ScreensaverEntity: string;
+            ScreensaverEntityText: string;
+            /**
+             * Value wird mit diesem Factor multipliziert.
+             */
+            ScreensaverEntityFactor?: number;
+            ScreensaverEntityDecimalPlaces?: number;
+            ScreensaverEntityDateFormat?: Intl.DateTimeFormatOptions;
+            ScreensaverEntityIconOn?: string | null;
+            ScreensaverEntityIconOff?: string | null;
+            ScreensaverEntityUnitText?: string;
+            ScreensaverEntityIconColor?: RGB | IconScaleElement | string;
+            ScreensaverEntityOnColor?: RGB;
+            ScreensaverEntityOffColor?: RGB;
+            ScreensaverEntityOnText?: string | null;
+            ScreensaverEntityOffText?: string | null;
+            ScreensaverEntityNaviToPage?: PageType;
+            /**
+             * To show different icons for different values in the screensaver
+             * 
+             * Value is the threshold for the icon. Lower values are first.
+             * Example:
+             * [
+                  {icon: 'sun-thermometer', value:40},
+                  {icon: 'sun-thermometer-outline', value: 35},
+                  {icon: 'thermometer-high', value: 30},
+                  {icon: 'thermometer', value: 25},
+                  {icon: 'thermometer-low', value: 15},
+                  {icon: 'snowflake-alert', value: 2},
+                  {icon: 'snowflake-thermometer', value: -2},
+                  {icon: 'snowflake', value: -10},
+                  ]
+             */
+            ScreensaverEntityIconSelect?: {icon: string; value: number}[] | null;
+        }
+        | {type: 'native'; native: any}
         | {
-              type: 'template';
-              template: string;
-              dpInit: string;
-              modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
-          }
+            type: 'template';
+            template: string;
+            dpInit: string;
+            modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
+        }
     );
-    export type ScreenSaverMRElement = { type: ScreenSaverType } & (
+    export type ScreenSaverMRElement = {type: ScreenSaverType} & (
         | {
-              type: 'script';
-              ScreensaverEntity: string | null;
-              ScreensaverEntityIconOn: string | null;
-              ScreensaverEntityIconSelect?: { [key: string]: string } | null | undefined;
-              ScreensaverEntityIconOff: string | null;
-              ScreensaverEntityValue: string | null;
-              ScreensaverEntityValueDecimalPlace: number | null;
-              ScreensaverEntityValueUnit: string | null;
-              ScreensaverEntityOnColor: RGB;
-              ScreensaverEntityOffColor: RGB;
-          }  
+            type: 'script';
+            ScreensaverEntity: string | null;
+            ScreensaverEntityIconOn: string | null;
+            ScreensaverEntityIconSelect?: {[key: string]: string} | null | undefined;
+            ScreensaverEntityIconOff: string | null;
+            ScreensaverEntityValue: string | null;
+            ScreensaverEntityValueDecimalPlace: number | null;
+            ScreensaverEntityValueUnit: string | null;
+            ScreensaverEntityOnColor: RGB;
+            ScreensaverEntityOffColor: RGB;
+        }
     );
 
     type ScreenSaverType = 'template' | 'script' | 'native';

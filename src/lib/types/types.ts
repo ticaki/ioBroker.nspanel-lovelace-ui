@@ -475,6 +475,52 @@ export type StateValue = ioBroker.StateValue | object;
 export type TasmotaIncomingTopics = 'stat/POWER2' | 'stat/POWER1' | 'stat/STATUS0';
 
 /**
+ * Represents the configuration for a button function.
+ * This type can be one of the following modes:
+ * - 'page': Navigates to a specified page.
+ * - 'switch': Toggles the state of a datapoint.
+ * - 'button': Triggers a button datapoint with a true value.
+ * - null: Represents no configuration.
+ */
+export type ConfigButtonFunction =
+    | {
+          /**
+           * Mode for navigating to a page.
+           *
+           */
+          mode: 'page';
+          /**
+           * The page to navigate to.
+           *
+           */
+          page: string;
+      }
+    | {
+          /**
+           * Mode for toggling a datapoint.
+           *
+           */
+          mode: 'switch';
+          /**
+           * The state of the datapoint to toggle.
+           *
+           */
+          state: string | dataItem.Dataitem;
+      }
+    | {
+          /**
+           * Mode for triggering a button datapoint.
+           *
+           */
+          mode: 'button';
+          /**
+           * The state of the button datapoint to trigger.
+           *
+           */
+          state: string | dataItem.Dataitem;
+      }
+    | null;
+/**
  * Json to Status0 from Tasmota
  */
 export type STATUS0 = {

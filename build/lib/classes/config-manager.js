@@ -34,7 +34,7 @@ class ConfigManager extends import_library.BaseClass {
   colorOff = import_Color.Color.Off;
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
-  scriptVersion = "0.5.0";
+  scriptVersion = "0.6.0";
   breakingVersion = "0.2.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -158,6 +158,7 @@ class ConfigManager extends import_library.BaseClass {
         }
       }
       if (panelConfig.navigation.length > 1) {
+        panelConfig.navigation = panelConfig.navigation.filter((item) => item != null);
         panelConfig.navigation = panelConfig.navigation.map((item, index, array) => {
           if (index === 0) {
             return {
@@ -166,7 +167,11 @@ class ConfigManager extends import_library.BaseClass {
               right: { single: array[index + 1].name }
             };
           } else if (index === array.length - 1) {
-            return { ...item, left: { single: array[index - 1].name }, right: { single: array[0].name } };
+            return {
+              ...item,
+              left: { single: array[index - 1].name },
+              right: { single: array[0].name }
+            };
           }
           return {
             ...item,
@@ -202,6 +207,20 @@ class ConfigManager extends import_library.BaseClass {
       panelConfig.navigation = panelConfig.navigation.filter(
         (a, p) => a && panelConfig.navigation.findIndex((b) => b && a && b.name === a.name) === p
       );
+    }
+    if ((0, import_config_manager_const.isButton)(config.buttonLeft)) {
+      panelConfig.buttons = panelConfig.buttons || { left: null, right: null };
+      panelConfig.buttons.left = config.buttonLeft;
+    } else {
+      messages.push(`Button left wrong configured!`);
+      this.log.warn(messages[messages.length - 1]);
+    }
+    if ((0, import_config_manager_const.isButton)(config.buttonRight)) {
+      panelConfig.buttons = panelConfig.buttons || { left: null, right: null };
+      panelConfig.buttons.right = config.buttonRight;
+    } else {
+      messages.push(`Button right wrong configured!`);
+      this.log.warn(messages[messages.length - 1]);
     }
     const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
     if (obj && !this.dontWrite) {
