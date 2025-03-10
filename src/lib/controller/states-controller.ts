@@ -261,7 +261,6 @@ export class StatesControler extends BaseClass {
             if (this.unload) {
                 return;
             }
-            this.intervalObjectDatabase = undefined;
             this.objectDatabase = {};
         }, 1800000);
     }
@@ -396,13 +395,13 @@ export class StatesControler extends BaseClass {
                 continue;
             }
             if (!entry.subscribed.some(a => a)) {
+                entry.subscribed[index] = true;
                 await this.adapter.subscribeForeignStatesAsync(id);
                 const state = await this.adapter.getForeignStateAsync(id);
                 if (state) {
                     entry.state = state;
                 }
             }
-            entry.subscribed[index] = true;
         }
     }
 
@@ -442,7 +441,7 @@ export class StatesControler extends BaseClass {
                 return state.val ?? null;
             }
         } catch (e: any) {
-            this.log.error(`Error 1004: ${e.replaceAll('Error: ', '')}`);
+            this.log.error(`Error 1004: ${typeof e === 'string' ? e.replaceAll('Error: ', '') : e}`);
         }
         return null;
     }

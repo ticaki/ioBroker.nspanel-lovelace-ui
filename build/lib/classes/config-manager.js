@@ -1770,7 +1770,7 @@ class ConfigManager extends import_library.BaseClass {
     if (!result.data.entity1) {
       throw new Error("Invalid data");
     }
-    result.data.entity2 = result.data.entity1;
+    result.data.entity2 = this.library.cloneGenericObject(result.data.entity1);
     if (mode === "indicator") {
       result.type = "button";
     }
@@ -1876,8 +1876,8 @@ class ConfigManager extends import_library.BaseClass {
     throw new Error("Invalid data");
   }
   async getFieldAsDataItemConfig(possibleId, isTrigger = false) {
-    const state = import_Color.Color.isScriptRGB(possibleId) || possibleId === "" || possibleId.endsWith(".") ? void 0 : await this.adapter.getForeignStateAsync(possibleId);
-    if (!import_Color.Color.isScriptRGB(possibleId) && state !== void 0 && state !== null) {
+    const state = import_Color.Color.isScriptRGB(possibleId) || possibleId === "" || possibleId.endsWith(".") ? false : await this.existsState(possibleId);
+    if (!import_Color.Color.isScriptRGB(possibleId) && state) {
       if (isTrigger) {
         return { type: "triggered", dp: possibleId };
       }
@@ -1902,10 +1902,10 @@ class ConfigManager extends import_library.BaseClass {
     return void 0;
   }
   async existsState(id) {
-    if (!id) {
+    if (!id || id.endsWith(".")) {
       return false;
     }
-    return await this.adapter.getForeignStateAsync(id) !== null;
+    return await this.adapter.getForeignStateAsync(id) != null;
   }
 }
 function isIconScaleElement(obj) {

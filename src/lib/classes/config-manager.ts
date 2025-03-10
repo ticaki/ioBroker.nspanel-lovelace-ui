@@ -2095,7 +2095,7 @@ export class ConfigManager extends BaseClass {
         if (!result.data.entity1) {
             throw new Error('Invalid data');
         }
-        result.data.entity2 = result.data.entity1;
+        result.data.entity2 = this.library.cloneGenericObject(result.data.entity1);
 
         if (mode === 'indicator') {
             // @ts-expect-error ignore this button has all propertys of text
@@ -2223,10 +2223,10 @@ export class ConfigManager extends BaseClass {
     ): Promise<Types.DataItemsOptions> {
         const state =
             Color.isScriptRGB(possibleId) || possibleId === '' || possibleId.endsWith('.')
-                ? undefined
-                : await this.adapter.getForeignStateAsync(possibleId);
+                ? false
+                : await this.existsState(possibleId);
 
-        if (!Color.isScriptRGB(possibleId) && state !== undefined && state !== null) {
+        if (!Color.isScriptRGB(possibleId) && state) {
             if (isTrigger) {
                 return { type: 'triggered', dp: possibleId };
             }
@@ -2256,10 +2256,10 @@ export class ConfigManager extends BaseClass {
         return undefined;
     }
     async existsState(id: string): Promise<boolean> {
-        if (!id) {
+        if (!id || id.endsWith('.')) {
             return false;
         }
-        return (await this.adapter.getForeignStateAsync(id)) !== null;
+        return (await this.adapter.getForeignStateAsync(id)) != null;
     }
 }
 

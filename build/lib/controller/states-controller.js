@@ -225,7 +225,6 @@ class StatesControler extends import_library.BaseClass {
       if (this.unload) {
         return;
       }
-      this.intervalObjectDatabase = void 0;
       this.objectDatabase = {};
     }, 18e5);
   }
@@ -347,13 +346,13 @@ class StatesControler extends import_library.BaseClass {
         continue;
       }
       if (!entry.subscribed.some((a) => a)) {
+        entry.subscribed[index] = true;
         await this.adapter.subscribeForeignStatesAsync(id);
         const state = await this.adapter.getForeignStateAsync(id);
         if (state) {
           entry.state = state;
         }
       }
-      entry.subscribed[index] = true;
     }
   }
   /**
@@ -392,7 +391,7 @@ class StatesControler extends import_library.BaseClass {
         return (_a = state.val) != null ? _a : null;
       }
     } catch (e) {
-      this.log.error(`Error 1004: ${e.replaceAll("Error: ", "")}`);
+      this.log.error(`Error 1004: ${typeof e === "string" ? e.replaceAll("Error: ", "") : e}`);
     }
     return null;
   }
