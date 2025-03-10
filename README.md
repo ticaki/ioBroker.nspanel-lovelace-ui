@@ -333,8 +333,10 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
-- (ticaki) check if port is free for mqtt server - and move it at start
+### 0.1.8 (2025-03-10)
+- (ticaki) added: hw-buttons with actions
+- (ticaki) fixed: screensaver trigger
+- (ticaki) check if port is free for mqtt server
 - (ticaki) check and tweak role info
 - (ticaki) fixed: entities and grid icons/text
 - (ticaki) tools for tasmota added to admin
@@ -364,7 +366,6 @@ Sind natürlich alles Dataitems
 
 ### 0.1.4 (2025-03-03)
 - (ticaki) fixes #131
-
 
 ### 0.1.3 (2025-03-02)
 - (ticaki) Data point generation changed
