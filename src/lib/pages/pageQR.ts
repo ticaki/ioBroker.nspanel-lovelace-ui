@@ -300,7 +300,7 @@ export class PageQR extends Page {
                             false: {
                                 value: {
                                     type: 'const',
-                                    constVal: 'wifi',
+                                    constVal: 'wifi-off',
                                 },
                                 color: await configManager.getIconColor(configManager.colorOff),
                             },
@@ -312,7 +312,8 @@ export class PageQR extends Page {
                             true: { type: 'const', constVal: text1 },
                         },
                         text: {
-                            true: { type: 'const', constVal: text },
+                            true: { type: 'const', constVal: 'WLAN ON' },
+                            false: { type: 'const', constVal: 'WLAN OFF' },
                         },
                         entity1: {
                             value: {
@@ -336,14 +337,14 @@ export class PageQR extends Page {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: 'wifi',
+                                    constVal: 'key-wireless',
                                 },
                                 color: await configManager.getIconColor(configManager.colorOn),
                             },
                             false: {
                                 value: {
                                     type: 'const',
-                                    constVal: 'wifi',
+                                    constVal: 'key-wireless',
                                 },
                                 color: await configManager.getIconColor(configManager.colorOff),
                             },
