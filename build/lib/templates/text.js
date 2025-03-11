@@ -1054,7 +1054,7 @@ const textTemplates = {
           mode: "auto",
           role: "",
           type: "triggered",
-          regexp: /^accuweather\.[0-9]+\.Current\.UVIndex/,
+          regexp: /^accuweather\.[0-9]+\.Current\.UVIndex$/,
           dp: ``,
           forceType: "string"
         },
@@ -1067,7 +1067,7 @@ const textTemplates = {
           mode: "auto",
           role: "",
           type: "triggered",
-          regexp: /^accuweather\.[0-9]+\.Current\.UVIndex/,
+          regexp: /^accuweather\.[0-9]+\.Current\.UVIndex$/,
           dp: ``,
           forceType: "string"
         },

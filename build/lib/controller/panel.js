@@ -790,7 +790,7 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "goToNavigationPoint": {
-          this.navigation.setTargetPageByName(state.val ? String(state.val) : "main");
+          await this.navigation.setTargetPageByName(state.val ? String(state.val) : "main");
           break;
         }
         case "screensaverTimeout": {
@@ -1210,7 +1210,7 @@ class Panel extends import_library.BaseClass {
         }
         case "page": {
           if (typeof action.page === "string") {
-            this.navigation.setTargetPageByName(action.page);
+            await this.navigation.setTargetPageByName(action.page);
           }
           break;
         }

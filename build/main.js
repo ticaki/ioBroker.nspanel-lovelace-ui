@@ -370,7 +370,6 @@ class NspanelLovelaceUi extends utils.Adapter {
         await this.controller.statesControler.onStateChange(id, state);
       }
     } else {
-      this.log.info(`state ${id} deleted`);
     }
   }
   // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.

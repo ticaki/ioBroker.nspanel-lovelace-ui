@@ -4,7 +4,14 @@ import type * as typePageItem from '../types/type-pageItem';
 import type * as Types from '../types/types';
 import { Color, type RGB } from '../const/Color';
 import type * as pages from '../types/pages';
-import { defaultConfig, isButton, isConfig, requiredScriptDataPoints } from '../const/config-manager-const';
+import {
+    checkedDatapoints,
+    defaultConfig,
+    isButton,
+    isConfig,
+    type requiredDatapoints,
+    requiredScriptDataPoints,
+} from '../const/config-manager-const';
 import type { panelConfigPartial } from '../controller/panel';
 import { exhaustiveCheck } from '../types/pages';
 import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
@@ -395,7 +402,9 @@ export class ConfigManager extends BaseClass {
                             continue;
                         }
                         try {
-                            const itemConfig = await this.getPageItemConfig(item, page);
+                            const temp = await this.getPageItemConfig(item, page, messages);
+                            const itemConfig = temp.itemConfig;
+                            messages = temp.messages;
                             if (itemConfig && gridItem.pageItems) {
                                 gridItem.pageItems.push(itemConfig);
                             }
@@ -956,16 +965,65 @@ export class ConfigManager extends BaseClass {
         return itemConfig;
     }
 
+    async searchDatapointsForItems(
+        db: requiredDatapoints,
+        role: ScriptConfig.channelRoles,
+        dpInit: string,
+        messages: string[],
+    ): Promise<checkedDatapoints> {
+        const result: checkedDatapoints = JSON.parse(JSON.stringify(checkedDatapoints));
+        let ups = false;
+        if (db[role]) {
+            const data = db[role].data;
+            for (const d in data) {
+                const dp = d as keyof typeof data;
+                if (!data[dp] || !this.statesController) {
+                    continue;
+                }
+                const entry = data[dp];
+                if (dp in result[role].data) {
+                    if (result[role].role === role) {
+                        // @ts-expect-error
+                        result[role].data[dp2] = await this.statesController.getIdbyAuto(
+                            dpInit,
+                            entry.role,
+                            '',
+                            entry.useKey ? new RegExp(`.${dp}$`.replaceAll('.', '\\.')) : undefined,
+                            entry.trigger,
+                            entry.writeable,
+                            entry.type,
+                        );
+                    }
+
+                    if (
+                        entry.required &&
+                        // @ts-expect-error
+                        !result[role].data[dp]
+                    ) {
+                        messages.push(`DP: ${dp} - ${JSON.stringify(entry.role)} not found for ${role}`);
+                        this.log.error(messages[messages.length - 1]);
+                        ups = true;
+                    }
+                }
+            }
+            if (ups) {
+                throw new Error('Missing datapoints!');
+            }
+        }
+        return result;
+    }
+
     async getPageItemConfig(
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
-    ): Promise<typePageItem.PageItemDataItemsOptions | undefined> {
+        messages: string[] = [],
+    ): Promise<{ itemConfig: typePageItem.PageItemDataItemsOptions | undefined; messages: string[] }> {
         let itemConfig: typePageItem.PageItemDataItemsOptions | undefined = undefined;
         if (item.navigate) {
             if (!item.targetPage || typeof item.targetPage !== 'string') {
                 throw new Error(`TargetPage missing in ${(item && item.id) || 'no id'}!`);
             }
-            return await this.getPageNaviItemConfig(item, page);
+            return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
         }
         if (item.id && !item.id.endsWith('.')) {
             const obj = await this.adapter.getForeignObjectAsync(item.id);
@@ -978,8 +1036,14 @@ export class ConfigManager extends BaseClass {
                 if (!requiredScriptDataPoints[role]) {
                     throw new Error(`Channel role ${role} not supported!`);
                 }
+                /*const foundedStates: checkedDatapoints = await this.searchDatapointsForItems(
+                    requiredScriptDataPoints,
+                    role,
+                    item.id,
+                    messages,
+                );*/
                 if (!(await this.checkRequiredDatapoints(role, item))) {
-                    return;
+                    return { itemConfig: undefined, messages };
                 }
                 const specialRole: pages.DeviceRole =
                     page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
@@ -1065,6 +1129,7 @@ export class ConfigManager extends BaseClass {
                             },
                         };
                         itemConfig = tempItem;
+
                         break;
                     }
 
@@ -1588,11 +1653,11 @@ export class ConfigManager extends BaseClass {
                         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
                 }
-                return itemConfig;
+                return { itemConfig, messages };
             }
             throw new Error(`Object ${item.id} not found!`);
         }
-        return undefined;
+        return { itemConfig: undefined, messages };
     }
 
     async getScreensaverConfig(config: ScriptConfig.Config): Promise<pages.PageBaseConfig> {

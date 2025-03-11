@@ -19,6 +19,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var config_manager_const_exports = {};
 __export(config_manager_const_exports, {
   CustomTemplates: () => CustomTemplates,
+  arrayOfAllConfigRequiredFields: () => arrayOfAllConfigRequiredFields,
   checkedDatapoints: () => checkedDatapoints,
   defaultConfig: () => defaultConfig,
   isButton: () => isButton,
@@ -26,6 +27,7 @@ __export(config_manager_const_exports, {
   requiredScriptDataPoints: () => requiredScriptDataPoints
 });
 module.exports = __toCommonJS(config_manager_const_exports);
+var import_pages = require("../types/pages");
 const CustomTemplates = [
   {
     device: "shutter",
@@ -79,6 +81,7 @@ function isConfig(F, adapter) {
   }
   return true;
 }
+const arrayOfAllConfigRequiredFields = (0, import_pages.arrayOfAll)();
 const defaultConfig = {
   version: "0",
   panelTopic: "",
@@ -152,236 +155,236 @@ const checkedDatapoints = {
   motion: {
     role: "motion",
     data: {
-      ACTUAL: ""
+      ACTUAL: void 0
     }
   },
   dimmer: {
     role: "dimmer",
     data: {
-      SET: "",
-      ACTUAL: "",
-      ON_SET: "",
-      ON_ACTUAL: ""
+      SET: void 0,
+      ACTUAL: void 0,
+      ON_SET: void 0,
+      ON_ACTUAL: void 0
     }
   },
   ct: {
     role: "ct",
     data: {
-      DIMMER: "",
-      ON: "",
-      ON_ACTUAL: "",
-      TEMPERATURE: ""
+      DIMMER: void 0,
+      ON: void 0,
+      ON_ACTUAL: void 0,
+      TEMPERATURE: void 0
     }
   },
   window: {
     role: "window",
     data: {
-      ACTUAL: "",
-      COLORDEC: "",
-      BUTTONTEXT: ""
+      ACTUAL: void 0,
+      COLORDEC: void 0,
+      BUTTONTEXT: void 0
     }
   },
   humidity: {
     role: "humidity",
     data: {
-      ACTUAL: ""
+      ACTUAL: void 0
     }
   },
   hue: {
     role: "hue",
     data: {
-      DIMMER: "",
-      ON: "",
-      ON_ACTUAL: "",
-      TEMPERATURE: "",
-      HUE: ""
+      DIMMER: void 0,
+      ON: void 0,
+      ON_ACTUAL: void 0,
+      TEMPERATURE: void 0,
+      HUE: void 0
     }
   },
   info: {
     role: "info",
     data: {
-      ACTUAL: "",
-      COLORDEC: "",
-      BUTTONTEXT: "",
-      USERICON: ""
+      ACTUAL: void 0,
+      COLORDEC: void 0,
+      BUTTONTEXT: void 0,
+      USERICON: void 0
     }
   },
   blind: {
     role: "blind",
     data: {
-      ACTUAL: "",
-      SET: "",
-      CLOSE: "",
-      OPEN: "",
-      STOP: "",
-      TILT_ACTUAL: "",
-      TILT_SET: "",
-      TILT_CLOSE: "",
-      TILT_OPEN: "",
-      TILT_STOP: ""
+      ACTUAL: void 0,
+      SET: void 0,
+      CLOSE: void 0,
+      OPEN: void 0,
+      STOP: void 0,
+      TILT_ACTUAL: void 0,
+      TILT_SET: void 0,
+      TILT_CLOSE: void 0,
+      TILT_OPEN: void 0,
+      TILT_STOP: void 0
     }
   },
   airCondition: {
     role: "airCondition",
     data: {
-      ACTUAL: "",
-      SET: "",
-      SET2: "",
-      AUTO: "",
-      COOL: "",
-      BOOST: "",
-      ERROR: "",
-      HEAT: "",
-      HUMIDITY: "",
-      MAINTAIN: "",
-      MODE: "",
-      OFF: "",
-      POWER: "",
-      SPEED: "",
-      SWING: "",
-      UNREACH: ""
+      ACTUAL: void 0,
+      SET: void 0,
+      SET2: void 0,
+      AUTO: void 0,
+      COOL: void 0,
+      BOOST: void 0,
+      ERROR: void 0,
+      HEAT: void 0,
+      HUMIDITY: void 0,
+      MAINTAIN: void 0,
+      MODE: void 0,
+      OFF: void 0,
+      POWER: void 0,
+      SPEED: void 0,
+      SWING: void 0,
+      UNREACH: void 0
     }
   },
   socket: {
     role: "socket",
     data: {
-      ACTUAL: "",
-      SET: "",
-      COLORDEC: "",
-      BUTTONTEXT: ""
+      ACTUAL: void 0,
+      SET: void 0,
+      COLORDEC: void 0,
+      BUTTONTEXT: void 0
     }
   },
   light: {
     role: "light",
     data: {
-      ACTUAL: "",
-      SET: "",
-      COLORDEC: "",
-      BUTTONTEXT: ""
+      ACTUAL: void 0,
+      SET: void 0,
+      COLORDEC: void 0,
+      BUTTONTEXT: void 0
     }
   },
   volume: {
     role: "volume",
     data: {
-      ACTUAL: "",
-      SET: "",
-      MUTE: ""
+      ACTUAL: void 0,
+      SET: void 0,
+      MUTE: void 0
     }
   },
   rgb: {
     role: "rgb",
     data: {
-      RED: "",
-      GREEN: "",
-      BLUE: "",
-      ON_ACTUAL: "",
-      ON: "",
-      DIMMER: "",
-      TEMPERATURE: "",
-      WHITE: ""
+      RED: void 0,
+      GREEN: void 0,
+      BLUE: void 0,
+      ON_ACTUAL: void 0,
+      ON: void 0,
+      DIMMER: void 0,
+      TEMPERATURE: void 0,
+      WHITE: void 0
     }
   },
   rgbSingle: {
     role: "rgbSingle",
     data: {
-      RGB: "",
-      ON: "",
-      DIMMER: "",
-      TEMPERATURE: "",
-      ON_ACTUAL: ""
+      RGB: void 0,
+      ON: void 0,
+      DIMMER: void 0,
+      TEMPERATURE: void 0,
+      ON_ACTUAL: void 0
     }
   },
   slider: {
     role: "slider",
     data: {
-      SET: "",
-      ACTUAL: ""
+      SET: void 0,
+      ACTUAL: void 0
     }
   },
   button: {
     role: "button",
     data: {
-      SET: ""
+      SET: void 0
     }
   },
   buttonSensor: {
     role: "buttonSensor",
     data: {
-      ACTUAL: ""
+      ACTUAL: void 0
     }
   },
   temperature: {
     role: "temperature",
     data: {
-      ACTUAL: ""
+      ACTUAL: void 0
     }
   },
   thermostat: {
     role: "thermostat",
     data: {
-      ACTUAL: "",
-      SET: "",
-      MODE: "",
-      BOOST: "",
-      AUTOMATIC: "",
-      ERROR: "",
-      LOWBAT: "",
-      MANUAL: "",
-      UNREACH: "",
-      HUMIDITY: "",
-      MAINTAIN: "",
-      PARTY: "",
-      POWER: "",
-      VACATION: "",
-      WINDOWOPEN: "",
-      WORKING: "",
-      USERICON: ""
+      ACTUAL: void 0,
+      SET: void 0,
+      MODE: void 0,
+      BOOST: void 0,
+      AUTOMATIC: void 0,
+      ERROR: void 0,
+      LOWBAT: void 0,
+      MANUAL: void 0,
+      UNREACH: void 0,
+      HUMIDITY: void 0,
+      MAINTAIN: void 0,
+      PARTY: void 0,
+      POWER: void 0,
+      VACATION: void 0,
+      WINDOWOPEN: void 0,
+      WORKING: void 0,
+      USERICON: void 0
     }
   },
   "level.timer": {
     role: "level.timer",
     data: {
-      ACTUAL: "",
-      STATE: ""
+      ACTUAL: void 0,
+      STATE: void 0
     }
   },
   gate: {
     role: "gate",
     data: {
-      ACTUAL: ""
+      ACTUAL: void 0
     }
   },
   door: {
     role: "door",
     data: {
-      ACTUAL: "",
-      COLORDEC: "",
-      BUTTONTEXT: ""
+      ACTUAL: void 0,
+      COLORDEC: void 0,
+      BUTTONTEXT: void 0
     }
   },
   "level.mode.fan": {
     role: "level.mode.fan",
     data: {
-      ACTUAL: "",
-      MODE: "",
-      SET: "",
-      SPEED: ""
+      ACTUAL: void 0,
+      MODE: void 0,
+      SET: void 0,
+      SPEED: void 0
     }
   },
   lock: {
     role: "lock",
     data: {
-      ACTUAL: "",
-      OPEN: "",
-      SET: ""
+      ACTUAL: void 0,
+      OPEN: void 0,
+      SET: void 0
     }
   },
   warning: {
     role: "warning",
     data: {
-      INFO: "",
-      LEVEL: "",
-      TITLE: ""
+      INFO: void 0,
+      LEVEL: void 0,
+      TITLE: void 0
     }
   }
 };
@@ -731,6 +734,7 @@ const requiredScriptDataPoints = {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CustomTemplates,
+  arrayOfAllConfigRequiredFields,
   checkedDatapoints,
   defaultConfig,
   isButton,

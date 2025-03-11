@@ -1,5 +1,6 @@
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
-import type { ConfigButtonFunction } from '../types/types';
+import { arrayOfAll, type StateRole } from '../types/pages';
+import type { ConfigButtonFunction, DataItemsOptions } from '../types/types';
 
 export const CustomTemplates: ConfigManager.CustomTemplate[] = [
     {
@@ -69,6 +70,9 @@ export function isConfig(F: any, adapter: NspanelLovelaceUi): F is ScriptConfig.
     }
     return true;
 }
+
+export const arrayOfAllConfigRequiredFields = arrayOfAll<keyof ScriptConfig.Config>();
+
 export const defaultConfig: ScriptConfig.Config = {
     version: '0',
     panelTopic: '',
@@ -143,344 +147,445 @@ export type checkedDatapoints = {
     [key: string]: checkedDatapointsUnion;
 };
 export type checkedDatapointsUnion = { role: ScriptConfig.channelRoles } & (
-    | { role: 'motion'; data: { ACTUAL: string } }
-    | { role: 'dimmer'; data: { SET: string; ACTUAL: string; ON_SET: string; ON_ACTUAL: string } }
-    | { role: 'ct'; data: { DIMMER: string; ON: string; ON_ACTUAL: string; TEMPERATURE: string } }
-    | { role: 'window'; data: { ACTUAL: string; COLORDEC: string; BUTTONTEXT: string } }
-    | { role: 'humidity'; data: { ACTUAL: string } }
-    | { role: 'hue'; data: { DIMMER: string; ON: string; ON_ACTUAL: string; TEMPERATURE: string; HUE: string } }
-    | { role: 'info'; data: { ACTUAL: string; COLORDEC: string; BUTTONTEXT: string; USERICON: string } }
+    | { role: 'motion'; data: { ACTUAL: DataItemsOptions | undefined } }
+    | {
+          role: 'dimmer';
+          data: {
+              SET: DataItemsOptions | undefined;
+              ACTUAL: DataItemsOptions | undefined;
+              ON_SET: DataItemsOptions | undefined;
+              ON_ACTUAL: DataItemsOptions | undefined;
+          };
+      }
+    | {
+          role: 'ct';
+          data: {
+              DIMMER: DataItemsOptions | undefined;
+              ON: DataItemsOptions | undefined;
+              ON_ACTUAL: DataItemsOptions | undefined;
+              TEMPERATURE: DataItemsOptions | undefined;
+          };
+      }
+    | {
+          role: 'window';
+          data: {
+              ACTUAL: DataItemsOptions | undefined;
+              COLORDEC: DataItemsOptions | undefined;
+              BUTTONTEXT: DataItemsOptions | undefined;
+          };
+      }
+    | { role: 'humidity'; data: { ACTUAL: DataItemsOptions | undefined } }
+    | {
+          role: 'hue';
+          data: {
+              DIMMER: DataItemsOptions | undefined;
+              ON: DataItemsOptions | undefined;
+              ON_ACTUAL: DataItemsOptions | undefined;
+              TEMPERATURE: DataItemsOptions | undefined;
+              HUE: DataItemsOptions | undefined;
+          };
+      }
+    | {
+          role: 'info';
+          data: {
+              ACTUAL: DataItemsOptions | undefined;
+              COLORDEC: DataItemsOptions | undefined;
+              BUTTONTEXT: DataItemsOptions | undefined;
+              USERICON: DataItemsOptions | undefined;
+          };
+      }
     | {
           role: 'blind';
           data: {
-              ACTUAL: string;
-              SET: string;
-              CLOSE: string;
-              OPEN: string;
-              STOP: string;
-              TILT_ACTUAL: string;
-              TILT_SET: string;
-              TILT_CLOSE: string;
-              TILT_OPEN: string;
-              TILT_STOP: string;
+              ACTUAL: DataItemsOptions | undefined;
+              SET: DataItemsOptions | undefined;
+              CLOSE: DataItemsOptions | undefined;
+              OPEN: DataItemsOptions | undefined;
+              STOP: DataItemsOptions | undefined;
+              TILT_ACTUAL: DataItemsOptions | undefined;
+              TILT_SET: DataItemsOptions | undefined;
+              TILT_CLOSE: DataItemsOptions | undefined;
+              TILT_OPEN: DataItemsOptions | undefined;
+              TILT_STOP: DataItemsOptions | undefined;
           };
       }
     | {
           role: 'airCondition';
           data: {
-              ACTUAL: string;
-              SET: string;
-              SET2: string;
-              AUTO: string;
-              COOL: string;
-              BOOST: string;
-              ERROR: string;
-              HEAT: string;
-              HUMIDITY: string;
-              MAINTAIN: string;
-              MODE: string;
-              OFF: string;
-              POWER: string;
-              SPEED: string;
-              SWING: string;
-              UNREACH: string;
+              ACTUAL: DataItemsOptions | undefined;
+              SET: DataItemsOptions | undefined;
+              SET2: DataItemsOptions | undefined;
+              AUTO: DataItemsOptions | undefined;
+              COOL: DataItemsOptions | undefined;
+              BOOST: DataItemsOptions | undefined;
+              ERROR: DataItemsOptions | undefined;
+              HEAT: DataItemsOptions | undefined;
+              HUMIDITY: DataItemsOptions | undefined;
+              MAINTAIN: DataItemsOptions | undefined;
+              MODE: DataItemsOptions | undefined;
+              OFF: DataItemsOptions | undefined;
+              POWER: DataItemsOptions | undefined;
+              SPEED: DataItemsOptions | undefined;
+              SWING: DataItemsOptions | undefined;
+              UNREACH: DataItemsOptions | undefined;
           };
       }
-    | { role: 'socket'; data: { ACTUAL: string; SET: string; COLORDEC: string; BUTTONTEXT: string } }
-    | { role: 'light'; data: { ACTUAL: string; SET: string; COLORDEC: string; BUTTONTEXT: string } }
-    | { role: 'volume'; data: { ACTUAL: string; SET: string; MUTE: string } }
+    | {
+          role: 'socket';
+          data: {
+              ACTUAL: DataItemsOptions | undefined;
+              SET: DataItemsOptions | undefined;
+              COLORDEC: DataItemsOptions | undefined;
+              BUTTONTEXT: DataItemsOptions | undefined;
+          };
+      }
+    | {
+          role: 'light';
+          data: {
+              ACTUAL: DataItemsOptions | undefined;
+              SET: DataItemsOptions | undefined;
+              COLORDEC: DataItemsOptions | undefined;
+              BUTTONTEXT: DataItemsOptions | undefined;
+          };
+      }
+    | {
+          role: 'volume';
+          data: {
+              ACTUAL: DataItemsOptions | undefined;
+              SET: DataItemsOptions | undefined;
+              MUTE: DataItemsOptions | undefined;
+          };
+      }
     | {
           role: 'rgb';
           data: {
-              RED: string;
-              GREEN: string;
-              BLUE: string;
-              ON_ACTUAL: string;
-              ON: string;
-              DIMMER: string;
-              TEMPERATURE: string;
-              WHITE: string;
+              RED: DataItemsOptions | undefined;
+              GREEN: DataItemsOptions | undefined;
+              BLUE: DataItemsOptions | undefined;
+              ON_ACTUAL: DataItemsOptions | undefined;
+              ON: DataItemsOptions | undefined;
+              DIMMER: DataItemsOptions | undefined;
+              TEMPERATURE: DataItemsOptions | undefined;
+              WHITE: DataItemsOptions | undefined;
           };
       }
     | {
           role: 'rgbSingle';
-          data: { RGB: string; ON: string; DIMMER: string; TEMPERATURE: string; ON_ACTUAL: string };
+          data: {
+              RGB: DataItemsOptions | undefined;
+              ON: DataItemsOptions | undefined;
+              DIMMER: DataItemsOptions | undefined;
+              TEMPERATURE: DataItemsOptions | undefined;
+              ON_ACTUAL: DataItemsOptions | undefined;
+          };
       }
-    | { role: 'slider'; data: { SET: string; ACTUAL: string } }
-    | { role: 'button'; data: { SET: string } }
-    | { role: 'buttonSensor'; data: { ACTUAL: string } }
-    | { role: 'temperature'; data: { ACTUAL: string } }
-    | { role: 'value.temperature'; data: { ACTUAL: string; USERICON: string } }
+    | { role: 'slider'; data: { SET: DataItemsOptions | undefined; ACTUAL: DataItemsOptions | undefined } }
+    | { role: 'button'; data: { SET: DataItemsOptions | undefined } }
+    | { role: 'buttonSensor'; data: { ACTUAL: DataItemsOptions | undefined } }
+    | { role: 'temperature'; data: { ACTUAL: DataItemsOptions | undefined } }
+    | {
+          role: 'value.temperature';
+          data: { ACTUAL: DataItemsOptions | undefined; USERICON: DataItemsOptions | undefined };
+      }
     | {
           role: 'thermostat';
           data: {
-              ACTUAL: string;
-              SET: string;
-              MODE: string;
-              BOOST: string;
-              AUTOMATIC: string;
-              ERROR: string;
-              LOWBAT: string;
-              MANUAL: string;
-              UNREACH: string;
-              HUMIDITY: string;
-              MAINTAIN: string;
-              PARTY: string;
-              POWER: string;
-              VACATION: string;
-              WINDOWOPEN: string;
-              WORKING: string;
-              USERICON: string;
+              ACTUAL: DataItemsOptions | undefined;
+              SET: DataItemsOptions | undefined;
+              MODE: DataItemsOptions | undefined;
+              BOOST: DataItemsOptions | undefined;
+              AUTOMATIC: DataItemsOptions | undefined;
+              ERROR: DataItemsOptions | undefined;
+              LOWBAT: DataItemsOptions | undefined;
+              MANUAL: DataItemsOptions | undefined;
+              UNREACH: DataItemsOptions | undefined;
+              HUMIDITY: DataItemsOptions | undefined;
+              MAINTAIN: DataItemsOptions | undefined;
+              PARTY: DataItemsOptions | undefined;
+              POWER: DataItemsOptions | undefined;
+              VACATION: DataItemsOptions | undefined;
+              WINDOWOPEN: DataItemsOptions | undefined;
+              WORKING: DataItemsOptions | undefined;
+              USERICON: DataItemsOptions | undefined;
           };
       }
-    | { role: 'level.timer'; data: { ACTUAL: string; STATE: string } }
-    | { role: 'gate'; data: { ACTUAL: string } }
-    | { role: 'door'; data: { ACTUAL: string; COLORDEC: string; BUTTONTEXT: string } }
-    | { role: 'level.mode.fan'; data: { ACTUAL: string; MODE: string; SET: string; SPEED: string } }
-    | { role: 'lock'; data: { ACTUAL: string; OPEN: string; SET: string } }
-    | { role: 'warning'; data: { INFO: string; LEVEL: string; TITLE: string } }
-    | { role: 'weatherforecast'; data: { ICON: string; TEMP: string } }
-    | { role: 'WIFI'; data: { ACTUAL: string; SWITCH: string } }
+    | { role: 'level.timer'; data: { ACTUAL: DataItemsOptions | undefined; STATE: DataItemsOptions | undefined } }
+    | { role: 'gate'; data: { ACTUAL: DataItemsOptions | undefined } }
+    | {
+          role: 'door';
+          data: {
+              ACTUAL: DataItemsOptions | undefined;
+              COLORDEC: DataItemsOptions | undefined;
+              BUTTONTEXT: DataItemsOptions | undefined;
+          };
+      }
+    | {
+          role: 'level.mode.fan';
+          data: {
+              ACTUAL: DataItemsOptions | undefined;
+              MODE: DataItemsOptions | undefined;
+              SET: DataItemsOptions | undefined;
+              SPEED: DataItemsOptions | undefined;
+          };
+      }
+    | {
+          role: 'lock';
+          data: {
+              ACTUAL: DataItemsOptions | undefined;
+              OPEN: DataItemsOptions | undefined;
+              SET: DataItemsOptions | undefined;
+          };
+      }
+    | {
+          role: 'warning';
+          data: {
+              INFO: DataItemsOptions | undefined;
+              LEVEL: DataItemsOptions | undefined;
+              TITLE: DataItemsOptions | undefined;
+          };
+      }
+    | { role: 'weatherforecast'; data: { ICON: DataItemsOptions | undefined; TEMP: DataItemsOptions | undefined } }
+    | { role: 'WIFI'; data: { ACTUAL: DataItemsOptions | undefined; SWITCH: DataItemsOptions | undefined } }
 );
 
 export const checkedDatapoints: checkedDatapoints = {
     motion: {
         role: 'motion',
         data: {
-            ACTUAL: '',
+            ACTUAL: undefined,
         },
     },
     dimmer: {
         role: 'dimmer',
         data: {
-            SET: '',
-            ACTUAL: '',
-            ON_SET: '',
-            ON_ACTUAL: '',
+            SET: undefined,
+            ACTUAL: undefined,
+            ON_SET: undefined,
+            ON_ACTUAL: undefined,
         },
     },
     ct: {
         role: 'ct',
         data: {
-            DIMMER: '',
-            ON: '',
-            ON_ACTUAL: '',
-            TEMPERATURE: '',
+            DIMMER: undefined,
+            ON: undefined,
+            ON_ACTUAL: undefined,
+            TEMPERATURE: undefined,
         },
     },
     window: {
         role: 'window',
         data: {
-            ACTUAL: '',
-            COLORDEC: '',
-            BUTTONTEXT: '',
+            ACTUAL: undefined,
+            COLORDEC: undefined,
+            BUTTONTEXT: undefined,
         },
     },
     humidity: {
         role: 'humidity',
         data: {
-            ACTUAL: '',
+            ACTUAL: undefined,
         },
     },
     hue: {
         role: 'hue',
         data: {
-            DIMMER: '',
-            ON: '',
-            ON_ACTUAL: '',
-            TEMPERATURE: '',
-            HUE: '',
+            DIMMER: undefined,
+            ON: undefined,
+            ON_ACTUAL: undefined,
+            TEMPERATURE: undefined,
+            HUE: undefined,
         },
     },
     info: {
         role: 'info',
         data: {
-            ACTUAL: '',
-            COLORDEC: '',
-            BUTTONTEXT: '',
-            USERICON: '',
+            ACTUAL: undefined,
+            COLORDEC: undefined,
+            BUTTONTEXT: undefined,
+            USERICON: undefined,
         },
     },
     blind: {
         role: 'blind',
         data: {
-            ACTUAL: '',
-            SET: '',
-            CLOSE: '',
-            OPEN: '',
-            STOP: '',
-            TILT_ACTUAL: '',
-            TILT_SET: '',
-            TILT_CLOSE: '',
-            TILT_OPEN: '',
-            TILT_STOP: '',
+            ACTUAL: undefined,
+            SET: undefined,
+            CLOSE: undefined,
+            OPEN: undefined,
+            STOP: undefined,
+            TILT_ACTUAL: undefined,
+            TILT_SET: undefined,
+            TILT_CLOSE: undefined,
+            TILT_OPEN: undefined,
+            TILT_STOP: undefined,
         },
     },
     airCondition: {
         role: 'airCondition',
         data: {
-            ACTUAL: '',
-            SET: '',
-            SET2: '',
-            AUTO: '',
-            COOL: '',
-            BOOST: '',
-            ERROR: '',
-            HEAT: '',
-            HUMIDITY: '',
-            MAINTAIN: '',
-            MODE: '',
-            OFF: '',
-            POWER: '',
-            SPEED: '',
-            SWING: '',
-            UNREACH: '',
+            ACTUAL: undefined,
+            SET: undefined,
+            SET2: undefined,
+            AUTO: undefined,
+            COOL: undefined,
+            BOOST: undefined,
+            ERROR: undefined,
+            HEAT: undefined,
+            HUMIDITY: undefined,
+            MAINTAIN: undefined,
+            MODE: undefined,
+            OFF: undefined,
+            POWER: undefined,
+            SPEED: undefined,
+            SWING: undefined,
+            UNREACH: undefined,
         },
     },
     socket: {
         role: 'socket',
         data: {
-            ACTUAL: '',
-            SET: '',
-            COLORDEC: '',
-            BUTTONTEXT: '',
+            ACTUAL: undefined,
+            SET: undefined,
+            COLORDEC: undefined,
+            BUTTONTEXT: undefined,
         },
     },
     light: {
         role: 'light',
         data: {
-            ACTUAL: '',
-            SET: '',
-            COLORDEC: '',
-            BUTTONTEXT: '',
+            ACTUAL: undefined,
+            SET: undefined,
+            COLORDEC: undefined,
+            BUTTONTEXT: undefined,
         },
     },
     volume: {
         role: 'volume',
         data: {
-            ACTUAL: '',
-            SET: '',
-            MUTE: '',
+            ACTUAL: undefined,
+            SET: undefined,
+            MUTE: undefined,
         },
     },
     rgb: {
         role: 'rgb',
         data: {
-            RED: '',
-            GREEN: '',
-            BLUE: '',
-            ON_ACTUAL: '',
-            ON: '',
-            DIMMER: '',
-            TEMPERATURE: '',
-            WHITE: '',
+            RED: undefined,
+            GREEN: undefined,
+            BLUE: undefined,
+            ON_ACTUAL: undefined,
+            ON: undefined,
+            DIMMER: undefined,
+            TEMPERATURE: undefined,
+            WHITE: undefined,
         },
     },
     rgbSingle: {
         role: 'rgbSingle',
         data: {
-            RGB: '',
-            ON: '',
-            DIMMER: '',
-            TEMPERATURE: '',
-            ON_ACTUAL: '',
+            RGB: undefined,
+            ON: undefined,
+            DIMMER: undefined,
+            TEMPERATURE: undefined,
+            ON_ACTUAL: undefined,
         },
     },
     slider: {
         role: 'slider',
         data: {
-            SET: '',
-            ACTUAL: '',
+            SET: undefined,
+            ACTUAL: undefined,
         },
     },
     button: {
         role: 'button',
         data: {
-            SET: '',
+            SET: undefined,
         },
     },
     buttonSensor: {
         role: 'buttonSensor',
         data: {
-            ACTUAL: '',
+            ACTUAL: undefined,
         },
     },
     temperature: {
         role: 'temperature',
         data: {
-            ACTUAL: '',
+            ACTUAL: undefined,
         },
     },
     thermostat: {
         role: 'thermostat',
         data: {
-            ACTUAL: '',
-            SET: '',
-            MODE: '',
-            BOOST: '',
-            AUTOMATIC: '',
-            ERROR: '',
-            LOWBAT: '',
-            MANUAL: '',
-            UNREACH: '',
-            HUMIDITY: '',
-            MAINTAIN: '',
-            PARTY: '',
-            POWER: '',
-            VACATION: '',
-            WINDOWOPEN: '',
-            WORKING: '',
-            USERICON: '',
+            ACTUAL: undefined,
+            SET: undefined,
+            MODE: undefined,
+            BOOST: undefined,
+            AUTOMATIC: undefined,
+            ERROR: undefined,
+            LOWBAT: undefined,
+            MANUAL: undefined,
+            UNREACH: undefined,
+            HUMIDITY: undefined,
+            MAINTAIN: undefined,
+            PARTY: undefined,
+            POWER: undefined,
+            VACATION: undefined,
+            WINDOWOPEN: undefined,
+            WORKING: undefined,
+            USERICON: undefined,
         },
     },
     'level.timer': {
         role: 'level.timer',
         data: {
-            ACTUAL: '',
-            STATE: '',
+            ACTUAL: undefined,
+            STATE: undefined,
         },
     },
     gate: {
         role: 'gate',
         data: {
-            ACTUAL: '',
+            ACTUAL: undefined,
         },
     },
     door: {
         role: 'door',
         data: {
-            ACTUAL: '',
-            COLORDEC: '',
-            BUTTONTEXT: '',
+            ACTUAL: undefined,
+            COLORDEC: undefined,
+            BUTTONTEXT: undefined,
         },
     },
     'level.mode.fan': {
         role: 'level.mode.fan',
         data: {
-            ACTUAL: '',
-            MODE: '',
-            SET: '',
-            SPEED: '',
+            ACTUAL: undefined,
+            MODE: undefined,
+            SET: undefined,
+            SPEED: undefined,
         },
     },
     lock: {
         role: 'lock',
         data: {
-            ACTUAL: '',
-            OPEN: '',
-            SET: '',
+            ACTUAL: undefined,
+            OPEN: undefined,
+            SET: undefined,
         },
     },
     warning: {
         role: 'warning',
         data: {
-            INFO: '',
-            LEVEL: '',
-            TITLE: '',
+            INFO: undefined,
+            LEVEL: undefined,
+            TITLE: undefined,
         },
     },
 };
-type mydps =
+export type mydps =
     | 'ACTUAL'
     | 'noNeed'
     | 'SET'
@@ -527,7 +632,8 @@ type mydps =
     | 'ICON'
     | 'TEMP'
     | 'SWITCH';
-type requiredDatapoints = {
+
+export type requiredDatapoints = {
     motion: {
         data: {
             ACTUAL: Datapoint;
@@ -859,11 +965,12 @@ type requiredDatapoints = {
 };
 
 type Datapoint = {
-    role: (ScriptConfig.roles | ConfigManager.ioBrokerRoles) | (ScriptConfig.roles | ConfigManager.ioBrokerRoles)[];
+    role: StateRole | StateRole[];
     required: boolean;
     useKey?: boolean;
     type: ioBroker.StateCommon['type'];
     writeable?: boolean;
+    trigger?: boolean;
     description?: string;
 };
 export const requiredScriptDataPoints: requiredDatapoints = {

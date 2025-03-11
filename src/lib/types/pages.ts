@@ -75,95 +75,103 @@ export function isScreenSaverMode(F: any): F is Types.ScreensaverModeType {
  * if u get a error here, u have to add the new stateRole to the type StateRole or visa versa
  */
 export const stateRoleArray = arrayOfAllStateRole([
-    'value.power',
-    'button.play',
-    'button.pause',
+    'button',
+    'button.close',
+    'button.close.blind',
+    'button.close.tilt',
     'button.next',
+    'button.open',
+    'button.open.blind',
+    'button.open.tilt',
+    'button.pause',
+    'button.play',
+    'button.press',
     'button.prev',
     'button.stop',
-    'button.volume.up',
-    'button.volume.down',
-    'media.seek', // (common.type=number) %
-    'media.mode.shuffle', //(common.type=number) 0 - none, 1 - all, 2 - one
-    'media.mode.repeat', //(common.type=boolean)
-    'media.state', //['play','stop','pause'] or [0 - pause, 1 - play, 2 - stop] or [true - playing/false - pause]
-    'media.artist',
-    'media.album',
-    'media.title',
-    'media.duration',
-    'media.elapsed.text',
-    'media.elapsed',
-    'media.mute',
-    'level.volume',
-    'media.playlist',
-    'button.open.blind',
-    'button.open',
-    'button.close.blind',
-    'button.close',
     'button.stop.blind',
-    'button.stop',
-    'button.open.tilt',
     'button.stop.tilt',
-    'button.close.tilt',
-    'level.tilt',
-    'level.blind',
-    'level.color.name',
-    'state',
-    'level.color.blue',
-    'level.color.red',
-    'level.color.green',
-    'level.color.white',
-    'level.brightness',
-    'switch',
-    'button',
-    'sensor.window',
-    'sensor.open',
-    'value.temperature',
-    'value.battery',
-    'indicator.lowbat',
-    'value',
-    'level.temperature',
-    'level.value',
+    'button.volume.down',
+    'button.volume.up',
     'date',
     'date.sunrise.forecast.0',
-    'date.sunset.forecast.0',
     'date.sunrise.forecast.1',
+    'date.sunset.forecast.0',
     'date.sunset.forecast.1',
-    'value.humidity',
-    'switch.gate',
-    'sensor.door',
-    'value.blind',
-    'value.volume',
-    'sensor.motion',
-    'value.warning',
-    'switch.mode.manual',
-    'switch.mode.auto',
-    'indicator.maintenance.unreach',
-    'indicator.maintenance.lowbat',
-    'indicator.maintenance',
-    'switch.mode.boost',
-    'switch.mode.party',
     'indicator.error',
+    'indicator.lowbat',
+    'indicator.maintenance',
+    'indicator.maintenance.lowbat',
+    'indicator.maintenance.unreach',
+    'indicator.working',
+    'level',
+    'level.blind',
+    'level.brightness',
+    'level.color.blue',
+    'level.color.cie',
+    'level.color.green',
+    'level.color.hue',
+    'level.color.name',
+    'level.color.red',
+    'level.color.rgb',
+    'level.color.temperature',
+    'level.color.white',
+    'level.dimmer',
+    'level.mode.airconditioner',
+    'level.mode.fan',
+    'level.mode.thermostat',
+    'level.temperature',
+    'level.tilt',
+    'level.value',
+    'level.volume',
+    'media.album',
+    'media.artist',
+    'media.duration',
+    'media.elapsed',
+    'media.elapsed.text',
+    'media.mode.repeat',
+    'media.mode.shuffle',
+    'media.mute',
+    'media.playlist',
+    'media.seek',
+    'media.state',
+    'media.title',
+    'sensor.door',
+    'sensor.light',
+    'sensor.motion',
+    'sensor.open',
+    'sensor.window',
+    'state',
+    'state.light',
+    'switch',
+    'switch.gate',
+    'switch.light',
+    'switch.lock',
+    'switch.mode.auto',
+    'switch.mode.boost',
+    'switch.mode.manual',
+    'switch.mode.party',
+    'switch.mode.swing',
     'switch.power',
+    'text',
+    'timestamp',
+    'value',
+    'value.battery',
+    'value.blind',
+    'value.dimmer',
+    'value.humidity',
+    'value.power',
+    'value.rgb',
+    'value.temperature',
+    'value.tilt',
+    'value.volume',
+    'value.warning',
+    'weather.icon.forecast',
+    'weather.title',
+    'weather.title.short',
     '',
 ]);
 
 export type StateRole =
-    | 'switch.power'
-    | 'indicator.error'
-    | 'switch.mode.party'
-    | 'switch.mode.boost'
-    | 'indicator.maintenance'
-    | 'indicator.maintenance.lowbat'
-    | 'indicator.maintenance.unreach'
-    | 'switch.mode.manual'
-    | 'switch.mode.auto'
-    | 'value.warning'
-    | 'sensor.motion'
-    | 'value.volume'
-    | 'value.blind'
-    | 'sensor.door'
-    | 'switch.gate'
     | 'button'
     | 'button.close'
     | 'button.close.blind'
@@ -175,6 +183,7 @@ export type StateRole =
     | 'button.pause'
     | 'button.play'
     | 'button.prev'
+    | 'button.press'
     | 'button.stop'
     | 'button.stop.blind'
     | 'button.stop.tilt'
@@ -185,14 +194,28 @@ export type StateRole =
     | 'date.sunrise.forecast.1'
     | 'date.sunset.forecast.0'
     | 'date.sunset.forecast.1'
+    | 'indicator.error'
     | 'indicator.lowbat'
+    | 'indicator.maintenance'
+    | 'indicator.maintenance.lowbat'
+    | 'indicator.maintenance.unreach'
+    | 'indicator.working'
+    | 'level'
     | 'level.blind'
     | 'level.brightness'
     | 'level.color.blue'
+    | 'level.color.cie'
     | 'level.color.green'
+    | 'level.color.hue'
     | 'level.color.name'
     | 'level.color.red'
+    | 'level.color.rgb'
+    | 'level.color.temperature'
     | 'level.color.white'
+    | 'level.dimmer'
+    | 'level.mode.airconditioner'
+    | 'level.mode.fan'
+    | 'level.mode.thermostat'
     | 'level.temperature'
     | 'level.tilt'
     | 'level.value'
@@ -209,15 +232,39 @@ export type StateRole =
     | 'media.seek'
     | 'media.state'
     | 'media.title'
+    | 'sensor.door'
+    | 'sensor.light'
+    | 'sensor.motion'
     | 'sensor.open'
     | 'sensor.window'
     | 'state'
+    | 'state.light'
     | 'switch'
+    | 'switch.gate'
+    | 'switch.light'
+    | 'switch.lock'
+    | 'switch.mode.auto'
+    | 'switch.mode.boost'
+    | 'switch.mode.manual'
+    | 'switch.mode.party'
+    | 'switch.mode.swing'
+    | 'switch.power'
+    | 'text'
+    | 'timestamp'
     | 'value'
     | 'value.battery'
-    | 'value.power'
-    | 'value.temperature'
+    | 'value.blind'
+    | 'value.dimmer'
     | 'value.humidity'
+    | 'value.power'
+    | 'value.rgb'
+    | 'value.temperature'
+    | 'value.tilt'
+    | 'value.volume'
+    | 'value.warning'
+    | 'weather.icon.forecast'
+    | 'weather.title'
+    | 'weather.title.short'
     | '';
 
 export type DeviceRole =
