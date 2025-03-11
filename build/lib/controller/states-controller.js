@@ -291,7 +291,7 @@ class StatesControler extends import_library.BaseClass {
         this.triggerDB[id].subscribed.push(false);
         this.triggerDB[id].triggerAllowed.push(trigger);
         this.triggerDB[id].change.push(change ? change : "ne");
-        this.log.debug(`Activate trigger from ${from.name} to ${id}`);
+        this.log.debug(`Add a trigger for ${from.name} to ${id}`);
       } else {
       }
     } else if (internal) {
@@ -318,7 +318,7 @@ class StatesControler extends import_library.BaseClass {
         if (this.stateDB[id] !== void 0) {
           delete this.stateDB[id];
         }
-        this.log.debug(`Set a new trigger from ${from.name} to ${id}`);
+        this.log.debug(`Set a new trigger for ${from.panel.name}.${from.name} to ${id}`);
       } else {
         delete this.triggerDB[id];
       }
@@ -353,6 +353,7 @@ class StatesControler extends import_library.BaseClass {
           entry.state = state;
         }
       }
+      entry.subscribed[index] = true;
     }
   }
   /**
@@ -630,7 +631,7 @@ class StatesControler extends import_library.BaseClass {
       } else if (typeof d === "object" && "type" in d) {
         target[i] = data[i] !== void 0 ? new import_data_item.Dataitem(
           this.adapter,
-          { ...d, name: `${this.name}.${parent.name}.${i}/${path}` },
+          { ...d, name: `${this.name}.${parent.name}.${i}.${path}` },
           parent,
           this
         ) : void 0;
@@ -729,9 +730,10 @@ class StatesControler extends import_library.BaseClass {
    * @param regexp - The regular expression to match the state ID.
    * @param triggered - Whether the state is triggered.
    * @param writeable - Whether the state is writeable.
+   * @param commonType - The common type of the state.
    * @returns A promise that resolves to the ID of the state if found, otherwise undefined.
    */
-  async getIdbyAuto(dpInit = "", role = "", enums = "", regexp, triggered, writeable) {
+  async getIdbyAuto(dpInit = "", role = "", enums = "", regexp, triggered, writeable, commonType) {
     const status = { ok: true };
     let item;
     if (triggered) {
@@ -741,7 +743,8 @@ class StatesControler extends import_library.BaseClass {
         dp: "",
         mode: "auto",
         regexp,
-        writeable
+        writeable,
+        commonType
       };
     } else {
       item = {
@@ -750,7 +753,8 @@ class StatesControler extends import_library.BaseClass {
         dp: "",
         mode: "auto",
         regexp,
-        writeable
+        writeable,
+        commonType
       };
     }
     const data = await this.getDataItemsFromAuto(dpInit, { item }, "", enums, status, true);
@@ -785,7 +789,7 @@ class StatesControler extends import_library.BaseClass {
             for (const commonType of Array.isArray(d.commonType) ? d.commonType : [d.commonType || ""]) {
               for (const id of tempObjectDB.keys) {
                 const obj = tempObjectDB.data[id];
-                if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp)) && (role === "" || obj.common.role === role) && (commonType === "" || obj.common.type === commonType) && (!d.writeable || obj.common.write === d.writeable) && (!d.regexp || id.match(d.regexp) !== null)) {
+                if (obj && obj.common && obj.type === "state" && (d.dp === "" || id.includes(d.dp)) && (role === "" || obj.common.role === role) && (!commonType || obj.common.type === commonType) && (!d.writeable || obj.common.write === d.writeable) && (!d.regexp || id.match(d.regexp) !== null)) {
                   if (found) {
                     if (!ignoreMultiple) {
                       this.log.warn(

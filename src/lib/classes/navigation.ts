@@ -201,10 +201,10 @@ export class Navigation extends BaseClass {
         }
     }
 
-    setTargetPageByName(n: string): void {
+    async setTargetPageByName(n: string): Promise<void> {
         const index = this.navigationConfig.findIndex(a => a && a.name === n);
         if (index !== -1) {
-            void this.setPageByIndex(index);
+            await this.setPageByIndex(index);
         } else {
             this.log.warn(`Dont find navigation target for ${n}`);
         }

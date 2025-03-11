@@ -851,7 +851,7 @@ export class Panel extends BaseClass {
                 }
                 case 'goToNavigationPoint': {
                     // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    this.navigation.setTargetPageByName(state.val ? String(state.val) : 'main');
+                    await this.navigation.setTargetPageByName(state.val ? String(state.val) : 'main');
                     break;
                 }
                 case 'screensaverTimeout': {
@@ -1308,7 +1308,7 @@ export class Panel extends BaseClass {
                 }
                 case 'page': {
                     if (typeof action.page === 'string') {
-                        this.navigation.setTargetPageByName(action.page);
+                        await this.navigation.setTargetPageByName(action.page);
                     }
                     break;
                 }

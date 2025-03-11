@@ -332,7 +332,7 @@ export class PageAlarm extends Page {
                     const item = entry.data;
                     const value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
                     if (value !== null) {
-                        this.panel.navigation.setTargetPageByName(value);
+                        await this.panel.navigation.setTargetPageByName(value);
                         break;
                     }
                     await this.setStatus('armed');

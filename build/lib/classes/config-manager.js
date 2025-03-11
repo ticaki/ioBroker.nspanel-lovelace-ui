@@ -328,7 +328,9 @@ class ConfigManager extends import_library.BaseClass {
               continue;
             }
             try {
-              const itemConfig = await this.getPageItemConfig(item, page);
+              const temp = await this.getPageItemConfig(item, page, messages);
+              const itemConfig = temp.itemConfig;
+              messages = temp.messages;
               if (itemConfig && gridItem.pageItems) {
                 gridItem.pageItems.push(itemConfig);
               }
@@ -818,14 +820,51 @@ class ConfigManager extends import_library.BaseClass {
     }
     return itemConfig;
   }
-  async getPageItemConfig(item, page) {
+  async searchDatapointsForItems(db, role, dpInit, messages) {
+    const result = JSON.parse(JSON.stringify(import_config_manager_const.checkedDatapoints));
+    let ups = false;
+    if (db[role]) {
+      const data = db[role].data;
+      for (const d in data) {
+        const dp = d;
+        if (!data[dp] || !this.statesController) {
+          continue;
+        }
+        const entry = data[dp];
+        if (dp in result[role].data) {
+          if (result[role].role === role) {
+            result[role].data[dp2] = await this.statesController.getIdbyAuto(
+              dpInit,
+              entry.role,
+              "",
+              entry.useKey ? new RegExp(`.${dp}$`.replaceAll(".", "\\.")) : void 0,
+              entry.trigger,
+              entry.writeable,
+              entry.type
+            );
+          }
+          if (entry.required && // @ts-expect-error
+          !result[role].data[dp]) {
+            messages.push(`DP: ${dp} - ${JSON.stringify(entry.role)} not found for ${role}`);
+            this.log.error(messages[messages.length - 1]);
+            ups = true;
+          }
+        }
+      }
+      if (ups) {
+        throw new Error("Missing datapoints!");
+      }
+    }
+    return result;
+  }
+  async getPageItemConfig(item, page, messages = []) {
     var _a, _b, _c, _d, _e;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
         throw new Error(`TargetPage missing in ${item && item.id || "no id"}!`);
       }
-      return await this.getPageNaviItemConfig(item, page);
+      return { itemConfig: await this.getPageNaviItemConfig(item, page), messages };
     }
     if (item.id && !item.id.endsWith(".")) {
       const obj = await this.adapter.getForeignObjectAsync(item.id);
@@ -838,7 +877,7 @@ class ConfigManager extends import_library.BaseClass {
           throw new Error(`Channel role ${role} not supported!`);
         }
         if (!await this.checkRequiredDatapoints(role, item)) {
-          return;
+          return { itemConfig: void 0, messages };
         }
         const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
         const commonName = typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()];
@@ -1338,11 +1377,11 @@ class ConfigManager extends import_library.BaseClass {
             (0, import_pages.exhaustiveCheck)(role);
             throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
         }
-        return itemConfig;
+        return { itemConfig, messages };
       }
       throw new Error(`Object ${item.id} not found!`);
     }
-    return void 0;
+    return { itemConfig: void 0, messages };
   }
   async getScreensaverConfig(config) {
     let pageItems = [];

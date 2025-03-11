@@ -166,7 +166,7 @@ export class PageItem extends BaseClassTriggerd {
     }
 
     async getPageItemPayload(): Promise<string> {
-        //await this.controller.statesControler.activateTrigger(this);
+        await this.controller.statesControler.activateTrigger(this);
         this.lastPopupType = undefined;
         if (this.dataItems && this.config) {
             this.visibility = false;
@@ -1198,7 +1198,7 @@ export class PageItem extends BaseClassTriggerd {
                     }
                     let value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
                     if (value !== null) {
-                        this.panel.navigation.setTargetPageByName(value);
+                        await this.panel.navigation.setTargetPageByName(value);
                         break;
                     }
                     value = (item.entity1 && item.entity1.set && (await item.entity1.set.getBoolean())) ?? null;

@@ -337,7 +337,7 @@ export class StatesControler extends BaseClass {
                 this.triggerDB[id].subscribed.push(false);
                 this.triggerDB[id].triggerAllowed.push(trigger);
                 this.triggerDB[id].change.push(change ? change : 'ne');
-                this.log.debug(`Activate trigger from ${from.name} to ${id}`);
+                this.log.debug(`Add a trigger for ${from.name} to ${id}`);
             } else {
                 //nothing
             }
@@ -366,7 +366,7 @@ export class StatesControler extends BaseClass {
                 if (this.stateDB[id] !== undefined) {
                     delete this.stateDB[id];
                 }
-                this.log.debug(`Set a new trigger from ${from.name} to ${id}`);
+                this.log.debug(`Set a new trigger for ${from.panel.name}.${from.name} to ${id}`);
             } else {
                 delete this.triggerDB[id];
             }
@@ -402,6 +402,7 @@ export class StatesControler extends BaseClass {
                     entry.state = state;
                 }
             }
+            entry.subscribed[index] = true;
         }
     }
 
@@ -724,7 +725,7 @@ export class StatesControler extends BaseClass {
                     data[i] !== undefined
                         ? new Dataitem(
                               this.adapter,
-                              { ...d, name: `${this.name}.${parent.name}.${i}/${path}` },
+                              { ...d, name: `${this.name}.${parent.name}.${i}.${path}` },
                               parent,
                               this,
                           )
@@ -836,6 +837,7 @@ export class StatesControler extends BaseClass {
      * @param regexp - The regular expression to match the state ID.
      * @param triggered - Whether the state is triggered.
      * @param writeable - Whether the state is writeable.
+     * @param commonType - The common type of the state.
      * @returns A promise that resolves to the ID of the state if found, otherwise undefined.
      */
     async getIdbyAuto(
@@ -845,6 +847,7 @@ export class StatesControler extends BaseClass {
         regexp?: RegExp,
         triggered?: boolean,
         writeable?: boolean,
+        commonType?: ioBroker.CommonType | '',
     ): Promise<DataItemsOptions | undefined> {
         const status = { ok: true };
         let item: DataItemsOptions | undefined;
@@ -856,6 +859,7 @@ export class StatesControler extends BaseClass {
                 mode: 'auto',
                 regexp,
                 writeable,
+                commonType,
             };
         } else {
             item = {
@@ -865,6 +869,7 @@ export class StatesControler extends BaseClass {
                 mode: 'auto',
                 regexp,
                 writeable,
+                commonType,
             };
         }
         const data = await this.getDataItemsFromAuto(dpInit, { item: item }, '', enums, status, true);
@@ -915,7 +920,7 @@ export class StatesControler extends BaseClass {
                                     obj.type === 'state' &&
                                     (d.dp === '' || id.includes(d.dp)) &&
                                     (role === '' || obj.common.role === role) &&
-                                    (commonType === '' || obj.common.type === commonType) &&
+                                    (!commonType || obj.common.type === commonType) &&
                                     (!d.writeable || obj.common.write === d.writeable) &&
                                     (!d.regexp || id.match(d.regexp) !== null)
                                 ) {
