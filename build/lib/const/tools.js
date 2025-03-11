@@ -81,7 +81,7 @@ async function setValueEntry(i, value, sca = true) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();
       if (min !== null && max !== null) {
-        res = Math.round(import_Color.Color.scale(res, 100, 0, min, max));
+        res = Math.round(import_Color.Color.scale(res, 0, 100, min, max));
       }
     }
   }
@@ -272,7 +272,7 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
     const textFalse = i.false && i.false.text && await getValueEntryString(i.false.text) || null;
     if (typeof on === "number" && textFalse !== null) {
       const scale = i.scale && await i.scale.getObject();
-      if ((0, import_types.isPartialIconColorScaleElement)(scale)) {
+      if ((0, import_types.isPartialColorScaleElement)(scale)) {
         if (scale.val_min && scale.val_min >= on || scale.val_max && scale.val_max <= on) {
           return text;
         }
@@ -287,11 +287,11 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   const icon = i.true && i.true.value && await i.true.value.getString() || null;
   const scaleM = i.scale && await i.scale.getObject();
   if (typeof on === "boolean") {
-    const scale = (0, import_types.isPartialIconColorScaleElement)(scaleM) ? scaleM : { val_min: 0, val_max: 1 };
-    if (scale.val_min === 1 && scale.val_max === 0) {
+    const scale = (0, import_types.isPartialIconSelectScaleElement)(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
+    if (scale.valIcon_min === 1 && scale.valIcon_max === 0) {
       on = !on;
     }
-    if (scale.val_best !== void 0 && scale.val_best == 0) {
+    if (scale.valIcon_best !== void 0 && scale.valIcon_best == 0) {
       on = !on;
     }
     if (!on) {
@@ -300,10 +300,10 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
       );
     }
   } else if (typeof on === "number") {
-    const scale = (0, import_types.isPartialIconColorScaleElement)(scaleM) ? scaleM : { val_min: 0, val_max: 100 };
-    const swap = scale.val_min > scale.val_max;
-    const min = swap ? scale.val_max : scale.val_min;
-    const max = swap ? scale.val_min : scale.val_max;
+    const scale = (0, import_types.isPartialIconSelectScaleElement)(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
+    const swap = scale.valIcon_min > scale.valIcon_max;
+    const min = swap ? scale.valIcon_max : scale.valIcon_min;
+    const max = swap ? scale.valIcon_min : scale.valIcon_max;
     if (min < on && max > on) {
       return import_icon_mapping.Icons.GetIcon(
         i.unstable && i.unstable.value && await i.unstable.value.getString() || icon || def
@@ -391,7 +391,7 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           rColor = func(cfrom, cto, factor);
         }
         return String(import_Color.Color.rgb_dec565(rColor));
-      } else if ((0, import_types.isPartialIconColorScaleElement)(scale)) {
+      } else if ((0, import_types.isPartialColorScaleElement)(scale)) {
         if (scale.val_min && scale.val_min >= value || scale.val_max && scale.val_max <= value) {
           return String(import_Color.Color.rgb_dec565(cto));
         }

@@ -1,10 +1,12 @@
 # Table of contents
 * [Remarks](#feature-remarks)
 * [motion](#motion)
+* [timeTable](#timetable)
 * [dimmer](#dimmer)
 * [ct](#ct)
 * [window](#window)
 * [humidity](#humidity)
+* [value.humidity](#valuehumidity)
 * [hue](#hue)
 * [info](#info)
 * [blind](#blind)
@@ -28,13 +30,6 @@
 * [warning](#warning)
 * [weatherforecast](#weatherforecast)
 * [WIFI](#wifi)
-## Feature
-* [cie](#feature-cie)
-* [timeTable](#feature-timetable)
-* [info](#feature-info)
-* [airCondition](#feature-aircondition)
-* [gate](#feature-gate)
-* [thermostat](#feature-thermostat)
 ## Remarks
 
  -(not fully implemented) Crossed out DPs can be called whatever you want, only use the name if you have questions in issues or in the forum. 
@@ -42,6 +37,10 @@
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **motion** | ~~ACTUAL~~ | boolean| sensor.motion  | X |  |  | 
+### timeTable
+| Channel role | State ID | common.type | common.role | required | common.write | description |  
+| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
+| **timeTable** | ~~noNeed~~ | string| state  |  | X |  | 
 ### dimmer
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -66,6 +65,10 @@
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **humidity** | ~~ACTUAL~~ | number| value.humidity  | X |  |  | 
+### value.humidity
+| Channel role | State ID | common.type | common.role | required | common.write | description |  
+| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
+| **value.humidity** | ~~ACTUAL~~ | number| value.humidity  | X |  |  | 
 ### hue
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -186,7 +189,7 @@
 | **"** | ~~LOWBAT~~ | boolean| indicator.maintenance.lowbat  |  |  |  | 
 | **"** | ~~MANUAL~~ | boolean| state  |  |  |  | 
 | **"** | ~~UNREACH~~ | boolean| indicator.maintenance.unreach  |  |  |  | 
-| **"** | ~~HUMINITY~~ | number| value.humidity  |  |  |  | 
+| **"** | ~~HUMIDITY~~ | number| value.humidity  |  |  |  | 
 | **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  |  | 
 | **"** | ~~PARTY~~ | boolean| switch.mode.party  |  |  |  | 
 | **"** | ~~POWER~~ | boolean| switch.power  |  | X |  | 
@@ -238,66 +241,3 @@
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **WIFI** | ~~ACTUAL~~ | string| state  | X |  |  | 
 | **"** | ~~SWITCH~~ | boolean| switch  |  | X |  | 
-# Feature datapoints
-### Feature: cie
-| Channel role | State ID | common.type | common.role | required | common.write | description |  
-| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **cie** | CIE | string| level.color.cie  | X |  |  | 
-| **"** | DIMMER | boolean| level.dimmer  | X |  |  | 
-| **"** | ON | boolean| switch.light  | X |  |  | 
-| **"** | ON_ACTUAL | boolean| sensor.light  | X |  |  | 
-| **"** | TEMPERATURE | number| level.color.temperature  | X |  |  | 
-### Feature: timeTable
-| Channel role | State ID | common.type | common.role | required | common.write | description |  
-| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **timeTable** | ACTUAL | string| text  | X |  |  | 
-| **"** | VEHICLE | string| text  | X |  |  | 
-| **"** | DIRECTION | string| text  | X |  |  | 
-| **"** | DELAY | boolean| indicator  | X |  |  | 
-### Feature: info
-| Channel role | State ID | common.type | common.role | required | common.write | description |  
-| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **info** | ACTUAL | string| text  | X |  |  | 
-### Feature: airCondition
-| Channel role | State ID | common.type | common.role | required | common.write | description |  
-| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **airCondition** | ACTUAL | number| value.temperature  | X |  |  | 
-| **"** | SET | number| level.temperature  | X |  |  | 
-| **"** | AUTO | boolean| switch  |  |  |  | 
-| **"** | COOL | boolean| switch  |  |  |  | 
-| **"** | BOOST | boolean| switch.mode.boost  |  |  |  | 
-| **"** | ERROR | boolean| indicator.error  |  |  |  | 
-| **"** | HEAT | boolean| switch  |  |  |  | 
-| **"** | HUMINITY | number| value.humidity  |  |  |  | 
-| **"** | MAINTAIN | boolean| indicator.maintenance  |  |  |  | 
-| **"** | MODE | number| level.mode.airconditioner  | X |  |  | 
-| **"** | OFF | boolean| switch  | X |  |  | 
-| **"** | POWER | boolean| switch.power  |  |  |  | 
-| **"** | SPEED | number| level.mode.fan  |  |  |  | 
-| **"** | SWING | boolean| switch.mode.swing  |  |  |  | 
-| **"** | UNREACH | boolean| indicator.maintenance.unreach  |  |  |  | 
-### Feature: gate
-| Channel role | State ID | common.type | common.role | required | common.write | description |  
-| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **gate** | ACTUAL | number| value.blind, value.blind  | X |  |  | 
-| **"** | SET | boolean| switch.gate  | X | X |  | 
-| **"** | STOP | boolean| button.stop  | X | X |  | 
-### Feature: thermostat
-| Channel role | State ID | common.type | common.role | required | common.write | description |  
-| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **thermostat** | ACTUAL | number| value.temperature  | X |  |  | 
-| **"** | SET | number| level.temperature  | X |  |  | 
-| **"** | MODE | number| level.mode.thermostat  | X |  |  | 
-| **"** | BOOST | boolean| switch.mode.boost  |  |  |  | 
-| **"** | AUTOMATIC | boolean| switch.mode.auto  | X |  |  | 
-| **"** | ERROR | boolean| indicator.error  |  |  |  | 
-| **"** | LOWBAT | boolean| indicator.maintenance.lowbat  |  |  |  | 
-| **"** | MANUAL | boolean| switch.mode.manual  |  |  |  | 
-| **"** | UNREACH | boolean| indicator.maintenance.unreach  |  |  |  | 
-| **"** | HUMINITY | number| value.humidity  |  |  |  | 
-| **"** | MAINTAIN | boolean| indicator.maintenance  |  |  |  | 
-| **"** | PARTY | boolean| switch.mode.party  |  |  |  | 
-| **"** | POWER | boolean| switch.power  |  |  |  | 
-| **"** | VACATION | boolean| switch  |  |  |  | 
-| **"** | WINDOWOPEN | boolean| sensor.window  |  |  |  | 
-| **"** | WORKING | boolean| indicator.working  |  |  |  | 

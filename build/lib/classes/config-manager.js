@@ -34,8 +34,8 @@ class ConfigManager extends import_library.BaseClass {
   colorOff = import_Color.Color.Off;
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
-  scriptVersion = "0.6.0";
-  breakingVersion = "0.2.0";
+  scriptVersion = "0.6.1";
+  breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
     super(adapter, "config-manager");
@@ -65,7 +65,7 @@ class ConfigManager extends import_library.BaseClass {
       configuration.advancedOptions || {}
     );
     const config = Object.assign(import_config_manager_const.defaultConfig, configuration);
-    if (!config || !(0, import_config_manager_const.isConfig)(config)) {
+    if (!config || !(0, import_config_manager_const.isConfig)(config, this.adapter)) {
       this.log.error(
         `Invalid configuration from Script: ${config ? config.panelName || config.panelTopic || JSON.stringify(config) : "undefined"}`
       );
@@ -78,7 +78,7 @@ class ConfigManager extends import_library.BaseClass {
     const breakingVersion = this.breakingVersion.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
     if (version < breakingVersion) {
       messages.push(
-        `Update Script! Panel for Topic: ${config.panelTopic} Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`
+        `Update Script! Panel for Topic: ${config.panelTopic} - Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`
       );
       this.log.error(messages[messages.length - 1]);
       return { messages: ["Invalid configuration"], panelConfig: void 0 };
@@ -368,7 +368,10 @@ class ConfigManager extends import_library.BaseClass {
     let itemConfig = void 0;
     const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
     const obj = item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
-    const role = obj && obj.common.role ? obj.common.role : void 0;
+    if (!obj || !obj.common || !obj.common.role) {
+      throw new Error(`Role missing in ${item.id}!`);
+    }
+    const role = obj.common.role;
     const commonName = obj && obj.common ? typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()] : void 0;
     const getButtonsTextTrue = async (item2, def1) => {
       return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
@@ -412,7 +415,7 @@ class ConfigManager extends import_library.BaseClass {
         }
       };
     }
-    if (obj && (!obj.common || !obj.common.role)) {
+    if (obj && (!obj.common || !obj.common.role || role == null)) {
       throw new Error(`Role missing in ${item.id}!`);
     }
     if (role) {
@@ -507,8 +510,8 @@ class ConfigManager extends import_library.BaseClass {
         itemConfig = tempItem;
         break;
       }
-      case "humidity":
-      case "value.humidity": {
+      case "value.humidity":
+      case "humidity": {
         {
           itemConfig = {
             type: "button",
@@ -533,9 +536,9 @@ class ConfigManager extends import_library.BaseClass {
         }
         break;
       }
+      case "value.temperature":
       case "temperature":
-      case "thermostat":
-      case "value.temperature": {
+      case "thermostat": {
         itemConfig = {
           type: "button",
           dpInit: item.id,
@@ -692,7 +695,6 @@ class ConfigManager extends import_library.BaseClass {
         };
         break;
       }
-      case "volumeGroup":
       case "volume": {
         itemConfig = {
           template: "button.volume",
@@ -800,18 +802,14 @@ class ConfigManager extends import_library.BaseClass {
         };
         break;
       }
+      case "timeTable":
+        break;
       case "airCondition":
       case "lock":
       case "slider":
       case "buttonSensor":
-      case "value.time":
       case "level.timer":
-      case "value.alarmtime":
-      case "level.mode.fan":
-      case "switch.mode.wlan":
-      case "media":
-      case "timeTable":
-      case "cie": {
+      case "level.mode.fan": {
         throw new Error(`DP: ${item.id} - Navigation for channel: ${role} not implemented yet!!`);
       }
       default:
@@ -836,7 +834,7 @@ class ConfigManager extends import_library.BaseClass {
           throw new Error(`Role missing in ${item.id}!`);
         }
         const role = obj.common.role;
-        if (!import_config_manager_const.requiredFeatureDatapoints[role] && !import_config_manager_const.requiredScriptDataPoints[role]) {
+        if (!import_config_manager_const.requiredScriptDataPoints[role]) {
           throw new Error(`Channel role ${role} not supported!`);
         }
         if (!await this.checkRequiredDatapoints(role, item)) {
@@ -1191,9 +1189,9 @@ class ConfigManager extends import_library.BaseClass {
           case "motion":
           case "info":
           case "humidity":
-          case "temperature":
-          case "value.temperature":
           case "value.humidity":
+          case "value.temperature":
+          case "temperature":
           case "door":
           case "window": {
             let iconOn = "door-open";
@@ -1237,8 +1235,8 @@ class ConfigManager extends import_library.BaseClass {
                 adapterRole = specialRole;
                 break;
               }
-              case "temperature":
-              case "value.temperature": {
+              case "value.temperature":
+              case "temperature": {
                 iconOn = "thermometer";
                 iconOff = "snowflake-thermometer";
                 iconUnstable = "sun-thermometer";
@@ -1247,8 +1245,8 @@ class ConfigManager extends import_library.BaseClass {
                 commonUnit = obj2 && obj2.common && obj2.common.unit ? obj2.common.unit : void 0;
                 break;
               }
-              case "humidity":
-              case "value.humidity": {
+              case "value.humidity":
+              case "humidity": {
                 iconOn = "water-percent";
                 iconOff = "water-off";
                 iconUnstable = "water-percent-alert";
@@ -1294,7 +1292,7 @@ class ConfigManager extends import_library.BaseClass {
                 entity1: {
                   value: { type: "triggered", dp: `${item.id}.ACTUAL` }
                 },
-                entity2: role === "temperature" || role === "value.temperature" || role === "humidity" || role === "value.humidity" || role === "info" ? {
+                entity2: role === "temperature" || role === "humidity" || role === "info" ? {
                   value: { type: "state", dp: `${item.id}.ACTUAL` },
                   unit: commonUnit ? { type: "const", constVal: commonUnit } : void 0
                 } : void 0
@@ -1305,7 +1303,6 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "thermostat":
             break;
-          case "volumeGroup":
           case "volume": {
             itemConfig = {
               template: "number.volume",
@@ -1328,16 +1325,11 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "warning":
-          case "cie":
           case "buttonSensor":
-          case "value.time":
           case "level.timer":
-          case "value.alarmtime":
           case "level.mode.fan":
           case "lock":
           case "slider":
-          case "switch.mode.wlan":
-          case "media":
           case "airCondition": {
             throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
             break;
@@ -1576,64 +1568,43 @@ class ConfigManager extends import_library.BaseClass {
   async checkRequiredDatapoints(role, item, mode = "both") {
     const _checkScriptDataPoints = async (role2, item2) => {
       let error = "";
-      if (!import_config_manager_const.requiredScriptDataPoints[role2]) {
-        throw new Error(`Role ${role2} is not supported!`);
-      }
-      for (const dp in (import_config_manager_const.requiredScriptDataPoints[role2] || {}).data) {
-        try {
-          const o = dp !== "" && !dp.endsWith(".") ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
-          if (!o && !import_config_manager_const.requiredScriptDataPoints[role2].data[dp].required) {
+      const subItem = import_config_manager_const.requiredScriptDataPoints[role2];
+      if (subItem && subItem.data) {
+        for (const dp in subItem.data) {
+          if (!(dp in subItem.data)) {
             continue;
           }
-          if (!o || !this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) || import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type !== "mixed" && o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type || import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write) {
-            if (!o) {
-              throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
-            } else {
-              throw new Error(
-                `Datapoint ${item2.id}.${dp}:${!this.checkStringVsStringOrArray(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredScriptDataPoints[role2].data[dp].role)})` : ""} ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type !== "mixed" && o.common.type !== import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].type}` : ""}${import_config_manager_const.requiredScriptDataPoints[role2].data[dp].writeable && !o.common.write ? " must be writeable!" : ""} `
-              );
+          const key = dp;
+          try {
+            const o = dp !== "" && !dp.endsWith(".") ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
+            if (!o || subItem.data[key] === void 0 || !subItem.data[key].required) {
+              continue;
             }
+            if (!o || !this.checkStringVsStringOrArray(subItem.data[key].role, o.common.role) || subItem.data[key].type !== "mixed" && o.common.type !== subItem.data[key].type || subItem.data[key].writeable && !o.common.write) {
+              if (!o) {
+                throw new Error(
+                  `Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`
+                );
+              } else {
+                throw new Error(
+                  `Datapoint ${item2.id}.${dp}:${!this.checkStringVsStringOrArray(subItem.data[key].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(subItem.data[key].role)})` : ""} ${subItem.data[key].type !== "mixed" && o.common.type !== subItem.data[key].type ? ` type: ${o.common.type} should be ${subItem.data[key].type}` : ""}${subItem.data[key].writeable && !o.common.write ? " must be writeable!" : ""} `
+                );
+              }
+            }
+          } catch (err) {
+            error += err;
           }
-        } catch (err) {
-          error += err;
         }
+      } else {
+        throw new Error(`Role ${role2} is not supported!`);
       }
       if (error) {
         throw new Error(error);
       }
       return true;
     };
-    const _checkDataPoints = async (role2, item2) => {
-      let error = "";
-      if (!import_config_manager_const.requiredFeatureDatapoints[role2]) {
-        return false;
-      }
-      for (const dp in (import_config_manager_const.requiredFeatureDatapoints[role2] || {}).data) {
-        try {
-          const o = dp !== "" ? await this.adapter.getForeignObjectAsync(`${item2.id}.${dp}`) : void 0;
-          if (!o && !import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].required) {
-            continue;
-          }
-          if (!o || !this.checkStringVsStringOrArray(
-            import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role,
-            o.common.role
-          ) || import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type !== "mixed" && o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type) {
-            if (!o) {
-              throw new Error(`Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`);
-            } else {
-              throw new Error(
-                `Datapoint ${item2.id}.${dp}:${!this.checkStringVsStringOrArray(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role, o.common.role) ? ` role: ${o.common.role} should be ${(0, import_readme.getStringOrArray)(import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].role)}` : ""} ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type !== "mixed" && o.common.type !== import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type ? ` type: ${o.common.type} should be ${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].type}` : ""}${import_config_manager_const.requiredFeatureDatapoints[role2].data[dp].writeable && !o.common.write ? " must be writeable!" : ""} `
-              );
-            }
-          }
-        } catch (err) {
-          error += err;
-        }
-      }
-      if (error) {
-        throw new Error(error);
-      }
-      return true;
+    const _checkDataPoints = async () => {
+      return false;
     };
     if (mode === "both" || mode === "script") {
       try {
@@ -1642,7 +1613,7 @@ class ConfigManager extends import_library.BaseClass {
         }
       } catch (error) {
         try {
-          if (await _checkDataPoints(role, item)) {
+          if (await _checkDataPoints()) {
             return true;
           }
         } catch {
@@ -1656,7 +1627,7 @@ class ConfigManager extends import_library.BaseClass {
       }
     } else {
       try {
-        if (await _checkDataPoints(role, item)) {
+        if (await _checkDataPoints()) {
           return true;
         }
       } catch (error) {

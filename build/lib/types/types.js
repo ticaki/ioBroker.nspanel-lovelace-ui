@@ -23,8 +23,8 @@ __export(types_exports, {
   isEventType: () => isEventType,
   isIconColorScaleElement: () => isIconColorScaleElement,
   isIconSelectScaleElement: () => isIconSelectScaleElement,
-  isPartialIconColorScaleElement: () => isPartialIconColorScaleElement,
-  isPartialSelectColorScaleElement: () => isPartialSelectColorScaleElement,
+  isPartialColorScaleElement: () => isPartialColorScaleElement,
+  isPartialIconSelectScaleElement: () => isPartialIconSelectScaleElement,
   isPopupType: () => isPopupType,
   isValueDateFormat: () => isValueDateFormat
 });
@@ -84,13 +84,13 @@ function isValueDateFormat(F) {
 function isIconColorScaleElement(F) {
   return F && "val_min" in F && "val_max" in F;
 }
-function isPartialIconColorScaleElement(F) {
+function isPartialColorScaleElement(F) {
   return F && ("val_min" in F || "val_max" in F);
 }
 function isIconSelectScaleElement(F) {
   return F && "valIcon_min" in F && "valIcon_max" in F;
 }
-function isPartialSelectColorScaleElement(F) {
+function isPartialIconSelectScaleElement(F) {
   return F && ("valIcon_min" in F || "valIcon_max" in F);
 }
 function isEventType(F) {
@@ -103,8 +103,8 @@ function isEventType(F) {
   isEventType,
   isIconColorScaleElement,
   isIconSelectScaleElement,
-  isPartialIconColorScaleElement,
-  isPartialSelectColorScaleElement,
+  isPartialColorScaleElement,
+  isPartialIconSelectScaleElement,
   isPopupType,
   isValueDateFormat
 });

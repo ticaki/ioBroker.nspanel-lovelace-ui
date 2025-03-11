@@ -259,7 +259,7 @@ class Dataitem extends import_library.BaseClass {
     if (result && (typeof result.val === "number" || typeof result.val === "string" && result.val && !isNaN(parseInt(result.val)))) {
       let val = parseFloat(String(result.val));
       if (this.options.scale !== void 0) {
-        val = Math.trunc(import_Color.Color.scale(val, this.options.scale.max, this.options.scale.min, 0, 100));
+        val = Math.trunc(import_Color.Color.scale(val, this.options.scale.min, this.options.scale.max, 0, 100));
       }
       return val;
     }

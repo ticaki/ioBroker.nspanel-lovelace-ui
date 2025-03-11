@@ -35,13 +35,13 @@ tests.integration(path.join(__dirname, '..'), {
                 await harness.objects.getObject('system.adapter.nspanel-lovelace-ui.0', async (err, obj) => {
                     obj.native.testCase = true;
                     obj.native.mqttServer = true;
-                    obj.native.mqttPassword = '';
+                    obj.native.mqttPassword = '1234';
                     obj.native.mqttUsername = 'test';
                     obj.native.mqttIp = '';
                     obj.native.mqttPort = 1883;
                     obj.native.mqttTopic = 'test';
                     obj.native.panels = [
-                        { id: 'A0_B7_A5_54_C0_71', name: 'test', topic: 'test/123456', removeIt: false },
+                        { id: 'A0_B7_A5_54_C0_71', name: 'test', topic: 'test/123456', ip:'1.1.1.1' },
                     ];
 
                     harness.objects.setObject(obj._id, obj)

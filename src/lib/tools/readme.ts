@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { requiredScriptDataPoints, requiredFeatureDatapoints } from '../const/config-manager-const';
+import { requiredScriptDataPoints } from '../const/config-manager-const';
 
 export async function generateAliasDocumentation(): Promise<void> {
     const checkPath = '.dev-data';
@@ -11,56 +11,20 @@ export async function generateAliasDocumentation(): Promise<void> {
         let table = '# Table of contents\n';
         let readme = '';
         table += `* [Remarks](#feature-${'Remarks'.toLowerCase().replace(/[^a-z0-9]+/g, '')})\n`;
-        for (const folder in requiredScriptDataPoints) {
+        for (const f in requiredScriptDataPoints) {
+            const folder = f as keyof typeof requiredScriptDataPoints;
             const data = requiredScriptDataPoints[folder];
             readme += `### ${folder}\n`;
             readme += header;
             table += `* [${folder}](#${folder.toLowerCase().replace(/[^a-z0-9]+/g, '')})\n`;
 
-            for (const key in data.data) {
+            for (const k in data.data) {
+                const key = k as keyof typeof data.data;
                 const row = data.data[key];
-                readme += `| **${folder == lastFolder ? '"' : folder}** | ${row.useKey ? key : `~~${key}~~`} | ${row.type}| ${getStringOrArray(row.role)}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
-                lastFolder = folder;
-            }
-        }
-        let first = true;
-        for (const folder in requiredFeatureDatapoints) {
-            const data = requiredFeatureDatapoints[folder];
-            const data2 = requiredScriptDataPoints[folder];
-            if (!data2) {
-                console.log(`Feature ${folder} not found in requiredScriptDataPoints`);
-            }
-
-            let next = true;
-            for (const key in data.data) {
-                if (
-                    !data2 ||
-                    !data2.data[key] ||
-                    data2.data[key].type != data.data[key].type ||
-                    data2.data[key].role != data.data[key].role ||
-                    !!data2.data[key].required != !!data.data[key].required ||
-                    !!data2.data[key].writeable != !!data.data[key].writeable
-                ) {
-                    next = false;
-                    break;
+                if (row === undefined) {
+                    continue;
                 }
-            }
-            if (next) {
-                continue;
-            }
-            if (first) {
-                table += `## Feature\n`;
-                readme += `# Feature datapoints\n`;
-            }
-            first = false;
-            readme += `### Feature: ${folder}\n`;
-            readme += header;
-
-            table += `* [${folder}](#feature-${folder.toLowerCase().replace(/[^a-z0-9]+/g, '')})\n`;
-
-            for (const key in data.data) {
-                const row = data.data[key];
-                readme += `| **${folder == lastFolder ? '"' : folder}** | ${key} | ${row.type}| ${getStringOrArray(row.role)}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
+                readme += `| **${folder == lastFolder ? '"' : folder}** | ${row.useKey ? key : `~~${key}~~`} | ${row.type}| ${getStringOrArray(row.role)}  | ${row.required ? 'X' : ''} | ${row.writeable ? 'X' : ''} | ${row.description ? row.description : ''} | \n`;
                 lastFolder = folder;
             }
         }

@@ -19,10 +19,10 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var config_manager_const_exports = {};
 __export(config_manager_const_exports, {
   CustomTemplates: () => CustomTemplates,
+  checkedDatapoints: () => checkedDatapoints,
   defaultConfig: () => defaultConfig,
   isButton: () => isButton,
   isConfig: () => isConfig,
-  requiredFeatureDatapoints: () => requiredFeatureDatapoints,
   requiredScriptDataPoints: () => requiredScriptDataPoints
 });
 module.exports = __toCommonJS(config_manager_const_exports);
@@ -49,25 +49,31 @@ function isButton(F) {
   }
   return "mode" in F && (F.mode === "page" && F.page || "state" in F && (F.mode === "switch" || F.mode === "button") && F.state);
 }
-function isConfig(F) {
+function isConfig(F, adapter) {
   if (F === void 0) {
     return false;
   }
   const requiredFields = [
     "panelTopic",
     "weatherEntity",
-    "defaultColor",
     "defaultOnColor",
     "defaultOffColor",
     "defaultBackgroundColor",
     "pages",
     "subPages",
-    "button1",
-    "button2",
-    "bottomScreensaverEntity"
+    "buttonLeft",
+    "buttonRight",
+    "bottomScreensaverEntity",
+    "favoritScreensaverEntity",
+    "alternateScreensaverEntity",
+    "leftScreensaverEntity",
+    "indicatorScreensaverEntity",
+    "mrIcon1ScreensaverEntity",
+    "mrIcon2ScreensaverEntity"
   ];
   for (const field of requiredFields) {
     if (F[field] === void 0) {
+      adapter.log.warn(`Required field '${field}' is missing in config - Aborting for this panel`);
       return false;
     }
   }
@@ -142,12 +148,255 @@ const defaultConfig = {
     }
   }
 };
+const checkedDatapoints = {
+  motion: {
+    role: "motion",
+    data: {
+      ACTUAL: ""
+    }
+  },
+  dimmer: {
+    role: "dimmer",
+    data: {
+      SET: "",
+      ACTUAL: "",
+      ON_SET: "",
+      ON_ACTUAL: ""
+    }
+  },
+  ct: {
+    role: "ct",
+    data: {
+      DIMMER: "",
+      ON: "",
+      ON_ACTUAL: "",
+      TEMPERATURE: ""
+    }
+  },
+  window: {
+    role: "window",
+    data: {
+      ACTUAL: "",
+      COLORDEC: "",
+      BUTTONTEXT: ""
+    }
+  },
+  humidity: {
+    role: "humidity",
+    data: {
+      ACTUAL: ""
+    }
+  },
+  hue: {
+    role: "hue",
+    data: {
+      DIMMER: "",
+      ON: "",
+      ON_ACTUAL: "",
+      TEMPERATURE: "",
+      HUE: ""
+    }
+  },
+  info: {
+    role: "info",
+    data: {
+      ACTUAL: "",
+      COLORDEC: "",
+      BUTTONTEXT: "",
+      USERICON: ""
+    }
+  },
+  blind: {
+    role: "blind",
+    data: {
+      ACTUAL: "",
+      SET: "",
+      CLOSE: "",
+      OPEN: "",
+      STOP: "",
+      TILT_ACTUAL: "",
+      TILT_SET: "",
+      TILT_CLOSE: "",
+      TILT_OPEN: "",
+      TILT_STOP: ""
+    }
+  },
+  airCondition: {
+    role: "airCondition",
+    data: {
+      ACTUAL: "",
+      SET: "",
+      SET2: "",
+      AUTO: "",
+      COOL: "",
+      BOOST: "",
+      ERROR: "",
+      HEAT: "",
+      HUMIDITY: "",
+      MAINTAIN: "",
+      MODE: "",
+      OFF: "",
+      POWER: "",
+      SPEED: "",
+      SWING: "",
+      UNREACH: ""
+    }
+  },
+  socket: {
+    role: "socket",
+    data: {
+      ACTUAL: "",
+      SET: "",
+      COLORDEC: "",
+      BUTTONTEXT: ""
+    }
+  },
+  light: {
+    role: "light",
+    data: {
+      ACTUAL: "",
+      SET: "",
+      COLORDEC: "",
+      BUTTONTEXT: ""
+    }
+  },
+  volume: {
+    role: "volume",
+    data: {
+      ACTUAL: "",
+      SET: "",
+      MUTE: ""
+    }
+  },
+  rgb: {
+    role: "rgb",
+    data: {
+      RED: "",
+      GREEN: "",
+      BLUE: "",
+      ON_ACTUAL: "",
+      ON: "",
+      DIMMER: "",
+      TEMPERATURE: "",
+      WHITE: ""
+    }
+  },
+  rgbSingle: {
+    role: "rgbSingle",
+    data: {
+      RGB: "",
+      ON: "",
+      DIMMER: "",
+      TEMPERATURE: "",
+      ON_ACTUAL: ""
+    }
+  },
+  slider: {
+    role: "slider",
+    data: {
+      SET: "",
+      ACTUAL: ""
+    }
+  },
+  button: {
+    role: "button",
+    data: {
+      SET: ""
+    }
+  },
+  buttonSensor: {
+    role: "buttonSensor",
+    data: {
+      ACTUAL: ""
+    }
+  },
+  temperature: {
+    role: "temperature",
+    data: {
+      ACTUAL: ""
+    }
+  },
+  thermostat: {
+    role: "thermostat",
+    data: {
+      ACTUAL: "",
+      SET: "",
+      MODE: "",
+      BOOST: "",
+      AUTOMATIC: "",
+      ERROR: "",
+      LOWBAT: "",
+      MANUAL: "",
+      UNREACH: "",
+      HUMIDITY: "",
+      MAINTAIN: "",
+      PARTY: "",
+      POWER: "",
+      VACATION: "",
+      WINDOWOPEN: "",
+      WORKING: "",
+      USERICON: ""
+    }
+  },
+  "level.timer": {
+    role: "level.timer",
+    data: {
+      ACTUAL: "",
+      STATE: ""
+    }
+  },
+  gate: {
+    role: "gate",
+    data: {
+      ACTUAL: ""
+    }
+  },
+  door: {
+    role: "door",
+    data: {
+      ACTUAL: "",
+      COLORDEC: "",
+      BUTTONTEXT: ""
+    }
+  },
+  "level.mode.fan": {
+    role: "level.mode.fan",
+    data: {
+      ACTUAL: "",
+      MODE: "",
+      SET: "",
+      SPEED: ""
+    }
+  },
+  lock: {
+    role: "lock",
+    data: {
+      ACTUAL: "",
+      OPEN: "",
+      SET: ""
+    }
+  },
+  warning: {
+    role: "warning",
+    data: {
+      INFO: "",
+      LEVEL: "",
+      TITLE: ""
+    }
+  }
+};
 const requiredScriptDataPoints = {
   motion: {
     updatedVersion: true,
     name: "motion",
     description: "Status of the motion sensor or presence detector (motion or presence detected)",
     data: { ACTUAL: { role: "sensor.motion", type: "boolean", required: true, writeable: false } }
+  },
+  timeTable: {
+    updatedVersion: true,
+    name: "timeTable",
+    description: "Time table for the heating",
+    data: { noNeed: { role: "state", type: "string", required: false, writeable: true } }
   },
   //läuft im Script mit unter RGBsingle, muss nochmal geprüft werden ob sinnvoll
   /* cie: {
@@ -196,6 +445,12 @@ const requiredScriptDataPoints = {
     }
   },
   humidity: {
+    updatedVersion: true,
+    name: "humidity",
+    description: "",
+    data: { ACTUAL: { role: "value.humidity", type: "number", required: true, writeable: false } }
+  },
+  "value.humidity": {
     updatedVersion: true,
     name: "humidity",
     description: "",
@@ -393,7 +648,7 @@ const requiredScriptDataPoints = {
       LOWBAT: { role: "indicator.maintenance.lowbat", type: "boolean", required: false, writeable: false },
       MANUAL: { role: "state", type: "boolean", required: false },
       UNREACH: { role: "indicator.maintenance.unreach", type: "boolean", required: false, writeable: false },
-      HUMINITY: { role: "value.humidity", type: "number", required: false, writeable: false },
+      HUMIDITY: { role: "value.humidity", type: "number", required: false, writeable: false },
       MAINTAIN: { role: "indicator.maintenance", type: "boolean", required: false, writeable: false },
       PARTY: { role: "switch.mode.party", type: "boolean", required: false },
       POWER: { role: "switch.power", type: "boolean", required: false, writeable: true },
@@ -473,89 +728,13 @@ const requiredScriptDataPoints = {
     }
   }
 };
-const requiredFeatureDatapoints = {
-  cie: {
-    name: "cie",
-    description: "",
-    data: {
-      CIE: { role: "level.color.cie", type: "string", required: true },
-      DIMMER: { role: "level.dimmer", type: "boolean", required: true },
-      ON: { role: "switch.light", type: "boolean", required: true },
-      ON_ACTUAL: { role: "sensor.light", type: "boolean", required: true },
-      TEMPERATURE: { role: "level.color.temperature", type: "number", required: true }
-    }
-  },
-  timeTable: {
-    name: "timeTable",
-    description: "",
-    data: {
-      ACTUAL: { role: "text", type: "string", required: true },
-      VEHICLE: { role: "text", type: "string", required: true },
-      DIRECTION: { role: "text", type: "string", required: true },
-      DELAY: { role: "indicator", type: "boolean", required: true }
-    }
-  },
-  info: { name: "info", description: "", data: { ACTUAL: { role: "text", type: "string", required: true } } },
-  airCondition: {
-    name: "airCondition",
-    description: "",
-    data: {
-      ACTUAL: { role: "value.temperature", type: "number", required: true },
-      SET: { role: "level.temperature", type: "number", required: true },
-      AUTO: { role: "switch", type: "boolean", required: false },
-      COOL: { role: "switch", type: "boolean", required: false },
-      BOOST: { role: "switch.mode.boost", type: "boolean", required: false },
-      ERROR: { role: "indicator.error", type: "boolean", required: false },
-      HEAT: { role: "switch", type: "boolean", required: false },
-      HUMINITY: { role: "value.humidity", type: "number", required: false },
-      MAINTAIN: { role: "indicator.maintenance", type: "boolean", required: false },
-      MODE: { role: "level.mode.airconditioner", type: "number", required: true },
-      OFF: { role: "switch", type: "boolean", required: true },
-      POWER: { role: "switch.power", type: "boolean", required: false },
-      SPEED: { role: "level.mode.fan", type: "number", required: false },
-      SWING: { role: "switch.mode.swing", type: "boolean", required: false },
-      UNREACH: { role: "indicator.maintenance.unreach", type: "boolean", required: false }
-    }
-  },
-  gate: {
-    name: "gate",
-    description: "",
-    data: {
-      ACTUAL: { role: ["value.blind", "value.blind"], type: "number", required: true, writeable: false },
-      SET: { role: "switch.gate", type: "boolean", required: true, writeable: true },
-      STOP: { role: "button.stop", type: "boolean", required: true, writeable: true }
-    }
-  },
-  thermostat: {
-    name: "thermostat",
-    description: "",
-    data: {
-      ACTUAL: { role: "value.temperature", type: "number", required: true },
-      SET: { role: "level.temperature", type: "number", required: true },
-      MODE: { role: "level.mode.thermostat", type: "number", required: true },
-      BOOST: { role: "switch.mode.boost", type: "boolean", required: false },
-      AUTOMATIC: { role: "switch.mode.auto", type: "boolean", required: true },
-      ERROR: { role: "indicator.error", type: "boolean", required: false },
-      LOWBAT: { role: "indicator.maintenance.lowbat", type: "boolean", required: false },
-      MANUAL: { role: "switch.mode.manual", type: "boolean", required: false },
-      UNREACH: { role: "indicator.maintenance.unreach", type: "boolean", required: false },
-      HUMINITY: { role: "value.humidity", type: "number", required: false },
-      MAINTAIN: { role: "indicator.maintenance", type: "boolean", required: false },
-      PARTY: { role: "switch.mode.party", type: "boolean", required: false },
-      POWER: { role: "switch.power", type: "boolean", required: false },
-      VACATION: { role: "switch", type: "boolean", required: false },
-      WINDOWOPEN: { role: "sensor.window", type: "boolean", required: false },
-      WORKING: { role: "indicator.working", type: "boolean", required: false }
-    }
-  }
-};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CustomTemplates,
+  checkedDatapoints,
   defaultConfig,
   isButton,
   isConfig,
-  requiredFeatureDatapoints,
   requiredScriptDataPoints
 });
 //# sourceMappingURL=config-manager-const.js.map

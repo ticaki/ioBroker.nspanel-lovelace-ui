@@ -67,7 +67,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     });
     this.library = new import_library.Library(this);
     if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
-      this.config.mqttPassword = this.config.mqttPassword || "1234";
+      this.config.mqttPassword = this.config.mqttPassword || "";
       const port = await this.getPortAsync(this.config.mqttPort);
       if (port != this.config.mqttPort) {
         this.log.error(`Port ${this.config.mqttPort} is already in use!`);
@@ -142,8 +142,8 @@ class NspanelLovelaceUi extends utils.Adapter {
       }
       const scriptConfig = config;
       if (scriptConfig.length === 0) {
-        this.log.error("No compatible config found, paused!");
         if (!this.config.testCase) {
+          this.log.error("No compatible config found, paused!");
           return;
         }
       }

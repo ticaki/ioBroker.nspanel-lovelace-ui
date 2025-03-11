@@ -1,3 +1,4 @@
+import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { ConfigButtonFunction } from '../types/types';
 
 export const CustomTemplates: ConfigManager.CustomTemplate[] = [
@@ -37,26 +38,32 @@ export function isButton(F: any): F is ConfigButtonFunction {
  * Also brauche ich an der stelle ein sendToSelect das manuelle eingaben erlaubt. mal testen
  */
 
-export function isConfig(F: any): F is ScriptConfig.Config {
+export function isConfig(F: any, adapter: NspanelLovelaceUi): F is ScriptConfig.Config {
     if (F === undefined) {
         return false;
     }
-    const requiredFields = [
+    const requiredFields: (keyof ScriptConfig.Config)[] = [
         'panelTopic',
         'weatherEntity',
-        'defaultColor',
         'defaultOnColor',
         'defaultOffColor',
         'defaultBackgroundColor',
         'pages',
         'subPages',
-        'button1',
-        'button2',
+        'buttonLeft',
+        'buttonRight',
         'bottomScreensaverEntity',
+        'favoritScreensaverEntity',
+        'alternateScreensaverEntity',
+        'leftScreensaverEntity',
+        'indicatorScreensaverEntity',
+        'mrIcon1ScreensaverEntity',
+        'mrIcon2ScreensaverEntity',
     ];
 
     for (const field of requiredFields) {
         if (F[field] === undefined) {
+            adapter.log.warn(`Required field '${field}' is missing in config - Aborting for this panel`);
             return false;
         }
     }
@@ -132,32 +139,745 @@ export const defaultConfig: ScriptConfig.Config = {
     },
 };
 
-type requiredDatapoints = {
-    [key: string]: {
+export type checkedDatapoints = {
+    [key: string]: checkedDatapointsUnion;
+};
+export type checkedDatapointsUnion = { role: ScriptConfig.channelRoles } & (
+    | { role: 'motion'; data: { ACTUAL: string } }
+    | { role: 'dimmer'; data: { SET: string; ACTUAL: string; ON_SET: string; ON_ACTUAL: string } }
+    | { role: 'ct'; data: { DIMMER: string; ON: string; ON_ACTUAL: string; TEMPERATURE: string } }
+    | { role: 'window'; data: { ACTUAL: string; COLORDEC: string; BUTTONTEXT: string } }
+    | { role: 'humidity'; data: { ACTUAL: string } }
+    | { role: 'hue'; data: { DIMMER: string; ON: string; ON_ACTUAL: string; TEMPERATURE: string; HUE: string } }
+    | { role: 'info'; data: { ACTUAL: string; COLORDEC: string; BUTTONTEXT: string; USERICON: string } }
+    | {
+          role: 'blind';
+          data: {
+              ACTUAL: string;
+              SET: string;
+              CLOSE: string;
+              OPEN: string;
+              STOP: string;
+              TILT_ACTUAL: string;
+              TILT_SET: string;
+              TILT_CLOSE: string;
+              TILT_OPEN: string;
+              TILT_STOP: string;
+          };
+      }
+    | {
+          role: 'airCondition';
+          data: {
+              ACTUAL: string;
+              SET: string;
+              SET2: string;
+              AUTO: string;
+              COOL: string;
+              BOOST: string;
+              ERROR: string;
+              HEAT: string;
+              HUMIDITY: string;
+              MAINTAIN: string;
+              MODE: string;
+              OFF: string;
+              POWER: string;
+              SPEED: string;
+              SWING: string;
+              UNREACH: string;
+          };
+      }
+    | { role: 'socket'; data: { ACTUAL: string; SET: string; COLORDEC: string; BUTTONTEXT: string } }
+    | { role: 'light'; data: { ACTUAL: string; SET: string; COLORDEC: string; BUTTONTEXT: string } }
+    | { role: 'volume'; data: { ACTUAL: string; SET: string; MUTE: string } }
+    | {
+          role: 'rgb';
+          data: {
+              RED: string;
+              GREEN: string;
+              BLUE: string;
+              ON_ACTUAL: string;
+              ON: string;
+              DIMMER: string;
+              TEMPERATURE: string;
+              WHITE: string;
+          };
+      }
+    | {
+          role: 'rgbSingle';
+          data: { RGB: string; ON: string; DIMMER: string; TEMPERATURE: string; ON_ACTUAL: string };
+      }
+    | { role: 'slider'; data: { SET: string; ACTUAL: string } }
+    | { role: 'button'; data: { SET: string } }
+    | { role: 'buttonSensor'; data: { ACTUAL: string } }
+    | { role: 'temperature'; data: { ACTUAL: string } }
+    | { role: 'value.temperature'; data: { ACTUAL: string; USERICON: string } }
+    | {
+          role: 'thermostat';
+          data: {
+              ACTUAL: string;
+              SET: string;
+              MODE: string;
+              BOOST: string;
+              AUTOMATIC: string;
+              ERROR: string;
+              LOWBAT: string;
+              MANUAL: string;
+              UNREACH: string;
+              HUMIDITY: string;
+              MAINTAIN: string;
+              PARTY: string;
+              POWER: string;
+              VACATION: string;
+              WINDOWOPEN: string;
+              WORKING: string;
+              USERICON: string;
+          };
+      }
+    | { role: 'level.timer'; data: { ACTUAL: string; STATE: string } }
+    | { role: 'gate'; data: { ACTUAL: string } }
+    | { role: 'door'; data: { ACTUAL: string; COLORDEC: string; BUTTONTEXT: string } }
+    | { role: 'level.mode.fan'; data: { ACTUAL: string; MODE: string; SET: string; SPEED: string } }
+    | { role: 'lock'; data: { ACTUAL: string; OPEN: string; SET: string } }
+    | { role: 'warning'; data: { INFO: string; LEVEL: string; TITLE: string } }
+    | { role: 'weatherforecast'; data: { ICON: string; TEMP: string } }
+    | { role: 'WIFI'; data: { ACTUAL: string; SWITCH: string } }
+);
+
+export const checkedDatapoints: checkedDatapoints = {
+    motion: {
+        role: 'motion',
         data: {
-            [key: string]: {
-                role:
-                    | (ScriptConfig.roles | ConfigManager.ioBrokerRoles)
-                    | (ScriptConfig.roles | ConfigManager.ioBrokerRoles)[];
-                required: boolean;
-                useKey?: boolean;
-                type: ioBroker.StateCommon['type'];
-                writeable?: boolean;
-                description?: string;
-            };
+            ACTUAL: '',
+        },
+    },
+    dimmer: {
+        role: 'dimmer',
+        data: {
+            SET: '',
+            ACTUAL: '',
+            ON_SET: '',
+            ON_ACTUAL: '',
+        },
+    },
+    ct: {
+        role: 'ct',
+        data: {
+            DIMMER: '',
+            ON: '',
+            ON_ACTUAL: '',
+            TEMPERATURE: '',
+        },
+    },
+    window: {
+        role: 'window',
+        data: {
+            ACTUAL: '',
+            COLORDEC: '',
+            BUTTONTEXT: '',
+        },
+    },
+    humidity: {
+        role: 'humidity',
+        data: {
+            ACTUAL: '',
+        },
+    },
+    hue: {
+        role: 'hue',
+        data: {
+            DIMMER: '',
+            ON: '',
+            ON_ACTUAL: '',
+            TEMPERATURE: '',
+            HUE: '',
+        },
+    },
+    info: {
+        role: 'info',
+        data: {
+            ACTUAL: '',
+            COLORDEC: '',
+            BUTTONTEXT: '',
+            USERICON: '',
+        },
+    },
+    blind: {
+        role: 'blind',
+        data: {
+            ACTUAL: '',
+            SET: '',
+            CLOSE: '',
+            OPEN: '',
+            STOP: '',
+            TILT_ACTUAL: '',
+            TILT_SET: '',
+            TILT_CLOSE: '',
+            TILT_OPEN: '',
+            TILT_STOP: '',
+        },
+    },
+    airCondition: {
+        role: 'airCondition',
+        data: {
+            ACTUAL: '',
+            SET: '',
+            SET2: '',
+            AUTO: '',
+            COOL: '',
+            BOOST: '',
+            ERROR: '',
+            HEAT: '',
+            HUMIDITY: '',
+            MAINTAIN: '',
+            MODE: '',
+            OFF: '',
+            POWER: '',
+            SPEED: '',
+            SWING: '',
+            UNREACH: '',
+        },
+    },
+    socket: {
+        role: 'socket',
+        data: {
+            ACTUAL: '',
+            SET: '',
+            COLORDEC: '',
+            BUTTONTEXT: '',
+        },
+    },
+    light: {
+        role: 'light',
+        data: {
+            ACTUAL: '',
+            SET: '',
+            COLORDEC: '',
+            BUTTONTEXT: '',
+        },
+    },
+    volume: {
+        role: 'volume',
+        data: {
+            ACTUAL: '',
+            SET: '',
+            MUTE: '',
+        },
+    },
+    rgb: {
+        role: 'rgb',
+        data: {
+            RED: '',
+            GREEN: '',
+            BLUE: '',
+            ON_ACTUAL: '',
+            ON: '',
+            DIMMER: '',
+            TEMPERATURE: '',
+            WHITE: '',
+        },
+    },
+    rgbSingle: {
+        role: 'rgbSingle',
+        data: {
+            RGB: '',
+            ON: '',
+            DIMMER: '',
+            TEMPERATURE: '',
+            ON_ACTUAL: '',
+        },
+    },
+    slider: {
+        role: 'slider',
+        data: {
+            SET: '',
+            ACTUAL: '',
+        },
+    },
+    button: {
+        role: 'button',
+        data: {
+            SET: '',
+        },
+    },
+    buttonSensor: {
+        role: 'buttonSensor',
+        data: {
+            ACTUAL: '',
+        },
+    },
+    temperature: {
+        role: 'temperature',
+        data: {
+            ACTUAL: '',
+        },
+    },
+    thermostat: {
+        role: 'thermostat',
+        data: {
+            ACTUAL: '',
+            SET: '',
+            MODE: '',
+            BOOST: '',
+            AUTOMATIC: '',
+            ERROR: '',
+            LOWBAT: '',
+            MANUAL: '',
+            UNREACH: '',
+            HUMIDITY: '',
+            MAINTAIN: '',
+            PARTY: '',
+            POWER: '',
+            VACATION: '',
+            WINDOWOPEN: '',
+            WORKING: '',
+            USERICON: '',
+        },
+    },
+    'level.timer': {
+        role: 'level.timer',
+        data: {
+            ACTUAL: '',
+            STATE: '',
+        },
+    },
+    gate: {
+        role: 'gate',
+        data: {
+            ACTUAL: '',
+        },
+    },
+    door: {
+        role: 'door',
+        data: {
+            ACTUAL: '',
+            COLORDEC: '',
+            BUTTONTEXT: '',
+        },
+    },
+    'level.mode.fan': {
+        role: 'level.mode.fan',
+        data: {
+            ACTUAL: '',
+            MODE: '',
+            SET: '',
+            SPEED: '',
+        },
+    },
+    lock: {
+        role: 'lock',
+        data: {
+            ACTUAL: '',
+            OPEN: '',
+            SET: '',
+        },
+    },
+    warning: {
+        role: 'warning',
+        data: {
+            INFO: '',
+            LEVEL: '',
+            TITLE: '',
+        },
+    },
+};
+type mydps =
+    | 'ACTUAL'
+    | 'noNeed'
+    | 'SET'
+    | 'ON_SET'
+    | 'ON_ACTUAL'
+    | 'DIMMER'
+    | 'ON'
+    | 'TEMPERATURE'
+    | 'COLORDEC'
+    | 'BUTTONTEXT'
+    | 'USERICON'
+    | 'CLOSE'
+    | 'OPEN'
+    | 'STOP'
+    | 'TILT_ACTUAL'
+    | 'TILT_SET'
+    | 'TILT_CLOSE'
+    | 'TILT_OPEN'
+    | 'TILT_STOP'
+    | 'SET2'
+    | 'AUTO'
+    | 'COOL'
+    | 'BOOST'
+    | 'ERROR'
+    | 'HEAT'
+    | 'HUMIDITY'
+    | 'MAINTAIN'
+    | 'MODE'
+    | 'OFF'
+    | 'POWER'
+    | 'SPEED'
+    | 'SWING'
+    | 'UNREACH'
+    | 'MUTE'
+    | 'RED'
+    | 'GREEN'
+    | 'BLUE'
+    | 'WHITE'
+    | 'RGB'
+    | 'STATE'
+    | 'INFO'
+    | 'LEVEL'
+    | 'TITLE'
+    | 'ICON'
+    | 'TEMP'
+    | 'SWITCH';
+type requiredDatapoints = {
+    motion: {
+        data: {
+            ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    timeTable: {
+        data: {
+            noNeed: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    dimmer: {
+        data: {
+            SET: Datapoint;
+            ACTUAL: Datapoint;
+            ON_SET: Datapoint;
+            ON_ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    ct: {
+        data: {
+            DIMMER: Datapoint;
+            ON: Datapoint;
+            ON_ACTUAL: Datapoint;
+            TEMPERATURE: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    window: {
+        data: {
+            ACTUAL: Datapoint;
+            COLORDEC: Datapoint;
+            BUTTONTEXT: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    'value.humidity': {
+        data: {
+            ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    humidity: {
+        data: {
+            ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    hue: {
+        data: {
+            DIMMER: Datapoint;
+            ON: Datapoint;
+            ON_ACTUAL: Datapoint;
+            TEMPERATURE: Datapoint;
+            HUE: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    info: {
+        data: {
+            ACTUAL: Datapoint;
+            COLORDEC: Datapoint;
+            BUTTONTEXT: Datapoint;
+            USERICON: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    blind: {
+        data: {
+            ACTUAL: Datapoint;
+            SET: Datapoint;
+            CLOSE: Datapoint;
+            OPEN: Datapoint;
+            STOP: Datapoint;
+            TILT_ACTUAL: Datapoint;
+            TILT_SET: Datapoint;
+            TILT_CLOSE: Datapoint;
+            TILT_OPEN: Datapoint;
+            TILT_STOP: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    airCondition: {
+        data: {
+            ACTUAL: Datapoint;
+            SET: Datapoint;
+            SET2: Datapoint;
+            AUTO: Datapoint;
+            COOL: Datapoint;
+            BOOST: Datapoint;
+            ERROR: Datapoint;
+            HEAT: Datapoint;
+            HUMIDITY: Datapoint;
+            MAINTAIN: Datapoint;
+            MODE: Datapoint;
+            OFF: Datapoint;
+            POWER: Datapoint;
+            SPEED: Datapoint;
+            SWING: Datapoint;
+            UNREACH: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    socket: {
+        data: {
+            ACTUAL: Datapoint;
+            SET: Datapoint;
+            COLORDEC: Datapoint;
+            BUTTONTEXT: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    light: {
+        data: {
+            ACTUAL: Datapoint;
+            SET: Datapoint;
+            COLORDEC: Datapoint;
+            BUTTONTEXT: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    volume: {
+        data: {
+            ACTUAL: Datapoint;
+            SET: Datapoint;
+            MUTE: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    rgb: {
+        data: {
+            RED: Datapoint;
+            GREEN: Datapoint;
+            BLUE: Datapoint;
+            ON_ACTUAL: Datapoint;
+            ON: Datapoint;
+            DIMMER: Datapoint;
+            TEMPERATURE: Datapoint;
+            WHITE: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    rgbSingle: {
+        data: {
+            RGB: Datapoint;
+            ON: Datapoint;
+            DIMMER: Datapoint;
+            TEMPERATURE: Datapoint;
+            ON_ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    slider: {
+        data: {
+            SET: Datapoint;
+            ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    button: {
+        data: {
+            SET: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    buttonSensor: {
+        data: {
+            ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    temperature: {
+        data: {
+            ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    'value.temperature': {
+        data: {
+            ACTUAL: Datapoint;
+            USERICON: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    thermostat: {
+        data: {
+            ACTUAL: Datapoint;
+            SET: Datapoint;
+            MODE: Datapoint;
+            BOOST: Datapoint;
+            AUTOMATIC: Datapoint;
+            ERROR: Datapoint;
+            LOWBAT: Datapoint;
+            MANUAL: Datapoint;
+            UNREACH: Datapoint;
+            HUMIDITY: Datapoint;
+            MAINTAIN: Datapoint;
+            PARTY: Datapoint;
+            POWER: Datapoint;
+            VACATION: Datapoint;
+            WINDOWOPEN: Datapoint;
+            WORKING: Datapoint;
+            USERICON: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    'level.timer': {
+        data: {
+            ACTUAL: Datapoint;
+            STATE: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    gate: {
+        data: {
+            ACTUAL: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    door: {
+        data: {
+            ACTUAL: Datapoint;
+            COLORDEC: Datapoint;
+            BUTTONTEXT: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    'level.mode.fan': {
+        data: {
+            ACTUAL: Datapoint;
+            MODE: Datapoint;
+            SET: Datapoint;
+            SPEED: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    lock: {
+        data: {
+            ACTUAL: Datapoint;
+            OPEN: Datapoint;
+            SET: Datapoint;
         };
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    warning: {
+        data: {
+            INFO: Datapoint;
+            LEVEL: Datapoint;
+            TITLE: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    weatherforecast: {
+        data: {
+            ICON: Datapoint;
+            TEMP: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    WIFI: {
+        data: {
+            ACTUAL: Datapoint;
+            SWITCH: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
         description: string;
     };
 };
 
+type Datapoint = {
+    role: (ScriptConfig.roles | ConfigManager.ioBrokerRoles) | (ScriptConfig.roles | ConfigManager.ioBrokerRoles)[];
+    required: boolean;
+    useKey?: boolean;
+    type: ioBroker.StateCommon['type'];
+    writeable?: boolean;
+    description?: string;
+};
 export const requiredScriptDataPoints: requiredDatapoints = {
     motion: {
         updatedVersion: true,
         name: 'motion',
         description: 'Status of the motion sensor or presence detector (motion or presence detected)',
         data: { ACTUAL: { role: 'sensor.motion', type: 'boolean', required: true, writeable: false } },
+    },
+    timeTable: {
+        updatedVersion: true,
+        name: 'timeTable',
+        description: 'Time table for the heating',
+        data: { noNeed: { role: 'state', type: 'string', required: false, writeable: true } },
     },
     //läuft im Script mit unter RGBsingle, muss nochmal geprüft werden ob sinnvoll
     /* cie: {
@@ -204,6 +924,12 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     humidity: {
+        updatedVersion: true,
+        name: 'humidity',
+        description: '',
+        data: { ACTUAL: { role: 'value.humidity', type: 'number', required: true, writeable: false } },
+    },
+    'value.humidity': {
         updatedVersion: true,
         name: 'humidity',
         description: '',
@@ -389,7 +1115,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             LOWBAT: { role: 'indicator.maintenance.lowbat', type: 'boolean', required: false, writeable: false },
             MANUAL: { role: 'state', type: 'boolean', required: false },
             UNREACH: { role: 'indicator.maintenance.unreach', type: 'boolean', required: false, writeable: false },
-            HUMINITY: { role: 'value.humidity', type: 'number', required: false, writeable: false },
+            HUMIDITY: { role: 'value.humidity', type: 'number', required: false, writeable: false },
             MAINTAIN: { role: 'indicator.maintenance', type: 'boolean', required: false, writeable: false },
             PARTY: { role: 'switch.mode.party', type: 'boolean', required: false },
             POWER: { role: 'switch.power', type: 'boolean', required: false, writeable: true },
@@ -463,83 +1189,6 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         data: {
             ACTUAL: { role: 'state', type: 'string', required: true, writeable: false },
             SWITCH: { role: 'switch', type: 'boolean', required: false, writeable: true },
-        },
-    },
-};
-
-export const requiredFeatureDatapoints: requiredDatapoints = {
-    cie: {
-        name: 'cie',
-        description: '',
-        data: {
-            CIE: { role: 'level.color.cie', type: 'string', required: true },
-            DIMMER: { role: 'level.dimmer', type: 'boolean', required: true },
-            ON: { role: 'switch.light', type: 'boolean', required: true },
-            ON_ACTUAL: { role: 'sensor.light', type: 'boolean', required: true },
-            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true },
-        },
-    },
-    timeTable: {
-        name: 'timeTable',
-        description: '',
-        data: {
-            ACTUAL: { role: 'text', type: 'string', required: true },
-            VEHICLE: { role: 'text', type: 'string', required: true },
-            DIRECTION: { role: 'text', type: 'string', required: true },
-            DELAY: { role: 'indicator', type: 'boolean', required: true },
-        },
-    },
-    info: { name: 'info', description: '', data: { ACTUAL: { role: 'text', type: 'string', required: true } } },
-    airCondition: {
-        name: 'airCondition',
-        description: '',
-        data: {
-            ACTUAL: { role: 'value.temperature', type: 'number', required: true },
-            SET: { role: 'level.temperature', type: 'number', required: true },
-            AUTO: { role: 'switch', type: 'boolean', required: false },
-            COOL: { role: 'switch', type: 'boolean', required: false },
-            BOOST: { role: 'switch.mode.boost', type: 'boolean', required: false },
-            ERROR: { role: 'indicator.error', type: 'boolean', required: false },
-            HEAT: { role: 'switch', type: 'boolean', required: false },
-            HUMINITY: { role: 'value.humidity', type: 'number', required: false },
-            MAINTAIN: { role: 'indicator.maintenance', type: 'boolean', required: false },
-            MODE: { role: 'level.mode.airconditioner', type: 'number', required: true },
-            OFF: { role: 'switch', type: 'boolean', required: true },
-            POWER: { role: 'switch.power', type: 'boolean', required: false },
-            SPEED: { role: 'level.mode.fan', type: 'number', required: false },
-            SWING: { role: 'switch.mode.swing', type: 'boolean', required: false },
-            UNREACH: { role: 'indicator.maintenance.unreach', type: 'boolean', required: false },
-        },
-    },
-    gate: {
-        name: 'gate',
-        description: '',
-        data: {
-            ACTUAL: { role: ['value.blind', 'value.blind'], type: 'number', required: true, writeable: false },
-            SET: { role: 'switch.gate', type: 'boolean', required: true, writeable: true },
-            STOP: { role: 'button.stop', type: 'boolean', required: true, writeable: true },
-        },
-    },
-    thermostat: {
-        name: 'thermostat',
-        description: '',
-        data: {
-            ACTUAL: { role: 'value.temperature', type: 'number', required: true },
-            SET: { role: 'level.temperature', type: 'number', required: true },
-            MODE: { role: 'level.mode.thermostat', type: 'number', required: true },
-            BOOST: { role: 'switch.mode.boost', type: 'boolean', required: false },
-            AUTOMATIC: { role: 'switch.mode.auto', type: 'boolean', required: true },
-            ERROR: { role: 'indicator.error', type: 'boolean', required: false },
-            LOWBAT: { role: 'indicator.maintenance.lowbat', type: 'boolean', required: false },
-            MANUAL: { role: 'switch.mode.manual', type: 'boolean', required: false },
-            UNREACH: { role: 'indicator.maintenance.unreach', type: 'boolean', required: false },
-            HUMINITY: { role: 'value.humidity', type: 'number', required: false },
-            MAINTAIN: { role: 'indicator.maintenance', type: 'boolean', required: false },
-            PARTY: { role: 'switch.mode.party', type: 'boolean', required: false },
-            POWER: { role: 'switch.power', type: 'boolean', required: false },
-            VACATION: { role: 'switch', type: 'boolean', required: false },
-            WINDOWOPEN: { role: 'sensor.window', type: 'boolean', required: false },
-            WORKING: { role: 'indicator.working', type: 'boolean', required: false },
         },
     },
 };

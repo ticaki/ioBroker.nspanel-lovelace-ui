@@ -408,7 +408,13 @@ export type PageItemBase = {
     setNavi?: number;
     confirm?: string;
     setList?: number;
+    /**
+     * use with slider
+     */
     maxValue1?: number;
+    /**
+     * use with slider
+     */
     minValue1?: number;
     minValue2?: number;
     maxValue2?: number;
@@ -499,6 +505,9 @@ export type ValueEntryType =
           decimal?: number;
           factor?: number;
           unit?: string;
+          /**
+           * scale the value
+           */
           minScale?: number;
           maxScale?: number;
           set?: number;

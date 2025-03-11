@@ -475,10 +475,12 @@ const ScreensaverOptions = {
       data: {
         entity1: {
           value: { type: "internal", dp: "cmd/dimActive" },
-          factor: { type: "const", constVal: 1 / 10 },
+          factor: { type: "const", constVal: 1 },
           minScale: { type: "const", constVal: 0 },
           maxScale: { type: "const", constVal: 10 }
         },
+        minValue1: { type: "const", constVal: 0 },
+        maxValue1: { type: "const", constVal: 10 },
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },

@@ -247,7 +247,7 @@ export class Dataitem extends BaseClass {
         ) {
             let val = parseFloat(String(result.val));
             if (this.options.scale !== undefined) {
-                val = Math.trunc(Color.scale(val, this.options.scale.max, this.options.scale.min, 0, 100));
+                val = Math.trunc(Color.scale(val, this.options.scale.min, this.options.scale.max, 0, 100));
             }
             return val;
         }

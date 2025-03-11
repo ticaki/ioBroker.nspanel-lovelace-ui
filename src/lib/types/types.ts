@@ -363,14 +363,14 @@ export type IconColorElement = {
 export function isIconColorScaleElement(F: any): F is IconColorElement {
     return F && 'val_min' in (F as IconColorElement) && 'val_max' in (F as IconColorElement);
 }
-export function isPartialIconColorScaleElement(F: any): F is IconColorElement {
+export function isPartialColorScaleElement(F: any): F is IconColorElement {
     return F && ('val_min' in (F as IconColorElement) || 'val_max' in (F as IconColorElement));
 }
 
 export function isIconSelectScaleElement(F: any): F is IconSelectElement {
     return F && 'valIcon_min' in (F as IconSelectElement) && 'valIcon_max' in (F as IconSelectElement);
 }
-export function isPartialSelectColorScaleElement(F: any): F is IconSelectElement {
+export function isPartialIconSelectScaleElement(F: any): F is IconSelectElement {
     return F && ('valIcon_min' in (F as IconSelectElement) || 'valIcon_max' in (F as IconSelectElement));
 }
 
