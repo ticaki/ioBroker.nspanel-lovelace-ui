@@ -144,7 +144,7 @@ class PageQR extends import_Page.Page {
           message.optionalValue1 = config.SSIDURLTEL;
           break;
         case 3:
-          this.log.debug(`qrType = url`);
+          this.log.debug(`qrType = Telephone`);
           message.textQR = `TEL:${config.SSIDURLTEL}`;
           message.optionalValue1 = config.SSIDURLTEL;
           break;
@@ -177,7 +177,7 @@ class PageQR extends import_Page.Page {
                 message.internalName2 = arr[1];
                 message.iconId2 = arr[2];
                 message.iconColor2 = arr[3];
-                message.optionalValue2 = arr[5];
+                message.optionalValue2 = config.pwdhidden ? "" : arr[5];
                 break;
               default:
                 break;
