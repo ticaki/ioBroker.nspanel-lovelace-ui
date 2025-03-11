@@ -437,6 +437,18 @@
                             "default": ""
                         },
                         {
+                            "attr": "wlanhidden",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "checkbox",
+                            "label": "wlanhidden",
+                            "hidden": "data.selType !== 1",
+                            "default": false
+                        },
+                        {
                             "type": "select",
                             "xs": 12,
                             "sm": 12,
@@ -500,14 +512,14 @@
                             ]
                         },
                         {
-                            "attr": "wlanhidden",
+                            "attr": "pwdhidden",
                             "xs": 12,
                             "sm": 12,
                             "md": 6,
                             "lg": 4,
                             "xl": 4,
                             "type": "checkbox",
-                            "label": "wlanhidden",
+                            "label": "pwdhidden",
                             "hidden": "data.selType !== 1",
                             "default": false
                         },

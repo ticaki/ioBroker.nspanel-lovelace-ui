@@ -146,7 +146,7 @@ export class PageQR extends Page {
                                 message.iconColor1 = arr[3];
                                 break;
                             case 1:
-                                message.type2 = arr[0] == 'button' ? 'switch' : 'text';
+                                message.type2 = arr[0]; //== 'button' ? 'switch' : 'text';
                                 message.displayName2 = arr[4];
                                 message.internalName2 = arr[1];
                                 message.iconId2 = arr[2];

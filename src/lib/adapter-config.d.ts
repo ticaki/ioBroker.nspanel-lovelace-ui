@@ -36,6 +36,7 @@ declare global {
                 wlantype?: "nopass" | "WPA" | "WPA2" | "WPA3" | "WEP",
                 qrPass?: number,
                 wlanhidden?: boolean,
+                pwdhidden?: boolean,
                 setState?: string,
             }[];
         }
