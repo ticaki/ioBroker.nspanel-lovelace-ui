@@ -330,8 +330,8 @@ class PageQR extends import_Page.Page {
               true: { type: "const", constVal: text1 }
             },
             text: {
-              true: { type: "const", constVal: "WLAN ON" },
-              false: { type: "const", constVal: "WLAN OFF" }
+              true: { type: "const", constVal: "WlanOn" },
+              false: { type: "const", constVal: "WlanOff" }
             },
             entity1: {
               value: {

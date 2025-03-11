@@ -1251,7 +1251,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'OnOff': {
-                if (entry.type === 'light' || entry.type === 'button') {
+                if (entry.type === 'light' || entry.type === 'button' || entry.type === 'switch') {
                     const item = entry.data;
                     if (item && item.entity1) {
                         await tools.setValueEntry(item.entity1, value === '1');
