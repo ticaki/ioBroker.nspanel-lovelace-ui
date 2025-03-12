@@ -263,9 +263,6 @@ class StatesControler extends import_library.BaseClass {
     if (this.intervalObjectDatabase) {
       this.adapter.clearInterval(this.intervalObjectDatabase);
     }
-    if (StatesControler.tempObjectDBTimeout) {
-      this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
-    }
     if (this.deletePageInterval) {
       this.adapter.clearInterval(this.deletePageInterval);
     }
@@ -445,6 +442,9 @@ class StatesControler extends import_library.BaseClass {
     throw new Error(`State id invalid ${id} no data!`);
   }
   getType(id) {
+    if (!id) {
+      return void 0;
+    }
     if (this.triggerDB[id] !== void 0 && this.triggerDB[id].common) {
       return this.triggerDB[id].common.type;
     }
@@ -454,6 +454,9 @@ class StatesControler extends import_library.BaseClass {
     return void 0;
   }
   async getCommonStates(id, force = false) {
+    if (!id) {
+      return void 0;
+    }
     let j = void 0;
     if (force) {
       const obj = await this.adapter.getObjectAsync(id);
@@ -664,7 +667,7 @@ class StatesControler extends import_library.BaseClass {
       }
       StatesControler.tempObjectDBTimeout = void 0;
       StatesControler.TempObjectDB = { data: void 0, keys: [], enums: void 0 };
-    }, 6e4);
+    }, 1e4);
     return StatesControler.TempObjectDB;
   }
   /**
@@ -758,7 +761,7 @@ class StatesControler extends import_library.BaseClass {
       };
     }
     const data = await this.getDataItemsFromAuto(dpInit, { item }, "", enums, status, true);
-    if (status.ok && data.item.dp) {
+    if (status.ok && data && data.item && data.item.dp) {
       return item;
     }
     return void 0;

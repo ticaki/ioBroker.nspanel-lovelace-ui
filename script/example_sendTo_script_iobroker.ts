@@ -441,7 +441,7 @@ async function configuration (): Promise<void> {
     log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version}))
 }
 
-const version = '0.6.1';
+const version = '0.6.2';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1020,6 +1020,10 @@ declare namespace ScriptConfig {
              * active the button function for the indicator of the screensaver
              */
             screensaverIndicatorButtons?: boolean;
+            /**
+             * warn for every missing state options - very noicy
+             */
+            extraConfigLogging?: boolean;
         };
     };
     export type leftScreensaverEntityType =

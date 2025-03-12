@@ -6,9 +6,11 @@ import { Color, type RGB } from '../const/Color';
 import type * as pages from '../types/pages';
 import {
     checkedDatapoints,
+    type checkedDatapointsUnion,
     defaultConfig,
     isButton,
     isConfig,
+    type mydps,
     type requiredDatapoints,
     requiredScriptDataPoints,
 } from '../const/config-manager-const';
@@ -17,7 +19,7 @@ import { exhaustiveCheck } from '../types/pages';
 import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
 import { getStringOrArray } from '../tools/readme';
 import { PageQR } from '../pages/pageQR';
-import type { StatesControler } from '../controller/states-controller';
+import { StatesControler } from '../controller/states-controller';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -25,14 +27,16 @@ export class ConfigManager extends BaseClass {
     colorOff: RGB = Color.Off;
     colorDefault: RGB = Color.Off;
     dontWrite: boolean = false;
+    extraConfigLogging: boolean = false;
 
-    readonly scriptVersion = '0.6.1';
+    readonly scriptVersion = '0.6.2';
     readonly breakingVersion = '0.6.0';
 
-    statesController: StatesControler | undefined;
+    statesController: StatesControler;
     constructor(adapter: NspanelLovelaceUi, dontWrite: boolean = false) {
         super(adapter, 'config-manager');
         this.dontWrite = dontWrite;
+        this.statesController = new StatesControler(adapter);
     }
 
     /**
@@ -112,6 +116,9 @@ export class ConfigManager extends BaseClass {
         } else {
             messages.push(`Panel for Topic: ${config.panelTopic} Script version ${config.version} is correct!`);
         }
+
+        // start configuration
+        this.extraConfigLogging = (config.advancedOptions && config.advancedOptions.extraConfigLogging) || false;
         let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];
             pages: pages.PageBaseConfig[];
@@ -464,10 +471,12 @@ export class ConfigManager extends BaseClass {
             page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
                 ? 'textNotIcon'
                 : 'iconNotText';
-
+        if (!item.id) {
+            throw new Error(`Channel id missing in ${item.name || 'unknown'}!`);
+        }
         const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
         if (!obj || !obj.common || !obj.common.role) {
-            throw new Error(`Role missing in ${item.id}!`);
+            throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
         }
         const role = obj.common.role as ScriptConfig.channelRoles;
         const commonName =
@@ -476,6 +485,13 @@ export class ConfigManager extends BaseClass {
                     ? obj.common.name
                     : obj.common.name[this.library.getLocalLanguage()]
                 : undefined;
+
+        const foundedStates: checkedDatapointsUnion = await this.searchDatapointsForItems(
+            requiredScriptDataPoints,
+            role,
+            item.id,
+            [],
+        );
 
         const getButtonsTextTrue = async (
             item: ScriptConfig.PageItem,
@@ -540,7 +556,7 @@ export class ConfigManager extends BaseClass {
         }
 
         if (obj && (!obj.common || !obj.common.role || role == null)) {
-            throw new Error(`Role missing in ${item.id}!`);
+            throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
         }
 
         // check if role and types are correct
@@ -589,12 +605,11 @@ export class ConfigManager extends BaseClass {
                             false: { type: 'const', constVal: 'off' },
                         },
                         text: text,
-                        entity1: {
-                            value: {
-                                type: 'triggered',
-                                dp: `${item.id}.${role === 'dimmer' || role == 'hue' ? 'ON_ACTUAL' : 'ACTUAL'}`,
-                            },
-                        },
+                        entity1:
+                            role === 'dimmer' || role == 'hue'
+                                ? { value: foundedStates[role].ON_ACTUAL }
+                                : { value: foundedStates[role].ACTUAL },
+
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
@@ -631,12 +646,7 @@ export class ConfigManager extends BaseClass {
                             false: { type: 'const', constVal: 'off' },
                         },
                         text: text,
-                        entity1:
-                            role === undefined
-                                ? undefined
-                                : {
-                                      value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
-                                  },
+                        entity1: role === undefined ? undefined : { value: foundedStates[role].ACTUAL },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
@@ -645,34 +655,53 @@ export class ConfigManager extends BaseClass {
             }
             case 'value.humidity':
             case 'humidity': {
-                {
-                    itemConfig = {
-                        type: 'button',
-                        dpInit: item.id,
-                        role: specialRole,
-                        color: {
-                            true: await this.getIconColor(item.onColor, this.colorOn),
-                            false: await this.getIconColor(item.offColor, this.colorOff),
-                            scale: item.colorScale ? item.colorScale : undefined,
-                        },
-                        icon: {
-                            true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                            false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                        },
-                        template: 'button.humidity',
-                        data: {
-                            text: text,
-
-                            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
-                        },
-                    };
-                    break;
+                let commonUnit = '';
+                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                    if (o && o.common && o.common.unit) {
+                        commonUnit = o.common.unit;
+                    }
                 }
+
+                itemConfig = {
+                    type: 'button',
+                    dpInit: item.id,
+                    role: specialRole,
+                    color: {
+                        true: await this.getIconColor(item.onColor, this.colorOn),
+                        false: await this.getIconColor(item.offColor, this.colorOff),
+                        scale: item.colorScale ? item.colorScale : undefined,
+                    },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                    },
+                    template: 'button.humidity',
+                    data: {
+                        entity1: {
+                            value: foundedStates[role].ACTUAL,
+                            unit:
+                                item.unit || commonUnit
+                                    ? { type: 'const', constVal: item.unit || commonUnit }
+                                    : undefined,
+                        },
+                        text: text,
+
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
                 break;
             }
             case 'value.temperature':
             case 'temperature':
             case 'thermostat': {
+                let commonUnit = '';
+                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                    if (o && o.common && o.common.unit) {
+                        commonUnit = o.common.unit;
+                    }
+                }
                 itemConfig = {
                     type: 'button',
                     dpInit: item.id,
@@ -688,6 +717,13 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
+                        entity1: {
+                            value: foundedStates[role].ACTUAL,
+                            unit:
+                                item.unit || commonUnit
+                                    ? { type: 'const', constVal: item.unit || commonUnit }
+                                    : undefined,
+                        },
                         text: text,
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -715,16 +751,8 @@ export class ConfigManager extends BaseClass {
                                 true: { type: 'const', constVal: 'opened' },
                                 false: { type: 'const', constVal: 'closed' },
                             },
-                            entity1: {
-                                value: {
-                                    type: 'triggered',
-                                    mode: 'auto',
-                                    role: 'value.blind',
-                                    read: 'return val >= 1',
-                                    forceType: 'boolean',
-                                    dp: '',
-                                },
-                            },
+                            entity1: { value: foundedStates[role].ACTUAL },
+
                             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                         },
                     };
@@ -743,6 +771,7 @@ export class ConfigManager extends BaseClass {
                             false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                         },
                         data: {
+                            entity1: { value: foundedStates[role].ACTUAL },
                             text: text,
                             text1: {
                                 true: { type: 'const', constVal: 'opened' },
@@ -769,6 +798,7 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
+                        entity1: { value: foundedStates[role].ACTUAL },
                         text1: {
                             true: { type: 'const', constVal: 'opened' },
                             false: { type: 'const', constVal: 'closed' },
@@ -794,6 +824,7 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
+                        entity1: { value: foundedStates[role].ACTUAL },
                         text1: {
                             true: { type: 'const', constVal: 'opened' },
                             false: { type: 'const', constVal: 'closed' },
@@ -820,6 +851,7 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
+                        entity1: { value: foundedStates[role].ACTUAL },
                         text1: {
                             true: { type: 'const', constVal: 'motion' },
                             false: { type: 'const', constVal: 'none' },
@@ -832,6 +864,13 @@ export class ConfigManager extends BaseClass {
                 break;
             }
             case 'volume': {
+                let commonUnit = '';
+                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                    if (o && o.common && o.common.unit) {
+                        commonUnit = o.common.unit;
+                    }
+                }
                 itemConfig = {
                     template: 'button.volume',
                     dpInit: item.id,
@@ -846,6 +885,13 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
+                        entity1: {
+                            value: foundedStates[role].ACTUAL,
+                            unit:
+                                item.unit || commonUnit
+                                    ? { type: 'const', constVal: item.unit || commonUnit }
+                                    : undefined,
+                        },
                         text: text,
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
@@ -868,6 +914,7 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                     },
                     data: {
+                        entity1: { value: foundedStates[role].INFO },
                         text: text,
 
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
@@ -897,19 +944,16 @@ export class ConfigManager extends BaseClass {
                     data: {
                         text: text,
                         text1: {
-                            true: {
-                                type: 'state',
-                                dp: `${item.id}.ACTUAL`,
-                            },
+                            true: foundedStates[role].ACTUAL,
 
                             false: null,
                         },
                         entity1: {
-                            value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                            value: foundedStates[role].ACTUAL,
                         },
 
                         entity2: {
-                            value: { type: 'state', dp: `${item.id}.ACTUAL` },
+                            value: foundedStates[role].ACTUAL,
                         },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -937,7 +981,7 @@ export class ConfigManager extends BaseClass {
                         },
                         text: text,
                         entity1: {
-                            value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                            value: foundedStates[role].ACTUAL,
                             minScale: { type: 'const', constVal: item.minValueLevel ?? 0 },
                             maxScale: { type: 'const', constVal: item.maxValueLevel ?? 100 },
                         },
@@ -954,13 +998,15 @@ export class ConfigManager extends BaseClass {
             case 'buttonSensor':
             case 'level.timer':
             case 'level.mode.fan': {
-                throw new Error(`DP: ${item.id} - Navigation for channel: ${role} not implemented yet!!`);
+                throw new Error(
+                    `DP: ${page.uniqueName}.${item.id} - Navigation for channel: ${role} not implemented yet!!`,
+                );
             }
             default:
                 exhaustiveCheck(role);
 
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
+                throw new Error(`DP: ${page.uniqueName}.${item.id} - Channel role ${role} is not supported!!!`);
         }
         return itemConfig;
     }
@@ -970,10 +1016,10 @@ export class ConfigManager extends BaseClass {
         role: ScriptConfig.channelRoles,
         dpInit: string,
         messages: string[],
-    ): Promise<checkedDatapoints> {
-        const result: checkedDatapoints = JSON.parse(JSON.stringify(checkedDatapoints));
+    ): Promise<checkedDatapointsUnion> {
+        const result: checkedDatapointsUnion = JSON.parse(JSON.stringify(checkedDatapoints));
         let ups = false;
-        if (db[role]) {
+        if (db[role] && db[role].data && result[role]) {
             const data = db[role].data;
             for (const d in data) {
                 const dp = d as keyof typeof data;
@@ -981,34 +1027,39 @@ export class ConfigManager extends BaseClass {
                     continue;
                 }
                 const entry = data[dp];
-                if (dp in result[role].data) {
-                    if (result[role].role === role) {
-                        // @ts-expect-error
-                        result[role].data[dp2] = await this.statesController.getIdbyAuto(
-                            dpInit,
-                            entry.role,
-                            '',
-                            entry.useKey ? new RegExp(`.${dp}$`.replaceAll('.', '\\.')) : undefined,
-                            entry.trigger,
-                            entry.writeable,
-                            entry.type,
-                        );
-                    }
+                if (dp in result[role]) {
+                    const dp2 = dp as mydps;
+                    result[role][dp2] = await this.statesController.getIdbyAuto(
+                        dpInit,
+                        entry.role,
+                        '',
+                        entry.useKey ? new RegExp(`.${dp}$`.replaceAll('.', '\\.')) : undefined,
+                        entry.trigger,
+                        entry.writeable,
+                        entry.type,
+                    );
 
-                    if (
-                        entry.required &&
-                        // @ts-expect-error
-                        !result[role].data[dp]
-                    ) {
-                        messages.push(`DP: ${dp} - ${JSON.stringify(entry.role)} not found for ${role}`);
-                        this.log.error(messages[messages.length - 1]);
-                        ups = true;
+                    if (!result[role][dp2]) {
+                        if (entry.required || this.extraConfigLogging) {
+                            messages.push(
+                                `${entry.required ? 'Required:' : 'Optional:'} ${dp}: ${dpInit}, channel role: ${role}` +
+                                    ` - missing - searching for ${entry.useKey ? `dp end: ${dp}` + ', ' : ''}` +
+                                    `type: ${JSON.stringify(entry.type)}, role: ${JSON.stringify(entry.role)}` +
+                                    `${entry.writeable ? ', common.write: true' : ''}`,
+                            );
+                            if (entry.required) {
+                                ups = true;
+                                this.log.error(messages[messages.length - 1]);
+                            }
+                        }
                     }
                 }
             }
             if (ups) {
-                throw new Error('Missing datapoints!');
+                throw new Error('Missing datapoints! check log for details');
             }
+        } else {
+            throw new Error(`Role ${role} not supported!`);
         }
         return result;
     }
@@ -1029,19 +1080,20 @@ export class ConfigManager extends BaseClass {
             const obj = await this.adapter.getForeignObjectAsync(item.id);
             if (obj) {
                 if (!(obj.common && obj.common.role)) {
-                    throw new Error(`Role missing in ${item.id}!`);
+                    throw new Error(`Role missing in^${item.id}!`);
                 }
                 const role = obj.common.role as ScriptConfig.channelRoles;
                 // check if role and types are correct
                 if (!requiredScriptDataPoints[role]) {
+                    this.log.warn(`Channel role ${role} not supported!`);
                     throw new Error(`Channel role ${role} not supported!`);
                 }
-                /*const foundedStates: checkedDatapoints = await this.searchDatapointsForItems(
+                const foundedStates: checkedDatapointsUnion = await this.searchDatapointsForItems(
                     requiredScriptDataPoints,
                     role,
                     item.id,
                     messages,
-                );*/
+                );
                 if (!(await this.checkRequiredDatapoints(role, item))) {
                     return { itemConfig: undefined, messages };
                 }
@@ -1123,8 +1175,8 @@ export class ConfigManager extends BaseClass {
                                 colorMode: { type: 'const', constVal: false },
                                 headline: headline,
                                 entity1: {
-                                    value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
-                                    set: { type: 'state', dp: `${item.id}.SET` },
+                                    value: foundedStates[role].ACTUAL,
+                                    set: foundedStates[role].SET,
                                 },
                             },
                         };
@@ -1163,8 +1215,8 @@ export class ConfigManager extends BaseClass {
                                 },
                                 colorMode: item.colormode ? { type: 'const', constVal: !!item.colormode } : undefined,
                                 dimmer: {
-                                    value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
-                                    set: { type: 'state', dp: `${item.id}.SET` },
+                                    value: foundedStates[role].ACTUAL,
+                                    set: foundedStates[role].SET,
                                     maxScale: item.maxValueBrightness
                                         ? { type: 'const', constVal: item.maxValueBrightness }
                                         : undefined,
@@ -1180,8 +1232,8 @@ export class ConfigManager extends BaseClass {
                                     },
                                 },
                                 entity1: {
-                                    value: { type: 'triggered', dp: `${item.id}.ON_ACTUAL` },
-                                    set: { type: 'state', dp: `${item.id}.ON_SET` },
+                                    value: foundedStates[role].ON_ACTUAL,
+                                    set: foundedStates[role].ON_SET,
                                 },
                             },
                         };
@@ -1228,7 +1280,7 @@ export class ConfigManager extends BaseClass {
                                 },
                                 colorMode: item.colormode ? { type: 'const', constVal: !!item.colormode } : undefined,
                                 dimmer: {
-                                    value: { type: 'triggered', dp: `${item.id}.DIMMER` },
+                                    value: foundedStates[role].DIMMER,
                                     maxScale: item.maxValueBrightness
                                         ? { type: 'const', constVal: item.maxValueBrightness }
                                         : undefined,
@@ -1237,56 +1289,19 @@ export class ConfigManager extends BaseClass {
                                         : undefined,
                                 },
                                 headline: headline,
-                                hue:
-                                    role !== 'hue'
-                                        ? undefined
-                                        : {
-                                              type: 'triggered',
-                                              dp: `${item.id}.HUE`,
-                                          },
-                                Red:
-                                    role !== 'rgb'
-                                        ? undefined
-                                        : {
-                                              type: 'triggered',
-                                              dp: `${item.id}.RED`,
-                                          },
-                                Green:
-                                    role !== 'rgb'
-                                        ? undefined
-                                        : {
-                                              type: 'triggered',
-                                              dp: `${item.id}.GREEN`,
-                                          },
-                                Blue:
-                                    role !== 'rgb'
-                                        ? undefined
-                                        : {
-                                              type: 'triggered',
-                                              dp: `${item.id}.BLUE`,
-                                          },
-                                White:
-                                    role !== 'rgb'
-                                        ? undefined
-                                        : (await this.existsState(`${item.id}.WHITE`))
-                                          ? {
-                                                value: {
-                                                    type: 'triggered',
-                                                    dp: `${item.id}.WHITE`,
-                                                },
-                                            }
-                                          : undefined,
+                                hue: role !== 'hue' ? undefined : foundedStates[role].HUE,
+                                Red: role !== 'rgb' ? undefined : foundedStates[role].RED,
+                                Green: role !== 'rgb' ? undefined : foundedStates[role].GREEN,
+                                Blue: role !== 'rgb' ? undefined : foundedStates[role].BLUE,
+                                White: role !== 'rgb' ? undefined : { value: foundedStates[role].WHITE },
                                 color:
                                     role !== 'rgbSingle'
                                         ? undefined
                                         : {
-                                              true: {
-                                                  type: 'triggered',
-                                                  dp: `${item.id}.RGB`,
-                                              },
+                                              true: foundedStates[role].RGB,
                                           },
                                 ct: {
-                                    value: { type: 'triggered', dp: `${item.id}.TEMPERATURE` },
+                                    value: foundedStates[role].TEMPERATURE,
                                     maxScale: item.maxValueColorTemp
                                         ? { type: 'const', constVal: item.maxValueColorTemp }
                                         : undefined,
@@ -1316,8 +1331,8 @@ export class ConfigManager extends BaseClass {
                                               },
                                           },
                                 entity1: {
-                                    value: { type: 'triggered', dp: `${item.id}.ON_ACTUAL` },
-                                    set: { type: 'state', dp: `${item.id}.ON` },
+                                    value: foundedStates[role].ON_ACTUAL,
+                                    set: foundedStates[role].ON,
                                 },
                             },
                         };
@@ -1355,7 +1370,7 @@ export class ConfigManager extends BaseClass {
                                     false: { type: 'const', constVal: 'off' },
                                 },
                                 entity1: {
-                                    value: { type: 'triggered', dp: `${item.id}.SET` },
+                                    value: foundedStates[role].SET,
                                 },
                             },
                         };
@@ -1396,27 +1411,27 @@ export class ConfigManager extends BaseClass {
                                 headline: headline,
 
                                 entity1: {
-                                    value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                                    value: foundedStates[role].ACTUAL,
                                     minScale: { type: 'const', constVal: item.minValueLevel ?? 0 },
 
                                     maxScale: { type: 'const', constVal: item.maxValueLevel ?? 100 },
 
-                                    set: { type: 'state', dp: `${item.id}.SET` },
+                                    set: foundedStates[role].SET,
                                 },
                                 entity2: {
-                                    value: { type: 'triggered', dp: `${item.id}.TILT_ACTUAL` },
+                                    value: foundedStates[role].TILT_ACTUAL,
                                     minScale: { type: 'const', constVal: item.minValueTilt ?? 100 },
 
                                     maxScale: { type: 'const', constVal: item.maxValueTilt ?? 0 },
 
-                                    set: { type: 'state', dp: `${item.id}.TILT_SET` },
+                                    set: foundedStates[role].TILT_SET,
                                 },
-                                up: { type: 'state', dp: `${item.id}.OPEN` },
-                                down: { type: 'state', dp: `${item.id}.CLOSE` },
-                                stop: { type: 'state', dp: `${item.id}.STOP` },
-                                up2: { type: 'state', dp: `${item.id}.TILT_OPEN` },
-                                down2: { type: 'state', dp: `${item.id}.TILT_CLOSE` },
-                                stop2: { type: 'state', dp: `${item.id}.TILT_STOP` },
+                                up: foundedStates[role].OPEN,
+                                down: foundedStates[role].CLOSE,
+                                stop: foundedStates[role].STOP,
+                                up2: foundedStates[role].TILT_OPEN,
+                                down2: foundedStates[role].TILT_CLOSE,
+                                stop2: foundedStates[role].TILT_STOP,
                             },
                         };
                         itemConfig = tempItem;
@@ -1459,12 +1474,12 @@ export class ConfigManager extends BaseClass {
                                     headline: headline,
 
                                     entity1: {
-                                        value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                                        value: foundedStates[role].ACTUAL,
                                     },
                                     entity2: undefined,
                                     up: { type: 'state', dp: `${item.id}.SET`, write: 'return true;' },
                                     down: { type: 'state', dp: `${item.id}.SET`, write: 'return false;' },
-                                    stop: { type: 'state', dp: `${item.id}.STOP` },
+                                    stop: foundedStates[role].STOP,
                                 },
                             };
                             break;
@@ -1476,6 +1491,9 @@ export class ConfigManager extends BaseClass {
                                     true: await this.getIconColor(item.onColor, this.colorOn),
                                     false: await this.getIconColor(item.offColor, this.colorOff),
                                     scale: item.colorScale,
+                                },
+                                data: {
+                                    entity1: { value: foundedStates[role].ACTUAL },
                                 },
                             };
                         }
@@ -1495,7 +1513,7 @@ export class ConfigManager extends BaseClass {
                         let textOn: undefined | string = undefined;
                         let textOff: undefined | string = undefined;
                         let adapterRole: pages.DeviceRole = '';
-                        let commonUnit: string | undefined = undefined;
+                        let commonUnit = '';
                         switch (role) {
                             case 'motion': {
                                 iconOn = 'motion-sensor';
@@ -1536,10 +1554,12 @@ export class ConfigManager extends BaseClass {
                                 iconOff = 'snowflake-thermometer';
                                 iconUnstable = 'sun-thermometer';
                                 adapterRole = specialRole;
-                                const obj = (await this.existsState(`${item.id}.ACTUAL`))
-                                    ? await this.adapter.getForeignObjectAsync(`${item.id}.ACTUAL`)
-                                    : undefined;
-                                commonUnit = obj && obj.common && obj.common.unit ? obj.common.unit : undefined;
+                                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                                    if (o && o.common && o.common.unit) {
+                                        commonUnit = o.common.unit;
+                                    }
+                                }
                                 break;
                             }
                             case 'value.humidity':
@@ -1548,11 +1568,12 @@ export class ConfigManager extends BaseClass {
                                 iconOff = 'water-off';
                                 iconUnstable = 'water-percent-alert';
                                 adapterRole = specialRole;
-                                const o = (await this.existsState(`${item.id}.ACTUAL`))
-                                    ? await this.adapter.getForeignObjectAsync(`${item.id}.ACTUAL`)
-                                    : undefined;
-
-                                commonUnit = o && o.common && o.common.unit ? o.common.unit : undefined;
+                                if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                                    const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                                    if (o && o.common && o.common.unit) {
+                                        commonUnit = o.common.unit;
+                                    }
+                                }
                                 break;
                             }
                         }
@@ -1567,10 +1588,8 @@ export class ConfigManager extends BaseClass {
                                         color: await this.getIconColor(item.onColor, this.colorOn),
                                         text: (await this.existsState(`${item.id}.ACTUAL`))
                                             ? {
-                                                  value: { type: 'state', dp: `${item.id}.ACTUAL` },
-                                                  unit: commonUnit
-                                                      ? { type: 'const', constVal: commonUnit }
-                                                      : undefined,
+                                                  value: foundedStates[role].ACTUAL,
+                                                  unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
                                               }
                                             : undefined,
                                     },
@@ -1579,10 +1598,8 @@ export class ConfigManager extends BaseClass {
                                         color: await this.getIconColor(item.offColor, this.colorOff),
                                         text: (await this.existsState(`${item.id}.ACTUAL`))
                                             ? {
-                                                  value: { type: 'state', dp: `${item.id}.ACTUAL` },
-                                                  unit: commonUnit
-                                                      ? { type: 'const', constVal: commonUnit }
-                                                      : undefined,
+                                                  value: foundedStates[role].ACTUAL,
+                                                  unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
                                               }
                                             : undefined,
                                     },
@@ -1601,13 +1618,20 @@ export class ConfigManager extends BaseClass {
                                     : undefined,
                                 text: text,
                                 entity1: {
-                                    value: { type: 'triggered', dp: `${item.id}.ACTUAL` },
+                                    value: foundedStates[role].ACTUAL,
                                 },
                                 entity2:
-                                    role === 'temperature' || role === 'humidity' || role === 'info'
+                                    role === 'temperature' ||
+                                    role === 'humidity' ||
+                                    role === 'info' ||
+                                    role === 'value.temperature' ||
+                                    role === 'value.humidity'
                                         ? {
-                                              value: { type: 'state', dp: `${item.id}.ACTUAL` },
-                                              unit: commonUnit ? { type: 'const', constVal: commonUnit } : undefined,
+                                              value: foundedStates[role].ACTUAL,
+                                              unit:
+                                                  item.unit || commonUnit
+                                                      ? { type: 'const', constVal: item.unit || commonUnit }
+                                                      : undefined,
                                           }
                                         : undefined,
                             },
@@ -1618,6 +1642,13 @@ export class ConfigManager extends BaseClass {
                     case 'thermostat':
                         break;
                     case 'volume': {
+                        let commonUnit = '';
+                        if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                            const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                            if (o && o.common && o.common.unit) {
+                                commonUnit = o.common.unit;
+                            }
+                        }
                         itemConfig = {
                             template: 'number.volume',
                             dpInit: item.id,
@@ -1633,6 +1664,13 @@ export class ConfigManager extends BaseClass {
                                 false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
                             },
                             data: {
+                                entity1: {
+                                    value: foundedStates[role].ACTUAL,
+                                    unit:
+                                        item.unit || commonUnit
+                                            ? { type: 'const', constVal: item.unit || commonUnit }
+                                            : undefined,
+                                },
                                 text: text,
                             },
                         };
@@ -1933,7 +1971,7 @@ export class ConfigManager extends BaseClass {
                                 throw new Error(
                                     `Datapoint ${item.id}.${dp}:` +
                                         `${!this.checkStringVsStringOrArray(subItem.data[key].role, o.common.role) ? ` role: ${o.common.role} should be ${getStringOrArray(subItem.data[key].role)})` : ''} ` +
-                                        `${subItem.data[key].type !== 'mixed' && o.common.type !== subItem.data[key].type ? ` type: ${o.common.type} should be ${subItem.data[key].type}` : ''}` +
+                                        `${subItem.data[key].type !== 'mixed' && o.common.type !== subItem.data[key].type ? ` type: ${o.common.type} should be ${getStringOrArray(subItem.data[key].type)}` : ''}` +
                                         `${subItem.data[key].writeable && !o.common.write ? ' must be writeable!' : ''} `,
                                 );
                             }
@@ -2286,6 +2324,10 @@ export class ConfigManager extends BaseClass {
             return false;
         }
         return (await this.adapter.getForeignStateAsync(id)) != null;
+    }
+
+    async delete(): Promise<void> {
+        await this.statesController.delete();
     }
 }
 

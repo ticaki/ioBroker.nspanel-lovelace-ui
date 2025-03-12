@@ -161,6 +161,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         }
                     }
                     this.log.warn(`No script config found for ${a.topic}`);
+                    await manager.delete();
                 }
             }
 
@@ -224,7 +225,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         ) {
             this.config.doubleClickTime = 350;
         }
-        await this.delay(2000);
+        await this.delay(4000);
 
         //check config
         try {
@@ -501,6 +502,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     let result = ['something went wrong'];
                     if (obj.message) {
                         const manager = new ConfigManager(this);
+                        await manager.delete();
                         const r = await manager.setScriptConfig(obj.message);
                         result = r.messages;
                     }

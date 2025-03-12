@@ -333,6 +333,9 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) Required data points are found via role, type etc. The designation only plays a role in rare cases.
+
 ### 0.1.8 (2025-03-10)
 - (ticaki) added: hw-buttons with actions
 - (ticaki) fixed: screensaver trigger

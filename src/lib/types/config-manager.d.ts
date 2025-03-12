@@ -491,6 +491,7 @@ declare namespace ScriptConfig {
         advancedOptions?: {
             screensaverSwipe?: boolean;
             screensaverIndicatorButtons?: boolean;
+            extraConfigLogging?: boolean;
         };
     };
 

@@ -384,6 +384,7 @@ export type DataItemsOptionsIcon =
 export type DataItemsOptions = {
     name?: string;
     scale?: { min: number; max: number };
+    dp?: string | undefined;
 } & (
     | DataItemsOptionsConst
     | DataItemsOptionsState
@@ -395,7 +396,7 @@ export type DataItemsOptions = {
 type DataItemsOptionsAuto = {
     mode: 'auto' | 'done' | 'fail'; // not set means custom
     role: pages.StateRole | pages.StateRole[];
-    commonType?: ioBroker.StateCommon['type'] | '';
+    commonType?: ioBroker.StateCommon['type'] | ioBroker.StateCommon['type'][] | '';
     regexp?: RegExp;
     def?: string | number | boolean | RGB;
     required?: boolean;
@@ -404,13 +405,13 @@ type DataItemsOptionsAuto = {
 type DataItemsOptionsCustom = {
     mode?: 'custom'; // not set means custom
     role?: string;
-    commonType?: ioBroker.StateCommon['type'] | '';
+    commonType?: ioBroker.StateCommon['type'] | ioBroker.StateCommon['type'][] | '';
 };
 
 type DataItemsOptionsConst = {
     type: 'const';
     role?: pages.StateRole;
-    commonType?: ioBroker.StateCommon['type'] | '';
+    commonType?: ioBroker.StateCommon['type'] | ioBroker.StateCommon['type'][] | '';
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     constVal: StateValue | AllIcons | RGB | pages.placeholderType | IconScaleElement;
     state?: State | null; // use just inside of class
@@ -419,7 +420,7 @@ type DataItemsOptionsConst = {
 type DataItemsOptionsInternal = {
     type: 'internal';
     role?: string;
-    commonType?: ioBroker.StateCommon['type'] | '';
+    commonType?: ioBroker.StateCommon['type'] | ioBroker.StateCommon['type'][] | '';
     dp: string;
     read?: string | ((val: any) => any);
     write?: string | ((val: any) => any);

@@ -60,7 +60,7 @@ async function generateAliasDocumentation() {
         if (row === void 0) {
           continue;
         }
-        readme += `| **${folder == lastFolder ? '"' : folder}** | ${row.useKey ? key : `~~${key}~~`} | ${row.type}| ${getStringOrArray(row.role)}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
+        readme += `| **${folder == lastFolder ? '"' : folder}** | ${row.useKey ? key : `~~${key}~~`} | ${getStringOrArray(row.type)}| ${getStringOrArray(row.role)}  | ${row.required ? "X" : ""} | ${row.writeable ? "X" : ""} | ${row.description ? row.description : ""} | 
 `;
         lastFolder = folder;
       }
