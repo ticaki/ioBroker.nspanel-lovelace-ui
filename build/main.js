@@ -96,6 +96,17 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
       }
     }
+    const states = await this.getForeignObjectsAsync("alias.0.*");
+    if (states) {
+      for (const id in states) {
+        if (states[id] && states[id].type === "state" && states[id].common && //@ts-expect-error
+        states[id].common.type === "state") {
+          this.log.warn(`Fix broken common.type in ${id} set to 'mixed'`);
+          states[id].common.type = "mixed";
+          await this.extendForeignObjectAsync(id, states[id]);
+        }
+      }
+    }
     await (0, import_readme.generateAliasDocumentation)();
     if (this.config.testCase) {
       this.log.warn("Testcase mode!");
@@ -191,9 +202,9 @@ class NspanelLovelaceUi extends utils.Adapter {
     try {
       import_icon_mapping.Icons.adapter = this;
       await this.library.init();
-      const states = await this.getStatesAsync("*");
-      await this.library.initStates(states);
-      for (const id in states) {
+      const states2 = await this.getStatesAsync("*");
+      await this.library.initStates(states2);
+      for (const id in states2) {
         if (id.endsWith(".info.isOnline")) {
           await this.library.writedp(id, false, import_definition.genericStateObjects.panel.panels.info.isOnline);
         }

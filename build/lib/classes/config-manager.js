@@ -364,8 +364,387 @@ class ConfigManager extends import_library.BaseClass {
       this.log.warn(msg);
       return { gridItem, messages };
     }
-    gridItem.template = "thermo.script";
+    const role = "thermostat";
+    const foundedStates = await this.searchDatapointsForItems(
+      import_config_manager_const.requiredScriptDataPoints,
+      role,
+      page.items[0].id,
+      messages
+    );
     gridItem.dpInit = page.items[0].id;
+    gridItem = {
+      ...gridItem,
+      card: "cardThermo",
+      alwaysOn: "none",
+      useColor: false,
+      items: void 0,
+      config: {
+        card: "cardThermo",
+        data: {
+          mixed1: {
+            value: { type: "const", constVal: "Temperature" }
+          },
+          mixed2: foundedStates[role].ACTUAL ? {
+            value: foundedStates[role].ACTUAL,
+            factor: { type: "const", constVal: 1 },
+            decimal: { type: "const", constVal: 1 }
+          } : void 0,
+          mixed3: foundedStates[role].HUMIDITY ? {
+            value: { type: "const", constVal: "Humidity" }
+          } : void 0,
+          mixed4: foundedStates[role].HUMIDITY ? {
+            value: foundedStates[role].HUMIDITY,
+            factor: { type: "const", constVal: 1 },
+            decimal: { type: "const", constVal: 0 },
+            unit: { type: "const", constVal: "%" }
+          } : void 0,
+          set1: foundedStates[role].SET,
+          set2: foundedStates[role].SET2
+        }
+      },
+      pageItems: []
+    };
+    gridItem.pageItems = gridItem.pageItems || [];
+    if (foundedStates[role].AUTOMATIC && !foundedStates[role].MANUAL) {
+      foundedStates[role].MANUAL = JSON.parse(JSON.stringify(foundedStates[role].AUTOMATIC));
+      if (foundedStates[role].MANUAL.type === "triggered") {
+        foundedStates[role].MANUAL.read = "return !val";
+        foundedStates[role].MANUAL.write = "return !val";
+      }
+    } else if (!foundedStates[role].AUTOMATIC && foundedStates[role].MANUAL) {
+      foundedStates[role].AUTOMATIC = JSON.parse(JSON.stringify(foundedStates[role].MANUAL));
+      if (foundedStates[role].AUTOMATIC.type === "triggered") {
+        foundedStates[role].AUTOMATIC.read = "return !val";
+        foundedStates[role].AUTOMATIC.write = "return !val";
+      }
+    }
+    if (foundedStates[role].AUTOMATIC) {
+      gridItem.pageItems.push({
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "alpha-a-circle" },
+              color: { type: "const", constVal: import_Color.Color.activated }
+            },
+            false: {
+              value: { type: "const", constVal: "alpha-a-circle-outline" },
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].AUTOMATIC,
+            set: foundedStates[role].AUTOMATIC
+          }
+        }
+      });
+    }
+    if (foundedStates[role].MANUAL) {
+      gridItem.pageItems.push({
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "alpha-m-circle" },
+              color: { type: "const", constVal: import_Color.Color.activated }
+            },
+            false: {
+              value: { type: "const", constVal: "alpha-m-circle-outline" },
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].MANUAL,
+            set: foundedStates[role].MANUAL
+          }
+        }
+      });
+    }
+    if (foundedStates[role].POWER && !foundedStates[role].OFF) {
+      foundedStates[role].OFF = JSON.parse(JSON.stringify(foundedStates[role].POWER));
+      if (foundedStates[role].OFF.type === "triggered") {
+        foundedStates[role].OFF.read = "return !val";
+        foundedStates[role].OFF.write = "return !val";
+      }
+    } else if (!foundedStates[role].POWER && foundedStates[role].OFF) {
+      foundedStates[role].POWER = JSON.parse(JSON.stringify(foundedStates[role].OFF));
+      if (foundedStates[role].POWER.type === "triggered") {
+        foundedStates[role].POWER.read = "return !val";
+        foundedStates[role].POWER.write = "return !val";
+      }
+    }
+    if (foundedStates[role].POWER) {
+      gridItem.pageItems.push({
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "power-standby" },
+              color: { type: "const", constVal: import_Color.Color.activated }
+            },
+            false: {
+              value: { type: "const", constVal: "power-standby" },
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].POWER,
+            set: foundedStates[role].POWER
+          }
+        }
+      });
+    }
+    if (foundedStates[role].OFF) {
+      gridItem.pageItems.push({
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "power-off" },
+              color: { type: "const", constVal: import_Color.Color.activated }
+            },
+            false: {
+              value: { type: "const", constVal: "power-off" },
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].OFF,
+            set: foundedStates[role].OFF
+          }
+        }
+      });
+    }
+    if (foundedStates[role].BOOST) {
+      gridItem.pageItems.push({
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "fast-forward-60" },
+              color: { type: "const", constVal: import_Color.Color.activated }
+            },
+            false: {
+              value: { type: "const", constVal: "fast-forward-60" },
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].BOOST,
+            set: foundedStates[role].BOOST
+          }
+        }
+      });
+    }
+    if (foundedStates[role].WINDOWOPEN) {
+      gridItem.pageItems.push({
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "window-open-variant" },
+              color: { type: "const", constVal: import_Color.Color.open }
+            },
+            false: {
+              value: { type: "const", constVal: "window-closed-variant" },
+              color: { type: "const", constVal: import_Color.Color.close }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].WINDOWOPEN
+          }
+        }
+      });
+    }
+    if (foundedStates[role].PARTY) {
+      gridItem.pageItems.push({
+        role: "button",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "party-popper" },
+              color: { type: "const", constVal: import_Color.Color.activated }
+            },
+            false: {
+              value: { type: "const", constVal: "party-popper" },
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].PARTY,
+            set: foundedStates[role].PARTY
+          }
+        }
+      });
+    }
+    if (foundedStates[role].MAINTAIN) {
+      gridItem.pageItems.push({
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "account-wrench" },
+              color: { type: "const", constVal: import_Color.Color.bad }
+            },
+            false: {
+              value: { type: "const", constVal: "account-wrench" },
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].MAINTAIN
+          }
+        }
+      });
+    }
+    if (foundedStates[role].UNREACH) {
+      gridItem.pageItems.push({
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "wifi-off" },
+              color: { type: "const", constVal: import_Color.Color.bad }
+            },
+            false: {
+              value: { type: "const", constVal: "wifi" },
+              color: { type: "const", constVal: import_Color.Color.good }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].UNREACH
+          }
+        }
+      });
+    }
+    if (foundedStates[role].MAINTAIN) {
+      gridItem.pageItems.push({
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "account-wrench" },
+              color: { type: "const", constVal: import_Color.Color.true }
+            },
+            false: {
+              value: { type: "const", constVal: "account-wrench" },
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].MAINTAIN
+          }
+        }
+      });
+    }
+    if (foundedStates[role].LOWBAT) {
+      gridItem.pageItems.push({
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "battery-low" },
+              color: { type: "const", constVal: import_Color.Color.bad }
+            },
+            false: {
+              value: { type: "const", constVal: "battery-high" },
+              color: { type: "const", constVal: import_Color.Color.good }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].LOWBAT
+          }
+        }
+      });
+    }
+    if (foundedStates[role].ERROR) {
+      gridItem.pageItems.push({
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "alert-circle" },
+              color: { type: "const", constVal: import_Color.Color.bad }
+            },
+            false: {
+              value: { type: "const", constVal: "alert-circle" },
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].ERROR
+          }
+        }
+      });
+    }
+    if (foundedStates[role].VACATION) {
+      gridItem.pageItems.push({
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "palm-tree" },
+              color: { type: "const", constVal: import_Color.Color.activated }
+            },
+            false: {
+              value: { type: "const", constVal: "palm-tree" },
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].VACATION
+          }
+        }
+      });
+    }
+    if (foundedStates[role].WORKING) {
+      gridItem.pageItems.push({
+        role: "indicator",
+        type: "button",
+        dpInit: "",
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: "briefcase-check" },
+              color: { type: "const", constVal: import_Color.Color.activated }
+            },
+            false: {
+              value: { type: "const", constVal: "briefcase-check" },
+              color: { type: "const", constVal: import_Color.Color.deactivated }
+            }
+          },
+          entity1: {
+            value: foundedStates[role].WORKING
+          }
+        }
+      });
+    }
     return { gridItem, messages };
   }
   async getPageNaviItemConfig(item, page) {
