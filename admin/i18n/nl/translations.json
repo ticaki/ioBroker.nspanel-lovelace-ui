@@ -58,5 +58,8 @@
     "mqttPort": "MQTT -poort",
     "mqttUser": "MQTT -gebruikersnaam",
     "mqttPassword": "MQTT -wachtwoord",
-    "shutter": "Luik"
+    "shutter": "Luik",
+    "on": "op",
+    "off": "uit",
+    "press": "drukken"
 }

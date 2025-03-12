@@ -36,7 +36,7 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.6.2";
+  scriptVersion = "0.6.3";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -376,21 +376,12 @@ class ConfigManager extends import_library.BaseClass {
     }
     let itemConfig = void 0;
     const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
-    if (!item.id) {
-      throw new Error(`Channel id missing in ${item.name || "unknown"}!`);
-    }
     const obj = item.id && !item.id.endsWith(".") ? await this.adapter.getForeignObjectAsync(item.id) : void 0;
-    if (!obj || !obj.common || !obj.common.role) {
+    if (obj && (!obj.common || !obj.common.role)) {
       throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
     }
-    const role = obj.common.role;
+    const role = obj ? obj.common.role : null;
     const commonName = obj && obj.common ? typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()] : void 0;
-    const foundedStates = await this.searchDatapointsForItems(
-      import_config_manager_const.requiredScriptDataPoints,
-      role,
-      item.id,
-      []
-    );
     const getButtonsTextTrue = async (item2, def1) => {
       return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText) : await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1);
     };
@@ -414,33 +405,30 @@ class ConfigManager extends import_library.BaseClass {
               },
               color: await this.getIconColor(item.onColor, this.colorOn)
             },
-            false: {
-              value: {
-                type: "const",
-                constVal: item.icon2 || item.icon || "gesture-tap-button"
-              },
-              color: await this.getIconColor(item.offColor, this.colorOff)
-            },
             scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
             maxBri: void 0,
             minBri: void 0
           },
           text1: {
-            true: { type: "const", constVal: "on" },
-            false: { type: "const", constVal: "off" }
+            true: { type: "const", constVal: "press" }
           },
           text
         }
       };
     }
-    if (obj && (!obj.common || !obj.common.role || role == null)) {
+    if (obj && (!obj.common || !obj.common.role) || role == null) {
       throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
     }
-    if (role) {
-      if (!await this.checkRequiredDatapoints(role, item)) {
-        return;
-      }
+    if (!import_config_manager_const.requiredScriptDataPoints[role]) {
+      this.log.warn(`Channel role ${role} not supported!`);
+      throw new Error(`Channel role ${role} not supported!`);
     }
+    const foundedStates = await this.searchDatapointsForItems(
+      import_config_manager_const.requiredScriptDataPoints,
+      role,
+      item.id,
+      []
+    );
     switch (role) {
       case "socket":
       case "light":
@@ -925,9 +913,6 @@ class ConfigManager extends import_library.BaseClass {
           item.id,
           messages
         );
-        if (!await this.checkRequiredDatapoints(role, item)) {
-          return { itemConfig: void 0, messages };
-        }
         const specialRole = page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" ? "textNotIcon" : "iconNotText";
         const commonName = typeof obj.common.name === "string" ? obj.common.name : obj.common.name[this.library.getLocalLanguage()];
         const getButtonsTextTrue = async (item2, def1) => {
@@ -1670,7 +1655,7 @@ class ConfigManager extends import_library.BaseClass {
             if (!o || subItem.data[key] === void 0 || !subItem.data[key].required) {
               continue;
             }
-            if (!o || !this.checkStringVsStringOrArray(subItem.data[key].role, o.common.role) || subItem.data[key].type !== "mixed" && o.common.type !== subItem.data[key].type || subItem.data[key].writeable && !o.common.write) {
+            if (!o || !this.checkStringVsStringOrArray(subItem.data[key].role, o.common.role) || !this.checkStringVsStringOrArray(subItem.data[key].type, o.common.type) || subItem.data[key].writeable && !o.common.write) {
               if (!o) {
                 throw new Error(
                   `Datapoint ${item2.id}.${dp} is missing and is required for role ${role2}!`
@@ -1682,7 +1667,7 @@ class ConfigManager extends import_library.BaseClass {
               }
             }
           } catch (err) {
-            error += err;
+            error += err.replaceAll("Error: ", "");
           }
         }
       } else {

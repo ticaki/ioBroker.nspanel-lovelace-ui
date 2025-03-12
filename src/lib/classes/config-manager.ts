@@ -29,7 +29,7 @@ export class ConfigManager extends BaseClass {
     dontWrite: boolean = false;
     extraConfigLogging: boolean = false;
 
-    readonly scriptVersion = '0.6.2';
+    readonly scriptVersion = '0.6.3';
     readonly breakingVersion = '0.6.0';
 
     statesController: StatesControler;
@@ -474,27 +474,18 @@ export class ConfigManager extends BaseClass {
             page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
                 ? 'textNotIcon'
                 : 'iconNotText';
-        if (!item.id) {
-            throw new Error(`Channel id missing in ${item.name || 'unknown'}!`);
-        }
+
         const obj = item.id && !item.id.endsWith('.') ? await this.adapter.getForeignObjectAsync(item.id) : undefined;
-        if (!obj || !obj.common || !obj.common.role) {
+        if (obj && (!obj.common || !obj.common.role)) {
             throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
         }
-        const role = obj.common.role as ScriptConfig.channelRoles;
+        const role = obj ? (obj.common.role as ScriptConfig.channelRoles) : null;
         const commonName =
             obj && obj.common
                 ? typeof obj.common.name === 'string'
                     ? obj.common.name
                     : obj.common.name[this.library.getLocalLanguage()]
                 : undefined;
-
-        const foundedStates: checkedDatapointsUnion = await this.searchDatapointsForItems(
-            requiredScriptDataPoints,
-            role,
-            item.id,
-            [],
-        );
 
         const getButtonsTextTrue = async (
             item: ScriptConfig.PageItem,
@@ -538,36 +529,38 @@ export class ConfigManager extends BaseClass {
                             },
                             color: await this.getIconColor(item.onColor, this.colorOn),
                         },
-                        false: {
-                            value: {
-                                type: 'const',
-                                constVal: item.icon2 || item.icon || 'gesture-tap-button',
-                            },
-                            color: await this.getIconColor(item.offColor, this.colorOff),
-                        },
                         scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                         maxBri: undefined,
                         minBri: undefined,
                     },
                     text1: {
-                        true: { type: 'const', constVal: 'on' },
-                        false: { type: 'const', constVal: 'off' },
+                        true: { type: 'const', constVal: 'press' },
                     },
                     text: text,
                 },
             };
         }
 
-        if (obj && (!obj.common || !obj.common.role || role == null)) {
+        if ((obj && (!obj.common || !obj.common.role)) || role == null) {
             throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
         }
+        if (!requiredScriptDataPoints[role]) {
+            this.log.warn(`Channel role ${role} not supported!`);
+            throw new Error(`Channel role ${role} not supported!`);
+        }
+        const foundedStates: checkedDatapointsUnion = await this.searchDatapointsForItems(
+            requiredScriptDataPoints,
+            role,
+            item.id,
+            [],
+        );
 
         // check if role and types are correct
-        if (role) {
+        /*if (role) {
             if (!(await this.checkRequiredDatapoints(role, item))) {
                 return;
             }
-        }
+        }*/
 
         switch (role) {
             case 'socket':
@@ -1099,9 +1092,9 @@ export class ConfigManager extends BaseClass {
                     item.id,
                     messages,
                 );
-                if (!(await this.checkRequiredDatapoints(role, item))) {
+                /*if (!(await this.checkRequiredDatapoints(role, item))) {
                     return { itemConfig: undefined, messages };
-                }
+                }*/
                 const specialRole: pages.DeviceRole =
                     page.type === 'cardGrid' || page.type === 'cardGrid2' || page.type === 'cardGrid3'
                         ? 'textNotIcon'
@@ -1965,7 +1958,7 @@ export class ConfigManager extends BaseClass {
                         if (
                             !o ||
                             !this.checkStringVsStringOrArray(subItem.data[key].role, o.common.role) ||
-                            (subItem.data[key].type !== 'mixed' && o.common.type !== subItem.data[key].type) ||
+                            !this.checkStringVsStringOrArray(subItem.data[key].type, o.common.type) ||
                             (subItem.data[key].writeable && !o.common.write)
                         ) {
                             if (!o) {
@@ -1982,7 +1975,7 @@ export class ConfigManager extends BaseClass {
                             }
                         }
                     } catch (err: any) {
-                        error += err;
+                        error += err.replaceAll('Error: ', '');
                     }
                 }
             } else {

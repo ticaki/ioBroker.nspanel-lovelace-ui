@@ -58,5 +58,8 @@
     "mqttPort": "Port MQTT",
     "mqttUser": "Nazwa użytkownika MQTT",
     "mqttPassword": "Hasło MQTT",
-    "shutter": "Migawka"
+    "shutter": "Migawka",
+    "on": "NA",
+    "off": "wyłączony",
+    "press": "naciskać"
 }
