@@ -435,10 +435,10 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "cmd/screensaverTimeout" },
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 90 }
+          value: { type: "internal", dp: "cmd/screensaverTimeout" }
         },
+        minValue1: { type: "const", constVal: 0 },
+        maxValue1: { type: "const", constVal: 90 },
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },
@@ -454,11 +454,10 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "cmd/dimStandby" },
-          factor: { type: "const", constVal: 1 / 10 },
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 10 }
+          value: { type: "internal", dp: "cmd/dimStandby" }
         },
+        minValue1: { type: "const", constVal: 0 },
+        maxValue1: { type: "const", constVal: 100 },
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },
@@ -474,13 +473,10 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "cmd/dimActive" },
-          factor: { type: "const", constVal: 1 },
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 10 }
+          value: { type: "internal", dp: "cmd/dimActive" }
         },
         minValue1: { type: "const", constVal: 0 },
-        maxValue1: { type: "const", constVal: 10 },
+        maxValue1: { type: "const", constVal: 100 },
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },
@@ -496,11 +492,10 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "cmd/dimNightActive" },
-          factor: { type: "const", constVal: 1 / 10 },
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 10 }
+          value: { type: "internal", dp: "cmd/dimNightActive" }
         },
+        minValue1: { type: "const", constVal: 0 },
+        maxValue1: { type: "const", constVal: 100 },
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },
@@ -516,11 +511,10 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "cmd/dimNightStandby" },
-          factor: { type: "const", constVal: 1 / 10 },
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 10 }
+          value: { type: "internal", dp: "cmd/dimNightStandby" }
         },
+        minValue1: { type: "const", constVal: 0 },
+        maxValue1: { type: "const", constVal: 100 },
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },
@@ -536,10 +530,10 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "cmd/dimNightHourStart" },
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 23 }
+          value: { type: "internal", dp: "cmd/dimNightHourStart" }
         },
+        minValue1: { type: "const", constVal: 0 },
+        maxValue1: { type: "const", constVal: 23 },
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },
@@ -555,10 +549,10 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "cmd/dimNightHourEnd" },
-          minScale: { type: "const", constVal: 0 },
-          maxScale: { type: "const", constVal: 23 }
+          value: { type: "internal", dp: "cmd/dimNightHourEnd" }
         },
+        minValue1: { type: "const", constVal: 0 },
+        maxValue1: { type: "const", constVal: 23 },
         icon: {
           true: {
             value: { type: "const", constVal: "clock-time-twelve-outline" },

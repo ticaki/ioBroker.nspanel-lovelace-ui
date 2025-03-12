@@ -31,11 +31,11 @@ const buttonTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "size-m" },
-          color: { type: "const", constVal: import_Color.Color.option1 }
+          color: { type: "const", constVal: import_Color.Color.Yellow }
         },
         false: {
           value: void 0,
-          color: { type: "const", constVal: import_Color.Color.option2 }
+          color: { type: "const", constVal: import_Color.Color.Green }
         }
       },
       entity1: {
