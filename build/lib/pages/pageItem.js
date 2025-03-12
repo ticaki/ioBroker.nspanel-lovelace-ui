@@ -273,7 +273,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.displayName = this.library.getTranslation(
               (_t = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _t : ""
             );
-            if (entry.type === "button") {
+            if (entry.type === "button" || entry.type === "switch") {
               message.optionalValue = (value != null ? value : true) ? "1" : "0";
               if (this.parent && this.parent.card === "cardEntities") {
                 message.optionalValue = (_u = this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value))) != null ? _u : message.optionalValue;
