@@ -135,8 +135,8 @@ Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
 - [x] cardGrid3
 - [x] cardThermo
 - [ ] cardMedia
-- [ ] cardUnlock
-- [ ] cardQR
+- [x] cardUnlock
+- [x] cardQR
 - [ ] cardAlarm
 - [ ] cardPower
 
