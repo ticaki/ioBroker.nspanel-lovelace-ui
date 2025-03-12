@@ -72,6 +72,17 @@
                     "lg": 4,
                     "xl": 3
                 },
+                "fixBrokenCommonTypes": {
+                    "type": "checkbox",
+                    "label": "fixBrokenCommonTypes",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "_header": {
                     "type": "header",
                     "label": "Not used",

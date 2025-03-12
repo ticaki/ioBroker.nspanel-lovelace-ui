@@ -16,6 +16,8 @@ declare global {
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             scstype: string;
 
+            fixBrokenCommonTypes: boolean;
+
             onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;
             doubleClickTime: number;

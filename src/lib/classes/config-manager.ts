@@ -556,20 +556,6 @@ export class ConfigManager extends BaseClass {
             });
         }
 
-        if (foundedStates[role].POWER && !foundedStates[role].OFF) {
-            foundedStates[role].OFF = JSON.parse(JSON.stringify(foundedStates[role].POWER));
-            if (foundedStates[role].OFF!.type === 'triggered') {
-                foundedStates[role].OFF!.read = 'return !val';
-                foundedStates[role].OFF!.write = 'return !val';
-            }
-        } else if (!foundedStates[role].POWER && foundedStates[role].OFF) {
-            foundedStates[role].POWER = JSON.parse(JSON.stringify(foundedStates[role].OFF));
-            if (foundedStates[role].POWER!.type === 'triggered') {
-                foundedStates[role].POWER!.read = 'return !val';
-                foundedStates[role].POWER!.write = 'return !val';
-            }
-        }
-
         if (foundedStates[role].POWER) {
             gridItem.pageItems.push({
                 role: 'button',
