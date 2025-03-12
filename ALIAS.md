@@ -80,7 +80,7 @@
 ### info
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **info** | ACTUAL | string, number, boolean| state  | X |  |  | 
+| **info** | ACTUAL | string, number, boolean, mixed| state  | X |  |  | 
 | **"** | COLORDEC | number| value.rgb  |  |  |  | 
 | **"** | BUTTONTEXT | string| text  |  |  |  | 
 | **"** | USERICON | string| state  |  |  |  | 

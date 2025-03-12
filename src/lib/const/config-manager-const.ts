@@ -847,7 +847,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         data: {
             ACTUAL: {
                 role: 'state',
-                type: ['string', 'number', 'boolean'],
+                type: ['string', 'number', 'boolean', 'mixed'],
                 required: true,
                 writeable: false,
                 useKey: true,
