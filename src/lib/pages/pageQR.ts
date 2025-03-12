@@ -151,7 +151,7 @@ export class PageQR extends Page {
                                 message.internalName2 = arr[1];
                                 message.iconId2 = arr[2];
                                 message.iconColor2 = arr[3];
-                                message.optionalValue2 = config.pwdhidden ? '' : arr[5];
+                                message.optionalValue2 = arr[0] == 'switch' ? arr[5] : config.pwdhidden ? '' : arr[5];
                                 break;
                             default:
                                 break;
