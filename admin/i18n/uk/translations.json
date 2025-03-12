@@ -58,5 +58,8 @@
     "mqttPort": "Порт MQTT",
     "mqttUser": "MQTT Ім'я користувача",
     "mqttPassword": "Пароль MQTT",
-    "shutter": "Затвора"
+    "shutter": "Затвора",
+    "on": "на",
+    "off": "не вистачати",
+    "press": "пресувати"
 }

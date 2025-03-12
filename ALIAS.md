@@ -40,7 +40,7 @@
 ### timeTable
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **timeTable** | ~~noNeed~~ | string| state  |  | X |  | 
+| **timeTable** | ~~noNeed~~ | string| state  |  |  | Just use the template for this - ask TT-Tom :) | 
 ### dimmer
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -80,7 +80,7 @@
 ### info
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **info** | ACTUAL | mixed| state  | X |  |  | 
+| **info** | ACTUAL | string, number, boolean, mixed| state  | X |  |  | 
 | **"** | COLORDEC | number| value.rgb  |  |  |  | 
 | **"** | BUTTONTEXT | string| text  |  |  |  | 
 | **"** | USERICON | string| state  |  |  |  | 

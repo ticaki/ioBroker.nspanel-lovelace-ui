@@ -228,7 +228,7 @@ export class PageItem extends BaseClassTriggerd {
 
                     const value = await tools.getValueEntryNumber(item.entity1);
                     if (value === null) {
-                        this.log.warn(`Entity ${this.config.role} has no value!`);
+                        this.log.warn(`Entity ${this.config.role} has no value! No Actual or Set`);
                         break;
                     }
                     message.icon = await tools.getIconEntryValue(item.icon, value, 'window-open');

@@ -58,5 +58,8 @@
     "mqttPort": "Porta mqtt",
     "mqttUser": "Nome utente MQTT",
     "mqttPassword": "Password MQTT",
-    "shutter": "Otturatore"
+    "shutter": "Otturatore",
+    "on": "SU",
+    "off": "spento",
+    "press": "premere"
 }

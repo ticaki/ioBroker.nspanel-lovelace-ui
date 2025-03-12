@@ -198,7 +198,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           message.type = "shutter";
           const value = await tools.getValueEntryNumber(item.entity1);
           if (value === null) {
-            this.log.warn(`Entity ${this.config.role} has no value!`);
+            this.log.warn(`Entity ${this.config.role} has no value! No Actual or Set`);
             break;
           }
           message.icon = await tools.getIconEntryValue(item.icon, value, "window-open");

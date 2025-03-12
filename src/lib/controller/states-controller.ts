@@ -302,9 +302,6 @@ export class StatesControler extends BaseClass {
         if (this.intervalObjectDatabase) {
             this.adapter.clearInterval(this.intervalObjectDatabase);
         }
-        if (StatesControler.tempObjectDBTimeout) {
-            this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
-        }
         if (this.deletePageInterval) {
             this.adapter.clearInterval(this.deletePageInterval);
         }
@@ -498,7 +495,10 @@ export class StatesControler extends BaseClass {
         throw new Error(`State id invalid ${id} no data!`);
     }
 
-    getType(id: string): ioBroker.CommonType | undefined {
+    getType(id: string | undefined): ioBroker.CommonType | undefined {
+        if (!id) {
+            return undefined;
+        }
         if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) {
             return this.triggerDB[id].common.type;
         }
@@ -508,7 +508,10 @@ export class StatesControler extends BaseClass {
         return undefined;
     }
 
-    async getCommonStates(id: string, force: boolean = false): Promise<Record<string, string> | undefined> {
+    async getCommonStates(id: string | undefined, force: boolean = false): Promise<Record<string, string> | undefined> {
+        if (!id) {
+            return undefined;
+        }
         let j: string | string[] | Record<string, string> | undefined = undefined;
         if (force) {
             const obj = await this.adapter.getObjectAsync(id);
@@ -765,7 +768,7 @@ export class StatesControler extends BaseClass {
             }
             StatesControler.tempObjectDBTimeout = undefined;
             StatesControler.TempObjectDB = { data: undefined, keys: [], enums: undefined };
-        }, 60000);
+        }, 10000);
 
         return StatesControler.TempObjectDB;
     }
@@ -847,7 +850,7 @@ export class StatesControler extends BaseClass {
         regexp?: RegExp,
         triggered?: boolean,
         writeable?: boolean,
-        commonType?: ioBroker.CommonType | '',
+        commonType?: ioBroker.CommonType | ioBroker.CommonType[] | '',
     ): Promise<DataItemsOptions | undefined> {
         const status = { ok: true };
         let item: DataItemsOptions | undefined;
@@ -873,7 +876,7 @@ export class StatesControler extends BaseClass {
             };
         }
         const data = await this.getDataItemsFromAuto(dpInit, { item: item }, '', enums, status, true);
-        if (status.ok && data.item.dp) {
+        if (status.ok && data && data.item && data.item.dp) {
             return item;
         }
         return undefined;

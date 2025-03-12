@@ -439,9 +439,10 @@ async function configuration (): Promise<void> {
      */
 
     log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version}))
+    setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 }
 
-const version = '0.6.1';
+const version = '0.6.3';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -832,74 +833,83 @@ declare namespace ScriptConfig {
     } & PageBaseItem;
     // mean string start with getState(' and end with ').val
     type getStateID = string;
-    export type PageBaseItem = {
-        uniqueName?: string;
-        role?: string;
-        /**
-         * The data point with the data to be used.
-         */
-        id?: string | null;
-        /**
-         * The icon that is used in the standard case or if ID is true
-         */
-        icon?: string;
-        /**
-         * The icon that is used when id is false
-         */
-        icon2?: string;
-        /**
-         * Used with blinds for partially open.
-         */
-        icon3?: string;
-        /**
-         * The color that is used in the standard case or if ID is true
-         */
-        onColor?: RGB;
-        /**
-         * The color that is used when id is false
-         */
-        offColor?: RGB;
-        useColor?: boolean;
-        /**
-         * Interpolate the icon colour by ID
-         */
-        interpolateColor?: boolean;
-        minValueBrightness?: number;
-        maxValueBrightness?: number;
-        minValueColorTemp?: number;
-        maxValueColorTemp?: number;
-        minValueLevel?: number;
-        maxValueLevel?: number;
-        minValueTilt?: number;
-        maxValueTilt?: number;
-        minValue?: number;
-        maxValue?: number;
-        stepValue?: number;
-        prefixName?: string;
-        suffixName?: string;
-        name?: string;
-        secondRow?: string;
-        buttonText?: string;
-        unit?: string;
-        navigate?: boolean;
-        colormode?: string;
-        colorScale?: IconScaleElement;
-        targetPage?: string;
-        modeList?: string[];
-        hidePassword?: boolean;
-        autoCreateALias?: boolean;
-        yAxis?: string;
-        yAxisTicks?: number[] | string;
-        xAxisDecorationId?: string;
-        useValue?: boolean;
-        monobutton?: boolean;
-        inSel_ChoiceState?: boolean;
-        iconArray?: string[];
-        customIcons?: any[];
-        fontSize?: number;
-        actionStringArray?: string[];
-        alwaysOnDisplay?: boolean;
-    };
+    export type PageBaseItem =
+        ({
+            navigate: true;
+            targetPage: string;
+            /**
+             * The data point with the data to be used.
+             */
+            id?: string | null
+        } | {
+            /**
+             * The data point with the data to be used.
+             */
+            id: string;
+            navigate?: false | null | undefined;
+        })
+        & {
+            uniqueName?: string;
+            role?: string;
+            /**
+             * The icon that is used in the standard case or if ID is true
+             */
+            icon?: string;
+            /**
+             * The icon that is used when id is false
+             */
+            icon2?: string;
+            /**
+             * Used with blinds for partially open.
+             */
+            icon3?: string;
+            /**
+             * The color that is used in the standard case or if ID is true
+             */
+            onColor?: RGB;
+            /**
+             * The color that is used when id is false
+             */
+            offColor?: RGB;
+            useColor?: boolean;
+            /**
+             * Interpolate the icon colour by ID
+             */
+            interpolateColor?: boolean;
+            minValueBrightness?: number;
+            maxValueBrightness?: number;
+            minValueColorTemp?: number;
+            maxValueColorTemp?: number;
+            minValueLevel?: number;
+            maxValueLevel?: number;
+            minValueTilt?: number;
+            maxValueTilt?: number;
+            minValue?: number;
+            maxValue?: number;
+            stepValue?: number;
+            prefixName?: string;
+            suffixName?: string;
+            name?: string;
+            secondRow?: string;
+            buttonText?: string;
+            unit?: string;
+            colormode?: string;
+            colorScale?: IconScaleElement;
+            modeList?: string[];
+            hidePassword?: boolean;
+            autoCreateALias?: boolean;
+            yAxis?: string;
+            yAxisTicks?: number[] | string;
+            xAxisDecorationId?: string;
+            useValue?: boolean;
+            monobutton?: boolean;
+            inSel_ChoiceState?: boolean;
+            iconArray?: string[];
+            customIcons?: any[];
+            fontSize?: number;
+            actionStringArray?: string[];
+            alwaysOnDisplay?: boolean;
+        };
 
     export type DimMode = {
         dimmodeOn: boolean | undefined;
@@ -1020,6 +1030,10 @@ declare namespace ScriptConfig {
              * active the button function for the indicator of the screensaver
              */
             screensaverIndicatorButtons?: boolean;
+            /**
+             * Also informs about missing optional data point option in the log. - very noicy
+             */
+            extraConfigLogging?: boolean;
         };
     };
     export type leftScreensaverEntityType =

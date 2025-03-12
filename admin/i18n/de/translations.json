@@ -58,5 +58,8 @@
     "mqttPort": "MQTT-Port",
     "mqttUser": "MQTT-Benutzername",
     "mqttPassword": "MQTT-Passwort",
-    "shutter": "Rollladen"
+    "shutter": "Rollladen",
+    "on": "An",
+    "off": "aus",
+    "press": "drücken"
 }

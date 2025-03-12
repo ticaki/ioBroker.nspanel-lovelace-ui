@@ -143,446 +143,186 @@ export const defaultConfig: ScriptConfig.Config = {
     },
 };
 
-export type checkedDatapoints = {
-    [key: string]: checkedDatapointsUnion;
-};
-export type checkedDatapointsUnion = { role: ScriptConfig.channelRoles } & (
-    | { role: 'motion'; data: { ACTUAL: DataItemsOptions | undefined } }
-    | {
-          role: 'dimmer';
-          data: {
-              SET: DataItemsOptions | undefined;
-              ACTUAL: DataItemsOptions | undefined;
-              ON_SET: DataItemsOptions | undefined;
-              ON_ACTUAL: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'ct';
-          data: {
-              DIMMER: DataItemsOptions | undefined;
-              ON: DataItemsOptions | undefined;
-              ON_ACTUAL: DataItemsOptions | undefined;
-              TEMPERATURE: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'window';
-          data: {
-              ACTUAL: DataItemsOptions | undefined;
-              COLORDEC: DataItemsOptions | undefined;
-              BUTTONTEXT: DataItemsOptions | undefined;
-          };
-      }
-    | { role: 'humidity'; data: { ACTUAL: DataItemsOptions | undefined } }
-    | {
-          role: 'hue';
-          data: {
-              DIMMER: DataItemsOptions | undefined;
-              ON: DataItemsOptions | undefined;
-              ON_ACTUAL: DataItemsOptions | undefined;
-              TEMPERATURE: DataItemsOptions | undefined;
-              HUE: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'info';
-          data: {
-              ACTUAL: DataItemsOptions | undefined;
-              COLORDEC: DataItemsOptions | undefined;
-              BUTTONTEXT: DataItemsOptions | undefined;
-              USERICON: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'blind';
-          data: {
-              ACTUAL: DataItemsOptions | undefined;
-              SET: DataItemsOptions | undefined;
-              CLOSE: DataItemsOptions | undefined;
-              OPEN: DataItemsOptions | undefined;
-              STOP: DataItemsOptions | undefined;
-              TILT_ACTUAL: DataItemsOptions | undefined;
-              TILT_SET: DataItemsOptions | undefined;
-              TILT_CLOSE: DataItemsOptions | undefined;
-              TILT_OPEN: DataItemsOptions | undefined;
-              TILT_STOP: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'airCondition';
-          data: {
-              ACTUAL: DataItemsOptions | undefined;
-              SET: DataItemsOptions | undefined;
-              SET2: DataItemsOptions | undefined;
-              AUTO: DataItemsOptions | undefined;
-              COOL: DataItemsOptions | undefined;
-              BOOST: DataItemsOptions | undefined;
-              ERROR: DataItemsOptions | undefined;
-              HEAT: DataItemsOptions | undefined;
-              HUMIDITY: DataItemsOptions | undefined;
-              MAINTAIN: DataItemsOptions | undefined;
-              MODE: DataItemsOptions | undefined;
-              OFF: DataItemsOptions | undefined;
-              POWER: DataItemsOptions | undefined;
-              SPEED: DataItemsOptions | undefined;
-              SWING: DataItemsOptions | undefined;
-              UNREACH: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'socket';
-          data: {
-              ACTUAL: DataItemsOptions | undefined;
-              SET: DataItemsOptions | undefined;
-              COLORDEC: DataItemsOptions | undefined;
-              BUTTONTEXT: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'light';
-          data: {
-              ACTUAL: DataItemsOptions | undefined;
-              SET: DataItemsOptions | undefined;
-              COLORDEC: DataItemsOptions | undefined;
-              BUTTONTEXT: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'volume';
-          data: {
-              ACTUAL: DataItemsOptions | undefined;
-              SET: DataItemsOptions | undefined;
-              MUTE: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'rgb';
-          data: {
-              RED: DataItemsOptions | undefined;
-              GREEN: DataItemsOptions | undefined;
-              BLUE: DataItemsOptions | undefined;
-              ON_ACTUAL: DataItemsOptions | undefined;
-              ON: DataItemsOptions | undefined;
-              DIMMER: DataItemsOptions | undefined;
-              TEMPERATURE: DataItemsOptions | undefined;
-              WHITE: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'rgbSingle';
-          data: {
-              RGB: DataItemsOptions | undefined;
-              ON: DataItemsOptions | undefined;
-              DIMMER: DataItemsOptions | undefined;
-              TEMPERATURE: DataItemsOptions | undefined;
-              ON_ACTUAL: DataItemsOptions | undefined;
-          };
-      }
-    | { role: 'slider'; data: { SET: DataItemsOptions | undefined; ACTUAL: DataItemsOptions | undefined } }
-    | { role: 'button'; data: { SET: DataItemsOptions | undefined } }
-    | { role: 'buttonSensor'; data: { ACTUAL: DataItemsOptions | undefined } }
-    | { role: 'temperature'; data: { ACTUAL: DataItemsOptions | undefined } }
-    | {
-          role: 'value.temperature';
-          data: { ACTUAL: DataItemsOptions | undefined; USERICON: DataItemsOptions | undefined };
-      }
-    | {
-          role: 'thermostat';
-          data: {
-              ACTUAL: DataItemsOptions | undefined;
-              SET: DataItemsOptions | undefined;
-              MODE: DataItemsOptions | undefined;
-              BOOST: DataItemsOptions | undefined;
-              AUTOMATIC: DataItemsOptions | undefined;
-              ERROR: DataItemsOptions | undefined;
-              LOWBAT: DataItemsOptions | undefined;
-              MANUAL: DataItemsOptions | undefined;
-              UNREACH: DataItemsOptions | undefined;
-              HUMIDITY: DataItemsOptions | undefined;
-              MAINTAIN: DataItemsOptions | undefined;
-              PARTY: DataItemsOptions | undefined;
-              POWER: DataItemsOptions | undefined;
-              VACATION: DataItemsOptions | undefined;
-              WINDOWOPEN: DataItemsOptions | undefined;
-              WORKING: DataItemsOptions | undefined;
-              USERICON: DataItemsOptions | undefined;
-          };
-      }
-    | { role: 'level.timer'; data: { ACTUAL: DataItemsOptions | undefined; STATE: DataItemsOptions | undefined } }
-    | { role: 'gate'; data: { ACTUAL: DataItemsOptions | undefined } }
-    | {
-          role: 'door';
-          data: {
-              ACTUAL: DataItemsOptions | undefined;
-              COLORDEC: DataItemsOptions | undefined;
-              BUTTONTEXT: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'level.mode.fan';
-          data: {
-              ACTUAL: DataItemsOptions | undefined;
-              MODE: DataItemsOptions | undefined;
-              SET: DataItemsOptions | undefined;
-              SPEED: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'lock';
-          data: {
-              ACTUAL: DataItemsOptions | undefined;
-              OPEN: DataItemsOptions | undefined;
-              SET: DataItemsOptions | undefined;
-          };
-      }
-    | {
-          role: 'warning';
-          data: {
-              INFO: DataItemsOptions | undefined;
-              LEVEL: DataItemsOptions | undefined;
-              TITLE: DataItemsOptions | undefined;
-          };
-      }
-    | { role: 'weatherforecast'; data: { ICON: DataItemsOptions | undefined; TEMP: DataItemsOptions | undefined } }
-    | { role: 'WIFI'; data: { ACTUAL: DataItemsOptions | undefined; SWITCH: DataItemsOptions | undefined } }
-);
+export type checkedDatapointsUnionWithNull = Record<
+    ScriptConfig.channelRoles,
+    Partial<Record<mydps, DataItemsOptions | undefined | null>>
+>;
 
-export const checkedDatapoints: checkedDatapoints = {
+export type checkedDatapointsUnion = Record<
+    ScriptConfig.channelRoles,
+    Partial<Record<mydps, DataItemsOptions | undefined>>
+>;
+
+export const checkedDatapoints: checkedDatapointsUnionWithNull = {
     motion: {
-        role: 'motion',
-        data: {
-            ACTUAL: undefined,
-        },
+        ACTUAL: null,
     },
     dimmer: {
-        role: 'dimmer',
-        data: {
-            SET: undefined,
-            ACTUAL: undefined,
-            ON_SET: undefined,
-            ON_ACTUAL: undefined,
-        },
+        SET: null,
+        ACTUAL: null,
+        ON_SET: null,
+        ON_ACTUAL: null,
     },
     ct: {
-        role: 'ct',
-        data: {
-            DIMMER: undefined,
-            ON: undefined,
-            ON_ACTUAL: undefined,
-            TEMPERATURE: undefined,
-        },
+        DIMMER: null,
+        ON: null,
+        ON_ACTUAL: null,
+        TEMPERATURE: null,
     },
     window: {
-        role: 'window',
-        data: {
-            ACTUAL: undefined,
-            COLORDEC: undefined,
-            BUTTONTEXT: undefined,
-        },
+        ACTUAL: null,
+        COLORDEC: null,
+        BUTTONTEXT: null,
     },
     humidity: {
-        role: 'humidity',
-        data: {
-            ACTUAL: undefined,
-        },
+        ACTUAL: null,
+    },
+    'value.humidity': {
+        ACTUAL: null,
+    },
+    timeTable: {
+        noNeed: null,
     },
     hue: {
-        role: 'hue',
-        data: {
-            DIMMER: undefined,
-            ON: undefined,
-            ON_ACTUAL: undefined,
-            TEMPERATURE: undefined,
-            HUE: undefined,
-        },
+        DIMMER: null,
+        ON: null,
+        ON_ACTUAL: null,
+        TEMPERATURE: null,
+        HUE: null,
     },
     info: {
-        role: 'info',
-        data: {
-            ACTUAL: undefined,
-            COLORDEC: undefined,
-            BUTTONTEXT: undefined,
-            USERICON: undefined,
-        },
+        ACTUAL: null,
+        COLORDEC: null,
+        BUTTONTEXT: null,
+        USERICON: null,
     },
     blind: {
-        role: 'blind',
-        data: {
-            ACTUAL: undefined,
-            SET: undefined,
-            CLOSE: undefined,
-            OPEN: undefined,
-            STOP: undefined,
-            TILT_ACTUAL: undefined,
-            TILT_SET: undefined,
-            TILT_CLOSE: undefined,
-            TILT_OPEN: undefined,
-            TILT_STOP: undefined,
-        },
+        ACTUAL: null,
+        SET: null,
+        CLOSE: null,
+        OPEN: null,
+        STOP: null,
+        TILT_ACTUAL: null,
+        TILT_SET: null,
+        TILT_CLOSE: null,
+        TILT_OPEN: null,
+        TILT_STOP: null,
     },
     airCondition: {
-        role: 'airCondition',
-        data: {
-            ACTUAL: undefined,
-            SET: undefined,
-            SET2: undefined,
-            AUTO: undefined,
-            COOL: undefined,
-            BOOST: undefined,
-            ERROR: undefined,
-            HEAT: undefined,
-            HUMIDITY: undefined,
-            MAINTAIN: undefined,
-            MODE: undefined,
-            OFF: undefined,
-            POWER: undefined,
-            SPEED: undefined,
-            SWING: undefined,
-            UNREACH: undefined,
-        },
+        ACTUAL: null,
+        SET: null,
+        SET2: null,
+        AUTO: null,
+        COOL: null,
+        BOOST: null,
+        ERROR: null,
+        HEAT: null,
+        HUMIDITY: null,
+        MAINTAIN: null,
+        MODE: null,
+        OFF: null,
+        POWER: null,
+        SPEED: null,
+        SWING: null,
+        UNREACH: null,
     },
     socket: {
-        role: 'socket',
-        data: {
-            ACTUAL: undefined,
-            SET: undefined,
-            COLORDEC: undefined,
-            BUTTONTEXT: undefined,
-        },
+        ACTUAL: null,
+        SET: null,
+        COLORDEC: null,
+        BUTTONTEXT: null,
     },
     light: {
-        role: 'light',
-        data: {
-            ACTUAL: undefined,
-            SET: undefined,
-            COLORDEC: undefined,
-            BUTTONTEXT: undefined,
-        },
+        ACTUAL: null,
+        SET: null,
+        COLORDEC: null,
+        BUTTONTEXT: null,
     },
     volume: {
-        role: 'volume',
-        data: {
-            ACTUAL: undefined,
-            SET: undefined,
-            MUTE: undefined,
-        },
+        ACTUAL: null,
+        SET: null,
+        MUTE: null,
     },
     rgb: {
-        role: 'rgb',
-        data: {
-            RED: undefined,
-            GREEN: undefined,
-            BLUE: undefined,
-            ON_ACTUAL: undefined,
-            ON: undefined,
-            DIMMER: undefined,
-            TEMPERATURE: undefined,
-            WHITE: undefined,
-        },
+        RED: null,
+        GREEN: null,
+        BLUE: null,
+        ON_ACTUAL: null,
+        ON: null,
+        DIMMER: null,
+        TEMPERATURE: null,
+        WHITE: null,
     },
     rgbSingle: {
-        role: 'rgbSingle',
-        data: {
-            RGB: undefined,
-            ON: undefined,
-            DIMMER: undefined,
-            TEMPERATURE: undefined,
-            ON_ACTUAL: undefined,
-        },
+        RGB: null,
+        ON: null,
+        DIMMER: null,
+        TEMPERATURE: null,
+        ON_ACTUAL: null,
     },
     slider: {
-        role: 'slider',
-        data: {
-            SET: undefined,
-            ACTUAL: undefined,
-        },
+        SET: null,
+        ACTUAL: null,
     },
     button: {
-        role: 'button',
-        data: {
-            SET: undefined,
-        },
+        SET: null,
     },
     buttonSensor: {
-        role: 'buttonSensor',
-        data: {
-            ACTUAL: undefined,
-        },
+        ACTUAL: null,
     },
     temperature: {
-        role: 'temperature',
-        data: {
-            ACTUAL: undefined,
-        },
+        ACTUAL: null,
     },
+    'value.temperature': {
+        ACTUAL: null,
+    },
+
     thermostat: {
-        role: 'thermostat',
-        data: {
-            ACTUAL: undefined,
-            SET: undefined,
-            MODE: undefined,
-            BOOST: undefined,
-            AUTOMATIC: undefined,
-            ERROR: undefined,
-            LOWBAT: undefined,
-            MANUAL: undefined,
-            UNREACH: undefined,
-            HUMIDITY: undefined,
-            MAINTAIN: undefined,
-            PARTY: undefined,
-            POWER: undefined,
-            VACATION: undefined,
-            WINDOWOPEN: undefined,
-            WORKING: undefined,
-            USERICON: undefined,
-        },
+        ACTUAL: null,
+        SET: null,
+        MODE: null,
+        BOOST: null,
+        AUTOMATIC: null,
+        ERROR: null,
+        LOWBAT: null,
+        MANUAL: null,
+        UNREACH: null,
+        HUMIDITY: null,
+        MAINTAIN: null,
+        PARTY: null,
+        POWER: null,
+        VACATION: null,
+        WINDOWOPEN: null,
+        WORKING: null,
+        USERICON: null,
     },
     'level.timer': {
-        role: 'level.timer',
-        data: {
-            ACTUAL: undefined,
-            STATE: undefined,
-        },
+        ACTUAL: null,
+        STATE: null,
     },
     gate: {
-        role: 'gate',
-        data: {
-            ACTUAL: undefined,
-        },
+        ACTUAL: null,
     },
     door: {
-        role: 'door',
-        data: {
-            ACTUAL: undefined,
-            COLORDEC: undefined,
-            BUTTONTEXT: undefined,
-        },
+        ACTUAL: null,
+        COLORDEC: null,
+        BUTTONTEXT: null,
     },
     'level.mode.fan': {
-        role: 'level.mode.fan',
-        data: {
-            ACTUAL: undefined,
-            MODE: undefined,
-            SET: undefined,
-            SPEED: undefined,
-        },
+        ACTUAL: null,
+        MODE: null,
+        SET: null,
+        SPEED: null,
     },
     lock: {
-        role: 'lock',
-        data: {
-            ACTUAL: undefined,
-            OPEN: undefined,
-            SET: undefined,
-        },
+        ACTUAL: null,
+        OPEN: null,
+        SET: null,
     },
     warning: {
-        role: 'warning',
-        data: {
-            INFO: undefined,
-            LEVEL: undefined,
-            TITLE: undefined,
-        },
+        INFO: null,
+        LEVEL: null,
+        TITLE: null,
     },
 };
 export type mydps =
@@ -631,7 +371,16 @@ export type mydps =
     | 'TITLE'
     | 'ICON'
     | 'TEMP'
-    | 'SWITCH';
+    | 'SWITCH'
+    | 'HUE'
+    | 'AUTOMATIC'
+    | 'LOWBAT'
+    | 'MANUAL'
+    | 'PARTY'
+    | 'VACATION'
+    | 'WINDOWOPEN'
+    | 'WORKING'
+    | 'VALUE';
 
 export type requiredDatapoints = {
     motion: {
@@ -968,7 +717,7 @@ type Datapoint = {
     role: StateRole | StateRole[];
     required: boolean;
     useKey?: boolean;
-    type: ioBroker.StateCommon['type'];
+    type: ioBroker.StateCommon['type'] | ioBroker.StateCommon['type'][];
     writeable?: boolean;
     trigger?: boolean;
     description?: string;
@@ -978,13 +727,20 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         updatedVersion: true,
         name: 'motion',
         description: 'Status of the motion sensor or presence detector (motion or presence detected)',
-        data: { ACTUAL: { role: 'sensor.motion', type: 'boolean', required: true, writeable: false } },
+        data: { ACTUAL: { role: 'sensor.motion', type: 'boolean', required: true, writeable: false, trigger: true } },
     },
     timeTable: {
         updatedVersion: true,
         name: 'timeTable',
         description: 'Time table for the heating',
-        data: { noNeed: { role: 'state', type: 'string', required: false, writeable: true } },
+        data: {
+            noNeed: {
+                role: 'state',
+                type: 'string',
+                required: false,
+                description: 'Just use the template for this - ask TT-Tom :)',
+            },
+        },
     },
     //läuft im Script mit unter RGBsingle, muss nochmal geprüft werden ob sinnvoll
     /* cie: {
@@ -1004,9 +760,21 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: 'Licht ein- / ausschalten und dimmen',
         data: {
             SET: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
-            ACTUAL: { role: ['value.dimmer', 'level.dimmer'], type: 'number', required: false, writeable: false },
+            ACTUAL: {
+                role: ['value.dimmer', 'level.dimmer'],
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
             ON_SET: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            ON_ACTUAL: { role: ['sensor.light', 'switch.light'], type: 'boolean', required: false, writeable: false },
+            ON_ACTUAL: {
+                role: ['sensor.light', 'switch.light'],
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
         },
     },
     ct: {
@@ -1016,8 +784,20 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         data: {
             DIMMER: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            ON_ACTUAL: { role: ['sensor.light', 'switch.light'], type: 'boolean', required: false, writeable: false },
-            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: true, writeable: true },
+            ON_ACTUAL: {
+                role: ['sensor.light', 'switch.light'],
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
+            TEMPERATURE: {
+                role: 'level.color.temperature',
+                type: 'number',
+                required: true,
+                writeable: true,
+                trigger: true,
+            },
         },
     },
     window: {
@@ -1025,7 +805,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'window',
         description: '',
         data: {
-            ACTUAL: { role: 'sensor.window', type: 'boolean', required: true, writeable: false },
+            ACTUAL: { role: 'sensor.window', type: 'boolean', required: true, writeable: false, trigger: true },
             COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP steuern
             BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false }, //Button-Text über DP steuern
         },
@@ -1034,13 +814,13 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         updatedVersion: true,
         name: 'humidity',
         description: '',
-        data: { ACTUAL: { role: 'value.humidity', type: 'number', required: true, writeable: false } },
+        data: { ACTUAL: { role: 'value.humidity', type: 'number', required: true, writeable: false, trigger: true } },
     },
     'value.humidity': {
         updatedVersion: true,
         name: 'humidity',
         description: '',
-        data: { ACTUAL: { role: 'value.humidity', type: 'number', required: true, writeable: false } },
+        data: { ACTUAL: { role: 'value.humidity', type: 'number', required: true, writeable: false, trigger: true } },
     },
     hue: {
         updatedVersion: true,
@@ -1049,9 +829,21 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         data: {
             DIMMER: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            ON_ACTUAL: { role: ['sensor.light', 'switch.light'], type: 'boolean', required: false, writeable: false },
-            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: false, writeable: true },
-            HUE: { role: 'level.color.hue', type: 'number', required: true, writeable: true },
+            ON_ACTUAL: {
+                role: ['sensor.light', 'switch.light'],
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
+            TEMPERATURE: {
+                role: 'level.color.temperature',
+                type: 'number',
+                required: false,
+                writeable: true,
+                trigger: true,
+            },
+            HUE: { role: 'level.color.hue', type: 'number', required: true, writeable: true, trigger: true },
             //SCENE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
@@ -1060,7 +852,14 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'info',
         description: 'Universal Datenpunkt für diverse Anwendungen',
         data: {
-            ACTUAL: { role: 'state', type: 'mixed', required: true, writeable: false, useKey: true },
+            ACTUAL: {
+                role: 'state',
+                type: ['string', 'number', 'boolean', 'mixed'],
+                required: true,
+                writeable: false,
+                useKey: true,
+                trigger: true,
+            },
             COLORDEC: { role: 'value.rgb', type: 'number', required: false, writeable: false, useKey: true }, //Farbcode über DP senden
             BUTTONTEXT: { role: ['text'], type: 'string', required: false, writeable: false, useKey: true }, //Button-Text über DP senden bei cardEntity
             USERICON: { role: 'state', type: 'string', required: false, writeable: false, useKey: true }, //Benutzerdefinierte Iconnamen über DP senden
@@ -1071,12 +870,24 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'blind',
         description: '',
         data: {
-            ACTUAL: { role: ['value.blind', 'level.blind'], type: 'number', required: false, writeable: false },
+            ACTUAL: {
+                role: ['value.blind', 'level.blind'],
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
             SET: { role: 'level.blind', type: 'number', required: true, writeable: true },
             CLOSE: { role: 'button.close.blind', type: 'boolean', required: true, writeable: true },
             OPEN: { role: 'button.open.blind', type: 'boolean', required: true, writeable: true },
             STOP: { role: 'button.stop.blind', type: 'boolean', required: true, writeable: true },
-            TILT_ACTUAL: { role: ['level.tilt', 'value.tilt'], type: 'number', required: false, writeable: false },
+            TILT_ACTUAL: {
+                role: ['level.tilt', 'value.tilt'],
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
             TILT_SET: { role: 'level.tilt', type: 'number', required: false, writeable: true },
             TILT_CLOSE: { role: 'button.close.tilt', type: 'boolean', required: false, writeable: true },
             TILT_OPEN: { role: 'button.open.tilt', type: 'boolean', required: false, writeable: true },
@@ -1092,22 +903,41 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 type: 'number',
                 required: false,
                 writeable: false,
+                trigger: true,
             },
             SET: { role: 'level.temperature', type: 'number', required: true, writeable: true },
             SET2: { role: 'level.temperature', type: 'number', required: false, writeable: true },
-            AUTO: { role: 'state', type: 'boolean', required: false, writeable: false },
-            COOL: { role: 'state', type: 'boolean', required: false, writeable: false },
-            BOOST: { role: 'switch.mode.boost', type: 'boolean', required: false, writeable: true },
-            ERROR: { role: 'indicator.error', type: 'boolean', required: false, writeable: false },
-            HEAT: { role: 'state', type: 'boolean', required: false, writeable: false },
-            HUMIDITY: { role: 'value.humidity', type: 'number', required: false, writeable: false },
-            MAINTAIN: { role: 'indicator.maintenance', type: 'boolean', required: false, writeable: false },
-            MODE: { role: 'level.mode.airconditioner', type: 'number', required: false, writeable: true },
+            AUTO: { role: 'state', type: 'boolean', required: false, writeable: false, trigger: true },
+            COOL: { role: 'state', type: 'boolean', required: false, writeable: false, trigger: true },
+            BOOST: { role: 'switch.mode.boost', type: 'boolean', required: false, writeable: true, trigger: true },
+            ERROR: { role: 'indicator.error', type: 'boolean', required: false, writeable: false, trigger: true },
+            HEAT: { role: 'state', type: 'boolean', required: false, writeable: false, trigger: true },
+            HUMIDITY: { role: 'value.humidity', type: 'number', required: false, writeable: false, trigger: true },
+            MAINTAIN: {
+                role: 'indicator.maintenance',
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
+            MODE: {
+                role: 'level.mode.airconditioner',
+                type: 'number',
+                required: false,
+                writeable: true,
+                trigger: true,
+            },
             OFF: { role: 'state', type: 'boolean', required: false, writeable: false }, //off
             POWER: { role: 'switch.power', type: 'boolean', required: false, writeable: true }, //on
-            SPEED: { role: 'level.mode.fan', type: 'number', required: false, writeable: true },
-            SWING: { role: 'switch.mode.swing', type: 'boolean', required: false, writeable: true },
-            UNREACH: { role: 'indicator.maintenance', type: 'boolean', required: false, writeable: false },
+            SPEED: { role: 'level.mode.fan', type: 'number', required: false, writeable: true, trigger: true },
+            SWING: { role: 'switch.mode.swing', type: 'boolean', required: false, writeable: true, trigger: true },
+            UNREACH: {
+                role: 'indicator.maintenance',
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
         },
     },
     socket: {
@@ -1115,7 +945,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'socket',
         description: 'Steckdosen, Schalter, Relais, usw. schalten',
         data: {
-            ACTUAL: { role: 'switch', type: 'boolean', required: true, writeable: false },
+            ACTUAL: { role: 'switch', type: 'boolean', required: true, writeable: false, trigger: true },
             SET: { role: 'switch', type: 'boolean', required: false, writeable: true },
             COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP steuern
             BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false }, //Button-Text über DP steuern bei cardEntity
@@ -1126,7 +956,13 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'light',
         description: 'ein Lichtschalter',
         data: {
-            ACTUAL: { role: ['switch.light', 'sensor.light'], type: 'boolean', required: true, writeable: false },
+            ACTUAL: {
+                role: ['switch.light', 'sensor.light'],
+                type: 'boolean',
+                required: true,
+                writeable: false,
+                trigger: true,
+            },
             SET: { role: 'switch.light', type: 'boolean', required: false, writeable: true },
             COLORDEC: { role: 'state', type: 'number', required: false, writeable: false }, //Farbcode über DP steuern
             BUTTONTEXT: { role: 'text', type: 'string', required: false, writeable: false }, //Button-Text über DP steuern bei cardEntity
@@ -1137,7 +973,13 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'volume',
         description: '',
         data: {
-            ACTUAL: { role: ['value.volume', 'level.volume'], type: 'number', required: false, writeable: false },
+            ACTUAL: {
+                role: ['value.volume', 'level.volume'],
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
             SET: { role: 'level.volume', type: 'number', required: true, writeable: true },
             MUTE: { role: 'media.mute', type: 'boolean', required: false, writeable: true },
         },
@@ -1147,14 +989,26 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'rgb',
         description: 'Farblicht mit einzelnen Farbkanälen',
         data: {
-            RED: { role: 'level.color.red', type: 'number', required: true, writeable: true },
-            GREEN: { role: 'level.color.green', type: 'number', required: true, writeable: true },
-            BLUE: { role: 'level.color.blue', type: 'number', required: true, writeable: true },
-            ON_ACTUAL: { role: ['sensor.light', 'switch.light'], type: 'boolean', required: true, writeable: false },
+            RED: { role: 'level.color.red', type: 'number', required: true, writeable: true, trigger: true },
+            GREEN: { role: 'level.color.green', type: 'number', required: true, writeable: true, trigger: true },
+            BLUE: { role: 'level.color.blue', type: 'number', required: true, writeable: true, trigger: true },
+            ON_ACTUAL: {
+                role: ['sensor.light', 'switch.light'],
+                type: 'boolean',
+                required: true,
+                writeable: false,
+                trigger: true,
+            },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            DIMMER: { role: 'level.dimmer', type: 'number', required: false, writeable: true },
-            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: false, writeable: true }, // entweder oder
-            WHITE: { role: 'level.color.white', type: 'number', required: false, writeable: true }, // mit prüfen
+            DIMMER: { role: 'level.dimmer', type: 'number', required: false, writeable: true, trigger: true },
+            TEMPERATURE: {
+                role: 'level.color.temperature',
+                type: 'number',
+                required: false,
+                writeable: true,
+                trigger: true,
+            }, // entweder oder
+            WHITE: { role: 'level.color.white', type: 'number', required: false, writeable: true, trigger: true }, // mit prüfen
             //VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
@@ -1163,11 +1017,23 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'rgbSingle',
         description: 'Farblicht ohne Farbkanäle',
         data: {
-            RGB: { role: 'level.color.rgb', type: 'string', required: true, writeable: true },
+            RGB: { role: 'level.color.rgb', type: 'string', required: true, writeable: true, trigger: true },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
-            DIMMER: { role: 'level.dimmer', type: 'number', required: false, writeable: true },
-            TEMPERATURE: { role: 'level.color.temperature', type: 'number', required: false, writeable: true },
-            ON_ACTUAL: { role: ['sensor.light', 'switch.light'], type: 'boolean', required: false, writeable: false },
+            DIMMER: { role: 'level.dimmer', type: 'number', required: false, writeable: true, trigger: true },
+            TEMPERATURE: {
+                role: 'level.color.temperature',
+                type: 'number',
+                required: false,
+                writeable: true,
+                trigger: true,
+            },
+            ON_ACTUAL: {
+                role: ['sensor.light', 'switch.light'],
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
             // VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
     },
@@ -1177,7 +1043,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: 'Slider to set a numerical value',
         data: {
             SET: { role: 'level', type: 'number', required: true, writeable: true },
-            ACTUAL: { role: ['value', 'level'], type: 'number', required: false, writeable: false },
+            ACTUAL: { role: ['value', 'level'], type: 'number', required: false, writeable: false, trigger: true },
         },
     },
     button: {
@@ -1190,14 +1056,14 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         updatedVersion: true,
         name: 'buttonSensor',
         description: 'Taster',
-        data: { ACTUAL: { role: 'button.press', type: 'boolean', required: true, writeable: false } },
+        data: { ACTUAL: { role: 'button.press', type: 'boolean', required: true, writeable: false, trigger: true } },
     },
     temperature: {
         updatedVersion: true,
         name: 'temperature',
         description: '',
         data: {
-            ACTUAL: { role: 'value.temperature', type: 'number', required: true, writeable: false },
+            ACTUAL: { role: 'value.temperature', type: 'number', required: true, writeable: false, trigger: true },
         },
     },
     'value.temperature': {
@@ -1205,7 +1071,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'value.temperature',
         description: '',
         data: {
-            ACTUAL: { role: 'value.temperature', type: 'number', required: true, writeable: false },
+            ACTUAL: { role: 'value.temperature', type: 'number', required: true, writeable: false, trigger: true },
             USERICON: { role: 'state', type: 'string', required: false, writeable: false }, // benutzerdefinierter Iconname über DP senden
         },
     },

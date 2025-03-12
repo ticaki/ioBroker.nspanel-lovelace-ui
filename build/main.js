@@ -138,6 +138,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
           }
           this.log.warn(`No script config found for ${a.topic}`);
+          await manager.delete();
         }
       }
       const scriptConfig = config;
@@ -186,7 +187,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     if (this.config.doubleClickTime === void 0 || typeof this.config.doubleClickTime !== "number" || !(this.config.doubleClickTime > 0)) {
       this.config.doubleClickTime = 350;
     }
-    await this.delay(2e3);
+    await this.delay(4e3);
     try {
       import_icon_mapping.Icons.adapter = this;
       await this.library.init();
@@ -408,6 +409,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           let result = ["something went wrong"];
           if (obj.message) {
             const manager = new import_config_manager.ConfigManager(this);
+            await manager.delete();
             const r = await manager.setScriptConfig(obj.message);
             result = r.messages;
           }
