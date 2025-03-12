@@ -116,7 +116,7 @@ export class PageQR extends Page {
                     message.optionalValue1 = config.SSIDURLTEL;
                     break;
                 case 3:
-                    this.log.debug(`qrType = url`);
+                    this.log.debug(`qrType = Telephone`);
                     message.textQR = `TEL:${config.SSIDURLTEL}`;
                     message.optionalValue1 = config.SSIDURLTEL;
                     break;
@@ -146,12 +146,12 @@ export class PageQR extends Page {
                                 message.iconColor1 = arr[3];
                                 break;
                             case 1:
-                                message.type2 = arr[0] == 'button' ? 'switch' : 'text';
+                                message.type2 = arr[0]; //== 'button' ? 'switch' : 'text';
                                 message.displayName2 = arr[4];
                                 message.internalName2 = arr[1];
                                 message.iconId2 = arr[2];
                                 message.iconColor2 = arr[3];
-                                message.optionalValue2 = arr[5];
+                                message.optionalValue2 = arr[0] == 'switch' ? arr[5] : config.pwdhidden ? '' : arr[5];
                                 break;
                             default:
                                 break;
@@ -300,7 +300,7 @@ export class PageQR extends Page {
                             false: {
                                 value: {
                                     type: 'const',
-                                    constVal: 'wifi',
+                                    constVal: 'wifi-off',
                                 },
                                 color: await configManager.getIconColor(configManager.colorOff),
                             },
@@ -312,7 +312,8 @@ export class PageQR extends Page {
                             true: { type: 'const', constVal: text1 },
                         },
                         text: {
-                            true: { type: 'const', constVal: text },
+                            true: { type: 'const', constVal: 'WlanOn' },
+                            false: { type: 'const', constVal: 'WlanOff' },
                         },
                         entity1: {
                             value: {
@@ -336,14 +337,14 @@ export class PageQR extends Page {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: 'wifi',
+                                    constVal: 'key-wireless',
                                 },
                                 color: await configManager.getIconColor(configManager.colorOn),
                             },
                             false: {
                                 value: {
                                     type: 'const',
-                                    constVal: 'wifi',
+                                    constVal: 'key-wireless',
                                 },
                                 color: await configManager.getIconColor(configManager.colorOff),
                             },

@@ -315,7 +315,7 @@ export class PageItem extends BaseClassTriggerd {
                             (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
                         );
 
-                        if (entry.type === 'button') {
+                        if (entry.type === 'button' || entry.type === 'switch') {
                             message.optionalValue = (value ?? true) ? '1' : '0';
                             if (this.parent && this.parent.card === 'cardEntities') {
                                 message.optionalValue =
@@ -1251,7 +1251,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'OnOff': {
-                if (entry.type === 'light' || entry.type === 'button') {
+                if (entry.type === 'light' || entry.type === 'button' || entry.type === 'switch') {
                     const item = entry.data;
                     if (item && item.entity1) {
                         await tools.setValueEntry(item.entity1, value === '1');
