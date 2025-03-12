@@ -733,7 +733,14 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         updatedVersion: true,
         name: 'timeTable',
         description: 'Time table for the heating',
-        data: { noNeed: { role: 'state', type: 'string', required: false, writeable: true } },
+        data: {
+            noNeed: {
+                role: 'state',
+                type: 'string',
+                required: false,
+                description: 'Just use the template for this - ask TT-Tom :)',
+            },
+        },
     },
     //läuft im Script mit unter RGBsingle, muss nochmal geprüft werden ob sinnvoll
     /* cie: {
