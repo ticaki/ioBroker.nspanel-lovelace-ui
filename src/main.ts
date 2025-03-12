@@ -92,6 +92,24 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
         }
 
+        //fix broken common.type in alias.0 from iobroker.device
+        const states = await this.getForeignObjectsAsync('alias.0.*');
+        if (states) {
+            for (const id in states) {
+                if (
+                    states[id] &&
+                    states[id].type === 'state' &&
+                    states[id].common &&
+                    //@ts-expect-error
+                    states[id].common.type === 'state'
+                ) {
+                    this.log.warn(`Fix broken common.type in ${id} set to 'mixed'`);
+                    states[id].common.type = 'mixed';
+                    await this.extendForeignObjectAsync(id, states[id]);
+                }
+            }
+        }
+
         await generateAliasDocumentation();
         if (this.config.testCase) {
             this.log.warn('Testcase mode!');
