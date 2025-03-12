@@ -326,8 +326,16 @@ class ConfigManager extends import_library.BaseClass {
         if (gridItem.config.card === "cardGrid" || gridItem.config.card === "cardGrid2" || gridItem.config.card === "cardGrid3" || gridItem.config.card === "cardEntities") {
           gridItem.config.scrollType = "page";
         }
-        if (page.type === "cardThermo") {
-          ({ gridItem, messages } = await this.getPageThermo(page, gridItem, messages));
+        try {
+          if (page.type === "cardThermo") {
+            ({ gridItem, messages } = await this.getPageThermo(page, gridItem, messages));
+          }
+        } catch (error) {
+          messages.push(
+            `Configuration error in page ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+          );
+          this.log.warn(messages[messages.length - 1]);
+          continue;
         }
         if (page.items) {
           for (const item of page.items) {
@@ -365,12 +373,17 @@ class ConfigManager extends import_library.BaseClass {
       return { gridItem, messages };
     }
     const role = "thermostat";
-    const foundedStates = await this.searchDatapointsForItems(
-      import_config_manager_const.requiredScriptDataPoints,
-      role,
-      page.items[0].id,
-      messages
-    );
+    let foundedStates;
+    try {
+      foundedStates = await this.searchDatapointsForItems(
+        import_config_manager_const.requiredScriptDataPoints,
+        role,
+        page.items[0].id,
+        messages
+      );
+    } catch {
+      return { gridItem, messages };
+    }
     gridItem.dpInit = page.items[0].id;
     gridItem = {
       ...gridItem,
