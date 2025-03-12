@@ -414,8 +414,16 @@ export class ConfigManager extends BaseClass {
                 ) {
                     gridItem.config.scrollType = 'page';
                 }
-                if (page.type === 'cardThermo') {
-                    ({ gridItem, messages } = await this.getPageThermo(page, gridItem, messages));
+                try {
+                    if (page.type === 'cardThermo') {
+                        ({ gridItem, messages } = await this.getPageThermo(page, gridItem, messages));
+                    }
+                } catch (error: any) {
+                    messages.push(
+                        `Configuration error in page ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                    );
+                    this.log.warn(messages[messages.length - 1]);
+                    continue;
                 }
                 if (page.items) {
                     for (const item of page.items) {
@@ -458,12 +466,17 @@ export class ConfigManager extends BaseClass {
             return { gridItem, messages };
         }
         const role = 'thermostat';
-        const foundedStates: checkedDatapointsUnion = await this.searchDatapointsForItems(
-            requiredScriptDataPoints,
-            role,
-            page.items[0].id,
-            messages,
-        );
+        let foundedStates: checkedDatapointsUnion | undefined;
+        try {
+            foundedStates = await this.searchDatapointsForItems(
+                requiredScriptDataPoints,
+                role,
+                page.items[0].id,
+                messages,
+            );
+        } catch {
+            return { gridItem, messages };
+        }
         gridItem.dpInit = page.items[0].id;
         gridItem = {
             ...gridItem,
