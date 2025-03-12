@@ -118,7 +118,10 @@ export class ConfigManager extends BaseClass {
         }
 
         // start configuration
-        this.extraConfigLogging = (config.advancedOptions && config.advancedOptions.extraConfigLogging) || false;
+        if (config.advancedOptions && config.advancedOptions.extraConfigLogging) {
+            this.extraConfigLogging = true;
+            config.advancedOptions.extraConfigLogging = false;
+        }
         let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];
             pages: pages.PageBaseConfig[];
@@ -1050,6 +1053,8 @@ export class ConfigManager extends BaseClass {
                             if (entry.required) {
                                 ups = true;
                                 this.log.error(messages[messages.length - 1]);
+                            } else {
+                                this.log.info(messages[messages.length - 1]);
                             }
                         }
                     }

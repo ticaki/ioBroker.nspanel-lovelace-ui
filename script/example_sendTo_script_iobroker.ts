@@ -1021,7 +1021,7 @@ declare namespace ScriptConfig {
              */
             screensaverIndicatorButtons?: boolean;
             /**
-             * warn for every missing state options - very noicy
+             * Also informs about missing optional data point option in the log. - very noicy
              */
             extraConfigLogging?: boolean;
         };

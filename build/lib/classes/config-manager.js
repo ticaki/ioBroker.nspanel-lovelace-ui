@@ -99,7 +99,10 @@ class ConfigManager extends import_library.BaseClass {
     } else {
       messages.push(`Panel for Topic: ${config.panelTopic} Script version ${config.version} is correct!`);
     }
-    this.extraConfigLogging = config.advancedOptions && config.advancedOptions.extraConfigLogging || false;
+    if (config.advancedOptions && config.advancedOptions.extraConfigLogging) {
+      this.extraConfigLogging = true;
+      config.advancedOptions.extraConfigLogging = false;
+    }
     let panelConfig = { pages: [], navigation: [] };
     if (!config.panelTopic) {
       this.log.error(`Required field panelTopic is missing in ${config.panelName || "unknown"}!`);
@@ -881,6 +884,8 @@ class ConfigManager extends import_library.BaseClass {
               if (entry.required) {
                 ups = true;
                 this.log.error(messages[messages.length - 1]);
+              } else {
+                this.log.info(messages[messages.length - 1]);
               }
             }
           }
