@@ -999,6 +999,10 @@ export class PageItem extends BaseClassTriggerd {
                     message.list = message.list.slice(0, 940);
                     this.log.warn('Value list has more as 940 chars!');
                 }
+                const n = (await tools.getValueEntryNumber(item.entityInSel)) ?? 0;
+                if (Array.isArray(list) && n != null && n < list.length) {
+                    message.currentState = tools.formatInSelText(this.library.getTranslation(list[n]));
+                }
                 if (mode !== 'popupThermo') {
                     break;
                 }
@@ -1655,6 +1659,7 @@ export class PageItem extends BaseClassTriggerd {
                 entry.role,
                 'valueList2' in item ? item.valueList2 : undefined,
             ));
+
         if (sList) {
             if (
                 entry.role === 'spotify-playlist' &&
@@ -1677,6 +1682,42 @@ export class PageItem extends BaseClassTriggerd {
             }
         }
         if (!item.setList) {
+            if (item.entityInSel && item.entityInSel.value) {
+                let list: string[] | string | object = (item.valueList && (await item.valueList.getObject())) ||
+                    (item.valueList && (await item.valueList.getString())) || [
+                        '1',
+                        '2',
+                        '3',
+                        '4',
+                        '5',
+                        '6',
+                        '7',
+                        '8',
+                        '9',
+                        '10',
+                        '11',
+                        '12',
+                        '13',
+                    ];
+
+                /**
+                 * die Liste ist entweder ein mit ? getrennt der String oder ein Array
+                 */
+                if (list !== null) {
+                    if (typeof list === 'string') {
+                        list = list.split('?');
+                    }
+                    if (Array.isArray(list)) {
+                        list.splice(48);
+                    }
+                } else {
+                    list = [];
+                }
+                if (Array.isArray(list) && list.length > parseInt(value)) {
+                    await item.entityInSel.value.setStateAsync(value);
+                    return true;
+                }
+            }
             return false;
         }
         const list = await this.getListCommands(item.setList);

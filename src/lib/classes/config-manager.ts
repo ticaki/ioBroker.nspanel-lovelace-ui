@@ -329,6 +329,19 @@ export class ConfigManager extends BaseClass {
                     continue;
                 }
                 if (page.type === undefined && page.native) {
+                    if ((config.subPages || []).includes(page)) {
+                        const left = page.prev || page.parent || undefined;
+                        const right = page.next || page.home || undefined;
+                        if (left || right) {
+                            const navItem: NavigationItemConfig = {
+                                name: page.uniqueName,
+                                left: left ? (page.prev ? { single: left } : { double: left }) : undefined,
+                                right: right ? (page.next ? { single: right } : { double: right }) : undefined,
+                                page: page.uniqueName,
+                            };
+                            panelConfig.navigation.push(navItem);
+                        }
+                    }
                     if (page.heading) {
                         page.native.config = page.native.config || {};
                         page.native.config.data = page.native.config.data || {};
@@ -361,14 +374,15 @@ export class ConfigManager extends BaseClass {
                 if ((config.subPages || []).includes(page)) {
                     const left = page.prev || page.parent || undefined;
                     const right = page.next || page.home || undefined;
-
-                    const navItem: NavigationItemConfig = {
-                        name: page.uniqueName,
-                        left: left ? (page.prev ? { single: left } : { double: left }) : undefined,
-                        right: right ? (page.next ? { single: right } : { double: right }) : undefined,
-                        page: page.uniqueName,
-                    };
-                    panelConfig.navigation.push(navItem);
+                    if (left || right) {
+                        const navItem: NavigationItemConfig = {
+                            name: page.uniqueName,
+                            left: left ? (page.prev ? { single: left } : { double: left }) : undefined,
+                            right: right ? (page.next ? { single: right } : { double: right }) : undefined,
+                            page: page.uniqueName,
+                        };
+                        panelConfig.navigation.push(navItem);
+                    }
                 }
 
                 if (page.type === 'cardQR') {
@@ -441,7 +455,7 @@ export class ConfigManager extends BaseClass {
     }
 
     async getPageThermo(
-        page: ScriptConfig.PageType,
+        page: ScriptConfig.PageThermo,
         gridItem: pages.PageBaseConfig,
         messages: string[],
     ): Promise<{ gridItem: pages.PageBaseConfig; messages: string[] }> {
@@ -493,6 +507,7 @@ export class ConfigManager extends BaseClass {
             config: {
                 card: 'cardThermo',
                 data: {
+                    headline: await this.getFieldAsDataItemConfig(page.heading || 'thermostat'),
                     mixed1: {
                         value: { type: 'const', constVal: 'Temperature' },
                     },
@@ -862,6 +877,63 @@ export class ConfigManager extends BaseClass {
                 },
             });
         }
+        if (item.setThermoAlias) {
+            if (item.popupThermoMode1 && item.setThermoAlias[0] && (await this.existsState(item.setThermoAlias[0]))) {
+                gridItem.pageItems.push({
+                    role: '',
+                    type: 'input_sel',
+                    dpInit: '',
+                    data: {
+                        entityInSel: {
+                            value: { type: 'triggered', dp: item.setThermoAlias[0] },
+                        },
+                        color: {
+                            true: await this.getIconColor(item.onColor, this.colorOn),
+                            false: await this.getIconColor(item.onColor, this.colorOn),
+                        },
+                        headline: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                        valueList: { type: 'const', constVal: item.popupThermoMode1 },
+                    },
+                });
+            }
+            if (item.popupThermoMode2 && item.setThermoAlias[1] && (await this.existsState(item.setThermoAlias[1]))) {
+                gridItem.pageItems.push({
+                    role: '',
+                    type: 'input_sel',
+                    dpInit: '',
+                    data: {
+                        entityInSel: {
+                            value: { type: 'triggered', dp: item.setThermoAlias[1] },
+                        },
+                        color: {
+                            true: await this.getIconColor(item.onColor, this.colorOn),
+                            false: await this.getIconColor(item.onColor, this.colorOn),
+                        },
+                        headline: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                        valueList: { type: 'const', constVal: item.popupThermoMode2 },
+                    },
+                });
+            }
+            if (item.popupThermoMode3 && item.setThermoAlias[2] && (await this.existsState(item.setThermoAlias[2]))) {
+                gridItem.pageItems.push({
+                    role: '',
+                    type: 'input_sel',
+                    dpInit: '',
+                    data: {
+                        entityInSel: {
+                            value: { type: 'triggered', dp: item.setThermoAlias[2] },
+                        },
+                        color: {
+                            true: await this.getIconColor(item.onColor, this.colorOn),
+                            false: await this.getIconColor(item.onColor, this.colorOn),
+                        },
+                        headline: item.name ? await this.getFieldAsDataItemConfig(item.name) : undefined,
+                        valueList: { type: 'const', constVal: item.popupThermoMode3 },
+                    },
+                });
+            }
+        }
+
         return { gridItem, messages };
     }
 

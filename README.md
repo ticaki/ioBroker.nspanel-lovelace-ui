@@ -334,6 +334,7 @@ Sind natürlich alles Dataitems
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) cardThermo with input_sel
 - (ticaki) Added: Admin option to fix wrong common.type=state in alias.0 to common.type=mixed
 - (ticaki) Required data points are found via role, type etc. The designation only plays a role in rare cases.
 

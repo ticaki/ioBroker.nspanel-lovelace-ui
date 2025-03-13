@@ -23,6 +23,12 @@ const PageThermoMessageDefault: pages.PageThermoMessage = {
     temp2: '',
     btDetail: '1',
 };
+/*type AtLeastOne<T, K extends keyof T = keyof T> = K extends keyof T ? Pick<T, K> & Partial<Omit<T, K>> : never;
+
+type MyType = { a: string; b: string; c: string };
+type MyValidType = AtLeastOne<MyType>;
+
+export const a: MyValidType = { c: 'c' };*/
 
 export class PageThermo extends Page {
     //config: pages.cardThermoDataItemOptions;
@@ -106,7 +112,7 @@ export class PageThermo extends Page {
                 // arrow is at index [0]
                 const maxSteps = localStep * this.step + 1;
                 const minStep = localStep * (this.step - 1) + 1;
-                let b = pageItems.length >= 8 ? 0 : Math.floor((8 - pageItems.length) / 2);
+                let b = pageItems.length >= 8 ? 0 : Math.ceil((8 - pageItems.length) / 2);
                 for (let a = minStep; a < maxSteps; a++, b++) {
                     const temp = pageItems[a];
                     if (temp) {
@@ -322,6 +328,26 @@ export class PageThermo extends Page {
             String(message.temp2),
             String(message.btDetail),
         );
+    }
+    protected async onVisibilityChange(val: boolean): Promise<void> {
+        await super.onVisibilityChange(val);
+        if (val) {
+            for (const item of this.pageItems ?? []) {
+                if (item && item.dataItems && item.dataItems.type === 'input_sel') {
+                    if (this.controller) {
+                        await this.controller.statesControler.activateTrigger(item);
+                    }
+                }
+            }
+        } else {
+            for (const item of this.pageItems ?? []) {
+                if (item && item.dataItems && item.dataItems.type === 'input_sel') {
+                    if (this.controller) {
+                        await this.controller.statesControler.deactivateTrigger(item);
+                    }
+                }
+            }
+        }
     }
     protected async onStateTrigger(): Promise<void> {
         await this.update();

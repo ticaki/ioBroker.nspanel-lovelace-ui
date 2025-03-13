@@ -268,6 +268,19 @@ class ConfigManager extends import_library.BaseClass {
           continue;
         }
         if (page.type === void 0 && page.native) {
+          if ((config.subPages || []).includes(page)) {
+            const left = page.prev || page.parent || void 0;
+            const right = page.next || page.home || void 0;
+            if (left || right) {
+              const navItem = {
+                name: page.uniqueName,
+                left: left ? page.prev ? { single: left } : { double: left } : void 0,
+                right: right ? page.next ? { single: right } : { double: right } : void 0,
+                page: page.uniqueName
+              };
+              panelConfig.navigation.push(navItem);
+            }
+          }
           if (page.heading) {
             page.native.config = page.native.config || {};
             page.native.config.data = page.native.config.data || {};
@@ -292,13 +305,15 @@ class ConfigManager extends import_library.BaseClass {
         if ((config.subPages || []).includes(page)) {
           const left = page.prev || page.parent || void 0;
           const right = page.next || page.home || void 0;
-          const navItem = {
-            name: page.uniqueName,
-            left: left ? page.prev ? { single: left } : { double: left } : void 0,
-            right: right ? page.next ? { single: right } : { double: right } : void 0,
-            page: page.uniqueName
-          };
-          panelConfig.navigation.push(navItem);
+          if (left || right) {
+            const navItem = {
+              name: page.uniqueName,
+              left: left ? page.prev ? { single: left } : { double: left } : void 0,
+              right: right ? page.next ? { single: right } : { double: right } : void 0,
+              page: page.uniqueName
+            };
+            panelConfig.navigation.push(navItem);
+          }
         }
         if (page.type === "cardQR") {
           const index = this.adapter.config.pageQRdata.findIndex((item) => item.pageName === page.uniqueName);
@@ -409,6 +424,7 @@ class ConfigManager extends import_library.BaseClass {
       config: {
         card: "cardThermo",
         data: {
+          headline: await this.getFieldAsDataItemConfig(page.heading || "thermostat"),
           mixed1: {
             value: { type: "const", constVal: "Temperature" }
           },
@@ -764,6 +780,62 @@ class ConfigManager extends import_library.BaseClass {
           }
         }
       });
+    }
+    if (item.setThermoAlias) {
+      if (item.popupThermoMode1 && item.setThermoAlias[0] && await this.existsState(item.setThermoAlias[0])) {
+        gridItem.pageItems.push({
+          role: "",
+          type: "input_sel",
+          dpInit: "",
+          data: {
+            entityInSel: {
+              value: { type: "triggered", dp: item.setThermoAlias[0] }
+            },
+            color: {
+              true: await this.getIconColor(item.onColor, this.colorOn),
+              false: await this.getIconColor(item.onColor, this.colorOn)
+            },
+            headline: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0,
+            valueList: { type: "const", constVal: item.popupThermoMode1 }
+          }
+        });
+      }
+      if (item.popupThermoMode2 && item.setThermoAlias[1] && await this.existsState(item.setThermoAlias[1])) {
+        gridItem.pageItems.push({
+          role: "",
+          type: "input_sel",
+          dpInit: "",
+          data: {
+            entityInSel: {
+              value: { type: "triggered", dp: item.setThermoAlias[1] }
+            },
+            color: {
+              true: await this.getIconColor(item.onColor, this.colorOn),
+              false: await this.getIconColor(item.onColor, this.colorOn)
+            },
+            headline: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0,
+            valueList: { type: "const", constVal: item.popupThermoMode2 }
+          }
+        });
+      }
+      if (item.popupThermoMode3 && item.setThermoAlias[2] && await this.existsState(item.setThermoAlias[2])) {
+        gridItem.pageItems.push({
+          role: "",
+          type: "input_sel",
+          dpInit: "",
+          data: {
+            entityInSel: {
+              value: { type: "triggered", dp: item.setThermoAlias[2] }
+            },
+            color: {
+              true: await this.getIconColor(item.onColor, this.colorOn),
+              false: await this.getIconColor(item.onColor, this.colorOn)
+            },
+            headline: item.name ? await this.getFieldAsDataItemConfig(item.name) : void 0,
+            valueList: { type: "const", constVal: item.popupThermoMode3 }
+          }
+        });
+      }
     }
     return { gridItem, messages };
   }
