@@ -115,7 +115,7 @@ class PageThermo extends import_Page.Page {
         }
         const maxSteps = localStep * this.step + 1;
         const minStep = localStep * (this.step - 1) + 1;
-        let b = 0;
+        let b = pageItems.length >= 8 ? 0 : Math.floor((8 - pageItems.length) / 2);
         for (let a = minStep; a < maxSteps; a++, b++) {
           const temp = pageItems[a];
           if (temp) {
