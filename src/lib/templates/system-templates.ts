@@ -552,6 +552,24 @@ const ScreensaverOptions: PageBaseConfig = {
                 text: { true: { type: 'const', constVal: 'dimNightHourEnd' }, false: undefined },
             },
         },
+        {
+            role: '',
+            type: 'switch',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/screenSaverDoubleClick' },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'screenSaverDoubleClick' }, false: undefined },
+                setValue1: { type: 'internalState', dp: 'cmd/screenSaverDoubleClick' },
+            },
+        },
     ],
     items: undefined,
 };

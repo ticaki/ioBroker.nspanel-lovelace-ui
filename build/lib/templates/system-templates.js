@@ -562,6 +562,24 @@ const ScreensaverOptions = {
         },
         text: { true: { type: "const", constVal: "dimNightHourEnd" }, false: void 0 }
       }
+    },
+    {
+      role: "",
+      type: "switch",
+      data: {
+        entity1: {
+          value: { type: "internal", dp: "cmd/screenSaverDoubleClick" }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "clock-time-twelve-outline" },
+            color: { type: "const", constVal: import_Color.Color.White }
+          },
+          false: void 0
+        },
+        text: { true: { type: "const", constVal: "screenSaverDoubleClick" }, false: void 0 },
+        setValue1: { type: "internalState", dp: "cmd/screenSaverDoubleClick" }
+      }
     }
   ],
   items: void 0

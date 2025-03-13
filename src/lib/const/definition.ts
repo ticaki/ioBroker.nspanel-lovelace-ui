@@ -1529,6 +1529,17 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
                 write: true,
             },
         },
+        'cmd/screenSaverDoubleClick': {
+            val: false,
+            ack: true,
+            common: {
+                name: '',
+                type: 'boolean',
+                role: 'switch',
+                read: true,
+                write: true,
+            },
+        },
     },
 };
 
