@@ -760,7 +760,13 @@ declare namespace ScriptConfig {
         | PageQR
         | PageAlarm
         | PagePower
-        | {type: undefined; heading?: string; native: any};
+        | PageNative;
+
+    export type PageNative = {
+        type: undefined;
+        heading?: string;
+        native: any;
+    } & Pick<PageBaseType, 'uniqueName' | 'prev' | 'next' | 'home' | 'parent'>;
 
     export type PageEntities = {
         type: 'cardEntities';
@@ -843,6 +849,9 @@ declare namespace ScriptConfig {
     } & PageBaseItem;
     // mean string start with getState(' and end with ').val
     type getStateID = string;
+
+   
+const valid: MyValidType = { a: 'a' };
     export type PageBaseItem =
         ({
             navigate: true;

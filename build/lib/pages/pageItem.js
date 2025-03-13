@@ -639,7 +639,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     return "";
   }
   async GeneratePopup(mode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M;
     if (!this.config || !this.dataItems) {
       return null;
     }
@@ -859,13 +859,17 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           message.list = message.list.slice(0, 940);
           this.log.warn("Value list has more as 940 chars!");
         }
+        const n = (_D = await tools.getValueEntryNumber(item.entityInSel)) != null ? _D : 0;
+        if (Array.isArray(list) && n != null && n < list.length) {
+          message.currentState = tools.formatInSelText(this.library.getTranslation(list[n]));
+        }
         if (mode !== "popupThermo") {
           break;
         }
         message = { ...message, type: "popupThermo" };
         if (message.type === "popupThermo") {
           message.headline = this.library.getTranslation(
-            (_E = (_D = await tools.getEntryTextOnOff(item.headline, true)) != null ? _D : message.headline) != null ? _E : ""
+            (_F = (_E = await tools.getEntryTextOnOff(item.headline, true)) != null ? _E : message.headline) != null ? _F : ""
           );
         }
         break;
@@ -881,14 +885,14 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         if (!(message.type === "popupShutter")) {
           break;
         }
-        message.text2 = (_F = await tools.getEntryTextOnOff(item.text, true)) != null ? _F : "";
+        message.text2 = (_G = await tools.getEntryTextOnOff(item.text, true)) != null ? _G : "";
         message.text2 = this.library.getTranslation(message.text2);
-        const pos1 = (_G = await tools.getValueEntryNumber(item.entity1)) != null ? _G : "disable";
-        const pos2 = (_H = await tools.getValueEntryNumber(item.entity2)) != null ? _H : "disable";
+        const pos1 = (_H = await tools.getValueEntryNumber(item.entity1)) != null ? _H : "disable";
+        const pos2 = (_I = await tools.getValueEntryNumber(item.entity2)) != null ? _I : "disable";
         if (pos1 !== "disable") {
-          message.icon = (_I = await tools.getIconEntryValue(item.icon, pos1, "")) != null ? _I : "";
+          message.icon = (_J = await tools.getIconEntryValue(item.icon, pos1, "")) != null ? _J : "";
         } else if (pos2 !== "disable") {
-          message.icon = (_J = await tools.getIconEntryValue(item.icon, pos2, "")) != null ? _J : "";
+          message.icon = (_K = await tools.getIconEntryValue(item.icon, pos2, "")) != null ? _K : "";
         }
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
           "arrow-up",
@@ -923,7 +927,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
           });
           if (index === 0) {
             message.pos1 = String(pos);
-            message.pos1text = (_K = await tools.getEntryTextOnOff(item.text1, true)) != null ? _K : "";
+            message.pos1text = (_L = await tools.getEntryTextOnOff(item.text1, true)) != null ? _L : "";
             message.pos1text = this.library.getTranslation(message.pos1text);
             message.iconL1 = optionalValueC[0];
             message.iconM1 = optionalValueC[1];
@@ -933,7 +937,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             message.statusR1 = pos === 100 ? "disable" : optionalValueC[5];
           } else {
             message.pos2 = String(pos);
-            message.pos2text = (_L = await tools.getEntryTextOnOff(item.text2, true)) != null ? _L : "";
+            message.pos2text = (_M = await tools.getEntryTextOnOff(item.text2, true)) != null ? _M : "";
             message.pos2text = this.library.getTranslation(message.pos2text);
             message.iconL2 = optionalValueC[0];
             message.iconM2 = optionalValueC[1];
@@ -1485,6 +1489,37 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
       }
     }
     if (!item.setList) {
+      if (item.entityInSel && item.entityInSel.value) {
+        let list2 = item.valueList && await item.valueList.getObject() || item.valueList && await item.valueList.getString() || [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13"
+        ];
+        if (list2 !== null) {
+          if (typeof list2 === "string") {
+            list2 = list2.split("?");
+          }
+          if (Array.isArray(list2)) {
+            list2.splice(48);
+          }
+        } else {
+          list2 = [];
+        }
+        if (Array.isArray(list2) && list2.length > parseInt(value)) {
+          await item.entityInSel.value.setStateAsync(value);
+          return true;
+        }
+      }
       return false;
     }
     const list = await this.getListCommands(item.setList);

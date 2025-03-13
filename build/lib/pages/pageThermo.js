@@ -115,7 +115,7 @@ class PageThermo extends import_Page.Page {
         }
         const maxSteps = localStep * this.step + 1;
         const minStep = localStep * (this.step - 1) + 1;
-        let b = pageItems.length >= 8 ? 0 : Math.floor((8 - pageItems.length) / 2);
+        let b = pageItems.length >= 8 ? 0 : Math.ceil((8 - pageItems.length) / 2);
         for (let a = minStep; a < maxSteps; a++, b++) {
           const temp = pageItems[a];
           if (temp) {
@@ -296,6 +296,27 @@ class PageThermo extends import_Page.Page {
       String(message.temp2),
       String(message.btDetail)
     );
+  }
+  async onVisibilityChange(val) {
+    var _a, _b;
+    await super.onVisibilityChange(val);
+    if (val) {
+      for (const item of (_a = this.pageItems) != null ? _a : []) {
+        if (item && item.dataItems && item.dataItems.type === "input_sel") {
+          if (this.controller) {
+            await this.controller.statesControler.activateTrigger(item);
+          }
+        }
+      }
+    } else {
+      for (const item of (_b = this.pageItems) != null ? _b : []) {
+        if (item && item.dataItems && item.dataItems.type === "input_sel") {
+          if (this.controller) {
+            await this.controller.statesControler.deactivateTrigger(item);
+          }
+        }
+      }
+    }
   }
   async onStateTrigger() {
     await this.update();

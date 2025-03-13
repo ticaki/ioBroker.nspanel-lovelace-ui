@@ -568,7 +568,7 @@ export class StatesControler extends BaseClass {
                                 if (i === this.triggerDB[dp].to.length - 1) {
                                     this.log.debug(`Ignore trigger from state ${dp} not subscribed or not allowed!`);
                                     this.log.debug(
-                                        `!c.neverDeactivateTrigger: ${!c.neverDeactivateTrigger} && !this.triggerDB[dp].subscribed[i]: ${!this.triggerDB[dp].subscribed[i]} || !this.triggerDB[dp].triggerAllowed[i]: ${!this.triggerDB[dp].triggerAllowed[i]}`,
+                                        `c: ${c.name} !c.neverDeactivateTrigger: ${!c.neverDeactivateTrigger} && !this.triggerDB[dp].subscribed[i]: ${!this.triggerDB[dp].subscribed[i]} || !this.triggerDB[dp].triggerAllowed[i]: ${!this.triggerDB[dp].triggerAllowed[i]}`,
                                     );
                                 }
                                 continue;

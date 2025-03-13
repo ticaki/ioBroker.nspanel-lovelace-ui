@@ -279,7 +279,13 @@ declare namespace ScriptConfig {
         | PageQR
         | PageAlarm
         | PagePower
-        | { type: undefined; heading?: string; native: any };
+        | PageNative;
+
+    export type PageNative = {
+        type: undefined;
+        heading?: string;
+        native: any;
+    } & Pick<PageBaseType, 'uniqueName' | 'prev' | 'next' | 'home' | 'parent'>;
 
     export type PageEntities = {
         type: 'cardEntities';
