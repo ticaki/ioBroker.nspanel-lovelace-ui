@@ -1483,7 +1483,7 @@ const InternalStates = {
       }
     },
     "cmd/screenSaverDoubleClick": {
-      val: false,
+      val: true,
       ack: true,
       common: {
         name: "",

@@ -977,7 +977,7 @@ export class Panel extends BaseClass {
                 }
                 case 'screenSaverDoubleClick': {
                     if (state && state.val != null) {
-                        //this.screenSaverDoubleClick = !!state.val;
+                        this.screenSaverDoubleClick = !!state.val;
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/screenSaverDoubleClick`,
                             !!state.val,
@@ -1488,7 +1488,7 @@ export class Panel extends BaseClass {
                 }
                 case 'cmd/screenSaverDoubleClick': {
                     if (this.screenSaver && typeof state.val === 'boolean') {
-                        this.screenSaverDoubleClick = state.val;
+                        this.screenSaverDoubleClick = !!state.val;
                         await this.library.writedp(`panels.${this.name}.cmd.screenSaverDoubleClick`, state.val);
                     }
                     break;

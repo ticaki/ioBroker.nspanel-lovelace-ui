@@ -572,13 +572,16 @@ const ScreensaverOptions = {
         },
         icon: {
           true: {
-            value: { type: "const", constVal: "clock-time-twelve-outline" },
-            color: { type: "const", constVal: import_Color.Color.White }
+            value: { type: "const", constVal: "switch" },
+            color: { type: "const", constVal: import_Color.Color.Green }
           },
-          false: void 0
+          false: {
+            value: { type: "const", constVal: "switch" },
+            color: { type: "const", constVal: import_Color.Color.Red }
+          }
         },
-        text: { true: { type: "const", constVal: "screenSaverDoubleClick" }, false: void 0 },
-        setValue1: { type: "internalState", dp: "cmd/screenSaverDoubleClick" }
+        text: { true: { type: "const", constVal: "DoubleClick" }, false: void 0 },
+        setValue1: { type: "internal", dp: "cmd/screenSaverDoubleClick" }
       }
     }
   ],

@@ -561,13 +561,16 @@ const ScreensaverOptions: PageBaseConfig = {
                 },
                 icon: {
                     true: {
-                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
-                        color: { type: 'const', constVal: Color.White },
+                        value: { type: 'const', constVal: 'switch' },
+                        color: { type: 'const', constVal: Color.Green },
                     },
-                    false: undefined,
+                    false: {
+                        value: { type: 'const', constVal: 'switch' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
                 },
-                text: { true: { type: 'const', constVal: 'screenSaverDoubleClick' }, false: undefined },
-                setValue1: { type: 'internalState', dp: 'cmd/screenSaverDoubleClick' },
+                text: { true: { type: 'const', constVal: 'DoubleClick' }, false: undefined },
+                setValue1: { type: 'internal', dp: 'cmd/screenSaverDoubleClick' },
             },
         },
     ],

@@ -907,6 +907,7 @@ class Panel extends import_library.BaseClass {
         }
         case "screenSaverDoubleClick": {
           if (state && state.val != null) {
+            this.screenSaverDoubleClick = !!state.val;
             await this.statesControler.setInternalState(
               `${this.name}/cmd/screenSaverDoubleClick`,
               !!state.val,
@@ -1365,7 +1366,7 @@ class Panel extends import_library.BaseClass {
         }
         case "cmd/screenSaverDoubleClick": {
           if (this.screenSaver && typeof state.val === "boolean") {
-            this.screenSaverDoubleClick = state.val;
+            this.screenSaverDoubleClick = !!state.val;
             await this.library.writedp(`panels.${this.name}.cmd.screenSaverDoubleClick`, state.val);
           }
           break;
