@@ -180,23 +180,21 @@
 ### thermostat
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **thermostat** | ~~ACTUAL~~ | number| value.temperature  |  |  |  | 
+| **thermostat** | ~~ACTUAL~~ | number| value.temperature, level.temperature  |  |  |  | 
 | **"** | ~~SET~~ | number| level.temperature  | X | X |  | 
 | **"** | ~~MODE~~ | number| level.mode.thermostat  |  | X |  | 
 | **"** | ~~BOOST~~ | boolean| switch.mode.boost  |  | X |  | 
-| **"** | ~~AUTOMATIC~~ | boolean| state  |  |  |  | 
 | **"** | ~~ERROR~~ | boolean| indicator.error  |  |  |  | 
 | **"** | ~~LOWBAT~~ | boolean| indicator.maintenance.lowbat  |  |  |  | 
-| **"** | ~~MANUAL~~ | boolean| state  |  |  |  | 
 | **"** | ~~UNREACH~~ | boolean| indicator.maintenance.unreach  |  |  |  | 
 | **"** | ~~HUMIDITY~~ | number| value.humidity  |  |  |  | 
 | **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  |  | 
 | **"** | ~~PARTY~~ | boolean| switch.mode.party  |  |  |  | 
 | **"** | ~~POWER~~ | boolean| switch.power  |  | X |  | 
-| **"** | ~~VACATION~~ | boolean| state  |  |  |  | 
+| **"** | VACATION | boolean| state  |  |  |  | 
 | **"** | ~~WINDOWOPEN~~ | boolean| state, sensor.window  |  |  |  | 
 | **"** | ~~WORKING~~ | boolean| indicator.working  |  |  |  | 
-| **"** | ~~USERICON~~ | string| state  |  |  |  | 
+| **"** | USERICON | string| state  |  |  |  | 
 ### level.timer
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  

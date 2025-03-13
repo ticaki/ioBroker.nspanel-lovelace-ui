@@ -22,7 +22,7 @@ import axios from 'axios';
 import { URL } from 'url';
 import type { HttpServer } from './lib/classes/http-server';
 //import fs from 'fs';
-axios.defaults.timeout = 5000;
+axios.defaults.timeout = 3000;
 
 class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
@@ -427,7 +427,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     private onMqttConnect = async (): Promise<void> => {
         const _helper = async (tasmota: any): Promise<void> => {
             try {
-                this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip}`);
+                this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
                 await axios.get(`http://${tasmota.ip}/cm?&cmnd=Backlog MqttRetry 11`);
                 await this.delay(300);
                 await axios.get(`http://${tasmota.ip}/cm?&cmnd=Backlog MqttRetry 10`);
