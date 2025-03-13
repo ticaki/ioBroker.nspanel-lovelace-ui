@@ -33,7 +33,7 @@ var import_config_manager = require("./lib/classes/config-manager");
 var import_readme = require("./lib/tools/readme");
 var import_axios = __toESM(require("axios"));
 var import_url = require("url");
-import_axios.default.defaults.timeout = 5e3;
+import_axios.default.defaults.timeout = 3e3;
 class NspanelLovelaceUi extends utils.Adapter {
   library;
   mqttClient;
@@ -335,7 +335,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   onMqttConnect = async () => {
     const _helper = async (tasmota) => {
       try {
-        this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip}`);
+        this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
         await import_axios.default.get(`http://${tasmota.ip}/cm?&cmnd=Backlog MqttRetry 11`);
         await this.delay(300);
         await import_axios.default.get(`http://${tasmota.ip}/cm?&cmnd=Backlog MqttRetry 10`);

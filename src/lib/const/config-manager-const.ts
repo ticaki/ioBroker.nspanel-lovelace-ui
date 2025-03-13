@@ -282,10 +282,10 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         SET: null,
         MODE: null,
         BOOST: null,
-        AUTOMATIC: null,
+        //AUTOMATIC: null,
         ERROR: null,
         LOWBAT: null,
-        MANUAL: null,
+        //MANUAL: null,
         UNREACH: null,
         HUMIDITY: null,
         MAINTAIN: null,
@@ -617,10 +617,10 @@ export type requiredDatapoints = {
             SET: Datapoint;
             MODE: Datapoint;
             BOOST: Datapoint;
-            AUTOMATIC: Datapoint;
+            //AUTOMATIC: Datapoint;
             ERROR: Datapoint;
             LOWBAT: Datapoint;
-            MANUAL: Datapoint;
+            //MANUAL: Datapoint;
             UNREACH: Datapoint;
             HUMIDITY: Datapoint;
             MAINTAIN: Datapoint;
@@ -1079,23 +1079,28 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'thermostat',
         description: '',
         data: {
-            ACTUAL: { role: 'value.temperature', type: 'number', required: false, writeable: false },
+            ACTUAL: {
+                role: ['value.temperature', 'level.temperature'],
+                type: 'number',
+                required: false,
+                writeable: false,
+            },
             SET: { role: 'level.temperature', type: 'number', required: true, writeable: true },
             MODE: { role: 'level.mode.thermostat', type: 'number', required: false, writeable: true },
             BOOST: { role: 'switch.mode.boost', type: 'boolean', required: false, writeable: true },
-            AUTOMATIC: { role: 'state', type: 'boolean', required: false },
+            //AUTOMATIC: { role: 'state', type: 'boolean', required: false },
             ERROR: { role: 'indicator.error', type: 'boolean', required: false, writeable: false },
             LOWBAT: { role: 'indicator.maintenance.lowbat', type: 'boolean', required: false, writeable: false },
-            MANUAL: { role: 'state', type: 'boolean', required: false },
+            //MANUAL: { role: 'state', type: 'boolean', required: false },
             UNREACH: { role: 'indicator.maintenance.unreach', type: 'boolean', required: false, writeable: false },
             HUMIDITY: { role: 'value.humidity', type: 'number', required: false, writeable: false },
             MAINTAIN: { role: 'indicator.maintenance', type: 'boolean', required: false, writeable: false },
             PARTY: { role: 'switch.mode.party', type: 'boolean', required: false },
             POWER: { role: 'switch.power', type: 'boolean', required: false, writeable: true },
-            VACATION: { role: 'state', type: 'boolean', required: false },
+            VACATION: { role: 'state', type: 'boolean', useKey: true, required: false },
             WINDOWOPEN: { role: ['state', 'sensor.window'], type: 'boolean', required: false, writeable: false },
             WORKING: { role: 'indicator.working', type: 'boolean', required: false, writeable: false },
-            USERICON: { role: 'state', type: 'string', required: false, writeable: false }, // benutzerdefinierter Iconname über DP senden
+            USERICON: { role: 'state', type: 'string', useKey: true, required: false, writeable: false }, // benutzerdefinierter Iconname über DP senden
         },
     },
     'level.timer': {
