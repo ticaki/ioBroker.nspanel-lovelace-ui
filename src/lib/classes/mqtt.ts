@@ -11,6 +11,7 @@ import { createServer, type Server } from 'net';
 import { randomUUID } from 'node:crypto';
 
 export type callbackMessageType = (topic: string, message: string) => void;
+export type callbackConnectType = () => Promise<void>;
 
 export class MQTTClientClass extends BaseClass {
     client: mqtt.MqttClient;
@@ -27,6 +28,7 @@ export class MQTTClientClass extends BaseClass {
         username: string,
         password: string,
         callback: callbackMessageType,
+        onConnect?: callbackConnectType,
     ) {
         super(adapter, 'mqttClient');
         this.clientId = `iobroker_${randomUUID()}`;
@@ -40,6 +42,9 @@ export class MQTTClientClass extends BaseClass {
             this.log.info(`Connection is active.`);
             void this.adapter.setState('info.connection', true, true);
             this.ready = true;
+            if (onConnect) {
+                void onConnect();
+            }
         });
         this.client.on('disconnect', () => {
             this.log.info(`Disconnected.`);

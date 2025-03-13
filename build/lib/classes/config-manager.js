@@ -366,25 +366,40 @@ class ConfigManager extends import_library.BaseClass {
     if (page.type !== "cardThermo" || !gridItem.config || gridItem.config.card !== "cardThermo") {
       return { gridItem, messages };
     }
-    if (!page.items || !page.items[0] || page.items[0].id == null) {
-      const msg = "Thermo page has no items or item 0 has no id!";
+    if (!page.items || !page.items[0]) {
+      const msg = `${page.uniqueName}: Thermo page has no item or item 0 has no id!`;
       messages.push(msg);
       this.log.warn(msg);
       return { gridItem, messages };
     }
-    const role = "thermostat";
+    const item = page.items[0];
+    if (!item || !item.id || item.id.endsWith(".")) {
+      const msg = `${page.uniqueName} id: ${page.items[0].id} is invalid!`;
+      messages.push(msg);
+      this.log.error(msg);
+      return { gridItem, messages };
+    }
+    const o = await this.adapter.getForeignObjectAsync(item.id);
+    if (!o || !o.common || !o.common.role) {
+      const msg = `${page.uniqueName} id: ${page.items[0].id} has a invalid object!`;
+      messages.push(msg);
+      this.log.error(msg);
+      return { gridItem, messages };
+    }
+    const role = o.common.role;
+    if (role !== "thermostat" && role !== "airCondition") {
+      const msg = `${page.uniqueName} id: ${page.items[0].id} role '${role}' not supported for cardThermo!`;
+      messages.push(msg);
+      this.log.error(msg);
+      return { gridItem, messages };
+    }
     let foundedStates;
     try {
-      foundedStates = await this.searchDatapointsForItems(
-        import_config_manager_const.requiredScriptDataPoints,
-        role,
-        page.items[0].id,
-        messages
-      );
+      foundedStates = await this.searchDatapointsForItems(import_config_manager_const.requiredScriptDataPoints, role, item.id, messages);
     } catch {
       return { gridItem, messages };
     }
-    gridItem.dpInit = page.items[0].id;
+    gridItem.dpInit = item.id;
     gridItem = {
       ...gridItem,
       card: "cardThermo",
@@ -400,7 +415,8 @@ class ConfigManager extends import_library.BaseClass {
           mixed2: foundedStates[role].ACTUAL ? {
             value: foundedStates[role].ACTUAL,
             factor: { type: "const", constVal: 1 },
-            decimal: { type: "const", constVal: 1 }
+            decimal: { type: "const", constVal: 1 },
+            unit: item.unit != null ? await this.getFieldAsDataItemConfig(item.unit) : void 0
           } : void 0,
           mixed3: foundedStates[role].HUMIDITY ? {
             value: { type: "const", constVal: "Humidity" }
@@ -411,6 +427,10 @@ class ConfigManager extends import_library.BaseClass {
             decimal: { type: "const", constVal: 0 },
             unit: { type: "const", constVal: "%" }
           } : void 0,
+          tempStep: item.stepValue != null ? await this.getFieldAsDataItemConfig(item.stepValue) : void 0,
+          minTemp: item.minValue != null ? await this.getFieldAsDataItemConfig(item.minValue) : void 0,
+          maxTemp: item.maxValue != null ? await this.getFieldAsDataItemConfig(item.maxValue) : void 0,
+          unit: item.unit != null ? await this.getFieldAsDataItemConfig(item.unit) : void 0,
           set1: foundedStates[role].SET,
           set2: foundedStates[role].SET2
         }
@@ -2309,12 +2329,14 @@ class ConfigManager extends import_library.BaseClass {
     throw new Error("Invalid data");
   }
   async getFieldAsDataItemConfig(possibleId, isTrigger = false) {
-    const state = import_Color.Color.isScriptRGB(possibleId) || possibleId === "" || possibleId.endsWith(".") ? false : await this.existsState(possibleId);
-    if (!import_Color.Color.isScriptRGB(possibleId) && state) {
-      if (isTrigger) {
-        return { type: "triggered", dp: possibleId };
+    if (typeof possibleId === "string") {
+      const state = import_Color.Color.isScriptRGB(possibleId) || possibleId === "" || possibleId.endsWith(".") ? false : await this.existsState(possibleId);
+      if (!import_Color.Color.isScriptRGB(possibleId) && state) {
+        if (isTrigger) {
+          return { type: "triggered", dp: possibleId };
+        }
+        return { type: "state", dp: possibleId };
       }
-      return { type: "state", dp: possibleId };
     }
     return { type: "const", constVal: possibleId };
   }

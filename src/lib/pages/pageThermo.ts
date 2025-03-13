@@ -193,9 +193,9 @@ export class PageThermo extends Page {
                     }
                 }
             }
-            v = (item.data.tempStep && (await item.data.tempStep.getString())) ?? null;
+            v = (item.data.tempStep && (await item.data.tempStep.getNumber())) ?? null;
             if (v !== null) {
-                message.tempStep = v;
+                message.tempStep = String(v);
             } else if (item.data.set1 && item.data.set1.common.step) {
                 message.tempStep = String(item.data.set1.common.step * 10);
             } else {
