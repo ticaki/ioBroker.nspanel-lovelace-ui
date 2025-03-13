@@ -293,6 +293,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 (topic, message) => {
                     this.log.debug(`${topic} ${message}`);
                 },
+                this.onMqttConnect,
             );
             if (!this.mqttClient) {
                 return;
@@ -423,6 +424,25 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
     }
 
+    private onMqttConnect = async (): Promise<void> => {
+        const _helper = async (tasmota: any): Promise<void> => {
+            try {
+                this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip}`);
+                await axios.get(`http://${tasmota.ip}/cm?&cmnd=Backlog MqttRetry 11`);
+                await this.delay(300);
+                await axios.get(`http://${tasmota.ip}/cm?&cmnd=Backlog MqttRetry 10`);
+            } catch (e: any) {
+                this.log.warn(
+                    `Error: This usually means that the NSpanel with ip ${tasmota.ip} is not online or has not been set up properly in the configuration! ${e}`,
+                );
+            }
+        };
+        for (const tasmota of this.config.panels) {
+            if (tasmota && tasmota.ip) {
+                void _helper(tasmota);
+            }
+        }
+    };
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances.
      *

@@ -188,9 +188,9 @@ class PageThermo extends import_Page.Page {
           }
         }
       }
-      v = (_g = item.data.tempStep && await item.data.tempStep.getString()) != null ? _g : null;
+      v = (_g = item.data.tempStep && await item.data.tempStep.getNumber()) != null ? _g : null;
       if (v !== null) {
-        message.tempStep = v;
+        message.tempStep = String(v);
       } else if (item.data.set1 && item.data.set1.common.step) {
         message.tempStep = String(item.data.set1.common.step * 10);
       } else {

@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 /*-----------------------------------------------------------------------
 TypeScript v4.5.0.4 zur Steuerung des SONOFF NSPanel mit dem ioBroker by @Armilar / @TT-Tom / @ticaki / @Britzelpuf / @Sternmiere / @ravenS0ne
 - abgestimmt auf TFT 54 / v4.5.0 / BerryDriver 9 / Tasmota 14.4.1

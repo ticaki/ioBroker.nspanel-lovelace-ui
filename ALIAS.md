@@ -180,11 +180,11 @@
 ### thermostat
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **thermostat** | ~~ACTUAL~~ | number| value.temperature  | X |  |  | 
+| **thermostat** | ~~ACTUAL~~ | number| value.temperature  |  |  |  | 
 | **"** | ~~SET~~ | number| level.temperature  | X | X |  | 
-| **"** | ~~MODE~~ | number| level.mode.thermostat  | X | X |  | 
+| **"** | ~~MODE~~ | number| level.mode.thermostat  |  | X |  | 
 | **"** | ~~BOOST~~ | boolean| switch.mode.boost  |  | X |  | 
-| **"** | ~~AUTOMATIC~~ | boolean| state  | X |  |  | 
+| **"** | ~~AUTOMATIC~~ | boolean| state  |  |  |  | 
 | **"** | ~~ERROR~~ | boolean| indicator.error  |  |  |  | 
 | **"** | ~~LOWBAT~~ | boolean| indicator.maintenance.lowbat  |  |  |  | 
 | **"** | ~~MANUAL~~ | boolean| state  |  |  |  | 
