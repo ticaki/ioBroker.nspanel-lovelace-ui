@@ -11,11 +11,11 @@ export const buttonTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'size-m' },
-                    color: { type: 'const', constVal: Color.option1 },
+                    color: { type: 'const', constVal: Color.Yellow },
                 },
                 false: {
                     value: undefined,
-                    color: { type: 'const', constVal: Color.option2 },
+                    color: { type: 'const', constVal: Color.Green },
                 },
             },
             entity1: {

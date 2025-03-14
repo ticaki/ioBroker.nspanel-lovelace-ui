@@ -978,8 +978,13 @@ export class Panel extends BaseClass {
                 case 'screenSaverDoubleClick': {
                     if (state && state.val != null) {
                         this.screenSaverDoubleClick = !!state.val;
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/screenSaverDoubleClick`,
+                            !!state.val,
+                            false,
+                        );
                     }
-                    await this.library.writedp(
+                    /* await this.library.writedp(
                         `panels.${this.name}.cmd.screenSaverDoubleClick`,
                         this.screenSaverDoubleClick,
                         genericStateObjects.panel.panels.cmd.screenSaverDoubleClick,
@@ -990,7 +995,7 @@ export class Panel extends BaseClass {
                             0,
                             genericStateObjects.panel.panels.buttons.screensaverGesture,
                         );
-                    }
+                    } */
                     break;
                 }
                 case 'detachLeft': {
@@ -1481,6 +1486,13 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'cmd/screenSaverDoubleClick': {
+                    if (this.screenSaver && typeof state.val === 'boolean') {
+                        this.screenSaverDoubleClick = !!state.val;
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaverDoubleClick`, state.val);
+                    }
+                    break;
+                }
             }
             await this.statesControler.setInternalState(id, state.val, true);
         }
@@ -1545,6 +1557,9 @@ export class Panel extends BaseClass {
                     return this.screenSaver.rotationTime;
                 }
                 break;
+            }
+            case 'cmd/screenSaverDoubleClick': {
+                return this.screenSaverDoubleClick;
             }
         }
         return null;

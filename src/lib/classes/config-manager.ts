@@ -29,7 +29,7 @@ export class ConfigManager extends BaseClass {
     dontWrite: boolean = false;
     extraConfigLogging: boolean = false;
 
-    readonly scriptVersion = '0.6.3';
+    readonly scriptVersion = '0.7.0';
     readonly breakingVersion = '0.6.0';
 
     statesController: StatesControler;
@@ -169,7 +169,7 @@ export class ConfigManager extends BaseClass {
             messages.push(`Screensaver configuration error - ${error}`);
             this.log.warn(messages[messages.length - 1]);
         }
-        if (config.pages.length > 1) {
+        if (config.pages.length > 0) {
             for (let a = 0; a < config.pages.length; a++) {
                 const page = config.pages[a];
                 let uniqueID = '';
@@ -263,6 +263,17 @@ export class ConfigManager extends BaseClass {
             panelConfig.buttons.right = config.buttonRight;
         } else {
             messages.push(`Button right wrong configured!`);
+            this.log.warn(messages[messages.length - 1]);
+        }
+
+        if (panelConfig.pages.length === 0) {
+            messages.push(`No pages found! This needs to be fixed!`);
+            this.log.error(messages[messages.length - 1]);
+        } else if (panelConfig.navigation.length === 0) {
+            messages.push(`No navigation items found! This needs to be fixed!`);
+            this.log.error(messages[messages.length - 1]);
+        } else if (panelConfig.navigation.findIndex(item => item && item.name === 'main') === -1) {
+            messages.push(`No entry found for ‘main’ in the navigation!`);
             this.log.warn(messages[messages.length - 1]);
         }
 

@@ -127,7 +127,8 @@ export type PanelInternalCommand =
     | 'cmd/dimNightActive'
     | 'cmd/dimNightStandby'
     | 'cmd/dimNightHourStart'
-    | 'cmd/dimNightHourEnd';
+    | 'cmd/dimNightHourEnd'
+    | 'cmd/screenSaverDoubleClick';
 
 export function isPopupType(F: any): F is PopupType {
     switch (F as PopupType) {

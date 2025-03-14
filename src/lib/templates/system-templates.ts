@@ -398,6 +398,7 @@ const ScreensaverOptions: PageBaseConfig = {
     useColor: false,
     config: {
         card: 'cardEntities',
+        scrollType: 'page',
         data: {
             headline: {
                 type: 'const',
@@ -420,13 +421,34 @@ const ScreensaverOptions: PageBaseConfig = {
         },
         {
             role: '',
+            type: 'switch',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/screenSaverDoubleClick' },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'switch' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'switch' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                },
+                text: { true: { type: 'const', constVal: 'DoubleClick' }, false: undefined },
+                setValue1: { type: 'internal', dp: 'cmd/screenSaverDoubleClick' },
+            },
+        },
+        {
+            role: '',
             type: 'number',
             data: {
                 entity1: {
                     value: { type: 'internal', dp: 'cmd/screensaverTimeout' },
-                    minScale: { type: 'const', constVal: 0 },
-                    maxScale: { type: 'const', constVal: 90 },
                 },
+                minValue1: { type: 'const', constVal: 0 },
+                maxValue1: { type: 'const', constVal: 90 },
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'clock-time-twelve-outline' },
@@ -443,10 +465,9 @@ const ScreensaverOptions: PageBaseConfig = {
             data: {
                 entity1: {
                     value: { type: 'internal', dp: 'cmd/dimStandby' },
-                    factor: { type: 'const', constVal: 1 / 10 },
-                    minScale: { type: 'const', constVal: 0 },
-                    maxScale: { type: 'const', constVal: 10 },
                 },
+                minValue1: { type: 'const', constVal: 0 },
+                maxValue1: { type: 'const', constVal: 100 },
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'clock-time-twelve-outline' },
@@ -463,13 +484,9 @@ const ScreensaverOptions: PageBaseConfig = {
             data: {
                 entity1: {
                     value: { type: 'internal', dp: 'cmd/dimActive' },
-                    factor: { type: 'const', constVal: 1 },
-                    minScale: { type: 'const', constVal: 0 },
-                    maxScale: { type: 'const', constVal: 10 },
                 },
                 minValue1: { type: 'const', constVal: 0 },
-
-                maxValue1: { type: 'const', constVal: 10 },
+                maxValue1: { type: 'const', constVal: 100 },
 
                 icon: {
                     true: {
@@ -487,10 +504,9 @@ const ScreensaverOptions: PageBaseConfig = {
             data: {
                 entity1: {
                     value: { type: 'internal', dp: 'cmd/dimNightActive' },
-                    factor: { type: 'const', constVal: 1 / 10 },
-                    minScale: { type: 'const', constVal: 0 },
-                    maxScale: { type: 'const', constVal: 10 },
                 },
+                minValue1: { type: 'const', constVal: 0 },
+                maxValue1: { type: 'const', constVal: 100 },
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'clock-time-twelve-outline' },
@@ -507,10 +523,9 @@ const ScreensaverOptions: PageBaseConfig = {
             data: {
                 entity1: {
                     value: { type: 'internal', dp: 'cmd/dimNightStandby' },
-                    factor: { type: 'const', constVal: 1 / 10 },
-                    minScale: { type: 'const', constVal: 0 },
-                    maxScale: { type: 'const', constVal: 10 },
                 },
+                minValue1: { type: 'const', constVal: 0 },
+                maxValue1: { type: 'const', constVal: 100 },
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'clock-time-twelve-outline' },
@@ -527,9 +542,9 @@ const ScreensaverOptions: PageBaseConfig = {
             data: {
                 entity1: {
                     value: { type: 'internal', dp: 'cmd/dimNightHourStart' },
-                    minScale: { type: 'const', constVal: 0 },
-                    maxScale: { type: 'const', constVal: 23 },
                 },
+                minValue1: { type: 'const', constVal: 0 },
+                maxValue1: { type: 'const', constVal: 23 },
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'clock-time-twelve-outline' },
@@ -546,9 +561,9 @@ const ScreensaverOptions: PageBaseConfig = {
             data: {
                 entity1: {
                     value: { type: 'internal', dp: 'cmd/dimNightHourEnd' },
-                    minScale: { type: 'const', constVal: 0 },
-                    maxScale: { type: 'const', constVal: 23 },
                 },
+                minValue1: { type: 'const', constVal: 0 },
+                maxValue1: { type: 'const', constVal: 23 },
                 icon: {
                     true: {
                         value: { type: 'const', constVal: 'clock-time-twelve-outline' },
@@ -557,6 +572,27 @@ const ScreensaverOptions: PageBaseConfig = {
                     false: undefined,
                 },
                 text: { true: { type: 'const', constVal: 'dimNightHourEnd' }, false: undefined },
+            },
+        },
+        {
+            role: '',
+            type: 'switch',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/screenSaverDoubleClick' },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'switch' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'switch' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                },
+                text: { true: { type: 'const', constVal: 'DoubleClick' }, false: undefined },
+                setValue1: { type: 'internal', dp: 'cmd/screenSaverDoubleClick' },
             },
         },
     ],

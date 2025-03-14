@@ -314,8 +314,9 @@ export class PageItem extends BaseClassTriggerd {
                         message.displayName = this.library.getTranslation(
                             (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
                         );
-
-                        if (entry.type === 'button' || entry.type === 'switch') {
+                        if (entry.type === 'switch') {
+                            message.optionalValue = (value ?? true) ? '1' : '0';
+                        } else if (entry.type === 'button') {
                             message.optionalValue = (value ?? true) ? '1' : '0';
                             if (this.parent && this.parent.card === 'cardEntities') {
                                 message.optionalValue =

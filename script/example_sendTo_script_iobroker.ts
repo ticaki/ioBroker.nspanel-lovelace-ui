@@ -1,5 +1,14 @@
 async function configuration (): Promise<void> {
 
+    const overrideConfig: Partial<ScriptConfig.Config> = {
+        // hier kann man die Werte von unten überschreiben bzw nicht ewig im Skript suchen wo nochmal die Farbe steht :)
+        // pages und subpages geht hier nicht, weil die Seiten ja erst später angelegt werden. Bei const gehts nach Reihenfolge.
+        // panelTopic: 'nspanel/ns_panel4',
+        weatherEntity: 'accuweather.0.',
+        defaultOffColor: Off,
+        defaultOnColor: On,
+        weatherAddDefaultItems: false,
+    }
 
     // Diese Konfiguration für den Fahrplan ist ein Beispiel was die interne Adapterkonfiguration benutzt, diese 
     // ist recht komplex und wird nicht weiter erläutert. Da gibts später fertige Templates die man hier verwenden kann.
@@ -438,11 +447,12 @@ async function configuration (): Promise<void> {
      ********************************************************************************
      */
 
-    log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version}))
-    setTimeout(() => {stopScript(scriptName, undefined)}, 200);
+    log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', Object.assign({...config, version}, overrideConfig)));
+}))
+setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 }
 
-const version = '0.6.3';
+const version = '0.7.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color

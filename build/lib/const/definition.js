@@ -1481,6 +1481,17 @@ const InternalStates = {
         read: true,
         write: true
       }
+    },
+    "cmd/screenSaverDoubleClick": {
+      val: true,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      }
     }
   }
 };

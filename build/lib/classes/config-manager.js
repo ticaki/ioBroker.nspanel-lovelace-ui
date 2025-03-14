@@ -36,7 +36,7 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.6.3";
+  scriptVersion = "0.7.0";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -137,7 +137,7 @@ class ConfigManager extends import_library.BaseClass {
       messages.push(`Screensaver configuration error - ${error}`);
       this.log.warn(messages[messages.length - 1]);
     }
-    if (config.pages.length > 1) {
+    if (config.pages.length > 0) {
       for (let a = 0; a < config.pages.length; a++) {
         const page = config.pages[a];
         let uniqueID = "";
@@ -227,6 +227,16 @@ class ConfigManager extends import_library.BaseClass {
       panelConfig.buttons.right = config.buttonRight;
     } else {
       messages.push(`Button right wrong configured!`);
+      this.log.warn(messages[messages.length - 1]);
+    }
+    if (panelConfig.pages.length === 0) {
+      messages.push(`No pages found! This needs to be fixed!`);
+      this.log.error(messages[messages.length - 1]);
+    } else if (panelConfig.navigation.length === 0) {
+      messages.push(`No navigation items found! This needs to be fixed!`);
+      this.log.error(messages[messages.length - 1]);
+    } else if (panelConfig.navigation.findIndex((item) => item && item.name === "main") === -1) {
+      messages.push(`No entry found for \u2018main\u2019 in the navigation!`);
       this.log.warn(messages[messages.length - 1]);
     }
     const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);

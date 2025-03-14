@@ -908,17 +908,10 @@ class Panel extends import_library.BaseClass {
         case "screenSaverDoubleClick": {
           if (state && state.val != null) {
             this.screenSaverDoubleClick = !!state.val;
-          }
-          await this.library.writedp(
-            `panels.${this.name}.cmd.screenSaverDoubleClick`,
-            this.screenSaverDoubleClick,
-            import_definition.genericStateObjects.panel.panels.cmd.screenSaverDoubleClick
-          );
-          if (!this.screenSaverDoubleClick) {
-            await this.library.writedp(
-              `panels.${this.name}.buttons.screensaverGesture`,
-              0,
-              import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+            await this.statesControler.setInternalState(
+              `${this.name}/cmd/screenSaverDoubleClick`,
+              !!state.val,
+              false
             );
           }
           break;
@@ -1371,6 +1364,13 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        case "cmd/screenSaverDoubleClick": {
+          if (this.screenSaver && typeof state.val === "boolean") {
+            this.screenSaverDoubleClick = !!state.val;
+            await this.library.writedp(`panels.${this.name}.cmd.screenSaverDoubleClick`, state.val);
+          }
+          break;
+        }
       }
       await this.statesControler.setInternalState(id, state.val, true);
     }
@@ -1436,6 +1436,9 @@ ${this.info.tasmota.onlineVersion}`;
           return this.screenSaver.rotationTime;
         }
         break;
+      }
+      case "cmd/screenSaverDoubleClick": {
+        return this.screenSaverDoubleClick;
       }
     }
     return null;
