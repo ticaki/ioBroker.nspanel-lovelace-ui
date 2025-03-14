@@ -18,7 +18,7 @@
 * [rgbSingle](#rgbsingle)
 * [slider](#slider)
 * [button](#button)
-* [buttonSensor](#buttonsensor)
+* [select](#select)
 * [temperature](#temperature)
 * [value.temperature](#valuetemperature)
 * [thermostat](#thermostat)
@@ -100,19 +100,19 @@
 ### airCondition
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **airCondition** | ~~ACTUAL~~ | number| level.temperature, value.temperature  |  |  |  | 
-| **"** | ~~SET~~ | number| level.temperature  | X | X |  | 
-| **"** | ~~SET2~~ | number| level.temperature  |  | X |  | 
-| **"** | ~~AUTO~~ | boolean| state  |  |  |  | 
-| **"** | ~~COOL~~ | boolean| state  |  |  |  | 
+| **airCondition** | ~~ACTUAL~~ | number| value.temperature  |  |  |  | 
+| **"** | SET | number| level.temperature  | X | X |  | 
+| **"** | SET2 | number| level.temperature  |  | X |  | 
+| **"** | ~~AUTO~~ | boolean| switch.mode.auto  |  |  |  | 
+| **"** | COOL | boolean| state  |  |  |  | 
 | **"** | ~~BOOST~~ | boolean| switch.mode.boost  |  | X |  | 
 | **"** | ~~ERROR~~ | boolean| indicator.error  |  |  |  | 
-| **"** | ~~HEAT~~ | boolean| state  |  |  |  | 
+| **"** | HEAT | boolean| state  |  |  |  | 
 | **"** | ~~HUMIDITY~~ | number| value.humidity  |  |  |  | 
 | **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  |  | 
 | **"** | ~~MODE~~ | number| level.mode.airconditioner  |  | X |  | 
 | **"** | ~~OFF~~ | boolean| state  |  |  |  | 
-| **"** | ~~POWER~~ | boolean| switch.power  |  | X |  | 
+| **"** | ~~POWER~~ | boolean| switch  |  | X |  | 
 | **"** | ~~SPEED~~ | number| level.mode.fan  |  | X |  | 
 | **"** | ~~SWING~~ | boolean| switch.mode.swing  |  | X |  | 
 | **"** | ~~UNREACH~~ | boolean| indicator.maintenance  |  |  |  | 
@@ -164,10 +164,11 @@
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **button** | ~~SET~~ | boolean| button  | X | X |  | 
-### buttonSensor
+### select
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **buttonSensor** | ~~ACTUAL~~ | boolean| button.press  | X |  |  | 
+| **select** | ~~ACTUAL~~ | number| value.mode.select, level.mode.select  | X |  |  | 
+| **"** | ~~SET~~ | number| level.mode.select  | X |  |  | 
 ### temperature
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -180,7 +181,7 @@
 ### thermostat
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **thermostat** | ~~ACTUAL~~ | number| value.temperature, level.temperature  |  |  |  | 
+| **thermostat** | ~~ACTUAL~~ | number| value.temperature  |  |  |  | 
 | **"** | ~~SET~~ | number| level.temperature  | X | X |  | 
 | **"** | ~~MODE~~ | number| level.mode.thermostat  |  | X |  | 
 | **"** | ~~BOOST~~ | boolean| switch.mode.boost  |  | X |  | 

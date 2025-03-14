@@ -168,10 +168,14 @@ export const stateRoleArray = arrayOfAllStateRole([
     'weather.icon.forecast',
     'weather.title',
     'weather.title.short',
+    'level.mode.select',
+    'value.mode.select',
     '',
 ]);
 
 export type StateRole =
+    | 'level.mode.select'
+    | 'value.mode.select'
     | 'button'
     | 'button.close'
     | 'button.close.blind'

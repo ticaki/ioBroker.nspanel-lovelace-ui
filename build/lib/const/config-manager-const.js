@@ -265,8 +265,9 @@ const checkedDatapoints = {
   button: {
     SET: null
   },
-  buttonSensor: {
-    ACTUAL: null
+  select: {
+    ACTUAL: null,
+    SET: null
   },
   temperature: {
     ACTUAL: null
@@ -504,19 +505,19 @@ const requiredScriptDataPoints = {
     description: "",
     data: {
       ACTUAL: {
-        role: ["level.temperature", "value.temperature"],
+        role: "value.temperature",
         type: "number",
         required: false,
         writeable: false,
         trigger: true
       },
-      SET: { role: "level.temperature", type: "number", required: true, writeable: true },
-      SET2: { role: "level.temperature", type: "number", required: false, writeable: true },
-      AUTO: { role: "state", type: "boolean", required: false, writeable: false, trigger: true },
-      COOL: { role: "state", type: "boolean", required: false, writeable: false, trigger: true },
+      SET: { role: "level.temperature", type: "number", useKey: true, required: true, writeable: true },
+      SET2: { role: "level.temperature", type: "number", useKey: true, required: false, writeable: true },
+      AUTO: { role: "switch.mode.auto", type: "boolean", required: false, writeable: false, trigger: true },
+      COOL: { role: "state", type: "boolean", useKey: true, required: false, writeable: false, trigger: true },
       BOOST: { role: "switch.mode.boost", type: "boolean", required: false, writeable: true, trigger: true },
       ERROR: { role: "indicator.error", type: "boolean", required: false, writeable: false, trigger: true },
-      HEAT: { role: "state", type: "boolean", required: false, writeable: false, trigger: true },
+      HEAT: { role: "state", type: "boolean", useKey: true, required: false, writeable: false, trigger: true },
       HUMIDITY: { role: "value.humidity", type: "number", required: false, writeable: false, trigger: true },
       MAINTAIN: {
         role: "indicator.maintenance",
@@ -534,7 +535,7 @@ const requiredScriptDataPoints = {
       },
       OFF: { role: "state", type: "boolean", required: false, writeable: false },
       //off
-      POWER: { role: "switch.power", type: "boolean", required: false, writeable: true },
+      POWER: { role: "switch", type: "boolean", required: false, writeable: true },
       //on
       SPEED: { role: "level.mode.fan", type: "number", required: false, writeable: true, trigger: true },
       SWING: { role: "switch.mode.swing", type: "boolean", required: false, writeable: true, trigger: true },
@@ -665,11 +666,20 @@ const requiredScriptDataPoints = {
     description: "Switch",
     data: { SET: { role: "button", type: "boolean", required: true, writeable: true } }
   },
-  buttonSensor: {
+  select: {
     updatedVersion: true,
-    name: "buttonSensor",
-    description: "Taster",
-    data: { ACTUAL: { role: "button.press", type: "boolean", required: true, writeable: false, trigger: true } }
+    name: "select",
+    description: "Auswahlbox",
+    data: {
+      ACTUAL: {
+        role: ["value.mode.select", "level.mode.select"],
+        type: "number",
+        required: true,
+        writeable: false,
+        trigger: true
+      },
+      SET: { role: "level.mode.select", type: "number", required: true, writeable: false, trigger: true }
+    }
   },
   temperature: {
     updatedVersion: true,
@@ -694,7 +704,7 @@ const requiredScriptDataPoints = {
     description: "",
     data: {
       ACTUAL: {
-        role: ["value.temperature", "level.temperature"],
+        role: "value.temperature",
         type: "number",
         required: false,
         writeable: false

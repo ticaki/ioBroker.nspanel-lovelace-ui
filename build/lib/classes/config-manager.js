@@ -21,14 +21,14 @@ __export(config_manager_exports, {
   ConfigManager: () => ConfigManager
 });
 module.exports = __toCommonJS(config_manager_exports);
-var import_library = require("./library");
 var import_Color = require("../const/Color");
 var import_config_manager_const = require("../const/config-manager-const");
-var import_pages = require("../types/pages");
-var import_navigation = require("./navigation");
-var import_readme = require("../tools/readme");
-var import_pageQR = require("../pages/pageQR");
 var import_states_controller = require("../controller/states-controller");
+var import_pageQR = require("../pages/pageQR");
+var import_readme = require("../tools/readme");
+var import_pages = require("../types/pages");
+var import_library = require("./library");
+var import_navigation = require("./navigation");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   colorOn = import_Color.Color.On;
@@ -103,6 +103,9 @@ class ConfigManager extends import_library.BaseClass {
       this.extraConfigLogging = true;
       config.advancedOptions.extraConfigLogging = false;
     }
+    config.subPages = config.subPages.filter(
+      (item) => config.pages.findIndex((item2) => item.uniqueName === item2.uniqueName) === -1
+    );
     let panelConfig = { pages: [], navigation: [] };
     if (!config.panelTopic) {
       this.log.error(`Required field panelTopic is missing in ${config.panelName || "unknown"}!`);
@@ -458,7 +461,7 @@ class ConfigManager extends import_library.BaseClass {
           maxTemp: item.maxValue != null ? await this.getFieldAsDataItemConfig(item.maxValue) : void 0,
           unit: item.unit != null ? await this.getFieldAsDataItemConfig(item.unit) : void 0,
           set1: foundedStates[role].SET,
-          set2: foundedStates[role].SET2
+          set2: role === "airCondition" ? foundedStates[role].SET2 : void 0
         }
       },
       pageItems: []
@@ -1307,10 +1310,35 @@ class ConfigManager extends import_library.BaseClass {
       }
       case "timeTable":
         break;
+      case "select": {
+        itemConfig = {
+          type: "button",
+          dpInit: item.id,
+          role: "",
+          color: {
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: item.colorScale ? item.colorScale : void 0
+          },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
+          template: "button.select",
+          data: {
+            entity1: {
+              value: foundedStates[role].ACTUAL
+              //set: foundedStates[role].SET,
+            },
+            text,
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
       case "airCondition":
       case "lock":
       case "slider":
-      case "buttonSensor":
       case "level.timer":
       case "level.mode.fan": {
         throw new Error(
@@ -1880,15 +1908,49 @@ class ConfigManager extends import_library.BaseClass {
             };
             break;
           }
+          case "select": {
+            itemConfig = {
+              type: "input_sel",
+              dpInit: item.id,
+              role: "",
+              color: {
+                true: await this.getIconColor(item.onColor, this.colorOn),
+                false: await this.getIconColor(item.offColor, this.colorOff),
+                scale: item.colorScale ? item.colorScale : void 0
+              },
+              icon: {
+                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+              },
+              data: {
+                entityInSel: {
+                  value: foundedStates[role].ACTUAL,
+                  set: foundedStates[role].SET
+                },
+                text: { true: { type: "const", constVal: "press" } },
+                valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0,
+                icon: {
+                  true: {
+                    value: { type: "const", constVal: "clipboard-list-outline" },
+                    color: { type: "const", constVal: import_Color.Color.Green }
+                  },
+                  false: {
+                    value: { type: "const", constVal: "clipboard-list" },
+                    color: { type: "const", constVal: import_Color.Color.Red }
+                  }
+                },
+                headline: { type: "const", constVal: item.name || commonName || role }
+              }
+            };
+            break;
+          }
           case "warning":
-          case "buttonSensor":
           case "level.timer":
           case "level.mode.fan":
           case "lock":
           case "slider":
           case "airCondition": {
             throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
-            break;
           }
           default:
             (0, import_pages.exhaustiveCheck)(role);

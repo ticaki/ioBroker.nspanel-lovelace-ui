@@ -1161,9 +1161,12 @@ export class PageItem extends BaseClassTriggerd {
             return false;
         }
         const entry = this.dataItems;
+        if (action.startsWith('mode-')) {
+            action = 'mode';
+        }
         switch (action) {
             case 'mode-preset_modes':
-            case 'mode-insel':
+            case 'mode':
                 {
                     if (!('entityInSel' in entry.data)) {
                         break;
