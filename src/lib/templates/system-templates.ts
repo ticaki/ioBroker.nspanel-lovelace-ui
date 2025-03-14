@@ -398,6 +398,7 @@ const ScreensaverOptions: PageBaseConfig = {
     useColor: false,
     config: {
         card: 'cardEntities',
+        scrollType: 'page',
         data: {
             headline: {
                 type: 'const',
@@ -417,6 +418,27 @@ const ScreensaverOptions: PageBaseConfig = {
             type: 'button',
             template: 'button.iconRightSize',
             dpInit: '',
+        },
+        {
+            role: '',
+            type: 'switch',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/screenSaverDoubleClick' },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'switch' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: {
+                        value: { type: 'const', constVal: 'switch' },
+                        color: { type: 'const', constVal: Color.Red },
+                    },
+                },
+                text: { true: { type: 'const', constVal: 'DoubleClick' }, false: undefined },
+                setValue1: { type: 'internal', dp: 'cmd/screenSaverDoubleClick' },
+            },
         },
         {
             role: '',

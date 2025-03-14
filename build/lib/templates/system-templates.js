@@ -410,6 +410,7 @@ const ScreensaverOptions = {
   useColor: false,
   config: {
     card: "cardEntities",
+    scrollType: "page",
     data: {
       headline: {
         type: "const",
