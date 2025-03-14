@@ -1,6 +1,7 @@
 {
     "typescript.tsdk": "node_modules/typescript/lib",
     "eslint.enable": true,
+    "eslint.format.enable": true,
     "json.schemas": [
         {
             "fileMatch": [
@@ -17,5 +18,10 @@
             "url": "https://raw.githubusercontent.com/ioBroker/adapter-react-v5/main/schemas/jsonConfig.json"
         }
     ],
-    "findUnusedExports.detectCircularImports": true
+    "findUnusedExports.detectCircularImports": true,
+    "editor.formatOnSave": false,
+    "eslint.autoFixOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit",
+    }
 }
