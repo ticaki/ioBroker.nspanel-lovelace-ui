@@ -266,6 +266,17 @@ export class ConfigManager extends BaseClass {
             this.log.warn(messages[messages.length - 1]);
         }
 
+        if (panelConfig.pages.length === 0) {
+            messages.push(`No pages found! This needs to be fixed!`);
+            this.log.error(messages[messages.length - 1]);
+        } else if (panelConfig.navigation.length === 0) {
+            messages.push(`No navigation items found! This needs to be fixed!`);
+            this.log.error(messages[messages.length - 1]);
+        } else if (panelConfig.navigation.findIndex(item => item && item.name === 'main') === -1) {
+            messages.push(`No entry found for ‘main’ in the navigation!`);
+            this.log.warn(messages[messages.length - 1]);
+        }
+
         const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
 
         if (obj && !this.dontWrite) {
