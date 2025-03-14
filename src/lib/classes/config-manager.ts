@@ -169,7 +169,7 @@ export class ConfigManager extends BaseClass {
             messages.push(`Screensaver configuration error - ${error}`);
             this.log.warn(messages[messages.length - 1]);
         }
-        if (config.pages.length > 1) {
+        if (config.pages.length > 0) {
             for (let a = 0; a < config.pages.length; a++) {
                 const page = config.pages[a];
                 let uniqueID = '';
