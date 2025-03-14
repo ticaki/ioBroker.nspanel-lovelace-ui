@@ -1,9 +1,4 @@
-import { BaseClass } from './library';
-import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
-import type * as typePageItem from '../types/type-pageItem';
-import type * as Types from '../types/types';
 import { Color, type RGB } from '../const/Color';
-import type * as pages from '../types/pages';
 import {
     checkedDatapoints,
     type checkedDatapointsUnion,
@@ -15,11 +10,16 @@ import {
     requiredScriptDataPoints,
 } from '../const/config-manager-const';
 import type { panelConfigPartial } from '../controller/panel';
-import { exhaustiveCheck } from '../types/pages';
-import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
-import { getStringOrArray } from '../tools/readme';
-import { PageQR } from '../pages/pageQR';
 import { StatesControler } from '../controller/states-controller';
+import { PageQR } from '../pages/pageQR';
+import { getStringOrArray } from '../tools/readme';
+import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
+import type * as pages from '../types/pages';
+import { exhaustiveCheck } from '../types/pages';
+import type * as typePageItem from '../types/type-pageItem';
+import type * as Types from '../types/types';
+import { BaseClass } from './library';
+import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -537,7 +537,7 @@ export class ConfigManager extends BaseClass {
                     maxTemp: item.maxValue != null ? await this.getFieldAsDataItemConfig(item.maxValue) : undefined,
                     unit: item.unit != null ? await this.getFieldAsDataItemConfig(item.unit) : undefined,
                     set1: foundedStates[role].SET,
-                    set2: foundedStates[role].SET2,
+                    set2: role === 'airCondition' ? foundedStates[role].SET2 : undefined,
                 },
             },
             pageItems: [],
@@ -2167,7 +2167,6 @@ export class ConfigManager extends BaseClass {
                     case 'slider':
                     case 'airCondition': {
                         throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
-                        break;
                     }
                     default:
                         exhaustiveCheck(role);

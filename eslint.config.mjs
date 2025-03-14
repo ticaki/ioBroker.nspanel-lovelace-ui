@@ -34,7 +34,8 @@ export default [
         rules: {
             'jsdoc/require-jsdoc': 'off',
             "require-await": "off",
-            "@typescript-eslint/require-await": "off"
+            "@typescript-eslint/require-await": "off",
+            "no-unused-vars": "off", // or "@typescript-eslint/no-unused-vars": "off",
         },
     },
 
