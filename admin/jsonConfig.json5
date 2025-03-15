@@ -224,7 +224,7 @@
                             "label": "panelTopic",
                             "readOnly": true,
                             "validatorErrorText": "mustBeUnique"
-                        },
+                        }/*,
                         {
                             "attr": "_RefreshDevices",
                             "type": "sendTo",
@@ -235,7 +235,7 @@
                             "useNative": true,
                             "timeout": 8000,
                             "disabled": "!data.topic || !data.name"
-                        }
+                        }*/
                     ]
                 },
                 "_header2": {
@@ -280,8 +280,11 @@
                     "xl": 4
                 },
                 "_tasmotaIP": {
-                    "type": "text",
+                    "type": "autocompleteSendTo",
+                    "command": "getTasmotaDevices",
+                    "data": "{\"ip\": \"${data.internalServerIp}\"}",
                     "label": "tasmotaIP",
+                    "freeSol": true,
                     "newLine": true,
                     "validator": "data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
                     "validatorErrorText": "mustBeIp",
@@ -292,7 +295,7 @@
                     "lg": 4,
                     "xl": 4
                 },
-                "_tasmotaName":{
+                "_tasmotaName": {
                     "type": "text",
                     "label": "_tasmotaName",
                     "validator": "",
@@ -318,15 +321,10 @@
                 "_tasmotaAddTableSendTo": {
                     "type": "sendTo",
                     "label": "tasmotaAddTableSendTo",
-                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": data.mqttServer, \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": data.mqttPort, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
+                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\": \"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\":  \"${data.mqttPort}\", \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
                     "showProcess": true,
                     "command": "tasmotaAddTableSendTo",
-                    "disabled": "return !data._tasmotaIP || \
-                     (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||\
-                     !data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || \
-                     !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || \
-                     (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || \
-                     !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
+                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 ||  (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
                     "newLine": false,
                     "reloadBrowser": true,
                     "variant": "contained",
@@ -338,18 +336,11 @@
                     "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": data.mqttPort, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
                     "showProcess": true,
                     "command": "tasmotaSendTo",
-                    "disabled": "return !data._tasmotaIP || \
-                     (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||\
-                     !data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || \
-                     !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || \
-                     (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || \
-                     !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
-
+                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
                     "newLine": true,
                     "variant": "contained",
                     "hidden": "data._selectTool != '1'"
                 },
-                
                 "_berryInstallSendTo": {
                     "type": "sendTo",
                     "label": "berryInstallSendTo",
@@ -381,7 +372,7 @@
                 "pageQRdata": {
                     "type": "accordion",
                     "label": "pageQRdata",
-                    "titleAttr" : "pageName",
+                    "titleAttr": "pageName",
                     "items": [
                         {
                             "attr": "pageName",

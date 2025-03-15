@@ -532,12 +532,29 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           break;
         }
+        case "getTasmotaDevices": {
+          if (this.config.panels) {
+            const devices = this.config.panels.map((a) => {
+              return { label: a.ip, value: a.ip };
+            });
+            if (obj.callback) {
+              this.sendTo(obj.from, obj.command, devices, obj.callback);
+            }
+            break;
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);
+          }
+          break;
+        }
         case "tasmotaSendTo": {
           if (obj.message) {
             try {
               if (obj.message.tasmotaIP && (obj.message.mqttIp || obj.message.internalServerIp) && obj.message.mqttServer != null && obj.message.mqttPort && obj.message.mqttUsername && obj.message.mqttPassword && obj.message.tasmotaTopic) {
                 if (obj.message.mqttServer == "false" || !obj.message.mqttServer) {
                   obj.message.mqttServer = false;
+                } else {
+                  obj.message.mqttServer = true;
                 }
                 const url = ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp}; MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword}; FullTopic ${`${obj.message.tasmotaTopic}/%prefix%/`.replaceAll("//", "/")}; MqttRetry 10; FriendlyName1 ${obj.message.tasmotaName}; Hostname ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, "_")}; WebLog 2; template {"NAME":"${obj.message.tasmotaName}", "GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1}; Module 0; MqttClient ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, "_")}%06X; Restart 1`;
                 const u = new import_url.URL(
@@ -666,7 +683,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                   await this.setForeignObjectAsync(`system.adapter.${this.namespace}`, o);
                 }
                 if (obj.callback) {
-                  this.sendTo(obj.from, obj.command, { result: "sendToDeviceFound" }, obj.callback);
+                  this.sendTo(
+                    obj.from,
+                    obj.command,
+                    { result: "sendToDeviceFound", reloadBrowser: true },
+                    obj.callback
+                  );
                 }
               }
             } catch (e) {
@@ -752,6 +774,10 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);
           }
         }
+      }
+    } else {
+      if (obj.callback) {
+        this.sendTo(obj.from, obj.command, { error: "failed" }, obj.callback);
       }
     }
   }

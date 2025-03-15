@@ -1527,4 +1527,38 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.lock': {
+        role: 'text',
+        adapter: '',
+        type: 'text',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'lock-open-variant' },
+                    color: { type: 'const', constVal: Color.Cyan },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'lock' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: ['switch.lock', 'state'],
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'lock' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'isOpen' },
+                false: { type: 'const', constVal: 'isClose' },
+            },
+        },
+    },
 };

@@ -221,8 +221,8 @@
 ### lock
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **lock** | ~~ACTUAL~~ | boolean| state  | X |  |  | 
-| **"** | ~~OPEN~~ | boolean| state  |  |  |  | 
+| **lock** | ~~ACTUAL~~ | boolean| switch.lock, state  |  |  |  | 
+| **"** | ~~OPEN~~ | boolean| button  |  | X |  | 
 | **"** | ~~SET~~ | boolean| switch.lock  | X | X |  | 
 ### warning
 | Channel role | State ID | common.type | common.role | required | common.write | description |  

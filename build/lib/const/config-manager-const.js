@@ -766,8 +766,14 @@ const requiredScriptDataPoints = {
     name: "lock",
     description: "T\xFCrschloss",
     data: {
-      ACTUAL: { role: "state", type: "boolean", required: true, writeable: false },
-      OPEN: { role: "state", type: "boolean", required: false, writeable: false },
+      ACTUAL: {
+        role: ["switch.lock", "state"],
+        type: "boolean",
+        required: false,
+        writeable: false,
+        trigger: true
+      },
+      OPEN: { role: "button", type: "boolean", required: false, writeable: true },
       SET: { role: "switch.lock", type: "boolean", required: true, writeable: true }
     }
   },
