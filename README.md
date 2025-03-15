@@ -163,13 +163,13 @@ Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
 - [ ] cie
 - [x] gate
 - [x] motion
-- [ ] buttonSensor
+- [x] buttonSensor
 - [x] button
 - [ ] value.time
 - [ ] level.timer
 - [ ] value.alarmtime
 - [ ] level.mode.fan
-- [ ] lock
+- [x] lock
 - [ ] slider
 - [ ] switch.mode.wlan
 - [ ] media
@@ -199,13 +199,13 @@ Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
 - [ ] cie
 - [x] gate
 - [x] motion
-- [ ] buttonSensor
+- [x] buttonSensor
 - [x] button
 - [ ] value.time
 - [ ] level.timer
 - [ ] value.alarmtime
 - [ ] level.mode.fan
-- [ ] lock
+- [x] lock
 - [ ] slider
 - [ ] switch.mode.wlan
 - [ ] media
@@ -334,6 +334,8 @@ Sind natürlich alles Dataitems
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (TT-Tom) added servicepage items
+- (ticaki) added lock
 - (ticaki) cardThermo with input_sel
 - (ticaki) Added: Admin option to fix wrong common.type=state in alias.0 to common.type=mixed
 - (ticaki) Required data points are found via role, type etc. The designation only plays a role in rare cases.

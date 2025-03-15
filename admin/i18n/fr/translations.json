@@ -61,5 +61,7 @@
     "shutter": "Obturateur",
     "on": "sur",
     "off": "désactivé",
-    "press": "presse"
+    "press": "presse",
+    "Lock open": "Verrouiller",
+    "Lock closed": "Verrouillage fermé"
 }

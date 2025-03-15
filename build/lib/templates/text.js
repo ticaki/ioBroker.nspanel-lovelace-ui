@@ -1536,6 +1536,39 @@ const textTemplates = {
         value: { mode: "auto", role: "", type: "triggered", dp: "", regexp: /\.TILT_ACTUAL$/ }
       }
     }
+  },
+  "text.lock": {
+    role: "text",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "lock-open-variant" },
+          color: { type: "const", constVal: import_Color.Color.Cyan }
+        },
+        false: {
+          value: { type: "const", constVal: "lock" },
+          color: { type: "const", constVal: import_Color.Color.Green }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: ["switch.lock", "state"],
+          dp: ""
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "lock" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "isOpen" },
+        false: { type: "const", constVal: "isClose" }
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:
