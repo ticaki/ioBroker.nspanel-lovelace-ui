@@ -20,6 +20,8 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'text.lock'
+    | 'button.select'
     | 'value.temperature'
     | 'level.temperature'
     | 'text.shutter.navigation'
@@ -417,6 +419,8 @@ type DataItemsOptionsConst = {
     constVal: StateValue | AllIcons | RGB | pages.placeholderType | IconScaleElement;
     state?: State | null; // use just inside of class
     forceType?: 'string' | 'number' | 'boolean'; // force a type
+    read?: string | ((val: any) => any);
+    write?: string | ((val: any) => any);
 };
 type DataItemsOptionsInternal = {
     type: 'internal';

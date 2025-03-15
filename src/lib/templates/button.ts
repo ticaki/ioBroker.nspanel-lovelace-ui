@@ -353,4 +353,38 @@ export const buttonTemplates: TemplateItems = {
             },
         },
     },
+    'button.select': {
+        role: '',
+        adapter: '',
+        type: 'button',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'clipboard-list-outline' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'clipboard-list' },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: ['value.mode.select', 'level.mode.select'],
+                    dp: '',
+                },
+                unit: { type: 'const', constVal: '%' },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Select' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'press' },
+            },
+        },
+    },
 };

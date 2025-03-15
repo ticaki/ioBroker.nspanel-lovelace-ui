@@ -61,5 +61,7 @@
     "shutter": "Migawka",
     "on": "NA",
     "off": "wyłączony",
-    "press": "naciskać"
+    "press": "naciskać",
+    "Lock open": "Zamknij otwarte",
+    "Lock closed": "Zamknij zamknięty"
 }

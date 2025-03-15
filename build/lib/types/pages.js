@@ -169,6 +169,8 @@ const stateRoleArray = arrayOfAllStateRole([
   "weather.icon.forecast",
   "weather.title",
   "weather.title.short",
+  "level.mode.select",
+  "value.mode.select",
   ""
 ]);
 function isStateRole(F) {

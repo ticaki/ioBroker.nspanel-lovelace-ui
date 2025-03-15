@@ -18,7 +18,7 @@
 * [rgbSingle](#rgbsingle)
 * [slider](#slider)
 * [button](#button)
-* [buttonSensor](#buttonsensor)
+* [select](#select)
 * [temperature](#temperature)
 * [value.temperature](#valuetemperature)
 * [thermostat](#thermostat)
@@ -164,10 +164,11 @@
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **button** | ~~SET~~ | boolean| button  | X | X |  | 
-### buttonSensor
+### select
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **buttonSensor** | ~~ACTUAL~~ | boolean| button.press  | X |  |  | 
+| **select** | ~~ACTUAL~~ | number| value.mode.select, level.mode.select  | X |  |  | 
+| **"** | ~~SET~~ | number| level.mode.select  | X |  |  | 
 ### temperature
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -220,8 +221,8 @@
 ### lock
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **lock** | ~~ACTUAL~~ | boolean| state  | X |  |  | 
-| **"** | ~~OPEN~~ | boolean| state  |  |  |  | 
+| **lock** | ~~ACTUAL~~ | boolean| switch.lock, state  |  |  |  | 
+| **"** | ~~OPEN~~ | boolean| button  |  | X |  | 
 | **"** | ~~SET~~ | boolean| switch.lock  | X | X |  | 
 ### warning
 | Channel role | State ID | common.type | common.role | required | common.write | description |  

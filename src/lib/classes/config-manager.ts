@@ -122,6 +122,10 @@ export class ConfigManager extends BaseClass {
             this.extraConfigLogging = true;
             config.advancedOptions.extraConfigLogging = false;
         }
+
+        config.subPages = config.subPages.filter(
+            item => config.pages.findIndex(item2 => item.uniqueName === item2.uniqueName) === -1,
+        );
         let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];
             pages: pages.PageBaseConfig[];
@@ -1484,10 +1488,61 @@ export class ConfigManager extends BaseClass {
             }
             case 'timeTable':
                 break;
+            case 'select': {
+                itemConfig = {
+                    type: 'button',
+                    dpInit: item.id,
+                    role: '',
+                    color: {
+                        true: await this.getIconColor(item.onColor, this.colorOn),
+                        false: await this.getIconColor(item.offColor, this.colorOff),
+                        scale: item.colorScale ? item.colorScale : undefined,
+                    },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                    },
+                    template: 'button.select',
+                    data: {
+                        entity1: {
+                            value: foundedStates[role].ACTUAL,
+                            //set: foundedStates[role].SET,
+                        },
+                        text: text,
+
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
+                break;
+            }
             case 'airCondition':
-            case 'lock':
+                break;
+            case 'lock': {
+                itemConfig = {
+                    template: 'text.lock',
+                    dpInit: item.id,
+                    type: 'button',
+                    role: 'button',
+                    color: {
+                        true: await this.getIconColor(item.onColor, this.colorOn),
+                        false: await this.getIconColor(item.offColor, this.colorOff),
+                        scale: item.colorScale,
+                    },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                    },
+                    data: {
+                        text: text,
+                        entity1: {
+                            value: foundedStates[role].ACTUAL,
+                            set: foundedStates[role].SET,
+                        },
+                    },
+                };
+                break;
+            }
             case 'slider':
-            case 'buttonSensor':
             case 'level.timer':
             case 'level.mode.fan': {
                 throw new Error(
@@ -1835,7 +1890,7 @@ export class ConfigManager extends BaseClass {
                     }
                     case 'button': {
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
-                            type: 'button',
+                            type: foundedStates[role].SET ? 'switch' : 'button',
                             role: 'button',
                             data: {
                                 icon: {
@@ -2170,11 +2225,115 @@ export class ConfigManager extends BaseClass {
                         };
                         break;
                     }
+                    case 'select': {
+                        itemConfig = {
+                            type: 'input_sel',
+                            dpInit: item.id,
+                            role: '',
+                            color: {
+                                true: await this.getIconColor(item.onColor, this.colorOn),
+                                false: await this.getIconColor(item.offColor, this.colorOff),
+                                scale: item.colorScale ? item.colorScale : undefined,
+                            },
+                            icon: {
+                                true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                                false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                            },
+                            data: {
+                                entityInSel: {
+                                    value: foundedStates[role].ACTUAL,
+                                    set: foundedStates[role].SET,
+                                },
+                                text: { true: { type: 'const', constVal: 'press' } },
+                                valueList: item.modeList ? { type: 'const', constVal: item.modeList } : undefined,
+                                icon: {
+                                    true: {
+                                        value: { type: 'const', constVal: 'clipboard-list-outline' },
+                                        color: { type: 'const', constVal: Color.Green },
+                                    },
+                                    false: {
+                                        value: { type: 'const', constVal: 'clipboard-list' },
+                                        color: { type: 'const', constVal: Color.Red },
+                                    },
+                                },
+                                headline: { type: 'const', constVal: item.name || commonName || role },
+                            },
+                        };
+                        break;
+                    }
+                    case 'lock': {
+                        itemConfig = {
+                            type: 'shutter',
+                            role: '',
+                            color: {
+                                true: await this.getIconColor(item.onColor, this.colorOn),
+                                false: await this.getIconColor(item.offColor, this.colorOff),
+                                scale: item.colorScale,
+                            },
+                            icon: {
+                                true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                                false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                            },
+                            data: {
+                                icon: {
+                                    true: {
+                                        value: await this.getFieldAsDataItemConfig(item.icon || 'lock-open-variant'),
+                                    },
+
+                                    false: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: item.icon2 || 'lock',
+                                        },
+                                    },
+                                },
+                                text: {
+                                    true: { type: 'const', constVal: 'Lock open' },
+                                    false: { type: 'const', constVal: 'Lock closed' },
+                                },
+                                headline: headline,
+
+                                entity1: {
+                                    value: foundedStates[role].ACTUAL,
+                                },
+                                entity2: undefined,
+                                valueList: item.modeList
+                                    ? { type: 'const', constVal: item.modeList }
+                                    : {
+                                          type: 'const',
+                                          constVal: ['lock-open-check-outline', 'lock-open-variant', 'lock'],
+                                      },
+                                up: foundedStates[role].OPEN,
+                                stop: foundedStates[role].SET
+                                    ? JSON.parse(
+                                          JSON.stringify(
+                                              Object.assign(foundedStates[role].SET, {
+                                                  type: 'state',
+                                                  write: 'return true',
+                                              }),
+                                          ),
+                                      )
+                                    : undefined,
+                                down: foundedStates[role].SET
+                                    ? JSON.parse(
+                                          JSON.stringify(
+                                              Object.assign(foundedStates[role].SET, {
+                                                  type: 'state',
+                                                  write: 'return false',
+                                              }),
+                                          ),
+                                      )
+                                    : undefined,
+                                up2: undefined,
+                                down2: undefined,
+                                stop2: undefined,
+                            },
+                        };
+                        break;
+                    }
                     case 'warning':
-                    case 'buttonSensor':
                     case 'level.timer':
                     case 'level.mode.fan':
-                    case 'lock':
                     case 'slider':
                     case 'airCondition': {
                         throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);

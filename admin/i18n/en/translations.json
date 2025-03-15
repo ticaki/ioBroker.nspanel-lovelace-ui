@@ -61,5 +61,7 @@
     "shutter": "Shutter",
     "on": "on",
     "off": "off",
-    "press": "press"
+    "press": "press",
+    "Lock open": "Lock open",
+    "Lock closed": "Lock closed"
 }

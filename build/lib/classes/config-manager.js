@@ -103,6 +103,9 @@ class ConfigManager extends import_library.BaseClass {
       this.extraConfigLogging = true;
       config.advancedOptions.extraConfigLogging = false;
     }
+    config.subPages = config.subPages.filter(
+      (item) => config.pages.findIndex((item2) => item.uniqueName === item2.uniqueName) === -1
+    );
     let panelConfig = { pages: [], navigation: [] };
     if (!config.panelTopic) {
       this.log.error(`Required field panelTopic is missing in ${config.panelName || "unknown"}!`);
@@ -1307,10 +1310,60 @@ class ConfigManager extends import_library.BaseClass {
       }
       case "timeTable":
         break;
+      case "select": {
+        itemConfig = {
+          type: "button",
+          dpInit: item.id,
+          role: "",
+          color: {
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: item.colorScale ? item.colorScale : void 0
+          },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
+          template: "button.select",
+          data: {
+            entity1: {
+              value: foundedStates[role].ACTUAL
+              //set: foundedStates[role].SET,
+            },
+            text,
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
       case "airCondition":
-      case "lock":
+        break;
+      case "lock": {
+        itemConfig = {
+          template: "text.lock",
+          dpInit: item.id,
+          type: "button",
+          role: "button",
+          color: {
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: item.colorScale
+          },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
+          data: {
+            text,
+            entity1: {
+              value: foundedStates[role].ACTUAL,
+              set: foundedStates[role].SET
+            }
+          }
+        };
+        break;
+      }
       case "slider":
-      case "buttonSensor":
       case "level.timer":
       case "level.mode.fan": {
         throw new Error(
@@ -1574,7 +1627,7 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "button": {
             const tempItem = {
-              type: "button",
+              type: foundedStates[role].SET ? "switch" : "button",
               role: "button",
               data: {
                 icon: {
@@ -1880,11 +1933,107 @@ class ConfigManager extends import_library.BaseClass {
             };
             break;
           }
+          case "select": {
+            itemConfig = {
+              type: "input_sel",
+              dpInit: item.id,
+              role: "",
+              color: {
+                true: await this.getIconColor(item.onColor, this.colorOn),
+                false: await this.getIconColor(item.offColor, this.colorOff),
+                scale: item.colorScale ? item.colorScale : void 0
+              },
+              icon: {
+                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+              },
+              data: {
+                entityInSel: {
+                  value: foundedStates[role].ACTUAL,
+                  set: foundedStates[role].SET
+                },
+                text: { true: { type: "const", constVal: "press" } },
+                valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0,
+                icon: {
+                  true: {
+                    value: { type: "const", constVal: "clipboard-list-outline" },
+                    color: { type: "const", constVal: import_Color.Color.Green }
+                  },
+                  false: {
+                    value: { type: "const", constVal: "clipboard-list" },
+                    color: { type: "const", constVal: import_Color.Color.Red }
+                  }
+                },
+                headline: { type: "const", constVal: item.name || commonName || role }
+              }
+            };
+            break;
+          }
+          case "lock": {
+            itemConfig = {
+              type: "shutter",
+              role: "",
+              color: {
+                true: await this.getIconColor(item.onColor, this.colorOn),
+                false: await this.getIconColor(item.offColor, this.colorOff),
+                scale: item.colorScale
+              },
+              icon: {
+                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+              },
+              data: {
+                icon: {
+                  true: {
+                    value: await this.getFieldAsDataItemConfig(item.icon || "lock-open-variant")
+                  },
+                  false: {
+                    value: {
+                      type: "const",
+                      constVal: item.icon2 || "lock"
+                    }
+                  }
+                },
+                text: {
+                  true: { type: "const", constVal: "Lock open" },
+                  false: { type: "const", constVal: "Lock closed" }
+                },
+                headline,
+                entity1: {
+                  value: foundedStates[role].ACTUAL
+                },
+                entity2: void 0,
+                valueList: item.modeList ? { type: "const", constVal: item.modeList } : {
+                  type: "const",
+                  constVal: ["lock-open-check-outline", "lock-open-variant", "lock"]
+                },
+                up: foundedStates[role].OPEN,
+                stop: foundedStates[role].SET ? JSON.parse(
+                  JSON.stringify(
+                    Object.assign(foundedStates[role].SET, {
+                      type: "state",
+                      write: "return true"
+                    })
+                  )
+                ) : void 0,
+                down: foundedStates[role].SET ? JSON.parse(
+                  JSON.stringify(
+                    Object.assign(foundedStates[role].SET, {
+                      type: "state",
+                      write: "return false"
+                    })
+                  )
+                ) : void 0,
+                up2: void 0,
+                down2: void 0,
+                stop2: void 0
+              }
+            };
+            break;
+          }
           case "warning":
-          case "buttonSensor":
           case "level.timer":
           case "level.mode.fan":
-          case "lock":
           case "slider":
           case "airCondition": {
             throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);

@@ -61,5 +61,7 @@
     "shutter": "快门",
     "on": "在",
     "off": "离开",
-    "press": "按"
+    "press": "按",
+    "Lock open": "锁定",
+    "Lock closed": "锁关闭"
 }

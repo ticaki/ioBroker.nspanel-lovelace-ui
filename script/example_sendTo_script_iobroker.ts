@@ -222,7 +222,7 @@ async function configuration (): Promise<void> {
                 ScreensaverEntityUnitText: '°',
                 ScreensaverEntityIconColor: White
             },
-            // bottomScreensaverEntity 5 (for Alternative and Advanced Screensaver)
+            // bottomScreensaverEntity 5 (Advanced Screensaver)
             {
                 type: 'script',
                 ScreensaverEntity: 'accuweather.0.Current.RelativeHumidity',
@@ -235,15 +235,10 @@ async function configuration (): Promise<void> {
                 ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 100, 'val_best': 65}
             },
             // bottomScreensaverEntity 6 (for Advanced Screensaver)
+            // the 6th day from dasWetter
             {
-                type: 'script',
-                ScreensaverEntity: 'Relay.1',
-                ScreensaverEntityIconOn: 'coach-lamp-variant',
-                ScreensaverEntityText: 'Street',
-                ScreensaverEntityOnColor: Yellow,
-                ScreensaverEntityOffColor: White,
-                ScreensaverEntityOnText: 'Is ON',
-                ScreensaverEntityOffText: 'Not ON'
+                type: 'native',
+                native: dasWetterBottomScreensaverEntity6
             },
             // Examples for Advanced-Screensaver: https://github.com/joBr99/nspanel-lovelace-ui/wiki/ioBroker-Config-Screensaver#entity-status-icons-ab-v400 
 
@@ -1238,4 +1233,180 @@ const valid: MyValidType = { a: 'a' };
         | 'repeat'
         | 'favorites';
 }
+// bottomScreensaverEntity 6 - daswetter.0. Forecast Day 6
+const dasWetterBottomScreensaverEntity6 = 
+{
+    type: 'native',
+    native: {            
+        role: '2values',
+        dpInit: '',
+        type: 'text',
+        modeScr: 'bottom',
+        data: {
+            entity1: {
+                value: { type: 'triggered', dp: 'daswetter.0.NextDays.Location_1.Day_6.Minimale_Temperatur_value' },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                factor: undefined,
+                unit: {
+                    type: 'const',
+                    constVal: '° ',
+                },
+            },
+            entity2: {
+                value: { type: 'triggered', dp: 'daswetter.0.NextDays.Location_1.Day_6.Maximale_Temperatur_value' },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                factor: undefined,
+                unit: {
+                    type: 'const',
+                    constVal: '°',
+                },
+            },
+            icon: {
+                true: {
+                    value: {
+                        type: 'triggered',
+                        dp: 'daswetter.0.NextDays.Location_1.Day_6.Wetter_Symbol_id',
+                        read: `{
+                                    switch (val) {
+                                        case 1:         // Sonnig
+                                            return 'weather-sunny';  // sunny
+
+                                        case 2:         // Teils bewölkt
+                                        case 3:         // Bewölkt
+                                            return 'weather-partly-cloudy';  // partlycloudy
+            
+                                        case 4:         // Bedeckt
+                                            return 'weather-cloudy';  // cloudy
+            
+                                        case 5:        // Teils bewölkt mit leichtem Regen
+                                        case 6:        // Bewölkt mit leichtem Regen
+                                        case 8:        // Teils bewölkt mit mäßigem Regen
+                                        case 9:        // Bewölkt mit mäßigem Regen
+                                            return 'weather-partly-rainy';  // partly-rainy
+            
+                                        case 7:        // Bedeckt mit leichtem Regen
+                                            return 'weather-rainy';  // rainy
+            
+                                        case 10:        // Bedeckt mit mäßigem Regen
+                                            return 'weather-pouring';  // pouring
+            
+                                        case 11:        // Teils bewölkt mit starken Regenschauern
+                                        case 12:        // Bewölkt mit stürmischen Regenschauern
+                                            return 'weather-partly-lightning';  // partlylightning
+            
+                                        case 13:        // Bedeckt mit stürmischen Regenschauern
+                                            return 'weather-lightning';  // lightning
+            
+                                        case 14:        // Teils bewölkt mit stürmischen Regenschauern und Hagel
+                                        case 15:        // Bewölkt mit stürmischen Regenschauern und Hagel
+                                        case 16:        // Bedeckt mit stürmischen Regenschauern und Hagel
+                                            return 'weather-hail';  // Hail
+
+                                        case 17:        // Teils bewölkt mit Schnee
+                                        case 18:        // Bewölkt mit Schnee
+                                            return 'weather-partly-snowy';  // partlysnowy
+
+                                        case 19:        // Bedeckt mit Schneeschauern
+                                            return 'weather-snowy';  // snowy
+
+                                        case 20:        // Teils bewölkt mit Schneeregen
+                                        case 21:        // Bewölkt mit Schneeregen
+                                            return 'weather-partly-snowy-rainy';
+
+                                        case 22:        // Bedeckt mit Schneeregen
+                                            return 'weather-snowy-rainy';  // snowy-rainy
+
+                                        default:
+                                            return 'alert-circle-outline';
+                                    }
+                                }`,
+                    },
+                    color: {
+                        type: 'triggered',
+                        dp: 'daswetter.0.NextDays.Location_1.Day_6.Wetter_Symbol_id',
+                        read: `{
+                                    switch (val) {
+                                        case 1:         // Sonnig
+                                            return Color.swSunny;
+
+                                        case 2:         // Teils bewölkt
+                                        case 3:         // Bewölkt
+                                            return Color.swPartlycloudy;
+
+                                        case 4:         // Bedeckt
+                                            return Color.swCloudy;
+
+                                        case 5:        // Teils bewölkt mit leichtem Regen
+                                        case 6:        // Bewölkt mit leichtem Regen
+                                        case 8:        // Teils bewölkt mit mäßigem Regen
+                                        case 9:        // Bewölkt mit mäßigem Regen
+                                            return Color.swRainy;
+
+                                        case 7:        // Bedeckt mit leichtem Regen
+                                            return Color.swRainy;
+
+                                        case 10:        // Bedeckt mit mäßigem Regen
+                                            return Color.swPouring;
+
+                                        case 11:        // Teils bewölkt mit starken Regenschauern
+                                        case 12:        // Bewölkt mit stürmischen Regenschauern
+                                            return Color.swLightningRainy;
+
+                                        case 13:        // Bedeckt mit stürmischen Regenschauern
+                                            return Color.swLightning;
+
+                                        case 14:        // Teils bewölkt mit stürmischen Regenschauern und Hagel
+                                        case 15:        // Bewölkt mit stürmischen Regenschauern und Hagel
+                                        case 16:        // Bedeckt mit stürmischen Regenschauern und Hagel
+                                            return Color.swHail;
+
+                                        case 17:        // Teils bewölkt mit Schnee
+                                        case 18:        // Bewölkt mit Schnee
+                                            return Color.swSnowy;
+
+                                        case 19:        // Bedeckt mit Schneeschauern
+                                            return Color.swSnowy;
+
+                                        case 20:        // Teils bewölkt mit Schneeregen
+                                        case 21:        // Bewölkt mit Schneeregen
+                                            return Color.swSnowyRainy;  // snowy-rainy
+
+                                        case 22:        // Bedeckt mit Schneeregen
+                                            return Color.swSnowyRainy;
+
+                                        default:
+                                            return Color.White;
+                                    }
+                                }`,
+                    },
+                },
+                false: {
+                    value: undefined,
+                    color: undefined
+                },
+                scale: undefined,
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: {
+                true: {
+                    type: 'triggered',
+                    dp: 'daswetter.0.NextDays.Location_1.Day_6.Tag_value',                        
+                    read:  `{
+                                return (val).substring(0,2);
+                            }`,
+                },
+                false: undefined,
+            },
+        },
+    },
+},
+
+
 configuration();

@@ -267,8 +267,9 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
     button: {
         SET: null,
     },
-    buttonSensor: {
+    select: {
         ACTUAL: null,
+        SET: null,
     },
     temperature: {
         ACTUAL: null,
@@ -586,9 +587,10 @@ export type requiredDatapoints = {
         name: string;
         description: string;
     };
-    buttonSensor: {
+    select: {
         data: {
             ACTUAL: Datapoint;
+            SET: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -1052,11 +1054,20 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: 'Switch',
         data: { SET: { role: 'button', type: 'boolean', required: true, writeable: true } },
     },
-    buttonSensor: {
+    select: {
         updatedVersion: true,
-        name: 'buttonSensor',
-        description: 'Taster',
-        data: { ACTUAL: { role: 'button.press', type: 'boolean', required: true, writeable: false, trigger: true } },
+        name: 'select',
+        description: 'Auswahlbox',
+        data: {
+            ACTUAL: {
+                role: ['value.mode.select', 'level.mode.select'],
+                type: 'number',
+                required: true,
+                writeable: false,
+                trigger: true,
+            },
+            SET: { role: 'level.mode.select', type: 'number', required: true, writeable: false, trigger: true },
+        },
     },
     temperature: {
         updatedVersion: true,
@@ -1139,8 +1150,14 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'lock',
         description: 'Türschloss',
         data: {
-            ACTUAL: { role: 'state', type: 'boolean', required: true, writeable: false },
-            OPEN: { role: 'state', type: 'boolean', required: false, writeable: false },
+            ACTUAL: {
+                role: ['switch.lock', 'state'],
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+            },
+            OPEN: { role: 'button', type: 'boolean', required: false, writeable: true },
             SET: { role: 'switch.lock', type: 'boolean', required: true, writeable: true },
         },
     },
