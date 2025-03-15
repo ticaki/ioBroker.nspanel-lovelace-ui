@@ -61,5 +61,7 @@
     "shutter": "Luik",
     "on": "op",
     "off": "uit",
-    "press": "drukken"
+    "press": "drukken",
+    "Lock open": "Sluit open",
+    "Lock closed": "Vergrendeling gesloten"
 }

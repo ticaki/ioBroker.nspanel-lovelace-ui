@@ -226,7 +226,10 @@ export class PageItem extends BaseClassTriggerd {
 
                     message.type = 'shutter';
 
-                    const value = await tools.getValueEntryNumber(item.entity1);
+                    let value: boolean | number | null = await tools.getValueEntryNumber(item.entity1);
+                    if (value === null) {
+                        value = await tools.getValueEntryBoolean(item.entity1);
+                    }
                     if (value === null) {
                         this.log.warn(`Entity ${this.config.role} has no value! No Actual or Set`);
                         break;
@@ -385,7 +388,7 @@ export class PageItem extends BaseClassTriggerd {
                                 this.confirmClick = 'lock';
                             }
                         }
-                        if (
+                        /*if (
                             this.parent &&
                             !this.parent.card.startsWith('screensaver') &&
                             entry.type === 'button' &&
@@ -397,7 +400,7 @@ export class PageItem extends BaseClassTriggerd {
                             entry.data.entity1.set.writeable
                         ) {
                             entry.type = 'switch';
-                        }
+                        }*/
 
                         message.icon = await tools.getIconEntryValue(item.icon, value, 'home');
                         switch (entry.role) {
@@ -1029,9 +1032,13 @@ export class PageItem extends BaseClassTriggerd {
                 if (!(message.type === 'popupShutter')) {
                     break;
                 }
-                message.text2 = (await tools.getEntryTextOnOff(item.text, true)) ?? '';
+                let pos1: 'disable' | number | boolean = (await tools.getValueEntryNumber(item.entity1)) ?? 'disable';
+                if (pos1 === 'disable') {
+                    pos1 = (await tools.getValueEntryBoolean(item.entity1)) ?? 'disable';
+                }
+                message.text2 =
+                    (await tools.getEntryTextOnOff(item.text, typeof pos1 === 'boolean' ? pos1 : true)) ?? '';
                 message.text2 = this.library.getTranslation(message.text2);
-                const pos1 = (await tools.getValueEntryNumber(item.entity1)) ?? 'disable';
                 const pos2 = (await tools.getValueEntryNumber(item.entity2)) ?? 'disable';
                 if (pos1 !== 'disable') {
                     message.icon = (await tools.getIconEntryValue(item.icon, pos1, '')) ?? '';
@@ -1071,17 +1078,23 @@ export class PageItem extends BaseClassTriggerd {
                         }
                     });
                     if (index === 0) {
-                        message.pos1 = String(pos);
+                        message.pos1 = typeof pos === 'boolean' ? 'disable' : String(pos);
                         message.pos1text = (await tools.getEntryTextOnOff(item.text1, true)) ?? '';
                         message.pos1text = this.library.getTranslation(message.pos1text);
                         message.iconL1 = optionalValueC[0];
                         message.iconM1 = optionalValueC[1];
                         message.iconR1 = optionalValueC[2];
-                        message.statusL1 = pos === 0 ? 'disable' : optionalValueC[3];
-                        message.statusM1 = pos === 'disabled' ? 'disable' : optionalValueC[4];
-                        message.statusR1 = pos === 100 ? 'disable' : optionalValueC[5];
+                        message.statusL1 = (typeof pos === 'boolean' ? false : pos === 0)
+                            ? 'disable'
+                            : optionalValueC[3];
+                        message.statusM1 = (typeof pos === 'boolean' ? pos : pos === 'disabled')
+                            ? 'disable'
+                            : optionalValueC[4];
+                        message.statusR1 = (typeof pos === 'boolean' ? !pos : pos === 100)
+                            ? 'disable'
+                            : optionalValueC[5];
                     } else {
-                        message.pos2 = String(pos);
+                        message.pos2 = typeof pos === 'boolean' ? 'disable' : String(pos);
                         message.pos2text = (await tools.getEntryTextOnOff(item.text2, true)) ?? '';
                         message.pos2text = this.library.getTranslation(message.pos2text);
                         message.iconL2 = optionalValueC[0];

@@ -61,5 +61,7 @@
     "shutter": "Otturatore",
     "on": "SU",
     "off": "spento",
-    "press": "premere"
+    "press": "premere",
+    "Lock open": "Blocca aperta",
+    "Lock closed": "Blocca chiusa"
 }

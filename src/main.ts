@@ -641,6 +641,21 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'getTasmotaDevices': {
+                    if (this.config.panels) {
+                        const devices = this.config.panels.map(a => {
+                            return { label: a.ip, value: a.ip };
+                        });
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, devices, obj.callback);
+                        }
+                        break;
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
                 case 'tasmotaSendTo': {
                     if (obj.message) {
                         try {
@@ -655,6 +670,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                             ) {
                                 if (obj.message.mqttServer == 'false' || !obj.message.mqttServer) {
                                     obj.message.mqttServer = false;
+                                } else {
+                                    obj.message.mqttServer = true;
                                 }
                                 const url =
                                     ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp};` +
@@ -802,7 +819,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
 
                                 if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, { result: 'sendToDeviceFound' }, obj.callback);
+                                    this.sendTo(
+                                        obj.from,
+                                        obj.command,
+                                        { result: 'sendToDeviceFound', reloadBrowser: true },
+                                        obj.callback,
+                                    );
                                 }
                             }
                         } catch (e: any) {
@@ -922,6 +944,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                         this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
                     }
                 }
+            }
+        } else {
+            if (obj.callback) {
+                this.sendTo(obj.from, obj.command, { error: 'failed' }, obj.callback);
             }
         }
     }

@@ -1337,7 +1337,32 @@ class ConfigManager extends import_library.BaseClass {
         break;
       }
       case "airCondition":
-      case "lock":
+        break;
+      case "lock": {
+        itemConfig = {
+          template: "text.lock",
+          dpInit: item.id,
+          type: "button",
+          role: "button",
+          color: {
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: item.colorScale
+          },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
+          data: {
+            text,
+            entity1: {
+              value: foundedStates[role].ACTUAL,
+              set: foundedStates[role].SET
+            }
+          }
+        };
+        break;
+      }
       case "slider":
       case "level.timer":
       case "level.mode.fan": {
@@ -1602,7 +1627,7 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "button": {
             const tempItem = {
-              type: "button",
+              type: foundedStates[role].SET ? "switch" : "button",
               role: "button",
               data: {
                 icon: {
@@ -1944,10 +1969,71 @@ class ConfigManager extends import_library.BaseClass {
             };
             break;
           }
+          case "lock": {
+            itemConfig = {
+              type: "shutter",
+              role: "",
+              color: {
+                true: await this.getIconColor(item.onColor, this.colorOn),
+                false: await this.getIconColor(item.offColor, this.colorOff),
+                scale: item.colorScale
+              },
+              icon: {
+                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+              },
+              data: {
+                icon: {
+                  true: {
+                    value: await this.getFieldAsDataItemConfig(item.icon || "lock-open-variant")
+                  },
+                  false: {
+                    value: {
+                      type: "const",
+                      constVal: item.icon2 || "lock"
+                    }
+                  }
+                },
+                text: {
+                  true: { type: "const", constVal: "Lock open" },
+                  false: { type: "const", constVal: "Lock closed" }
+                },
+                headline,
+                entity1: {
+                  value: foundedStates[role].ACTUAL
+                },
+                entity2: void 0,
+                valueList: item.modeList ? { type: "const", constVal: item.modeList } : {
+                  type: "const",
+                  constVal: ["lock-open-check-outline", "lock-open-variant", "lock"]
+                },
+                up: foundedStates[role].OPEN,
+                stop: foundedStates[role].SET ? JSON.parse(
+                  JSON.stringify(
+                    Object.assign(foundedStates[role].SET, {
+                      type: "state",
+                      write: "return true"
+                    })
+                  )
+                ) : void 0,
+                down: foundedStates[role].SET ? JSON.parse(
+                  JSON.stringify(
+                    Object.assign(foundedStates[role].SET, {
+                      type: "state",
+                      write: "return false"
+                    })
+                  )
+                ) : void 0,
+                up2: void 0,
+                down2: void 0,
+                stop2: void 0
+              }
+            };
+            break;
+          }
           case "warning":
           case "level.timer":
           case "level.mode.fan":
-          case "lock":
           case "slider":
           case "airCondition": {
             throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);

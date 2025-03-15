@@ -69,24 +69,24 @@ export type entityUpdateDetailMessage =
       >)
     | ({ type: 'popupShutter' } & Record<
           | 'entityName'
-          | 'pos1'
+          | 'pos1' // 'disable' allowed
           | 'text2'
           | 'pos1text'
           | 'icon'
           | 'iconL1'
           | 'iconM1'
           | 'iconR1'
-          | 'statusL1'
-          | 'statusM1'
-          | 'statusR1'
+          | 'statusL1' // 'disable' allowed
+          | 'statusM1' // 'disable' allowed
+          | 'statusR1' // 'disable' allowed
           | 'pos2text'
           | 'iconL2'
           | 'iconM2'
           | 'iconR2'
-          | 'statusL2'
-          | 'statusM2'
-          | 'statusR2'
-          | 'pos2',
+          | 'statusL2' // 'disable' allowed
+          | 'statusM2' // 'disable' allowed
+          | 'statusR2' // 'disable' allowed
+          | 'pos2', // 'disable' allowed
           string
       >)
     | ({

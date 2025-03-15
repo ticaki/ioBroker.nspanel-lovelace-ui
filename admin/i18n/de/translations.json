@@ -59,7 +59,9 @@
     "mqttUser": "MQTT-Benutzername",
     "mqttPassword": "MQTT-Passwort",
     "shutter": "Rollladen",
-    "on": "An",
+    "on": "an",
     "off": "aus",
-    "press": "drücken"
+    "press": "drücken",
+    "Lock open": "Schloss geöffnet",
+    "Lock closed": "Schloss verriegelt"
 }

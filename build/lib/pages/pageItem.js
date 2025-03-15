@@ -196,7 +196,10 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         case "shutter": {
           const item = entry.data;
           message.type = "shutter";
-          const value = await tools.getValueEntryNumber(item.entity1);
+          let value = await tools.getValueEntryNumber(item.entity1);
+          if (value === null) {
+            value = await tools.getValueEntryBoolean(item.entity1);
+          }
           if (value === null) {
             this.log.warn(`Entity ${this.config.role} has no value! No Actual or Set`);
             break;
@@ -334,9 +337,6 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
               } else {
                 this.confirmClick = "lock";
               }
-            }
-            if (this.parent && !this.parent.card.startsWith("screensaver") && entry.type === "button" && entry.data.entity1 && entry.data.entity1.set && entry.data.entity1.set.common && entry.data.entity1.set.common.role && entry.data.entity1.set.common.role.startsWith("switch") && entry.data.entity1.set.writeable) {
-              entry.type = "switch";
             }
             message.icon = await tools.getIconEntryValue(item.icon, value, "home");
             switch (entry.role) {
@@ -641,7 +641,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     return "";
   }
   async GeneratePopup(mode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N;
     if (!this.config || !this.dataItems) {
       return null;
     }
@@ -887,14 +887,17 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         if (!(message.type === "popupShutter")) {
           break;
         }
-        message.text2 = (_G = await tools.getEntryTextOnOff(item.text, true)) != null ? _G : "";
+        let pos1 = (_G = await tools.getValueEntryNumber(item.entity1)) != null ? _G : "disable";
+        if (pos1 === "disable") {
+          pos1 = (_H = await tools.getValueEntryBoolean(item.entity1)) != null ? _H : "disable";
+        }
+        message.text2 = (_I = await tools.getEntryTextOnOff(item.text, typeof pos1 === "boolean" ? pos1 : true)) != null ? _I : "";
         message.text2 = this.library.getTranslation(message.text2);
-        const pos1 = (_H = await tools.getValueEntryNumber(item.entity1)) != null ? _H : "disable";
-        const pos2 = (_I = await tools.getValueEntryNumber(item.entity2)) != null ? _I : "disable";
+        const pos2 = (_J = await tools.getValueEntryNumber(item.entity2)) != null ? _J : "disable";
         if (pos1 !== "disable") {
-          message.icon = (_J = await tools.getIconEntryValue(item.icon, pos1, "")) != null ? _J : "";
+          message.icon = (_K = await tools.getIconEntryValue(item.icon, pos1, "")) != null ? _K : "";
         } else if (pos2 !== "disable") {
-          message.icon = (_K = await tools.getIconEntryValue(item.icon, pos2, "")) != null ? _K : "";
+          message.icon = (_L = await tools.getIconEntryValue(item.icon, pos2, "")) != null ? _L : "";
         }
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
           "arrow-up",
@@ -928,18 +931,18 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             }
           });
           if (index === 0) {
-            message.pos1 = String(pos);
-            message.pos1text = (_L = await tools.getEntryTextOnOff(item.text1, true)) != null ? _L : "";
+            message.pos1 = typeof pos === "boolean" ? "disable" : String(pos);
+            message.pos1text = (_M = await tools.getEntryTextOnOff(item.text1, true)) != null ? _M : "";
             message.pos1text = this.library.getTranslation(message.pos1text);
             message.iconL1 = optionalValueC[0];
             message.iconM1 = optionalValueC[1];
             message.iconR1 = optionalValueC[2];
-            message.statusL1 = pos === 0 ? "disable" : optionalValueC[3];
-            message.statusM1 = pos === "disabled" ? "disable" : optionalValueC[4];
-            message.statusR1 = pos === 100 ? "disable" : optionalValueC[5];
+            message.statusL1 = (typeof pos === "boolean" ? false : pos === 0) ? "disable" : optionalValueC[3];
+            message.statusM1 = (typeof pos === "boolean" ? pos : pos === "disabled") ? "disable" : optionalValueC[4];
+            message.statusR1 = (typeof pos === "boolean" ? !pos : pos === 100) ? "disable" : optionalValueC[5];
           } else {
-            message.pos2 = String(pos);
-            message.pos2text = (_M = await tools.getEntryTextOnOff(item.text2, true)) != null ? _M : "";
+            message.pos2 = typeof pos === "boolean" ? "disable" : String(pos);
+            message.pos2text = (_N = await tools.getEntryTextOnOff(item.text2, true)) != null ? _N : "";
             message.pos2text = this.library.getTranslation(message.pos2text);
             message.iconL2 = optionalValueC[0];
             message.iconM2 = optionalValueC[1];

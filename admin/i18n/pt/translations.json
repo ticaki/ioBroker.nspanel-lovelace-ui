@@ -61,5 +61,7 @@
     "shutter": "Obturador",
     "on": "sobre",
     "off": "desligado",
-    "press": "imprensa"
+    "press": "imprensa",
+    "Lock open": "Lock aberto",
+    "Lock closed": "Lock fechado"
 }

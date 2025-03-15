@@ -31,7 +31,23 @@ class PanelSend extends import_library.BaseClass {
   mqttClient;
   topic = "";
   losingMessageCount = 0;
+  _losingDelay = 1e3;
   _panel = void 0;
+  get losingDelay() {
+    this._losingDelay = this._losingDelay + 2e3;
+    return this._losingDelay;
+  }
+  set losingDelay(value) {
+    if (value > 3e4) {
+      this._losingDelay = 3e4;
+      return;
+    }
+    if (value === 0) {
+      this._losingDelay = 2e3;
+      return;
+    }
+    this._losingDelay = value;
+  }
   constructor(adapter, config) {
     super(adapter, config.name);
     this.mqttClient = config.mqttClient;
@@ -52,6 +68,7 @@ class PanelSend extends import_library.BaseClass {
           this.adapter.clearTimeout(this.messageTimeout);
         }
         this.losingMessageCount = 0;
+        this._losingDelay = 0;
         const msg2 = this.messageDb.shift();
         if (msg2) {
           if (msg2.payload === "pageType~pageStartup") {
@@ -93,7 +110,7 @@ class PanelSend extends import_library.BaseClass {
       this.messageDb = [];
     }
     this.addMessageTasmota(this.topic, msg.payload, msg.opt);
-    this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 3e3);
+    this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
   };
   addMessageTasmota = (topic, payload, opt) => {
     if (this.messageDbTasmota.length > 0 && this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt)) {
