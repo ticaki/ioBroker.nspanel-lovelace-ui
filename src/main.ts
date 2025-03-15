@@ -641,6 +641,21 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'getTasmotaDevices': {
+                    if (this.config.panels) {
+                        const devices = this.config.panels.map(a => {
+                            return { label: a.ip, value: a.ip };
+                        });
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, devices, obj.callback);
+                        }
+                        break;
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
                 case 'tasmotaSendTo': {
                     if (obj.message) {
                         try {

@@ -224,7 +224,7 @@
                             "label": "panelTopic",
                             "readOnly": true,
                             "validatorErrorText": "mustBeUnique"
-                        },
+                        }/*,
                         {
                             "attr": "_RefreshDevices",
                             "type": "sendTo",
@@ -235,7 +235,7 @@
                             "useNative": true,
                             "timeout": 8000,
                             "disabled": "!data.topic || !data.name"
-                        }
+                        }*/
                     ]
                 },
                 "_header2": {
@@ -280,8 +280,11 @@
                     "xl": 4
                 },
                 "_tasmotaIP": {
-                    "type": "text",
+                    "type": "autocompleteSendTo",
+                    "command": "getTasmotaDevices",
+                    "data": "{\"ip\": \"${data.internalServerIp}\"}",
                     "label": "tasmotaIP",
+                    "freeSol": true,
                     "newLine": true,
                     "validator": "data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
                     "validatorErrorText": "mustBeIp",
