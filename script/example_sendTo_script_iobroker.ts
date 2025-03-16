@@ -845,8 +845,6 @@ declare namespace ScriptConfig {
     // mean string start with getState(' and end with ').val
     type getStateID = string;
 
-   
-const valid: MyValidType = { a: 'a' };
     export type PageBaseItem =
         ({
             navigate: true;
