@@ -1,4 +1,4 @@
-async function configuration (): Promise<void> {
+async function configuration(): Promise<void> {
 
     const overrideConfig: Partial<ScriptConfig.Config> = {
         // hier kann man die Werte von unten überschreiben bzw nicht ewig im Skript suchen wo nochmal die Farbe steht :)
@@ -443,9 +443,9 @@ async function configuration (): Promise<void> {
      */
 
     log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', Object.assign({...config, version}, overrideConfig)));
-}))
-setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 }
+setTimeout(() => {stopScript(scriptName, undefined)}, 200);
+
 
 const version = '0.7.0';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
@@ -1406,7 +1406,5 @@ const dasWetterBottomScreensaverEntity6 =
             },
         },
     },
-},
-
-
+}
 configuration();
