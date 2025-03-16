@@ -34,6 +34,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     httpServer: HttpServer[] = [];
     timeoutAdmin: ioBroker.Timeout | undefined;
     timeoutAdmin2: ioBroker.Timeout | undefined;
+    intervalAdmin: ioBroker.Interval | undefined;
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -459,6 +460,9 @@ class NspanelLovelaceUi extends utils.Adapter {
     private async onUnload(callback: () => void): Promise<void> {
         try {
             this.unload = true;
+            if (this.intervalAdmin) {
+                this.clearInterval(this.intervalAdmin);
+            }
             if (this.timeoutAdmin) {
                 this.clearTimeout(this.timeoutAdmin);
             }
@@ -657,7 +661,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
                 case 'tasmotaSendTo': {
-                    if (obj.message) {
+                    if (obj.message && !this.timeoutAdmin2) {
                         try {
                             if (
                                 obj.message.tasmotaIP &&
@@ -689,7 +693,91 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 this.log.info(`Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP}`);
 
                                 await axios.get(u.href);
+                                const mqtt = new MQTT.MQTTClientClass(
+                                    this,
+                                    this.config.mqttIp,
+                                    this.config.mqttPort,
+                                    this.config.mqttUsername,
+                                    this.config.mqttPassword,
+                                    (topic, message) => {
+                                        this.log.debug(`${topic} ${message}`);
+                                    },
+                                );
+                                await this.delay(100);
+                                const checkTasmota = async (
+                                    mqtt: MQTT.MQTTClientClass,
+                                    topic: string,
+                                ): Promise<{ status: boolean; id: string; ip: string }> => {
+                                    return new Promise(resolve => {
+                                        const result: { status: boolean; id: string; ip: string } = {
+                                            status: false,
+                                            id: '',
+                                            ip: '',
+                                        };
+                                        if (mqtt && topic) {
+                                            mqtt.subscript(
+                                                `${topic}/stat/STATUS0`,
+                                                (_topic: string, _message: string) => {
+                                                    const msg = JSON.parse(_message) as STATUS0;
+                                                    if (msg.StatusNET) {
+                                                        result.status = true;
+                                                    }
+                                                    if (this.intervalAdmin) {
+                                                        this.clearInterval(this.intervalAdmin);
+                                                    }
+                                                    resolve(result);
+                                                    return;
+                                                },
+                                            );
 
+                                            this.timeoutAdmin2 = this.setTimeout(() => {
+                                                if (this.intervalAdmin) {
+                                                    this.clearInterval(this.intervalAdmin);
+                                                }
+                                                this.timeoutAdmin2 = null;
+                                                resolve(result);
+                                            }, 20000);
+
+                                            this.intervalAdmin = this.setInterval(
+                                                (mqtt: MQTT.MQTTClientClass, topic: string) => {
+                                                    if (this.unload) {
+                                                        return;
+                                                    }
+                                                    void mqtt.publish(`${topic}/cmnd/STATUS0`, '');
+                                                },
+                                                2000,
+                                                mqtt,
+                                                topic,
+                                            );
+                                        } else {
+                                            resolve(result);
+                                            return;
+                                        }
+                                    });
+                                };
+                                if (this.timeoutAdmin2) {
+                                    this.clearTimeout(this.timeoutAdmin2);
+                                    this.timeoutAdmin2 = null;
+                                }
+                                if (this.intervalAdmin) {
+                                    this.clearInterval(this.intervalAdmin);
+                                    this.intervalAdmin = null;
+                                }
+                                const result = await checkTasmota(mqtt, obj.message.tasmotaTopic);
+                                mqtt.destroy();
+
+                                if (!result.status) {
+                                    this.log.error(`Device with topic ${obj.message.tasmotaTopic} not found!`);
+                                    if (obj.callback) {
+                                        this.sendTo(
+                                            obj.from,
+                                            obj.command,
+                                            { error: 'sendToDeviceNotFound' },
+                                            obj.callback,
+                                        );
+                                    }
+                                    break;
+                                }
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, [], obj.callback);
                                 }
