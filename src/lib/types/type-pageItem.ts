@@ -425,7 +425,7 @@ export type PageItemBase = {
     hue?: string;
     colorMode: boolean; // true rgb, false ct
     saturation?: string;
-    useColor: string;
+    useColor?: string;
     Red?: number;
     Green?: number;
     Blue?: number;

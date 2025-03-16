@@ -1014,6 +1014,9 @@ export class ConfigManager extends BaseClass {
         const text = {
             true: await getButtonsTextTrue(item, role || ''),
             false: await getButtonsTextFalse(item, role || ''),
+            textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+            prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
+            suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
         };
 
         if (!item.id) {
@@ -1682,6 +1685,9 @@ export class ConfigManager extends BaseClass {
                 const text = {
                     true: await getButtonsTextTrue(item, role || ''),
                     false: await getButtonsTextFalse(item, role || ''),
+                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                    prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
+                    suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
                 };
                 const headline = await getButtonsTextTrue(item, role || '');
 

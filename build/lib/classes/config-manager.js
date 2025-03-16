@@ -874,7 +874,10 @@ class ConfigManager extends import_library.BaseClass {
     };
     const text = {
       true: await getButtonsTextTrue(item, role || ""),
-      false: await getButtonsTextFalse(item, role || "")
+      false: await getButtonsTextFalse(item, role || ""),
+      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0,
+      prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
+      suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
     };
     if (!item.id) {
       return {
@@ -1457,7 +1460,10 @@ class ConfigManager extends import_library.BaseClass {
         };
         const text = {
           true: await getButtonsTextTrue(item, role || ""),
-          false: await getButtonsTextFalse(item, role || "")
+          false: await getButtonsTextFalse(item, role || ""),
+          textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0,
+          prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
+          suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
         };
         const headline = await getButtonsTextTrue(item, role || "");
         switch (role) {
