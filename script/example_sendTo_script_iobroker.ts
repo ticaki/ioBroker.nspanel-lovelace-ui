@@ -709,7 +709,7 @@ declare namespace ScriptConfig {
 
     export type PageBaseType = {
         type: PagetypeType;
-        uniqueName?: string;
+        uniqueName: string;
         heading: string;
         items: PageItem[];
         useColor: boolean;

@@ -49,7 +49,7 @@ function isButton(F) {
   if (F === null) {
     return true;
   }
-  return "mode" in F && (F.mode === "page" && F.page || "state" in F && (F.mode === "switch" || F.mode === "button") && F.state);
+  return "mode" in F && (F.mode === "page" && F.page || "state" in F && (F.mode === "switch" || F.mode === "button") && F.state && !F.state.endsWith("."));
 }
 function isConfig(F, adapter) {
   if (F === void 0) {
