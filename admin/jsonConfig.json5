@@ -283,7 +283,7 @@
                 "_tasmotaIP": {
                     "type": "autocompleteSendTo",
                     "command": "getTasmotaDevices",
-                    "data": "{\"ip\": \"${data.internalServerIp}\"}",
+                    "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
                     "label": "tasmotaIP",
                     "freeSolo": true,
                     "newLine": true,
