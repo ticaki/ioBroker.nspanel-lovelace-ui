@@ -63,5 +63,7 @@
     "off": "desligado",
     "press": "imprensa",
     "Lock open": "Lock aberto",
-    "Lock closed": "Lock fechado"
+    "Lock closed": "Lock fechado",
+    "getRandomMqttCredentialsHelp": "Gerar credenciais aleatórias do MQTT e obter uma porta grátis",
+    "getRandomMqttCredentials": "Preencher credenciais e porta MQTT"
 }

@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var config_manager_exports = {};
 __export(config_manager_exports, {
@@ -22,7 +32,7 @@ __export(config_manager_exports, {
 });
 module.exports = __toCommonJS(config_manager_exports);
 var import_Color = require("../const/Color");
-var import_config_manager_const = require("../const/config-manager-const");
+var configManagerConst = __toESM(require("../const/config-manager-const"));
 var import_states_controller = require("../controller/states-controller");
 var import_pageQR = require("../pages/pageQR");
 var import_readme = require("../tools/readme");
@@ -36,7 +46,7 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.7.0";
+  scriptVersion = "0.7.1";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -64,11 +74,11 @@ class ConfigManager extends import_library.BaseClass {
    */
   async setScriptConfig(configuration) {
     configuration.advancedOptions = Object.assign(
-      import_config_manager_const.defaultConfig.advancedOptions || {},
+      configManagerConst.defaultConfig.advancedOptions || {},
       configuration.advancedOptions || {}
     );
-    const config = Object.assign(import_config_manager_const.defaultConfig, configuration);
-    if (!config || !(0, import_config_manager_const.isConfig)(config, this.adapter)) {
+    const config = Object.assign(configManagerConst.defaultConfig, configuration);
+    if (!config || !configManagerConst.isConfig(config, this.adapter)) {
       this.log.error(
         `Invalid configuration from Script: ${config ? config.panelName || config.panelTopic || JSON.stringify(config) : "undefined"}`
       );
@@ -218,14 +228,14 @@ class ConfigManager extends import_library.BaseClass {
         (a, p) => a && panelConfig.navigation.findIndex((b) => b && a && b.name === a.name) === p
       );
     }
-    if ((0, import_config_manager_const.isButton)(config.buttonLeft)) {
+    if (configManagerConst.isButton(config.buttonLeft)) {
       panelConfig.buttons = panelConfig.buttons || { left: null, right: null };
       panelConfig.buttons.left = config.buttonLeft;
     } else {
       messages.push(`Button left wrong configured!`);
       this.log.warn(messages[messages.length - 1]);
     }
-    if ((0, import_config_manager_const.isButton)(config.buttonRight)) {
+    if (configManagerConst.isButton(config.buttonRight)) {
       panelConfig.buttons = panelConfig.buttons || { left: null, right: null };
       panelConfig.buttons.right = config.buttonRight;
     } else {
@@ -329,6 +339,11 @@ class ConfigManager extends import_library.BaseClass {
           }
         }
         if (page.type === "cardQR") {
+          if (!Array.isArray(this.adapter.config.pageQRdata)) {
+            messages.push(`No PageQR configured in Admin for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
           const index = this.adapter.config.pageQRdata.findIndex((item) => item.pageName === page.uniqueName);
           if (index === -1) {
             messages.push(`No pageQRdata found for ${page.uniqueName}`);
@@ -423,7 +438,12 @@ class ConfigManager extends import_library.BaseClass {
     }
     let foundedStates;
     try {
-      foundedStates = await this.searchDatapointsForItems(import_config_manager_const.requiredScriptDataPoints, role, item.id, messages);
+      foundedStates = await this.searchDatapointsForItems(
+        configManagerConst.requiredScriptDataPoints,
+        role,
+        item.id,
+        messages
+      );
     } catch {
       return { gridItem, messages };
     }
@@ -906,12 +926,12 @@ class ConfigManager extends import_library.BaseClass {
     if (obj && (!obj.common || !obj.common.role) || role == null) {
       throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
     }
-    if (!import_config_manager_const.requiredScriptDataPoints[role]) {
+    if (!configManagerConst.requiredScriptDataPoints[role]) {
       this.log.warn(`Channel role ${role} not supported!`);
       throw new Error(`Channel role ${role} not supported!`);
     }
     const foundedStates = await this.searchDatapointsForItems(
-      import_config_manager_const.requiredScriptDataPoints,
+      configManagerConst.requiredScriptDataPoints,
       role,
       item.id,
       []
@@ -1380,7 +1400,9 @@ class ConfigManager extends import_library.BaseClass {
     return itemConfig;
   }
   async searchDatapointsForItems(db, role, dpInit, messages) {
-    const result = JSON.parse(JSON.stringify(import_config_manager_const.checkedDatapoints));
+    const result = JSON.parse(
+      JSON.stringify(configManagerConst.checkedDatapoints)
+    );
     let ups = false;
     if (db[role] && db[role].data && result[role]) {
       const data = db[role].data;
@@ -1440,12 +1462,12 @@ class ConfigManager extends import_library.BaseClass {
           throw new Error(`Role missing in^${item.id}!`);
         }
         const role = obj.common.role;
-        if (!import_config_manager_const.requiredScriptDataPoints[role]) {
+        if (!configManagerConst.requiredScriptDataPoints[role]) {
           this.log.warn(`Channel role ${role} not supported!`);
           throw new Error(`Channel role ${role} not supported!`);
         }
         const foundedStates = await this.searchDatapointsForItems(
-          import_config_manager_const.requiredScriptDataPoints,
+          configManagerConst.requiredScriptDataPoints,
           role,
           item.id,
           messages
@@ -2278,7 +2300,7 @@ class ConfigManager extends import_library.BaseClass {
   async checkRequiredDatapoints(role, item, mode = "both") {
     const _checkScriptDataPoints = async (role2, item2) => {
       let error = "";
-      const subItem = import_config_manager_const.requiredScriptDataPoints[role2];
+      const subItem = configManagerConst.requiredScriptDataPoints[role2];
       if (subItem && subItem.data) {
         for (const dp in subItem.data) {
           if (!(dp in subItem.data)) {
@@ -2599,7 +2621,9 @@ class ConfigManager extends import_library.BaseClass {
     return await this.adapter.getForeignStateAsync(id) != null;
   }
   async delete() {
-    await this.statesController.delete();
+    var _a;
+    await ((_a = this.statesController) == null ? void 0 : _a.delete());
+    this.statesController = void 0;
   }
 }
 function isIconScaleElement(obj) {

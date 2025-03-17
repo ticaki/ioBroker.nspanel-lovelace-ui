@@ -21,6 +21,8 @@ import type { STATUS0 } from './lib/types/types';
 import axios from 'axios';
 import { URL } from 'url';
 import type { HttpServer } from './lib/classes/http-server';
+import type { PageBaseConfig } from './lib/types/pages';
+import type { NavigationItemConfig } from './lib/classes/navigation';
 //import fs from 'fs';
 axios.defaults.timeout = 3000;
 
@@ -455,7 +457,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances.
      *
-     * @param callback Callback so the adapter can finish what it has to do
+     * @param callback Callback so the adapter can finish what it has to do.
      */
     private async onUnload(callback: () => void): Promise<void> {
         try {
@@ -561,8 +563,24 @@ class NspanelLovelaceUi extends utils.Adapter {
                     let result = ['something went wrong'];
                     if (obj.message) {
                         const manager = new ConfigManager(this);
+                        let r: {
+                            messages: string[];
+                            panelConfig:
+                                | (Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
+                                      navigation: NavigationItemConfig[];
+                                      pages: PageBaseConfig[];
+                                  })
+                                | undefined;
+                        } = { messages: [], panelConfig: undefined };
+                        if (obj.message.panelTopic && Array.isArray(obj.message.panelTopic)) {
+                            const topics = JSON.parse(JSON.stringify(obj.message.panelTopic));
+                            for (const a of topics) {
+                                r = await manager.setScriptConfig({ ...obj.message, panelTopic: a });
+                            }
+                        } else {
+                            r = await manager.setScriptConfig(obj.message);
+                        }
                         await manager.delete();
-                        const r = await manager.setScriptConfig(obj.message);
                         result = r.messages;
                     }
                     if (obj.callback) {
@@ -677,6 +695,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 } else {
                                     obj.message.mqttServer = true;
                                 }
+                                this.log.info(
+                                    `Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP} with user ${obj.message.mqttUsername} && ${obj.message.mqttPassword}`,
+                                );
                                 const url =
                                     ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp};` +
                                     ` MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword};` +
@@ -686,11 +707,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     ` Module 0; MqttClient ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}%06X;` +
                                     ` Restart 1`;
                                 const u = new URL(
-                                    `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog${url
-                                        .replaceAll('&', '%26')
-                                        .replaceAll('%', '%25')}`,
+                                    `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog${encodeURIComponent(url)}`,
                                 );
-                                this.log.info(`Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP}`);
+                                this.log.info(
+                                    `Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP} ${u.href}`,
+                                );
 
                                 await axios.get(u.href);
                                 const mqtt = new MQTT.MQTTClientClass(
@@ -1026,6 +1047,48 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'getRandomMqttCredentials': {
+                    if (obj.message) {
+                        const allowedChars: string[] = [
+                            ...'abcdefghijklmnopqrstuvwxyz',
+                            ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                            ...'0123456789',
+                            ...'()*+-.:<=>[]_',
+                        ];
+                        const allowedCharsUser: string[] = [
+                            ...'abcdefghijklmnopqrstuvwxyz',
+                            ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', // c|Yh7Pe<&1ap34t/]S&TxDwL&KDWqW-Se_D@vtXh,z]|T[RIqLgz.>^3H1j<
+                        ];
+                        const passwordLength = 50;
+                        const usernameLength = 15;
+                        const getString = (c: string[], length: number): string => {
+                            let result = '';
+                            for (let i = 0; i < length; i++) {
+                                const random = Math.floor(Math.random() * c.length);
+                                result += c[random];
+                            }
+                            return result;
+                        };
+
+                        const result = {
+                            native: {
+                                mqttUsername: getString(allowedCharsUser, usernameLength),
+                                mqttPassword: getString(allowedChars, passwordLength),
+                                mqttPort: await this.getPortAsync(1883),
+                                saveConfig: true,
+                            },
+                        };
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, result, obj.callback);
+                        }
+                        break;
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'error' }, obj.callback);
+                    }
+                    break;
+                }
+
                 default: {
                     // Send response in callback if required
                     if (obj.callback) {

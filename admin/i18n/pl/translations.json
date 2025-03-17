@@ -63,5 +63,7 @@
     "off": "wyłączony",
     "press": "naciskać",
     "Lock open": "Zamknij otwarte",
-    "Lock closed": "Zamknij zamknięty"
+    "Lock closed": "Zamknij zamknięty",
+    "getRandomMqttCredentialsHelp": "Wygeneruj losowe poświadczenia MQTT i uzyskaj bezpłatny port",
+    "getRandomMqttCredentials": "Wypełnij poświadczenia MQTT i port"
 }

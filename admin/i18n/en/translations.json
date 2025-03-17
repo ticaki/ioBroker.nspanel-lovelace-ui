@@ -63,5 +63,7 @@
     "off": "off",
     "press": "press",
     "Lock open": "Lock open",
-    "Lock closed": "Lock closed"
+    "Lock closed": "Lock closed",
+    "getRandomMqttCredentialsHelp": "Generate random MQTT credentials and get a free port",
+    "getRandomMqttCredentials": "Fill MQTT credentials and port"
 }

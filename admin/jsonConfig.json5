@@ -17,6 +17,19 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "_getRandomMqttCredentials": {
+                    "type": "sendTo",
+                    "label": "getRandomMqttCredentials",
+                    "jsonData": "{ \"mqttServer\": \"${data.mqttServer}\" }",
+                    "showProcess": false,
+                    "command": "getRandomMqttCredentials",
+                    "disabled": "data.mqttPort || data.mqttUsername || data.mqttPassword",
+                    "tooltip": "getRandomMqttCredentialsHelp",
+                    "newLine": true,
+                    "useNative": true,
+                    "variant": "contained",
+                    "hidden": "!data.mqttServer"
+                },
                 "mqttIp": {
                     "type": "text",
                     "label": "mqttIp",
@@ -53,11 +66,12 @@
                     "label": "mqttPassword",
                     "newLine": false,
                     "validator": "data.mqttPassword.length > 5",
+                    "visible": true,
                     "xs": 12,
                     "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
                 },
                 "pw1": {
                     "type": "password",
@@ -181,6 +195,7 @@
         "overview": {
             "type": "panel",
             "label": "Panels",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
             "items": {
                 "panels": {
                     "type": "table",
@@ -291,6 +306,7 @@
                     "validatorErrorText": "mustBeIp",
                     "hidden": "data._selectTool == '0'",
                     "default": "",
+                    "doNotSave": true,
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -303,6 +319,7 @@
                     "validator": "",
                     "hidden": "data._selectTool != '1'",
                     "default": "",
+                    "doNotSave": true,
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -371,6 +388,7 @@
         "pageQR": {
             "type": "panel",
             "label": "Page QR",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
             "items": {
                 "pageQRdata": {
                     "type": "accordion",

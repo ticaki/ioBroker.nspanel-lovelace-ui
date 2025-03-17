@@ -1,14 +1,5 @@
 import { Color, type RGB } from '../const/Color';
-import {
-    checkedDatapoints,
-    type checkedDatapointsUnion,
-    defaultConfig,
-    isButton,
-    isConfig,
-    type mydps,
-    type requiredDatapoints,
-    requiredScriptDataPoints,
-} from '../const/config-manager-const';
+import * as configManagerConst from '../const/config-manager-const';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PageQR } from '../pages/pageQR';
@@ -29,10 +20,10 @@ export class ConfigManager extends BaseClass {
     dontWrite: boolean = false;
     extraConfigLogging: boolean = false;
 
-    readonly scriptVersion = '0.7.0';
+    readonly scriptVersion = '0.7.1';
     readonly breakingVersion = '0.6.0';
 
-    statesController: StatesControler;
+    statesController: StatesControler | undefined;
     constructor(adapter: NspanelLovelaceUi, dontWrite: boolean = false) {
         super(adapter, 'config-manager');
         this.dontWrite = dontWrite;
@@ -67,11 +58,11 @@ export class ConfigManager extends BaseClass {
             | undefined;
     }> {
         configuration.advancedOptions = Object.assign(
-            defaultConfig.advancedOptions || {},
+            configManagerConst.defaultConfig.advancedOptions || {},
             configuration.advancedOptions || {},
         );
-        const config = Object.assign(defaultConfig, configuration);
-        if (!config || !isConfig(config, this.adapter)) {
+        const config = Object.assign(configManagerConst.defaultConfig, configuration);
+        if (!config || !configManagerConst.isConfig(config, this.adapter)) {
             this.log.error(
                 `Invalid configuration from Script: ${config ? config.panelName || config.panelTopic || JSON.stringify(config) : 'undefined'}`,
             );
@@ -255,14 +246,14 @@ export class ConfigManager extends BaseClass {
             );
         }
         // buttons
-        if (isButton(config.buttonLeft)) {
+        if (configManagerConst.isButton(config.buttonLeft)) {
             panelConfig.buttons = panelConfig.buttons || { left: null, right: null };
             panelConfig.buttons.left = config.buttonLeft;
         } else {
             messages.push(`Button left wrong configured!`);
             this.log.warn(messages[messages.length - 1]);
         }
-        if (isButton(config.buttonRight)) {
+        if (configManagerConst.isButton(config.buttonRight)) {
             panelConfig.buttons = panelConfig.buttons || { left: null, right: null };
             panelConfig.buttons.right = config.buttonRight;
         } else {
@@ -401,6 +392,11 @@ export class ConfigManager extends BaseClass {
                 }
 
                 if (page.type === 'cardQR') {
+                    if (!Array.isArray(this.adapter.config.pageQRdata)) {
+                        messages.push(`No PageQR configured in Admin for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
                     const index = this.adapter.config.pageQRdata.findIndex(item => item.pageName === page.uniqueName);
                     if (index === -1) {
                         messages.push(`No pageQRdata found for ${page.uniqueName}`);
@@ -506,9 +502,14 @@ export class ConfigManager extends BaseClass {
             this.log.error(msg);
             return { gridItem, messages };
         }
-        let foundedStates: checkedDatapointsUnion | undefined;
+        let foundedStates: configManagerConst.checkedDatapointsUnion | undefined;
         try {
-            foundedStates = await this.searchDatapointsForItems(requiredScriptDataPoints, role, item.id, messages);
+            foundedStates = await this.searchDatapointsForItems(
+                configManagerConst.requiredScriptDataPoints,
+                role,
+                item.id,
+                messages,
+            );
         } catch {
             return { gridItem, messages };
         }
@@ -1047,12 +1048,12 @@ export class ConfigManager extends BaseClass {
         if ((obj && (!obj.common || !obj.common.role)) || role == null) {
             throw new Error(`Role missing in ${page.uniqueName}.${item.id}!`);
         }
-        if (!requiredScriptDataPoints[role]) {
+        if (!configManagerConst.requiredScriptDataPoints[role]) {
             this.log.warn(`Channel role ${role} not supported!`);
             throw new Error(`Channel role ${role} not supported!`);
         }
-        const foundedStates: checkedDatapointsUnion = await this.searchDatapointsForItems(
-            requiredScriptDataPoints,
+        const foundedStates: configManagerConst.checkedDatapointsUnion = await this.searchDatapointsForItems(
+            configManagerConst.requiredScriptDataPoints,
             role,
             item.id,
             [],
@@ -1562,12 +1563,14 @@ export class ConfigManager extends BaseClass {
     }
 
     async searchDatapointsForItems(
-        db: requiredDatapoints,
+        db: configManagerConst.requiredDatapoints,
         role: ScriptConfig.channelRoles,
         dpInit: string,
         messages: string[],
-    ): Promise<checkedDatapointsUnion> {
-        const result: checkedDatapointsUnion = JSON.parse(JSON.stringify(checkedDatapoints));
+    ): Promise<configManagerConst.checkedDatapointsUnion> {
+        const result: configManagerConst.checkedDatapointsUnion = JSON.parse(
+            JSON.stringify(configManagerConst.checkedDatapoints),
+        );
         let ups = false;
         if (db[role] && db[role].data && result[role]) {
             const data = db[role].data;
@@ -1578,7 +1581,7 @@ export class ConfigManager extends BaseClass {
                 }
                 const entry = data[dp];
                 if (dp in result[role]) {
-                    const dp2 = dp as mydps;
+                    const dp2 = dp as configManagerConst.mydps;
                     result[role][dp2] = await this.statesController.getIdbyAuto(
                         dpInit,
                         entry.role,
@@ -1636,12 +1639,12 @@ export class ConfigManager extends BaseClass {
                 }
                 const role = obj.common.role as ScriptConfig.channelRoles;
                 // check if role and types are correct
-                if (!requiredScriptDataPoints[role]) {
+                if (!configManagerConst.requiredScriptDataPoints[role]) {
                     this.log.warn(`Channel role ${role} not supported!`);
                     throw new Error(`Channel role ${role} not supported!`);
                 }
-                const foundedStates: checkedDatapointsUnion = await this.searchDatapointsForItems(
-                    requiredScriptDataPoints,
+                const foundedStates: configManagerConst.checkedDatapointsUnion = await this.searchDatapointsForItems(
+                    configManagerConst.requiredScriptDataPoints,
                     role,
                     item.id,
                     messages,
@@ -2598,7 +2601,7 @@ export class ConfigManager extends BaseClass {
             item: ScriptConfig.PageItem,
         ): Promise<boolean> => {
             let error = '';
-            const subItem = requiredScriptDataPoints[role];
+            const subItem = configManagerConst.requiredScriptDataPoints[role];
             if (subItem && subItem.data) {
                 for (const dp in subItem.data) {
                     if (!(dp in subItem.data)) {
@@ -2987,7 +2990,8 @@ export class ConfigManager extends BaseClass {
     }
 
     async delete(): Promise<void> {
-        await this.statesController.delete();
+        await this.statesController?.delete();
+        this.statesController = undefined;
     }
 }
 

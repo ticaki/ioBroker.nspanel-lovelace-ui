@@ -63,5 +63,7 @@
     "off": "не вистачати",
     "press": "пресувати",
     "Lock open": "Замок",
-    "Lock closed": "Замок закритий"
+    "Lock closed": "Замок закритий",
+    "getRandomMqttCredentialsHelp": "Створіть випадкові облікові дані MQTT та отримайте безкоштовний порт",
+    "getRandomMqttCredentials": "Заповніть облікові дані MQTT та порт"
 }

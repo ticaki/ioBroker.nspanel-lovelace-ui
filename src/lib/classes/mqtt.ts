@@ -122,9 +122,9 @@ export class MQTTServerClass extends BaseClass {
             pw: Readonly<Buffer | undefined>,
             callback: any,
         ) => {
-            const confirm = username === un && password == pw!.toString();
+            const confirm = username === un && password == pw?.toString();
             if (!confirm) {
-                this.log.warn(`Login denied client: ${client.id}. User name or password wrong!`);
+                this.log.warn(`Login denied client: ${client.id}. User name or password wrong! ${pw?.toString()}`);
             } else {
                 this.log.info(`Client ${client.id} login successful.`);
             }
