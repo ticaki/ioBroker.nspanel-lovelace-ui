@@ -1386,8 +1386,67 @@ class ConfigManager extends import_library.BaseClass {
         };
         break;
       }
-      case "slider":
-      case "level.timer":
+      case "slider": {
+        let commonUnit = "";
+        if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+          const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+          if (o && o.common && o.common.unit) {
+            commonUnit = o.common.unit;
+          }
+        }
+        itemConfig = {
+          template: "button.slider",
+          dpInit: item.id,
+          type: "button",
+          color: {
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: item.colorScale ? item.colorScale : void 0
+          },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
+          data: {
+            entity1: {
+              value: foundedStates[role].ACTUAL,
+              unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
+            },
+            text,
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
+      case "level.timer": {
+        itemConfig = {
+          role: "button",
+          type: "button",
+          dpInit: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: item.icon || "timer" },
+                color: await this.getIconColor(item.onColor, this.colorOn)
+              },
+              false: {
+                value: { type: "const", constVal: item.icon2 || "timer" },
+                color: await this.getIconColor(item.offColor, this.colorOff)
+              },
+              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0
+            },
+            entity1: {
+              value: {
+                type: "const",
+                constVal: true
+              }
+            },
+            text,
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
       case "level.mode.fan": {
         throw new Error(
           `DP: ${page.uniqueName}.${item.id} - Navigation for channel: ${role} not implemented yet!!`
@@ -2059,10 +2118,74 @@ class ConfigManager extends import_library.BaseClass {
             };
             break;
           }
+          case "slider": {
+            let commonUnit = "";
+            if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+              const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+              if (o && o.common && o.common.unit) {
+                commonUnit = o.common.unit;
+              }
+            }
+            itemConfig = {
+              template: "number.slider",
+              dpInit: item.id,
+              type: "number",
+              role: specialRole,
+              color: {
+                true: await this.getIconColor(item.onColor, this.colorOn),
+                false: await this.getIconColor(item.offColor, this.colorOff),
+                scale: item.colorScale
+              },
+              icon: {
+                true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+              },
+              data: {
+                entity1: {
+                  value: foundedStates[role].ACTUAL,
+                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
+                },
+                text
+              }
+            };
+            break;
+          }
           case "warning":
-          case "level.timer":
+          case "level.timer": {
+            itemConfig = {
+              role: "timer",
+              type: "timer",
+              dpInit: "",
+              data: {
+                icon: {
+                  true: {
+                    value: { type: "const", constVal: item.icon || "timer" },
+                    color: await this.getIconColor(item.onColor, this.colorOn)
+                  },
+                  false: {
+                    value: { type: "const", constVal: item.icon2 || "timer" },
+                    color: await this.getIconColor(item.offColor, this.colorOff)
+                  },
+                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+                  maxBri: void 0,
+                  minBri: void 0
+                },
+                entity1: {
+                  value: {
+                    type: "const",
+                    constVal: true
+                  },
+                  decimal: void 0,
+                  factor: void 0,
+                  unit: void 0
+                },
+                headline: { type: "const", constVal: "Timer" },
+                setValue1: foundedStates[role].ACTUAL
+              }
+            };
+            break;
+          }
           case "level.mode.fan":
-          case "slider":
           case "airCondition": {
             throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
           }

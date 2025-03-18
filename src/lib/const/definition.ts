@@ -56,7 +56,11 @@ export const genericStateObjects: {
                 screenSaverRotationTime: ioBroker.StateObject;
                 goToNavigationPoint: ioBroker.StateObject;
                 mainNavigationPoint: ioBroker.StateObject;
-                screenSaver: ioBroker.StateObject;
+                screenSaver: Omit<ioBroker.StateObject, 'common'> & {
+                    common: Omit<ioBroker.StateObject['common'], 'states'>;
+                } & {
+                    common: { states: Record<ScreensaverModeType, string> };
+                };
                 detachRight: ioBroker.StateObject;
                 detachLeft: ioBroker.StateObject;
                 screenSaverDoubleClick: ioBroker.StateObject;
@@ -192,7 +196,12 @@ export const genericStateObjects: {
                         role: 'level.text',
                         read: true,
                         write: true,
-                        states: {},
+                        states: {
+                            standard: 'Standard',
+                            advanced: 'Advanced',
+                            alternate: 'Alternate',
+                            easyview: 'Easyview',
+                        },
                     },
                     native: {},
                 },

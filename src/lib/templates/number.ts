@@ -62,4 +62,47 @@ export const numberTemplates: TemplateItems = {
             },
         },
     },
+    'number.slider': {
+        role: '',
+        adapter: '',
+        type: 'button',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'plus-minus-variant' },
+                    text: {
+                        value: {
+                            type: 'state',
+                            mode: 'auto',
+                            role: ['value', 'level'],
+                            dp: '',
+                        },
+                        unit: { type: 'const', constVal: '%' },
+                    },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+                false: undefined,
+                scale: { type: 'const', constVal: { min: 0, max: 100 } },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: ['value', 'level'],
+                    dp: '',
+                },
+                set: {
+                    type: 'state',
+                    mode: 'auto',
+                    role: 'level',
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'slider' },
+                false: undefined,
+            },
+        },
+    },
 };

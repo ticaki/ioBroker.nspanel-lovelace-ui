@@ -1381,7 +1381,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             if (this.unload && this.tempInterval) {
               this.adapter.clearInterval(this.tempInterval);
             }
-            if (--this.tempData.value == 0) {
+            if (--this.tempData.value <= 0) {
               this.tempData.value = 0;
               this.tempData.status = "stop";
               this.dataItems && this.dataItems.type == "timer" && this.dataItems.data && this.dataItems.data.setValue1 && await this.dataItems.data.setValue1.setStateTrue();

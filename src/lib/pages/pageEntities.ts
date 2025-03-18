@@ -29,7 +29,7 @@ export class PageEntities extends PageMenu {
         if (options.items && options.items.card == 'cardEntities') {
             this.items = options.items;
         }
-        this.minUpdateInterval = 2000;
+        this.minUpdateInterval = 1000;
     }
 
     async init(): Promise<void> {

@@ -20,6 +20,8 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'button.slider'
+    | 'number.slider'
     | 'text.lock'
     | 'button.select'
     | 'value.temperature'

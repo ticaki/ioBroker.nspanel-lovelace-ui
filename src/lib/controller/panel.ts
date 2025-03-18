@@ -555,14 +555,14 @@ export class Panel extends BaseClass {
             }
         }
 
-        const states: Record<Types.ScreensaverModeType, string> = {
+        /*const states: Record<Types.ScreensaverModeType, string> = {
             standard: 'Standard',
             advanced: 'Advanced',
             alternate: 'Alternate',
             easyview: 'Easyview',
         };
 
-        genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;
+        genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;*/
         await this.library.writedp(
             `panels.${this.name}.cmd.screenSaver`,
             this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : 'none',
