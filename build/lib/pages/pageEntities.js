@@ -45,7 +45,7 @@ class PageEntities extends import_pageMenu.PageMenu {
     if (options.items && options.items.card == "cardEntities") {
       this.items = options.items;
     }
-    this.minUpdateInterval = 2e3;
+    this.minUpdateInterval = 1e3;
   }
   async init() {
     const config = structuredClone(this.config);

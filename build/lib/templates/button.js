@@ -363,6 +363,51 @@ const buttonTemplates = {
       }
     }
   },
+  "button.slider": {
+    role: "",
+    adapter: "",
+    type: "button",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "plus-minus-variant" },
+          text: {
+            value: {
+              type: "triggered",
+              mode: "auto",
+              role: ["value", "level"],
+              dp: ""
+            },
+            unit: { type: "const", constVal: "%" }
+          },
+          color: { type: "const", constVal: import_Color.Color.Red }
+        },
+        false: void 0,
+        scale: { type: "const", constVal: { min: 0, max: 100 } }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: ["value", "level"],
+          dp: ""
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "volume" },
+        false: void 0
+      },
+      text1: {
+        true: {
+          type: "triggered",
+          mode: "auto",
+          role: ["value", "level"],
+          dp: ""
+        },
+        false: void 0
+      }
+    }
+  },
   "button.select": {
     role: "",
     adapter: "",

@@ -149,7 +149,12 @@ const genericStateObjects = {
             role: "level.text",
             read: true,
             write: true,
-            states: {}
+            states: {
+              standard: "Standard",
+              advanced: "Advanced",
+              alternate: "Alternate",
+              easyview: "Easyview"
+            }
           },
           native: {}
         },

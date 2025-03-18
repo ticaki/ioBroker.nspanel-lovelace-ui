@@ -519,13 +519,6 @@ class Panel extends import_library.BaseClass {
         }
       }
     }
-    const states = {
-      standard: "Standard",
-      advanced: "Advanced",
-      alternate: "Alternate",
-      easyview: "Easyview"
-    };
-    import_definition.genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver`,
       this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : "none",

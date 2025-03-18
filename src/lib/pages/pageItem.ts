@@ -1556,7 +1556,7 @@ export class PageItem extends BaseClassTriggerd {
                         if (this.unload && this.tempInterval) {
                             this.adapter.clearInterval(this.tempInterval);
                         }
-                        if (--this.tempData.value == 0) {
+                        if (--this.tempData.value <= 0) {
                             this.tempData.value = 0;
                             this.tempData.status = 'stop';
                             this.dataItems &&
