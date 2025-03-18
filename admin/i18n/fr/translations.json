@@ -63,5 +63,7 @@
     "off": "désactivé",
     "press": "presse",
     "Lock open": "Verrouiller",
-    "Lock closed": "Verrouillage fermé"
+    "Lock closed": "Verrouillage fermé",
+    "getRandomMqttCredentialsHelp": "Générer des informations d'identification MQTT aléatoires et obtenir un port libre",
+    "getRandomMqttCredentials": "Remplissez les informations d'identification et le port MQTT"
 }

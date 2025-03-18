@@ -63,5 +63,7 @@
     "off": "spento",
     "press": "premere",
     "Lock open": "Blocca aperta",
-    "Lock closed": "Blocca chiusa"
+    "Lock closed": "Blocca chiusa",
+    "getRandomMqttCredentialsHelp": "Genera credenziali MQTT casuali e ottieni una porta gratuita",
+    "getRandomMqttCredentials": "Riempi le credenziali MQTT e la porta"
 }

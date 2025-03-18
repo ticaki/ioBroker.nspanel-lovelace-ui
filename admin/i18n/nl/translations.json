@@ -63,5 +63,7 @@
     "off": "uit",
     "press": "drukken",
     "Lock open": "Sluit open",
-    "Lock closed": "Vergrendeling gesloten"
+    "Lock closed": "Vergrendeling gesloten",
+    "getRandomMqttCredentialsHelp": "Genereer willekeurige MQTT -referenties en krijg een gratis poort",
+    "getRandomMqttCredentials": "Vul MQTT -referenties en poort"
 }

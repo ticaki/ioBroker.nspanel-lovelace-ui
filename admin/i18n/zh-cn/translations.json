@@ -63,5 +63,7 @@
     "off": "离开",
     "press": "按",
     "Lock open": "锁定",
-    "Lock closed": "锁关闭"
+    "Lock closed": "锁关闭",
+    "getRandomMqttCredentialsHelp": "生成随机MQTT凭据并获得免费端口",
+    "getRandomMqttCredentials": "填写MQTT凭据和端口"
 }

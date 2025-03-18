@@ -447,7 +447,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.7.0';
+const version = '0.7.1';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -983,9 +983,9 @@ declare namespace ScriptConfig {
         version?: string;
         panelName?: string;
         /**
-         * The topic to receive and send messages to the panel.
+         * The topic to receive and send messages to the panel or an array of topics.
          */
-        panelTopic: string;
+        panelTopic: string | string[];
         /**
          * The weather adapter and instance to use.
          * example: accuweather.0

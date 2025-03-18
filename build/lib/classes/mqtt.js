@@ -122,9 +122,9 @@ class MQTTServerClass extends import_library.BaseClass {
       this.log.info(`Started and listening on port ${port}`);
     });
     this.aedes.authenticate = (client, un, pw, callback) => {
-      const confirm = username === un && password == pw.toString();
+      const confirm = username === un && password == (pw == null ? void 0 : pw.toString());
       if (!confirm) {
-        this.log.warn(`Login denied client: ${client.id}. User name or password wrong!`);
+        this.log.warn(`Login denied client: ${client.id}. User name or password wrong! ${pw == null ? void 0 : pw.toString()}`);
       } else {
         this.log.info(`Client ${client.id} login successful.`);
       }
