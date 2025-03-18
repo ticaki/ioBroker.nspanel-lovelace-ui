@@ -31,7 +31,7 @@ Fragen gerne im [Forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel
 ---
 
 Das hat sich im Skript geändert button1 und button2 gibts nicht mehr - für mehr siehe beispiel skript
-```
+```(typescript)
     /**
      * Represents the configuration for a button function.
      * This type can be one of the following modes:
@@ -56,17 +56,18 @@ Das hat sich im Skript geändert button1 und button2 gibts nicht mehr - für meh
 
 ---
 
-Hab die Möglichkeit eingefügt die Bildschirmschoner roation über States zu aktiviern. `0=off`, `min=3s`, `max=3600s` 
-Damit kann man aktuell überall mehr Items hinzufügen und die werden dann rotiert. 
+Wir haben die Möglichkeit eingefügt, die Bildschirmschonerroation über States zu aktiviern.  
+`0=off`, `min=3s`, `max=3600s`   
+Damit können aktuell überall mehr Items hinzufügt werden und diese dann im Intwrvall rotiert lassen. 
 
 ---
 
-Der Adapter reagiert in 0_userdata.0 und alias.0 auf jede Änderung `ack=true` oder `ack=false` eines abonnierten Datenpunktes. Ansonsten gilt nachfolgendes:
+Der Adapter reagiert in **0_userdata.0** und **alias.0** auf jede Änderung (`ack=true` oder `ack=false`) eines abonnierten Datenpunktes. Ansonsten gilt nachfolgendes:
 - Auserhalb vom Adapter namespace(`nspanel-lovelace-ui.0`) reagiert dieser Adapter auf `ack=true` und setzt Datenpunkte mit `ack=false`
 - Innerhalb des Adapter namespace reagiert dieser Adapter auf `ack=false` und setzt Datenpunkte mit `ack=true`
 
-Beim Farbscalieren `colorScale` gibt es die unteren Zusatzoptionen
-```
+Beim Farbscalieren `colorScale` gibt es diese unteren Zusatzoptionen
+```(typescrpit)
 /**
 * The color mix mode. Default is 'mixed'.
 * ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
@@ -81,46 +82,14 @@ log10?: 'max' | 'min';
 ```
 
 ---
+  
+## Aktuelle Version  
 
-Mit der aktuellen Version 0.1.0 sind schon ein paar Test möglich.
+Mit der aktuellen Version 0.1.8 sind schon ein paar Test möglich.
 
-Ablauf:
-- Installieren
-- Im Admin Mqtt einstellen und speichern
-- Im Admin unter Overview in der Tabelle einen neu Zeile einfügen und dort den Mqtt Topic unter dem das panel lauscht und einen Namen vergeben. Anschließend Geräte aktualisieren. Wenn alles bis hin hin richtig ist, erscheint nun einen MAC Adresse mit _ im ID Feld. Speichern und beenden
-
-Nächster Schritt:
-- Dieses [Skript](script/example_sendTo_script_iobroker.ts) als RAW downloaden und ein neues TS-Skript im Javascript-Adapter anlegen [Beispiel Konfigurationsskript](script/example_sendTo_script_iobroker.ts)
-- Anschauen und die Konfiguration aus einem vorhandenen aktuellen Nspanel-Skript hinein kopieren. Alle Servicepages aus dem alten Skript nicht übernehmen.
-- Der Topic hier muß identisch sein mit einem der Topics aus dem Admin.
-- Jede Seite braucht eine Eigenschaft `uniqueName`
-
-z.B. 
-```
-const main: PageType = {
-    'type': 'cardGrid',
-    uniqueName:'main',
-    'heading': 'Wohnzimmer',
-    'useColor': true,
-    'items': [
-        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Wohnzimmer', targetPage: 'this_Thermostat',name: 'Wohnzimmer', onColor: MSRed, offColor: Blue, useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 19} },
-        { id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.Wohnzimmer.room', onColor: MSRed, offColor: MSGreen},
-        //{ navigate: true, id: '', targetPage: 'Alexa_Schlafzimmer', onColor: White},
-        { navigate: true, icon:'home', name:'Haus', targetPage: 'MenuGrid', onColor: White},
-    ]};
-```
-- Die Hauptseite muß main heißen
-- `next`, `prev`, `home`, `parent` müssen Strings sein die auf einen der `uniqueName` verweist.
-- Seiten die in `pages` eingetragen werden, werden im Kreis miteinander verlinkt, alle anderen Seiten die verwendet werden sollen müssen in `subPages` aufgeführt sein
-- `button1` und `button2` müssen aktuell noch da sein, werden aber nicht verwendet
-- `useValue` wird nicht verwendet.
-
-Wenn alles eingestellt ist, skript starten und auf die Rückmeldung warten, dann beenden und in den Alias die gefunden Fehler beheben.
-
-Dabei bedeutet die Phrase: `not implemented yet!` das wir es noch nicht eingebaut habe und `not supported` das wir das auch nicht werde :)
+[Hier eine kurze Anleitung zur Installation und Startconfig](INSTALLATION.md)
 
 Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
-
 
 [Alias Tabelle](ALIAS.md)
 
