@@ -378,7 +378,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.config.Testconfig2.length === 0
             ) {
                 await this.delay(100);
-                this.mqttClient.destroy();
+                await this.mqttClient.destroy();
                 await this.delay(100);
                 this.log.error('No configuration - adapter on hold!');
                 return;
@@ -480,7 +480,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
             }
             if (this.mqttClient) {
-                this.mqttClient.destroy();
+                await this.mqttClient.destroy();
             }
             if (this.mqttServer) {
                 this.mqttServer.destroy();
@@ -637,7 +637,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         this.timeoutAdmin = null;
                     }
 
-                    mqtt.destroy();
+                    await mqtt.destroy();
                     if (result.status) {
                         device.id = result.id;
                         device.ip = result.ip;
@@ -785,7 +785,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     this.intervalAdmin = null;
                                 }
                                 const result = await checkTasmota(mqtt, obj.message.tasmotaTopic);
-                                mqtt.destroy();
+                                await mqtt.destroy();
 
                                 if (!result.status) {
                                     this.log.error(`Device with topic ${obj.message.tasmotaTopic} not found!`);
@@ -902,7 +902,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     this.timeoutAdmin2 = null;
                                 }
                                 const result = await checkTasmota(mqtt, item.topic);
-                                mqtt.destroy();
+                                await mqtt.destroy();
 
                                 if (!result.status) {
                                     this.log.error(`Device with topic ${item.topic} not found!`);

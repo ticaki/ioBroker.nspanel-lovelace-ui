@@ -103,9 +103,16 @@ class MQTTClientClass extends import_library.BaseClass {
       });
     }
   }
-  destroy() {
+  async destroy() {
     void this.delete();
-    this.client.end();
+    const endMqttClient = () => {
+      return new Promise((resolve) => {
+        this.client.end(false, () => {
+          resolve();
+        });
+      });
+    };
+    await endMqttClient();
   }
 }
 class MQTTServerClass extends import_library.BaseClass {
