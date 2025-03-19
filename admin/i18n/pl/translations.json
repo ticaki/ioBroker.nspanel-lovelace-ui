@@ -36,7 +36,7 @@
     "Notification": "Benachrichtigung",
     "dimActive": "Jasność aktywna",
     "dimStandby": "Tryb gotowości jasności",
-    "screensaverTimeout": "Czas wygaszacza ekranu",
+    "screenSaverTimeout": "Czas wygaszacza ekranu",
     "IconLeft": "Ikona lewa",
     "IconRight": "Ikona prawa",
     "ScreensaverOptions": "Wygaszacz ekranu",

@@ -445,7 +445,7 @@ const ScreensaverOptions: PageBaseConfig = {
             type: 'number',
             data: {
                 entity1: {
-                    value: { type: 'internal', dp: 'cmd/screensaverTimeout' },
+                    value: { type: 'internal', dp: 'cmd/screenSaverTimeout' },
                 },
                 minValue1: { type: 'const', constVal: 0 },
                 maxValue1: { type: 'const', constVal: 90 },
@@ -456,7 +456,7 @@ const ScreensaverOptions: PageBaseConfig = {
                     },
                     false: undefined,
                 },
-                text: { true: { type: 'const', constVal: 'screensaverTimeout' }, false: undefined },
+                text: { true: { type: 'const', constVal: 'screenSaverTimeout' }, false: undefined },
             },
         },
         {

@@ -37,7 +37,7 @@
     "Notification" : "Benachrichtigung",
     "dimActive": "Brightness active",
     "dimStandby":"Brightness standby",
-    "screensaverTimeout": "Dimming time",
+    "screenSaverTimeout": "Dimming time",
     "IconLeft": "Icon left",
     "IconRight": "Icon right",
     "ScreensaverOptions": "Screensaver",

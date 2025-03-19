@@ -36,7 +36,7 @@
     "Notification": "Benachrichtigung",
     "dimActive": "Brillo activo",
     "dimStandby": "Brillo en espera",
-    "screensaverTimeout": "tiempo del salvapantallas",
+    "screenSaverTimeout": "tiempo del salvapantallas",
     "IconLeft": "Icono a la izquierda",
     "IconRight": "Icono a la derecha",
     "ScreensaverOptions": "Protector de pantalla",

@@ -114,7 +114,7 @@ export type PanelInternalCommand =
     | 'cmd/bigIconLeft'
     | 'cmd/dimActive'
     | 'cmd/dimStandby'
-    | 'cmd/screensaverTimeout'
+    | 'cmd/screenSaverTimeout'
     | 'cmd/NotificationCleared2'
     | 'cmd/NotificationNext2'
     | 'cmd/popupNotification2'

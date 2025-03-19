@@ -685,7 +685,7 @@ const pageEntitiesTest2: pages.PageBaseConfig = {
             type: 'number',
             data: {
                 entity1: {
-                    value: { type: 'internal', dp: 'cmd/screensaverTimeout' },
+                    value: { type: 'internal', dp: 'cmd/screenSaverTimeout' },
                     minScale: { type: 'const', constVal: 0 },
                     maxScale: { type: 'const', constVal: 90 },
                 },
@@ -696,7 +696,7 @@ const pageEntitiesTest2: pages.PageBaseConfig = {
                     },
                     false: undefined,
                 },
-                text: { true: { type: 'const', constVal: 'screensaverTimeout' }, false: undefined },
+                text: { true: { type: 'const', constVal: 'screenSaverTimeout' }, false: undefined },
             },
         },
     ],
@@ -6961,7 +6961,7 @@ namespace Types {
         | 'cmd/bigIconLeft'
         | 'cmd/dimActive'
         | 'cmd/dimStandby'
-        | 'cmd/screensaverTimeout'
+        | 'cmd/screenSaverTimeout'
         | 'cmd/NotificationCleared2'
         | 'cmd/NotificationNext2'
         | 'cmd/popupNotification2'
