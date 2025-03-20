@@ -5989,7 +5989,7 @@ namespace pages {
     };
     
     export type screensaverDataItemOptions = {
-        card: 'screensaver' | 'screensaver2';
+        card: 'screensaver' | 'screensaver2' | 'screensaver3';
         mode: Types.ScreensaverModeType;
         rotationTime: number;
         model: Types.NSpanelModel;
@@ -7292,7 +7292,7 @@ namespace Types {
     export function isEventType(F: string | EventType): F is EventType {
         return ['event'].indexOf(F) != -1;
     }
-    export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced';
+    export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced' | 'easyview';
     
     export interface State extends Omit<iobJS.State, 'val'> {
         val: StateValue;
