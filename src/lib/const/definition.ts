@@ -1549,6 +1549,17 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
                 write: true,
             },
         },
+        'cmd/screenSaverLayout': {
+            val: 'standard',
+            ack: true,
+            common: {
+                name: '',
+                type: 'string',
+                role: 'level.text',
+                read: true,
+                write: true,
+            },
+        },
     },
 };
 
