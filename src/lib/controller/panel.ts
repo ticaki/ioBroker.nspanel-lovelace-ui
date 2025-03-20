@@ -24,6 +24,7 @@ import { PageChart } from '../pages/pageChart';
 import { PageLChart } from '../pages/pageLChart';
 import { PageQR } from '../pages/pageQR';
 import { Dataitem } from '../classes/data-item';
+import { Color } from '../const/Color';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -1063,10 +1064,11 @@ export class Panel extends BaseClass {
                 }
             }
         }
+        const color = `${Color.rgb_dec565(Color.Black)}~${Color.rgb_dec565(Color.White)}`;
         if (this.dimMode.dayMode) {
-            this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${this.dimMode.delay}`);
+            this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${color}`);
         } else {
-            this.sendToPanel(`dimmode~${this.dimMode.lowNight}~${this.dimMode.highNight}~${this.dimMode.delay}`);
+            this.sendToPanel(`dimmode~${this.dimMode.lowNight}~${this.dimMode.highNight}~${color}`);
         }
     }
 
@@ -1166,7 +1168,7 @@ export class Panel extends BaseClass {
 
                 await this.writeInfo();
 
-                this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${String(1)}`);
+                this.sendDimmode();
                 this.navigation.resetPosition();
 
                 const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');

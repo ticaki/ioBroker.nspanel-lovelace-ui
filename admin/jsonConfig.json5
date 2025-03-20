@@ -244,7 +244,7 @@
                             "attr": "_tasmotaSendTo",
                             "type": "sendTo",
                             "label": "TS",
-                            "jsonData": "{ \"tasmotaName\": \"${data.panelName}\", \"tasmotaIP\": \"${data.ip}\", \"tasmotaTopic\":\"${data.panelTopic}\", \"mqttServer\": \"${globalData.mqttServer}\", \"mqttIp\": \"${globalData.mqttIp}\", \"mqttPort\": ${globalData.mqttPort}, \"mqttUsername\": \"${globalData.mqttUsername}\", \"mqttPassword\": \"${globalData.mqttPassword}\", \"internalServerIp\": \"${globalData.internalServerIp}\" }",
+                            "jsonData": "{ \"tasmotaName\": \"${data.name}\", \"tasmotaIP\": \"${data.ip}\", \"tasmotaTopic\":\"${data.topic}\", \"mqttServer\": \"${globalData.mqttServer}\", \"mqttIp\": \"${globalData.mqttIp}\", \"mqttPort\": ${globalData.mqttPort}, \"mqttUsername\": \"${globalData.mqttUsername}\", \"mqttPassword\": \"${globalData.mqttPassword}\", \"internalServerIp\": \"${globalData.internalServerIp}\" }",
                             "showProcess": true,
                             "command": "tasmotaSendTo",
                             "disabled": "return !data.ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data.ip || data.ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data.topic || data.topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data.name ",

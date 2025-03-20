@@ -51,6 +51,7 @@ var import_pageChart = require("../pages/pageChart");
 var import_pageLChart = require("../pages/pageLChart");
 var import_pageQR = require("../pages/pageQR");
 var import_data_item = require("../classes/data-item");
+var import_Color = require("../const/Color");
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -965,10 +966,11 @@ class Panel extends import_library.BaseClass {
         }
       }
     }
+    const color = `${import_Color.Color.rgb_dec565(import_Color.Color.Black)}~${import_Color.Color.rgb_dec565(import_Color.Color.White)}`;
     if (this.dimMode.dayMode) {
-      this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${this.dimMode.delay}`);
+      this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${color}`);
     } else {
-      this.sendToPanel(`dimmode~${this.dimMode.lowNight}~${this.dimMode.highNight}~${this.dimMode.delay}`);
+      this.sendToPanel(`dimmode~${this.dimMode.lowNight}~${this.dimMode.highNight}~${color}`);
     }
   }
   restartLoops() {
@@ -1060,7 +1062,7 @@ class Panel extends import_library.BaseClass {
         this.info.nspanel.displayVersion = parseInt(event.id);
         this.info.nspanel.model = event.action;
         await this.writeInfo();
-        this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${String(1)}`);
+        this.sendDimmode();
         this.navigation.resetPosition();
         const i = this.pages.findIndex((a) => a && a.name === "///WelcomePopup");
         const popup = i !== -1 ? this.pages[i] : void 0;
