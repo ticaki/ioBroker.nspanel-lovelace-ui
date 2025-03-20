@@ -140,11 +140,11 @@ const genericStateObjects = {
           },
           native: {}
         },
-        screenSaver: {
+        screenSaverLayout: {
           _id: "",
           type: "state",
           common: {
-            name: "StateObjects.screenSaver",
+            name: "StateObjects.screenSaverLayout",
             type: "string",
             role: "level.text",
             read: true,
