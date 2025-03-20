@@ -1366,7 +1366,7 @@ class Panel extends import_library.BaseClass {
         }
         case "cmd/screenSaverLayout": {
           if (this.screenSaver && typeof state.val === "string") {
-            this.screenSaver.mode = state.val;
+            this.screenSaver.mode;
             await this.library.writedp(`panels.${this.name}.cmd.screenSaverLayout`, state.val);
           }
           break;
