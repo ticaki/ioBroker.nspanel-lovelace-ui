@@ -3,15 +3,17 @@ import { Level } from 'level';
 
 //@ts-expect-error no types
 import aedesPersistencelevel from 'aedes-persistence-level';
-
+import * as factory from 'aedes-server-factory';
 import { BaseClass, type AdapterClassDefinition } from './library';
 
 import Aedes, { type Client } from 'aedes';
-import { createServer, type Server } from 'net';
+import { type Server } from 'net';
 import { randomUUID } from 'node:crypto';
-
+import * as forge from 'node-forge';
 export type callbackMessageType = (topic: string, message: string) => void;
 export type callbackConnectType = () => Promise<void>;
+
+// RSA-Schlüsselpaar erzeugen (4096 Bit für hohe Sicherheit)
 
 export class MQTTClientClass extends BaseClass {
     client: mqtt.MqttClient;
@@ -27,16 +29,18 @@ export class MQTTClientClass extends BaseClass {
         port: number,
         username: string,
         password: string,
+        tls: boolean,
         callback: callbackMessageType,
         onConnect?: callbackConnectType,
     ) {
         super(adapter, 'mqttClient');
         this.clientId = `iobroker_${randomUUID()}`;
         this.messageCallback = callback;
-        this.client = mqtt.connect(`mqtt://${ip}:${port}`, {
+        this.client = mqtt.connect(`${tls ? 'tls' : 'mqtt'}://${ip}:${port}`, {
             username: username,
             password: password,
             clientId: this.clientId,
+            rejectUnauthorized: false,
         });
         this.client.on('connect', () => {
             this.log.info(`Connection is active.`);
@@ -106,11 +110,82 @@ export class MQTTServerClass extends BaseClass {
     aedes: Aedes;
     server: Server;
     ready: boolean = false;
-    constructor(adapter: AdapterClassDefinition, port: number, username: string, password: string, path: string) {
+
+    static async createMQTTServer(
+        adapter: AdapterClassDefinition,
+        port: number,
+        username: string,
+        password: string,
+        path: string,
+    ): Promise<MQTTServerClass> {
+        let keys: Record<string, string> = {};
+        if (
+            !(await adapter.fileExistsAsync(adapter.namespace, 'keys/private-key.pem')) ||
+            !(await adapter.fileExistsAsync(adapter.namespace, 'keys/public-key.pem')) ||
+            !(await adapter.fileExistsAsync(adapter.namespace, 'keys/certificate.pem'))
+        ) {
+            const prekeys = forge.pki.rsa.generateKeyPair(4096);
+            keys.privateKey = forge.pki.privateKeyToPem(prekeys.privateKey);
+            keys.publicKey = forge.pki.publicKeyToPem(prekeys.publicKey);
+
+            // Zertifikat erstellen
+            const cert = forge.pki.createCertificate();
+            cert.publicKey = prekeys.publicKey;
+            cert.serialNumber = '01'; // Eine eindeutige Seriennummer als HEX
+            cert.validity.notBefore = new Date();
+            cert.validity.notAfter = new Date();
+            cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1); // 1 Jahr gültig
+
+            // Zertifikats-Infos (X.509 Subject & Issuer)
+            const attrs = [
+                { name: 'commonName', value: 'localhost' },
+                { name: 'countryName', value: 'DE' },
+                { name: 'organizationName', value: 'Meine Firma' },
+            ];
+            cert.setSubject(attrs);
+            cert.setIssuer(attrs);
+
+            // Selbstsignieren mit SHA-256
+            cert.sign(prekeys.privateKey, forge.md.sha256.create());
+
+            // PEM-Format exportieren
+            keys.certPem = forge.pki.certificateToPem(cert);
+
+            // In Dateien speichern
+
+            // Schlüssel in Dateien speichern
+            await adapter.writeFileAsync(adapter.namespace, 'keys/private-key.pem', keys.privateKey);
+            await adapter.writeFileAsync(adapter.namespace, 'keys/public-key.pem', keys.publicKey);
+            await adapter.writeFileAsync(adapter.namespace, 'keys/certificate.pem', keys.certPem);
+        } else {
+            keys = {
+                publicKey: (await adapter.readFileAsync(adapter.namespace, 'keys/public-key.pem')).file.toString(),
+                privateKey: (await adapter.readFileAsync(adapter.namespace, 'keys/private-key.pem')).file.toString(),
+                certPem: (await adapter.readFileAsync(adapter.namespace, 'keys/certificate.pem')).file.toString(),
+            };
+        }
+        return new MQTTServerClass(adapter, port, username, password, path, keys);
+    }
+
+    constructor(
+        adapter: AdapterClassDefinition,
+        port: number,
+        username: string,
+        password: string,
+        path: string,
+        keyPair: Record<string, string>,
+    ) {
         super(adapter, 'mqttServer');
         const persistence = aedesPersistencelevel(new Level(path));
+
         this.aedes = new Aedes({ persistence: persistence });
-        this.server = createServer(this.aedes.handle);
+        this.server = factory.createServer(this.aedes, {
+            tls: {
+                key: Buffer.from(keyPair.privateKey),
+                cert: Buffer.from(keyPair.certPem),
+            },
+        });
+        //this.server = createServer(this.aedes.handle);
 
         this.server.listen(port, () => {
             this.ready = true;

@@ -213,15 +213,11 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         ACTUAL: null,
         SET: null,
         SET2: null,
-        AUTO: null,
-        COOL: null,
         BOOST: null,
         ERROR: null,
-        HEAT: null,
         HUMIDITY: null,
         MAINTAIN: null,
         MODE: null,
-        OFF: null,
         POWER: null,
         SPEED: null,
         SWING: null,
@@ -494,15 +490,11 @@ export type requiredDatapoints = {
             ACTUAL: Datapoint;
             SET: Datapoint;
             SET2: Datapoint;
-            AUTO: Datapoint;
-            COOL: Datapoint;
             BOOST: Datapoint;
             ERROR: Datapoint;
-            HEAT: Datapoint;
             HUMIDITY: Datapoint;
             MAINTAIN: Datapoint;
             MODE: Datapoint;
-            OFF: Datapoint;
             POWER: Datapoint;
             SPEED: Datapoint;
             SWING: Datapoint;
@@ -910,11 +902,8 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             },
             SET: { role: 'level.temperature', type: 'number', useKey: true, required: true, writeable: true },
             SET2: { role: 'level.temperature', type: 'number', useKey: true, required: false, writeable: true },
-            AUTO: { role: 'switch.mode.auto', type: 'boolean', required: false, writeable: false, trigger: true },
-            COOL: { role: 'state', type: 'boolean', useKey: true, required: false, writeable: false, trigger: true },
             BOOST: { role: 'switch.mode.boost', type: 'boolean', required: false, writeable: true, trigger: true },
             ERROR: { role: 'indicator.error', type: 'boolean', required: false, writeable: false, trigger: true },
-            HEAT: { role: 'state', type: 'boolean', useKey: true, required: false, writeable: false, trigger: true },
             HUMIDITY: { role: 'value.humidity', type: 'number', required: false, writeable: false, trigger: true },
             MAINTAIN: {
                 role: 'indicator.maintenance',
@@ -929,9 +918,15 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: true,
                 trigger: true,
+                description: `0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more`,
             },
-            OFF: { role: 'state', type: 'boolean', required: false, writeable: false }, //off
-            POWER: { role: 'switch', type: 'boolean', required: false, writeable: true }, //on
+            POWER: {
+                role: 'switch',
+                type: 'boolean',
+                required: false,
+                writeable: true,
+                description: 'use MODE for on/off',
+            }, //on
             SPEED: { role: 'level.mode.fan', type: 'number', required: false, writeable: true, trigger: true },
             SWING: { role: 'switch.mode.swing', type: 'boolean', required: false, writeable: true, trigger: true },
             UNREACH: {

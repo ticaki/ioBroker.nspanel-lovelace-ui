@@ -103,16 +103,12 @@
 | **airCondition** | ~~ACTUAL~~ | number| value.temperature  |  |  |  | 
 | **"** | SET | number| level.temperature  | X | X |  | 
 | **"** | SET2 | number| level.temperature  |  | X |  | 
-| **"** | ~~AUTO~~ | boolean| switch.mode.auto  |  |  |  | 
-| **"** | COOL | boolean| state  |  |  |  | 
 | **"** | ~~BOOST~~ | boolean| switch.mode.boost  |  | X |  | 
 | **"** | ~~ERROR~~ | boolean| indicator.error  |  |  |  | 
-| **"** | HEAT | boolean| state  |  |  |  | 
 | **"** | ~~HUMIDITY~~ | number| value.humidity  |  |  |  | 
 | **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  |  | 
-| **"** | ~~MODE~~ | number| level.mode.airconditioner  |  | X |  | 
-| **"** | ~~OFF~~ | boolean| state  |  |  |  | 
-| **"** | ~~POWER~~ | boolean| switch  |  | X |  | 
+| **"** | ~~MODE~~ | number| level.mode.airconditioner  |  | X | 0: OFF, 1: AUTO, 2: COOL, 3: HEAT, 4: ECO, 5: FAN_ONLY, 6: DRY - depend on array in common.states - check wiki for more | 
+| **"** | ~~POWER~~ | boolean| switch  |  | X | use MODE for on/off | 
 | **"** | ~~SPEED~~ | number| level.mode.fan  |  | X |  | 
 | **"** | ~~SWING~~ | boolean| switch.mode.swing  |  | X |  | 
 | **"** | ~~UNREACH~~ | boolean| indicator.maintenance  |  |  |  | 

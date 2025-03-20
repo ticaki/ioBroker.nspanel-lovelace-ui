@@ -35,10 +35,11 @@ module.exports = __toCommonJS(mqtt_exports);
 var import_mqtt = __toESM(require("mqtt"));
 var import_level = require("level");
 var import_aedes_persistence_level = __toESM(require("aedes-persistence-level"));
+var factory = __toESM(require("aedes-server-factory"));
 var import_library = require("./library");
 var import_aedes = __toESM(require("aedes"));
-var import_net = require("net");
 var import_node_crypto = require("node:crypto");
+var forge = __toESM(require("node-forge"));
 class MQTTClientClass extends import_library.BaseClass {
   client;
   data = {};
@@ -46,14 +47,15 @@ class MQTTClientClass extends import_library.BaseClass {
   messageCallback;
   clientId;
   subscriptDB = [];
-  constructor(adapter, ip, port, username, password, callback, onConnect) {
+  constructor(adapter, ip, port, username, password, tls, callback, onConnect) {
     super(adapter, "mqttClient");
     this.clientId = `iobroker_${(0, import_node_crypto.randomUUID)()}`;
     this.messageCallback = callback;
-    this.client = import_mqtt.default.connect(`mqtt://${ip}:${port}`, {
+    this.client = import_mqtt.default.connect(`${tls ? "tls" : "mqtt"}://${ip}:${port}`, {
       username,
       password,
-      clientId: this.clientId
+      clientId: this.clientId,
+      rejectUnauthorized: false
     });
     this.client.on("connect", () => {
       this.log.info(`Connection is active.`);
@@ -112,11 +114,49 @@ class MQTTServerClass extends import_library.BaseClass {
   aedes;
   server;
   ready = false;
-  constructor(adapter, port, username, password, path) {
+  static async createMQTTServer(adapter, port, username, password, path) {
+    let keys = {};
+    if (!await adapter.fileExistsAsync(adapter.namespace, "keys/private-key.pem") || !await adapter.fileExistsAsync(adapter.namespace, "keys/public-key.pem") || !await adapter.fileExistsAsync(adapter.namespace, "keys/certificate.pem")) {
+      const prekeys = forge.pki.rsa.generateKeyPair(4096);
+      keys.privateKey = forge.pki.privateKeyToPem(prekeys.privateKey);
+      keys.publicKey = forge.pki.publicKeyToPem(prekeys.publicKey);
+      const cert = forge.pki.createCertificate();
+      cert.publicKey = prekeys.publicKey;
+      cert.serialNumber = "01";
+      cert.validity.notBefore = /* @__PURE__ */ new Date();
+      cert.validity.notAfter = /* @__PURE__ */ new Date();
+      cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
+      const attrs = [
+        { name: "commonName", value: "localhost" },
+        { name: "countryName", value: "DE" },
+        { name: "organizationName", value: "Meine Firma" }
+      ];
+      cert.setSubject(attrs);
+      cert.setIssuer(attrs);
+      cert.sign(prekeys.privateKey, forge.md.sha256.create());
+      keys.certPem = forge.pki.certificateToPem(cert);
+      await adapter.writeFileAsync(adapter.namespace, "keys/private-key.pem", keys.privateKey);
+      await adapter.writeFileAsync(adapter.namespace, "keys/public-key.pem", keys.publicKey);
+      await adapter.writeFileAsync(adapter.namespace, "keys/certificate.pem", keys.certPem);
+    } else {
+      keys = {
+        publicKey: (await adapter.readFileAsync(adapter.namespace, "keys/public-key.pem")).file.toString(),
+        privateKey: (await adapter.readFileAsync(adapter.namespace, "keys/private-key.pem")).file.toString(),
+        certPem: (await adapter.readFileAsync(adapter.namespace, "keys/certificate.pem")).file.toString()
+      };
+    }
+    return new MQTTServerClass(adapter, port, username, password, path, keys);
+  }
+  constructor(adapter, port, username, password, path, keyPair) {
     super(adapter, "mqttServer");
     const persistence = (0, import_aedes_persistence_level.default)(new import_level.Level(path));
     this.aedes = new import_aedes.default({ persistence });
-    this.server = (0, import_net.createServer)(this.aedes.handle);
+    this.server = factory.createServer(this.aedes, {
+      tls: {
+        key: Buffer.from(keyPair.privateKey),
+        cert: Buffer.from(keyPair.certPem)
+      }
+    });
     this.server.listen(port, () => {
       this.ready = true;
       this.log.info(`Started and listening on port ${port}`);
