@@ -250,6 +250,7 @@ function isButtonActionType(F) {
     case "mode-modus3":
     case "number-set":
     case "mode-preset_modes":
+    case "mode-screenSaverLayout":
     case "A1":
     case "A2":
     case "A3":
