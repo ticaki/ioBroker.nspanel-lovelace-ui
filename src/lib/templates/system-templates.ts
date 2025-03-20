@@ -441,6 +441,53 @@ const ScreensaverOptions: PageBaseConfig = {
             },
         },
         {
+            role: 'text.list',
+            type: 'input_sel',
+            dpInit: '',
+            data: {
+                headline: {
+                    type: 'const',
+                    constVal: 'screenSaverLayout',
+                },
+                color: {
+                    true: {
+                        type: 'const',
+                        constVal: Color.HMIOn,
+                    },
+                    false: undefined,
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'monitor' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: undefined,
+                },
+                entityInSel: {
+                    value: {
+                        type: 'internal',
+                        dp: 'cmd/screenSaverLayout',
+                    },
+                },
+                text: {
+                    true: { type: 'internal', dp: 'cmd/screenSaverLayout' },
+                    false: undefined,
+                },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                valueList: { type: 'const', constVal: 'Standard?Alternate?Advanced?Easyview' },
+                /**
+                 * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+                 */
+                setList: undefined /* {
+                    type: 'const',
+                    constVal:
+                        '0_userdata.0.example_state_string?standrard|0_userdata.0.example_state_string?alternate|0_userdata.0.example_state_string?advanced|0_userdata.0.example_state_string?easyview',
+                } */,
+            },
+        },
+        {
             role: '',
             type: 'number',
             data: {

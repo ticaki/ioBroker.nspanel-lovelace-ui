@@ -453,6 +453,49 @@ const ScreensaverOptions = {
       }
     },
     {
+      role: "text.list",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        headline: {
+          type: "const",
+          constVal: "screenSaverLayout"
+        },
+        color: {
+          true: {
+            type: "const",
+            constVal: import_Color.Color.HMIOn
+          },
+          false: void 0
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "monitor" },
+            color: { type: "const", constVal: import_Color.Color.Green }
+          },
+          false: void 0
+        },
+        entityInSel: {
+          value: {
+            type: "internal",
+            dp: "cmd/screenSaverLayout"
+          }
+        },
+        text: {
+          true: { type: "internal", dp: "cmd/screenSaverLayout" },
+          false: void 0
+        },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        valueList: { type: "const", constVal: "Standard?Alternate?Advanced?Easyview" },
+        /**
+         * setList: {id:Datenpunkt, value: zu setzender Wert}[] bzw. stringify  oder ein String nach dem Muster datenpunkt?Wert|Datenpunkt?Wert {input_sel}
+         */
+        setList: void 0
+      }
+    },
+    {
       role: "",
       type: "number",
       data: {
