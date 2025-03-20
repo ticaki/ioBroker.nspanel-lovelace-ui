@@ -65,5 +65,6 @@
     "Lock open": "Sluit open",
     "Lock closed": "Vergrendeling gesloten",
     "getRandomMqttCredentialsHelp": "Genereer willekeurige MQTT -referenties en krijg een gratis poort",
-    "getRandomMqttCredentials": "Vul MQTT -referenties en poort"
+    "getRandomMqttCredentials": "Vul MQTT -referenties en poort",
+    "useTasmotaAdmin": "Tasmota webbeheerder en wachtwoord zijn ingesteld"
 }

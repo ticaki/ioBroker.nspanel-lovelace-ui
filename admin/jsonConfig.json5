@@ -239,7 +239,19 @@
                             "label": "panelTopic",
                             "readOnly": true,
                             "validatorErrorText": "mustBeUnique"
-                        }/*,
+                        },
+                        {
+                            "attr": "_tasmotaSendTo",
+                            "type": "sendTo",
+                            "label": "TS",
+                            "jsonData": "{ \"tasmotaName\": \"${data.panelName}\", \"tasmotaIP\": \"${data.ip}\", \"tasmotaTopic\":\"${data.panelTopic}\", \"mqttServer\": \"${globalData.mqttServer}\", \"mqttIp\": \"${globalData.mqttIp}\", \"mqttPort\": ${globalData.mqttPort}, \"mqttUsername\": \"${globalData.mqttUsername}\", \"mqttPassword\": \"${globalData.mqttPassword}\", \"internalServerIp\": \"${globalData.internalServerIp}\" }",
+                            "showProcess": true,
+                            "command": "tasmotaSendTo",
+                            "disabled": "return !data.ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data.ip || data.ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data.topic || data.topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data.name ",
+                            "width": "5%",
+                            "variant": "outlined",
+                            "confirm": "Are you sure?"
+                        } /*,
                         {
                             "attr": "_RefreshDevices",
                             "type": "sendTo",
@@ -259,6 +271,39 @@
                     "text": "TasmotaDeviceTools",
                     "size": 3,
                     "newLine": true
+                },
+                "useTasmotaAdmin": {
+                    "type": "checkbox",
+                    "label": "useTasmotaAdmin",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "tasmotaAdmin": {
+                    "type": "text",
+                    "label": "tasmotaAdmin",
+                    "newLine": false,
+                    "hidden": "!data.useTasmotaAdmin",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "tasmotaAdminPassword": {
+                    "type": "password",
+                    "label": "tasmotaAdminPassword",
+                    "newLine": false,
+                    "hidden": "!data.useTasmotaAdmin",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "_selectTool": {
                     "type": "select",
@@ -341,12 +386,13 @@
                 "_tasmotaAddTableSendTo": {
                     "type": "sendTo",
                     "label": "tasmotaAddTableSendTo",
-                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\": \"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\":  \"${data.mqttPort}\", \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
+                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\": \"${data._tasmotaTopic}\", \"mqttServer\": ${data.mqttServer}, \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\":  ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
                     "showProcess": true,
                     "command": "tasmotaAddTableSendTo",
                     "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 ||  (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
                     "newLine": false,
-                    "reloadBrowser": true,
+                    //"reloadBrowser": true,
+                    "useNative": true,
                     "variant": "contained",
                     "hidden": "data._selectTool != '1'"
                 },

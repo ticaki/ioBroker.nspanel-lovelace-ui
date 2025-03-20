@@ -65,5 +65,6 @@
     "Lock open": "Verrouiller",
     "Lock closed": "Verrouillage fermé",
     "getRandomMqttCredentialsHelp": "Générer des informations d'identification MQTT aléatoires et obtenir un port libre",
-    "getRandomMqttCredentials": "Remplissez les informations d'identification et le port MQTT"
+    "getRandomMqttCredentials": "Remplissez les informations d'identification et le port MQTT",
+    "useTasmotaAdmin": "L'administrateur Web et le mot de passe Tasmota ont été définis"
 }

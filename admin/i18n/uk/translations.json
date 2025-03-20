@@ -65,5 +65,6 @@
     "Lock open": "Замок",
     "Lock closed": "Замок закритий",
     "getRandomMqttCredentialsHelp": "Створіть випадкові облікові дані MQTT та отримайте безкоштовний порт",
-    "getRandomMqttCredentials": "Заповніть облікові дані MQTT та порт"
+    "getRandomMqttCredentials": "Заповніть облікові дані MQTT та порт",
+    "useTasmotaAdmin": "Встановлено веб -адміністратор та пароль Tasmota"
 }

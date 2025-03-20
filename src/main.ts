@@ -441,9 +441,17 @@ class NspanelLovelaceUi extends utils.Adapter {
         const _helper = async (tasmota: any): Promise<void> => {
             try {
                 this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
-                await axios.get(`http://${tasmota.ip}/cm?&cmnd=Backlog MqttRetry 11`);
+                await axios.get(
+                    `http://${tasmota.ip}/cm?` +
+                        `${this.config.useTasmotaAdmin ? `user=${this.config.tasmotaAdmin}&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                        `&cmnd=Backlog MqttRetry 11`,
+                );
                 await this.delay(300);
-                await axios.get(`http://${tasmota.ip}/cm?&cmnd=Backlog MqttRetry 10`);
+                await axios.get(
+                    `http://${tasmota.ip}/cm?` +
+                        `${this.config.useTasmotaAdmin ? `user=${this.config.tasmotaAdmin}&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                        `&cmnd=Backlog MqttRetry 10`,
+                );
             } catch (e: any) {
                 this.log.warn(
                     `Error: This usually means that the NSpanel with ip ${tasmota.ip} is not online or has not been set up properly in the configuration! ${e}`,
@@ -527,7 +535,7 @@ class NspanelLovelaceUi extends utils.Adapter {
 
     // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
     // /**
-    //  * Somee message was sent to this instance over message box. Used by email, pushover, text2speech, .
+    //  * Somee message was sent to this instance over message box. Used by email, pushover, text2speech,
     //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
     //  */
     private async onMessage(obj: ioBroker.Message): Promise<void> {
@@ -710,7 +718,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     ` Module 0; MqttClient ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}%06X;` +
                                     ` ${obj.message.mqttServer ? 'SetOption132 1; SetOption103 1 ' : 'SetOption132 0; SetOption103 0'}; Restart 1`;
                                 const u = new URL(
-                                    `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog${encodeURIComponent(url)}`,
+                                    `http://${obj.message.tasmotaIP}/cm?` +
+                                        `${this.config.useTasmotaAdmin ? `user=${this.config.tasmotaAdmin}&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                        `&cmnd=Backlog${encodeURIComponent(url)}`,
                                 );
                                 this.log.info(
                                     `Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP} ${u.href}`,
@@ -926,17 +936,21 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 if (index === -1) {
                                     panels.push(item);
                                 }
-                                const o = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
+                                /*const o = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
                                 if (o && o.native) {
                                     o.native.panels = panels;
                                     await this.setForeignObjectAsync(`system.adapter.${this.namespace}`, o);
-                                }
+                                }*/
 
                                 if (obj.callback) {
                                     this.sendTo(
                                         obj.from,
                                         obj.command,
-                                        { result: 'sendToDeviceFound', reloadBrowser: true },
+                                        {
+                                            result: 'sendToDeviceFound',
+                                            native: { panels: panels },
+                                            saveConfig: true,
+                                        },
                                         obj.callback,
                                     );
                                 }
@@ -958,7 +972,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (obj.message) {
                         if (obj.message.tasmotaIP) {
                             try {
-                                const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
+                                const url =
+                                    `http://${obj.message.tasmotaIP}/cm?` +
+                                    `${this.config.useTasmotaAdmin ? `user=${this.config.tasmotaAdmin}&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                    `&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
                                 this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
                                 await axios.get(url);
                                 if (obj.callback) {
@@ -1029,9 +1046,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog FlashNextion http://${obj.message.internalServerIp}:${port}/${
                                     fileName
                                 }`;*/
-                                const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog FlashNextion http://nspanel.de/${
-                                    fileName
-                                }`;
+                                const url =
+                                    `http://${obj.message.tasmotaIP}/cm?` +
+                                    `${this.config.useTasmotaAdmin ? `user=${this.config.tasmotaAdmin}&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                    `&cmnd=Backlog FlashNextion http://nspanel.de/${fileName}`;
                                 this.log.debug(url);
                                 await axios.get(url);
 

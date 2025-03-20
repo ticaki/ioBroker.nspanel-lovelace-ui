@@ -65,5 +65,6 @@
     "Lock open": "Lock open",
     "Lock closed": "Lock closed",
     "getRandomMqttCredentialsHelp": "Generate random MQTT credentials and get a free port",
-    "getRandomMqttCredentials": "Fill MQTT credentials and port"
+    "getRandomMqttCredentials": "Fill MQTT credentials and port",
+    "useTasmotaAdmin": "Tasmota Web Admin & Password has been set"
 }
