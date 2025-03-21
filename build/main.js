@@ -44,6 +44,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   httpServer = [];
   timeoutAdmin;
   timeoutAdmin2;
+  timeoutAdminArray = [];
   intervalAdmin;
   constructor(options = {}) {
     super({
@@ -383,6 +384,11 @@ class NspanelLovelaceUi extends utils.Adapter {
       if (this.timeoutAdmin2) {
         this.clearTimeout(this.timeoutAdmin2);
       }
+      this.timeoutAdminArray.forEach((a) => {
+        if (a) {
+          this.clearTimeout(a);
+        }
+      });
       if (this.controller) {
         await this.controller.delete();
       }
@@ -392,7 +398,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
       }
       if (this.mqttClient) {
-        this.mqttClient.destroy();
+        await this.mqttClient.destroy();
       }
       if (this.mqttServer) {
         this.mqttServer.destroy();
@@ -685,12 +691,6 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         case "tasmotaAddTableSendTo": {
           if (obj.message) {
-            if (this.timeoutAdmin2) {
-              if (obj.callback) {
-                this.sendTo(obj.from, obj.command, { error: "sendToAdmin2Running" }, obj.callback);
-                break;
-              }
-            }
             try {
               if (obj.message.tasmotaIP && obj.message.tasmotaTopic && obj.message.tasmotaName) {
                 const config = this.config;
@@ -719,18 +719,26 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.log.debug(`${topic} ${message}`);
                   }
                 );
-                await this.delay(100);
+                await this.delay(250);
                 const checkTasmota = async (mqtt2, topic) => {
                   return new Promise((resolve) => {
                     const result2 = {
                       status: false,
                       id: "",
-                      ip: ""
+                      ip: "",
+                      timeoutIndex: -1
                     };
-                    this.timeoutAdmin2 = this.setTimeout(() => {
-                      this.timeoutAdmin2 = null;
-                      resolve(result2);
-                    }, 5e3);
+                    this.timeoutAdminArray.push(
+                      this.setTimeout(
+                        (index2) => {
+                          this.timeoutAdminArray[index2] = null;
+                          resolve(result2);
+                        },
+                        5e3,
+                        this.timeoutAdminArray.length - 1
+                      )
+                    );
+                    result2.timeoutIndex = this.timeoutAdminArray.length - 1;
                     if (mqtt2 && topic) {
                       mqtt2.subscript(
                         `${topic}/stat/STATUS0`,
@@ -759,11 +767,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                   });
                 };
-                if (this.timeoutAdmin2) {
-                  this.clearTimeout(this.timeoutAdmin2);
-                  this.timeoutAdmin2 = null;
-                }
                 const result = await checkTasmota(mqtt, item.topic);
+                if (result.timeoutIndex !== -1) {
+                  this.clearTimeout(this.timeoutAdminArray[result.timeoutIndex]);
+                  this.timeoutAdminArray[result.timeoutIndex] = null;
+                }
+                if (this.timeoutAdminArray.every((a) => a === null)) {
+                  this.timeoutAdminArray = [];
+                }
                 mqtt.destroy();
                 if (!result.status) {
                   this.log.error(`Device with topic ${item.topic} not found!`);

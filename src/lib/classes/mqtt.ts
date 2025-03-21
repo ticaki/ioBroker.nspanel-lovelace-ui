@@ -100,9 +100,16 @@ export class MQTTClientClass extends BaseClass {
             });
         }
     }
-    destroy(): void {
-        void this.delete();
-        this.client.end();
+    async destroy(): Promise<void> {
+        await this.delete();
+        const endMqttClient = (): Promise<void> => {
+            return new Promise(resolve => {
+                this.client.end(false, () => {
+                    resolve();
+                });
+            });
+        };
+        await endMqttClient();
     }
 }
 

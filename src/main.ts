@@ -36,6 +36,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     httpServer: HttpServer[] = [];
     timeoutAdmin: ioBroker.Timeout | undefined;
     timeoutAdmin2: ioBroker.Timeout | undefined;
+    timeoutAdminArray: (ioBroker.Timeout | undefined)[] = [];
     intervalAdmin: ioBroker.Interval | undefined;
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -481,6 +482,11 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (this.timeoutAdmin2) {
                 this.clearTimeout(this.timeoutAdmin2);
             }
+            this.timeoutAdminArray.forEach(a => {
+                if (a) {
+                    this.clearTimeout(a);
+                }
+            });
             if (this.controller) {
                 await this.controller.delete();
             }
@@ -490,7 +496,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
             }
             if (this.mqttClient) {
-                this.mqttClient.destroy();
+                await this.mqttClient.destroy();
             }
             if (this.mqttServer) {
                 this.mqttServer.destroy();
@@ -834,12 +840,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 case 'tasmotaAddTableSendTo': {
                     if (obj.message) {
-                        if (this.timeoutAdmin2) {
+                        /*if (this.timeoutAdmin2) {
                             if (obj.callback) {
                                 this.sendTo(obj.from, obj.command, { error: 'sendToAdmin2Running' }, obj.callback);
                                 break;
                             }
-                        }
+                        }*/
                         try {
                             if (obj.message.tasmotaIP && obj.message.tasmotaTopic && obj.message.tasmotaName) {
                                 const config = this.config;
@@ -869,21 +875,34 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         this.log.debug(`${topic} ${message}`);
                                     },
                                 );
-                                await this.delay(100);
+                                await this.delay(250);
                                 const checkTasmota = async (
                                     mqtt: MQTT.MQTTClientClass,
                                     topic: string,
-                                ): Promise<{ status: boolean; id: string; ip: string }> => {
+                                ): Promise<{ status: boolean; id: string; ip: string; timeoutIndex: number }> => {
                                     return new Promise(resolve => {
-                                        const result: { status: boolean; id: string; ip: string } = {
+                                        const result: {
+                                            status: boolean;
+                                            id: string;
+                                            ip: string;
+                                            timeoutIndex: number;
+                                        } = {
                                             status: false,
                                             id: '',
                                             ip: '',
+                                            timeoutIndex: -1,
                                         };
-                                        this.timeoutAdmin2 = this.setTimeout(() => {
-                                            this.timeoutAdmin2 = null;
-                                            resolve(result);
-                                        }, 5000);
+                                        this.timeoutAdminArray.push(
+                                            this.setTimeout(
+                                                (index: number) => {
+                                                    this.timeoutAdminArray[index] = null;
+                                                    resolve(result);
+                                                },
+                                                5000,
+                                                this.timeoutAdminArray.length - 1,
+                                            ),
+                                        );
+                                        result.timeoutIndex = this.timeoutAdminArray.length - 1;
                                         if (mqtt && topic) {
                                             mqtt.subscript(
                                                 `${topic}/stat/STATUS0`,
@@ -912,11 +931,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         }
                                     });
                                 };
-                                if (this.timeoutAdmin2) {
-                                    this.clearTimeout(this.timeoutAdmin2);
-                                    this.timeoutAdmin2 = null;
-                                }
+
                                 const result = await checkTasmota(mqtt, item.topic);
+                                if (result.timeoutIndex !== -1) {
+                                    this.clearTimeout(this.timeoutAdminArray[result.timeoutIndex]);
+                                    this.timeoutAdminArray[result.timeoutIndex] = null;
+                                }
+                                if (this.timeoutAdminArray.every(a => a === null)) {
+                                    this.timeoutAdminArray = [];
+                                }
                                 mqtt.destroy();
 
                                 if (!result.status) {
@@ -1017,35 +1040,7 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                                 const version = result.data.tft.split('_')[0];
                                 const fileName = `nspanel-v${version}.tft`;
-                                /*
-                                const path = `${utils.getAbsoluteInstanceDataDir(this)}/tft`;
-                                const absolutFileName = `${path}/${fileName}`;
-                                if (!fs.existsSync(path)) {
-                                    fs.mkdirSync(path, { recursive: true });
-                                }
-                                if (!fs.existsSync(fileName)) {
-                                    const downloadLink = `http://nspanel.de/nspanel-v${version}.tft`;
-                                    const response = await axios.get(downloadLink, { responseType: 'arraybuffer' });
-                                    const fileData = Buffer.from(response.data, 'binary');
 
-                                    fs.writeFileSync(absolutFileName, fileData);
-                                }
-                                const port = await this.getPortAsync(10000);
-                                const http = new HttpServer(
-                                    this,
-                                    `http-server-${this.httpServer.length}`,
-                                    obj.message.internalServerIp,
-                                    port,
-                                    path,
-                                );
-                                this.httpServer.push(http);
-                                this.httpServer = this.httpServer.filter(a => !a.unload);
-                                this.log.info(
-                                    `Installing version ${version} on tasmota with IP ${obj.message.tasmotaIP}`,
-                                );
-                                const url = `http://${obj.message.tasmotaIP}/cm?&cmnd=Backlog FlashNextion http://${obj.message.internalServerIp}:${port}/${
-                                    fileName
-                                }`;*/
                                 const url =
                                     `http://${obj.message.tasmotaIP}/cm?` +
                                     `${this.config.useTasmotaAdmin ? `user=${this.config.tasmotaAdmin}&password=${this.config.tasmotaAdminPassword}` : ``}` +
