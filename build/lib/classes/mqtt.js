@@ -92,7 +92,6 @@ class MQTTClientClass extends import_library.BaseClass {
   }
   async publish(topic, message, opt) {
     if (!this.client.connected) {
-      this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
       return;
     }
     await this.client.publishAsync(topic, message, opt);

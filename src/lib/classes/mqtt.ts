@@ -85,7 +85,7 @@ export class MQTTClientClass extends BaseClass {
 
     async publish(topic: string, message: string, opt?: IClientPublishOptions): Promise<void> {
         if (!this.client.connected) {
-            this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
+            //this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
             return;
         }
         await this.client.publishAsync(topic, message, opt);

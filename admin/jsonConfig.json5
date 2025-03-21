@@ -337,7 +337,7 @@
                     "onlyIp4": true,
                     "newLine": true,
                     "validator": "data.internalServerIp && (data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1 && data.internalServerIp !== '127.0.0.1' )",
-                    "hidden": "!data.mqttServer || (data._selectTool !== '1')",
+                    "hidden": "!data.mqttServer || (data._selectTool && data._selectTool != '1')",
                     "default": "",
                     "xs": 12,
                     "sm": 12,
