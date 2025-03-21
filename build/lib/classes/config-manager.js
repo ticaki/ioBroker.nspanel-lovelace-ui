@@ -2167,8 +2167,8 @@ class ConfigManager extends import_library.BaseClass {
                   }
                 },
                 text: {
-                  true: { type: "const", constVal: "Lock open" },
-                  false: { type: "const", constVal: "Lock closed" }
+                  true: { type: "const", constVal: "lockOpen" },
+                  false: { type: "const", constVal: "lockClosed" }
                 },
                 headline,
                 entity1: {

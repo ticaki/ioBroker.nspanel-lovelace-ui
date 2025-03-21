@@ -2498,8 +2498,8 @@ export class ConfigManager extends BaseClass {
                                     },
                                 },
                                 text: {
-                                    true: { type: 'const', constVal: 'Lock open' },
-                                    false: { type: 'const', constVal: 'Lock closed' },
+                                    true: { type: 'const', constVal: 'lockOpen' },
+                                    false: { type: 'const', constVal: 'lockClosed' },
                                 },
                                 headline: headline,
 
