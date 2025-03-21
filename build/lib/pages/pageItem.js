@@ -418,6 +418,12 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             }
           }
           break;
+        /**
+         * 3 Funktionen
+         * 1. Countdown
+         * 2. Wecker stellen
+         * 3. Countdown anzeigen
+         */
         case "timer": {
           if (entry.type === "timer") {
             const item = entry.data;
@@ -641,7 +647,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     return "";
   }
   async GeneratePopup(mode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O;
     if (!this.config || !this.dataItems) {
       return null;
     }
@@ -963,7 +969,17 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         if (!(message.type === "popupTimer")) {
           break;
         }
-        if (this.tempData !== void 0) {
+        if ((_O = item.entity1) == null ? void 0 : _O.value) {
+          const value = await item.entity1.value.getNumber();
+          if (value !== null) {
+            message.iconColor = await tools.GetIconColor(item.icon, value > 0);
+            message.minutes = Math.floor(value / 60).toFixed(0);
+            message.seconds = Math.floor(value % 60).toFixed(0);
+            if (item.entity1.set) {
+            } else {
+            }
+          }
+        } else if (this.tempData !== void 0) {
           message.iconColor = await tools.GetIconColor(item.icon, this.tempData.status === "run");
           message.minutes = Math.floor(this.tempData.value / 60).toFixed(0);
           message.seconds = Math.floor(this.tempData.value % 60).toFixed(0);
