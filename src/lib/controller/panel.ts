@@ -515,7 +515,7 @@ export class Panel extends BaseClass {
 
         for (const page of this.pages) {
             if (page && page.name) {
-                this.log.info(
+                this.log.debug(
                     `Initialisation of page ${page.name} - card: ${page.card} - pageItems: ${(page.pageItemConfig || []).length}`,
                 );
                 await page.init();
