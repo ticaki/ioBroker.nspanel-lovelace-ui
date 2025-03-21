@@ -199,7 +199,7 @@
             "items": {
                 "panels": {
                     "type": "table",
-                    "label": "panels",
+                    "label": "overviewOfPanels",
                     "sm": 12,
                     "md": 12,
                     "lg": 12,
@@ -213,7 +213,7 @@
                         {
                             "type": "text",
                             "attr": "id",
-                            "label": "Id",
+                            "label": "macAdressOfPanel",
                             "validator": "data.id",
                             "validatorNoSaveOnError": true,
                             "readOnly": true
@@ -223,7 +223,7 @@
                             "attr": "ip",
                             "validator": "data.ip",
                             "default": "",
-                            "label": "ip",
+                            "label": "ipFromPanel",
                             "readOnly": true
                         },
                         {
@@ -272,8 +272,8 @@
                 },
                 "_header2": {
                     "type": "header",
-                    "label": "TasmotaDeviceTools",
-                    "text": "TasmotaDeviceTools",
+                    "label": "tasmotaDeviceTools",
+                    "text": "tasmotaDeviceTools",
                     "size": 3,
                     "newLine": true
                 },
@@ -287,7 +287,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },
+                },/*
                 "tasmotaAdmin": {
                     "type": "text",
                     "label": "tasmotaAdmin",
@@ -298,7 +298,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },
+                },*/
                 "tasmotaAdminPassword": {
                     "type": "password",
                     "label": "tasmotaAdminPassword",
@@ -312,22 +312,28 @@
                 },
                 "_selectTool": {
                     "type": "select",
-                    "label": "SelectTool",
+                    "label": "selectTool",
                     "default": 1,
                     "options": [
                         {
-                            "label": "TasmotaTool",
+                            "label": "tasmotaTool",
                             "value": "1"
                         },
                         {
-                            "label": "BerryTool",
+                            "label": "berryTool",
                             "value": "2"
                         },
                         {
-                            "label": "TFTTool",
+                            "label": "tftTool",
                             "value": "3"
                         }
-                    ]
+                    ],
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "internalServerIp": {
                     "type": "ip",
@@ -349,7 +355,7 @@
                     "type": "autocompleteSendTo",
                     "command": "getTasmotaDevices",
                     "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
-                    "label": "tasmotaIP",
+                    "label": "ipFromPanel",
                     "freeSolo": true,
                     "newLine": true,
                     "validator": "typeof data._tasmotaIP === 'string' && data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
@@ -365,7 +371,7 @@
                 },
                 "_tasmotaName": {
                     "type": "text",
-                    "label": "tasmotaName",
+                    "label": "panelName",
                     "validator": "",
                     "hidden": "data._selectTool != '1'",
                     "default": "",
@@ -378,7 +384,7 @@
                 },
                 "_tasmotaTopic": {
                     "type": "text",
-                    "label": "tasmotaTopic",
+                    "label": "panelTopic",
                     "validator": "data._tasmotaTopic && data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) !== -1",
                     "hidden": "data._selectTool != '1'",
                     "default": "",
@@ -388,6 +394,17 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "_tasmotaSendTo": {
+                    "type": "sendTo",
+                    "label": "tasmotaSendTo",
+                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
+                    "showProcess": true,
+                    "command": "tasmotaSendTo",
+                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
+                    "newLine": true,
+                    "variant": "contained",
+                    "hidden": "data._selectTool != '1'"
+                },                
                 "_tasmotaAddTableSendTo": {
                     "type": "sendTo",
                     "label": "tasmotaAddTableSendTo",
@@ -398,17 +415,6 @@
                     "newLine": false,
                     //"reloadBrowser": true,
                     "useNative": true,
-                    "variant": "contained",
-                    "hidden": "data._selectTool != '1'"
-                },
-                "_tasmotaSendTo": {
-                    "type": "sendTo",
-                    "label": "tasmotaSendTo",
-                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
-                    "showProcess": true,
-                    "command": "tasmotaSendTo",
-                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
-                    "newLine": true,
                     "variant": "contained",
                     "hidden": "data._selectTool != '1'"
                 },
@@ -465,7 +471,7 @@
                             "lg": 4,
                             "xl": 4,
                             "type": "text",
-                            "label": "Headline",
+                            "label": "headline",
                             "default": ""
                         },
                         {
@@ -518,7 +524,7 @@
                             "lg": 4,
                             "xl": 4,
                             "type": "checkbox",
-                            "label": "wlanhidden",
+                            "label": "wlanHidden",
                             "hidden": "data.selType !== 1",
                             "default": false
                         },
@@ -572,16 +578,16 @@
                                     "value": 0
                                 },
                                 {
-                                    "label": "Password1",
+                                    "label": "Password 1",
                                     "value": 1
                                 },
                                 {
-                                    "label": "Password2",
+                                    "label": "Password 2",
                                     "value": 2
                                 },
                                 {
-                                    "label": "Password3",
-                                    "value": 2
+                                    "label": "Password 3",
+                                    "value": 3
                                 }
                             ]
                         },
@@ -593,7 +599,7 @@
                             "lg": 4,
                             "xl": 4,
                             "type": "checkbox",
-                            "label": "pwdhidden",
+                            "label": "pwdHidden",
                             "hidden": "data.selType !== 1",
                             "default": false
                         },
@@ -605,7 +611,7 @@
                             "lg": 8,
                             "xl": 8,
                             "type": "objectId",
-                            "label": "Switch",
+                            "label": "switchForWifi",
                             "hidden": "data.selType !== 1",
                             "filterFunc": "return obj.common.type === 'boolean' && obj.common.role === 'switch' && obj.common.write"
                         }
@@ -613,7 +619,7 @@
                 },
                 "pageQRpwd1": {
                     "type": "password",
-                    "label": "Password1",
+                    "label": "Password 1",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -622,7 +628,7 @@
                 },
                 "pageQRpwd2": {
                     "type": "password",
-                    "label": "Password2",
+                    "label": "Password 2",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -631,7 +637,7 @@
                 },
                 "pageQRpwd3": {
                     "type": "password",
-                    "label": "Password3",
+                    "label": "Password 3",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
