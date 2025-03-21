@@ -32,6 +32,7 @@ export class MQTTClientClass extends BaseClass {
         tls: boolean,
         callback: callbackMessageType,
         onConnect?: callbackConnectType,
+        onDisconnect?: callbackConnectType,
     ) {
         super(adapter, 'mqttClient');
         this.clientId = `iobroker_${randomUUID()}`;
@@ -44,7 +45,6 @@ export class MQTTClientClass extends BaseClass {
         });
         this.client.on('connect', () => {
             this.log.info(`Connection is active.`);
-            void this.adapter.setState('info.connection', true, true);
             this.ready = true;
             if (onConnect) {
                 void onConnect();
@@ -53,8 +53,10 @@ export class MQTTClientClass extends BaseClass {
         this.client.on('disconnect', () => {
             this.log.info(`Disconnected.`);
             this.ready = false;
-            void this.adapter.setState('info.connection', false, true);
             this.log.debug(`disconnected`);
+            if (onDisconnect) {
+                void onDisconnect();
+            }
         });
         this.client.on('error', err => {
             this.ready = false;
@@ -64,8 +66,10 @@ export class MQTTClientClass extends BaseClass {
 
         this.client.on('close', () => {
             this.ready = false;
-            void this.adapter.setState('info.connection', false, true);
             this.log.info(`Connection is closed.`);
+            if (onDisconnect) {
+                void onDisconnect();
+            }
         });
 
         this.client.on('message', (topic, message) => {
@@ -80,7 +84,10 @@ export class MQTTClientClass extends BaseClass {
     }
 
     async publish(topic: string, message: string, opt?: IClientPublishOptions): Promise<void> {
-        //this.log.debug(`Publishing topic: ${topic} with message: ${message}.`);
+        if (!this.client.connected) {
+            this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
+            return;
+        }
         await this.client.publishAsync(topic, message, opt);
     }
 
@@ -100,9 +107,16 @@ export class MQTTClientClass extends BaseClass {
             });
         }
     }
-    destroy(): void {
-        void this.delete();
-        this.client.end();
+    async destroy(): Promise<void> {
+        await this.delete();
+        const endMqttClient = (): Promise<void> => {
+            return new Promise(resolve => {
+                this.client.end(false, () => {
+                    resolve();
+                });
+            });
+        };
+        await endMqttClient();
     }
 }
 

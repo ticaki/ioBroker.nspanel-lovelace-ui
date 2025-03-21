@@ -65,5 +65,6 @@
     "Lock open": "锁定",
     "Lock closed": "锁关闭",
     "getRandomMqttCredentialsHelp": "生成随机MQTT凭据并获得免费端口",
-    "getRandomMqttCredentials": "填写MQTT凭据和端口"
+    "getRandomMqttCredentials": "填写MQTT凭据和端口",
+    "useTasmotaAdmin": "Tasmota Web管理员和密码已设置"
 }

@@ -65,5 +65,6 @@
     "Lock open": "Bloqueo abierto",
     "Lock closed": "Cerradura cerrada",
     "getRandomMqttCredentialsHelp": "Genere credenciales MQTT aleatorias y obtenga un puerto gratuito",
-    "getRandomMqttCredentials": "Llenar credenciales y puerto de MQTT"
+    "getRandomMqttCredentials": "Llenar credenciales y puerto de MQTT",
+    "useTasmotaAdmin": "Tasmota Web Admin y contraseña se ha establecido"
 }

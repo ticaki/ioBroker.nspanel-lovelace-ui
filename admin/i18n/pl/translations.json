@@ -65,5 +65,6 @@
     "Lock open": "Zamknij otwarte",
     "Lock closed": "Zamknij zamknięty",
     "getRandomMqttCredentialsHelp": "Wygeneruj losowe poświadczenia MQTT i uzyskaj bezpłatny port",
-    "getRandomMqttCredentials": "Wypełnij poświadczenia MQTT i port"
+    "getRandomMqttCredentials": "Wypełnij poświadczenia MQTT i port",
+    "useTasmotaAdmin": "Ustawiono administrator internetową Tasmota i hasło"
 }

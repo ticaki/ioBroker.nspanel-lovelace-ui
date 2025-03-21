@@ -303,6 +303,8 @@ Sind natürlich alles Dataitems
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) added: tasmota web ui user & password Fixes #164
+- (ticaki) BREAKING: Internal server use TLS - New tasmota config for internal server.
 - (TT-Tom) added servicepage items
 - (ticaki) added lock
 - (ticaki) cardThermo with input_sel

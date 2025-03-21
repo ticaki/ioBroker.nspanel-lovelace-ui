@@ -47,7 +47,7 @@ class MQTTClientClass extends import_library.BaseClass {
   messageCallback;
   clientId;
   subscriptDB = [];
-  constructor(adapter, ip, port, username, password, tls, callback, onConnect) {
+  constructor(adapter, ip, port, username, password, tls, callback, onConnect, onDisconnect) {
     super(adapter, "mqttClient");
     this.clientId = `iobroker_${(0, import_node_crypto.randomUUID)()}`;
     this.messageCallback = callback;
@@ -59,7 +59,6 @@ class MQTTClientClass extends import_library.BaseClass {
     });
     this.client.on("connect", () => {
       this.log.info(`Connection is active.`);
-      void this.adapter.setState("info.connection", true, true);
       this.ready = true;
       if (onConnect) {
         void onConnect();
@@ -68,8 +67,10 @@ class MQTTClientClass extends import_library.BaseClass {
     this.client.on("disconnect", () => {
       this.log.info(`Disconnected.`);
       this.ready = false;
-      void this.adapter.setState("info.connection", false, true);
       this.log.debug(`disconnected`);
+      if (onDisconnect) {
+        void onDisconnect();
+      }
     });
     this.client.on("error", (err) => {
       this.ready = false;
@@ -77,8 +78,10 @@ class MQTTClientClass extends import_library.BaseClass {
     });
     this.client.on("close", () => {
       this.ready = false;
-      void this.adapter.setState("info.connection", false, true);
       this.log.info(`Connection is closed.`);
+      if (onDisconnect) {
+        void onDisconnect();
+      }
     });
     this.client.on("message", (topic, message) => {
       const callbacks = this.subscriptDB.filter((i) => {
@@ -88,6 +91,10 @@ class MQTTClientClass extends import_library.BaseClass {
     });
   }
   async publish(topic, message, opt) {
+    if (!this.client.connected) {
+      this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
+      return;
+    }
     await this.client.publishAsync(topic, message, opt);
   }
   subscript(topic, callback) {
@@ -105,9 +112,16 @@ class MQTTClientClass extends import_library.BaseClass {
       });
     }
   }
-  destroy() {
-    void this.delete();
-    this.client.end();
+  async destroy() {
+    await this.delete();
+    const endMqttClient = () => {
+      return new Promise((resolve) => {
+        this.client.end(false, () => {
+          resolve();
+        });
+      });
+    };
+    await endMqttClient();
   }
 }
 class MQTTServerClass extends import_library.BaseClass {

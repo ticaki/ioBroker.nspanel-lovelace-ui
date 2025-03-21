@@ -65,5 +65,6 @@
     "Lock open": "Schloss geöffnet",
     "Lock closed": "Schloss verriegelt",
     "getRandomMqttCredentialsHelp": "Generiert zufällige MQTT-Anmeldeinformationen und fügt einen freien Port ein",
-    "getRandomMqttCredentials": "Fülle automatisch MQTT-Anmeldeinformationen und Port aus"
+    "getRandomMqttCredentials": "Fülle automatisch MQTT-Anmeldeinformationen und Port aus",
+    "useTasmotaAdmin": "Tasmota Web Admin & Passwort wurde festgelegt"
 }

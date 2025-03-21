@@ -22,10 +22,17 @@ declare global {
             logUnknownTokens: boolean;
             doubleClickTime: number;
             
+            // tasmota Admin
+            useTasmotaAdmin: boolean;
+            tasmotaAdmin: string;
+            tasmotaAdminPassword: string;
+
+
+
             pageQRpwd1: string;
             pageQRpwd2: string;
             pageQRpwd3: string;
-            
+
             panels: {name: string, topic: string, id: string, ip: string}[];
             mqttServer: boolean;
             pw1: string;
