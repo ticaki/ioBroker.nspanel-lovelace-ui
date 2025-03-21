@@ -182,8 +182,8 @@
   "native": {
     "mqttPassword": "",
     "mqttUsername": "",
-    "mqttIp": "mqtt.kiemen.com",
-    "mqttPort": 1883,
+    "mqttIp": "",
+    "mqttPort": null,
     "panels": [],
     "pageQRpwd1": "",
     "pageQRpwd2": "",
