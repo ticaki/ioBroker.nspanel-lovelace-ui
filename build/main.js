@@ -239,7 +239,10 @@ class NspanelLovelaceUi extends utils.Adapter {
         (topic, message) => {
           this.log.debug(`${topic} ${message}`);
         },
-        this.onMqttConnect
+        this.onMqttConnect,
+        async () => {
+          await this.setState("info.connection", false, true);
+        }
       );
       if (!this.mqttClient) {
         return;
@@ -366,6 +369,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         void _helper(tasmota);
       }
     }
+    await this.setState("info.connection", true, true);
   };
   /**
    * Is called when adapter shuts down - callback has to be called under any circumstances.

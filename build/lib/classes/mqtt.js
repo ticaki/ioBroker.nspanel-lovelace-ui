@@ -47,7 +47,7 @@ class MQTTClientClass extends import_library.BaseClass {
   messageCallback;
   clientId;
   subscriptDB = [];
-  constructor(adapter, ip, port, username, password, tls, callback, onConnect) {
+  constructor(adapter, ip, port, username, password, tls, callback, onConnect, onDisconnect) {
     super(adapter, "mqttClient");
     this.clientId = `iobroker_${(0, import_node_crypto.randomUUID)()}`;
     this.messageCallback = callback;
@@ -59,7 +59,6 @@ class MQTTClientClass extends import_library.BaseClass {
     });
     this.client.on("connect", () => {
       this.log.info(`Connection is active.`);
-      void this.adapter.setState("info.connection", true, true);
       this.ready = true;
       if (onConnect) {
         void onConnect();
@@ -68,8 +67,10 @@ class MQTTClientClass extends import_library.BaseClass {
     this.client.on("disconnect", () => {
       this.log.info(`Disconnected.`);
       this.ready = false;
-      void this.adapter.setState("info.connection", false, true);
       this.log.debug(`disconnected`);
+      if (onDisconnect) {
+        void onDisconnect();
+      }
     });
     this.client.on("error", (err) => {
       this.ready = false;
@@ -77,8 +78,10 @@ class MQTTClientClass extends import_library.BaseClass {
     });
     this.client.on("close", () => {
       this.ready = false;
-      void this.adapter.setState("info.connection", false, true);
       this.log.info(`Connection is closed.`);
+      if (onDisconnect) {
+        void onDisconnect();
+      }
     });
     this.client.on("message", (topic, message) => {
       const callbacks = this.subscriptDB.filter((i) => {
