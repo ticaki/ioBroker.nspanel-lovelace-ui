@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "news": {
+      "0.1.9": {
+        "en": "added: tasmota web ui user & password Fixes #164\nBREAKING: Internal server use TLS - New tasmota config for internal server.\nadded servicepage items\nadded lock\ncardThermo with input_sel\nAdded: Admin option to fix wrong common.type=state in alias.0 to common.type=mixed\nRequired data points are found via role, type etc. The designation only plays a role in rare cases.",
+        "de": "hinzugefügt: tasmota web ui user & passwort Fixes #164\nBREAKING: Interner Server verwendet TLS - Neue tasmota config für internen Server.\nzusätzliche serviceseite\nzusätzliches schloss\nkarte Thermo mit input_sel\nHinzugefügt: Admin-Option, um falsch häufig zu beheben. type=state in alias.0 zu common.type=gemischt\nErforderliche Datenpunkte werden über Rolle, Art etc. gefunden. Die Bezeichnung spielt in seltenen Fällen nur eine Rolle.",
+        "ru": "добавлено: tasmota web ui user & password Fixes #164\nBREAKING: Внутренний сервер использует TLS - новый конфигуратор tasmota для внутреннего сервера.\nдобавлены элементы сервиса\nдобавить замок\nкарточка Термо с входом_sel\nДобавлено: Административная опция для исправления неправильного общего. type=state in alias.0 to common.type=mixed\nТребуемые точки данных находятся через роль, тип и т.д. Обозначение играет роль только в редких случаях.",
+        "pt": "adicionado: tasmota web ui usuário & senha correções #164\nBREAKING: Servidor interno use TLS - Nova configuração tasmota para servidor interno.\nadicionado servicepage itens\nfechadura adicionada\ncartão Termo com input_sel\nAdicionado: Admin opção para corrigir errado comum. type=state in alias.0 to common.type=mixed\nOs pontos de dados necessários são encontrados por função, tipo etc. A designação só desempenha um papel em casos raros.",
+        "nl": "toegevoegd: tasmota web ui gebruiker & wachtwoord Fixes #164\nBREAKING: Interne server gebruikt TLS - Nieuwe tasmota configuratie voor interne server.\ntoegevoegde servicepagina-items\nslot toevoegen\nkaart Thermo met ingang_sel\nToegevoegd: Admin optie om foute gemeenschappelijk op te lossen. type=staat in alias.0 naar common.type=gemengd\nVereiste datapunten worden gevonden via rol, type enz. De aanwijzing speelt slechts een rol in zeldzame gevallen.",
+        "fr": "ajouté: tasmota web ui utilisateur & mot de passe Fixer #164\nBREAKING: Serveur interne utiliser TLS - Nouvelle configuration de tasmota pour le serveur interne.\najout d'éléments de page de service\nverrouillage ajouté\ncarte Thermo avec entrée_sel\nAjouté : option Admin pour corriger mal commun. type=état dans alias.0 à common.type=mixed\nLes points de données requis sont trouvés via le rôle, le type, etc. La désignation ne joue un rôle que dans de rares cas.",
+        "it": "aggiunto: tasmota web ui utente & password Fissa #164\nBREAKING: Server interno usare TLS - Nuova configurazione tasmota per server interno.\nulteriori articoli di servicepage\nblocco aggiunto\ncarta Thermo con input_sel\nAggiunto: Admin opzione per risolvere sbagliato comune. type=state in alias.0 to common.type=mixed\nI punti di dati richiesti sono trovati tramite ruolo, tipo ecc. La designazione gioca solo un ruolo in casi rari.",
+        "es": "añadido: tasmota web ui usuario \" password Fixes #164\nBREAKING: Uso interno del servidor TLS - Nuevo configuración de tasmota para servidor interno.\nartículos de servicio añadidos\ncierre añadido\ntarjeta Termo con entrada_sel\nAñadido: opción Admin para corregir el común equivocado. type=state in alias.0 to common.type=mixed\nLos puntos de datos requeridos se encuentran a través de papel, tipo, etc. La designación sólo desempeña un papel en casos raros.",
+        "pl": "dodane: tasmota web ui użytkownik & hasło Fixes # 164\nBREAKING: Wewnętrzny serwer używać TLS - Nowy tasmota config dla wewnętrznego serwera.\ndodane pozycje na stronie serwisowej\ndodany zamek\nkarta Thermo with input _ sel\nDodano: Admin opcja naprawić złe wspólne. type = state in alias.0 to common .type = mixed\nWymagane punkty danych można znaleźć poprzez rolę, typ itp. Oznaczenie odgrywa rolę tylko w rzadkich przypadkach.",
+        "uk": "додано: tasmota web ui користувача та пароль Виправлення #164\nBREAKING: Внутрішній сервер використання TLS - Нові налаштування тасмота для внутрішнього сервера.\nдоданий сайт\nдоданий замок\nкошик Термо з входом\nДодано: Параметри адміністратора для виправлення неправильного спільного. type=state in alias.0 до спільного.type=змішувати\nПотрібні пункти даних розміщені за допомогою функції, типу тощо. Розповідь тільки грає роль у рідкісних випадках.",
+        "zh-cn": "添加: tasmota web ui 用户和密码\nBREAKING:内部服务器使用TLS - 内部服务器的新塔斯莫塔配置.\n添加的服务页项目\n添加锁定\n纸牌 带有输入的热器_ sel\n添加:管理选项来修正错误的常见. 类型=以别名.0表示为常见。类型=混合\n所需数据点通过角色,类型等查找. 指定仅在罕见的情况下发挥作用."
+      },
       "0.1.8": {
         "en": "added: hw-buttons with actions\nfixed: screensaver trigger\ncheck if port is free for mqtt server\ncheck and tweak role info\nfixed: entities and grid icons/text\ntools for tasmota added to admin\ntweak panel response time \n'switch' added\ncompleted servicepages",
         "de": "hinzugefügt: hw-buttons mit aktionen\nfest: bildschirmschoner-trigger\nüberprüfen, ob der port frei für mqtt server ist\nüberprüfen und tweak rolleninfo\nfixiert: entitäten und rastersymbole/text\nwerkzeuge für tasmota zu admin hinzugefügt\ntweak panel antwortzeit\n'switch' hinzugefügt\nservicepages",
@@ -80,19 +93,6 @@
         "pl": "poprawki # 130\nZmieniona generacja punktów danych\nTryb przyciemniania (punkty danych) zakończony\nDwukrotne kliknięcie wygaszacza ekranu",
         "uk": "застібки #130\nЗмінено генерацію точки даних\nРежим дозування (таблички даних) завершено\nScreensaver double-click додано",
         "zh-cn": "修正 # 130\n数据点生成已改变\n缩小模式( 数据点)\n添加双击屏幕保护器"
-      },
-      "0.1.2": {
-        "en": "fixed nav service right\nscreensaver rotation time added\ngrid scrolling improved\nFeedback from the script improved\n(Kuckuckmann:) new adapter logo",
-        "de": "fester nav service rechts\nbildschirmschoner drehzeit hinzugefügt\ngrid scrolling verbessert\nFeedback aus dem Skript verbessert\n(Kuckmann:) neues Adapter-Logo",
-        "ru": "право фиксированной службы\nскринсейвер время вращения добавлено\nсетка прокрутки улучшилась\nОбратная связь со сценарием улучшилась\n(Kuckuckmann: новый логотип адаптера)",
-        "pt": "serviço de navegação fixa direita\ntempo de rotação do screensaver adicionado\nrolagem de grade melhorada\nFeedback do script melhorado\n(Kuckuckmann:) novo logotipo do adaptador",
-        "nl": "vaste navigatie rechts\nscreensaver rotatietijd toegevoegd\ngrid scrollen verbeterd\nFeedback van het script verbeterd\n(Kuckuckmann:) nieuw adapterlogo",
-        "fr": "droit de service fixe nav\nscreensaver temps de rotation ajouté\namélioration du défilement de la grille\nLa rétroaction du script s'est améliorée\n(Kuckuckmann:) nouveau logo d'adaptateur",
-        "it": "servizio nav fisso\ntempo di rotazione screensaver aggiunto\ngriglia di scorrimento migliorato\nIl feedback dallo script è migliorato\n(Kuckuckuckmann:) nuovo logo adattatore",
-        "es": "servicio fijo nav derecho\ntiempo de rotación añadido\npergaminos mejorados\nLa retroalimentación del script mejoró\n(Kuckuckmann:) nuevo logo adaptador",
-        "pl": "prawo do stałej nawigacji\ndodano czas rotacji wygaszacza ekranu\nulepszone przewijanie sieci\nInformacje zwrotne ze skryptu poprawiły się\n(Kuckuckmann:) nowe logo adaptera",
-        "uk": "фіксована послуга nav\nекранисереднього часу обертання додано\nрозкручування сітки поліпшена\nЗворотній зв'язок з скриптом поліпшений\n(Kuckmann:) новий логотип адаптера",
-        "zh-cn": "固定导航服务右侧\n添加屏幕保护旋转时间\n网格滚动改进\n改进了对脚本的反馈\n(Kuckuckmann:) 新的适配器标志"
       }
     },
     "title": "NSPanel-Lovelace-UI Next Level",

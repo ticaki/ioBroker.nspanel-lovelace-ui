@@ -302,7 +302,7 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.1.9 (2025-03-21)
 - (ticaki) added: tasmota web ui user & password Fixes #164
 - (ticaki) BREAKING: Internal server use TLS - New tasmota config for internal server.
 - (TT-Tom) added servicepage items
