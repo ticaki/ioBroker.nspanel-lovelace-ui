@@ -37,7 +37,9 @@ class NspanelLovelaceUi extends utils.Adapter {
     timeoutAdmin: ioBroker.Timeout | undefined;
     timeoutAdmin2: ioBroker.Timeout | undefined;
     timeoutAdminArray: (ioBroker.Timeout | undefined)[] = [];
-    intervalAdmin: ioBroker.Interval | undefined;
+
+    intervalAdminArray: (ioBroker.Interval | undefined)[] = [];
+
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -381,7 +383,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.config.Testconfig2.length === 0
             ) {
                 await this.delay(100);
-                this.mqttClient.destroy();
+                await this.mqttClient.destroy();
                 await this.delay(100);
                 this.log.error('No configuration - adapter on hold!');
                 return;
@@ -473,9 +475,6 @@ class NspanelLovelaceUi extends utils.Adapter {
     private async onUnload(callback: () => void): Promise<void> {
         try {
             this.unload = true;
-            if (this.intervalAdmin) {
-                this.clearInterval(this.intervalAdmin);
-            }
             if (this.timeoutAdmin) {
                 this.clearTimeout(this.timeoutAdmin);
             }
@@ -485,6 +484,11 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.timeoutAdminArray.forEach(a => {
                 if (a) {
                     this.clearTimeout(a);
+                }
+            });
+            this.intervalAdminArray.forEach(a => {
+                if (a) {
+                    this.clearInterval(a);
                 }
             });
             if (this.controller) {
@@ -654,7 +658,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         this.timeoutAdmin = null;
                     }
 
-                    mqtt.destroy();
+                    await mqtt.destroy();
                     if (result.status) {
                         device.id = result.id;
                         device.ip = result.ip;
@@ -696,7 +700,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
                 case 'tasmotaSendTo': {
-                    if (obj.message && !this.timeoutAdmin2) {
+                    if (obj.message) {
                         try {
                             if (
                                 obj.message.tasmotaIP &&
@@ -748,12 +752,18 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 const checkTasmota = async (
                                     mqtt: MQTT.MQTTClientClass,
                                     topic: string,
-                                ): Promise<{ status: boolean; id: string; ip: string }> => {
+                                ): Promise<{ status: boolean; id: string; ip: string; timeoutIndex: number }> => {
                                     return new Promise(resolve => {
-                                        const result: { status: boolean; id: string; ip: string } = {
+                                        const result: {
+                                            status: boolean;
+                                            id: string;
+                                            ip: string;
+                                            timeoutIndex: number;
+                                        } = {
                                             status: false,
                                             id: '',
                                             ip: '',
+                                            timeoutIndex: -1,
                                         };
                                         if (mqtt && topic) {
                                             mqtt.subscript(
@@ -763,49 +773,71 @@ class NspanelLovelaceUi extends utils.Adapter {
                                                     if (msg.StatusNET) {
                                                         result.status = true;
                                                     }
-                                                    if (this.intervalAdmin) {
-                                                        this.clearInterval(this.intervalAdmin);
+                                                    if (
+                                                        result.timeoutIndex !== -1 &&
+                                                        this.intervalAdminArray[result.timeoutIndex]
+                                                    ) {
+                                                        this.clearInterval(
+                                                            this.intervalAdminArray[result.timeoutIndex],
+                                                        );
+                                                        this.intervalAdminArray[result.timeoutIndex] = null;
                                                     }
                                                     resolve(result);
                                                     return;
                                                 },
                                             );
 
-                                            this.timeoutAdmin2 = this.setTimeout(() => {
-                                                if (this.intervalAdmin) {
-                                                    this.clearInterval(this.intervalAdmin);
-                                                }
-                                                this.timeoutAdmin2 = null;
-                                                resolve(result);
-                                            }, 20000);
-
-                                            this.intervalAdmin = this.setInterval(
-                                                (mqtt: MQTT.MQTTClientClass, topic: string) => {
-                                                    if (this.unload) {
-                                                        return;
-                                                    }
-                                                    void mqtt.publish(`${topic}/cmnd/STATUS0`, '');
-                                                },
-                                                2000,
-                                                mqtt,
-                                                topic,
+                                            this.timeoutAdminArray.push(
+                                                this.setTimeout(
+                                                    (index: number) => {
+                                                        if (index !== -1 && this.timeoutAdminArray[index]) {
+                                                            this.clearTimeout(this.timeoutAdminArray[index]);
+                                                        }
+                                                        this.timeoutAdminArray[index] = null;
+                                                        resolve(result);
+                                                    },
+                                                    20000,
+                                                    this.timeoutAdminArray.length - 1,
+                                                ),
                                             );
+
+                                            this.intervalAdminArray[this.timeoutAdminArray.length - 1] =
+                                                this.setInterval(
+                                                    (mqtt: MQTT.MQTTClientClass, topic: string) => {
+                                                        if (this.unload) {
+                                                            return;
+                                                        }
+                                                        void mqtt.publish(`${topic}/cmnd/STATUS0`, '');
+                                                    },
+                                                    2000,
+                                                    mqtt,
+                                                    topic,
+                                                );
                                         } else {
                                             resolve(result);
                                             return;
                                         }
                                     });
                                 };
-                                if (this.timeoutAdmin2) {
-                                    this.clearTimeout(this.timeoutAdmin2);
-                                    this.timeoutAdmin2 = null;
-                                }
-                                if (this.intervalAdmin) {
-                                    this.clearInterval(this.intervalAdmin);
-                                    this.intervalAdmin = null;
-                                }
+
                                 const result = await checkTasmota(mqtt, obj.message.tasmotaTopic);
-                                mqtt.destroy();
+                                if (result.timeoutIndex !== -1) {
+                                    if (this.timeoutAdminArray[result.timeoutIndex]) {
+                                        this.clearTimeout(this.timeoutAdminArray[result.timeoutIndex]);
+                                        this.timeoutAdminArray[result.timeoutIndex] = null;
+                                    }
+                                    if (this.intervalAdminArray[result.timeoutIndex]) {
+                                        this.clearInterval(this.intervalAdminArray[result.timeoutIndex]);
+                                        this.intervalAdminArray[result.timeoutIndex] = null;
+                                    }
+                                }
+                                if (this.timeoutAdminArray.every(a => a === null)) {
+                                    this.timeoutAdminArray = [];
+                                }
+                                if (this.intervalAdminArray.every(a => a === null)) {
+                                    this.intervalAdminArray = [];
+                                }
+                                await mqtt.destroy();
 
                                 if (!result.status) {
                                     this.log.error(`Device with topic ${obj.message.tasmotaTopic} not found!`);
@@ -940,7 +972,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 if (this.timeoutAdminArray.every(a => a === null)) {
                                     this.timeoutAdminArray = [];
                                 }
-                                mqtt.destroy();
+                                await mqtt.destroy();
 
                                 if (!result.status) {
                                     this.log.error(`Device with topic ${item.topic} not found!`);
