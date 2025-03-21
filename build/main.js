@@ -352,11 +352,11 @@ class NspanelLovelaceUi extends utils.Adapter {
       try {
         this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
         await import_axios.default.get(
-          `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=${this.config.tasmotaAdmin}&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog MqttRetry 11`
+          `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog MqttRetry 11`
         );
         await this.delay(300);
         await import_axios.default.get(
-          `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=${this.config.tasmotaAdmin}&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog MqttRetry 10`
+          `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog MqttRetry 10`
         );
       } catch (e) {
         this.log.warn(
@@ -592,7 +592,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 );
                 const url = ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp}; MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword}; FullTopic ${`${obj.message.tasmotaTopic}/%prefix%/`.replaceAll("//", "/")}; MqttRetry 10; FriendlyName1 ${obj.message.tasmotaName}; Hostname ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, "_")}; WebLog 2; template {"NAME":"${obj.message.tasmotaName}", "GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1}; Module 0; MqttClient ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, "_")}-%06X; ${obj.message.mqttServer ? "SetOption132 1; SetOption103 1 " : "SetOption132 0; SetOption103 0"}; Restart 1`;
                 const u = new import_url.URL(
-                  `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=${this.config.tasmotaAdmin}&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog${encodeURIComponent(url)}`
+                  `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog${encodeURIComponent(url)}`
                 );
                 this.log.info(
                   `Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP} ${u.href}`
@@ -847,7 +847,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           if (obj.message) {
             if (obj.message.tasmotaIP) {
               try {
-                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=${this.config.tasmotaAdmin}&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
+                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
                 this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
                 await import_axios.default.get(url);
                 if (obj.callback) {
@@ -888,7 +888,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 const version = result.data.tft.split("_")[0];
                 const fileName = `nspanel-v${version}.tft`;
-                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=${this.config.tasmotaAdmin}&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog FlashNextion http://nspanel.de/${fileName}`;
+                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog FlashNextion http://nspanel.de/${fileName}`;
                 this.log.debug(url);
                 await import_axios.default.get(url);
                 if (obj.callback) {

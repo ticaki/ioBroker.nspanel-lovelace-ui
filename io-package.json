@@ -169,6 +169,7 @@
     "pageQRpwd1",
     "pageQRpwd2",
     "pageQRpwd3",
+    "tasmotaAdminPassword",
     "pw1"
   ],
   "encryptedNative": [
@@ -177,19 +178,21 @@
     "pageQRpwd1",
     "pageQRpwd2",
     "pageQRpwd3",
+    "tasmotaAdminPassword",
     "pw1"
   ],
   "native": {
     "mqttPassword": "",
     "mqttUsername": "",
-    "mqttIp": "mqtt.kiemen.com",
-    "mqttPort": 1883,
+    "mqttIp": "",
+    "mqttPort": 0,
     "panels": [],
     "pageQRpwd1": "",
     "pageQRpwd2": "",
     "pageQRpwd3": "",
     "pageQRssid": "",
-    "pw1": ""
+    "pw1": "",
+    "tasmotaAdminPassword": ""
   },
   "objects": [],
   "instanceObjects": [

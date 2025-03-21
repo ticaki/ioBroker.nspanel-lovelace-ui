@@ -501,6 +501,13 @@ export class PageItem extends BaseClassTriggerd {
                         }
                     }
                     break;
+
+                /**
+                 * 3 Funktionen
+                 * 1. Countdown
+                 * 2. Wecker stellen
+                 * 3. Countdown anzeigen
+                 */
                 case 'timer': {
                     if (entry.type === 'timer') {
                         const item = entry.data;
@@ -1116,7 +1123,21 @@ export class PageItem extends BaseClassTriggerd {
                 if (!(message.type === 'popupTimer')) {
                     break;
                 }
-                if (this.tempData !== undefined) {
+                // alarm/display
+                if (item.entity1?.value) {
+                    const value = await item.entity1.value.getNumber();
+                    if (value !== null) {
+                        message.iconColor = await tools.GetIconColor(item.icon, value > 0);
+                        message.minutes = Math.floor(value / 60).toFixed(0);
+                        message.seconds = Math.floor(value % 60).toFixed(0);
+
+                        if (item.entity1.set) {
+                            // alarm
+                        } else {
+                            // display
+                        }
+                    }
+                } else if (this.tempData !== undefined) {
                     message.iconColor = await tools.GetIconColor(item.icon, this.tempData.status === 'run');
                     message.minutes = Math.floor(this.tempData.value / 60).toFixed(0);
                     message.seconds = Math.floor(this.tempData.value % 60).toFixed(0);
