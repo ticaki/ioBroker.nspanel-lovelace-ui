@@ -1064,12 +1064,13 @@ export class Panel extends BaseClass {
                 }
             }
         }
-        const color = `${Color.rgb_dec565(Color.Black)}~${Color.rgb_dec565(Color.White)}`;
+        let cmd = `${Color.rgb_dec565(Color.Black)}~${Color.rgb_dec565(Color.White)}`;
         if (this.dimMode.dayMode) {
-            this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${color}`);
+            cmd = `dimmode~${this.dimMode.low}~${this.dimMode.high}~${cmd}`;
         } else {
-            this.sendToPanel(`dimmode~${this.dimMode.lowNight}~${this.dimMode.highNight}~${color}`);
+            cmd = `dimmode~${this.dimMode.lowNight}~${this.dimMode.highNight}~${cmd}`;
         }
+        this.sendToPanel(cmd);
     }
 
     restartLoops(): void {
@@ -1167,7 +1168,7 @@ export class Panel extends BaseClass {
                 this.info.nspanel.model = event.action;
 
                 await this.writeInfo();
-
+                this.sendScreeensaverTimeout(this.timeout);
                 this.sendDimmode();
                 this.navigation.resetPosition();
 

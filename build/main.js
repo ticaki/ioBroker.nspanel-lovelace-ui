@@ -792,7 +792,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   });
                 };
                 const result = await checkTasmota(mqtt, item.topic);
-                if (result.timeoutIndex !== -1) {
+                if (result.timeoutIndex !== -1 && this.timeoutAdminArray[result.timeoutIndex]) {
                   this.clearTimeout(this.timeoutAdminArray[result.timeoutIndex]);
                   this.timeoutAdminArray[result.timeoutIndex] = null;
                 }

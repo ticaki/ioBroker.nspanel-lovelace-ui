@@ -966,12 +966,13 @@ class Panel extends import_library.BaseClass {
         }
       }
     }
-    const color = `${import_Color.Color.rgb_dec565(import_Color.Color.Black)}~${import_Color.Color.rgb_dec565(import_Color.Color.White)}`;
+    let cmd = `${import_Color.Color.rgb_dec565(import_Color.Color.Black)}~${import_Color.Color.rgb_dec565(import_Color.Color.White)}`;
     if (this.dimMode.dayMode) {
-      this.sendToPanel(`dimmode~${this.dimMode.low}~${this.dimMode.high}~${color}`);
+      cmd = `dimmode~${this.dimMode.low}~${this.dimMode.high}~${cmd}`;
     } else {
-      this.sendToPanel(`dimmode~${this.dimMode.lowNight}~${this.dimMode.highNight}~${color}`);
+      cmd = `dimmode~${this.dimMode.lowNight}~${this.dimMode.highNight}~${cmd}`;
     }
+    this.sendToPanel(cmd);
   }
   restartLoops() {
     if (this.loopTimeout) {
@@ -1062,6 +1063,7 @@ class Panel extends import_library.BaseClass {
         this.info.nspanel.displayVersion = parseInt(event.id);
         this.info.nspanel.model = event.action;
         await this.writeInfo();
+        this.sendScreeensaverTimeout(this.timeout);
         this.sendDimmode();
         this.navigation.resetPosition();
         const i = this.pages.findIndex((a) => a && a.name === "///WelcomePopup");
