@@ -1739,12 +1739,12 @@ export class ConfigManager extends BaseClass {
                             },
                             scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                         },
-                        entity1: {
-                            value: {
-                                type: 'const',
-                                constVal: true,
-                            },
-                        },
+                        entity1: foundedStates[role].ACTUAL
+                            ? {
+                                  value: foundedStates[role].ACTUAL,
+                              }
+                            : undefined,
+
                         text: text,
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
@@ -1786,7 +1786,7 @@ export class ConfigManager extends BaseClass {
                 if (dp in result[role]) {
                     const dp2 = dp as configManagerConst.mydps;
                     result[role][dp2] = await this.statesController.getIdbyAuto(
-                        dpInit,
+                        `${dpInit}.`,
                         entry.role,
                         '',
                         entry.useKey ? new RegExp(`.${dp}$`.replaceAll('.', '\\.')) : undefined,
@@ -2576,8 +2576,7 @@ export class ConfigManager extends BaseClass {
                         };
                         break;
                     }
-                    case 'warning':
-                    case 'level.timer': {
+                    case 'warning': {
                         itemConfig = {
                             role: 'timer',
                             type: 'timer',
@@ -2597,18 +2596,68 @@ export class ConfigManager extends BaseClass {
                                     maxBri: undefined,
                                     minBri: undefined,
                                 },
-                                entity1: {
-                                    value: {
-                                        type: 'const',
-                                        constVal: true,
-                                    },
-                                    decimal: undefined,
-                                    factor: undefined,
-                                    unit: undefined,
-                                },
+                                entity1: foundedStates[role].ACTUAL ? { value: foundedStates[role].ACTUAL } : undefined,
                                 headline: { type: 'const', constVal: 'Timer' },
 
                                 setValue1: foundedStates[role].ACTUAL,
+                            },
+                        };
+                        break;
+                    }
+                    case 'level.timer': {
+                        let isAlarm = false;
+                        if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
+                            const o = await this.adapter.getForeignObjectAsync(foundedStates[role].ACTUAL.dp);
+                            if (o && o.common && o.common.role === 'date') {
+                                isAlarm = true;
+                            }
+                        }
+                        const icon = isAlarm
+                            ? foundedStates[role].SET
+                                ? 'clock-edit-outline'
+                                : 'alarm'
+                            : foundedStates[role].SET
+                              ? 'timer-edit-outline'
+                              : foundedStates[role].ACTUAL
+                                ? 'timer-outline'
+                                : 'timer';
+                        const iconFalse = isAlarm
+                            ? 'alarm-off'
+                            : foundedStates[role].SET
+                              ? 'timer-off-outline'
+                              : foundedStates[role].ACTUAL
+                                ? 'timer-off-outline'
+                                : 'timer-off';
+                        itemConfig = {
+                            role: 'timer',
+                            type: 'timer',
+                            dpInit: '',
+
+                            data: {
+                                icon: {
+                                    true: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: item.icon || icon || 'timer',
+                                        },
+                                        color: await this.getIconColor(item.onColor, this.colorOn),
+                                    },
+                                    false: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: item.icon2 || iconFalse || 'timer',
+                                        },
+                                        color: await this.getIconColor(item.offColor, this.colorOff),
+                                    },
+                                    scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
+                                    maxBri: undefined,
+                                    minBri: undefined,
+                                },
+                                entity1: { value: foundedStates[role].ACTUAL, set: foundedStates[role].SET },
+                                headline: { type: 'const', constVal: 'timer' },
+
+                                setValue1: foundedStates[role].STATE,
+                                setValue2: foundedStates[role].STATUS,
                             },
                         };
                         break;
