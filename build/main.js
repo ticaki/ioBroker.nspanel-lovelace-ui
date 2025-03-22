@@ -935,7 +935,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               native: {
                 mqttUsername: getString(allowedCharsUser, usernameLength),
                 mqttPassword: getString(allowedChars, passwordLength),
-                mqttPort: await this.getPortAsync(1883),
+                mqttPort: await this.getPortAsync(8883),
                 saveConfig: true
               }
             };

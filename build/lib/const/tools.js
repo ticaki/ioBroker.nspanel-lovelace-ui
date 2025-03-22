@@ -552,8 +552,8 @@ async function getValueEntryString(i, v = null) {
     return null;
   }
   const nval = v !== null ? v : await getValueEntryNumber(i);
+  const format = (_a = i.dateFormat && await i.dateFormat.getObject()) != null ? _a : null;
   if (nval !== null && nval !== void 0) {
-    const format = (_a = i.dateFormat && await i.dateFormat.getObject()) != null ? _a : null;
     let res2 = "";
     if ((0, import_types.isValueDateFormat)(format)) {
       if (nval <= 0) {
@@ -578,6 +578,9 @@ async function getValueEntryString(i, v = null) {
   let res = await i.value.getString();
   let opt = "";
   if (res != null) {
+    if ((0, import_types.isValueDateFormat)(format)) {
+      res = new Date(res).toLocaleString(format.local, format.format);
+    }
     res += (_g = (_f = i.unit && await i.unit.getString()) != null ? _f : i.value.common.unit) != null ? _g : "";
     if (isTextSizeEntryType(i)) {
       opt = String((_h = i.textSize && await i.textSize.getNumber()) != null ? _h : "");

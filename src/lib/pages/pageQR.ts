@@ -203,7 +203,7 @@ export class PageQR extends Page {
                     card: 'cardQR',
                     index: index,
                     data: {
-                        headline: { type: 'const', constVal: config.pageName },
+                        headline: { type: 'const', constVal: config.headline || '' },
                     },
                 },
                 pageItems: [],

@@ -243,7 +243,7 @@ export class Dataitem extends BaseClass {
         if (
             result &&
             (typeof result.val === 'number' ||
-                (typeof result.val === 'string' && result.val && !isNaN(parseInt(result.val))))
+                (typeof result.val === 'string' && result.val && !isNaN(Number(result.val))))
         ) {
             let val = parseFloat(String(result.val));
             if (this.options.scale !== undefined) {

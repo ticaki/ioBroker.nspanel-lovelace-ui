@@ -224,7 +224,7 @@ class PageQR extends import_Page.Page {
           card: "cardQR",
           index,
           data: {
-            headline: { type: "const", constVal: config.pageName }
+            headline: { type: "const", constVal: config.headline || "" }
           }
         },
         pageItems: []
