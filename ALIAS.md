@@ -195,8 +195,10 @@
 ### level.timer
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **level.timer** | ~~ACTUAL~~ | number| timestamp  | X | X |  | 
-| **"** | ~~STATE~~ | string| state  | X | X |  | 
+| **level.timer** | ~~ACTUAL~~ | number| value.timer, level.timer, date  |  |  | Das wird angezeigt - date in hh:mm, timer in mm:ss | 
+| **"** | ~~SET~~ | number| level.timer, date  |  | X | Hier wird ein geänderter Wert hingeschrieben | 
+| **"** | ~~STATE~~ | boolean| button  |  | X | wenn die oberen nicht benutzt wird hier getriggert wenn ein interner Timer endet. | 
+| **"** | ~~STATUS~~ | number| level.mode  |  | X | 0: OFF , 1: PAUSE, 2: ON/RUNNING | 
 ### gate
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  

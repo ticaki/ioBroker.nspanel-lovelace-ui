@@ -127,7 +127,18 @@ export class PageItem extends BaseClassTriggerd {
 
             case 'timer': {
                 if (this.dataItems.role === 'timer' && this.tempData === undefined) {
-                    this.tempData = { status: 'pause', value: 0 };
+                    if (this.dataItems.data.entity1?.value?.common?.role) {
+                        if (
+                            ['value.timer', 'level.timer'].indexOf(this.dataItems.data.entity1.value.common.role) !== -1
+                        ) {
+                            this.tempData = { status: 'pause', role: 'ex-timer' };
+                            break;
+                        }
+
+                        this.tempData = { status: 'pause', role: 'ex-alarm' };
+                        break;
+                    }
+                    this.tempData = { status: 'pause', value: 0, role: 'timer' };
                     if (!this.panel.persistentPageItems[this.id]) {
                         this.panel.persistentPageItems[this.id] = this;
                     }
@@ -512,20 +523,50 @@ export class PageItem extends BaseClassTriggerd {
                     if (entry.type === 'timer') {
                         const item = entry.data;
                         message.type = 'timer';
-                        const value: number | null = !item.setValue1
-                            ? ((item.entity1 && (await tools.getValueEntryNumber(item.entity1))) ?? null)
-                            : ((this.tempData && this.tempData.time) ?? 0);
+                        const value: number | null =
+                            (item.entity1 && item.entity1.value && (await tools.getValueEntryNumber(item.entity1))) ??
+                            (this.tempData && this.tempData.time) ??
+                            0;
 
                         if (value !== null) {
                             let opt = '';
                             if (this.tempData) {
-                                opt = new Date(new Date().setHours(0, 0, this.tempData.value, 0)).toLocaleTimeString(
-                                    'de',
-                                    { minute: '2-digit', second: '2-digit' },
-                                );
+                                switch (this.tempData.role) {
+                                    case 'ex-timer': {
+                                        opt = new Date(new Date().setHours(0, 0, 0, value)).toLocaleTimeString('de', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                        });
+                                        break;
+                                    }
+                                    case 'ex-alarm': {
+                                        opt = new Date(new Date().setHours(0, 0, 0, value)).toLocaleTimeString('de', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                        });
+                                        break;
+                                    }
+                                    case 'timer': {
+                                        opt = new Date(
+                                            new Date().setHours(0, 0, this.tempData.time || 0, 0),
+                                        ).toLocaleTimeString('de', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                        });
+                                        break;
+                                    }
+                                }
                             }
-                            message.iconColor = await tools.getIconEntryColor(item.icon, value, Color.White);
-                            message.icon = await tools.getIconEntryValue(item.icon, true, 'gesture-tap-button');
+                            const s = item.setValue2 && (await item.setValue2.getNumber());
+                            let v = !!value;
+                            if (s != null) {
+                                v = s > 1;
+                            }
+                            message.iconColor = await tools.getIconEntryColor(item.icon, v, Color.White);
+                            message.icon = await tools.getIconEntryValue(item.icon, v, 'gesture-tap-button');
                             message.optionalValue = this.library.getTranslation(
                                 (await tools.getEntryTextOnOff(item.text, value !== 0)) ?? opt,
                             );
@@ -1124,46 +1165,130 @@ export class PageItem extends BaseClassTriggerd {
                     break;
                 }
                 // alarm/display
-                if (item.entity1?.value) {
-                    const value = await item.entity1.value.getNumber();
-                    if (value !== null) {
-                        message.iconColor = await tools.GetIconColor(item.icon, value > 0);
-                        message.minutes = Math.floor(value / 60).toFixed(0);
-                        message.seconds = Math.floor(value % 60).toFixed(0);
+                if (this.tempData) {
+                    let value: number | null = !item.setValue1
+                        ? ((item.entity1 && (await tools.getValueEntryNumber(item.entity1))) ?? null)
+                        : ((this.tempData && this.tempData.time) ?? 0);
+                    if (value == null) {
+                        value = 0;
+                    }
+                    switch (this.tempData.role) {
+                        case 'ex-timer': {
+                            message.iconColor = await tools.GetIconColor(item.icon, value > 0);
+                            message.minutes = new Date(new Date().setHours(0, 0, 0, value)).toLocaleTimeString('de', {
+                                minute: '2-digit',
+                            });
+                            message.seconds = new Date(new Date().setHours(0, 0, 0, value)).toLocaleTimeString('de', {
+                                second: '2-digit',
+                            });
+                            break;
+                        }
+                        case 'ex-alarm': {
+                            message.iconColor = await tools.GetIconColor(item.icon, value > 0);
+                            message.minutes = new Date(new Date().setHours(0, 0, 0, value)).toLocaleTimeString('de', {
+                                hour: '2-digit',
+                            });
+                            message.seconds = new Date(new Date().setHours(0, 0, 0, value)).toLocaleTimeString('de', {
+                                minute: '2-digit',
+                            });
 
-                        if (item.entity1.set) {
-                            // alarm
-                        } else {
-                            // display
+                            break;
+                        }
+                        case 'timer': {
+                            message.iconColor = await tools.GetIconColor(item.icon, this.tempData.status === 'run');
+                            message.minutes = Math.floor(this.tempData.value / 60).toFixed(0);
+                            message.seconds = Math.floor(this.tempData.value % 60).toFixed(0);
+                            break;
                         }
                     }
-                } else if (this.tempData !== undefined) {
-                    message.iconColor = await tools.GetIconColor(item.icon, this.tempData.status === 'run');
-                    message.minutes = Math.floor(this.tempData.value / 60).toFixed(0);
-                    message.seconds = Math.floor(this.tempData.value % 60).toFixed(0);
-
-                    if (this.tempData.status === 'run') {
-                        message.editable = '0';
-                        message.action1 = 'pause';
-                        message.action3 = 'clear';
-                        //message.action3 = 'finish';
-                        message.text1 = this.library.getTranslation('Pause');
-                        message.text3 = this.library.getTranslation('Clear');
-                        //message.text3 = this.library.getTranslation('Finish');
-                    } else if (this.tempData.value > 0) {
-                        message.editable = '0';
-                        message.action1 = 'start';
-                        message.action3 = 'clear';
-                        //message.action3 = 'finish';
-                        message.text1 = this.library.getTranslation('Continue');
-                        message.text3 = this.library.getTranslation('Clear');
-                        //message.text3 = this.library.getTranslation('Finish');
-                    } else {
-                        message.editable = '1';
-                        message.action2 = 'start';
-                        message.text2 = this.library.getTranslation('Start');
+                    switch (this.tempData.role) {
+                        case 'ex-alarm': {
+                            const status = item.setValue2 && ((await item.setValue2.getNumber()) as 1 | 0 | 2 | null);
+                            if (status == null) {
+                                break;
+                            }
+                            switch (status) {
+                                case 0:
+                                case 1: {
+                                    message.editable = item.entity1?.set?.writeable ? '1' : '0';
+                                    message.action1 = item.setValue2?.writeable ? 'begin' : 'disable';
+                                    message.action3 = item.entity1?.set?.writeable ? 'clear' : 'disable';
+                                    //message.action3 = 'finish';
+                                    message.text1 = this.library.getTranslation('continue');
+                                    message.text3 = this.library.getTranslation('clear');
+                                    //message.text3 = this.library.getTranslation('Finish');
+                                    break;
+                                }
+                                case 2: {
+                                    message.editable = '0';
+                                    message.action2 = item.setValue2?.writeable ? 'pause' : 'disable';
+                                    message.action3 = item.entity1?.set?.writeable ? 'clear' : 'disable';
+                                    //message.action3 = 'finish';
+                                    message.text2 = this.library.getTranslation('stop');
+                                    message.text3 = this.library.getTranslation('clear');
+                                    //message.text3 = this.library.getTranslation('Finish')
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                        case 'ex-timer': {
+                            const status = item.setValue2 && ((await item.setValue2.getNumber()) as 1 | 0 | 2 | null);
+                            if (status == null) {
+                                break;
+                            }
+                            switch (status) {
+                                case 0:
+                                case 1: {
+                                    message.editable = item.entity1?.set?.writeable ? '1' : '0';
+                                    message.action1 = item.setValue2?.writeable ? 'begin' : 'disable';
+                                    message.action3 = item.entity1?.set?.writeable ? 'clear' : 'disable';
+                                    //message.action3 = 'finish';
+                                    message.text1 = this.library.getTranslation('start');
+                                    message.text3 = this.library.getTranslation('clear');
+                                    break;
+                                }
+                                case 2: {
+                                    message.editable = '0';
+                                    message.action2 = item.setValue2?.writeable ? 'pause' : 'disable';
+                                    message.action3 = item.entity1?.set?.writeable ? 'clear' : 'disable';
+                                    //message.action3 = 'finish';
+                                    message.text2 = this.library.getTranslation('stop');
+                                    message.text3 = this.library.getTranslation('clear');
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                        case 'timer': {
+                            if (this.tempData.status === 'run') {
+                                message.editable = '0';
+                                message.action2 = 'pause';
+                                //message.action3 = 'clear';
+                                //message.action3 = 'finish';
+                                message.text2 = this.library.getTranslation('pause');
+                                //message.text3 = this.library.getTranslation('clear');
+                                //message.text3 = this.library.getTranslation('Finish');
+                            } else if (this.tempData.value > 0) {
+                                message.editable = '0';
+                                message.action1 = 'begin';
+                                message.action3 = 'clear';
+                                //message.action3 = 'finish';
+                                message.text1 = this.library.getTranslation('continue');
+                                message.text3 = this.library.getTranslation('clear');
+                                //message.text3 = this.library.getTranslation('Finish');
+                            } else {
+                                message.editable = '1';
+                                message.action1 = 'begin';
+                                message.action3 = 'clear';
+                                message.text1 = this.library.getTranslation('Start');
+                                message.text3 = this.library.getTranslation('clear');
+                            }
+                            break;
+                        }
                     }
                 }
+
                 break;
             }
         }
@@ -1559,47 +1684,96 @@ export class PageItem extends BaseClassTriggerd {
                 }
                 break;
             }
-            case 'timer-start': {
-                if (this.tempInterval) {
-                    this.adapter.clearInterval(this.tempInterval);
+            case 'timer-begin': {
+                if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
+                    this.dataItems.data.setValue2 && (await this.dataItems.data.setValue2.setStateAsync(2));
                 }
-                if (value) {
-                    this.tempData.value = value.split(':').reduce((p, c, i) => {
-                        return String(parseInt(p) + parseInt(c) * 60 ** (2 - i));
-                    });
-                } else {
-                    this.tempData.status = 'run';
-                    if (this.visibility) {
-                        await this.onStateTrigger();
+                switch (this.tempData.role) {
+                    case 'ex-alarm':
+                    case 'ex-timer': {
+                        break;
                     }
-
-                    this.tempInterval = this.adapter.setInterval(async () => {
-                        if (this.unload && this.tempInterval) {
+                    case 'timer': {
+                        if (this.tempInterval) {
                             this.adapter.clearInterval(this.tempInterval);
                         }
-                        if (--this.tempData.value <= 0) {
-                            this.tempData.value = 0;
-                            this.tempData.status = 'stop';
-                            this.dataItems &&
-                                this.dataItems.type == 'timer' &&
-                                this.dataItems.data &&
-                                this.dataItems.data.setValue1 &&
-                                (await this.dataItems.data.setValue1.setStateTrue());
-                            if (this.visibility) {
-                                await this.onStateTrigger();
-                            }
-                            if (this.tempInterval) {
+
+                        this.tempData.status = 'run';
+                        if (this.visibility) {
+                            await this.onStateTrigger();
+                        }
+
+                        this.tempInterval = this.adapter.setInterval(async () => {
+                            if (this.unload && this.tempInterval) {
                                 this.adapter.clearInterval(this.tempInterval);
                             }
-                            this.tempInterval = undefined;
-                        } else if (this.tempData.value > 0) {
-                            if (this.visibility) {
-                                await this.onStateTrigger();
-                            } else if (this.parent && !this.parent.sleep && this.parent.getVisibility()) {
-                                await this.parent.onStateTriggerSuperDoNotOverride('timer', this);
+                            if (--this.tempData.value <= 0) {
+                                this.tempData.value = 0;
+                                this.tempData.status = 'stop';
+                                this.dataItems &&
+                                    this.dataItems.type == 'timer' &&
+                                    this.dataItems.data &&
+                                    this.dataItems.data.setValue1 &&
+                                    (await this.dataItems.data.setValue1.setStateTrue());
+                                if (this.visibility) {
+                                    await this.onStateTrigger();
+                                } else if (this.parent && !this.parent.sleep && this.parent.getVisibility()) {
+                                    await this.parent.onStateTriggerSuperDoNotOverride('timer', this);
+                                }
+                                if (this.tempInterval) {
+                                    this.adapter.clearInterval(this.tempInterval);
+                                }
+                                this.tempInterval = undefined;
+                            } else if (this.tempData.value > 0) {
+                                if (this.visibility) {
+                                    await this.onStateTrigger();
+                                } else if (this.parent && !this.parent.sleep && this.parent.getVisibility()) {
+                                    await this.parent.onStateTriggerSuperDoNotOverride('timer', this);
+                                }
                             }
+                        }, 1000);
+
+                        break;
+                    }
+                }
+                break;
+            }
+
+            case 'timer-start': {
+                switch (this.tempData.role) {
+                    case 'ex-alarm': {
+                        const t = value.split(':').reduce((p, c, i) => {
+                            return String(parseInt(p) + parseInt(c) * 60 ** (2 - i));
+                        });
+                        const r = new Date(new Date().setHours(0, parseInt(t), 0, 0)).getTime();
+                        if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
+                            this.dataItems.data.entity1?.set &&
+                                (await this.dataItems.data.entity1.set.setStateAsync(r));
                         }
-                    }, 1000);
+                        break;
+                    }
+                    case 'ex-timer': {
+                        const t = value.split(':').reduce((p, c, i) => {
+                            return String(parseInt(p) + parseInt(c) * 60 ** (2 - i));
+                        });
+                        const r = new Date(new Date().setHours(0, 0, parseInt(t), 0)).getTime();
+                        if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
+                            this.dataItems.data.entity1?.set &&
+                                (await this.dataItems.data.entity1.set.setStateAsync(r));
+                        }
+                        break;
+                    }
+                    case 'timer': {
+                        if (this.tempInterval) {
+                            this.adapter.clearInterval(this.tempInterval);
+                        }
+                        if (value) {
+                            this.tempData.value = value.split(':').reduce((p, c, i) => {
+                                return String(parseInt(p) + parseInt(c) * 60 ** (2 - i));
+                            });
+                        }
+                        break;
+                    }
                 }
                 break;
             }
@@ -1607,27 +1781,60 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'timer-clear': {
+                if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
+                    this.dataItems.data.setValue2 && (await this.dataItems.data.setValue2.setStateAsync(0));
+                }
+
                 if (this.tempData) {
-                    this.tempData.value = 0;
-                    this.tempData.status = 'stop';
-                    if (this.visibility) {
-                        await this.onStateTrigger();
-                    }
-                    if (this.tempInterval) {
-                        this.adapter.clearInterval(this.tempInterval);
+                    switch (this.tempData.role) {
+                        case 'ex-alarm':
+                        case 'ex-timer': {
+                            const r = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
+                            if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
+                                this.dataItems.data.entity1?.set &&
+                                    (await this.dataItems.data.entity1.set.setStateAsync(r));
+                            }
+                            break;
+                        }
+                        case 'timer':
+                            {
+                                this.tempData.value = 0;
+                                this.tempData.status = 'stop';
+                                if (this.visibility) {
+                                    await this.onStateTrigger();
+                                }
+                                if (this.tempInterval) {
+                                    this.adapter.clearInterval(this.tempInterval);
+                                }
+                            }
+                            break;
                     }
                 }
 
                 break;
             }
             case 'timer-pause': {
+                if (this.dataItems && this.dataItems.type == 'timer' && this.dataItems.data) {
+                    this.dataItems.data.setValue2 && (await this.dataItems.data.setValue2.setStateAsync(1));
+                }
+
                 if (this.tempData) {
-                    this.tempData.status = 'pause';
-                    if (this.visibility) {
-                        await this.onStateTrigger();
-                    }
-                    if (this.tempInterval) {
-                        this.adapter.clearInterval(this.tempInterval);
+                    switch (this.tempData.role) {
+                        case 'ex-alarm':
+                        case 'ex-timer': {
+                            break;
+                        }
+                        case 'timer':
+                            {
+                                this.tempData.status = 'pause';
+                                if (this.visibility) {
+                                    await this.onStateTrigger();
+                                }
+                                if (this.tempInterval) {
+                                    this.adapter.clearInterval(this.tempInterval);
+                                }
+                            }
+                            break;
                     }
                 }
 

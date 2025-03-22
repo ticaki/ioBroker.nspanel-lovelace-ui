@@ -226,7 +226,18 @@ export type PageItemOptionsTemplate = {
           >)
 );
 
-export type PageItemTimer = Pick<PageItemBase, 'entity1' | 'text' | 'headline' | 'icon' | 'setValue1'>;
+export type PageItemTimer = Pick<
+    PageItemBase,
+    // value or set the time
+    | 'entity1'
+    | 'text'
+    | 'headline'
+    | 'icon'
+    // the state to trigger if internal trigger ends
+    | 'setValue1'
+    // set current status
+    | 'setValue2'
+>;
 export type PageItemTimerDataItemsOptions = {
     type: 'timer';
     data: pages.ChangeTypeOfKeys<PageItemTimer, Types.DataItemsOptions | undefined>;

@@ -170,10 +170,16 @@ export const stateRoleArray = arrayOfAllStateRole([
     'weather.title.short',
     'level.mode.select',
     'value.mode.select',
+    'level.timer',
+    'value.timer',
+    'level.mode',
     '',
 ]);
 
 export type StateRole =
+    | 'level.mode'
+    | 'value.timer'
+    | 'level.timer'
     | 'level.mode.select'
     | 'value.mode.select'
     | 'button'
