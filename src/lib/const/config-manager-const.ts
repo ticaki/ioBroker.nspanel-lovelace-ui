@@ -296,7 +296,9 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
     },
     'level.timer': {
         ACTUAL: null,
+        SET: null,
         STATE: null,
+        STATUS: null,
     },
     gate: {
         ACTUAL: null,
@@ -378,7 +380,8 @@ export type mydps =
     | 'VACATION'
     | 'WINDOWOPEN'
     | 'WORKING'
-    | 'VALUE';
+    | 'VALUE'
+    | 'STATUS';
 
 export type requiredDatapoints = {
     motion: {
@@ -634,6 +637,8 @@ export type requiredDatapoints = {
         data: {
             ACTUAL: Datapoint;
             STATE: Datapoint;
+            SET: Datapoint;
+            STATUS: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -1112,10 +1117,38 @@ export const requiredScriptDataPoints: requiredDatapoints = {
     },
     'level.timer': {
         name: 'level.timer',
-        description: '',
+        description: 'Ein countdown Timer (intern/extern) oder eine Uhrzeit (extern)',
         data: {
-            ACTUAL: { role: 'timestamp', type: 'number', required: true, writeable: true },
-            STATE: { role: 'state', type: 'string', required: true, writeable: true },
+            ACTUAL: {
+                role: ['value.timer', 'level.timer', 'date'],
+                type: 'number',
+                required: false,
+                trigger: true,
+                writeable: false,
+                description: 'Das wird angezeigt - date in hh:mm, timer in mm:ss',
+            },
+            SET: {
+                role: ['level.timer', 'date'],
+                type: 'number',
+                required: false,
+                writeable: true,
+                description: 'Hier wird ein geänderter Wert hingeschrieben',
+            },
+            STATE: {
+                role: 'button',
+                type: 'boolean',
+                required: false,
+                writeable: true,
+                description: 'wenn die oberen nicht benutzt wird hier getriggert wenn ein interner Timer endet.',
+            },
+            STATUS: {
+                role: 'level.mode',
+                type: 'number',
+                required: false,
+                trigger: true,
+                writeable: true,
+                description: '0: OFF , 1: PAUSE, 2: ON/RUNNING',
+            },
         },
     },
     gate: {
