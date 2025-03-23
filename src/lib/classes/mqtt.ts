@@ -13,8 +13,7 @@ import * as forge from 'node-forge';
 export type callbackMessageType = (topic: string, message: string) => void;
 export type callbackConnectType = () => Promise<void>;
 
-// RSA-Schlüsselpaar erzeugen (4096 Bit für hohe Sicherheit)
-
+const allowedMQTTids: string[] = [];
 export class MQTTClientClass extends BaseClass {
     client: mqtt.MqttClient;
     data: any = {};
@@ -36,6 +35,7 @@ export class MQTTClientClass extends BaseClass {
     ) {
         super(adapter, 'mqttClient');
         this.clientId = `iobroker_${randomUUID()}`;
+        allowedMQTTids.push(this.clientId);
         this.messageCallback = callback;
         this.client = mqtt.connect(`${tls ? 'tls' : 'mqtt'}://${ip}:${port}`, {
             username: username,
@@ -43,6 +43,7 @@ export class MQTTClientClass extends BaseClass {
             clientId: this.clientId,
             rejectUnauthorized: false,
         });
+
         this.client.on('connect', () => {
             this.log.info(`Connection is active.`);
             this.ready = true;
@@ -84,11 +85,15 @@ export class MQTTClientClass extends BaseClass {
     }
 
     async publish(topic: string, message: string, opt?: IClientPublishOptions): Promise<void> {
-        if (!this.client.connected) {
-            //this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
-            return;
+        try {
+            if (!this.client.connected) {
+                //this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
+                return;
+            }
+            await this.client.publishAsync(topic, message, opt);
+        } catch (error) {
+            this.log.error(`On publish: ${error}`);
         }
-        await this.client.publishAsync(topic, message, opt);
     }
 
     subscript(topic: string, callback: callbackMessageType): void {
@@ -108,6 +113,10 @@ export class MQTTClientClass extends BaseClass {
         }
     }
     async destroy(): Promise<void> {
+        const index = allowedMQTTids.findIndex(i => i === this.clientId);
+        if (index !== -1) {
+            allowedMQTTids.splice(index, 1);
+        }
         await this.delete();
         const endMqttClient = (): Promise<void> => {
             return new Promise(resolve => {
@@ -218,6 +227,17 @@ export class MQTTServerClass extends BaseClass {
                 this.log.info(`Client ${client.id} login successful.`);
             }
             callback(null, confirm);
+        };
+        this.aedes.authorizeSubscribe = (client: Client, subscription: any, callback: any) => {
+            if (allowedMQTTids.includes(client.id)) {
+                return callback(null, subscription);
+            }
+            if (subscription.topic.replaceAll(/[^a-zA-Z0-9_-]/g, '_').startsWith(client.id)) {
+                this.log.debug(`Client ${client.id} subscribed to ${subscription.topic}`);
+                return callback(null, subscription);
+            }
+            this.log.warn(`Client ${client.id} not allowed to subscribe to ${subscription.topic}`);
+            return callback(null, null);
         };
     }
     destroy(): void {

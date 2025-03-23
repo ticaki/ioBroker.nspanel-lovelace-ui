@@ -40,6 +40,7 @@ var import_library = require("./library");
 var import_aedes = __toESM(require("aedes"));
 var import_node_crypto = require("node:crypto");
 var forge = __toESM(require("node-forge"));
+const allowedMQTTids = [];
 class MQTTClientClass extends import_library.BaseClass {
   client;
   data = {};
@@ -50,6 +51,7 @@ class MQTTClientClass extends import_library.BaseClass {
   constructor(adapter, ip, port, username, password, tls, callback, onConnect, onDisconnect) {
     super(adapter, "mqttClient");
     this.clientId = `iobroker_${(0, import_node_crypto.randomUUID)()}`;
+    allowedMQTTids.push(this.clientId);
     this.messageCallback = callback;
     this.client = import_mqtt.default.connect(`${tls ? "tls" : "mqtt"}://${ip}:${port}`, {
       username,
@@ -91,10 +93,14 @@ class MQTTClientClass extends import_library.BaseClass {
     });
   }
   async publish(topic, message, opt) {
-    if (!this.client.connected) {
-      return;
+    try {
+      if (!this.client.connected) {
+        return;
+      }
+      await this.client.publishAsync(topic, message, opt);
+    } catch (error) {
+      this.log.error(`On publish: ${error}`);
     }
-    await this.client.publishAsync(topic, message, opt);
   }
   subscript(topic, callback) {
     if (this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback) !== -1) {
@@ -112,6 +118,10 @@ class MQTTClientClass extends import_library.BaseClass {
     }
   }
   async destroy() {
+    const index = allowedMQTTids.findIndex((i) => i === this.clientId);
+    if (index !== -1) {
+      allowedMQTTids.splice(index, 1);
+    }
     await this.delete();
     const endMqttClient = () => {
       return new Promise((resolve) => {
@@ -182,6 +192,17 @@ class MQTTServerClass extends import_library.BaseClass {
         this.log.info(`Client ${client.id} login successful.`);
       }
       callback(null, confirm);
+    };
+    this.aedes.authorizeSubscribe = (client, subscription, callback) => {
+      if (allowedMQTTids.includes(client.id)) {
+        return callback(null, subscription);
+      }
+      if (subscription.topic.replaceAll(/[^a-zA-Z0-9_-]/g, "_").startsWith(client.id)) {
+        this.log.debug(`Client ${client.id} subscribed to ${subscription.topic}`);
+        return callback(null, subscription);
+      }
+      this.log.warn(`Client ${client.id} not allowed to subscribe to ${subscription.topic}`);
+      return callback(null, null);
     };
   }
   destroy() {
