@@ -228,9 +228,8 @@ class Screensaver extends import_Page.Page {
   /**
    * ..
    *
-   * @param _dp
-   * @param from
-   * @returns
+   * @param _dp - the dp that triggered the state
+   * @param from - the class that triggered the state
    */
   onStateTrigger = async (_dp, from) => {
     const config = this.config;
@@ -361,26 +360,26 @@ class Screensaver extends import_Page.Page {
     }
   }
   overwriteModel(mode, init = false) {
-    if (mode === this.mode) {
+    if (mode === Screensaver.mapModeToNumber(this.mode)) {
       return;
     }
     switch (mode) {
-      case "standard":
-      case "alternate": {
+      case 0:
+      case 1: {
         this.card = "screensaver";
         if (this.config) {
           this.config.card = "screensaver";
         }
         break;
       }
-      case "advanced": {
+      case 2: {
         this.card = "screensaver2";
         if (this.config) {
           this.config.card = "screensaver2";
         }
         break;
       }
-      case "easyview": {
+      case 3: {
         this.card = "screensaver3";
         if (this.config) {
           this.config.card = "screensaver3";
@@ -388,14 +387,55 @@ class Screensaver extends import_Page.Page {
         break;
       }
       default: {
+        pages.exhaustiveCheck(mode);
         this.log.error(`Invalid mode: ${mode}`);
         return;
       }
     }
-    this.mode = mode;
+    this.mode = Screensaver.mapNumberToMode(mode);
     if (!init) {
       this.sendType();
       void this.update();
+    }
+  }
+  static mapModeToNumber(mode) {
+    switch (mode) {
+      case "standard": {
+        return 0;
+      }
+      case "alternate": {
+        return 1;
+      }
+      case "advanced": {
+        return 2;
+      }
+      case "easyview": {
+        return 3;
+      }
+      default: {
+        pages.exhaustiveCheck(mode);
+        return 0;
+      }
+    }
+  }
+  static mapNumberToMode(mode) {
+    switch (mode) {
+      case 0: {
+        return "standard";
+      }
+      case 1: {
+        return "alternate";
+      }
+      case 2: {
+        return "advanced";
+      }
+      case 3: {
+        return "easyview";
+      }
+      default: {
+        pages.exhaustiveCheck(mode);
+        return "standard";
+      }
     }
   }
 }

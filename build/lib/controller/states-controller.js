@@ -122,7 +122,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
       `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`
     );
   }
-  async stopTriggerTimeout() {
+  stopTriggerTimeout() {
     if (this.updateTimeout) {
       this.adapter.clearTimeout(this.updateTimeout);
       this.updateTimeout = void 0;
@@ -138,7 +138,10 @@ class BaseClassTriggerd extends import_library.BaseClass {
     if (this.alwaysOnState) {
       this.adapter.clearTimeout(this.alwaysOnState);
     }
-    await this.stopTriggerTimeout();
+    if (StatesControler.tempObjectDBTimeout) {
+      this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
+    }
+    this.stopTriggerTimeout();
   }
   getVisibility = () => {
     return this.visibility;
@@ -179,7 +182,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
         }
         this.log.debug(`Switch page to invisible${force ? " (forced)" : ""}!`);
         if (!this.neverDeactivateTrigger) {
-          await this.stopTriggerTimeout();
+          this.stopTriggerTimeout();
           this.controller && await this.controller.statesControler.deactivateTrigger(this);
         }
       }

@@ -1,7 +1,7 @@
 import type * as dataItem from '../classes/data-item';
 import type { RGB } from '../const/Color';
 import type * as typePageItem from './type-pageItem';
-import type * as pages from './pages';
+import * as pages from './pages';
 
 /**
  * Bitte an folgendes Schema halten
@@ -487,8 +487,11 @@ export type EventType = 'event';
 export function isEventType(F: string): F is EventType {
     return ['event'].indexOf(F) != -1;
 }
-export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced' | 'easyview';
 
+const arrayOfModes = pages.arrayOfAll<ScreensaverModeType>();
+export const arrayOfScreensaverModes = arrayOfModes(['standard', 'alternate', 'advanced', 'easyview']);
+export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced' | 'easyview';
+export type ScreensaverModeTypeAsNumber = 0 | 1 | 2 | 3;
 export interface State extends Omit<ioBroker.State, 'val'> {
     val: StateValue;
 }

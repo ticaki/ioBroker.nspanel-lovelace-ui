@@ -70,6 +70,23 @@ export function isScreenSaverMode(F: any): F is Types.ScreensaverModeType {
             return false;
     }
 }
+export function isScreenSaverModeAsNumber(F: any): F is Types.ScreensaverModeTypeAsNumber {
+    if (typeof F !== 'number') {
+        return false;
+    }
+    const N = F as Types.ScreensaverModeTypeAsNumber;
+    switch (N) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            return true;
+        default:
+            exhaustiveCheck(N);
+            console.info(`${F} is not isScreenSaverModeAsNumber!`);
+            return false;
+    }
+}
 
 /**
  * if u get a error here, u have to add the new stateRole to the type StateRole or visa versa

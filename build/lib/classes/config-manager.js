@@ -296,12 +296,16 @@ class ConfigManager extends import_library.BaseClass {
             const right = page.next || page.home || void 0;
             if (left || right) {
               const navItem = {
-                name: page.uniqueName,
+                name: page.native.uniqueID || "",
                 left: left ? page.prev ? { single: left } : { double: left } : void 0,
                 right: right ? page.next ? { single: right } : { double: right } : void 0,
-                page: page.uniqueName
+                page: page.native.uniqueID
               };
               panelConfig.navigation.push(navItem);
+            } else {
+              const msg = `Page: ${page.native.uniqueID || "unknown"} dont have any navigation!`;
+              messages.push(msg);
+              continue;
             }
           }
           if (page.heading) {
@@ -313,7 +317,7 @@ class ConfigManager extends import_library.BaseClass {
           continue;
         }
         if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR") {
-          const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!`;
+          const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!..`;
           messages.push(msg);
           this.log.warn(msg);
           continue;

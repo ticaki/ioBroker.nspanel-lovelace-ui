@@ -28,6 +28,7 @@ __export(pages_exports, {
   isQRButtonEvent: () => isQRButtonEvent,
   isScreenSaverCardType: () => isScreenSaverCardType,
   isScreenSaverMode: () => isScreenSaverMode,
+  isScreenSaverModeAsNumber: () => isScreenSaverModeAsNumber,
   isStateRole: () => isStateRole,
   screenSaverCardArray: () => screenSaverCardArray,
   screenSaverModeArray: () => screenSaverModeArray,
@@ -72,6 +73,23 @@ function isScreenSaverMode(F) {
       return true;
     default:
       console.info(`${F} is not isScreenSaverMode!`);
+      return false;
+  }
+}
+function isScreenSaverModeAsNumber(F) {
+  if (typeof F !== "number") {
+    return false;
+  }
+  const N = F;
+  switch (N) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+      return true;
+    default:
+      exhaustiveCheck(N);
+      console.info(`${F} is not isScreenSaverModeAsNumber!`);
       return false;
   }
 }
@@ -313,6 +331,7 @@ function isPlaceholderType(F) {
   isQRButtonEvent,
   isScreenSaverCardType,
   isScreenSaverMode,
+  isScreenSaverModeAsNumber,
   isStateRole,
   screenSaverCardArray,
   screenSaverModeArray,

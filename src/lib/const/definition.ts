@@ -1,10 +1,12 @@
-import type {
-    InternalStatesObject,
-    NSpanelModel,
-    PanelInfo,
-    PanelInternalCommand,
-    ScreenSaverPlaces,
-    ScreensaverModeType,
+import {
+    arrayOfScreensaverModes,
+    type InternalStatesObject,
+    type NSpanelModel,
+    type PanelInfo,
+    type PanelInternalCommand,
+    type ScreenSaverPlaces,
+    type ScreensaverModeType,
+    type ScreensaverModeTypeAsNumber,
 } from '../types/types';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object
@@ -59,7 +61,7 @@ export const genericStateObjects: {
                 screenSaver: Omit<ioBroker.StateObject, 'common'> & {
                     common: Omit<ioBroker.StateObject['common'], 'states'>;
                 } & {
-                    common: { states: Record<ScreensaverModeType, string> };
+                    common: { states: Record<ScreensaverModeTypeAsNumber, string> };
                 };
                 detachRight: ioBroker.StateObject;
                 detachLeft: ioBroker.StateObject;
@@ -192,16 +194,11 @@ export const genericStateObjects: {
                     type: 'state',
                     common: {
                         name: 'StateObjects.screenSaver',
-                        type: 'string',
-                        role: 'level.text',
+                        type: 'number',
+                        role: 'level',
                         read: true,
                         write: true,
-                        states: {
-                            standard: 'Standard',
-                            advanced: 'Advanced',
-                            alternate: 'Alternate',
-                            easyview: 'Easyview',
-                        },
+                        states: arrayOfScreensaverModes,
                     },
                     native: {},
                 },

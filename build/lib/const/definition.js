@@ -28,6 +28,7 @@ __export(definition_exports, {
   tasmotaOtaUrl: () => tasmotaOtaUrl
 });
 module.exports = __toCommonJS(definition_exports);
+var import_types = require("../types/types");
 const defaultChannel = {
   _id: "",
   type: "channel",
@@ -145,16 +146,11 @@ const genericStateObjects = {
           type: "state",
           common: {
             name: "StateObjects.screenSaver",
-            type: "string",
-            role: "level.text",
+            type: "number",
+            role: "level",
             read: true,
             write: true,
-            states: {
-              standard: "Standard",
-              advanced: "Advanced",
-              alternate: "Alternate",
-              easyview: "Easyview"
-            }
+            states: import_types.arrayOfScreensaverModes
           },
           native: {}
         },

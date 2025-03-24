@@ -130,7 +130,7 @@ export class BaseClassTriggerd extends BaseClass {
         );
     }
 
-    private async stopTriggerTimeout(): Promise<void> {
+    private stopTriggerTimeout(): void {
         if (this.updateTimeout) {
             this.adapter.clearTimeout(this.updateTimeout);
             this.updateTimeout = undefined;
@@ -146,7 +146,10 @@ export class BaseClassTriggerd extends BaseClass {
         if (this.alwaysOnState) {
             this.adapter.clearTimeout(this.alwaysOnState);
         }
-        await this.stopTriggerTimeout();
+        if (StatesControler.tempObjectDBTimeout) {
+            this.adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
+        }
+        this.stopTriggerTimeout();
     }
     getVisibility = (): boolean => {
         return this.visibility;
@@ -190,7 +193,7 @@ export class BaseClassTriggerd extends BaseClass {
                 }
                 this.log.debug(`Switch page to invisible${force ? ' (forced)' : ''}!`);
                 if (!this.neverDeactivateTrigger) {
-                    await this.stopTriggerTimeout();
+                    this.stopTriggerTimeout();
                     this.controller && (await this.controller.statesControler.deactivateTrigger(this));
                 }
             }
