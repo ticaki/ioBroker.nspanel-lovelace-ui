@@ -32,6 +32,7 @@ __export(screensaver_exports, {
 });
 module.exports = __toCommonJS(screensaver_exports);
 var Definition = __toESM(require("../const/definition"));
+var Types = __toESM(require("../types/types"));
 var import_Page = require("../classes/Page");
 var pages = __toESM(require("../types/pages"));
 var tools = __toESM(require("../const/tools"));
@@ -399,44 +400,14 @@ class Screensaver extends import_Page.Page {
     }
   }
   static mapModeToNumber(mode) {
-    switch (mode) {
-      case "standard": {
-        return 0;
-      }
-      case "alternate": {
-        return 1;
-      }
-      case "advanced": {
-        return 2;
-      }
-      case "easyview": {
-        return 3;
-      }
-      default: {
-        pages.exhaustiveCheck(mode);
-        return 0;
-      }
-    }
+    const index = Types.arrayOfScreensaverModes.findIndex((x) => x === mode);
+    return Math.min(
+      Math.max(index, 0),
+      Types.arrayOfScreensaverModes.length - 1
+    );
   }
   static mapNumberToMode(mode) {
-    switch (mode) {
-      case 0: {
-        return "standard";
-      }
-      case 1: {
-        return "alternate";
-      }
-      case 2: {
-        return "advanced";
-      }
-      case 3: {
-        return "easyview";
-      }
-      default: {
-        pages.exhaustiveCheck(mode);
-        return "standard";
-      }
-    }
+    return Types.arrayOfScreensaverModes[mode];
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

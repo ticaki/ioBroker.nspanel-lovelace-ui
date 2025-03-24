@@ -1,5 +1,5 @@
 import * as Definition from '../const/definition';
-import type * as Types from '../types/types';
+import * as Types from '../types/types';
 
 //import dayjs from 'dayjs';
 //import moment from 'moment';
@@ -423,44 +423,16 @@ export class Screensaver extends Page {
             void this.update();
         }
     }
+
     static mapModeToNumber(mode: Types.ScreensaverModeType): Types.ScreensaverModeTypeAsNumber {
-        switch (mode) {
-            case 'standard': {
-                return 0;
-            }
-            case 'alternate': {
-                return 1;
-            }
-            case 'advanced': {
-                return 2;
-            }
-            case 'easyview': {
-                return 3;
-            }
-            default: {
-                pages.exhaustiveCheck(mode);
-                return 0;
-            }
-        }
+        const index = Types.arrayOfScreensaverModes.findIndex(x => x === mode);
+        return Math.min(
+            Math.max(index, 0),
+            Types.arrayOfScreensaverModes.length - 1,
+        ) as Types.ScreensaverModeTypeAsNumber;
     }
+
     static mapNumberToMode(mode: Types.ScreensaverModeTypeAsNumber): Types.ScreensaverModeType {
-        switch (mode) {
-            case 0: {
-                return 'standard';
-            }
-            case 1: {
-                return 'alternate';
-            }
-            case 2: {
-                return 'advanced';
-            }
-            case 3: {
-                return 'easyview';
-            }
-            default: {
-                pages.exhaustiveCheck(mode);
-                return 'standard';
-            }
-        }
+        return Types.arrayOfScreensaverModes[mode];
     }
 }
