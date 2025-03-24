@@ -70,6 +70,12 @@ export class Page extends BaseClassPage {
                     continue;
                 }
 
+                // switch type text to button as indicator for cardThermo
+                if (options.type === 'text' && this && this.card === 'cardThermo') {
+                    options.type = 'button' as any;
+                    options.role = 'indicator';
+                }
+
                 options = await this.getItemFromTemplate(options);
                 if (!options) {
                     this.log.error(`Dont get a template for ${a}`);

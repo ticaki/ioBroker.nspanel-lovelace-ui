@@ -64,6 +64,10 @@ class Page extends import_states_controller.BaseClassPage {
         if (options === void 0) {
           continue;
         }
+        if (options.type === "text" && this && this.card === "cardThermo") {
+          options.type = "button";
+          options.role = "indicator";
+        }
         options = await this.getItemFromTemplate(options);
         if (!options) {
           this.log.error(`Dont get a template for ${a}`);
