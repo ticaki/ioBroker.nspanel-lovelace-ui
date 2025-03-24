@@ -192,6 +192,13 @@ class PageMenu extends import_Page.Page {
   async reset() {
     this.step = 0;
   }
+  async delete() {
+    if (this.doubleClick) {
+      this.adapter.clearTimeout(this.doubleClick);
+      this.doubleClick = void 0;
+    }
+    await super.delete();
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

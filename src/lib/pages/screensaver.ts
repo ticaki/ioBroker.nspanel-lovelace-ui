@@ -232,9 +232,8 @@ export class Screensaver extends Page {
     /**
      * ..
      *
-     * @param _dp
-     * @param from
-     * @returns
+     * @param _dp - the dp that triggered the state
+     * @param from - the class that triggered the state
      */
     onStateTrigger = async (_dp: string, from: BaseClassTriggerd): Promise<void> => {
         const config = this.config;
@@ -381,13 +380,13 @@ export class Screensaver extends Page {
         }
     }
 
-    overwriteModel(mode: Types.ScreensaverModeType, init: boolean = false): void {
-        if (mode === this.mode) {
+    overwriteModel(mode: Types.ScreensaverModeTypeAsNumber, init: boolean = false): void {
+        if (mode === Screensaver.mapModeToNumber(this.mode)) {
             return;
         }
         switch (mode) {
-            case 'standard':
-            case 'alternate': {
+            case 0:
+            case 1: {
                 // overwrite readonly property
                 (this.card as any) = 'screensaver';
                 if (this.config) {
@@ -395,7 +394,7 @@ export class Screensaver extends Page {
                 }
                 break;
             }
-            case 'advanced': {
+            case 2: {
                 // overwrite readonly property
                 (this.card as any) = 'screensaver2';
                 if (this.config) {
@@ -403,7 +402,7 @@ export class Screensaver extends Page {
                 }
                 break;
             }
-            case 'easyview': {
+            case 3: {
                 // overwrite readonly property
                 (this.card as any) = 'screensaver3';
                 if (this.config) {
@@ -412,15 +411,56 @@ export class Screensaver extends Page {
                 break;
             }
             default: {
+                pages.exhaustiveCheck(mode);
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 this.log.error(`Invalid mode: ${mode}`);
                 return;
             }
         }
-        this.mode = mode;
+        this.mode = Screensaver.mapNumberToMode(mode);
         if (!init) {
             this.sendType();
             void this.update();
+        }
+    }
+    static mapModeToNumber(mode: Types.ScreensaverModeType): Types.ScreensaverModeTypeAsNumber {
+        switch (mode) {
+            case 'standard': {
+                return 0;
+            }
+            case 'alternate': {
+                return 1;
+            }
+            case 'advanced': {
+                return 2;
+            }
+            case 'easyview': {
+                return 3;
+            }
+            default: {
+                pages.exhaustiveCheck(mode);
+                return 0;
+            }
+        }
+    }
+    static mapNumberToMode(mode: Types.ScreensaverModeTypeAsNumber): Types.ScreensaverModeType {
+        switch (mode) {
+            case 0: {
+                return 'standard';
+            }
+            case 1: {
+                return 'alternate';
+            }
+            case 2: {
+                return 'advanced';
+            }
+            case 3: {
+                return 'easyview';
+            }
+            default: {
+                pages.exhaustiveCheck(mode);
+                return 'standard';
+            }
         }
     }
 }

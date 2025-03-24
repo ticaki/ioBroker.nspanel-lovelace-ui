@@ -512,10 +512,10 @@ class Panel extends import_library.BaseClass {
     const scs = this.pages.filter(
       (a) => a && (a.card === "screensaver" || a.card === "screensaver2" || a.card === "screensaver3")
     );
-    if (currentScreensaver && currentScreensaver.val) {
+    if (currentScreensaver && currentScreensaver.val != null) {
       if (scs && scs[0]) {
         this.screenSaver = scs[0];
-        if (pages.isScreenSaverMode(currentScreensaver.val)) {
+        if (pages.isScreenSaverModeAsNumber(currentScreensaver.val)) {
           this.screenSaver.overwriteModel(currentScreensaver.val, true);
         }
       }
@@ -919,7 +919,7 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "screenSaver": {
-          if (typeof state.val === "string" && pages.isScreenSaverMode(state.val)) {
+          if (typeof state.val === "number" && pages.isScreenSaverModeAsNumber(state.val)) {
             if (this.screenSaver) {
               this.screenSaver.overwriteModel(state.val);
               await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, state.val);

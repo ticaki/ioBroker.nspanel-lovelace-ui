@@ -230,4 +230,12 @@ export class PageMenu extends Page {
     async reset(): Promise<void> {
         this.step = 0;
     }
+
+    async delete(): Promise<void> {
+        if (this.doubleClick) {
+            this.adapter.clearTimeout(this.doubleClick);
+            this.doubleClick = undefined;
+        }
+        await super.delete();
+    }
 }

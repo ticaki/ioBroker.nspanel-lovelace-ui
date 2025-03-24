@@ -547,10 +547,10 @@ export class Panel extends BaseClass {
             a => a && (a.card === 'screensaver' || a.card === 'screensaver2' || a.card === 'screensaver3'),
         ) as Page[];
         //const s = scs.filter(a => currentScreensaver && a.name === currentScreensaver.val);
-        if (currentScreensaver && currentScreensaver.val) {
+        if (currentScreensaver && currentScreensaver.val != null) {
             if (scs && scs[0]) {
                 this.screenSaver = scs[0] as Screensaver;
-                if (pages.isScreenSaverMode(currentScreensaver.val)) {
+                if (pages.isScreenSaverModeAsNumber(currentScreensaver.val)) {
                     this.screenSaver.overwriteModel(currentScreensaver.val, true);
                 }
             }
@@ -1014,7 +1014,7 @@ export class Panel extends BaseClass {
                         this.screenSaver = s;
                         await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, s.name);
                     }*/
-                    if (typeof state.val === 'string' && pages.isScreenSaverMode(state.val)) {
+                    if (typeof state.val === 'number' && pages.isScreenSaverModeAsNumber(state.val)) {
                         if (this.screenSaver) {
                             this.screenSaver.overwriteModel(state.val);
                             await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, state.val);

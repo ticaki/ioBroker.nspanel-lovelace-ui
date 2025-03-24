@@ -340,12 +340,17 @@ export class ConfigManager extends BaseClass {
                         const right = page.next || page.home || undefined;
                         if (left || right) {
                             const navItem: NavigationItemConfig = {
-                                name: page.uniqueName,
+                                name: page.native.uniqueID || '',
                                 left: left ? (page.prev ? { single: left } : { double: left }) : undefined,
                                 right: right ? (page.next ? { single: right } : { double: right }) : undefined,
-                                page: page.uniqueName,
+                                page: page.native.uniqueID,
                             };
                             panelConfig.navigation.push(navItem);
+                        } else {
+                            const msg = `Page: ${page.native.uniqueID || 'unknown'} dont have any navigation!`;
+                            messages.push(msg);
+                            //this.log.warn(msg);
+                            continue;
                         }
                     }
                     if (page.heading) {
@@ -364,7 +369,7 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardThermo' &&
                     page.type !== 'cardQR'
                 ) {
-                    const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!`;
+                    const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!..`;
                     messages.push(msg);
                     this.log.warn(msg);
                     continue;
