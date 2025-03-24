@@ -440,8 +440,12 @@ export class ConfigManager extends BaseClass {
                     continue;
                 }
                 if (page.items) {
-                    for (const item of page.items) {
+                    for (let a = 0; a < page.items.length; a++) {
+                        const item = page.items[a];
                         if (!item) {
+                            continue;
+                        }
+                        if (page.type === 'cardThermo' && a === 0) {
                             continue;
                         }
                         try {
