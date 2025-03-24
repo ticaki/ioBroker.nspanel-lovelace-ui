@@ -21,7 +21,7 @@ import type { STATUS0 } from './lib/types/types';
 import axios from 'axios';
 import { URL } from 'url';
 import type { HttpServer } from './lib/classes/http-server';
-import type { PageBaseConfig } from './lib/types/pages';
+import type * as pages from './lib/types/pages';
 import type { NavigationItemConfig } from './lib/classes/navigation';
 //import fs from 'fs';
 axios.defaults.timeout = 3000;
@@ -39,6 +39,8 @@ class NspanelLovelaceUi extends utils.Adapter {
     timeoutAdminArray: (ioBroker.Timeout | undefined)[] = [];
 
     intervalAdminArray: (ioBroker.Interval | undefined)[] = [];
+
+    mainConfiguration: panelConfigPartial[] | undefined;
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -246,6 +248,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 //this.config.Testconfig2[0].timeout = this.config.timeout;
             }
         }
+
         /*} catch (e: any) {
             this.log.warn(`Invalid configuration stopped! ${e}`);
             return;
@@ -391,9 +394,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.log.error('No configuration - adapter on hold!');
                 return;
             }
-            const testconfig = structuredClone(this.config.Testconfig2);
+            this.mainConfiguration = structuredClone(this.config.Testconfig2);
             let counter = 0;
-            for (const a of testconfig) {
+            for (const a of this.mainConfiguration) {
                 try {
                     if (a && a.pages) {
                         const names: string[] = [];
@@ -402,34 +405,48 @@ class NspanelLovelaceUi extends utils.Adapter {
                             if (!('uniqueID' in p)) {
                                 continue;
                             }
-                            if (p.card === 'screensaver' || p.card === 'screensaver2' || p.card === 'screensaver3') {
+                            if (
+                                p.config?.card === 'screensaver' ||
+                                p.config?.card === 'screensaver2' ||
+                                p.config?.card === 'screensaver3'
+                            ) {
                                 p.uniqueID = `#${p.uniqueID}`;
                             }
                             if (names.indexOf(p.uniqueID) !== -1) {
                                 throw new Error(
-                                    `PanelTopic: ${(a as panelConfigPartial).topic} uniqueID ${p.uniqueID} is double! Ignore this panel!`,
+                                    `PanelTopic: ${a.topic} uniqueID ${p.uniqueID} is double! Ignore this panel!`,
                                 );
                             }
                             names.push(p.uniqueID);
                         }
                     }
                 } catch (e: any) {
-                    const index = testconfig.findIndex(b => b === a);
-                    testconfig.splice(index, 1);
+                    const index = this.mainConfiguration.findIndex(b => b === a);
+                    this.mainConfiguration.splice(index, 1);
                     this.log.error(`Error: ${e}`);
                 }
             }
             if (counter === 0) {
                 return;
             }
-            //testconfig[0].name = this.config.name;
-            //testconfig[0].topic = this.config.topic;
+            const config = structuredClone(this.mainConfiguration);
+            {
+                const o = await this.getForeignObjectAsync(this.namespace);
+                if (o && o.native && o.native.navigation) {
+                    for (const b of config) {
+                        if (o.native.navigation[b.topic] && o.native.navigation[b.topic].useNavigation) {
+                            b.navigation = o.native.navigation[b.topic].data;
+                        }
+                    }
+                }
+            }
+
             const mem = process.memoryUsage().heapUsed / 1024;
             this.log.debug(String(`${mem}k`));
             this.controller = new Controller(this, {
                 mqttClient: this.mqttClient,
                 name: 'controller',
-                panels: testconfig,
+                panels: config,
             });
             await this.controller.init();
             /*setInterval(() => {
@@ -592,7 +609,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             panelConfig:
                                 | (Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
                                       navigation: NavigationItemConfig[];
-                                      pages: PageBaseConfig[];
+                                      pages: pages.PageBaseConfig[];
                                   })
                                 | undefined;
                         } = { messages: [], panelConfig: undefined };
@@ -1142,7 +1159,183 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'selectPanel': {
+                    if (this.mainConfiguration && obj.message?.id) {
+                        let msg: any[] = [];
+                        switch (obj.message.id) {
+                            case 'panel': {
+                                msg = this.mainConfiguration.map(a => {
+                                    const index = this.config.panels.findIndex(b => b.topic === a.topic);
+                                    if (index !== -1) {
+                                        return { value: a.topic, label: this.config.panels[index].name };
+                                    }
+                                    return null;
+                                });
+                                msg = msg.filter(a => a);
+                                msg.sort((a, b) => a.label.localeCompare(b.label));
+                                break;
+                            }
+                            case 'uniqueID': {
+                                if (obj.message.panel) {
+                                    const index: number = this.mainConfiguration.findIndex(
+                                        a => a.topic === obj.message.panel,
+                                    );
+                                    if (index !== -1) {
+                                        msg = this.mainConfiguration[index].pages.map(a => {
+                                            return { label: a.uniqueID, value: a.uniqueID };
+                                        });
+                                        msg.sort((a, b) => a.label.localeCompare(b.label));
+                                        break;
+                                    }
+                                }
+                                msg = [];
+                                break;
+                            }
+                            case 'navigationNames': {
+                                if (obj.message.table && Array.isArray(obj.message.table)) {
+                                    msg = obj.message.table.map((a: { name: string }) => {
+                                        return a.name;
+                                    });
+                                    msg = msg.filter(a => a && a !== obj.message.name);
+                                    msg.sort((a, b) => a.localeCompare(b));
+                                    break;
+                                }
+                                msg = [];
+                                break;
+                            }
+                        }
 
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, msg, obj.callback);
+                            break;
+                        }
+                    }
+
+                    this.sendTo(obj.from, obj.command, null, obj.callback);
+                    break;
+                }
+                case '_loadNavigationOverview': {
+                    if (this.mainConfiguration && obj.message?.panel) {
+                        let msg: any[] = [];
+                        let useNavigation = false;
+                        let configFrom = '';
+                        const index: number = this.mainConfiguration.findIndex(a => a.topic === obj.message.panel);
+                        if (index !== -1) {
+                            let nav: any[] = [];
+                            const o = await this.getForeignObjectAsync(this.namespace);
+                            if (o?.native?.navigation && o.native.navigation[obj.message.panel]) {
+                                nav = o.native.navigation[obj.message.panel].data;
+                                useNavigation = o.native.navigation[obj.message.panel].useNavigation;
+                                configFrom = 'Adminconfiguration';
+                            } else {
+                                nav = this.mainConfiguration[index].navigation;
+                                configFrom = 'Scriptconfiguration';
+                            }
+                            msg = nav.map(a => {
+                                return a
+                                    ? {
+                                          name: a.name,
+                                          page: a.page,
+                                          left1: a.left?.single,
+                                          left2: a.left?.double,
+                                          right1: a.right?.single,
+                                          right2: a.right?.double,
+                                      }
+                                    : null;
+                            });
+                            msg = msg.filter(a => a);
+                        }
+                        if (obj.callback) {
+                            this.sendTo(
+                                obj.from,
+                                obj.command,
+                                {
+                                    native: {
+                                        _NavigationOverviewTable: msg,
+                                        _useNavigation: useNavigation,
+                                        _configFrom: configFrom,
+                                    },
+                                },
+                                obj.callback,
+                            );
+                        }
+                        break;
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+                case '_saveNavigationOverview': {
+                    if (obj.message?.table && obj.message?.panel && this.mainConfiguration) {
+                        const o = await this.getForeignObjectAsync(this.namespace);
+                        if (o && o.native) {
+                            const index: number = this.mainConfiguration.findIndex(a => a.topic === obj.message.panel);
+                            if (index !== -1) {
+                                let result = obj.message.table.map(
+                                    (a: { name: any; page: any; left1: any; left2: any; right1: any; right2: any }) => {
+                                        return a && a.name && a.page && (a.left1 || a.left2 || a.right1 || a.right2)
+                                            ? {
+                                                  name: a.name,
+                                                  page: a.page,
+                                                  left:
+                                                      a.left1 || a.left2 ? { single: a.left1, double: a.left2 } : null,
+                                                  right:
+                                                      a.right1 || a.right2
+                                                          ? { single: a.right1, double: a.right2 }
+                                                          : null,
+                                              }
+                                            : null;
+                                    },
+                                );
+                                result = result.filter((a: any) => a);
+                                o.native.navigation = o.native.navigation ?? {};
+                                o.native.navigation[obj.message.panel] = {
+                                    useNavigation: obj.message.useNavigation === 'true',
+                                    data: result,
+                                };
+
+                                await this.setForeignObjectAsync(this.namespace, o);
+                            }
+                            if (obj.callback) {
+                                this.sendTo(obj.from, obj.command, null, obj.callback);
+                            }
+                            break;
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+                case '_clearNavigationOverview': {
+                    if (obj.message?.table && obj.message?.panel && this.mainConfiguration) {
+                        const o = await this.getForeignObjectAsync(this.namespace);
+                        if (o && o.native && o.native.navigation && o.native.navigation[obj.message.panel]) {
+                            o.native.navigation[obj.message.panel] = undefined;
+                            await this.setForeignObjectAsync(this.namespace, o);
+                        }
+                        if (obj.callback) {
+                            this.sendTo(
+                                obj.from,
+                                obj.command,
+                                {
+                                    native: {
+                                        _NavigationOverviewTable: [],
+                                        _useNavigation: false,
+                                        _configFrom: 'None!',
+                                    },
+                                },
+                                obj.callback,
+                            );
+                        }
+                        break;
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
                 default: {
                     // Send response in callback if required
                     if (obj.callback) {

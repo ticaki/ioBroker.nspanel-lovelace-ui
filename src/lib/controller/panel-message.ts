@@ -105,6 +105,7 @@ export class PanelSend extends BaseClass {
         if (this._panel && !this._panel.isOnline) {
             this.messageDb = [];
         }
+
         this.addMessageTasmota(this.topic, msg.payload, msg.opt);
         this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
     };
@@ -131,6 +132,9 @@ export class PanelSend extends BaseClass {
         this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
         this.messageTimeoutTasmota = true;
         await this.mqttClient.publish(msg.topic, msg.payload, msg.opt);
+        if (this.unload) {
+            return;
+        }
         this.messageTimeoutTasmota = this.adapter.setTimeout(this.sendMessageLoopTasmota, 20);
     };
 
