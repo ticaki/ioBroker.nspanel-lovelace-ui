@@ -485,14 +485,14 @@ export class Panel extends BaseClass {
             this.detach.left,
             genericStateObjects.panel.panels.cmd.detachLeft,
         );
-        state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
+        state = this.library.readdb(`panels.${this.name}.cmd.screenSaverTimeout`);
         if (state) {
             this.timeout = parseInt(String(state.val));
         }
         await this.library.writedp(
-            `panels.${this.name}.cmd.screensaverTimeout`,
+            `panels.${this.name}.cmd.screenSaverTimeout`,
             this.timeout,
-            genericStateObjects.panel.panels.cmd.screensaverTimeout,
+            genericStateObjects.panel.panels.cmd.screenSaverTimeout,
         );
 
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
@@ -855,10 +855,10 @@ export class Panel extends BaseClass {
                     await this.navigation.setTargetPageByName(state.val ? String(state.val) : 'main');
                     break;
                 }
-                case 'screensaverTimeout': {
+                case 'screenSaverTimeout': {
                     if (state && state.val != null && typeof state.val === 'number') {
                         await this.statesControler.setInternalState(
-                            `${this.name}/cmd/screensaverTimeout`,
+                            `${this.name}/cmd/screenSaverTimeout`,
 
                             parseInt(String(state.val)),
                             false,
@@ -1383,14 +1383,14 @@ export class Panel extends BaseClass {
                     );
                     break;
                 }
-                case 'cmd/screensaverTimeout': {
+                case 'cmd/screenSaverTimeout': {
                     if (typeof state.val !== 'boolean') {
                         // eslint-disable-next-line @typescript-eslint/no-base-to-string
                         const val = parseInt(String(state.val));
                         this.timeout = val;
                         this.sendScreeensaverTimeout(this.timeout);
-                        await this.statesControler.setInternalState(`${this.name}/cmd/screensaverTimeout`, val, true);
-                        await this.library.writedp(`panels.${this.name}.cmd.screensaverTimeout`, this.timeout);
+                        await this.statesControler.setInternalState(`${this.name}/cmd/screenSaverTimeout`, val, true);
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaverTimeout`, this.timeout);
                     }
                     break;
                 }
@@ -1506,7 +1506,7 @@ export class Panel extends BaseClass {
             case 'cmd/bigIconRight': {
                 return this.info.nspanel.bigIconRight;
             }
-            case 'cmd/screensaverTimeout': {
+            case 'cmd/screenSaverTimeout': {
                 return this.timeout;
             }
             case 'cmd/dimStandby': {
