@@ -529,7 +529,7 @@ const pageEntitiesTest2 = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "cmd/screensaverTimeout" },
+          value: { type: "internal", dp: "cmd/screenSaverTimeout" },
           minScale: { type: "const", constVal: 0 },
           maxScale: { type: "const", constVal: 90 }
         },
@@ -540,7 +540,7 @@ const pageEntitiesTest2 = {
           },
           false: void 0
         },
-        text: { true: { type: "const", constVal: "screensaverTimeout" }, false: void 0 }
+        text: { true: { type: "const", constVal: "screenSaverTimeout" }, false: void 0 }
       }
     }
   ],

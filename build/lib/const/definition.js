@@ -228,11 +228,11 @@ const genericStateObjects = {
           },
           native: {}
         },
-        screensaverTimeout: {
+        screenSaverTimeout: {
           _id: "",
           type: "state",
           common: {
-            name: "StateObjects.screensaverTimeout",
+            name: "StateObjects.screenSaverTimeout",
             type: "number",
             role: "level",
             unit: "s",
@@ -1329,7 +1329,7 @@ const InternalStates = {
         write: true
       }
     },
-    "cmd/screensaverTimeout": {
+    "cmd/screenSaverTimeout": {
       val: 0,
       ack: true,
       common: {

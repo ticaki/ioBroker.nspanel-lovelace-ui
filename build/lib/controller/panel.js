@@ -460,14 +460,14 @@ class Panel extends import_library.BaseClass {
       this.detach.left,
       import_definition.genericStateObjects.panel.panels.cmd.detachLeft
     );
-    state = this.library.readdb(`panels.${this.name}.cmd.screensaverTimeout`);
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaverTimeout`);
     if (state) {
       this.timeout = parseInt(String(state.val));
     }
     await this.library.writedp(
-      `panels.${this.name}.cmd.screensaverTimeout`,
+      `panels.${this.name}.cmd.screenSaverTimeout`,
       this.timeout,
-      import_definition.genericStateObjects.panel.panels.cmd.screensaverTimeout
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaverTimeout
     );
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
     this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
@@ -523,7 +523,7 @@ class Panel extends import_library.BaseClass {
     }
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver`,
-      this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : "none",
+      this.screenSaver && this.screenSaver.mode ? import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode) : 0,
       import_definition.genericStateObjects.panel.panels.cmd.screenSaver
     );
     let state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
@@ -788,10 +788,10 @@ class Panel extends import_library.BaseClass {
           await this.navigation.setTargetPageByName(state.val ? String(state.val) : "main");
           break;
         }
-        case "screensaverTimeout": {
+        case "screenSaverTimeout": {
           if (state && state.val != null && typeof state.val === "number") {
             await this.statesControler.setInternalState(
-              `${this.name}/cmd/screensaverTimeout`,
+              `${this.name}/cmd/screenSaverTimeout`,
               parseInt(String(state.val)),
               false
             );
@@ -1265,13 +1265,13 @@ class Panel extends import_library.BaseClass {
           );
           break;
         }
-        case "cmd/screensaverTimeout": {
+        case "cmd/screenSaverTimeout": {
           if (typeof state.val !== "boolean") {
             const val = parseInt(String(state.val));
             this.timeout = val;
             this.sendScreeensaverTimeout(this.timeout);
-            await this.statesControler.setInternalState(`${this.name}/cmd/screensaverTimeout`, val, true);
-            await this.library.writedp(`panels.${this.name}.cmd.screensaverTimeout`, this.timeout);
+            await this.statesControler.setInternalState(`${this.name}/cmd/screenSaverTimeout`, val, true);
+            await this.library.writedp(`panels.${this.name}.cmd.screenSaverTimeout`, this.timeout);
           }
           break;
         }
@@ -1379,7 +1379,7 @@ class Panel extends import_library.BaseClass {
       case "cmd/bigIconRight": {
         return this.info.nspanel.bigIconRight;
       }
-      case "cmd/screensaverTimeout": {
+      case "cmd/screenSaverTimeout": {
         return this.timeout;
       }
       case "cmd/dimStandby": {

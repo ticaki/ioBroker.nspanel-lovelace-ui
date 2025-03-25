@@ -457,7 +457,7 @@ const ScreensaverOptions = {
       type: "number",
       data: {
         entity1: {
-          value: { type: "internal", dp: "cmd/screensaverTimeout" }
+          value: { type: "internal", dp: "cmd/screenSaverTimeout" }
         },
         minValue1: { type: "const", constVal: 0 },
         maxValue1: { type: "const", constVal: 90 },
@@ -468,7 +468,7 @@ const ScreensaverOptions = {
           },
           false: void 0
         },
-        text: { true: { type: "const", constVal: "screensaverTimeout" }, false: void 0 }
+        text: { true: { type: "const", constVal: "screenSaverTimeout" }, false: void 0 }
       }
     },
     {

@@ -566,7 +566,7 @@ export class Panel extends BaseClass {
         genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;*/
         await this.library.writedp(
             `panels.${this.name}.cmd.screenSaver`,
-            this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : 'none',
+            this.screenSaver && this.screenSaver.mode ? Screensaver.mapModeToNumber(this.screenSaver.mode) : 0,
             genericStateObjects.panel.panels.cmd.screenSaver,
         );
         let state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
