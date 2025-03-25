@@ -53,7 +53,7 @@ export const genericStateObjects: {
                 };
                 power1: ioBroker.StateObject;
                 power2: ioBroker.StateObject;
-                screensaverTimeout: ioBroker.StateObject;
+                screenSaverTimeout: ioBroker.StateObject;
 
                 screenSaverRotationTime: ioBroker.StateObject;
                 goToNavigationPoint: ioBroker.StateObject;
@@ -276,11 +276,11 @@ export const genericStateObjects: {
                     },
                     native: {},
                 },
-                screensaverTimeout: {
+                screenSaverTimeout: {
                     _id: '',
                     type: 'state',
                     common: {
-                        name: 'StateObjects.screensaverTimeout',
+                        name: 'StateObjects.screenSaverTimeout',
                         type: 'number',
                         role: 'level',
                         unit: 's',
@@ -1381,7 +1381,7 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
                 write: true,
             },
         },
-        'cmd/screensaverTimeout': {
+        'cmd/screenSaverTimeout': {
             val: 0,
             ack: true,
             common: {
