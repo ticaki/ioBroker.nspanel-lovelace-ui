@@ -471,6 +471,7 @@ class Panel extends import_library.BaseClass {
     );
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
     this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
+    this.log.debug(`Panel ${this.name} is initialised!`);
     this.restartLoops();
   };
   start = async () => {
