@@ -287,7 +287,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },/*
+                }, /*
                 "tasmotaAdmin": {
                     "type": "text",
                     "label": "tasmotaAdmin",
@@ -404,7 +404,7 @@
                     "newLine": true,
                     "variant": "contained",
                     "hidden": "data._selectTool != '1'"
-                },                
+                },
                 "_tasmotaAddTableSendTo": {
                     "type": "sendTo",
                     "label": "tasmotaAddTableSendTo",
@@ -643,6 +643,160 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                }
+            }
+        },
+        "NavigationOverview": {
+            "type": "panel",
+            "label": "Navigation Overview",
+            "items": {
+                "_selectPanel": {
+                    "type": "selectSendTo",
+                    "command": "selectPanel",
+                    "data": {
+                        "id": "panel"
+                    },
+                    "label": "selectPanel",
+                    "newLine": true
+                },
+                "_useNavigation": {
+                    "type": "checkbox",
+                    "label": "useNavigation",
+                    "default": false,
+                    "newLine": true
+                },
+                "_loadNavigationOverview": {
+                    "type": "sendTo",
+                    "label": "_loadNavigationOverview",
+                    "jsonData": "{\"panel\": \"${data._selectPanel}\"}",
+                    "command": "_loadNavigationOverview",
+                    "variant": "contained",
+                    "useNative": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_saveNavigationOverview": {
+                    "type": "sendTo",
+                    "label": "_saveNavigationOverview",
+                    "command": "_saveNavigationOverview",
+                    "jsonData": "{\"panel\": \"${data._selectPanel}\", \"table\": ${JSON.stringify(data._NavigationOverviewTable)}, \"useNavigation\": \"${data._useNavigation}\"}",
+                    "variant": "contained",
+                    "disabled": "if (!data._NavigationOverviewTable) return true; for (let i = 0; i < data._NavigationOverviewTable.length; i++) { if (!data._NavigationOverviewTable[i].name || !data._NavigationOverviewTable[i].page  || !(data._NavigationOverviewTable[i].left1 || data._NavigationOverviewTable[i].left2|| data._NavigationOverviewTable[i].right1|| data._NavigationOverviewTable[i].right2)) return true; };  return false;",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_clearNavigationOverview": {
+                    "type": "sendTo",
+                    "label": "_clearNavigationOverview",
+                    "command": "_clearNavigationOverview",
+                    "jsonData": "{\"panel\": \"${data._selectPanel}\", \"table\": ${JSON.stringify(data._NavigationOverviewTable)}, \"useNavigation\": \"${data._useNavigation}\"}",
+                    "variant": "contained",
+                    "useNative": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_configFrom": {
+                    "type": "text",
+                    "label": "configFrom",
+                    "text": "",
+                    "readOnly": true,
+                    "style": {
+                        "color": "red"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_changeTagForUpdate": {
+                    "type": "staticText",
+                    "label": "goToOtherTabAfterChangeOfNavID",
+                    "text": "",
+                    "style": {
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_NavigationOverviewTable": {
+                    "type": "table",
+                    "label": "navigationOverview",
+                    "newLine": true,
+                    "export": true,
+                    "import": true,
+                    "uniqueColumns": [
+                        "name"
+                    ],
+                    "items": [
+                        {
+                            "type": "text",
+                            "attr": "name",
+                            "label": "navId",
+                            "validator": "data.name",
+                            "doNotSave": true,
+                            "width": "16%"
+                        },
+                        {
+                            "type": "selectSendTo",
+                            "command": "selectPanel",
+                            "jsonData": "{\"id\": \"uniqueID\",\"panel\": \"${globalData._selectPanel}\"}",
+                            "attr": "page",
+                            "validator": "data.page",
+                            "label": "uniqueID",
+                            "width": "16%"
+                        },
+                        {
+                            "type": "autocompleteSendTo",
+                            "command": "selectPanel",
+                            "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
+                            "attr": "left1",
+                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
+                            "label": "prev",
+                            "width": "16%"
+                        },
+                        {
+                            "type": "autocompleteSendTo",
+                            "command": "selectPanel",
+                            "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
+                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
+                            "attr": "left2",
+                            "label": "parent",
+                            "width": "16%"
+                            
+                        },
+                        {
+                            "type": "autocompleteSendTo",
+                            "command": "selectPanel",
+                            "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
+                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
+                            "attr": "right1",
+                            "label": "next",
+                            "width": "16%"
+                        },
+                        {
+                            "type": "autocompleteSendTo",
+                            "command": "selectPanel",
+                            "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
+                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
+                            "attr": "right2",
+                            "label": "home",
+                            "width": "16%"
+                        }
+                    ]
                 }
             }
         }

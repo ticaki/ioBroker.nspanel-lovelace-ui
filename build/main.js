@@ -46,6 +46,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   timeoutAdmin2;
   timeoutAdminArray = [];
   intervalAdminArray = [];
+  mainConfiguration;
   constructor(options = {}) {
     super({
       ...options,
@@ -62,6 +63,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
+    var _a, _b, _c;
     await this.extendForeignObjectAsync(this.namespace, {
       type: "meta",
       common: { name: { en: "Nspanel Instance", de: "Nspanel Instanze" }, type: "meta.folder" },
@@ -303,9 +305,9 @@ class NspanelLovelaceUi extends utils.Adapter {
         this.log.error("No configuration - adapter on hold!");
         return;
       }
-      const testconfig = structuredClone(this.config.Testconfig2);
+      this.mainConfiguration = structuredClone(this.config.Testconfig2);
       let counter = 0;
-      for (const a of testconfig) {
+      for (const a of this.mainConfiguration) {
         try {
           if (a && a.pages) {
             const names = [];
@@ -314,7 +316,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               if (!("uniqueID" in p)) {
                 continue;
               }
-              if (p.card === "screensaver" || p.card === "screensaver2" || p.card === "screensaver3") {
+              if (((_a = p.config) == null ? void 0 : _a.card) === "screensaver" || ((_b = p.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = p.config) == null ? void 0 : _c.card) === "screensaver3") {
                 p.uniqueID = `#${p.uniqueID}`;
               }
               if (names.indexOf(p.uniqueID) !== -1) {
@@ -326,20 +328,31 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
           }
         } catch (e) {
-          const index = testconfig.findIndex((b) => b === a);
-          testconfig.splice(index, 1);
+          const index = this.mainConfiguration.findIndex((b) => b === a);
+          this.mainConfiguration.splice(index, 1);
           this.log.error(`Error: ${e}`);
         }
       }
       if (counter === 0) {
         return;
       }
+      const config = structuredClone(this.mainConfiguration);
+      {
+        const o = await this.getForeignObjectAsync(this.namespace);
+        if (o && o.native && o.native.navigation) {
+          for (const b of config) {
+            if (o.native.navigation[b.topic] && o.native.navigation[b.topic].useNavigation) {
+              b.navigation = o.native.navigation[b.topic].data;
+            }
+          }
+        }
+      }
       const mem = process.memoryUsage().heapUsed / 1024;
       this.log.debug(String(`${mem}k`));
       this.controller = new import_controller.Controller(this, {
         mqttClient: this.mqttClient,
         name: "controller",
-        panels: testconfig
+        panels: config
       });
       await this.controller.init();
     } catch (e) {
@@ -449,7 +462,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
     if (typeof obj === "object" && obj.message) {
       switch (obj.command) {
         case "config": {
@@ -946,6 +959,173 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, { error: "error" }, obj.callback);
+          }
+          break;
+        }
+        case "selectPanel": {
+          if (this.mainConfiguration && ((_b = obj.message) == null ? void 0 : _b.id)) {
+            let msg = [];
+            switch (obj.message.id) {
+              case "panel": {
+                msg = this.mainConfiguration.map((a) => {
+                  const index = this.config.panels.findIndex((b) => b.topic === a.topic);
+                  if (index !== -1) {
+                    return { value: a.topic, label: this.config.panels[index].name };
+                  }
+                  return null;
+                });
+                msg = msg.filter((a) => a);
+                msg.sort((a, b) => a.label.localeCompare(b.label));
+                break;
+              }
+              case "uniqueID": {
+                if (obj.message.panel) {
+                  const index = this.mainConfiguration.findIndex(
+                    (a) => a.topic === obj.message.panel
+                  );
+                  if (index !== -1) {
+                    msg = this.mainConfiguration[index].pages.map((a) => {
+                      return { label: a.uniqueID, value: a.uniqueID };
+                    });
+                    msg.sort((a, b) => a.label.localeCompare(b.label));
+                    break;
+                  }
+                }
+                msg = [];
+                break;
+              }
+              case "navigationNames": {
+                if (obj.message.table && Array.isArray(obj.message.table)) {
+                  msg = obj.message.table.map((a) => {
+                    return a.name;
+                  });
+                  msg = msg.filter((a) => a && a !== obj.message.name);
+                  msg.sort((a, b) => a.localeCompare(b));
+                  break;
+                }
+                msg = [];
+                break;
+              }
+            }
+            if (obj.callback) {
+              this.sendTo(obj.from, obj.command, msg, obj.callback);
+              break;
+            }
+          }
+          this.sendTo(obj.from, obj.command, null, obj.callback);
+          break;
+        }
+        case "_loadNavigationOverview": {
+          if (this.mainConfiguration && ((_c = obj.message) == null ? void 0 : _c.panel)) {
+            let msg = [];
+            let useNavigation = false;
+            let configFrom = "";
+            const index = this.mainConfiguration.findIndex((a) => a.topic === obj.message.panel);
+            if (index !== -1) {
+              let nav = [];
+              const o = await this.getForeignObjectAsync(this.namespace);
+              if (((_d = o == null ? void 0 : o.native) == null ? void 0 : _d.navigation) && o.native.navigation[obj.message.panel]) {
+                nav = o.native.navigation[obj.message.panel].data;
+                useNavigation = o.native.navigation[obj.message.panel].useNavigation;
+                configFrom = "Adminconfiguration";
+              } else {
+                nav = this.mainConfiguration[index].navigation;
+                configFrom = "Scriptconfiguration";
+              }
+              msg = nav.map((a) => {
+                var _a2, _b2, _c2, _d2;
+                return a ? {
+                  name: a.name,
+                  page: a.page,
+                  left1: (_a2 = a.left) == null ? void 0 : _a2.single,
+                  left2: (_b2 = a.left) == null ? void 0 : _b2.double,
+                  right1: (_c2 = a.right) == null ? void 0 : _c2.single,
+                  right2: (_d2 = a.right) == null ? void 0 : _d2.double
+                } : null;
+              });
+              msg = msg.filter((a) => a);
+            }
+            if (obj.callback) {
+              this.sendTo(
+                obj.from,
+                obj.command,
+                {
+                  native: {
+                    _NavigationOverviewTable: msg,
+                    _useNavigation: useNavigation,
+                    _configFrom: configFrom
+                  }
+                },
+                obj.callback
+              );
+            }
+            break;
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);
+          }
+          break;
+        }
+        case "_saveNavigationOverview": {
+          if (((_e = obj.message) == null ? void 0 : _e.table) && ((_f = obj.message) == null ? void 0 : _f.panel) && this.mainConfiguration) {
+            const o = await this.getForeignObjectAsync(this.namespace);
+            if (o && o.native) {
+              const index = this.mainConfiguration.findIndex((a) => a.topic === obj.message.panel);
+              if (index !== -1) {
+                let result = obj.message.table.map(
+                  (a) => {
+                    return a && a.name && a.page && (a.left1 || a.left2 || a.right1 || a.right2) ? {
+                      name: a.name,
+                      page: a.page,
+                      left: a.left1 || a.left2 ? { single: a.left1, double: a.left2 } : null,
+                      right: a.right1 || a.right2 ? { single: a.right1, double: a.right2 } : null
+                    } : null;
+                  }
+                );
+                result = result.filter((a) => a);
+                o.native.navigation = (_g = o.native.navigation) != null ? _g : {};
+                o.native.navigation[obj.message.panel] = {
+                  useNavigation: obj.message.useNavigation === "true",
+                  data: result
+                };
+                await this.setForeignObjectAsync(this.namespace, o);
+              }
+              if (obj.callback) {
+                this.sendTo(obj.from, obj.command, null, obj.callback);
+              }
+              break;
+            }
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);
+          }
+          break;
+        }
+        case "_clearNavigationOverview": {
+          if (((_h = obj.message) == null ? void 0 : _h.table) && ((_i = obj.message) == null ? void 0 : _i.panel) && this.mainConfiguration) {
+            const o = await this.getForeignObjectAsync(this.namespace);
+            if (o && o.native && o.native.navigation && o.native.navigation[obj.message.panel]) {
+              o.native.navigation[obj.message.panel] = void 0;
+              await this.setForeignObjectAsync(this.namespace, o);
+            }
+            if (obj.callback) {
+              this.sendTo(
+                obj.from,
+                obj.command,
+                {
+                  native: {
+                    _NavigationOverviewTable: [],
+                    _useNavigation: false,
+                    _configFrom: "None!"
+                  }
+                },
+                obj.callback
+              );
+            }
+            break;
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);
           }
           break;
         }
