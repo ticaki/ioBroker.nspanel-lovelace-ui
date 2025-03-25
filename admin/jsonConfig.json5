@@ -684,6 +684,7 @@
                     "command": "_saveNavigationOverview",
                     "jsonData": "{\"panel\": \"${data._selectPanel}\", \"table\": ${JSON.stringify(data._NavigationOverviewTable)}, \"useNavigation\": \"${data._useNavigation}\"}",
                     "variant": "contained",
+                    "disabled": "if (!data._NavigationOverviewTable) return true; for (let i = 0; i < data._NavigationOverviewTable.length; i++) { if (!data._NavigationOverviewTable[i].name || !data._NavigationOverviewTable[i].page  || !(data._NavigationOverviewTable[i].left1 || data._NavigationOverviewTable[i].left2|| data._NavigationOverviewTable[i].right1|| data._NavigationOverviewTable[i].right2)) return true; };  return false;",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -710,7 +711,26 @@
                     "readOnly": true,
                     "style": {
                         "color": "red"
-                    }
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_changeTagForUpdate": {
+                    "type": "staticText",
+                    "label": "goToOtherTabAfterChangeOfNavID",
+                    "text": "",
+                    "style": {
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "_NavigationOverviewTable": {
                     "type": "table",
@@ -726,47 +746,55 @@
                             "type": "text",
                             "attr": "name",
                             "label": "navId",
-                            "doNotSave": true
+                            "validator": "data.name",
+                            "doNotSave": true,
+                            "width": "16%"
                         },
                         {
                             "type": "selectSendTo",
                             "command": "selectPanel",
                             "jsonData": "{\"id\": \"uniqueID\",\"panel\": \"${globalData._selectPanel}\"}",
                             "attr": "page",
-                            "label": "uniqueID"
+                            "validator": "data.page",
+                            "label": "uniqueID",
+                            "width": "16%"
                         },
                         {
                             "type": "autocompleteSendTo",
                             "command": "selectPanel",
                             "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
                             "attr": "left1",
+                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
                             "label": "prev",
-                            "alsoDependsOn": ["left1"]
+                            "width": "16%"
                         },
                         {
                             "type": "autocompleteSendTo",
                             "command": "selectPanel",
                             "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
+                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
                             "attr": "left2",
                             "label": "parent",
-                            "alsoDependsOn": ["left2"]
+                            "width": "16%"
                             
                         },
                         {
                             "type": "autocompleteSendTo",
                             "command": "selectPanel",
                             "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
+                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
                             "attr": "right1",
                             "label": "next",
-                            "alsoDependsOn": ["right1"]
+                            "width": "16%"
                         },
                         {
                             "type": "autocompleteSendTo",
                             "command": "selectPanel",
                             "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
+                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
                             "attr": "right2",
                             "label": "home",
-                            "alsoDependsOn": ["right2"]
+                            "width": "16%"
                         }
                     ]
                 }
