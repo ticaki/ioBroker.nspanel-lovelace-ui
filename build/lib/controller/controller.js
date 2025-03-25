@@ -73,6 +73,7 @@ class Controller extends Library.BaseClass {
       this.panels.push(panel);
     }
     this.systemNotification = new import_system_notifications.SystemNotifications(this.adapter);
+    this.log.debug(`${this.name} created`);
   }
   minuteLoop = async () => {
     if (this.unload) {
@@ -257,6 +258,7 @@ class Controller extends Library.BaseClass {
       if (await panel.isValid()) {
         newPanels.push(panel);
         void panel.init();
+        this.log.debug(`Panel ${panel.name} is valid.`);
       } else {
         await panel.delete();
         this.adapter.testSuccessful = false;

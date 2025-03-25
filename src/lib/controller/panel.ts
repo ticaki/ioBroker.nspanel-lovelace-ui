@@ -497,7 +497,7 @@ export class Panel extends BaseClass {
 
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
         this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
-
+        this.log.debug(`Panel ${this.name} is initialised!`);
         this.restartLoops();
     };
 
