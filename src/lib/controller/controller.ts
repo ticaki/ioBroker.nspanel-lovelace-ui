@@ -178,6 +178,7 @@ export class Controller extends Library.BaseClass {
         }
         return null;
     };
+
     async init(): Promise<void> {
         await this.statesControler.setInternalState(
             '///time',
@@ -237,7 +238,7 @@ export class Controller extends Library.BaseClass {
         // erzeuge übergeordneten channel
         await this.library.writedp(`panels`, undefined, genericStateObjects.panel._channel);
 
-        await this.systemNotification.init();
+        void this.systemNotification.init();
         this.log.debug(`Create ${this.panels.length} panels`);
         for (const panel of this.panels) {
             await this.adapter.delay(100);

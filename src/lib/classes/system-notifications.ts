@@ -77,11 +77,21 @@ export class SystemNotifications extends BaseClass {
         for (const host of hosts) {
             this.log.debug(`Request notifications from "${host}"`);
 
-            const { result: notifications } = (await this.adapter.sendToHostAsync(
-                host,
-                'getNotifications',
-                {},
-            )) as unknown as GetNotificationsResponse;
+            const _helper = async (): Promise<GetNotificationsResponse> => {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve({ result: {} });
+                    }, 1000);
+                    return resolve(
+                        this.adapter.sendToHostAsync(
+                            host,
+                            'getNotifications',
+                            {},
+                        ) as unknown as GetNotificationsResponse,
+                    );
+                });
+            };
+            const { result: notifications } = await _helper();
 
             this.log.debug(`Received notifications from "${host}": ${JSON.stringify(notifications)}`);
 

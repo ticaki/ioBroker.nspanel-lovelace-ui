@@ -93,11 +93,21 @@ class SystemNotifications extends import_library.BaseClass {
     hosts = hosts || await this.getAllHosts();
     for (const host of hosts) {
       this.log.debug(`Request notifications from "${host}"`);
-      const { result: notifications } = await this.adapter.sendToHostAsync(
-        host,
-        "getNotifications",
-        {}
-      );
+      const _helper = async () => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve({ result: {} });
+          }, 1e3);
+          return resolve(
+            this.adapter.sendToHostAsync(
+              host,
+              "getNotifications",
+              {}
+            )
+          );
+        });
+      };
+      const { result: notifications } = await _helper();
       this.log.debug(`Received notifications from "${host}": ${JSON.stringify(notifications)}`);
       const msgs = [];
       for (const k in notifications) {
