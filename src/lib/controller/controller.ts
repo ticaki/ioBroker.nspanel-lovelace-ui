@@ -238,13 +238,12 @@ export class Controller extends Library.BaseClass {
         await this.library.writedp(`panels`, undefined, genericStateObjects.panel._channel);
 
         await this.systemNotification.init();
-
+        this.log.debug(`Create ${this.panels.length} panels`);
         for (const panel of this.panels) {
             await this.adapter.delay(100);
             if (await panel.isValid()) {
                 newPanels.push(panel);
                 void panel.init();
-                this.log.debug(`Panel ${panel.name} is valid.`);
             } else {
                 await panel.delete();
                 this.adapter.testSuccessful = false;
