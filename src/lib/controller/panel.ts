@@ -1009,13 +1009,11 @@ export class Panel extends BaseClass {
                 }
                 case 'screenSaverLayout': {
                     if (typeof state.val === 'number' && pages.isScreenSaverModeAsNumber(state.val)) {
-                        if (this.screenSaver) {
-                            this.screenSaver.overwriteModel(state.val);
-                            await this.statesControler.setInternalState(
-                                `panels.${this.name}.cmd.screenSaverLayout`,
-                                state.val,
-                            );
-                        }
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/screenSaverLayout`,
+                            state.val,
+                            false,
+                        );
                     }
                     break;
                 }
