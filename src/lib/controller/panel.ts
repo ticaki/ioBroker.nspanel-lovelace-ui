@@ -1008,16 +1008,13 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'screenSaverLayout': {
-                    /*const i = this.pages.findIndex(a => a && a.name === state.val);
-                    const s = this.pages[i] as Screensaver;
-                    if (s) {
-                        this.screenSaver = s;
-                        await this.library.writedp(`panels.${this.name}.cmd.screenSaverLayout`, s.name);
-                    }*/
                     if (typeof state.val === 'number' && pages.isScreenSaverModeAsNumber(state.val)) {
                         if (this.screenSaver) {
                             this.screenSaver.overwriteModel(state.val);
-                            await this.library.writedp(`panels.${this.name}.cmd.screenSaverLayout`, state.val);
+                            await this.statesControler.setInternalState(
+                                `panels.${this.name}.cmd.screenSaverLayout`,
+                                state.val,
+                            );
                         }
                     }
                     break;
@@ -1500,12 +1497,7 @@ export class Panel extends BaseClass {
                     if (typeof state.val === 'number' && pages.isScreenSaverModeAsNumber(state.val)) {
                         if (this.screenSaver) {
                             this.screenSaver.overwriteModel(state.val);
-                            await this.library.writedp(
-                                `panels.${this.name}.cmd.screenSaverLayout`,
-                                this.screenSaver && this.screenSaver.mode
-                                    ? Screensaver.mapModeToNumber(this.screenSaver.mode)
-                                    : 0,
-                            );
+                            await this.library.writedp(`panels.${this.name}.cmd.screenSaverLayout`, state.val);
                         }
                     }
                     break;
@@ -1580,7 +1572,7 @@ export class Panel extends BaseClass {
             }
             case 'cmd/screenSaverLayout': {
                 if (this.screenSaver) {
-                    return this.screenSaver.mode;
+                    return Screensaver.mapModeToNumber(this.screenSaver.mode);
                 }
                 break;
             }

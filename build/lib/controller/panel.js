@@ -922,7 +922,10 @@ class Panel extends import_library.BaseClass {
           if (typeof state.val === "number" && pages.isScreenSaverModeAsNumber(state.val)) {
             if (this.screenSaver) {
               this.screenSaver.overwriteModel(state.val);
-              await this.library.writedp(`panels.${this.name}.cmd.screenSaverLayout`, state.val);
+              await this.statesControler.setInternalState(
+                `panels.${this.name}.cmd.screenSaverLayout`,
+                state.val
+              );
             }
           }
           break;
@@ -1372,10 +1375,7 @@ class Panel extends import_library.BaseClass {
           if (typeof state.val === "number" && pages.isScreenSaverModeAsNumber(state.val)) {
             if (this.screenSaver) {
               this.screenSaver.overwriteModel(state.val);
-              await this.library.writedp(
-                `panels.${this.name}.cmd.screenSaverLayout`,
-                this.screenSaver && this.screenSaver.mode ? import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode) : 0
-              );
+              await this.library.writedp(`panels.${this.name}.cmd.screenSaverLayout`, state.val);
             }
           }
           break;
@@ -1451,7 +1451,7 @@ ${this.info.tasmota.onlineVersion}`;
       }
       case "cmd/screenSaverLayout": {
         if (this.screenSaver) {
-          return this.screenSaver.mode;
+          return import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode);
         }
         break;
       }
