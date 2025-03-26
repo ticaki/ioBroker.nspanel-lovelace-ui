@@ -444,7 +444,7 @@ const ScreensaverOptions: PageBaseConfig = {
             role: '',
             type: 'input_sel',
             data: {
-                headline: { type: 'const', constVal: 'ScreenSaverLayout' },
+                headline: { type: 'const', constVal: 'screenSaverLayout' },
                 entityInSel: {
                     value: { type: 'internal', dp: 'cmd/screenSaverLayout' },
                 },
@@ -460,7 +460,7 @@ const ScreensaverOptions: PageBaseConfig = {
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                  */
                 //valueList: { type: 'internal', dp: 'cmd/screenSaverLayout', read: 'return val ? val.split(";") : []' },
-                valueList: { type: 'const', constVal: 'Standard?Alternativ?Advanced?Easyview' },
+                valueList: { type: 'const', constVal: 'standard?alternate?advanced?easyview' },
             },
         },
         {

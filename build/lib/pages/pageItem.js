@@ -900,14 +900,15 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         } else {
           list = [];
         }
-        message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
+        list = list.map((a) => tools.formatInSelText(this.library.getTranslation(a)));
+        message.list = list.join("?");
         if (message.list && message.list.length > 940) {
           message.list = message.list.slice(0, 940);
           this.log.warn("Value list has more as 940 chars!");
         }
         const n = (_D = await tools.getValueEntryNumber(item.entityInSel)) != null ? _D : 0;
         if (Array.isArray(list) && n != null && n < list.length) {
-          message.currentState = tools.formatInSelText(this.library.getTranslation(list[n]));
+          message.currentState = list[n];
         }
         if (mode !== "popupThermo") {
           break;

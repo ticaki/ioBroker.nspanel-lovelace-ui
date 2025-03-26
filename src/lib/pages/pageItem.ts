@@ -1046,15 +1046,19 @@ export class PageItem extends BaseClassTriggerd {
                     list = [];
                 }
 
-                message.list = Array.isArray(list) ? list.map((a: string) => tools.formatInSelText(a)).join('?') : '';
+                list = (list as string[]).map((a: string) => tools.formatInSelText(this.library.getTranslation(a)));
+
+                message.list = (list as string[]).join('?');
+
                 if (message.list && message.list.length > 940) {
                     message.list = message.list.slice(0, 940);
                     this.log.warn('Value list has more as 940 chars!');
                 }
                 const n = (await tools.getValueEntryNumber(item.entityInSel)) ?? 0;
                 if (Array.isArray(list) && n != null && n < list.length) {
-                    message.currentState = tools.formatInSelText(this.library.getTranslation(list[n]));
+                    message.currentState = list[n];
                 }
+
                 if (mode !== 'popupThermo') {
                     break;
                 }
