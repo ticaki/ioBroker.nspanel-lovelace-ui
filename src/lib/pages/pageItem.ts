@@ -477,7 +477,7 @@ export class PageItem extends BaseClassTriggerd {
                         (await tools.getEntryTextOnOff(item.headline, true)) ?? message.displayName ?? '',
                     );
                     message.optionalValue = this.library.getTranslation(
-                        (await tools.getEntryTextOnOff(item.text, !!value)) ?? 'PRESS',
+                        (await tools.getEntryTextOnOff(item.text, !!value, true)) ?? 'PRESS',
                     );
                     this.log.debug(JSON.stringify(message));
                     return tools.getItemMesssage(message);
@@ -1926,7 +1926,11 @@ export class PageItem extends BaseClassTriggerd {
                 item.entityInSel &&
                 item.entityInSel.value
             ) {
-                await item.entityInSel.value.setStateAsync(sList.states[parseInt(value)]);
+                if (item.entityInSel.value?.common?.type === 'number') {
+                    await item.entityInSel.value.setStateAsync(parseInt(sList.states[parseInt(value)]));
+                } else {
+                    await item.entityInSel.value.setStateAsync(sList.states[parseInt(value)]);
+                }
                 return true;
             }
         }
