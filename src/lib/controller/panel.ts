@@ -566,7 +566,7 @@ export class Panel extends BaseClass {
         genericStateObjects.panel.panels.cmd.screenSaverLayout.common.states = states;*/
         await this.library.writedp(
             `panels.${this.name}.cmd.screenSaverLayout`,
-            this.screenSaver && this.screenSaver.mode ? this.screenSaver.mode : 'none',
+            this.screenSaver && this.screenSaver.mode ? Screensaver.mapModeToNumber(this.screenSaver.mode) : 0,
             genericStateObjects.panel.panels.cmd.screenSaverLayout,
         );
         let state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
@@ -1496,6 +1496,20 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'cmd/screenSaverLayout': {
+                    if (typeof state.val === 'number' && pages.isScreenSaverModeAsNumber(state.val)) {
+                        if (this.screenSaver) {
+                            this.screenSaver.overwriteModel(state.val);
+                            await this.library.writedp(
+                                `panels.${this.name}.cmd.screenSaverLayout`,
+                                this.screenSaver && this.screenSaver.mode
+                                    ? Screensaver.mapModeToNumber(this.screenSaver.mode)
+                                    : 0,
+                            );
+                        }
+                    }
+                    break;
+                }
             }
             await this.statesControler.setInternalState(id, state.val, true);
         }
@@ -1563,6 +1577,12 @@ export class Panel extends BaseClass {
             }
             case 'cmd/screenSaverDoubleClick': {
                 return this.screenSaverDoubleClick;
+            }
+            case 'cmd/screenSaverLayout': {
+                if (this.screenSaver) {
+                    return this.screenSaver.mode;
+                }
+                break;
             }
         }
         return null;

@@ -1392,6 +1392,18 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
                 write: true,
             },
         },
+        'cmd/screenSaverLayout': {
+            val: 'standard',
+            ack: true,
+            common: {
+                name: '',
+                type: 'number',
+                role: 'level',
+                read: true,
+                write: true,
+                states: arrayOfScreensaverModes,
+            },
+        },
         'cmd/NotificationCleared2': {
             val: false,
             ack: true,
