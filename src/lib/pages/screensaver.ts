@@ -418,7 +418,7 @@ export class Screensaver extends Page {
             }
         }
         this.mode = Screensaver.mapNumberToMode(mode);
-        if (!init) {
+        if (!init && this.visibility) {
             this.sendType();
             void this.update();
         }

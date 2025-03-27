@@ -58,7 +58,7 @@ export const genericStateObjects: {
                 screenSaverRotationTime: ioBroker.StateObject;
                 goToNavigationPoint: ioBroker.StateObject;
                 mainNavigationPoint: ioBroker.StateObject;
-                screenSaver: Omit<ioBroker.StateObject, 'common'> & {
+                screenSaverLayout: Omit<ioBroker.StateObject, 'common'> & {
                     common: Omit<ioBroker.StateObject['common'], 'states'>;
                 } & {
                     common: { states: Record<ScreensaverModeTypeAsNumber, string> };
@@ -189,11 +189,11 @@ export const genericStateObjects: {
                     },
                     native: {},
                 },
-                screenSaver: {
+                screenSaverLayout: {
                     _id: '',
                     type: 'state',
                     common: {
-                        name: 'StateObjects.screenSaver',
+                        name: 'StateObjects.screenSaverLayout',
                         type: 'number',
                         role: 'level',
                         read: true,
@@ -1390,6 +1390,18 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
                 role: 'value',
                 read: true,
                 write: true,
+            },
+        },
+        'cmd/screenSaverLayout': {
+            val: 'standard',
+            ack: true,
+            common: {
+                name: '',
+                type: 'number',
+                role: 'level',
+                read: true,
+                write: true,
+                states: arrayOfScreensaverModes,
             },
         },
         'cmd/NotificationCleared2': {

@@ -495,8 +495,8 @@ async function getEntryColor(i, value, def) {
   }
   return color != null ? color : def;
 }
-async function getEntryTextOnOff(i, on) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+async function getEntryTextOnOff(i, on, useCommon = false) {
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
   if (!i) {
     return null;
   }
@@ -508,30 +508,50 @@ async function getEntryTextOnOff(i, on) {
   if (!(0, import_data_item.isDataItem)(i)) {
     if ((0, import_data_item.isDataItem)(i.true)) {
       v = (_a = i.true && await i.true.getString()) != null ? _a : null;
+      if (useCommon) {
+        const states = (_b = i.true && i.true.common && i.true.common.states) != null ? _b : null;
+        if (states && v !== null && typeof states === "object") {
+          if (!Array.isArray(states)) {
+            v = (_c = states[v]) != null ? _c : v;
+          } else if (!isNaN(Number(v))) {
+            v = (_d = states[Number(v)]) != null ? _d : v;
+          }
+        }
+      }
       value = v != null ? v : "";
     } else {
-      value = (_b = i.true && i.true.prefix && await i.true.prefix.getString()) != null ? _b : "";
-      v = (_c = i.true && i.true.value && await i.true.value.getString()) != null ? _c : null;
+      value = (_e = i.true && i.true.prefix && await i.true.prefix.getString()) != null ? _e : "";
+      v = (_f = i.true && i.true.value && await i.true.value.getString()) != null ? _f : null;
       value += v != null ? v : "";
-      value += (_d = i.true && i.true.suffix && await i.true.suffix.getString()) != null ? _d : "";
+      value += (_g = i.true && i.true.suffix && await i.true.suffix.getString()) != null ? _g : "";
     }
     if (!(on != null ? on : true)) {
       let value2 = "";
       let v2 = null;
       if ((0, import_data_item.isDataItem)(i.false)) {
-        v2 = (_e = i.false && await i.false.getString()) != null ? _e : null;
+        v2 = (_h = i.false && await i.false.getString()) != null ? _h : null;
+        if (useCommon) {
+          const states = (_i = i.false && i.false.common && i.false.common.states) != null ? _i : null;
+          if (states && v2 !== null && typeof states === "object") {
+            if (!Array.isArray(states)) {
+              v2 = (_j = states[v2]) != null ? _j : v2;
+            } else if (!isNaN(Number(v2))) {
+              v2 = (_k = states[Number(v2)]) != null ? _k : v2;
+            }
+          }
+        }
         value2 = v2 != null ? v2 : "";
       } else {
-        value2 = (_f = i.false && i.false.prefix && await i.false.prefix.getString()) != null ? _f : "";
-        v2 = (_g = i.false && i.false.value && await i.false.value.getString()) != null ? _g : null;
+        value2 = (_l = i.false && i.false.prefix && await i.false.prefix.getString()) != null ? _l : "";
+        v2 = (_m = i.false && i.false.value && await i.false.value.getString()) != null ? _m : null;
         value2 += v2 != null ? v2 : "";
-        value2 += (_h = i.false && i.false.suffix && await i.false.suffix.getString()) != null ? _h : "";
+        value2 += (_n = i.false && i.false.suffix && await i.false.suffix.getString()) != null ? _n : "";
       }
       return v2 === null ? v === null ? null : value : value2;
     }
     return v === null ? null : value;
   }
-  return (_i = await i.getString()) != null ? _i : null;
+  return (_o = await i.getString()) != null ? _o : null;
 }
 async function getValueEntryBoolean(i) {
   if (!i) {

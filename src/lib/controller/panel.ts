@@ -542,7 +542,7 @@ export class Panel extends BaseClass {
             );
         }
 
-        const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
+        const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaverLayout`);
         const scs: Page[] = this.pages.filter(
             a => a && (a.card === 'screensaver' || a.card === 'screensaver2' || a.card === 'screensaver3'),
         ) as Page[];
@@ -563,11 +563,11 @@ export class Panel extends BaseClass {
             easyview: 'Easyview',
         };
 
-        genericStateObjects.panel.panels.cmd.screenSaver.common.states = states;*/
+        genericStateObjects.panel.panels.cmd.screenSaverLayout.common.states = states;*/
         await this.library.writedp(
-            `panels.${this.name}.cmd.screenSaver`,
+            `panels.${this.name}.cmd.screenSaverLayout`,
             this.screenSaver && this.screenSaver.mode ? Screensaver.mapModeToNumber(this.screenSaver.mode) : 0,
-            genericStateObjects.panel.panels.cmd.screenSaver,
+            genericStateObjects.panel.panels.cmd.screenSaverLayout,
         );
         let state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
         let temp: any = 0;
@@ -1007,18 +1007,13 @@ export class Panel extends BaseClass {
                     await this.statesControler.setInternalState(`${this.name}/cmd/detachRight`, !!state.val, false);
                     break;
                 }
-                case 'screenSaver': {
-                    /*const i = this.pages.findIndex(a => a && a.name === state.val);
-                    const s = this.pages[i] as Screensaver;
-                    if (s) {
-                        this.screenSaver = s;
-                        await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, s.name);
-                    }*/
+                case 'screenSaverLayout': {
                     if (typeof state.val === 'number' && pages.isScreenSaverModeAsNumber(state.val)) {
-                        if (this.screenSaver) {
-                            this.screenSaver.overwriteModel(state.val);
-                            await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, state.val);
-                        }
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/screenSaverLayout`,
+                            state.val,
+                            false,
+                        );
                     }
                     break;
                 }
@@ -1504,6 +1499,15 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'cmd/screenSaverLayout': {
+                    if (typeof state.val === 'number' && pages.isScreenSaverModeAsNumber(state.val)) {
+                        if (this.screenSaver) {
+                            this.screenSaver.overwriteModel(state.val);
+                            await this.library.writedp(`panels.${this.name}.cmd.screenSaverLayout`, state.val);
+                        }
+                    }
+                    break;
+                }
             }
             await this.statesControler.setInternalState(id, state.val, true);
         }
@@ -1571,6 +1575,12 @@ export class Panel extends BaseClass {
             }
             case 'cmd/screenSaverDoubleClick': {
                 return this.screenSaverDoubleClick;
+            }
+            case 'cmd/screenSaverLayout': {
+                if (this.screenSaver) {
+                    return Screensaver.mapModeToNumber(this.screenSaver.mode);
+                }
+                break;
             }
         }
         return null;

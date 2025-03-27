@@ -509,7 +509,7 @@ class Panel extends import_library.BaseClass {
         import_definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint
       );
     }
-    const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver`);
+    const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaverLayout`);
     const scs = this.pages.filter(
       (a) => a && (a.card === "screensaver" || a.card === "screensaver2" || a.card === "screensaver3")
     );
@@ -522,9 +522,9 @@ class Panel extends import_library.BaseClass {
       }
     }
     await this.library.writedp(
-      `panels.${this.name}.cmd.screenSaver`,
+      `panels.${this.name}.cmd.screenSaverLayout`,
       this.screenSaver && this.screenSaver.mode ? import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode) : 0,
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaver
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaverLayout
     );
     let state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
     let temp = 0;
@@ -919,12 +919,13 @@ class Panel extends import_library.BaseClass {
           await this.statesControler.setInternalState(`${this.name}/cmd/detachRight`, !!state.val, false);
           break;
         }
-        case "screenSaver": {
+        case "screenSaverLayout": {
           if (typeof state.val === "number" && pages.isScreenSaverModeAsNumber(state.val)) {
-            if (this.screenSaver) {
-              this.screenSaver.overwriteModel(state.val);
-              await this.library.writedp(`panels.${this.name}.cmd.screenSaver`, state.val);
-            }
+            await this.statesControler.setInternalState(
+              `${this.name}/cmd/screenSaverLayout`,
+              state.val,
+              false
+            );
           }
           break;
         }
@@ -1377,6 +1378,15 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        case "cmd/screenSaverLayout": {
+          if (typeof state.val === "number" && pages.isScreenSaverModeAsNumber(state.val)) {
+            if (this.screenSaver) {
+              this.screenSaver.overwriteModel(state.val);
+              await this.library.writedp(`panels.${this.name}.cmd.screenSaverLayout`, state.val);
+            }
+          }
+          break;
+        }
       }
       await this.statesControler.setInternalState(id, state.val, true);
     }
@@ -1445,6 +1455,12 @@ ${this.info.tasmota.onlineVersion}`;
       }
       case "cmd/screenSaverDoubleClick": {
         return this.screenSaverDoubleClick;
+      }
+      case "cmd/screenSaverLayout": {
+        if (this.screenSaver) {
+          return import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode);
+        }
+        break;
       }
     }
     return null;

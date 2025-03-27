@@ -141,11 +141,11 @@ const genericStateObjects = {
           },
           native: {}
         },
-        screenSaver: {
+        screenSaverLayout: {
           _id: "",
           type: "state",
           common: {
-            name: "StateObjects.screenSaver",
+            name: "StateObjects.screenSaverLayout",
             type: "number",
             role: "level",
             read: true,
@@ -1338,6 +1338,18 @@ const InternalStates = {
         role: "value",
         read: true,
         write: true
+      }
+    },
+    "cmd/screenSaverLayout": {
+      val: "standard",
+      ack: true,
+      common: {
+        name: "",
+        type: "number",
+        role: "level",
+        read: true,
+        write: true,
+        states: import_types.arrayOfScreensaverModes
       }
     },
     "cmd/NotificationCleared2": {

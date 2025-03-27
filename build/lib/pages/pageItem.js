@@ -399,7 +399,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             (_J = (_I = await tools.getEntryTextOnOff(item.headline, true)) != null ? _I : message.displayName) != null ? _J : ""
           );
           message.optionalValue = this.library.getTranslation(
-            (_K = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _K : "PRESS"
+            (_K = await tools.getEntryTextOnOff(item.text, !!value, true)) != null ? _K : "PRESS"
           );
           this.log.debug(JSON.stringify(message));
           return tools.getItemMesssage(message);
@@ -900,14 +900,15 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         } else {
           list = [];
         }
-        message.list = Array.isArray(list) ? list.map((a) => tools.formatInSelText(a)).join("?") : "";
+        list = list.map((a) => tools.formatInSelText(this.library.getTranslation(a)));
+        message.list = list.join("?");
         if (message.list && message.list.length > 940) {
           message.list = message.list.slice(0, 940);
           this.log.warn("Value list has more as 940 chars!");
         }
         const n = (_D = await tools.getValueEntryNumber(item.entityInSel)) != null ? _D : 0;
         if (Array.isArray(list) && n != null && n < list.length) {
-          message.currentState = tools.formatInSelText(this.library.getTranslation(list[n]));
+          message.currentState = list[n];
         }
         if (mode !== "popupThermo") {
           break;
@@ -1681,6 +1682,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
    * 'flip': Liest den State mit ID ein, negiert den Wert und schreibt ihn wieder zurück. string, number, boolean möglich.
    */
   async setListCommand(entry, value) {
+    var _a, _b;
     const item = entry.data;
     if (!("entityInSel" in item)) {
       return false;
@@ -1696,7 +1698,11 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         await item.setValue1.setStateAsync(parseInt(value) + 1);
         return true;
       } else if (sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.value) {
-        await item.entityInSel.value.setStateAsync(sList.states[parseInt(value)]);
+        if (((_b = (_a = item.entityInSel.value) == null ? void 0 : _a.common) == null ? void 0 : _b.type) === "number") {
+          await item.entityInSel.value.setStateAsync(parseInt(sList.states[parseInt(value)]));
+        } else {
+          await item.entityInSel.value.setStateAsync(sList.states[parseInt(value)]);
+        }
         return true;
       }
     }

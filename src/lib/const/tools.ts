@@ -542,6 +542,7 @@ export async function getEntryColor(
 export async function getEntryTextOnOff(
     i: ChangeTypeOfKeys<TextEntryType | TextEntryType2, Dataitem | undefined> | undefined | Dataitem,
     on: boolean | number | null,
+    useCommon: boolean = false,
 ): Promise<string | null> {
     if (!i) {
         return null;
@@ -555,6 +556,17 @@ export async function getEntryTextOnOff(
         if (isDataItem(i.true)) {
             //i = i as ChangeTypeOfKeys<TextEntryType, Dataitem>;
             v = (i.true && (await i.true.getString())) ?? null;
+            if (useCommon) {
+                const states =
+                    ((i.true && i.true.common && i.true.common.states) as Record<string, string> | string[]) ?? null;
+                if (states && v !== null && typeof states === 'object') {
+                    if (!Array.isArray(states)) {
+                        v = states[v] ?? v;
+                    } else if (!isNaN(Number(v))) {
+                        v = states[Number(v)] ?? v;
+                    }
+                }
+            }
             value = v ?? '';
         } else {
             value = (i.true && i.true.prefix && (await i.true.prefix.getString())) ?? '';
@@ -567,6 +579,18 @@ export async function getEntryTextOnOff(
             let v2: string | null = null;
             if (isDataItem(i.false)) {
                 v2 = (i.false && (await i.false.getString())) ?? null;
+                if (useCommon) {
+                    const states =
+                        ((i.false && i.false.common && i.false.common.states) as Record<string, string> | string[]) ??
+                        null;
+                    if (states && v2 !== null && typeof states === 'object') {
+                        if (!Array.isArray(states)) {
+                            v2 = states[v2] ?? v2;
+                        } else if (!isNaN(Number(v2))) {
+                            v2 = states[Number(v2)] ?? v2;
+                        }
+                    }
+                }
                 value2 = v2 ?? '';
             } else {
                 value2 = (i.false && i.false.prefix && (await i.false.prefix.getString())) ?? '';

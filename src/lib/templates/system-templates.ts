@@ -442,6 +442,29 @@ const ScreensaverOptions: PageBaseConfig = {
         },
         {
             role: '',
+            type: 'input_sel',
+            data: {
+                headline: { type: 'const', constVal: 'screenSaverLayout' },
+                entityInSel: {
+                    value: { type: 'internal', dp: 'cmd/screenSaverLayout' },
+                },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'monitor' },
+                        color: { type: 'const', constVal: Color.Green },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'internal', dp: 'cmd/screenSaverLayout' }, false: undefined },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                //valueList: { type: 'internal', dp: 'cmd/screenSaverLayout', read: 'return val ? val.split(";") : []' },
+                valueList: { type: 'const', constVal: 'standard?alternate?advanced?easyview' },
+            },
+        },
+        {
+            role: '',
             type: 'number',
             data: {
                 entity1: {

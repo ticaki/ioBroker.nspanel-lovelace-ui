@@ -394,7 +394,7 @@ class Screensaver extends import_Page.Page {
       }
     }
     this.mode = Screensaver.mapNumberToMode(mode);
-    if (!init) {
+    if (!init && this.visibility) {
       this.sendType();
       void this.update();
     }
