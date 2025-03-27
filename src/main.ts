@@ -1091,7 +1091,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     break;
                                 }
 
-                                const version = result.data.tft.split('_')[0];
+                                const version = obj.message.useBetaTFT
+                                    ? result.data['tft-beta'].split('_')[0]
+                                    : result.data.tft.split('_')[0];
                                 const fileName = `nspanel-v${version}.tft`;
 
                                 const url =
