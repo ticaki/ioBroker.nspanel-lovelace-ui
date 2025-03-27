@@ -339,7 +339,8 @@ const genericStateObjects = {
               type: "boolean",
               role: "switch",
               read: true,
-              write: true
+              write: true,
+              def: true
             },
             native: {}
           },

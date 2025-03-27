@@ -143,6 +143,7 @@ declare namespace ScriptConfig {
         | 'light'
         | 'lock'
         //| 'media'
+        //| 'fan'
         | 'motion'
         | 'rgb'
         | 'rgbSingle'

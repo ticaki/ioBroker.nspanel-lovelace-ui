@@ -885,7 +885,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (obj.message.tasmotaIP) {
               try {
                 const result = await import_axios.default.get(
-                  "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/raw/refs/heads/main/json/version.json"
+                  "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
                 );
                 if (!result.data) {
                   this.log.error("No version found!");
