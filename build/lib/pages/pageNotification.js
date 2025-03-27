@@ -151,6 +151,9 @@ ${message.text}`;
           pos = pos2;
         }
         if (!this.rotationTimeout) {
+          if (this.unload) {
+            return;
+          }
           this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3e3);
         }
       }
@@ -215,6 +218,9 @@ ${message.text}`;
     }
     this.step++;
     await this.update();
+    if (this.unload) {
+      return;
+    }
     this.rotationTimeout = this.adapter.setTimeout(this.rotation, 1500);
   };
   async delete() {

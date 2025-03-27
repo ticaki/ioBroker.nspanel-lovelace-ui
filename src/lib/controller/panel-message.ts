@@ -66,6 +66,9 @@ export class PanelSend extends BaseClass {
                     }
                     this.log.debug(`Receive ack for ${JSON.stringify(msg)}`);
                 }
+                if (this.unload) {
+                    return;
+                }
                 this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 2);
             }
         }
@@ -107,6 +110,9 @@ export class PanelSend extends BaseClass {
         }
 
         this.addMessageTasmota(this.topic, msg.payload, msg.opt);
+        if (this.unload) {
+            return;
+        }
         this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
     };
 

@@ -209,9 +209,6 @@ class Screensaver extends import_Page.Page {
     await this.rotationLoop();
   }
   rotationLoop = async () => {
-    if (this.unload) {
-      return;
-    }
     if (!this.visibility) {
       return;
     }
@@ -221,6 +218,9 @@ class Screensaver extends import_Page.Page {
       return;
     }
     this.step = this.step > 1e4 ? 0 : this.step + 1;
+    if (this.unload) {
+      return;
+    }
     this.timoutRotation = this.adapter.setTimeout(
       this.rotationLoop,
       this.rotationTime < 3e3 ? 3e3 : this.rotationTime
@@ -325,6 +325,9 @@ class Screensaver extends import_Page.Page {
         }
       }
       await this.pageItems[event.id].onCommand(event.action, event.opt);
+      if (this.unload) {
+        return;
+      }
       this.blockButtons = this.adapter.setTimeout(() => {
         this.blockButtons = void 0;
       }, 500);

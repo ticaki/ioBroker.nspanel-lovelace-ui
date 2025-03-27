@@ -76,6 +76,9 @@ class PanelSend extends import_library.BaseClass {
           }
           this.log.debug(`Receive ack for ${JSON.stringify(msg2)}`);
         }
+        if (this.unload) {
+          return;
+        }
         this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 2);
       }
     }
@@ -110,6 +113,9 @@ class PanelSend extends import_library.BaseClass {
       this.messageDb = [];
     }
     this.addMessageTasmota(this.topic, msg.payload, msg.opt);
+    if (this.unload) {
+      return;
+    }
     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
   };
   addMessageTasmota = (topic, payload, opt) => {

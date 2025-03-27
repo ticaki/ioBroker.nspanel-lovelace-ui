@@ -209,9 +209,6 @@ export class Screensaver extends Page {
         await this.rotationLoop();
     }
     rotationLoop = async (): Promise<void> => {
-        if (this.unload) {
-            return;
-        }
         // only use this if screensaver is activated
         if (!this.visibility) {
             return;
@@ -223,6 +220,9 @@ export class Screensaver extends Page {
             return;
         }
         this.step = this.step > 10000 ? 0 : this.step + 1;
+        if (this.unload) {
+            return;
+        }
         this.timoutRotation = this.adapter.setTimeout(
             this.rotationLoop,
             this.rotationTime < 3000 ? 3000 : this.rotationTime,
@@ -333,6 +333,9 @@ export class Screensaver extends Page {
                 }
             }
             await this.pageItems[event.id as any]!.onCommand(event.action, event.opt);
+            if (this.unload) {
+                return;
+            }
             this.blockButtons = this.adapter.setTimeout(() => {
                 this.blockButtons = undefined;
             }, 500);

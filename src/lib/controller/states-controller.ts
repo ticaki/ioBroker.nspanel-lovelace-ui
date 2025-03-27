@@ -97,6 +97,9 @@ export class BaseClassTriggerd extends BaseClass {
             this.doUpdate = true;
             return false;
         }
+        if (this.unload) {
+            return false;
+        }
         this.waitForTimeout = this.adapter.setTimeout(async () => {
             this.waitForTimeout = undefined;
             await this.onStateTrigger(dp, from);
@@ -104,6 +107,9 @@ export class BaseClassTriggerd extends BaseClass {
                 this.adapter.clearTimeout(this.alwaysOnState);
             }
             if (this.alwaysOn === 'action') {
+                if (this.unload) {
+                    return;
+                }
                 this.alwaysOnState = this.adapter.setTimeout(
                     () => {
                         this.panel.sendScreeensaverTimeout(this.panel.timeout);
@@ -164,6 +170,9 @@ export class BaseClassTriggerd extends BaseClass {
 
                 if (this.alwaysOn != 'none') {
                     if (this.alwaysOn === 'action') {
+                        if (this.unload) {
+                            return;
+                        }
                         this.alwaysOnState = this.adapter.setTimeout(
                             async () => {
                                 this.panel.sendScreeensaverTimeout(this.panel.timeout);
@@ -764,7 +773,6 @@ export class StatesControler extends BaseClass {
         if (StatesControler.tempObjectDBTimeout) {
             adapter.clearTimeout(StatesControler.tempObjectDBTimeout);
         }
-
         StatesControler.tempObjectDBTimeout = adapter.setTimeout(() => {
             if (adapter.unload) {
                 return;

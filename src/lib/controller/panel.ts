@@ -781,7 +781,7 @@ export class Panel extends BaseClass {
                                 if (this.name == this.library.cleandp(data.StatusNET.Mac, false, true)) {
                                     const index = o.native.panels.findIndex((a: any) => a.id === this.name);
                                     const ip = data.StatusNET.IPAddress;
-                                    if (index !== -1) {
+                                    if (index !== -1 && o.native.panels[index].ip == ip) {
                                         o.native.panels[index].ip = ip;
                                         await this.adapter.setForeignObjectAsync(o._id, o);
                                     }
@@ -1100,9 +1100,6 @@ export class Panel extends BaseClass {
      *
      */
     loop = (): void => {
-        if (this.unload) {
-            return;
-        }
         this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, '');
         this.pages = this.pages.filter(a => a && !a.unload);
         let t = 300000 + Math.random() * 30000 - 15000;
@@ -1110,15 +1107,18 @@ export class Panel extends BaseClass {
             t = 15000;
             this.sendToPanel('pageType~pageStartup', { retain: true });
         }
+        if (this.unload) {
+            return;
+        }
         this.loopTimeout = this.adapter.setTimeout(this.loop, t);
     };
 
     async delete(): Promise<void> {
+        await super.delete();
         this.isOnline = false;
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
-        await super.delete();
         await this.library.writedp(
             `panels.${this.name}.info.isOnline`,
             false,

@@ -116,6 +116,9 @@ class PageChart extends import_Page.Page {
     return "";
   }
   async onStateTrigger(_id) {
+    if (this.unload) {
+      return;
+    }
     this.adapter.setTimeout(() => this.update(), 50);
   }
   /**

@@ -117,6 +117,9 @@ export class PageMenu extends Page {
                 }
             } else {
                 this.lastdirection = 'left';
+                if (this.unload) {
+                    return;
+                }
                 this.doubleClick = this.adapter.setTimeout(() => {
                     this.goLeft(true);
                     this.doubleClick = undefined;
@@ -152,6 +155,9 @@ export class PageMenu extends Page {
                 }
             } else {
                 this.lastdirection = 'right';
+                if (this.unload) {
+                    return;
+                }
                 this.doubleClick = this.adapter.setTimeout(() => {
                     this.doubleClick = undefined;
                     this.goRight(true);

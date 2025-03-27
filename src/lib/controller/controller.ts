@@ -56,9 +56,6 @@ export class Controller extends Library.BaseClass {
     }
 
     minuteLoop = async (): Promise<void> => {
-        if (this.unload) {
-            return;
-        }
         const minute = new Date().getMinutes();
         if (minute === 0) {
             this.panels.forEach(panel => {
@@ -67,6 +64,9 @@ export class Controller extends Library.BaseClass {
         }
         await this.statesControler.setInternalState('///time', await this.getCurrentTime(), true);
         const diff = 60000 - (Date.now() % 60000) + 10;
+        if (this.unload) {
+            return;
+        }
         this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
     };
 
@@ -76,15 +76,15 @@ export class Controller extends Library.BaseClass {
      * @returns void
      */
     dateUpdateLoop = async (): Promise<void> => {
-        if (this.unload) {
-            return;
-        }
         const d: Date = new Date();
         d.setDate(d.getDate() + 1);
         d.setHours(0, 0, 1);
         const diff = d.getTime() - Date.now();
         this.log.debug(`Set current Date with time: ${new Date(await this.getCurrentTime()).toString()}`);
         await this.statesControler.setInternalState('///date', this.getCurrentTime(), true);
+        if (this.unload) {
+            return;
+        }
         this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
     };
     getCurrentTime = async (): Promise<number> => {
@@ -259,6 +259,7 @@ export class Controller extends Library.BaseClass {
     }
 
     async delete(): Promise<void> {
+        await super.delete();
         if (this.minuteLoopTimeout) {
             this.adapter.clearTimeout(this.minuteLoopTimeout);
         }
@@ -268,7 +269,6 @@ export class Controller extends Library.BaseClass {
         if (this.dailyIntervalTimeout) {
             this.adapter.clearInterval(this.dailyIntervalTimeout);
         }
-        await super.delete();
         await this.systemNotification.delete();
         await this.statesControler.delete();
         for (const a of this.panels) {

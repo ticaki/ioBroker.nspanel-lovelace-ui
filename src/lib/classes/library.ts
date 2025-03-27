@@ -743,6 +743,3 @@ export class Library extends BaseClass {
         return key;
     }
 }
-export async function sleep(time: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, time));
-}

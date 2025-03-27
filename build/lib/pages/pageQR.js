@@ -407,6 +407,9 @@ class PageQR extends import_Page.Page {
     );
   }
   async onStateTrigger(_id) {
+    if (this.unload) {
+      return;
+    }
     this.adapter.setTimeout(() => this.update(), 50);
   }
   /**

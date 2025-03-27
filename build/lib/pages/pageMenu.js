@@ -102,6 +102,9 @@ class PageMenu extends import_Page.Page {
         }
       } else {
         this.lastdirection = "left";
+        if (this.unload) {
+          return;
+        }
         this.doubleClick = this.adapter.setTimeout(() => {
           this.goLeft(true);
           this.doubleClick = void 0;
@@ -130,6 +133,9 @@ class PageMenu extends import_Page.Page {
         }
       } else {
         this.lastdirection = "right";
+        if (this.unload) {
+          return;
+        }
         this.doubleClick = this.adapter.setTimeout(() => {
           this.doubleClick = void 0;
           this.goRight(true);

@@ -76,9 +76,6 @@ class Controller extends Library.BaseClass {
     this.log.debug(`${this.name} created`);
   }
   minuteLoop = async () => {
-    if (this.unload) {
-      return;
-    }
     const minute = (/* @__PURE__ */ new Date()).getMinutes();
     if (minute === 0) {
       this.panels.forEach((panel) => {
@@ -87,6 +84,9 @@ class Controller extends Library.BaseClass {
     }
     await this.statesControler.setInternalState("///time", await this.getCurrentTime(), true);
     const diff = 6e4 - Date.now() % 6e4 + 10;
+    if (this.unload) {
+      return;
+    }
     this.minuteLoopTimeout = this.adapter.setTimeout(this.minuteLoop, diff);
   };
   /**
@@ -95,15 +95,15 @@ class Controller extends Library.BaseClass {
    * @returns void
    */
   dateUpdateLoop = async () => {
-    if (this.unload) {
-      return;
-    }
     const d = /* @__PURE__ */ new Date();
     d.setDate(d.getDate() + 1);
     d.setHours(0, 0, 1);
     const diff = d.getTime() - Date.now();
     this.log.debug(`Set current Date with time: ${new Date(await this.getCurrentTime()).toString()}`);
     await this.statesControler.setInternalState("///date", this.getCurrentTime(), true);
+    if (this.unload) {
+      return;
+    }
     this.dateUpdateTimeout = this.adapter.setTimeout(this.dateUpdateLoop, diff);
   };
   getCurrentTime = async () => {
@@ -272,6 +272,7 @@ class Controller extends Library.BaseClass {
     this.dailyIntervalTimeout = this.adapter.setInterval(this.dailyInterval, 24 * 60 * 60 * 1e3);
   }
   async delete() {
+    await super.delete();
     if (this.minuteLoopTimeout) {
       this.adapter.clearTimeout(this.minuteLoopTimeout);
     }
@@ -281,7 +282,6 @@ class Controller extends Library.BaseClass {
     if (this.dailyIntervalTimeout) {
       this.adapter.clearInterval(this.dailyIntervalTimeout);
     }
-    await super.delete();
     await this.systemNotification.delete();
     await this.statesControler.delete();
     for (const a of this.panels) {

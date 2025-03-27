@@ -255,6 +255,9 @@ export class PageAlarm extends Page {
                         await this.setStatus('disarmed');
                     }
                 }
+                if (this.unload) {
+                    return;
+                }
                 this.adapter.setTimeout(() => this.update(), 50);
             }
         }
@@ -302,12 +305,18 @@ export class PageAlarm extends Page {
                     if (this.status === 'disarmed' && approved) {
                         await this.setStatus('arming');
                         await this.setMode(button);
+                        if (this.unload) {
+                            return;
+                        }
                         this.adapter.setTimeout(() => this.update(), 50);
                     } else if (this.status === 'arming') {
                         // nothing to do
                     } else if (!approved) {
                         await this.setStatus('armed');
                         await this.setMode(button);
+                        if (this.unload) {
+                            return;
+                        }
                         this.adapter.setTimeout(() => this.update(), 50);
                     }
                     break;
@@ -316,12 +325,18 @@ export class PageAlarm extends Page {
                     if (this.status === 'armed' && approved) {
                         await this.setStatus('pending');
                         await this.setMode(button);
+                        if (this.unload) {
+                            return;
+                        }
                         this.adapter.setTimeout(() => this.update(), 50);
                     } else if (this.status === 'pending') {
                         // nothing to do
                     } else if (!approved) {
                         await this.setStatus('disarmed');
                         await this.setMode(button);
+                        if (this.unload) {
+                            return;
+                        }
                         this.adapter.setTimeout(() => this.update(), 50);
                     }
 

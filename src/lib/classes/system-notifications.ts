@@ -146,6 +146,9 @@ export class SystemNotifications extends BaseClass {
         if (this.messageTimeout) {
             return;
         }
+        if (this.unload) {
+            return;
+        }
         this.messageTimeout = this.adapter.setTimeout(async () => {
             this.notifications.sort((a, b) => {
                 if (a.severity === b.severity) {
