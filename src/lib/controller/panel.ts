@@ -781,7 +781,7 @@ export class Panel extends BaseClass {
                                 if (this.name == this.library.cleandp(data.StatusNET.Mac, false, true)) {
                                     const index = o.native.panels.findIndex((a: any) => a.id === this.name);
                                     const ip = data.StatusNET.IPAddress;
-                                    if (index !== -1 && o.native.panels[index].ip == ip) {
+                                    if (index !== -1 && o.native.panels[index].ip != ip) {
                                         o.native.panels[index].ip = ip;
                                         await this.adapter.setForeignObjectAsync(o._id, o);
                                     }
