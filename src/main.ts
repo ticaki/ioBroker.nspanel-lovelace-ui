@@ -1076,7 +1076,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         if (obj.message.tasmotaIP /*&& obj.message.internalServerIp*/) {
                             try {
                                 const result = await axios.get(
-                                    'https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/raw/refs/heads/main/json/version.json',
+                                    'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
                                 );
                                 if (!result.data) {
                                     this.log.error('No version found!');
@@ -1091,7 +1091,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     break;
                                 }
 
-                                const version = result.data.tft.split('_')[0];
+                                const version = obj.message.useBetaTFT
+                                    ? result.data['tft-beta'].split('_')[0]
+                                    : result.data.tft.split('_')[0];
                                 const fileName = `nspanel-v${version}.tft`;
 
                                 const url =

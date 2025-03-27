@@ -429,17 +429,45 @@
                     "variant": "contained",
                     "hidden": "data._selectTool != '2'"
                 },
+                "_useBetaTFTText": {
+                    "type": "staticText",
+                    "label": "useBetaTFTText",
+                    "text": "useBetaTFTText",
+                    "style": {
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "hidden": "data._selectTool != '3' || !data.useBetaTFT",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "_tftInstallSendTo": {
                     "type": "sendTo",
                     "label": "tftInstallSendTo",
-                    "jsonData": "{\"tasmotaIP\": \"${data._tasmotaIP}\", \"internalServerIp\": \"${data.internalServerIp}\"}",
+                    "jsonData": "{\"tasmotaIP\": \"${data._tasmotaIP}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": \"${data.useBetaTFT}\"}",
                     "showProcess": true,
                     "command": "tftInstallSendTo",
                     "disabled": "!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
                     "newLine": true,
                     "variant": "contained",
                     "hidden": "data._selectTool != '3'"
-                }
+                },
+                "useBetaTFT": {
+                    "type": "checkbox",
+                    "label": "useBetaTFT",
+                    "default": false,
+                    "newLine": true,
+                    "hidden": "data._selectTool != '3'",
+                    "expertMode": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
             }
         },
         "pageQR": {

@@ -885,7 +885,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (obj.message.tasmotaIP) {
               try {
                 const result = await import_axios.default.get(
-                  "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/raw/refs/heads/main/json/version.json"
+                  "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
                 );
                 if (!result.data) {
                   this.log.error("No version found!");
@@ -899,7 +899,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                   break;
                 }
-                const version = result.data.tft.split("_")[0];
+                const version = obj.message.useBetaTFT ? result.data["tft-beta"].split("_")[0] : result.data.tft.split("_")[0];
                 const fileName = `nspanel-v${version}.tft`;
                 const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog FlashNextion http://nspanel.de/${fileName}`;
                 this.log.debug(url);
