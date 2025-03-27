@@ -141,27 +141,19 @@ class Page extends import_states_controller.BaseClassPage {
         options.data.icon = (_a = options.data.icon) != null ? _a : {};
         if (colorTrue) {
           options.data.icon.true = (_b = options.data.icon.true) != null ? _b : {};
-          if (options.data.icon.true.color) {
-            options.data.icon.true.color = colorTrue;
-          }
+          options.data.icon.true.color = colorTrue;
         }
         if (iconTrue) {
           options.data.icon.true = (_c = options.data.icon.true) != null ? _c : {};
-          if (options.data.icon.true.value) {
-            options.data.icon.true.value = iconTrue;
-          }
+          options.data.icon.true.value = iconTrue;
         }
         if (colorFalse) {
           options.data.icon.false = (_d = options.data.icon.false) != null ? _d : {};
-          if (options.data.icon.false.color) {
-            options.data.icon.false.color = colorFalse;
-          }
+          options.data.icon.false.color = colorFalse;
         }
         if (iconFalse) {
           options.data.icon.false = (_e = options.data.icon.false) != null ? _e : {};
-          if (options.data.icon.false.value) {
-            options.data.icon.false.value = iconFalse;
-          }
+          options.data.icon.false.value = iconFalse;
         }
         if (colorScale) {
           options.data.icon.scale = { type: "const", constVal: colorScale };

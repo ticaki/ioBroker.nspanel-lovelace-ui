@@ -260,7 +260,7 @@ export type PageItemFanDataItems = {
     data: pages.ChangeTypeOfKeys<PageItemFan, dataItem.Dataitem | undefined>;
 };
 
-export type PageItemNumber = Pick<PageItemBase, 'entity1' | 'text' | 'icon' | 'minValue1' | 'maxValue1'>;
+export type PageItemNumber = Pick<PageItemBase, 'entity1' | 'switch1' | 'text' | 'icon' | 'minValue1' | 'maxValue1'>;
 export type PageItemNumberDataItemsOptions = {
     type: 'number';
     data: pages.ChangeTypeOfKeys<PageItemNumber, Types.DataItemsOptions | undefined>;
@@ -404,6 +404,10 @@ export type PageItemBase = {
     entity2?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     entity3?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
     entity4?: ValueEntryType; // Readonly Werte die angezeigt werden soll.
+    /**
+     * Zur Zeit bei number mit cardGrid
+     */
+    switch1?: string; // true/false only
     text1?: TextEntryType;
     text2?: TextEntryType;
     text3?: TextEntryType;

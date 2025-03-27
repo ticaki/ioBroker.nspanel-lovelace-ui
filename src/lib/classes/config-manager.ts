@@ -2438,7 +2438,11 @@ export class ConfigManager extends BaseClass {
                                         item.unit || commonUnit
                                             ? { type: 'const', constVal: item.unit || commonUnit }
                                             : undefined,
+                                    set: foundedStates[role].SET,
                                 },
+                                minValue1: item.minValue ? { type: 'const', constVal: item.minValue } : undefined,
+                                maxValue1: item.maxValue ? { type: 'const', constVal: item.maxValue } : undefined,
+                                switch1: foundedStates[role].MUTE,
                                 text: text,
                             },
                         };

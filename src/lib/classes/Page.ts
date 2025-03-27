@@ -179,27 +179,19 @@ export class Page extends BaseClassPage {
                 options.data.icon = options.data.icon ?? {};
                 if (colorTrue) {
                     options.data.icon.true = options.data.icon.true ?? {};
-                    if (options.data.icon.true.color) {
-                        options.data.icon.true.color = colorTrue;
-                    }
+                    options.data.icon.true.color = colorTrue;
                 }
                 if (iconTrue) {
                     options.data.icon.true = options.data.icon.true ?? {};
-                    if (options.data.icon.true.value) {
-                        options.data.icon.true.value = iconTrue;
-                    }
+                    options.data.icon.true.value = iconTrue;
                 }
                 if (colorFalse) {
                     options.data.icon.false = options.data.icon.false ?? {};
-                    if (options.data.icon.false.color) {
-                        options.data.icon.false.color = colorFalse;
-                    }
+                    options.data.icon.false.color = colorFalse;
                 }
                 if (iconFalse) {
                     options.data.icon.false = options.data.icon.false ?? {};
-                    if (options.data.icon.false.value) {
-                        options.data.icon.false.value = iconFalse;
-                    }
+                    options.data.icon.false.value = iconFalse;
                 }
                 if (colorScale) {
                     options.data.icon.scale = { type: 'const', constVal: colorScale };
