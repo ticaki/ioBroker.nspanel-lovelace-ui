@@ -497,7 +497,7 @@ export class Panel extends BaseClass {
 
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
         this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
-
+        this.log.debug(`Panel ${this.name} is initialised!`);
         this.restartLoops();
     };
 
@@ -1044,6 +1044,7 @@ export class Panel extends BaseClass {
 
     sendDimmode(): void {
         const hour = new Date().getHours();
+        const oldDayMode = this.dimMode.dayMode;
         if (this.dimMode.dimSchedule) {
             if (this.dimMode.startNight > this.dimMode.endNight) {
                 if (hour >= this.dimMode.startNight || hour < this.dimMode.endNight) {
@@ -1064,6 +1065,13 @@ export class Panel extends BaseClass {
             cmd = `dimmode~${this.dimMode.low}~${this.dimMode.high}~${cmd}`;
         } else {
             cmd = `dimmode~${this.dimMode.lowNight}~${this.dimMode.highNight}~${cmd}`;
+        }
+        if (this.dimMode.dayMode !== oldDayMode) {
+            void this.library.writedp(
+                `panels.${this.name}.cmd.dim.dayMode`,
+                this.dimMode.dayMode,
+                genericStateObjects.panel.panels.cmd.dim.dayMode,
+            );
         }
         this.sendToPanel(cmd);
     }
