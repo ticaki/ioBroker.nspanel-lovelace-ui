@@ -388,6 +388,7 @@ export const genericStateObjects: {
                             role: 'switch',
                             read: true,
                             write: true,
+                            def: true,
                         },
                         native: {},
                     },
