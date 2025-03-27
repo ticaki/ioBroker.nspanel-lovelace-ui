@@ -984,7 +984,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 trigger: true,
             },
             SET: { role: 'level.volume', type: 'number', required: true, writeable: true },
-            MUTE: { role: 'media.mute', type: 'boolean', required: false, writeable: true },
+            MUTE: { role: 'media.mute', type: 'boolean', required: false, writeable: true, trigger: true },
         },
     },
     rgb: {

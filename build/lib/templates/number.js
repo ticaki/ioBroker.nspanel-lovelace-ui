@@ -26,7 +26,7 @@ const numberTemplates = {
   "number.volume": {
     role: "",
     adapter: "",
-    type: "button",
+    type: "number",
     data: {
       icon: {
         true: {
@@ -45,21 +45,33 @@ const numberTemplates = {
                             if (val > 0) {
                                 return 'volume-low';
                             }
-                            return 'volume-mute';
+                            return 'volume-off';
                         }`
           },
           text: {
             value: {
-              type: "triggered",
+              type: "state",
               mode: "auto",
               role: "value.volume",
               dp: ""
             },
             unit: { type: "const", constVal: "%" }
           },
-          color: { type: "const", constVal: import_Color.Color.Red }
+          color: { type: "const", constVal: import_Color.Color.Green }
         },
-        false: void 0,
+        false: {
+          value: { type: "const", constVal: "volume-mute" },
+          text: {
+            value: {
+              type: "state",
+              mode: "auto",
+              role: "value.volume",
+              dp: ""
+            },
+            unit: { type: "const", constVal: "%" }
+          },
+          color: { type: "const", constVal: import_Color.Color.Green }
+        },
         scale: { type: "const", constVal: { min: 0, max: 100 } }
       },
       entity1: {

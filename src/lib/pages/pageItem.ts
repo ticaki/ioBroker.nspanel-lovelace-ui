@@ -285,11 +285,13 @@ export class PageItem extends BaseClassTriggerd {
                         const item = entry.data;
                         message.type = 'number';
                         const number = (await tools.getValueEntryNumber(item.entity1, false)) ?? 0;
+                        const value = (item.switch1 && (await item.switch1.getBoolean())) ?? null;
                         message.displayName = this.library.getTranslation(
                             (await tools.getEntryTextOnOff(item.text, true)) ?? '',
                         );
-                        message.icon = (await tools.getIconEntryValue(item.icon, true, '')) ?? '';
-                        message.iconColor = (await tools.getIconEntryColor(item.icon, true, Color.HMIOn)) ?? '';
+                        message.icon = (await tools.getIconEntryValue(item.icon, value !== true, '')) ?? '';
+                        message.iconColor =
+                            (await tools.getIconEntryColor(item.icon, value !== true, Color.HMIOn)) ?? '';
                         let min = item.entity1 && item.entity1.value && item.entity1.value.common.min;
                         let max = item.entity1 && item.entity1.value && item.entity1.value.common.max;
                         min = (item.minValue1 && (await item.minValue1.getNumber())) ?? min ?? 0;
@@ -1387,6 +1389,11 @@ export class PageItem extends BaseClassTriggerd {
                     const item = entry.data;
                     item.entity1 && item.entity1.set && (await item.entity1.set.setStateFlip());
                     item.setValue1 && (await item.setValue1.setStateFlip());
+                } else if (entry.type === 'number') {
+                    const item = entry.data;
+                    if (item && item.switch1 && item.switch1.writeable) {
+                        await item.switch1.setStateFlip();
+                    }
                 }
                 break;
             }

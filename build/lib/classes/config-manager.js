@@ -2103,8 +2103,12 @@ class ConfigManager extends import_library.BaseClass {
               data: {
                 entity1: {
                   value: foundedStates[role].ACTUAL,
-                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
+                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0,
+                  set: foundedStates[role].SET
                 },
+                minValue1: item.minValue ? { type: "const", constVal: item.minValue } : void 0,
+                maxValue1: item.maxValue ? { type: "const", constVal: item.maxValue } : void 0,
+                switch1: foundedStates[role].MUTE,
                 text
               }
             };
