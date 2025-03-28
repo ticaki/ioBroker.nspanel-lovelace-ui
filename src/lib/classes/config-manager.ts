@@ -20,7 +20,7 @@ export class ConfigManager extends BaseClass {
     dontWrite: boolean = false;
     extraConfigLogging: boolean = false;
 
-    readonly scriptVersion = '0.7.1';
+    readonly scriptVersion = '0.7.2';
     readonly breakingVersion = '0.6.0';
 
     statesController: StatesControler | undefined;
@@ -414,7 +414,11 @@ export class ConfigManager extends BaseClass {
 
                 let gridItem: pages.PageBaseConfig = {
                     dpInit: '',
-                    alwaysOn: 'none',
+                    alwaysOn: page.alwaysOnDisplay
+                        ? typeof page.alwaysOnDisplay === 'boolean'
+                            ? 'always'
+                            : 'action'
+                        : 'none',
                     uniqueID: page.uniqueName || '',
                     useColor: false,
                     config: {

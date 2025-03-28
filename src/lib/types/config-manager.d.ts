@@ -252,6 +252,7 @@ declare namespace ScriptConfig {
         homeIcon?: string;
         homeIconColor?: RGB;
         hiddenByTrigger?: boolean;
+        alwaysOnDisplay?: boolean | 'action' | null;
     };
 
     export type PagetypeType =

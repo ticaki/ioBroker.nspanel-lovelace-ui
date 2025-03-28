@@ -46,7 +46,7 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.7.1";
+  scriptVersion = "0.7.2";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -359,7 +359,7 @@ class ConfigManager extends import_library.BaseClass {
         }
         let gridItem = {
           dpInit: "",
-          alwaysOn: "none",
+          alwaysOn: page.alwaysOnDisplay ? typeof page.alwaysOnDisplay === "boolean" ? "always" : "action" : "none",
           uniqueID: page.uniqueName || "",
           useColor: false,
           config: {
