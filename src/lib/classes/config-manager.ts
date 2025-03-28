@@ -1316,15 +1316,6 @@ export class ConfigManager extends BaseClass {
                     type: 'button',
                     dpInit: item.id,
                     role: specialRole,
-                    color: {
-                        true: await this.getIconColor(item.onColor, this.colorOn),
-                        false: await this.getIconColor(item.offColor, this.colorOff),
-                        scale: item.colorScale ? item.colorScale : undefined,
-                    },
-                    icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                    },
                     template: 'button.humidity',
                     data: {
                         entity1: {
@@ -1333,6 +1324,33 @@ export class ConfigManager extends BaseClass {
                                 item.unit || commonUnit
                                     ? { type: 'const', constVal: item.unit || commonUnit }
                                     : undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                                color: await this.getIconColor(item.onColor, this.colorOn),
+                                text: {
+                                    value: foundedStates[role].ACTUAL,
+                                    unit:
+                                        item.unit || commonUnit
+                                            ? { type: 'const', constVal: item.unit || commonUnit }
+                                            : undefined,
+                                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                                },
+                            },
+                            false: {
+                                value: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                                color: await this.getIconColor(item.offColor, this.colorOff),
+                                text: {
+                                    value: foundedStates[role].ACTUAL,
+                                    unit:
+                                        item.unit || commonUnit
+                                            ? { type: 'const', constVal: item.unit || commonUnit }
+                                            : undefined,
+                                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                                },
+                            },
+                            scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                         },
                         text: text,
 
@@ -1357,15 +1375,6 @@ export class ConfigManager extends BaseClass {
                     dpInit: item.id,
                     role: specialRole,
                     template: 'button.temperature',
-                    color: {
-                        true: await this.getIconColor(item.onColor, this.colorOn),
-                        false: await this.getIconColor(item.offColor, this.colorOff),
-                        scale: item.colorScale ? item.colorScale : undefined,
-                    },
-                    icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                    },
                     data: {
                         entity1: {
                             value: foundedStates[role].ACTUAL,
@@ -1373,6 +1382,33 @@ export class ConfigManager extends BaseClass {
                                 item.unit || commonUnit
                                     ? { type: 'const', constVal: item.unit || commonUnit }
                                     : undefined,
+                        },
+                        icon: {
+                            true: {
+                                value: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                                color: await this.getIconColor(item.onColor, this.colorOn),
+                                text: {
+                                    value: foundedStates[role].ACTUAL,
+                                    unit:
+                                        item.unit || commonUnit
+                                            ? { type: 'const', constVal: item.unit || commonUnit }
+                                            : undefined,
+                                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                                },
+                            },
+                            false: {
+                                value: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                                color: await this.getIconColor(item.offColor, this.colorOff),
+                                text: {
+                                    value: foundedStates[role].ACTUAL,
+                                    unit:
+                                        item.unit || commonUnit
+                                            ? { type: 'const', constVal: item.unit || commonUnit }
+                                            : undefined,
+                                    textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                                },
+                            },
+                            scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
                         },
                         text: text,
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
@@ -2360,6 +2396,9 @@ export class ConfigManager extends BaseClass {
                                             ? {
                                                   value: foundedStates[role].ACTUAL,
                                                   unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
+                                                  textSize: item.fontSize
+                                                      ? { type: 'const', constVal: item.fontSize }
+                                                      : undefined,
                                               }
                                             : undefined,
                                     },
@@ -2370,6 +2409,9 @@ export class ConfigManager extends BaseClass {
                                             ? {
                                                   value: foundedStates[role].ACTUAL,
                                                   unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
+                                                  textSize: item.fontSize
+                                                      ? { type: 'const', constVal: item.fontSize }
+                                                      : undefined,
                                               }
                                             : undefined,
                                     },
