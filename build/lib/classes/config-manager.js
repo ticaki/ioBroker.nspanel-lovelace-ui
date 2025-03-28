@@ -46,7 +46,7 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.7.1";
+  scriptVersion = "0.7.2";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -359,7 +359,7 @@ class ConfigManager extends import_library.BaseClass {
         }
         let gridItem = {
           dpInit: "",
-          alwaysOn: "none",
+          alwaysOn: page.alwaysOnDisplay ? typeof page.alwaysOnDisplay === "boolean" ? "always" : "action" : "none",
           uniqueID: page.uniqueName || "",
           useColor: false,
           config: {
@@ -1125,20 +1125,32 @@ class ConfigManager extends import_library.BaseClass {
           type: "button",
           dpInit: item.id,
           role: specialRole,
-          color: {
-            true: await this.getIconColor(item.onColor, this.colorOn),
-            false: await this.getIconColor(item.offColor, this.colorOff),
-            scale: item.colorScale ? item.colorScale : void 0
-          },
-          icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
-          },
           template: "button.humidity",
           data: {
             entity1: {
               value: foundedStates[role].ACTUAL,
               unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
+            },
+            icon: {
+              true: {
+                value: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                color: await this.getIconColor(item.onColor, this.colorOn),
+                text: {
+                  value: foundedStates[role].ACTUAL,
+                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0,
+                  textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                }
+              },
+              false: {
+                value: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0,
+                color: await this.getIconColor(item.offColor, this.colorOff),
+                text: {
+                  value: foundedStates[role].ACTUAL,
+                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0,
+                  textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                }
+              },
+              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0
             },
             text,
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
@@ -1162,19 +1174,31 @@ class ConfigManager extends import_library.BaseClass {
           dpInit: item.id,
           role: specialRole,
           template: "button.temperature",
-          color: {
-            true: await this.getIconColor(item.onColor, this.colorOn),
-            false: await this.getIconColor(item.offColor, this.colorOff),
-            scale: item.colorScale ? item.colorScale : void 0
-          },
-          icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
-          },
           data: {
             entity1: {
               value: foundedStates[role].ACTUAL,
               unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0
+            },
+            icon: {
+              true: {
+                value: item.icon ? { type: "const", constVal: item.icon } : void 0,
+                color: await this.getIconColor(item.onColor, this.colorOn),
+                text: {
+                  value: foundedStates[role].ACTUAL,
+                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0,
+                  textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                }
+              },
+              false: {
+                value: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0,
+                color: await this.getIconColor(item.offColor, this.colorOff),
+                text: {
+                  value: foundedStates[role].ACTUAL,
+                  unit: item.unit || commonUnit ? { type: "const", constVal: item.unit || commonUnit } : void 0,
+                  textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+                }
+              },
+              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0
             },
             text,
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
@@ -2043,7 +2067,8 @@ class ConfigManager extends import_library.BaseClass {
                     color: await this.getIconColor(item.onColor, this.colorOn),
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
                       value: foundedStates[role].ACTUAL,
-                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0
+                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
+                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
                     } : void 0
                   },
                   false: {
@@ -2051,7 +2076,8 @@ class ConfigManager extends import_library.BaseClass {
                     color: await this.getIconColor(item.offColor, this.colorOff),
                     text: await this.existsState(`${item.id}.ACTUAL`) ? {
                       value: foundedStates[role].ACTUAL,
-                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0
+                      unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
+                      textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
                     } : void 0
                   },
                   unstable: {
