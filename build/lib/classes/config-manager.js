@@ -1563,6 +1563,8 @@ class ConfigManager extends import_library.BaseClass {
         };
         break;
       }
+      //case 'cie':
+      case "sensor.alarm.flood":
       case "level.mode.fan": {
         throw new Error(
           `DP: ${page.uniqueName}.${item.id} - Navigation for channel: ${role} not implemented yet!!`
@@ -1983,6 +1985,8 @@ class ConfigManager extends import_library.BaseClass {
           case "info":
           case "humidity":
           case "value.humidity":
+          case "thermostat":
+          case "airCondition":
           case "value.temperature":
           case "temperature":
           case "door":
@@ -2028,6 +2032,8 @@ class ConfigManager extends import_library.BaseClass {
                 adapterRole = specialRole;
                 break;
               }
+              case "thermostat":
+              case "airCondition":
               case "value.temperature":
               case "temperature": {
                 iconOn = "thermometer";
@@ -2338,9 +2344,8 @@ class ConfigManager extends import_library.BaseClass {
             };
             break;
           }
-          case "level.mode.fan":
-          case "thermostat":
-          case "airCondition": {
+          case "sensor.alarm.flood":
+          case "level.mode.fan": {
             throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
           }
           default:

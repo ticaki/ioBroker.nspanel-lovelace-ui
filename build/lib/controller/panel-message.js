@@ -79,7 +79,7 @@ class PanelSend extends import_library.BaseClass {
         if (this.unload) {
           return;
         }
-        this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 2);
+        this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 50);
       }
     }
   };

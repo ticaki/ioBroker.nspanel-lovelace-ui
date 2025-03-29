@@ -28,8 +28,7 @@
 * [level.mode.fan](#levelmodefan)
 * [lock](#lock)
 * [warning](#warning)
-* [weatherforecast](#weatherforecast)
-* [WIFI](#wifi)
+* [sensor.alarm.flood](#sensoralarmflood)
 ## Remarks
 
  -(not fully implemented) Crossed out DPs can be called whatever you want, only use the name if you have questions in issues or in the forum. 
@@ -228,13 +227,7 @@
 | **warning** | ~~INFO~~ | string| weather.title  | X |  |  | 
 | **"** | ~~LEVEL~~ | number| value.warning  | X |  |  | 
 | **"** | ~~TITLE~~ | string| weather.title.short  | X |  |  | 
-### weatherforecast
+### sensor.alarm.flood
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **weatherforecast** | ~~ICON~~ | string| weather.icon.forecast  | X |  |  | 
-| **"** | ~~TEMP~~ | number| value.temperature  | X |  |  | 
-### WIFI
-| Channel role | State ID | common.type | common.role | required | common.write | description |  
-| :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **WIFI** | ~~ACTUAL~~ | string| state  | X |  |  | 
-| **"** | ~~SWITCH~~ | boolean| switch  |  | X |  | 
+| **sensor.alarm.flood** | ~~ACTUAL~~ | boolean| sensor.alarm.flood  | X |  |  | 

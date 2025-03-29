@@ -1800,6 +1800,8 @@ export class ConfigManager extends BaseClass {
                 };
                 break;
             }
+            //case 'cie':
+            case 'sensor.alarm.flood':
             case 'level.mode.fan': {
                 throw new Error(
                     `DP: ${page.uniqueName}.${item.id} - Navigation for channel: ${role} not implemented yet!!`,
@@ -2313,6 +2315,8 @@ export class ConfigManager extends BaseClass {
                     case 'info':
                     case 'humidity':
                     case 'value.humidity':
+                    case 'thermostat':
+                    case 'airCondition':
                     case 'value.temperature':
                     case 'temperature':
                     case 'door':
@@ -2358,6 +2362,8 @@ export class ConfigManager extends BaseClass {
                                 adapterRole = specialRole;
                                 break;
                             }
+                            case 'thermostat':
+                            case 'airCondition':
                             case 'value.temperature':
                             case 'temperature': {
                                 iconOn = 'thermometer';
@@ -2721,13 +2727,13 @@ export class ConfigManager extends BaseClass {
                         };
                         break;
                     }
-                    case 'level.mode.fan':
-                    case 'thermostat':
-                    case 'airCondition': {
+                    case 'sensor.alarm.flood':
+                    case 'level.mode.fan': {
                         throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
                     }
                     default:
                         exhaustiveCheck(role);
+
                         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         throw new Error(`DP: ${item.id} - Channel role ${role} is not supported!!!`);
                 }

@@ -190,10 +190,12 @@ export const stateRoleArray = arrayOfAllStateRole([
     'level.timer',
     'value.timer',
     'level.mode',
+    'sensor.alarm.flood',
     '',
 ]);
 
 export type StateRole =
+    | 'sensor.alarm.flood'
     | 'level.mode'
     | 'value.timer'
     | 'level.timer'
@@ -425,7 +427,7 @@ export type PageBaseConfigTemplate =
     | {
           card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2' | 'screensaver3'>;
           adapter: string;
-          alwaysOn: 'none' | 'always' | 'action';
+          alwaysOn: 'none' | 'always' | 'action' | 'ignore';
           useColor?: boolean;
           pageItems: typePageItem.PageItemDataItemsOptions[];
 
@@ -448,7 +450,7 @@ export type PageBaseConfigTemplate =
           card: Extract<PageTypeCards, 'screensaver' | 'screensaver2'>;
           template: Types.PageTemplateIdent;
           adapter: string;
-          alwaysOn: 'none' | 'always' | 'action';
+          alwaysOn: 'none' | 'always' | 'action' | 'ignore';
           useColor?: boolean;
           pageItems: typePageItem.PageItemDataItemsOptions[];
 
@@ -474,7 +476,7 @@ export type PageBaseConfig = (
                 dpInit?: string | RegExp; // ''
                 enums?: string | string[];
                 device?: string;
-                alwaysOn: 'none' | 'always' | 'action';
+                alwaysOn: 'none' | 'always' | 'action' | 'ignore';
                 useColor?: boolean;
                 pageItems: typePageItem.PageItemDataItemsOptions[];
                 //    mediaNamespace: string;
@@ -498,7 +500,7 @@ export type PageBaseConfig = (
                 template?: Types.PageTemplateIdent;
                 dpInit: string | RegExp; // ''
                 enums?: string | string[];
-                alwaysOn: 'none' | 'always' | 'action';
+                alwaysOn: 'none' | 'always' | 'action' | 'ignore';
                 device?: string;
                 useColor?: boolean;
                 cardRole?: CardRole;
