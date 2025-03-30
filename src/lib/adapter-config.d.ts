@@ -39,6 +39,7 @@ declare global {
             pageQRdata: {
                 pageName: string,
                 headline: string,
+                alwaysOnDisplay: boolean,
                 optionalText: string,
                 SSIDURLTEL: string,
                 selType: 0 | 1 | 2 | 3,

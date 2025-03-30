@@ -198,7 +198,7 @@ export class PageQR extends Page {
             const stateExist = config.setState && (await configManager.existsState(config.setState || ''));
             const result: pages.PageBaseConfig = {
                 uniqueID: config.pageName,
-                alwaysOn: 'none',
+                alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
                 config: {
                     card: 'cardQR',
                     index: index,
