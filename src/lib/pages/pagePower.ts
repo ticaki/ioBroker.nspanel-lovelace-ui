@@ -88,7 +88,7 @@ export class PagePower extends Page {
             `///${this.name}/powerSum`,
             0,
             true,
-            { name: '', type: 'string', role: '', read: true, write: false },
+            { name: '', type: 'number', role: '', read: true, write: true },
             this.onInternalCommand,
         );
         const config = structuredClone(this.config);
@@ -197,7 +197,7 @@ export class PagePower extends Page {
                         value: { type: 'const', constVal: 'Value top' },
                     },
                     homeValueBot: {
-                        value: { type: 'internal', dp: '///power1/powerSum' },
+                        value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
                         math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
                     },
                     leftTop: {
