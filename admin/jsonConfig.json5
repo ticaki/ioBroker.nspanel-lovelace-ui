@@ -776,25 +776,25 @@
                         },
                         {
                             "newLine": true,
-                            "attr": "setIconLeftButtom",
+                            "attr": "setIconLeftBottom",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 4,
                             "xl": 4,
                             "type": "text",
-                            "label": "iconLeftButtom",
-                            "default": "arrow-buttom-left"
+                            "label": "iconLeftBottom",
+                            "default": "arrow-bottom-left"
                         },
                         {
-                            "attr": "setStateLeftButtom",
+                            "attr": "setStateLeftBottom",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 8,
                             "xl": 8,
                             "type": "objectId",
-                            "label": "stateLeftButtom",
+                            "label": "stateLeftBottom",
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
@@ -845,25 +845,25 @@
                         },
                         {
                             "newLine": true,
-                            "attr": "setIconRightButtom",
+                            "attr": "setIconRightBottom",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 4,
                             "xl": 4,
                             "type": "text",
-                            "label": "iconRightButtom",
-                            "default": "arrow-buttom-right"
+                            "label": "iconRightBottom",
+                            "default": "arrow-bottom-right"
                         },
                         {
-                            "attr": "setStateRightButtom",
+                            "attr": "setStateRightBottom",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 8,
                             "xl": 8,
                             "type": "objectId",
-                            "label": "stateRightButtom",
+                            "label": "stateRightBottom",
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
