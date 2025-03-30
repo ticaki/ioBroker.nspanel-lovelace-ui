@@ -159,23 +159,6 @@ class BaseClassTriggerd extends import_library.BaseClass {
         if (this.unload) {
           return;
         }
-        if (this.alwaysOn != "none") {
-          if (this.alwaysOn === "action") {
-            if (this.unload) {
-              return;
-            }
-            this.alwaysOnState = this.adapter.setTimeout(
-              async () => {
-                this.panel.sendScreeensaverTimeout(this.panel.timeout);
-              },
-              this.panel.timeout * 2 * 1e3 || 5e3
-            );
-          } else {
-            this.panel.sendScreeensaverTimeout(0);
-          }
-        } else {
-          this.panel.sendScreeensaverTimeout(this.panel.timeout);
-        }
         this.log.debug(`Switch page to visible${force ? " (forced)" : ""}!`);
         this.resetLastMessage();
         this.controller && await this.controller.statesControler.activateTrigger(this);
@@ -196,6 +179,30 @@ class BaseClassTriggerd extends import_library.BaseClass {
         }
       }
       await this.onVisibilityChange(v);
+      if (this.visibility) {
+        if (this.unload) {
+          return;
+        }
+        if (this.alwaysOn != "ignore") {
+          if (this.alwaysOn != "none") {
+            if (this.alwaysOn === "action") {
+              if (this.unload) {
+                return;
+              }
+              this.alwaysOnState = this.adapter.setTimeout(
+                async () => {
+                  this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                },
+                this.panel.timeout * 2 * 1e3 || 5e3
+              );
+            } else {
+              this.panel.sendScreeensaverTimeout(0);
+            }
+          } else {
+            this.panel.sendScreeensaverTimeout(this.panel.timeout);
+          }
+        }
+      }
     } else {
       this.visibility = v;
     }

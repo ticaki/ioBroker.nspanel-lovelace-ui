@@ -1187,7 +1187,7 @@ export class Panel extends BaseClass {
                 this.sendScreeensaverTimeout(this.timeout);
                 this.sendDimmode();
                 this.navigation.resetPosition();
-
+                await this.adapter.delay(100);
                 const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
                 const popup = i !== -1 ? this.pages[i] : undefined;
                 if (popup) {

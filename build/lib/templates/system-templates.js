@@ -25,7 +25,7 @@ module.exports = __toCommonJS(system_templates_exports);
 var import_Color = require("../const/Color");
 const popupWelcome = {
   dpInit: "",
-  alwaysOn: "none",
+  alwaysOn: "ignore",
   uniqueID: "///WelcomePopup",
   config: {
     card: "popupNotify",
@@ -52,7 +52,7 @@ const popupWelcome = {
 };
 const popupNotification = {
   dpInit: "",
-  alwaysOn: "none",
+  alwaysOn: "ignore",
   uniqueID: "///popupNotification",
   config: {
     card: "popupNotify",
@@ -80,7 +80,7 @@ const popupNotification = {
 };
 const popupNotification2 = {
   dpInit: "",
-  alwaysOn: "none",
+  alwaysOn: "ignore",
   uniqueID: "///popupNotification2",
   config: {
     card: "popupNotify",

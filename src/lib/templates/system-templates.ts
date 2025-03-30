@@ -4,7 +4,7 @@ import { Color } from '../const/Color';
 
 const popupWelcome: PageBaseConfig = {
     dpInit: '',
-    alwaysOn: 'none',
+    alwaysOn: 'ignore',
     uniqueID: '///WelcomePopup',
     config: {
         card: 'popupNotify',
@@ -31,7 +31,7 @@ const popupWelcome: PageBaseConfig = {
 
 const popupNotification: PageBaseConfig = {
     dpInit: '',
-    alwaysOn: 'none',
+    alwaysOn: 'ignore',
     uniqueID: '///popupNotification',
     config: {
         card: 'popupNotify',
@@ -59,7 +59,7 @@ const popupNotification: PageBaseConfig = {
 
 const popupNotification2: PageBaseConfig = {
     dpInit: '',
-    alwaysOn: 'none',
+    alwaysOn: 'ignore',
     uniqueID: '///popupNotification2',
     config: {
         card: 'popupNotify',

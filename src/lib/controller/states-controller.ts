@@ -19,7 +19,7 @@ export interface BaseClassTriggerdInterface {
     name: string;
     adapter: NspanelLovelaceUi;
     panelSend: PanelSend;
-    alwaysOn?: 'none' | 'always' | 'action';
+    alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
     panel: Panel;
     dpInit?: string | RegExp;
 }
@@ -37,7 +37,7 @@ export class BaseClassTriggerd extends BaseClass {
     protected visibility: boolean = false;
     protected controller: Controller;
     readonly panelSend: PanelSend;
-    public alwaysOn: 'none' | 'always' | 'action';
+    public alwaysOn: 'none' | 'always' | 'action' | 'ignore';
     private alwaysOnState: ioBroker.Timeout | undefined;
     private lastMessage: string = '';
     public panel: Panel;
@@ -167,24 +167,25 @@ export class BaseClassTriggerd extends BaseClass {
                 if (this.unload) {
                     return;
                 }
-
-                if (this.alwaysOn != 'none') {
-                    if (this.alwaysOn === 'action') {
-                        if (this.unload) {
-                            return;
+                /*if (this.alwaysOn != 'ignore') {
+                    if (this.alwaysOn != 'none') {
+                        if (this.alwaysOn === 'action') {
+                            if (this.unload) {
+                                return;
+                            }
+                            this.alwaysOnState = this.adapter.setTimeout(
+                                async () => {
+                                    this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                                },
+                                this.panel.timeout * 2 * 1000 || 5000,
+                            );
+                        } else {
+                            this.panel.sendScreeensaverTimeout(0);
                         }
-                        this.alwaysOnState = this.adapter.setTimeout(
-                            async () => {
-                                this.panel.sendScreeensaverTimeout(this.panel.timeout);
-                            },
-                            this.panel.timeout * 2 * 1000 || 5000,
-                        );
                     } else {
-                        this.panel.sendScreeensaverTimeout(0);
+                        this.panel.sendScreeensaverTimeout(this.panel.timeout);
                     }
-                } else {
-                    this.panel.sendScreeensaverTimeout(this.panel.timeout);
-                }
+                }*/
 
                 this.log.debug(`Switch page to visible${force ? ' (forced)' : ''}!`);
                 this.resetLastMessage();
@@ -207,6 +208,30 @@ export class BaseClassTriggerd extends BaseClass {
                 }
             }
             await this.onVisibilityChange(v);
+            if (this.visibility) {
+                if (this.unload) {
+                    return;
+                }
+                if (this.alwaysOn != 'ignore') {
+                    if (this.alwaysOn != 'none') {
+                        if (this.alwaysOn === 'action') {
+                            if (this.unload) {
+                                return;
+                            }
+                            this.alwaysOnState = this.adapter.setTimeout(
+                                async () => {
+                                    this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                                },
+                                this.panel.timeout * 2 * 1000 || 5000,
+                            );
+                        } else {
+                            this.panel.sendScreeensaverTimeout(0);
+                        }
+                    } else {
+                        this.panel.sendScreeensaverTimeout(this.panel.timeout);
+                    }
+                }
+            }
         } else {
             this.visibility = v;
         }

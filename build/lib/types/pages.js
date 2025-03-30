@@ -192,6 +192,7 @@ const stateRoleArray = arrayOfAllStateRole([
   "level.timer",
   "value.timer",
   "level.mode",
+  "sensor.alarm.flood",
   ""
 ]);
 function isStateRole(F) {

@@ -147,6 +147,7 @@ declare namespace ScriptConfig {
         | 'motion'
         | 'rgb'
         | 'rgbSingle'
+        | 'sensor.alarm.flood'
         | 'slider'
         | 'socket'
         //| 'switch.mode.wlan'

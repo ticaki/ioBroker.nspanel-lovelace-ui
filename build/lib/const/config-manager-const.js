@@ -271,6 +271,9 @@ const checkedDatapoints = {
   "value.temperature": {
     ACTUAL: null
   },
+  "sensor.alarm.flood": {
+    ACTUAL: null
+  },
   thermostat: {
     ACTUAL: null,
     SET: null,
@@ -781,7 +784,7 @@ const requiredScriptDataPoints = {
     }
   },
   "level.mode.fan": {
-    name: "level.mode.fan",
+    name: "fan",
     description: "",
     data: {
       ACTUAL: { role: "state", type: "boolean", required: true, writeable: false },
@@ -814,22 +817,29 @@ const requiredScriptDataPoints = {
       TITLE: { role: "weather.title.short", type: "string", required: true, writeable: false }
     }
   },
-  weatherforecast: {
-    name: "weatherforecast",
-    description: "",
+  "sensor.alarm.flood": {
+    name: "sensor.alarm.flood",
+    description: "Sensor f\xFCr Hochwasser",
     data: {
-      ICON: { role: "weather.icon.forecast", type: "string", required: true, writeable: false },
-      TEMP: { role: "value.temperature", type: "number", required: true, writeable: false }
-    }
-  },
-  WIFI: {
-    name: "WIFI",
-    description: "",
-    data: {
-      ACTUAL: { role: "state", type: "string", required: true, writeable: false },
-      SWITCH: { role: "switch", type: "boolean", required: false, writeable: true }
+      ACTUAL: { role: "sensor.alarm.flood", type: "boolean", required: true, writeable: false }
     }
   }
+  /*weatherforecast: {
+      name: 'weatherforecast',
+      description: '',
+      data: {
+          ICON: { role: 'weather.icon.forecast', type: 'string', required: true, writeable: false },
+          TEMP: { role: 'value.temperature', type: 'number', required: true, writeable: false },
+      },
+  },
+  WIFI: {
+      name: 'WIFI',
+      description: '',
+      data: {
+          ACTUAL: { role: 'state', type: 'string', required: true, writeable: false },
+          SWITCH: { role: 'switch', type: 'boolean', required: false, writeable: true },
+      },
+  },*/
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

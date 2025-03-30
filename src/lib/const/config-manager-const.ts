@@ -275,6 +275,9 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         ACTUAL: null,
     },
 
+    'sensor.alarm.flood': {
+        ACTUAL: null,
+    },
     thermostat: {
         ACTUAL: null,
         SET: null,
@@ -382,8 +385,9 @@ export type mydps =
     | 'WORKING'
     | 'VALUE'
     | 'STATUS';
+export type requiredDatapoints = Pick<requiredDatapoints2, ScriptConfig.channelRoles>;
 
-export type requiredDatapoints = {
+type requiredDatapoints2 = {
     motion: {
         data: {
             ACTUAL: Datapoint;
@@ -604,6 +608,14 @@ export type requiredDatapoints = {
         data: {
             ACTUAL: Datapoint;
             USERICON: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    'sensor.alarm.flood': {
+        data: {
+            ACTUAL: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -1166,7 +1178,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         },
     },
     'level.mode.fan': {
-        name: 'level.mode.fan',
+        name: 'fan',
         description: '',
         data: {
             ACTUAL: { role: 'state', type: 'boolean', required: true, writeable: false },
@@ -1199,7 +1211,14 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             TITLE: { role: 'weather.title.short', type: 'string', required: true, writeable: false },
         },
     },
-    weatherforecast: {
+    'sensor.alarm.flood': {
+        name: 'sensor.alarm.flood',
+        description: 'Sensor für Hochwasser',
+        data: {
+            ACTUAL: { role: 'sensor.alarm.flood', type: 'boolean', required: true, writeable: false },
+        },
+    },
+    /*weatherforecast: {
         name: 'weatherforecast',
         description: '',
         data: {
@@ -1214,5 +1233,5 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             ACTUAL: { role: 'state', type: 'string', required: true, writeable: false },
             SWITCH: { role: 'switch', type: 'boolean', required: false, writeable: true },
         },
-    },
+    },*/
 };
