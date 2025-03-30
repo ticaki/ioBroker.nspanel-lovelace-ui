@@ -97,7 +97,7 @@ class PageQR extends import_Page.Page {
   }
   /**
    *
-   * @returns
+   * @returns //Rücksprung
    */
   async update() {
     var _a, _b;
@@ -415,8 +415,8 @@ class PageQR extends import_Page.Page {
   /**
    *a
    *
-   * @param _event
-   * @returns
+   * @param _event //ButtonEvent z.B. bExit, buttonpress2
+   * @returns //Rücksprung
    */
   async onButtonEvent(_event) {
     const button = _event.action;

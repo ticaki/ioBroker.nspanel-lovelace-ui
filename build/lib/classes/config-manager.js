@@ -35,6 +35,7 @@ var import_Color = require("../const/Color");
 var configManagerConst = __toESM(require("../const/config-manager-const"));
 var import_states_controller = require("../controller/states-controller");
 var import_pageQR = require("../pages/pageQR");
+var import_pagePower = require("../pages/pagePower");
 var import_readme = require("../tools/readme");
 var import_pages = require("../types/pages");
 var import_library = require("./library");
@@ -316,7 +317,7 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(page.native);
           continue;
         }
-        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR") {
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR" && page.type !== "cardPower") {
           const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!..`;
           messages.push(msg);
           this.log.warn(msg);
@@ -344,7 +345,7 @@ class ConfigManager extends import_library.BaseClass {
         }
         if (page.type === "cardQR") {
           if (!Array.isArray(this.adapter.config.pageQRdata)) {
-            messages.push(`No PageQR configured in Admin for ${page.uniqueName}`);
+            messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
             this.log.warn(messages[messages.length - 1]);
             continue;
           }
@@ -355,6 +356,23 @@ class ConfigManager extends import_library.BaseClass {
             continue;
           }
           panelConfig.pages.push(await import_pageQR.PageQR.getQRPageConfig(this.adapter, index, this));
+          continue;
+        }
+        if (page.type === "cardPower") {
+          if (!Array.isArray(this.adapter.config.pagePowerdata)) {
+            messages.push(`No pagePower configured in Admin for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          const index = this.adapter.config.pagePowerdata.findIndex(
+            (item) => item.pageName === page.uniqueName
+          );
+          if (index === -1) {
+            messages.push(`No pagePowerdata found for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          panelConfig.pages.push(await import_pagePower.PagePower.getPowerPageConfig(this.adapter, index, this));
           continue;
         }
         let gridItem = {

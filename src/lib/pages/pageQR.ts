@@ -68,7 +68,7 @@ export class PageQR extends Page {
 
     /**
      *
-     * @returns
+     * @returns //Rücksprung
      */
     public async update(): Promise<void> {
         if (!this.visibility) {
@@ -399,8 +399,8 @@ export class PageQR extends Page {
     /**
      *a
      *
-     * @param _event
-     * @returns
+     * @param _event //ButtonEvent z.B. bExit, buttonpress2
+     * @returns //Rücksprung
      */
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         const button = _event.action;

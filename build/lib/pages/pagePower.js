@@ -26,7 +26,7 @@ var import_Color = require("../const/Color");
 var import_tools = require("../const/tools");
 const PagePowerMessageDefault = {
   event: "entityUpd",
-  headline: "Page Grid",
+  headline: "Power Grid",
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
   homeValueTop: "",
   homeIcon: "",
@@ -77,7 +77,9 @@ const PagePowerMessageDefault = {
   }
 };
 class PagePower extends import_Page.Page {
+  //items: pages.PageBaseConfig['items'];
   items;
+  index = 0;
   constructor(config, options) {
     super(config, options);
     if (options.config && options.config.card == "cardPower") {
@@ -131,31 +133,173 @@ class PagePower extends import_Page.Page {
     }
     return null;
   };
+  static async getPowerPageConfig(adapter, index, configManager) {
+    const config = adapter.config.pagePowerdata[index];
+    const stateLetTopExist = config.setStateLeftTop !== void 0 && await configManager.existsState(config.setStateLeftTop);
+    const result = {
+      uniqueID: config.pageName,
+      alwaysOn: config.alwaysOnDisplay ? "always" : "none",
+      config: {
+        card: "cardPower",
+        index,
+        data: {
+          headline: { type: "const", constVal: config.headline },
+          homeIcon: {
+            true: {
+              value: {
+                type: "state",
+                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+              },
+              color: void 0
+            },
+            false: void 0
+          },
+          homeValueTop: {
+            value: { type: "const", constVal: "Value top" }
+          },
+          homeValueBot: {
+            value: { type: "internal", dp: "///power1/powerSum" },
+            math: { type: "const", constVal: "return r1+r2+r3+l1+l2+l3 -999" }
+          },
+          leftTop: {
+            icon: {
+              true: {
+                value: {
+                  type: "state",
+                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                },
+                color: void 0
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+              }
+            }
+          },
+          leftMiddle: {
+            icon: {
+              true: {
+                value: {
+                  type: "state",
+                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                },
+                color: void 0
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+              }
+            }
+          },
+          leftBottom: {
+            icon: {
+              true: {
+                value: {
+                  type: "state",
+                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                },
+                color: void 0
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+              }
+            }
+          },
+          rightTop: {
+            icon: {
+              true: {
+                value: {
+                  type: "state",
+                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                },
+                color: void 0
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+              }
+            }
+          },
+          rightMiddle: {
+            icon: {
+              true: {
+                value: {
+                  type: "state",
+                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                },
+                color: void 0
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+              }
+            }
+          },
+          rightBottom: {
+            icon: {
+              true: {
+                value: {
+                  type: "state",
+                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                },
+                color: void 0
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+              }
+            }
+          }
+        }
+      },
+      pageItems: void 0
+    };
+    return result;
+  }
   async update() {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     if (!this.visibility) {
       return;
     }
     const message = {};
-    const items = this.items;
-    if (!items || items.card !== "cardPower") {
-      return;
+    const config = this.adapter.config.pagePowerdata[this.index];
+    if (this.items && config != null) {
+      const items = this.items;
+      message.headline = this.library.getTranslation(
+        (_b = (_a = items.data.headline && await items.data.headline.getString()) != null ? _a : config.headline) != null ? _b : ""
+      );
+      message.navigation = this.getNavigation();
+      const data = items.data;
+      message.homeIcon = await (0, import_tools.getIconEntryValue)(data.homeIcon, true, "");
+      message.homeColor = await (0, import_tools.getIconEntryColor)(data.homeIcon, true, import_Color.Color.White);
+      message.homeValueTop = (_c = await (0, import_tools.getValueEntryString)(data.homeValueTop)) != null ? _c : "";
+      message.homeValueBot = (_d = await (0, import_tools.getValueEntryString)(data.homeValueBot)) != null ? _d : "";
+      message.leftTop = await this.getElementUpdate(data.leftTop);
+      message.leftMiddle = await this.getElementUpdate(data.leftMiddle);
+      message.leftBottom = await this.getElementUpdate(data.leftBottom);
+      message.rightTop = await this.getElementUpdate(data.rightTop);
+      message.rightMiddle = await this.getElementUpdate(data.rightMiddle);
+      message.rightBottom = await this.getElementUpdate(data.rightBottom);
     }
-    const data = items.data;
-    message.headline = this.library.getTranslation(
-      (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
-    );
-    message.navigation = this.getNavigation();
-    message.homeIcon = await (0, import_tools.getIconEntryValue)(data.homeIcon, true, "");
-    message.homeColor = await (0, import_tools.getIconEntryColor)(data.homeIcon, true, import_Color.Color.White);
-    message.homeValueTop = (_b = await (0, import_tools.getValueEntryString)(data.homeValueTop)) != null ? _b : "";
-    message.homeValueBot = (_c = await (0, import_tools.getValueEntryString)(data.homeValueBot)) != null ? _c : "";
-    message.leftTop = await this.getElementUpdate(data.leftTop);
-    message.leftMiddle = await this.getElementUpdate(data.leftMiddle);
-    message.leftBottom = await this.getElementUpdate(data.leftBottom);
-    message.rightTop = await this.getElementUpdate(data.rightTop);
-    message.rightMiddle = await this.getElementUpdate(data.rightMiddle);
-    message.rightBottom = await this.getElementUpdate(data.rightBottom);
     this.sendToPanel(this.getMessage(message));
   }
   async getElementSum(item, num) {

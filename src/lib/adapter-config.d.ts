@@ -5,6 +5,7 @@ declare global {
     namespace ioBroker {
         interface AdapterConfig {
             testCase: boolean;
+            mqttServer: boolean;
             mqttPassword: string;
             mqttUsername: string;
             mqttIp: string;
@@ -26,16 +27,10 @@ declare global {
             useTasmotaAdmin: boolean;
             tasmotaAdmin: string;
             tasmotaAdminPassword: string;
-
-
-
-            pageQRpwd1: string;
-            pageQRpwd2: string;
-            pageQRpwd3: string;
-
             panels: {name: string, topic: string, id: string, ip: string}[];
-            mqttServer: boolean;
             pw1: string;
+
+            // PageQR
             pageQRdata: {
                 pageName: string,
                 headline: string,
@@ -48,6 +43,23 @@ declare global {
                 wlanhidden?: boolean,
                 pwdhidden?: boolean,
                 setState?: string,
+            }[];
+            pageQRpwd1: string;
+            pageQRpwd2: string;
+            pageQRpwd3: string;
+
+            // PagePower
+            pagePowerdata: {
+                pageName: string,
+                headline: string,
+                alwaysOnDisplay: boolean,
+                setStateHomeTop?: string,
+                setStateLeftTop?: string,
+                setStateLeftMiddle?: string,
+                setStateLeftBottom?: string,
+                setStateRightTop?: string,
+                setStateRightMiddle?: string,
+                setStateRightBottom?: string,
             }[];
         }
     }

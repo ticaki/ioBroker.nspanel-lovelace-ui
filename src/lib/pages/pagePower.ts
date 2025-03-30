@@ -12,10 +12,12 @@ import {
 } from '../const/tools';
 import type * as pages from '../types/pages';
 import type { IncomingEvent, nsPanelState } from '../types/types';
+import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
+import type { ConfigManager } from '../classes/config-manager';
 
 const PagePowerMessageDefault: pages.PagePowerMessage = {
     event: 'entityUpd',
-    headline: 'Page Grid',
+    headline: 'Power Grid',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
     homeValueTop: '',
     homeIcon: '',
@@ -70,7 +72,9 @@ const PagePowerMessageDefault: pages.PagePowerMessage = {
  * untested
  */
 export class PagePower extends Page {
-    items: pages.PageBaseConfig['items'];
+    //items: pages.PageBaseConfig['items'];
+    items: pages.cardPowerDataItems | undefined;
+    index: number = 0;
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
         if (options.config && options.config.card == 'cardPower') {
@@ -133,34 +137,89 @@ export class PagePower extends Page {
         }
         return null;
     };
+    static async getPowerPageConfig(
+        adapter: NspanelLovelaceUi,
+        index: number,
+        configManager: ConfigManager,
+    ): Promise<pages.PageBaseConfig> {
+        const config = adapter.config.pagePowerdata[index];
+        const stateLetTopExist =
+            config.setStateLeftTop !== undefined && (await configManager.existsState(config.setStateLeftTop));
+        const Power1 = stateLetTopExist ? (config.setStateLeftTop !== undefined ? config.setStateLeftTop : '') : '';
+        const result: pages.PageBaseConfig = {
+            uniqueID: config.pageName,
+            alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
+            config: {
+                card: 'cardPower',
+                index: index,
+                data: {
+                    headline: { type: 'const', constVal: config.headline },
+                    homeIcon: undefined,
+                    homeValueTop: {
+                        value: { type: 'const', constVal: 'Value top' },
+                    },
+                    homeValueBot: {
+                        value: { type: 'internal', dp: '///power1/powerSum' },
+                        math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
+                    },
+                    leftTop: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'state',
+                                    dp: Power1,
+                                },
+                                color: undefined,
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'state',
+                                dp: Power1,
+                            },
+                        },
+                    },
+                    leftMiddle: undefined,
+                    leftBottom: undefined,
+                    rightTop: undefined,
+                    rightMiddle: undefined,
+                    rightBottom: undefined,
+                },
+            },
+            pageItems: undefined,
+        };
+        return result;
+    }
+
     public async update(): Promise<void> {
         if (!this.visibility) {
             return;
         }
         const message: Partial<pages.PagePowerMessage> = {};
-        const items = this.items;
-        if (!items || items.card !== 'cardPower') {
-            return;
+        const config = this.adapter.config.pagePowerdata[this.index];
+        if (this.items && config != null) {
+            const items = this.items;
+            message.headline = this.library.getTranslation(
+                (items.data.headline && (await items.data.headline.getString())) ?? config.headline ?? '',
+            );
+            message.navigation = this.getNavigation();
+
+            const data = items.data;
+
+            message.homeIcon = await getIconEntryValue(data.homeIcon, true, '');
+            message.homeColor = await getIconEntryColor(data.homeIcon, true, Color.White);
+            message.homeValueTop = (await getValueEntryString(data.homeValueTop)) ?? '';
+            message.homeValueBot = (await getValueEntryString(data.homeValueBot)) ?? '';
+
+            // to much work to change types to partial in getMessage we assign a full object to this.
+            message.leftTop = (await this.getElementUpdate(data.leftTop)) as pages.PagePowerMessageItem;
+            message.leftMiddle = (await this.getElementUpdate(data.leftMiddle)) as pages.PagePowerMessageItem;
+            message.leftBottom = (await this.getElementUpdate(data.leftBottom)) as pages.PagePowerMessageItem;
+            message.rightTop = (await this.getElementUpdate(data.rightTop)) as pages.PagePowerMessageItem;
+            message.rightMiddle = (await this.getElementUpdate(data.rightMiddle)) as pages.PagePowerMessageItem;
+            message.rightBottom = (await this.getElementUpdate(data.rightBottom)) as pages.PagePowerMessageItem;
         }
-        const data = items.data;
-        message.headline = this.library.getTranslation(
-            (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
-        );
-        message.navigation = this.getNavigation();
-
-        message.homeIcon = await getIconEntryValue(data.homeIcon, true, '');
-        message.homeColor = await getIconEntryColor(data.homeIcon, true, Color.White);
-        message.homeValueTop = (await getValueEntryString(data.homeValueTop)) ?? '';
-        message.homeValueBot = (await getValueEntryString(data.homeValueBot)) ?? '';
-
-        // to much work to change types to partial in getMessage we assign a full object to this.
-        message.leftTop = (await this.getElementUpdate(data.leftTop)) as pages.PagePowerMessageItem;
-        message.leftMiddle = (await this.getElementUpdate(data.leftMiddle)) as pages.PagePowerMessageItem;
-        message.leftBottom = (await this.getElementUpdate(data.leftBottom)) as pages.PagePowerMessageItem;
-        message.rightTop = (await this.getElementUpdate(data.rightTop)) as pages.PagePowerMessageItem;
-        message.rightMiddle = (await this.getElementUpdate(data.rightMiddle)) as pages.PagePowerMessageItem;
-        message.rightBottom = (await this.getElementUpdate(data.rightBottom)) as pages.PagePowerMessageItem;
-
         this.sendToPanel(this.getMessage(message));
     }
 
