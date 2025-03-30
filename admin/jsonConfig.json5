@@ -503,7 +503,7 @@
                             "default": ""
                         },
                         {
-                            "attr": "alwaysOnDispaly",
+                            "attr": "alwaysOnDisplay",
                             "xs": 12,
                             "sm": 12,
                             "md": 6,
