@@ -55,11 +55,17 @@ declare global {
                 alwaysOnDisplay: boolean,
                 setStateHomeTop?: string,
                 setStateLeftTop?: string,
+                setIconLeftTop?: string,
                 setStateLeftMiddle?: string,
+                setIconLeftMiddle?: string,
                 setStateLeftBottom?: string,
+                setIconLeftBottom?: string,
                 setStateRightTop?: string,
+                setIconRightTop?: string,
                 setStateRightMiddle?: string,
+                setIconRightMiddle?: string,
                 setStateRightBottom?: string,
+                setIconRightBottom?: string,
             }[];
         }
     }

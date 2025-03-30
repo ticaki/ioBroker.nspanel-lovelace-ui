@@ -143,9 +143,47 @@ export class PagePower extends Page {
         configManager: ConfigManager,
     ): Promise<pages.PageBaseConfig> {
         const config = adapter.config.pagePowerdata[index];
-        const stateLetTopExist =
+        const stateLeftTopExist =
             config.setStateLeftTop !== undefined && (await configManager.existsState(config.setStateLeftTop));
-        const Power1 = stateLetTopExist ? (config.setStateLeftTop !== undefined ? config.setStateLeftTop : '') : '';
+        const Power1 = stateLeftTopExist ? (config.setStateLeftTop !== undefined ? config.setStateLeftTop : '') : '';
+        const stateLeftMiddleExist =
+            config.setStateLeftMiddle !== undefined && (await configManager.existsState(config.setStateLeftMiddle));
+        const Power2 = stateLeftMiddleExist
+            ? config.setStateLeftMiddle !== undefined
+                ? config.setStateLeftMiddle
+                : ''
+            : '';
+        const stateLeftBottomExist =
+            config.setStateLeftBottom !== undefined && (await configManager.existsState(config.setStateLeftBottom));
+        const Power3 = stateLeftBottomExist
+            ? config.setStateLeftBottom !== undefined
+                ? config.setStateLeftBottom
+                : ''
+            : '';
+        const stateRightTopExist =
+            config.setStateRightTop !== undefined && (await configManager.existsState(config.setStateRightTop));
+        const Power4 = stateRightTopExist ? (config.setStateRightTop !== undefined ? config.setStateRightTop : '') : '';
+        const stateRightMiddleExist =
+            config.setStateRightMiddle !== undefined && (await configManager.existsState(config.setStateRightMiddle));
+        const Power5 = stateRightMiddleExist
+            ? config.setStateRightMiddle !== undefined
+                ? config.setStateRightMiddle
+                : ''
+            : '';
+        const stateRightBottomExist =
+            config.setStateRightBottom !== undefined && (await configManager.existsState(config.setStateRightBottom));
+        const Power6 = stateRightBottomExist
+            ? config.setStateRightBottom !== undefined
+                ? config.setStateRightBottom
+                : ''
+            : '';
+        const Icon1 = config.setIconLeftTop !== undefined ? config.setIconLeftTop : '';
+        const Icon2 = config.setIconLeftMiddle !== undefined ? config.setIconLeftMiddle : '';
+        const Icon3 = config.setIconLeftBottom !== undefined ? config.setIconLeftBottom : '';
+        const Icon4 = config.setIconRightTop !== undefined ? config.setIconRightTop : '';
+        const Icon5 = config.setIconRightMiddle !== undefined ? config.setIconRightMiddle : '';
+        const Icon6 = config.setIconRightBottom !== undefined ? config.setIconRightBottom : '';
+
         const result: pages.PageBaseConfig = {
             uniqueID: config.pageName,
             alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
@@ -154,7 +192,7 @@ export class PagePower extends Page {
                 index: index,
                 data: {
                     headline: { type: 'const', constVal: config.headline },
-                    homeIcon: undefined,
+                    homeIcon: { true: { value: { type: 'const', constVal: 'home' } }, false: undefined },
                     homeValueTop: {
                         value: { type: 'const', constVal: 'Value top' },
                     },
@@ -166,8 +204,8 @@ export class PagePower extends Page {
                         icon: {
                             true: {
                                 value: {
-                                    type: 'state',
-                                    dp: Power1,
+                                    type: 'const',
+                                    constVal: Icon1,
                                 },
                                 color: undefined,
                             },
@@ -175,19 +213,104 @@ export class PagePower extends Page {
                         },
                         value: {
                             value: {
-                                type: 'state',
+                                type: 'triggered',
                                 dp: Power1,
                             },
                         },
                     },
-                    leftMiddle: undefined,
-                    leftBottom: undefined,
-                    rightTop: undefined,
-                    rightMiddle: undefined,
-                    rightBottom: undefined,
+                    leftMiddle: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: Icon2,
+                                },
+                                color: undefined,
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'triggered',
+                                dp: Power2,
+                            },
+                        },
+                    },
+                    leftBottom: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: Icon3,
+                                },
+                                color: undefined,
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'triggered',
+                                dp: Power3,
+                            },
+                        },
+                    },
+                    rightTop: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: Icon4,
+                                },
+                                color: undefined,
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'triggered',
+                                dp: Power4,
+                            },
+                        },
+                    },
+                    rightMiddle: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: Icon5,
+                                },
+                                color: undefined,
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'triggered',
+                                dp: Power5,
+                            },
+                        },
+                    },
+                    rightBottom: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: Icon6,
+                                },
+                                color: undefined,
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'triggered',
+                                dp: Power6,
+                            },
+                        },
+                    },
                 },
             },
-            pageItems: undefined,
+            pageItems: [],
         };
         return result;
     }

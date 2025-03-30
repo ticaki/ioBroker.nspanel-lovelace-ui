@@ -135,7 +135,24 @@ class PagePower extends import_Page.Page {
   };
   static async getPowerPageConfig(adapter, index, configManager) {
     const config = adapter.config.pagePowerdata[index];
-    const stateLetTopExist = config.setStateLeftTop !== void 0 && await configManager.existsState(config.setStateLeftTop);
+    const stateLeftTopExist = config.setStateLeftTop !== void 0 && await configManager.existsState(config.setStateLeftTop);
+    const Power1 = stateLeftTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : "";
+    const stateLeftMiddleExist = config.setStateLeftMiddle !== void 0 && await configManager.existsState(config.setStateLeftMiddle);
+    const Power2 = stateLeftMiddleExist ? config.setStateLeftMiddle !== void 0 ? config.setStateLeftMiddle : "" : "";
+    const stateLeftBottomExist = config.setStateLeftBottom !== void 0 && await configManager.existsState(config.setStateLeftBottom);
+    const Power3 = stateLeftBottomExist ? config.setStateLeftBottom !== void 0 ? config.setStateLeftBottom : "" : "";
+    const stateRightTopExist = config.setStateRightTop !== void 0 && await configManager.existsState(config.setStateRightTop);
+    const Power4 = stateRightTopExist ? config.setStateRightTop !== void 0 ? config.setStateRightTop : "" : "";
+    const stateRightMiddleExist = config.setStateRightMiddle !== void 0 && await configManager.existsState(config.setStateRightMiddle);
+    const Power5 = stateRightMiddleExist ? config.setStateRightMiddle !== void 0 ? config.setStateRightMiddle : "" : "";
+    const stateRightBottomExist = config.setStateRightBottom !== void 0 && await configManager.existsState(config.setStateRightBottom);
+    const Power6 = stateRightBottomExist ? config.setStateRightBottom !== void 0 ? config.setStateRightBottom : "" : "";
+    const Icon1 = config.setIconLeftTop !== void 0 ? config.setIconLeftTop : "";
+    const Icon2 = config.setIconLeftMiddle !== void 0 ? config.setIconLeftMiddle : "";
+    const Icon3 = config.setIconLeftBottom !== void 0 ? config.setIconLeftBottom : "";
+    const Icon4 = config.setIconRightTop !== void 0 ? config.setIconRightTop : "";
+    const Icon5 = config.setIconRightMiddle !== void 0 ? config.setIconRightMiddle : "";
+    const Icon6 = config.setIconRightBottom !== void 0 ? config.setIconRightBottom : "";
     const result = {
       uniqueID: config.pageName,
       alwaysOn: config.alwaysOnDisplay ? "always" : "none",
@@ -144,16 +161,7 @@ class PagePower extends import_Page.Page {
         index,
         data: {
           headline: { type: "const", constVal: config.headline },
-          homeIcon: {
-            true: {
-              value: {
-                type: "state",
-                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
-              },
-              color: void 0
-            },
-            false: void 0
-          },
+          homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
           homeValueTop: {
             value: { type: "const", constVal: "Value top" }
           },
@@ -165,8 +173,8 @@ class PagePower extends import_Page.Page {
             icon: {
               true: {
                 value: {
-                  type: "state",
-                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                  type: "const",
+                  constVal: Icon1
                 },
                 color: void 0
               },
@@ -175,7 +183,7 @@ class PagePower extends import_Page.Page {
             value: {
               value: {
                 type: "triggered",
-                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                dp: Power1
               }
             }
           },
@@ -183,8 +191,8 @@ class PagePower extends import_Page.Page {
             icon: {
               true: {
                 value: {
-                  type: "state",
-                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                  type: "const",
+                  constVal: Icon2
                 },
                 color: void 0
               },
@@ -193,7 +201,7 @@ class PagePower extends import_Page.Page {
             value: {
               value: {
                 type: "triggered",
-                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                dp: Power2
               }
             }
           },
@@ -201,8 +209,8 @@ class PagePower extends import_Page.Page {
             icon: {
               true: {
                 value: {
-                  type: "state",
-                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                  type: "const",
+                  constVal: Icon3
                 },
                 color: void 0
               },
@@ -211,7 +219,7 @@ class PagePower extends import_Page.Page {
             value: {
               value: {
                 type: "triggered",
-                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                dp: Power3
               }
             }
           },
@@ -219,8 +227,8 @@ class PagePower extends import_Page.Page {
             icon: {
               true: {
                 value: {
-                  type: "state",
-                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                  type: "const",
+                  constVal: Icon4
                 },
                 color: void 0
               },
@@ -229,7 +237,7 @@ class PagePower extends import_Page.Page {
             value: {
               value: {
                 type: "triggered",
-                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                dp: Power4
               }
             }
           },
@@ -237,8 +245,8 @@ class PagePower extends import_Page.Page {
             icon: {
               true: {
                 value: {
-                  type: "state",
-                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                  type: "const",
+                  constVal: Icon5
                 },
                 color: void 0
               },
@@ -247,7 +255,7 @@ class PagePower extends import_Page.Page {
             value: {
               value: {
                 type: "triggered",
-                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                dp: Power5
               }
             }
           },
@@ -255,8 +263,8 @@ class PagePower extends import_Page.Page {
             icon: {
               true: {
                 value: {
-                  type: "state",
-                  dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                  type: "const",
+                  constVal: Icon6
                 },
                 color: void 0
               },
@@ -265,13 +273,13 @@ class PagePower extends import_Page.Page {
             value: {
               value: {
                 type: "triggered",
-                dp: stateLetTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : ""
+                dp: Power6
               }
             }
           }
         }
       },
-      pageItems: void 0
+      pageItems: []
     };
     return result;
   }
