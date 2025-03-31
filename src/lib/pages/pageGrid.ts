@@ -34,7 +34,6 @@ export class PageGrid extends PageMenu {
         ) {
             this.items = options.items;
         }
-        this.maxItems = this.card === 'cardGrid' ? 6 : 8;
         this.minUpdateInterval = 2000;
     }
 

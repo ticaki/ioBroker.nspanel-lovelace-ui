@@ -38,6 +38,37 @@ class PageMenu extends import_Page.Page {
   tempItems;
   constructor(config, options) {
     super(config, options);
+    if (options.config) {
+      switch (options.config.card) {
+        case "cardGrid":
+          this.maxItems = 6;
+          break;
+        case "cardGrid2":
+          this.maxItems = 8;
+          break;
+        case "cardGrid3":
+        case "cardEntities":
+          this.maxItems = 4;
+          break;
+        case "cardChart":
+        case "cardLChart":
+        case "cardThermo":
+        case "cardMedia":
+        case "cardQR":
+        case "cardAlarm":
+        case "cardPower":
+        case "screensaver":
+        case "screensaver2":
+        case "screensaver3":
+        case "popupNotify":
+        case "popupNotify2":
+        default:
+          this.log.warn(
+            `PageMenu: ${config.card} is not supported in this class. Please use the correct class for this card.`
+          );
+          break;
+      }
+    }
   }
   async getOptions(result) {
     if (this.pageItems) {
