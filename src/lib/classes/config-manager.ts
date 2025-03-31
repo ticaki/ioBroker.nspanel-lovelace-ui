@@ -20,7 +20,7 @@ export class ConfigManager extends BaseClass {
     dontWrite: boolean = false;
     extraConfigLogging: boolean = false;
 
-    readonly scriptVersion = '0.7.2';
+    readonly scriptVersion = '0.8.0';
     readonly breakingVersion = '0.6.0';
 
     statesController: StatesControler | undefined;
