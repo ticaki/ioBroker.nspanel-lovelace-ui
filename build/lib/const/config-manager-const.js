@@ -259,6 +259,7 @@ const checkedDatapoints = {
     ACTUAL: null
   },
   button: {
+    ACTUAL: null,
     SET: null
   },
   select: {
@@ -554,7 +555,7 @@ const requiredScriptDataPoints = {
   socket: {
     updatedVersion: true,
     name: "socket",
-    description: "Steckdosen, Schalter, Relais, usw. schalten",
+    description: "Steckdosen, Schalter, Relais, usw. alles was man mit true/false steuern kann",
     data: {
       ACTUAL: { role: "switch", type: "boolean", required: true, writeable: false, trigger: true },
       SET: { role: "switch", type: "boolean", required: false, writeable: true },
@@ -667,7 +668,16 @@ const requiredScriptDataPoints = {
     updatedVersion: true,
     name: "button",
     description: "Switch",
-    data: { SET: { role: "button", type: "boolean", required: true, writeable: true } }
+    data: {
+      ACTUAL: {
+        role: "",
+        type: ["boolean", "string", "boolean"],
+        required: false,
+        writeable: false,
+        useKey: true
+      },
+      SET: { role: "switch", type: "boolean", required: true, writeable: true }
+    }
   },
   select: {
     updatedVersion: true,

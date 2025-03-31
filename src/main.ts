@@ -572,6 +572,11 @@ class NspanelLovelaceUi extends utils.Adapter {
     private async onMessage(obj: ioBroker.Message): Promise<void> {
         if (typeof obj === 'object' && obj.message) {
             //this.log.info(JSON.stringify(obj));
+            if (obj.command === 'tftInstallSendToMQTT') {
+                if (obj.message.online === 'no') {
+                    obj.command = 'tftInstallSendTo';
+                }
+            }
             switch (obj.command) {
                 case 'config': {
                     const obj1 = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
@@ -1120,6 +1125,59 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'tftInstallSendToMQTT': {
+                    if (obj.message) {
+                        if (obj.message.topic /*&& obj.message.internalServerIp*/) {
+                            try {
+                                const result = await axios.get(
+                                    'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
+                                );
+                                if (!result.data) {
+                                    this.log.error('No version found!');
+                                    if (obj.callback) {
+                                        this.sendTo(
+                                            obj.from,
+                                            obj.command,
+                                            { error: 'sendToRequestFail' },
+                                            obj.callback,
+                                        );
+                                    }
+                                    break;
+                                }
+
+                                const version = obj.message.useBetaTFT
+                                    ? result.data['tft-beta'].split('_')[0]
+                                    : result.data.tft.split('_')[0];
+                                const fileName = `nspanel-v${version}.tft`;
+
+                                const cmnd = `FlashNextion http://nspanel.de/${fileName}`;
+                                this.log.debug(cmnd);
+                                if (this.controller?.panels) {
+                                    const index = this.controller.panels.findIndex(a => a.topic === obj.message.topic);
+                                    if (index !== -1) {
+                                        const panel = this.controller.panels[index];
+                                        panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+                                    }
+                                }
+
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, [], obj.callback);
+                                }
+                            } catch (e: any) {
+                                this.log.error(`Error: ${e}`);
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+
                 case 'getRandomMqttCredentials': {
                     if (obj.message) {
                         const allowedChars: string[] = [
@@ -1330,6 +1388,58 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 },
                                 obj.callback,
                             );
+                        }
+                        break;
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+                case 'tasmotaRestartSendTo': {
+                    if (obj.message) {
+                        if (obj.message.tasmotaIP /*&& obj.message.internalServerIp*/) {
+                            try {
+                                const url =
+                                    `http://${obj.message.tasmotaIP}/cm?` +
+                                    `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                    `&cmnd=Restart 1`;
+                                this.log.debug(url);
+                                await axios.get(url);
+
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, [], obj.callback);
+                                }
+                            } catch (e: any) {
+                                this.log.error(`Error: ${e}`);
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+                case 'refreshMaintainTable': {
+                    if (this.controller?.panels) {
+                        const result = this.controller.panels.map(a => {
+                            const tv = a.info?.tasmota?.firmwareversion?.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                            return {
+                                name: a.friendlyName,
+                                ip: a.info?.tasmota?.net?.IPAddress ? a.info.tasmota.net.IPAddress : '',
+                                online: a.isOnline ? 'yes' : 'no',
+                                topic: a.topic,
+                                id: a.info?.tasmota?.net?.Mac ? a.info.tasmota.net.Mac : '',
+                                tftVersion: a.info?.nspanel?.displayVersion ? a.info.nspanel.displayVersion : '???',
+                                tasmotaVersion: tv && tv[1] ? tv[1] : '???',
+                            };
+                        });
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, { native: { _maintainPanels: result } }, obj.callback);
                         }
                         break;
                     }
