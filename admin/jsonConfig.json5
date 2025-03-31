@@ -256,18 +256,7 @@
                                 "ok": "Update",
                                 "cancel": "Cancel"
                             }
-                        } /*,
-                        {
-                            "attr": "_RefreshDevices",
-                            "type": "sendTo",
-                            "label": "Refresh Device",
-                            "command": "RefreshDevices",
-                            "jsonData": "{\"id\": \"${data.id}\", \"name\": \"${data.name}\", \"topic\": \"${data.topic}\", \"ip\": \"${data.ip}\"}",
-                            "showProcess": true,
-                            "useNative": true,
-                            "timeout": 8000,
-                            "disabled": "!data.topic || !data.name"
-                        }*/
+                        }
                     ]
                 },
                 "_header2": {
@@ -287,18 +276,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                }, /*
-                "tasmotaAdmin": {
-                    "type": "text",
-                    "label": "tasmotaAdmin",
-                    "newLine": false,
-                    "hidden": "!data.useTasmotaAdmin",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },*/
+                },
                 "tasmotaAdminPassword": {
                     "type": "password",
                     "label": "tasmotaAdminPassword",
@@ -413,7 +391,6 @@
                     "command": "tasmotaAddTableSendTo",
                     "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 ||  (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
                     "newLine": false,
-                    //"reloadBrowser": true,
                     "useNative": true,
                     "variant": "contained",
                     "hidden": "data._selectTool != '1'"
@@ -467,7 +444,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },
+                }
             }
         },
         "pageQR": {
@@ -685,7 +662,7 @@
                 }
             }
         },
-         "pagePower": {
+        "pagePower": {
             "type": "panel",
             "label": "Page Power",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
@@ -729,158 +706,396 @@
                             "default": false
                         },
                         {
-                            "attr": "setIconLeftTop",
+                            "type": "divider",
+                            "newLine": true,
+                            "height": 2,
+                            "color": "red",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "attr": "power1_icon",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 4,
-                            "xl": 4,
+                            "xl": 2,
                             "type": "text",
-                            "label": "iconLeftTop",
+                            "label": "powerIcon",
                             "default": "arrow-top-left"
                         },
                         {
-                            "attr": "setStateLeftTop",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 8,
-                            "lg": 8,
-                            "xl": 8,
-                            "type": "objectId",
-                            "label": "stateLeftTop",
-                            "filterFunc": "return obj.common.type === 'number'" 
-
-                        },
-                        {
-                            "newLine": true,
-                            "attr": "setIconLeftMiddle",
+                            "attr": "power1_state",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 4,
                             "xl": 4,
-                            "type": "text",
-                            "label": "iconLeftMiddle",
-                            "default": "arrow-left"
-                        },
-                        {
-                            "attr": "setStateLeftMiddle",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 8,
-                            "lg": 8,
-                            "xl": 8,
                             "type": "objectId",
-                            "label": "stateLeftMiddle",
+                            "label": "powerState",
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
-                            "newLine": true,
-                            "attr": "setIconLeftBottom",
+                            "attr": "power1_minSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0"
+                        },
+                        {
+                            "attr": "power1_maxSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100"
+                        },
+                        {
+                            "attr": "power1_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false
+                        },
+                        {
+                            "type": "divider",
+                            "height": 5,
+                            "color": "red"
+                        },
+                        {
+                            "attr": "power2_icon",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "powerIcon",
+                            "default": "arrow-top-left"
+                        },
+                        {
+                            "attr": "power2_state",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 4,
                             "xl": 4,
-                            "type": "text",
-                            "label": "iconLeftBottom",
-                            "default": "arrow-bottom-left"
-                        },
-                        {
-                            "attr": "setStateLeftBottom",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 8,
-                            "lg": 8,
-                            "xl": 8,
                             "type": "objectId",
-                            "label": "stateLeftBottom",
+                            "label": "powerState",
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power2_minSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0"
+                        },
+                        {
+                            "attr": "power2_maxSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100"
+                        },
+                        {
+                            "attr": "power2_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false
+                        },
+                        {
+                            "type": "divider",
+                            "height": 5,
+                            "color": "red"
+                        },
+                        {
                             "newLine": true,
-                            "attr": "setIconRightTop",
+                            "attr": "power3_icon",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "powerIcon",
+                            "default": "arrow-top-left"
+                        },
+                        {
+                            "attr": "power3_state",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 4,
                             "xl": 4,
-                            "type": "text",
-                            "label": "iconRightTop",
-                            "default": "arrow-top-right"
-                        },
-                        {
-                            "attr": "setStateRightTop",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 8,
-                            "lg": 8,
-                            "xl": 8,
                             "type": "objectId",
-                            "label": "stateRightTop",
+                            "label": "powerState",
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power3_minSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0"
+                        },
+                        {
+                            "attr": "power3_maxSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100"
+                        },
+                        {
+                            "attr": "power3_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false
+                        },
+                        {
+                            "type": "divider",
+                            "height": 5,
+                            "color": "red"
+                        },
+                        {
                             "newLine": true,
-                            "attr": "setIconRightMiddle",
+                            "attr": "power4_icon",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "powerIcon",
+                            "default": "arrow-top-left"
+                        },
+                        {
+                            "attr": "power4_state",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 4,
                             "xl": 4,
-                            "type": "text",
-                            "label": "iconRightMiddle",
-                            "default": "arrow-right"
-                        },
-                        {
-                            "attr": "setStateRightMiddle",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 8,
-                            "lg": 8,
-                            "xl": 8,
                             "type": "objectId",
-                            "label": "stateRightMiddle",
+                            "label": "powerState",
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power4_minSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0"
+                        },
+                        {
+                            "attr": "power4_maxSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100"
+                        },
+                        {
+                            "attr": "power4_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false
+                        },
+                        {
+                            "type": "divider",
+                            "height": 5,
+                            "color": "red"
+                        },
+                        {
                             "newLine": true,
-                            "attr": "setIconRightBottom",
+                            "attr": "power5_icon",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "powerIcon",
+                            "default": "arrow-top-left"
+                        },
+                        {
+                            "attr": "power5_state",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 4,
                             "xl": 4,
+                            "type": "objectId",
+                            "label": "powerState",
+                            "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "power5_minSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0"
+                        },
+                        {
+                            "attr": "power5_maxSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100"
+                        },
+                        {
+                            "attr": "power5_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false
+                        },
+                        {
+                            "type": "divider",
+                            "height": 5,
+                            "color": "red"
+                        },
+                        {
+                            "newLine": true,
+                            "attr": "power6_icon",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
                             "type": "text",
-                            "label": "iconRightBottom",
-                            "default": "arrow-bottom-right"
+                            "label": "powerIcon",
+                            "default": "arrow-top-left"
                         },
                         {
-                            "attr": "setStateRightBottom",
+                            "attr": "power6_state",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "objectId",
+                            "label": "powerState",
+                            "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "power6_minSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0"
+                        },
+                        {
+                            "attr": "power6_maxSpeed",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100"
+                        },
+                        {
+                            "attr": "power6_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false
+                        },
+                        {
+                            "type": "divider",
+                            "height": 5,
+                            "color": "blue"
+                        },
+                        {
+                            "newLine": true,
+                            "attr": "power7_state",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 8,
                             "xl": 8,
                             "type": "objectId",
-                            "label": "stateRightBottom",
+                            "label": "powerState",
                             "filterFunc": "return obj.common.type === 'number'"
-                        },
-                        {
-                            "attr": "setStateHomeTop",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 8,
-                            "lg": 8,
-                            "xl": 8,
-                            "type": "objectId",
-                            "label": "stateHomeTop",
-                            "filterFunc": "return obj.common.type === 'number'"
-                        },
+                        }
                     ]
-                },
-            },
-        },        
+                }
+            }
+        },
         "NavigationOverview": {
             "type": "panel",
             "label": "Navigation Overview",
@@ -1011,7 +1226,6 @@
                             "attr": "left2",
                             "label": "parent",
                             "width": "16%"
-                            
                         },
                         {
                             "type": "autocompleteSendTo",

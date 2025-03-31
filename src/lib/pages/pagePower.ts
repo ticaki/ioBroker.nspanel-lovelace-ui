@@ -144,53 +144,33 @@ export class PagePower extends Page {
     ): Promise<pages.PageBaseConfig> {
         const config = adapter.config.pagePowerdata[index];
         const stateLeftTopExist =
-            config.setStateLeftTop !== undefined && (await configManager.existsState(config.setStateLeftTop));
-        const Power1 = stateLeftTopExist ? (config.setStateLeftTop !== undefined ? config.setStateLeftTop : '') : '';
+            config.power1_state !== undefined && (await configManager.existsState(config.power1_state));
+        const Power1 = stateLeftTopExist ? (config.power1_state !== undefined ? config.power1_state : '') : '';
         const stateLeftMiddleExist =
-            config.setStateLeftMiddle !== undefined && (await configManager.existsState(config.setStateLeftMiddle));
-        const Power2 = stateLeftMiddleExist
-            ? config.setStateLeftMiddle !== undefined
-                ? config.setStateLeftMiddle
-                : ''
-            : '';
+            config.power2_state !== undefined && (await configManager.existsState(config.power2_state));
+        const Power2 = stateLeftMiddleExist ? (config.power2_state !== undefined ? config.power2_state : '') : '';
         const stateLeftBottomExist =
-            config.setStateLeftBottom !== undefined && (await configManager.existsState(config.setStateLeftBottom));
-        const Power3 = stateLeftBottomExist
-            ? config.setStateLeftBottom !== undefined
-                ? config.setStateLeftBottom
-                : ''
-            : '';
+            config.power3_state !== undefined && (await configManager.existsState(config.power3_state));
+        const Power3 = stateLeftBottomExist ? (config.power3_state !== undefined ? config.power3_state : '') : '';
         const stateRightTopExist =
-            config.setStateRightTop !== undefined && (await configManager.existsState(config.setStateRightTop));
-        const Power4 = stateRightTopExist ? (config.setStateRightTop !== undefined ? config.setStateRightTop : '') : '';
+            config.power4_state !== undefined && (await configManager.existsState(config.power4_state));
+        const Power4 = stateRightTopExist ? (config.power4_state !== undefined ? config.power4_state : '') : '';
         const stateRightMiddleExist =
-            config.setStateRightMiddle !== undefined && (await configManager.existsState(config.setStateRightMiddle));
-        const Power5 = stateRightMiddleExist
-            ? config.setStateRightMiddle !== undefined
-                ? config.setStateRightMiddle
-                : ''
-            : '';
+            config.power5_state !== undefined && (await configManager.existsState(config.power5_state));
+        const Power5 = stateRightMiddleExist ? (config.power5_state !== undefined ? config.power5_state : '') : '';
         const stateRightBottomExist =
-            config.setStateRightBottom !== undefined && (await configManager.existsState(config.setStateRightBottom));
-        const Power6 = stateRightBottomExist
-            ? config.setStateRightBottom !== undefined
-                ? config.setStateRightBottom
-                : ''
-            : '';
+            config.power6_state !== undefined && (await configManager.existsState(config.power6_state));
+        const Power6 = stateRightBottomExist ? (config.power6_state !== undefined ? config.power6_state : '') : '';
         const statePowerHomeExist =
-            config.setStateHomeTop !== undefined && (await configManager.existsState(config.setStateHomeTop));
-        const PowerHome = statePowerHomeExist
-            ? config.setStateHomeTop !== undefined
-                ? config.setStateHomeTop
-                : ''
-            : '';
+            config.power7_state !== undefined && (await configManager.existsState(config.power7_state));
+        const PowerHome = statePowerHomeExist ? (config.power7_state !== undefined ? config.power7_state : '') : '';
 
-        const Icon1 = config.setIconLeftTop !== undefined ? config.setIconLeftTop : '';
-        const Icon2 = config.setIconLeftMiddle !== undefined ? config.setIconLeftMiddle : '';
-        const Icon3 = config.setIconLeftBottom !== undefined ? config.setIconLeftBottom : '';
-        const Icon4 = config.setIconRightTop !== undefined ? config.setIconRightTop : '';
-        const Icon5 = config.setIconRightMiddle !== undefined ? config.setIconRightMiddle : '';
-        const Icon6 = config.setIconRightBottom !== undefined ? config.setIconRightBottom : '';
+        const Icon1 = config.power1_icon !== undefined ? config.power1_icon : '';
+        const Icon2 = config.power2_icon !== undefined ? config.power2_icon : '';
+        const Icon3 = config.power3_icon !== undefined ? config.power3_icon : '';
+        const Icon4 = config.power4_icon !== undefined ? config.power4_icon : '';
+        const Icon5 = config.power5_icon !== undefined ? config.power5_icon : '';
+        const Icon6 = config.power6_icon !== undefined ? config.power6_icon : '';
 
         const result: pages.PageBaseConfig = {
             uniqueID: config.pageName,

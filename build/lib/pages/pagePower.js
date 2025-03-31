@@ -135,24 +135,26 @@ class PagePower extends import_Page.Page {
   };
   static async getPowerPageConfig(adapter, index, configManager) {
     const config = adapter.config.pagePowerdata[index];
-    const stateLeftTopExist = config.setStateLeftTop !== void 0 && await configManager.existsState(config.setStateLeftTop);
-    const Power1 = stateLeftTopExist ? config.setStateLeftTop !== void 0 ? config.setStateLeftTop : "" : "";
-    const stateLeftMiddleExist = config.setStateLeftMiddle !== void 0 && await configManager.existsState(config.setStateLeftMiddle);
-    const Power2 = stateLeftMiddleExist ? config.setStateLeftMiddle !== void 0 ? config.setStateLeftMiddle : "" : "";
-    const stateLeftBottomExist = config.setStateLeftBottom !== void 0 && await configManager.existsState(config.setStateLeftBottom);
-    const Power3 = stateLeftBottomExist ? config.setStateLeftBottom !== void 0 ? config.setStateLeftBottom : "" : "";
-    const stateRightTopExist = config.setStateRightTop !== void 0 && await configManager.existsState(config.setStateRightTop);
-    const Power4 = stateRightTopExist ? config.setStateRightTop !== void 0 ? config.setStateRightTop : "" : "";
-    const stateRightMiddleExist = config.setStateRightMiddle !== void 0 && await configManager.existsState(config.setStateRightMiddle);
-    const Power5 = stateRightMiddleExist ? config.setStateRightMiddle !== void 0 ? config.setStateRightMiddle : "" : "";
-    const stateRightBottomExist = config.setStateRightBottom !== void 0 && await configManager.existsState(config.setStateRightBottom);
-    const Power6 = stateRightBottomExist ? config.setStateRightBottom !== void 0 ? config.setStateRightBottom : "" : "";
-    const Icon1 = config.setIconLeftTop !== void 0 ? config.setIconLeftTop : "";
-    const Icon2 = config.setIconLeftMiddle !== void 0 ? config.setIconLeftMiddle : "";
-    const Icon3 = config.setIconLeftBottom !== void 0 ? config.setIconLeftBottom : "";
-    const Icon4 = config.setIconRightTop !== void 0 ? config.setIconRightTop : "";
-    const Icon5 = config.setIconRightMiddle !== void 0 ? config.setIconRightMiddle : "";
-    const Icon6 = config.setIconRightBottom !== void 0 ? config.setIconRightBottom : "";
+    const stateLeftTopExist = config.power1_state !== void 0 && await configManager.existsState(config.power1_state);
+    const Power1 = stateLeftTopExist ? config.power1_state !== void 0 ? config.power1_state : "" : "";
+    const stateLeftMiddleExist = config.power2_state !== void 0 && await configManager.existsState(config.power2_state);
+    const Power2 = stateLeftMiddleExist ? config.power2_state !== void 0 ? config.power2_state : "" : "";
+    const stateLeftBottomExist = config.power3_state !== void 0 && await configManager.existsState(config.power3_state);
+    const Power3 = stateLeftBottomExist ? config.power3_state !== void 0 ? config.power3_state : "" : "";
+    const stateRightTopExist = config.power4_state !== void 0 && await configManager.existsState(config.power4_state);
+    const Power4 = stateRightTopExist ? config.power4_state !== void 0 ? config.power4_state : "" : "";
+    const stateRightMiddleExist = config.power5_state !== void 0 && await configManager.existsState(config.power5_state);
+    const Power5 = stateRightMiddleExist ? config.power5_state !== void 0 ? config.power5_state : "" : "";
+    const stateRightBottomExist = config.power6_state !== void 0 && await configManager.existsState(config.power6_state);
+    const Power6 = stateRightBottomExist ? config.power6_state !== void 0 ? config.power6_state : "" : "";
+    const statePowerHomeExist = config.power7_state !== void 0 && await configManager.existsState(config.power7_state);
+    const PowerHome = statePowerHomeExist ? config.power7_state !== void 0 ? config.power7_state : "" : "";
+    const Icon1 = config.power1_icon !== void 0 ? config.power1_icon : "";
+    const Icon2 = config.power2_icon !== void 0 ? config.power2_icon : "";
+    const Icon3 = config.power3_icon !== void 0 ? config.power3_icon : "";
+    const Icon4 = config.power4_icon !== void 0 ? config.power4_icon : "";
+    const Icon5 = config.power5_icon !== void 0 ? config.power5_icon : "";
+    const Icon6 = config.power6_icon !== void 0 ? config.power6_icon : "";
     const result = {
       uniqueID: config.pageName,
       alwaysOn: config.alwaysOnDisplay ? "always" : "none",
@@ -163,7 +165,7 @@ class PagePower extends import_Page.Page {
           headline: { type: "const", constVal: config.headline },
           homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
           homeValueTop: {
-            value: { type: "const", constVal: "Value top" }
+            value: { type: "state", dp: PowerHome }
           },
           homeValueBot: {
             value: { type: "internal", dp: `///${config.pageName}/powerSum` },
@@ -185,6 +187,15 @@ class PagePower extends import_Page.Page {
                 type: "triggered",
                 dp: Power1
               }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: Power1
+              }
+            },
+            text: {
+              true: { type: "state", dp: Power1 }
             }
           },
           leftMiddle: {
@@ -230,6 +241,15 @@ class PagePower extends import_Page.Page {
                 type: "triggered",
                 dp: Power3
               }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: Power3
+              }
+            },
+            text: {
+              true: { type: "state", dp: Power3 }
             }
           },
           rightTop: {
@@ -248,6 +268,15 @@ class PagePower extends import_Page.Page {
                 type: "triggered",
                 dp: Power4
               }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: Power4
+              }
+            },
+            text: {
+              true: { type: "state", dp: Power4 }
             }
           },
           rightMiddle: {
@@ -266,6 +295,15 @@ class PagePower extends import_Page.Page {
                 type: "triggered",
                 dp: Power5
               }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: Power5
+              }
+            },
+            text: {
+              true: { type: "state", dp: Power5 }
             }
           },
           rightBottom: {
@@ -284,6 +322,15 @@ class PagePower extends import_Page.Page {
                 type: "triggered",
                 dp: Power6
               }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: Power6
+              }
+            },
+            text: {
+              true: { type: "state", dp: Power6 }
             }
           }
         }
