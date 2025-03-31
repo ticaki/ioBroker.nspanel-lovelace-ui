@@ -177,6 +177,14 @@ export class PagePower extends Page {
                 ? config.setStateRightBottom
                 : ''
             : '';
+        const statePowerHomeExist =
+            config.setStateHomeTop !== undefined && (await configManager.existsState(config.setStateHomeTop));
+        const PowerHome = statePowerHomeExist
+            ? config.setStateHomeTop !== undefined
+                ? config.setStateHomeTop
+                : ''
+            : '';
+
         const Icon1 = config.setIconLeftTop !== undefined ? config.setIconLeftTop : '';
         const Icon2 = config.setIconLeftMiddle !== undefined ? config.setIconLeftMiddle : '';
         const Icon3 = config.setIconLeftBottom !== undefined ? config.setIconLeftBottom : '';
@@ -194,7 +202,7 @@ export class PagePower extends Page {
                     headline: { type: 'const', constVal: config.headline },
                     homeIcon: { true: { value: { type: 'const', constVal: 'home' } }, false: undefined },
                     homeValueTop: {
-                        value: { type: 'const', constVal: 'Value top' },
+                        value: { type: 'state', dp: PowerHome },
                     },
                     homeValueBot: {
                         value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
@@ -217,6 +225,15 @@ export class PagePower extends Page {
                                 dp: Power1,
                             },
                         },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: Power1,
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: Power1 },
+                        },
                     },
                     leftMiddle: {
                         icon: {
@@ -234,6 +251,15 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: Power2,
                             },
+                        },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: Power2,
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: Power2 },
                         },
                     },
                     leftBottom: {
@@ -253,6 +279,15 @@ export class PagePower extends Page {
                                 dp: Power3,
                             },
                         },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: Power3,
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: Power3 },
+                        },
                     },
                     rightTop: {
                         icon: {
@@ -270,6 +305,15 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: Power4,
                             },
+                        },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: Power4,
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: Power4 },
                         },
                     },
                     rightMiddle: {
@@ -289,6 +333,15 @@ export class PagePower extends Page {
                                 dp: Power5,
                             },
                         },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: Power5,
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: Power5 },
+                        },
                     },
                     rightBottom: {
                         icon: {
@@ -306,6 +359,15 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: Power6,
                             },
+                        },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: Power6,
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: Power6 },
                         },
                     },
                 },

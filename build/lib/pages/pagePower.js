@@ -203,6 +203,15 @@ class PagePower extends import_Page.Page {
                 type: "triggered",
                 dp: Power2
               }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: Power2
+              }
+            },
+            text: {
+              true: { type: "state", dp: Power2 }
             }
           },
           leftBottom: {
