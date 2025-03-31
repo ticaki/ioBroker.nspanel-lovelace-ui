@@ -129,6 +129,7 @@ declare namespace ScriptConfig {
         | 'airCondition'
         | 'blind'
         | 'button'
+        //| 'buttonSensor'
         | 'select'
         //| 'cie'
         | 'ct'

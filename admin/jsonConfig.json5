@@ -240,6 +240,24 @@
                             "readOnly": true,
                             "validatorErrorText": "mustBeUnique"
                         },
+                        
+                        {
+                            "attr": "_tasmotaRestartSendTo",
+                            "type": "sendTo",
+                            "label": "Restart",
+                            "jsonData": "{ \"tasmotaIP\": \"${data.ip}\"}",
+                            "showProcess": true,
+                            "command": "tasmotaRestartSendTo",
+                            "disabled": "!data.ip",
+                            "width": "5%",
+                            "variant": "outlined",
+                            "confirm": {
+                                "title": "Tasmota restart",
+                                "text": "Restart the Tasmota NS panel.",
+                                "ok": "Restart",
+                                "cancel": "Cancel"
+                            }
+                        },
                         {
                             "attr": "_tasmotaSendTo",
                             "type": "sendTo",
@@ -256,7 +274,7 @@
                                 "ok": "Update",
                                 "cancel": "Cancel"
                             }
-                        } /*,
+                        }/*,
                         {
                             "attr": "_RefreshDevices",
                             "type": "sendTo",
@@ -468,6 +486,130 @@
                     "lg": 4,
                     "xl": 4
                 },
+            }
+        },
+        "maintain": {
+            "type": "panel",
+            "label": "maintain",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
+            "items": {
+                "_RefreshMaintainTable": {
+                    "type": "sendTo",
+                    "label": "refresh",
+                    "jsonData": "{ \"internalServerIp\": \"${globalData.internalServerIp}\" }",
+                    "showProcess": true,
+                    "command": "refreshMaintainTable",
+                    "variant": "outlined",
+                    "useNative": true
+                },
+                "_maintainPanels": {
+                    "type": "table",
+                    "label": "overviewOfPanels",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "uniqueColumns": [
+                        "name",
+                        "topic",
+                        "ip"
+                    ],
+                    "items": [
+                        {
+                            "type": "text",
+                            "attr": "id",
+                            "label": "macAdressOfPanel",
+                            "validator": "data.id",
+                            "readOnly": true,
+                            "width": "10%"
+                        },
+                        {
+                            "type": "text",
+                            "attr": "ip",
+                            "validator": "data.ip",
+                            "default": "",
+                            "label": "ipFromPanel",
+                            "readOnly": true,
+                            "width": "10%"
+                        },
+                        {
+                            "type": "text",
+                            "attr": "name",
+                            "label": "panelName",
+                            "readOnly": true,
+                            "width": "10%"
+                        },
+                        {
+                            "type": "text",
+                            "attr": "topic",
+                            "label": "panelTopic",
+                            "readOnly": true,
+                            "width": "10%"
+                        },
+                        {
+                            "type": "text",
+                            "attr": "online",
+                            "label": "isOnline",
+                            "readOnly": true,
+                            "width": "5%"
+                        },
+                        {
+                            "type": "text",
+                            "attr": "tasmotaVersion",
+                            "label": "tasmotaVersion",
+                            "readOnly": true,
+                            "width": "5%"
+                        },
+                        {
+                            "type": "text",
+                            "attr": "tftVersion",
+                            "label": "tftVersion",
+                            "readOnly": true,
+                            "width": "5%"
+                        },
+                        {
+                            "attr": "_tasmotaSendTo",
+                            "type": "sendTo",
+                            "label": "Tasmota",
+                            "jsonData": "{ \"tasmotaName\": \"${data.name}\", \"tasmotaIP\": \"${data.ip}\", \"tasmotaTopic\":\"${data.topic}\", \"mqttServer\": \"${globalData.mqttServer}\", \"mqttIp\": \"${globalData.mqttIp}\", \"mqttPort\": ${globalData.mqttPort}, \"mqttUsername\": \"${globalData.mqttUsername}\", \"mqttPassword\": \"${globalData.mqttPassword}\", \"internalServerIp\": \"${globalData.internalServerIp}\" }",
+                            "showProcess": true,
+                            "command": "tasmotaSendTo",
+                            "disabled": "return !data.ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data.ip || data.ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data.topic || data.topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data.name ",
+                            "width": "5%",
+                            "variant": "outlined",
+                            "confirm": {
+                                "title": "Tasmota Configuration",
+                                "text": "Update the configuration of the Tasmota NS panel with the current settings.",
+                                "ok": "Update",
+                                "cancel": "Cancel"
+                            }
+                        },
+                        /*{
+                            "attr": "_tftInstallSendTo",
+                            "type": "sendTo",
+                            "label": "tftInstallSendToInTable",
+                            "jsonData": "{\"tasmotaIP\": \"${data.ip}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT} }",
+                            "showProcess": true,
+                            "command": "tftInstallSendTo",
+                            "disabled": "!data.ip || data.ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
+                            "newLine": true,
+                            "variant": "contained",
+                            "hidden": "data.online !== 'no'"
+                        },*/
+                        {
+                            "attr": "_tftInstallSendToMQtt",
+                            "type": "sendTo",
+                            "label": "tftInstallSendToMQTT",
+                            "jsonData": "{\"tasmotaIP\": \"${data.ip}\", \"topic\": \"${data.topic}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT},\"online\": \"${data.online}\" }",
+                            "showProcess": true,
+                            "command": "tftInstallSendToMQTT",
+                            "disabled": "data.online === 'no' && data.ip === ''",
+                            "newLine": true,
+                            "variant": "contained",
+                            "width": "5%"
+                        }
+                    ]
+                }
             }
         },
         "pageQR": {
@@ -815,7 +957,6 @@
                             "attr": "left2",
                             "label": "parent",
                             "width": "16%"
-                            
                         },
                         {
                             "type": "autocompleteSendTo",

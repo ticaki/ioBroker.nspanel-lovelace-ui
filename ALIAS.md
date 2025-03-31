@@ -158,7 +158,8 @@
 ### button
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **button** | ~~SET~~ | boolean| button  | X | X |  | 
+| **button** | ACTUAL | boolean, string, boolean|   |  |  |  | 
+| **"** | ~~SET~~ | boolean| switch  | X | X |  | 
 ### select
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
