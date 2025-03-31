@@ -22,7 +22,9 @@ import axios from 'axios';
 import { URL } from 'url';
 import type { HttpServer } from './lib/classes/http-server';
 import type * as pages from './lib/types/pages';
+import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
+import path from 'path';
 //import fs from 'fs';
 axios.defaults.timeout = 3000;
 
@@ -1445,6 +1447,69 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+                case 'createScript': {
+                    const folder: ioBroker.ChannelObject = {
+                        type: 'channel',
+                        _id: `script.js.${this.name}`,
+                        common: {
+                            name: this.name,
+                            expert: true,
+                        },
+                        native: {},
+                    };
+                    await this.extendForeignObjectAsync(`script.js.${this.name}`, folder);
+
+                    // Skript erstellen
+                    const scriptId = `script.js.${this.name}.${obj.message.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}`;
+                    this.log.debug(`Create script ${path.join(__dirname, '../script')}`);
+                    if (fs.existsSync(path.join(__dirname, '../script')) && obj.message.name && obj.message.topic) {
+                        let file = fs.readFileSync(
+                            path.join(__dirname, '../script/example_sendTo_script_iobroker.ts'),
+                            'utf8',
+                        );
+                        const o = await this.getForeignObjectAsync(scriptId);
+                        if (file) {
+                            if (o) {
+                                const token =
+                                    '*  END STOP END STOP END - No more configuration - END STOP END STOP END       *';
+                                const indexFrom = file.indexOf(token);
+                                const indexTo = o.common.source.indexOf(token);
+                                if (indexFrom !== -1 && indexTo !== -1) {
+                                    this.log.info(`Update script ${scriptId}`);
+                                    file = o.common.source.substring(0, indexTo) + file.substring(indexFrom);
+                                } else {
+                                    if (obj.callback) {
+                                        this.sendTo(obj.from, obj.command, null, obj.callback);
+                                    }
+                                    this.log.warn(`Update script ${scriptId} something whent wrong!`);
+                                    break;
+                                }
+                            } else {
+                                this.log.info(`Create script ${scriptId}`);
+                                file = file.replace(`panelTopic: 'topic',`, `panelTopic: '${obj.message.topic}',`);
+                            }
+                            const script: ioBroker.ScriptObject = {
+                                type: 'script',
+                                _id: scriptId,
+                                common: {
+                                    name: obj.message.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_'),
+                                    engineType: 'TypeScript/ts',
+                                    engine: `system.adapter.javascript.0`,
+                                    source: file,
+                                    debug: false,
+                                    verbose: false,
+                                    enabled: false,
+                                },
+                                native: {},
+                            };
+                            await this.extendForeignObjectAsync(scriptId, script);
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, null, obj.callback);
                     }
                     break;
                 }
