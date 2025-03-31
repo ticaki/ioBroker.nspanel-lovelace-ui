@@ -92,7 +92,7 @@ class Panel extends import_library.BaseClass {
   info = {
     isOnline: false,
     nspanel: {
-      displayVersion: 0,
+      displayVersion: "0.0.0",
       model: "",
       bigIconLeft: false,
       bigIconRight: false,
@@ -1083,7 +1083,7 @@ class Panel extends import_library.BaseClass {
     switch (event.method) {
       case "startup": {
         this.isOnline = true;
-        this.info.nspanel.displayVersion = parseInt(event.id);
+        this.info.nspanel.displayVersion = event.opt;
         this.info.nspanel.model = event.action;
         await this.writeInfo();
         this.sendScreeensaverTimeout(this.timeout);

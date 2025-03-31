@@ -95,5 +95,10 @@
     "wlantype": "Cifrado wifi",
     "qrPass": "Contraseña wifi",
     "pwdHidden": "contraseña de wifi oculta",
-    "switchForWifi": "Cambiar para activar WLAN"
+    "switchForWifi": "Cambiar para activar WLAN",
+    "tftInstallSendToMQTT": "Actualizar TFT",
+    "createScript": "Guion",
+    "tasmotaSendToHelp": "Envíe la configuración de Tasmota al panel.",
+    "createScriptHelp": "Crear o actualizar el script de configuración para el panel",
+    "tftInstallSendToMQTTHelp": "Actualice el firmware TFT en el panel."
 }

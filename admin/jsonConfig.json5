@@ -519,9 +519,7 @@
                             "type": "text",
                             "attr": "id",
                             "label": "macAdressOfPanel",
-                            "validator": "data.id",
-                            "readOnly": true,
-                            "width": "10%"
+                            "readOnly": true
                         },
                         {
                             "type": "text",
@@ -529,8 +527,7 @@
                             "validator": "data.ip",
                             "default": "",
                             "label": "ipFromPanel",
-                            "readOnly": true,
-                            "width": "10%"
+                            "readOnly": true
                         },
                         {
                             "type": "text",
@@ -556,27 +553,30 @@
                         {
                             "type": "text",
                             "attr": "tasmotaVersion",
-                            "label": "tasmotaVersion",
+                            "label": "vTasmota",
                             "readOnly": true,
-                            "width": "5%"
+                            "width": "6%"
                         },
                         {
                             "type": "text",
                             "attr": "tftVersion",
-                            "label": "tftVersion",
+                            "label": "vTFT",
                             "readOnly": true,
-                            "width": "5%"
+                            "width": "6%",
+                            
+                            
                         },
                         {
                             "attr": "_tasmotaSendTo",
                             "type": "sendTo",
                             "label": "Tasmota",
+                            "tooltip": "tasmotaSendToHelp",
                             "jsonData": "{ \"tasmotaName\": \"${data.name}\", \"tasmotaIP\": \"${data.ip}\", \"tasmotaTopic\":\"${data.topic}\", \"mqttServer\": \"${globalData.mqttServer}\", \"mqttIp\": \"${globalData.mqttIp}\", \"mqttPort\": ${globalData.mqttPort}, \"mqttUsername\": \"${globalData.mqttUsername}\", \"mqttPassword\": \"${globalData.mqttPassword}\", \"internalServerIp\": \"${globalData.internalServerIp}\" }",
                             "showProcess": true,
                             "command": "tasmotaSendTo",
                             "disabled": "return !data.ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data.ip || data.ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data.topic || data.topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data.name ",
                             "width": "5%",
-                            "variant": "outlined",
+                            "variant": "contained",
                             "confirm": {
                                 "title": "Tasmota Configuration",
                                 "text": "Update the configuration of the Tasmota NS panel with the current settings.",
@@ -591,14 +591,17 @@
                             "jsonData": "{\"name\": \"${data.name}\", \"topic\": \"${data.topic}\", \"useBetaTFT\": ${globalData.useBetaTFT} }",
                             "showProcess": true,
                             "command": "createScript",
+                            "tooltip": "createScriptHelp",
                             "disabled": "!data.name || !data.topic",
                             "newLine": true,
-                            "variant": "contained"
+                            "variant": "outlined",
+                            "width": "5%"
                         },
                         {
                             "attr": "_tftInstallSendToMQtt",
                             "type": "sendTo",
                             "label": "tftInstallSendToMQTT",
+                            "tooltip": "tftInstallSendToMQTTHelp",
                             "jsonData": "{\"tasmotaIP\": \"${data.ip}\", \"topic\": \"${data.topic}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT},\"online\": \"${data.online}\" }",
                             "showProcess": true,
                             "command": "tftInstallSendToMQTT",

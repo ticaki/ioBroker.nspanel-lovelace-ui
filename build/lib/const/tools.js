@@ -42,6 +42,7 @@ __export(tools_exports, {
   getValueEntryString: () => getValueEntryString,
   ifValueEntryIs: () => ifValueEntryIs,
   insertLinebreak: () => insertLinebreak,
+  isValidDate: () => isValidDate,
   messageItemDefault: () => messageItemDefault,
   setHuefromRGB: () => setHuefromRGB,
   setRGBThreefromRGB: () => setRGBThreefromRGB,
@@ -579,7 +580,10 @@ async function getValueEntryString(i, v = null) {
       if (nval <= 0) {
         return null;
       }
-      res2 = new Date(nval).toLocaleString(format.local, format.format);
+      const temp = new Date(nval);
+      if (isValidDate(temp)) {
+        res2 = temp.toLocaleString(format.local, format.format);
+      }
     } else {
       const d = (_b = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _b : null;
       if (d !== null && d !== false) {
@@ -599,7 +603,10 @@ async function getValueEntryString(i, v = null) {
   let opt = "";
   if (res != null) {
     if ((0, import_types.isValueDateFormat)(format)) {
-      res = new Date(res).toLocaleString(format.local, format.format);
+      const temp = new Date(res);
+      if (isValidDate(temp)) {
+        res = temp.toLocaleString(format.local, format.format);
+      }
     }
     res += (_g = (_f = i.unit && await i.unit.getString()) != null ? _f : i.value.common.unit) != null ? _g : "";
     if (isTextSizeEntryType(i)) {
@@ -831,6 +838,12 @@ ${text.slice(++a)}`;
   }
   return text;
 }
+function isValidDate(d) {
+  if (!d) {
+    return false;
+  }
+  return d instanceof Date && !isNaN(d.getTime());
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
@@ -857,6 +870,7 @@ ${text.slice(++a)}`;
   getValueEntryString,
   ifValueEntryIs,
   insertLinebreak,
+  isValidDate,
   messageItemDefault,
   setHuefromRGB,
   setRGBThreefromRGB,

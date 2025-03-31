@@ -102,7 +102,7 @@ export class Panel extends BaseClass {
     info: Types.PanelInfo = {
         isOnline: false,
         nspanel: {
-            displayVersion: 0,
+            displayVersion: '0.0.0',
             model: '',
             bigIconLeft: false,
             bigIconRight: false,
@@ -1180,7 +1180,7 @@ export class Panel extends BaseClass {
             case 'startup': {
                 this.isOnline = true;
 
-                this.info.nspanel.displayVersion = parseInt(event.id);
+                this.info.nspanel.displayVersion = event.opt;
                 this.info.nspanel.model = event.action;
 
                 await this.writeInfo();

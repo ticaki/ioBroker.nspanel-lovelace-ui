@@ -382,15 +382,15 @@ declare namespace ScriptConfig {
         /**
          * The icon that is used in the standard case or if ID is true
          */
-        icon?: string;
+        icon?: AllIcons | undefined;
         /**
          * The icon that is used when id is false
          */
-        icon2?: string;
+        icon2?: AllIcons | undefined;
         /**
          * Used with blinds for partially open.
          */
-        icon3?: string;
+        icon3?: AllIcons | undefined;
         /**
          * The color that is used in the standard case or if ID is true
          */

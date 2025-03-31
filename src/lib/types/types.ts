@@ -712,7 +712,7 @@ export type STATUS0 = {
 export type PanelInfo = {
     isOnline: boolean;
     nspanel: {
-        displayVersion: number;
+        displayVersion: string;
         model: string;
         bigIconLeft: boolean;
         bigIconRight: boolean;

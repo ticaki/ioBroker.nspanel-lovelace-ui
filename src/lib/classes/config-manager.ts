@@ -1221,6 +1221,19 @@ export class ConfigManager extends BaseClass {
 
         switch (role) {
             case 'socket': {
+                let icon: AllIcons | undefined;
+                let icon2: AllIcons | undefined;
+                if (item.role) {
+                    switch (item.role) {
+                        case 'socket': {
+                            icon = 'power-socket-de';
+                            icon2 = 'power-socket-de';
+                            break;
+                        }
+                    }
+                }
+                icon = item.icon || icon || 'power';
+                icon2 = item.icon2 || icon2 || icon || 'power-standby';
                 const tempItem: typePageItem.PageItemDataItemsOptions = {
                     type: 'button',
                     role: 'button',
@@ -1229,14 +1242,14 @@ export class ConfigManager extends BaseClass {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: item.icon || 'gesture-tap-button',
+                                    constVal: icon,
                                 },
                                 color: await this.getIconColor(item.onColor, this.colorOn),
                             },
                             false: {
                                 value: {
                                     type: 'const',
-                                    constVal: item.icon2 || item.icon || 'gesture-tap-button',
+                                    constVal: icon2,
                                 },
                                 color: await this.getIconColor(item.offColor, this.colorOff),
                             },

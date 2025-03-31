@@ -1034,6 +1034,19 @@ class ConfigManager extends import_library.BaseClass {
     );
     switch (role) {
       case "socket": {
+        let icon;
+        let icon2;
+        if (item.role) {
+          switch (item.role) {
+            case "socket": {
+              icon = "power-socket-de";
+              icon2 = "power-socket-de";
+              break;
+            }
+          }
+        }
+        icon = item.icon || icon || "power";
+        icon2 = item.icon2 || icon2 || icon || "power-standby";
         const tempItem = {
           type: "button",
           role: "button",
@@ -1042,14 +1055,14 @@ class ConfigManager extends import_library.BaseClass {
               true: {
                 value: {
                   type: "const",
-                  constVal: item.icon || "gesture-tap-button"
+                  constVal: icon
                 },
                 color: await this.getIconColor(item.onColor, this.colorOn)
               },
               false: {
                 value: {
                   type: "const",
-                  constVal: item.icon2 || item.icon || "gesture-tap-button"
+                  constVal: icon2
                 },
                 color: await this.getIconColor(item.offColor, this.colorOff)
               },

@@ -33,6 +33,7 @@ __export(screensaver_exports, {
 module.exports = __toCommonJS(screensaver_exports);
 var Definition = __toESM(require("../const/definition"));
 var Types = __toESM(require("../types/types"));
+var import_icon_mapping = require("../const/icon_mapping");
 var import_Page = require("../classes/Page");
 var pages = __toESM(require("../types/pages"));
 var tools = __toESM(require("../const/tools"));
@@ -44,6 +45,7 @@ class Screensaver extends import_Page.Page {
   rotationTime = 3e5;
   screensaverIndicatorButtons = false;
   screensaverSwipe = false;
+  _alert = true;
   timoutRotation = void 0;
   //readonly mode: Types.ScreensaverModeType = 'standard';
   constructor(config, options) {
@@ -167,6 +169,13 @@ class Screensaver extends import_Page.Page {
     }
     return message;
   }
+  get alert() {
+    return this._alert;
+  }
+  set alert(alert) {
+    this._alert = alert;
+    void this.HandleTime();
+  }
   async update() {
     if (!this.visibility) {
       return;
@@ -196,6 +205,7 @@ class Screensaver extends import_Page.Page {
     if (v) {
       this.sendType();
       await this.rotationLoop();
+      await this.HandleTime();
     } else {
       if (this.timoutRotation) {
         this.adapter.clearTimeout(this.timoutRotation);
@@ -275,7 +285,9 @@ class Screensaver extends import_Page.Page {
       this.log.debug("HandleTime: no message, no time or panel is offline");
       return;
     }
-    this.sendToPanel(`time~${message.options.time[0].split("~")[5]}`);
+    this.sendToPanel(
+      `time~${message.options.time[0].split("~")[5]}${this.alert ? `~${import_icon_mapping.Icons.GetIcon("bell-ring-outline")}` : ""}`
+    );
   }
   async HandleDate() {
     const message = await this.getData(["date"]);
