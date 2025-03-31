@@ -584,18 +584,17 @@
                                 "cancel": "Cancel"
                             }
                         },
-                        /*{
-                            "attr": "_tftInstallSendTo",
+                        {
+                            "attr": "_createScript",
                             "type": "sendTo",
-                            "label": "tftInstallSendToInTable",
-                            "jsonData": "{\"tasmotaIP\": \"${data.ip}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT} }",
+                            "label": "createScript",
+                            "jsonData": "{\"name\": \"${data.name}\", \"topic\": \"${data.topic}\", \"useBetaTFT\": ${globalData.useBetaTFT} }",
                             "showProcess": true,
-                            "command": "tftInstallSendTo",
-                            "disabled": "!data.ip || data.ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
+                            "command": "createScript",
+                            "disabled": "!data.name || !data.topic",
                             "newLine": true,
-                            "variant": "contained",
-                            "hidden": "data.online !== 'no'"
-                        },*/
+                            "variant": "contained"
+                        },
                         {
                             "attr": "_tftInstallSendToMQtt",
                             "type": "sendTo",

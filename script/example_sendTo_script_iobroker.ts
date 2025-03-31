@@ -67,7 +67,7 @@ async function configuration(): Promise<void> {
     }
 
     const config: ScriptConfig.Config = {
-        panelTopic: 'nspanel/ns_panel4',
+        panelTopic: 'topic',
         weatherEntity: 'accuweather.0.',
         defaultOffColor: Off,
         defaultOnColor: On,
