@@ -706,10 +706,11 @@
                             "default": false
                         },
                         {
+                            "attr": "_divider1",
                             "type": "divider",
                             "newLine": true,
-                            "height": 2,
-                            "color": "red",
+                            "height": 5,
+                            "color": "blue",
                             "xs": 12,
                             "sm": 12,
                             "md": 6,
@@ -739,6 +740,17 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power1_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
                             "attr": "power1_minSpeed",
                             "xs": 12,
                             "sm": 12,
@@ -747,7 +759,9 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinSpeed",
-                            "default": "0"
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power1_more"
                         },
                         {
                             "attr": "power1_maxSpeed",
@@ -758,7 +772,8 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100"
+                            "default": "100",
+                            "hidden": "!data._power1_more"
                         },
                         {
                             "attr": "power1_reverse",
@@ -769,12 +784,19 @@
                             "xl": 2,
                             "type": "checkbox",
                             "label": "powerReverse",
-                            "default": false
+                            "default": false,
+                            "hidden": "!data._power1_more"
                         },
                         {
+                            "attr": "_divider2",
                             "type": "divider",
                             "height": 5,
-                            "color": "red"
+                            "color": "red",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "attr": "power2_icon",
@@ -799,6 +821,17 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power2_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
                             "attr": "power2_minSpeed",
                             "xs": 12,
                             "sm": 12,
@@ -807,7 +840,9 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinSpeed",
-                            "default": "0"
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power2_more"
                         },
                         {
                             "attr": "power2_maxSpeed",
@@ -818,7 +853,8 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100"
+                            "default": "100",
+                            "hidden": "!data._power2_more"
                         },
                         {
                             "attr": "power2_reverse",
@@ -829,12 +865,19 @@
                             "xl": 2,
                             "type": "checkbox",
                             "label": "powerReverse",
-                            "default": false
+                            "default": false,
+                            "hidden": "!data._power2_more"
                         },
                         {
+                            "attr": "_divider3",
                             "type": "divider",
                             "height": 5,
-                            "color": "red"
+                            "color": "red",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "newLine": true,
@@ -860,6 +903,17 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power3_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
                             "attr": "power3_minSpeed",
                             "xs": 12,
                             "sm": 12,
@@ -868,7 +922,9 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinSpeed",
-                            "default": "0"
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power3_more"
                         },
                         {
                             "attr": "power3_maxSpeed",
@@ -879,7 +935,8 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100"
+                            "default": "100",
+                            "hidden": "!data._power3_more"
                         },
                         {
                             "attr": "power3_reverse",
@@ -890,12 +947,19 @@
                             "xl": 2,
                             "type": "checkbox",
                             "label": "powerReverse",
-                            "default": false
+                            "default": false,
+                            "hidden": "!data._power3_more"
                         },
                         {
+                            "attr": "_divider4",
                             "type": "divider",
                             "height": 5,
-                            "color": "red"
+                            "color": "red",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "newLine": true,
@@ -921,6 +985,17 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power4_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
                             "attr": "power4_minSpeed",
                             "xs": 12,
                             "sm": 12,
@@ -929,7 +1004,9 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinSpeed",
-                            "default": "0"
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power4_more"
                         },
                         {
                             "attr": "power4_maxSpeed",
@@ -940,7 +1017,8 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100"
+                            "default": "100",
+                            "hidden": "!data._power4_more"
                         },
                         {
                             "attr": "power4_reverse",
@@ -951,12 +1029,19 @@
                             "xl": 2,
                             "type": "checkbox",
                             "label": "powerReverse",
-                            "default": false
+                            "default": false,
+                            "hidden": "!data._power4_more"
                         },
                         {
+                            "attr": "_divider5",
                             "type": "divider",
                             "height": 5,
-                            "color": "red"
+                            "color": "red",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "newLine": true,
@@ -982,6 +1067,17 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power5_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
                             "attr": "power5_minSpeed",
                             "xs": 12,
                             "sm": 12,
@@ -990,7 +1086,9 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinSpeed",
-                            "default": "0"
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power5_more"
                         },
                         {
                             "attr": "power5_maxSpeed",
@@ -1001,7 +1099,8 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100"
+                            "default": "100",
+                            "hidden": "!data._power5_more"
                         },
                         {
                             "attr": "power5_reverse",
@@ -1012,12 +1111,19 @@
                             "xl": 2,
                             "type": "checkbox",
                             "label": "powerReverse",
-                            "default": false
+                            "default": false,
+                            "hidden": "!data._power5_more"
                         },
                         {
+                            "attr": "_divider6",
                             "type": "divider",
                             "height": 5,
-                            "color": "red"
+                            "color": "red",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "newLine": true,
@@ -1043,6 +1149,17 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power6_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
                             "attr": "power6_minSpeed",
                             "xs": 12,
                             "sm": 12,
@@ -1051,7 +1168,9 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinSpeed",
-                            "default": "0"
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power6_more"
                         },
                         {
                             "attr": "power6_maxSpeed",
@@ -1062,7 +1181,8 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100"
+                            "default": "100",
+                            "hidden": "!data._power6_more"
                         },
                         {
                             "attr": "power6_reverse",
@@ -1073,12 +1193,19 @@
                             "xl": 2,
                             "type": "checkbox",
                             "label": "powerReverse",
-                            "default": false
+                            "default": false,
+                            "hidden": "!data._power6_more"
                         },
                         {
+                            "attr": "_divider7",
                             "type": "divider",
                             "height": 5,
-                            "color": "blue"
+                            "color": "blue",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "newLine": true,
