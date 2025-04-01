@@ -26,13 +26,14 @@ Messages from the Panel are send to the `tele/XXX/RESULT` Topic, encoded in json
 
 ## Startup
 
-On startup the panel will send `{"CustomRecv":"event,startup,39,eu"}` every few seconds.
+On startup the panel will send `{"CustomRecv":"event,startup,55,eu,4.6.2"}` every few seconds.
 
 ```
 event,   #Every message from the screen will start with `event`
 startup, #Startup Event
-39,      #Current HMI Project Version
+55,      #Current HMI Project Version
 eu       #Current HMI Project Model
+4.6.2    #Current HMI Release
 ```
 
 You can answer this message in many different ways, but in general the goal is to navigate way from the startup page. In the following example we will navigate to the screensaver page.
@@ -42,18 +43,21 @@ Send the following messages to the CustomSend Topic. (You can also send them on 
 ### Some preperation before we are acually navigating away:
 
 Send this every minute: `time~18:17`
+- add Icon or Text with `time~18:17~tTimeAdd` (tTimeAdd used for bell-symbol (Adapter Nofifications))
 
 Send this at least once at midnight: `date~Donnerstag, 25. August 2022`
 
 Send theese message once after receiving the startup event (parameters will be explained later):
 
-`timeout~20`
+`timeout~20` (timeout~numValueInSeconds)
 
-`dimmode~10~100~6371`
+`dimmode~10~100~6371~65535~1` (dimmode~DimBrightness~ActiveBrightness~BackgroundColore~TextColor~SwitchToNewLightPopup)
 
 ### Navigate from the startup page to the screensaver, by sending this command to the CustomSend Topic.
 
-`pageType~screensaver`
+`pageType~screensaver` (Standard & Alternate Screensaver)
+`pageType~screensaver2` (Advanced Screensaver)
+`pageType~screensaver3` (EasyView Screensaver)
 
 After sending this command you should already see the time and date.
 To also show weather data you have to send them with weatherUpdate, but we will skip this for now.
@@ -76,13 +80,14 @@ You can answer this by sending theese commands to the CustomSend Topic.
 
 set brightness of screensaver and active-brightness:
 
-`dimmode~0~100 - (screen off)`
+`dimmode~0~100~BackgroundColor~TextColor - (screen off)`
 
-`dimmode~100~100 - (screen on with full brightness)`
+`dimmode~100~100~BackgroundColor~TextColor - (screen on with full brightness)`
 
 set current time:
 
-`time~22:26`
+`time~22:26` no Notificatiion
+`time~22:26~XYZ` with Notification (Text or Icon)
 
 set current date:
 
@@ -92,7 +97,7 @@ set screensaver timeout (set time in sec~ max 65):
 
 `timeout~15 - timeout after 15 seconds`
 
-`timeout~0 - disable screensaver`
+`timeout~0 - disable screensaver` (Dimmode is not working)
 
 change the page type:
 
@@ -100,17 +105,29 @@ change the page type:
 
 `pageType~cardEntities`
 
+`pageType~cardSchedule`
+
+`pageType~cardGrid`
+
+`pageType~cardGrid2`
+
+`pageType~cardGrid3`
+
 `pageType~cardThermo`
 
 `pageType~cardMedia`
+
+`pageType~cardQR`
+
+`pageType~cardAlarm`
 
 `pageType~popupLight~Schreibtischlampe~light.schreibtischlampe`
 
 `pageType~popupNotify`
 
-`pageType~screensaver`
+`pageType~screensaver` or `pageType~screensaver2` or `pageType~screensaver3`
 
-### screensaver page
+### screensaver page (Standard & Alternative)
 
 <table>
 <thead>
