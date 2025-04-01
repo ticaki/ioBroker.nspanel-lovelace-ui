@@ -176,6 +176,27 @@ class NspanelLovelaceUi extends utils.Adapter {
       }
       if (scriptConfig) {
         for (let b = 0; b < scriptConfig.length; b++) {
+          for (let c = b <= 0 ? 1 : b - 1; c < scriptConfig.length; c++) {
+            if (c === b || !scriptConfig[c] || !scriptConfig[b].pages || !scriptConfig[c].pages) {
+              continue;
+            }
+            let pages = JSON.parse(JSON.stringify(scriptConfig[c].pages));
+            if (pages) {
+              pages = pages.filter((a) => {
+                var _a2, _b2, _c2;
+                if (((_a2 = a.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b2 = a.config) == null ? void 0 : _b2.card) === "screensaver2" || ((_c2 = a.config) == null ? void 0 : _c2.card) === "screensaver3") {
+                  return false;
+                }
+                if (scriptConfig[b].pages.find((b2) => b2.uniqueID === a.uniqueID)) {
+                  return false;
+                }
+                return true;
+              });
+              scriptConfig[b].pages = scriptConfig[b].pages.concat(pages);
+            }
+          }
+        }
+        for (let b = 0; b < scriptConfig.length; b++) {
           const s = scriptConfig[b];
           if (!s || !s.pages) {
             continue;
@@ -349,6 +370,20 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
         }
       }
+      config.forEach((a) => {
+        if (a && a.pages) {
+          a.pages = a.pages.filter((b) => {
+            var _a2, _b2, _c2;
+            if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b2 = b.config) == null ? void 0 : _b2.card) === "screensaver2" || ((_c2 = b.config) == null ? void 0 : _c2.card) === "screensaver3") {
+              return true;
+            }
+            if (a.navigation.find((c) => c && c.name === b.uniqueID)) {
+              return true;
+            }
+            return false;
+          });
+        }
+      });
       const mem = process.memoryUsage().heapUsed / 1024;
       this.log.debug(String(`${mem}k`));
       this.controller = new import_controller.Controller(this, {

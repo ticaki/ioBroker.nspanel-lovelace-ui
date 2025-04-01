@@ -74,7 +74,7 @@ class PageGrid extends import_pageMenu.PageMenu {
     if (!this.config || this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
       return;
     }
-    const arr = (await this.getOptions([])).slice(0, 8);
+    const arr = (await this.getOptions([])).slice(0, this.maxItems);
     message.options = arr;
     message.headline = this.library.getTranslation(
       (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""

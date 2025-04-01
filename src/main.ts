@@ -210,6 +210,32 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
             }
             if (scriptConfig) {
+                // merge all pages into every pages array
+                for (let b = 0; b < scriptConfig.length; b++) {
+                    for (let c = b <= 0 ? 1 : b - 1; c < scriptConfig.length; c++) {
+                        if (c === b || !scriptConfig[c] || !scriptConfig[b].pages || !scriptConfig[c].pages) {
+                            continue;
+                        }
+                        let pages = JSON.parse(JSON.stringify(scriptConfig[c].pages)) as panelConfigPartial['pages'];
+                        if (pages) {
+                            pages = pages.filter(a => {
+                                if (
+                                    a.config?.card === 'screensaver' ||
+                                    a.config?.card === 'screensaver2' ||
+                                    a.config?.card === 'screensaver3'
+                                ) {
+                                    return false;
+                                }
+                                if (scriptConfig[b].pages!.find(b => b.uniqueID === a.uniqueID)) {
+                                    return false;
+                                }
+                                return true;
+                            });
+
+                            scriptConfig[b].pages = scriptConfig[b].pages!.concat(pages);
+                        }
+                    }
+                }
                 for (let b = 0; b < scriptConfig.length; b++) {
                     const s = scriptConfig[b];
                     if (!s || !s.pages) {
@@ -431,6 +457,8 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (counter === 0) {
                 return;
             }
+
+            // clone the configuration and update navigation from admin
             const config = structuredClone(this.mainConfiguration);
             {
                 const o = await this.getForeignObjectAsync(this.namespace);
@@ -442,6 +470,24 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                 }
             }
+            // remove unused pages except screensaver - pages must be in navigation
+            config.forEach(a => {
+                if (a && a.pages) {
+                    a.pages = a.pages.filter(b => {
+                        if (
+                            b.config?.card === 'screensaver' ||
+                            b.config?.card === 'screensaver2' ||
+                            b.config?.card === 'screensaver3'
+                        ) {
+                            return true;
+                        }
+                        if (a.navigation.find(c => c && c.name === b.uniqueID)) {
+                            return true;
+                        }
+                        return false;
+                    });
+                }
+            });
 
             const mem = process.memoryUsage().heapUsed / 1024;
             this.log.debug(String(`${mem}k`));

@@ -25,6 +25,7 @@ import { PageLChart } from '../pages/pageLChart';
 import { PageQR } from '../pages/pageQR';
 import { Dataitem } from '../classes/data-item';
 import { Color } from '../const/Color';
+import { PageSchedule } from '../pages/pageSchedule';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -242,6 +243,11 @@ export class Panel extends BaseClass {
                 case 'cardEntities': {
                     pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageEntities(pmconfig, pageConfig);
+                    break;
+                }
+                case 'cardSchedule': {
+                    pageConfig = Page.getPage(pageConfig, this);
+                    this.pages[a] = new PageSchedule(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardGrid3':

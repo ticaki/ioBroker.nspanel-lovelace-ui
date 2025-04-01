@@ -52,6 +52,7 @@ var import_pageLChart = require("../pages/pageLChart");
 var import_pageQR = require("../pages/pageQR");
 var import_data_item = require("../classes/data-item");
 var import_Color = require("../const/Color");
+var import_pageSchedule = require("../pages/pageSchedule");
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -226,6 +227,11 @@ class Panel extends import_library.BaseClass {
         case "cardEntities": {
           pageConfig = import_Page.Page.getPage(pageConfig, this);
           this.pages[a] = new import_pageEntities.PageEntities(pmconfig, pageConfig);
+          break;
+        }
+        case "cardSchedule": {
+          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          this.pages[a] = new import_pageSchedule.PageSchedule(pmconfig, pageConfig);
           break;
         }
         case "cardGrid3":
