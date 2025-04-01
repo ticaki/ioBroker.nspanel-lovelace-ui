@@ -40,6 +40,7 @@ class PageMenu extends import_Page.Page {
     super(config, options);
     if (options.config) {
       switch (options.config.card) {
+        case "cardSchedule":
         case "cardGrid":
           this.maxItems = 6;
           break;
@@ -72,7 +73,7 @@ class PageMenu extends import_Page.Page {
   }
   async getOptions(result) {
     if (this.pageItems) {
-      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardGrid2")) {
+      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardGrid2")) {
         let pageItems = this.pageItems;
         if (this.config.filterType === "true" || this.config.filterType === "false") {
           this.tempItems = [];
@@ -84,7 +85,7 @@ class PageMenu extends import_Page.Page {
           }
           pageItems = this.tempItems;
         }
-        const isEntities = this.config.card === "cardEntities";
+        const isEntities = this.config.card === "cardEntities" || this.config.card === "cardSchedule";
         let maxItems = this.maxItems;
         let a = 0;
         if (this.pageItems.length > maxItems) {
@@ -110,7 +111,7 @@ class PageMenu extends import_Page.Page {
   }
   async onVisibilityChange(val) {
     if (val) {
-      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardGrid2")) {
+      if (this.config && (this.config.card === "cardEntities" || this.config.card === "cardSchedule" || this.config.card === "cardGrid" || this.config.card === "cardGrid3" || this.config.card === "cardGrid2")) {
         const temp = await (0, import_data_collection_functions.handleCardRole)(this.adapter, this.config.cardRole, this);
         if (temp) {
           this.pageItemConfig = temp;
@@ -120,7 +121,7 @@ class PageMenu extends import_Page.Page {
     await super.onVisibilityChange(val);
   }
   goLeft(single = false) {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
       return;
     }
     if (!single) {
@@ -151,7 +152,7 @@ class PageMenu extends import_Page.Page {
     }
   }
   goRight(single = false) {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
       return;
     }
     if (!single) {
@@ -176,8 +177,8 @@ class PageMenu extends import_Page.Page {
     }
     const pageScroll = this.config.scrollType === "page";
     const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-    const maxItemsPage = this.config.card === "cardEntities" ? this.maxItems : this.maxItems / 2;
-    const maxItemsPagePlus = this.config.card === "cardEntities" ? 0 : this.maxItems / 2;
+    const maxItemsPage = this.config.card === "cardEntities" || this.config.card === "cardSchedule" ? this.maxItems : this.maxItems / 2;
+    const maxItemsPagePlus = this.config.card === "cardEntities" || this.config.card === "cardSchedule" ? 0 : this.maxItems / 2;
     if (!pageScroll ? ++this.step + this.maxItems > length : ++this.step * maxItemsPage + maxItemsPagePlus >= length) {
       this.step--;
       this.panel.navigation.goRight();
@@ -186,7 +187,7 @@ class PageMenu extends import_Page.Page {
     }
   }
   getNavigation() {
-    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
+    if (!this.config || this.config.card !== "cardEntities" && this.config.card !== "cardSchedule" && this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
       return "";
     }
     const pageScroll = this.config.scrollType === "page";
@@ -199,8 +200,8 @@ class PageMenu extends import_Page.Page {
     if (this.step <= 0) {
       left = this.panel.navigation.buildNavigationString("left");
     }
-    const maxItemsPage = this.config.card === "cardEntities" ? this.maxItems : this.maxItems / 2;
-    const maxItemsPagePlus = this.config.card === "cardEntities" ? 0 : this.maxItems / 2;
+    const maxItemsPage = this.config.card === "cardEntities" || this.config.card === "cardSchedule" ? this.maxItems : this.maxItems / 2;
+    const maxItemsPagePlus = this.config.card === "cardEntities" || this.config.card === "cardSchedule" ? 0 : this.maxItems / 2;
     if (!pageScroll ? this.step + this.maxItems >= length : (this.step + 1) * maxItemsPage + maxItemsPagePlus >= length) {
       right = this.panel.navigation.buildNavigationString("right");
     }

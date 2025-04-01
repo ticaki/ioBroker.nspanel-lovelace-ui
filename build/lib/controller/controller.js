@@ -282,10 +282,16 @@ class Controller extends Library.BaseClass {
     if (this.dailyIntervalTimeout) {
       this.adapter.clearInterval(this.dailyIntervalTimeout);
     }
-    await this.systemNotification.delete();
-    await this.statesControler.delete();
+    if (this.systemNotification) {
+      await this.systemNotification.delete();
+    }
+    if (this.statesControler) {
+      await this.statesControler.delete();
+    }
     for (const a of this.panels) {
-      await a.delete();
+      if (a) {
+        await a.delete();
+      }
     }
   }
   async notificationToPanel() {

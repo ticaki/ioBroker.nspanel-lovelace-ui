@@ -16,25 +16,25 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var pageEntities_exports = {};
-__export(pageEntities_exports, {
-  PageEntities: () => PageEntities
+var pageSchedule_exports = {};
+__export(pageSchedule_exports, {
+  PageSchedule: () => PageSchedule
 });
-module.exports = __toCommonJS(pageEntities_exports);
+module.exports = __toCommonJS(pageSchedule_exports);
 var import_tools = require("../const/tools");
 var import_pageMenu = require("./pageMenu");
-const PageEntitiesMessageDefault = {
+const PageScheduleMessageDefault = {
   event: "entityUpd",
   headline: "Page Entities",
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
-  options: ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"]
+  options: ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"]
 };
-class PageEntities extends import_pageMenu.PageMenu {
+class PageSchedule extends import_pageMenu.PageMenu {
   config;
   items;
   constructor(config, options) {
     super(config, options);
-    if (!options.config || options.config.card !== "cardEntities") {
+    if (!options.config || options.config.card !== "cardSchedule") {
       throw new Error("wrong card, should never happen");
     }
     this.iconLeftP = "arrow-up-bold-outline";
@@ -42,7 +42,7 @@ class PageEntities extends import_pageMenu.PageMenu {
     this.iconRightP = "arrow-down-bold-outline";
     this.iconRight = "arrow-down-bold";
     this.config = options.config;
-    if (options.items && options.items.card == "cardEntities") {
+    if (options.items && options.items.card == "cardSchedule") {
       this.items = options.items;
     }
     this.minUpdateInterval = 1e3;
@@ -70,7 +70,7 @@ class PageEntities extends import_pageMenu.PageMenu {
       (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
     );
     message.navigation = this.getNavigation();
-    const msg = Object.assign(structuredClone(PageEntitiesMessageDefault), message);
+    const msg = Object.assign(structuredClone(PageScheduleMessageDefault), message);
     this.sendToPanel(this.getMessage(msg));
   }
   getMessage(message) {
@@ -84,6 +84,6 @@ class PageEntities extends import_pageMenu.PageMenu {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  PageEntities
+  PageSchedule
 });
-//# sourceMappingURL=pageEntities.js.map
+//# sourceMappingURL=pageSchedule.js.map

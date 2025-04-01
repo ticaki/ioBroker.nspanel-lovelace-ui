@@ -4,20 +4,20 @@ import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 import { PageMenu } from './pageMenu';
 
-const PageEntitiesMessageDefault: pages.PageEntitiesMessage = {
+const PageScheduleMessageDefault: pages.PageScheduleMessage = {
     event: 'entityUpd',
     headline: 'Page Entities',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
-    options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
+    options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
 };
 
-export class PageEntities extends PageMenu {
-    config: pages.cardEntitiesDataItemOptions;
+export class PageSchedule extends PageMenu {
+    config: pages.cardScheduleDataItemOptions;
     items: pages.PageBaseConfig['items'];
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
-        if (!options.config || options.config.card !== 'cardEntities') {
+        if (!options.config || options.config.card !== 'cardSchedule') {
             throw new Error('wrong card, should never happen');
         }
         this.iconLeftP = 'arrow-up-bold-outline';
@@ -26,7 +26,7 @@ export class PageEntities extends PageMenu {
         this.iconRight = 'arrow-down-bold';
 
         this.config = options.config;
-        if (options.items && options.items.card == 'cardEntities') {
+        if (options.items && options.items.card == 'cardSchedule') {
             this.items = options.items;
         }
         this.minUpdateInterval = 1000;
@@ -35,19 +35,19 @@ export class PageEntities extends PageMenu {
     async init(): Promise<void> {
         const config = structuredClone(this.config);
         // search states for mode auto
-        const tempConfig: Partial<pages.cardEntitiesDataItemOptions> =
+        const tempConfig: Partial<pages.cardScheduleDataItemOptions> =
             this.enums || this.dpInit
                 ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
                 : config;
         // create Dataitems
         //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<pages.cardEntitiesDataItems> = await this.panel.statesControler.createDataItems(
+        const tempItem: Partial<pages.cardScheduleDataItems> = await this.panel.statesControler.createDataItems(
             tempConfig,
             this,
         );
-        this.items = tempItem as pages.cardEntitiesDataItems;
+        this.items = tempItem as pages.cardScheduleDataItems;
         // set card because we lose it
-        this.items.card = this.card as 'cardEntities';
+        this.items.card = this.card as 'cardSchedule';
         await super.init();
     }
 
@@ -55,7 +55,7 @@ export class PageEntities extends PageMenu {
         if (!this.visibility) {
             return;
         }
-        const message: Partial<pages.PageEntitiesMessage> = {};
+        const message: Partial<pages.PageScheduleMessage> = {};
         const arr = (await this.getOptions([])).slice(0, this.maxItems);
         message.options = arr as typeof message.options;
 
@@ -63,11 +63,11 @@ export class PageEntities extends PageMenu {
             (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
         );
         message.navigation = this.getNavigation();
-        const msg: pages.PageEntitiesMessage = Object.assign(structuredClone(PageEntitiesMessageDefault), message);
+        const msg: pages.PageScheduleMessage = Object.assign(structuredClone(PageScheduleMessageDefault), message);
 
         this.sendToPanel(this.getMessage(msg));
     }
-    private getMessage(message: pages.PageEntitiesMessage): string {
+    private getMessage(message: pages.PageScheduleMessage): string {
         return getPayload('entityUpd', message.headline, message.navigation, getPayloadArray(message.options));
     }
     protected async onStateTrigger(): Promise<void> {
