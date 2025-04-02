@@ -240,7 +240,6 @@
                             "readOnly": true,
                             "validatorErrorText": "mustBeUnique"
                         },
-                        
                         {
                             "attr": "_tasmotaRestartSendTo",
                             "type": "sendTo",
@@ -275,18 +274,6 @@
                                 "cancel": "Cancel"
                             }
                         }
-                        }/*,
-                        {
-                            "attr": "_RefreshDevices",
-                            "type": "sendTo",
-                            "label": "Refresh Device",
-                            "command": "RefreshDevices",
-                            "jsonData": "{\"id\": \"${data.id}\", \"name\": \"${data.name}\", \"topic\": \"${data.topic}\", \"ip\": \"${data.ip}\"}",
-                            "showProcess": true,
-                            "useNative": true,
-                            "timeout": 8000,
-                            "disabled": "!data.topic || !data.name"
-                        }*/
                     ]
                 },
                 "_header2": {
