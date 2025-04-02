@@ -14,6 +14,7 @@ import type * as pages from '../types/pages';
 import type { IncomingEvent, nsPanelState } from '../types/types';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { ConfigManager } from '../classes/config-manager';
+import { Icons } from '../const/icon_mapping';
 
 const PagePowerMessageDefault: pages.PagePowerMessage = {
     event: 'entityUpd',
@@ -165,12 +166,22 @@ export class PagePower extends Page {
             config.power7_state !== undefined && (await configManager.existsState(config.power7_state));
         const PowerHome = statePowerHomeExist ? (config.power7_state !== undefined ? config.power7_state : '') : '';
 
-        const Icon1 = config.power1_icon !== undefined ? config.power1_icon : '';
+        /*const Icon1 = config.power1_icon !== undefined ? config.power1_icon : '';
         const Icon2 = config.power2_icon !== undefined ? config.power2_icon : '';
         const Icon3 = config.power3_icon !== undefined ? config.power3_icon : '';
         const Icon4 = config.power4_icon !== undefined ? config.power4_icon : '';
         const Icon5 = config.power5_icon !== undefined ? config.power5_icon : '';
-        const Icon6 = config.power6_icon !== undefined ? config.power6_icon : '';
+        const Icon6 = config.power6_icon !== undefined ? config.power6_icon : ''; */
+
+        const icons: string[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_icon` as keyof typeof config;
+            if (typeof config[key] === 'string') {
+                icons.push(config[key]);
+            } else {
+                icons.push('');
+            }
+        }
 
         const result: pages.PageBaseConfig = {
             uniqueID: config.pageName,
@@ -193,7 +204,7 @@ export class PagePower extends Page {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: Icon1,
+                                    constVal: icons[0],
                                 },
                                 color: undefined,
                             },
@@ -220,7 +231,7 @@ export class PagePower extends Page {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: Icon2,
+                                    constVal: icons[1],
                                 },
                                 color: undefined,
                             },
@@ -247,7 +258,7 @@ export class PagePower extends Page {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: Icon3,
+                                    constVal: icons[2],
                                 },
                                 color: undefined,
                             },
@@ -274,7 +285,7 @@ export class PagePower extends Page {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: Icon4,
+                                    constVal: icons[3],
                                 },
                                 color: undefined,
                             },
@@ -301,7 +312,7 @@ export class PagePower extends Page {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: Icon5,
+                                    constVal: icons[4],
                                 },
                                 color: undefined,
                             },
@@ -328,7 +339,7 @@ export class PagePower extends Page {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: Icon6,
+                                    constVal: icons[5],
                                 },
                                 color: undefined,
                             },

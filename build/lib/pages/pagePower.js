@@ -149,12 +149,15 @@ class PagePower extends import_Page.Page {
     const Power6 = stateRightBottomExist ? config.power6_state !== void 0 ? config.power6_state : "" : "";
     const statePowerHomeExist = config.power7_state !== void 0 && await configManager.existsState(config.power7_state);
     const PowerHome = statePowerHomeExist ? config.power7_state !== void 0 ? config.power7_state : "" : "";
-    const Icon1 = config.power1_icon !== void 0 ? config.power1_icon : "";
-    const Icon2 = config.power2_icon !== void 0 ? config.power2_icon : "";
-    const Icon3 = config.power3_icon !== void 0 ? config.power3_icon : "";
-    const Icon4 = config.power4_icon !== void 0 ? config.power4_icon : "";
-    const Icon5 = config.power5_icon !== void 0 ? config.power5_icon : "";
-    const Icon6 = config.power6_icon !== void 0 ? config.power6_icon : "";
+    const icons = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_icon`;
+      if (typeof config[key] === "string") {
+        icons.push(config[key]);
+      } else {
+        icons.push("");
+      }
+    }
     const result = {
       uniqueID: config.pageName,
       alwaysOn: config.alwaysOnDisplay ? "always" : "none",
@@ -176,7 +179,7 @@ class PagePower extends import_Page.Page {
               true: {
                 value: {
                   type: "const",
-                  constVal: Icon1
+                  constVal: icons[0]
                 },
                 color: void 0
               },
@@ -203,7 +206,7 @@ class PagePower extends import_Page.Page {
               true: {
                 value: {
                   type: "const",
-                  constVal: Icon2
+                  constVal: icons[1]
                 },
                 color: void 0
               },
@@ -230,7 +233,7 @@ class PagePower extends import_Page.Page {
               true: {
                 value: {
                   type: "const",
-                  constVal: Icon3
+                  constVal: icons[2]
                 },
                 color: void 0
               },
@@ -257,7 +260,7 @@ class PagePower extends import_Page.Page {
               true: {
                 value: {
                   type: "const",
-                  constVal: Icon4
+                  constVal: icons[3]
                 },
                 color: void 0
               },
@@ -284,7 +287,7 @@ class PagePower extends import_Page.Page {
               true: {
                 value: {
                   type: "const",
-                  constVal: Icon5
+                  constVal: icons[4]
                 },
                 color: void 0
               },
@@ -311,7 +314,7 @@ class PagePower extends import_Page.Page {
               true: {
                 value: {
                   type: "const",
-                  constVal: Icon6
+                  constVal: icons[5]
                 },
                 color: void 0
               },
