@@ -240,7 +240,6 @@
                             "readOnly": true,
                             "validatorErrorText": "mustBeUnique"
                         },
-                        
                         {
                             "attr": "_tasmotaRestartSendTo",
                             "type": "sendTo",
@@ -274,18 +273,7 @@
                                 "ok": "Update",
                                 "cancel": "Cancel"
                             }
-                        }/*,
-                        {
-                            "attr": "_RefreshDevices",
-                            "type": "sendTo",
-                            "label": "Refresh Device",
-                            "command": "RefreshDevices",
-                            "jsonData": "{\"id\": \"${data.id}\", \"name\": \"${data.name}\", \"topic\": \"${data.topic}\", \"ip\": \"${data.ip}\"}",
-                            "showProcess": true,
-                            "useNative": true,
-                            "timeout": 8000,
-                            "disabled": "!data.topic || !data.name"
-                        }*/
+                        }
                     ]
                 },
                 "_header2": {
@@ -305,18 +293,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                }, /*
-                "tasmotaAdmin": {
-                    "type": "text",
-                    "label": "tasmotaAdmin",
-                    "newLine": false,
-                    "hidden": "!data.useTasmotaAdmin",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },*/
+                },
                 "tasmotaAdminPassword": {
                     "type": "password",
                     "label": "tasmotaAdminPassword",
@@ -431,7 +408,6 @@
                     "command": "tasmotaAddTableSendTo",
                     "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 ||  (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
                     "newLine": false,
-                    //"reloadBrowser": true,
                     "useNative": true,
                     "variant": "contained",
                     "hidden": "data._selectTool != '1'"
@@ -485,7 +461,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },
+                }
             }
         },
         "maintain": {
@@ -826,6 +802,633 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                }
+            }
+        },
+        "pagePower": {
+            "type": "panel",
+            "label": "Page Power",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
+            "items": {
+                "pagePowerdata": {
+                    "type": "accordion",
+                    "label": "pagePowerdata",
+                    "titleAttr": "pageName",
+                    "items": [
+                        {
+                            "attr": "pageName",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "text",
+                            "label": "pageName",
+                            "default": "Unique Name"
+                        },
+                        {
+                            "attr": "headline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "text",
+                            "label": "headline",
+                            "default": ""
+                        },
+                        {
+                            "attr": "alwaysOnDisplay",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "checkbox",
+                            "label": "alwaysOnDisplay",
+                            "default": false
+                        },
+                        {
+                            "attr": "_divider1",
+                            "type": "divider",
+                            "newLine": true,
+                            "height": 5,
+                            "color": "blue",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "attr": "power1_icon",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "powerIcon",
+                            "default": "arrow-top-left"
+                        },
+                        {
+                            "attr": "power1_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
+                            "attr": "power1_state",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "objectId",
+                            "label": "powerState",
+                            "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "_power1_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
+                            "attr": "power1_minSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power1_more"
+                        },
+                        {
+                            "attr": "power1_maxSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100",
+                            "hidden": "!data._power1_more"
+                        },
+                        {
+                            "attr": "power1_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false,
+                            "hidden": "!data._power1_more"
+                        },
+                        {
+                            "attr": "_divider2",
+                            "type": "divider",
+                            "height": 5,
+                            "color": "red",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "attr": "power2_icon",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "powerIcon",
+                            "default": "arrow-top-left"
+                        },
+                        {
+                            "attr": "power2_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
+                            "attr": "power2_state",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "objectId",
+                            "label": "powerState",
+                            "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "_power2_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
+                            "attr": "power2_minSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power2_more"
+                        },
+                        {
+                            "attr": "power2_maxSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100",
+                            "hidden": "!data._power2_more"
+                        },
+                        {
+                            "attr": "power2_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false,
+                            "hidden": "!data._power2_more"
+                        },
+                        {
+                            "attr": "_divider3",
+                            "type": "divider",
+                            "height": 5,
+                            "color": "red",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "newLine": true,
+                            "attr": "power3_icon",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "powerIcon",
+                            "default": "arrow-top-left"
+                        },
+                        {
+                            "attr": "power3_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
+                            "attr": "power3_state",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "objectId",
+                            "label": "powerState",
+                            "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "_power3_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
+                            "attr": "power3_minSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power3_more"
+                        },
+                        {
+                            "attr": "power3_maxSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100",
+                            "hidden": "!data._power3_more"
+                        },
+                        {
+                            "attr": "power3_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false,
+                            "hidden": "!data._power3_more"
+                        },
+                        {
+                            "attr": "_divider4",
+                            "type": "divider",
+                            "height": 5,
+                            "color": "red",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "newLine": true,
+                            "attr": "power4_icon",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "powerIcon",
+                            "default": "arrow-top-left"
+                        },
+                        {
+                            "attr": "power4_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
+                            "attr": "power4_state",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "objectId",
+                            "label": "powerState",
+                            "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "_power4_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
+                            "attr": "power4_minSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power4_more"
+                        },
+                        {
+                            "attr": "power4_maxSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100",
+                            "hidden": "!data._power4_more"
+                        },
+                        {
+                            "attr": "power4_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false,
+                            "hidden": "!data._power4_more"
+                        },
+                        {
+                            "attr": "_divider5",
+                            "type": "divider",
+                            "height": 5,
+                            "color": "red",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "newLine": true,
+                            "attr": "power5_icon",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "powerIcon",
+                            "default": "arrow-top-left"
+                        },
+                        {
+                            "attr": "power5_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
+                            "attr": "power5_state",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "objectId",
+                            "label": "powerState",
+                            "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "_power5_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
+                            "attr": "power5_minSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power5_more"
+                        },
+                        {
+                            "attr": "power5_maxSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100",
+                            "hidden": "!data._power5_more"
+                        },
+                        {
+                            "attr": "power5_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false,
+                            "hidden": "!data._power5_more"
+                        },
+                        {
+                            "attr": "_divider6",
+                            "type": "divider",
+                            "height": 5,
+                            "color": "red",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "newLine": true,
+                            "attr": "power6_icon",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "powerIcon",
+                            "default": "arrow-top-left"
+                        },
+                        {
+                            "attr": "power6_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
+                            "attr": "power6_state",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "objectId",
+                            "label": "powerState",
+                            "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "_power6_more",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false
+                        },
+                        {
+                            "attr": "power6_minSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinSpeed",
+                            "default": "0",
+                            "newLine": true,
+                            "hidden": "!data._power6_more"
+                        },
+                        {
+                            "attr": "power6_maxSpeedScale",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxSpeed",
+                            "default": "100",
+                            "hidden": "!data._power6_more"
+                        },
+                        {
+                            "attr": "power6_reverse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "powerReverse",
+                            "default": false,
+                            "hidden": "!data._power6_more"
+                        },
+                        {
+                            "attr": "_divider7",
+                            "type": "divider",
+                            "height": 5,
+                            "color": "blue",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "newLine": true,
+                            "attr": "power7_state",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 8,
+                            "xl": 8,
+                            "type": "objectId",
+                            "label": "powerState",
+                            "filterFunc": "return obj.common.type === 'number'"
+                        }
+                    ]
                 }
             }
         },

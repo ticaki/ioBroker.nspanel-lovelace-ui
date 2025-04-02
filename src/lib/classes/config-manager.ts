@@ -3,6 +3,7 @@ import * as configManagerConst from '../const/config-manager-const';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PageQR } from '../pages/pageQR';
+import { PagePower } from '../pages/pagePower';
 import { getStringOrArray } from '../tools/readme';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
@@ -367,7 +368,8 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardGrid3' &&
                     page.type !== 'cardEntities' &&
                     page.type !== 'cardThermo' &&
-                    page.type !== 'cardQR'
+                    page.type !== 'cardQR' &&
+                    page.type !== 'cardPower'
                 ) {
                     const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!..`;
                     messages.push(msg);
@@ -395,10 +397,10 @@ export class ConfigManager extends BaseClass {
                         panelConfig.navigation.push(navItem);
                     }
                 }
-
+                // PageQR einlesen
                 if (page.type === 'cardQR') {
                     if (!Array.isArray(this.adapter.config.pageQRdata)) {
-                        messages.push(`No PageQR configured in Admin for ${page.uniqueName}`);
+                        messages.push(`No pageQR configured in Admin for ${page.uniqueName}`);
                         this.log.warn(messages[messages.length - 1]);
                         continue;
                     }
@@ -409,6 +411,24 @@ export class ConfigManager extends BaseClass {
                         continue;
                     }
                     panelConfig.pages.push(await PageQR.getQRPageConfig(this.adapter, index, this));
+                    continue;
+                }
+                // PagePower einlesen
+                if (page.type === 'cardPower') {
+                    if (!Array.isArray(this.adapter.config.pagePowerdata)) {
+                        messages.push(`No pagePower configured in Admin for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    const index = this.adapter.config.pagePowerdata.findIndex(
+                        item => item.pageName === page.uniqueName,
+                    );
+                    if (index === -1) {
+                        messages.push(`No pagePowerdata found for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    panelConfig.pages.push(await PagePower.getPowerPageConfig(this.adapter, index, this));
                     continue;
                 }
 

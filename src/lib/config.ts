@@ -539,6 +539,7 @@ const pagePowerTest1: pages.PageBaseConfig = {
     pageItems: [],
     config: {
         card: 'cardPower',
+        index: 0,
         data: {
             headline: { type: 'const', constVal: 'headline' },
             homeValueTop: {

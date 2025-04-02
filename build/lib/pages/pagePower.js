@@ -26,7 +26,7 @@ var import_Color = require("../const/Color");
 var import_tools = require("../const/tools");
 const PagePowerMessageDefault = {
   event: "entityUpd",
-  headline: "Page Grid",
+  headline: "Power Grid",
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
   homeValueTop: "",
   homeIcon: "",
@@ -77,7 +77,9 @@ const PagePowerMessageDefault = {
   }
 };
 class PagePower extends import_Page.Page {
+  //items: pages.PageBaseConfig['items'];
   items;
+  index = 0;
   constructor(config, options) {
     super(config, options);
     if (options.config && options.config.card == "cardPower") {
@@ -90,7 +92,7 @@ class PagePower extends import_Page.Page {
       `///${this.name}/powerSum`,
       0,
       true,
-      { name: "", type: "string", role: "", read: true, write: false },
+      { name: "", type: "number", role: "", read: true, write: true },
       this.onInternalCommand
     );
     const config = structuredClone(this.config);
@@ -131,31 +133,328 @@ class PagePower extends import_Page.Page {
     }
     return null;
   };
+  static async getPowerPageConfig(adapter, index, configManager) {
+    const config = adapter.config.pagePowerdata[index];
+    const states = [];
+    for (let i = 1; i <= 7; i++) {
+      const key = `power${i}_state`;
+      if (typeof config[key] === "string" && await configManager.existsState(config[key])) {
+        states.push(config[key]);
+      } else {
+        states.push("");
+      }
+    }
+    const icons = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_icon`;
+      if (typeof config[key] === "string") {
+        icons.push(config[key]);
+      } else {
+        icons.push("");
+      }
+    }
+    const minSpeedScale = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_minSpeedScale`;
+      if (typeof config[key] === "number") {
+        minSpeedScale.push(config[key]);
+      } else {
+        minSpeedScale.push(0);
+      }
+    }
+    const maxSpeedScale = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_maxSpeedScale`;
+      if (typeof config[key] === "number") {
+        maxSpeedScale.push(config[key]);
+      } else {
+        maxSpeedScale.push(100);
+      }
+    }
+    const iconColor = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_iconColor`;
+      if (typeof config[key] === "string") {
+        iconColor.push(config[key]);
+      } else {
+        iconColor.push("#ffffff");
+      }
+    }
+    const result = {
+      uniqueID: config.pageName,
+      alwaysOn: config.alwaysOnDisplay ? "always" : "none",
+      config: {
+        card: "cardPower",
+        index,
+        data: {
+          headline: { type: "const", constVal: config.headline },
+          homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
+          homeValueTop: {
+            value: { type: "state", dp: states[6] }
+          },
+          homeValueBot: {
+            value: { type: "internal", dp: `///${config.pageName}/powerSum` },
+            math: { type: "const", constVal: "return r1+r2+r3+l1+l2+l3 -999" }
+          },
+          leftTop: {
+            icon: {
+              true: {
+                value: {
+                  type: "const",
+                  constVal: icons[0]
+                },
+                color: {
+                  type: "const",
+                  constVal: iconColor[0]
+                }
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: states[0]
+              }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: states[0]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[0]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[0]
+              }
+            },
+            text: {
+              true: { type: "state", dp: states[0] }
+            }
+          },
+          leftMiddle: {
+            icon: {
+              true: {
+                value: {
+                  type: "const",
+                  constVal: icons[1]
+                },
+                color: {
+                  type: "const",
+                  constVal: iconColor[1]
+                }
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: states[1]
+              }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: states[1]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[1]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[1]
+              }
+            },
+            text: {
+              true: { type: "state", dp: states[1] }
+            }
+          },
+          leftBottom: {
+            icon: {
+              true: {
+                value: {
+                  type: "const",
+                  constVal: icons[2]
+                },
+                color: {
+                  type: "const",
+                  constVal: iconColor[2]
+                }
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: states[2]
+              }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: states[2]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[2]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[2]
+              }
+            },
+            text: {
+              true: { type: "state", dp: states[2] }
+            }
+          },
+          rightTop: {
+            icon: {
+              true: {
+                value: {
+                  type: "const",
+                  constVal: icons[3]
+                },
+                color: {
+                  type: "const",
+                  constVal: iconColor[3]
+                }
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: states[3]
+              }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: states[3]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[3]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[3]
+              }
+            },
+            text: {
+              true: { type: "state", dp: states[3] }
+            }
+          },
+          rightMiddle: {
+            icon: {
+              true: {
+                value: {
+                  type: "const",
+                  constVal: icons[4]
+                },
+                color: {
+                  type: "const",
+                  constVal: iconColor[4]
+                }
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: states[4]
+              }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: states[4]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[4]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[4]
+              }
+            },
+            text: {
+              true: { type: "state", dp: states[4] }
+            }
+          },
+          rightBottom: {
+            icon: {
+              true: {
+                value: {
+                  type: "const",
+                  constVal: icons[5]
+                },
+                color: {
+                  type: "const",
+                  constVal: iconColor[5]
+                }
+              },
+              false: void 0
+            },
+            value: {
+              value: {
+                type: "triggered",
+                dp: states[5]
+              }
+            },
+            speed: {
+              value: {
+                type: "triggered",
+                dp: states[5]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[5]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[5]
+              }
+            },
+            text: {
+              true: { type: "state", dp: states[5] }
+            }
+          }
+        }
+      },
+      pageItems: []
+    };
+    return result;
+  }
   async update() {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     if (!this.visibility) {
       return;
     }
     const message = {};
-    const items = this.items;
-    if (!items || items.card !== "cardPower") {
-      return;
+    const config = this.adapter.config.pagePowerdata[this.index];
+    if (this.items && config != null) {
+      const items = this.items;
+      message.headline = this.library.getTranslation(
+        (_b = (_a = items.data.headline && await items.data.headline.getString()) != null ? _a : config.headline) != null ? _b : ""
+      );
+      message.navigation = this.getNavigation();
+      const data = items.data;
+      message.homeIcon = await (0, import_tools.getIconEntryValue)(data.homeIcon, true, "");
+      message.homeColor = await (0, import_tools.getIconEntryColor)(data.homeIcon, true, import_Color.Color.White);
+      message.homeValueTop = (_c = await (0, import_tools.getValueEntryString)(data.homeValueTop)) != null ? _c : "";
+      message.homeValueBot = (_d = await (0, import_tools.getValueEntryString)(data.homeValueBot)) != null ? _d : "";
+      message.leftTop = await this.getElementUpdate(data.leftTop);
+      message.leftMiddle = await this.getElementUpdate(data.leftMiddle);
+      message.leftBottom = await this.getElementUpdate(data.leftBottom);
+      message.rightTop = await this.getElementUpdate(data.rightTop);
+      message.rightMiddle = await this.getElementUpdate(data.rightMiddle);
+      message.rightBottom = await this.getElementUpdate(data.rightBottom);
     }
-    const data = items.data;
-    message.headline = this.library.getTranslation(
-      (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""
-    );
-    message.navigation = this.getNavigation();
-    message.homeIcon = await (0, import_tools.getIconEntryValue)(data.homeIcon, true, "");
-    message.homeColor = await (0, import_tools.getIconEntryColor)(data.homeIcon, true, import_Color.Color.White);
-    message.homeValueTop = (_b = await (0, import_tools.getValueEntryString)(data.homeValueTop)) != null ? _b : "";
-    message.homeValueBot = (_c = await (0, import_tools.getValueEntryString)(data.homeValueBot)) != null ? _c : "";
-    message.leftTop = await this.getElementUpdate(data.leftTop);
-    message.leftMiddle = await this.getElementUpdate(data.leftMiddle);
-    message.leftBottom = await this.getElementUpdate(data.leftBottom);
-    message.rightTop = await this.getElementUpdate(data.rightTop);
-    message.rightMiddle = await this.getElementUpdate(data.rightMiddle);
-    message.rightBottom = await this.getElementUpdate(data.rightBottom);
     this.sendToPanel(this.getMessage(message));
   }
   async getElementSum(item, num) {

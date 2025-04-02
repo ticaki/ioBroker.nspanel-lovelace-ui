@@ -12,10 +12,12 @@ import {
 } from '../const/tools';
 import type * as pages from '../types/pages';
 import type { IncomingEvent, nsPanelState } from '../types/types';
+import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
+import type { ConfigManager } from '../classes/config-manager';
 
 const PagePowerMessageDefault: pages.PagePowerMessage = {
     event: 'entityUpd',
-    headline: 'Page Grid',
+    headline: 'Power Grid',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
     homeValueTop: '',
     homeIcon: '',
@@ -70,7 +72,9 @@ const PagePowerMessageDefault: pages.PagePowerMessage = {
  * untested
  */
 export class PagePower extends Page {
-    items: pages.PageBaseConfig['items'];
+    //items: pages.PageBaseConfig['items'];
+    items: pages.cardPowerDataItems | undefined;
+    index: number = 0;
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
         if (options.config && options.config.card == 'cardPower') {
@@ -84,7 +88,7 @@ export class PagePower extends Page {
             `///${this.name}/powerSum`,
             0,
             true,
-            { name: '', type: 'string', role: '', read: true, write: false },
+            { name: '', type: 'number', role: '', read: true, write: true },
             this.onInternalCommand,
         );
         const config = structuredClone(this.config);
@@ -133,34 +137,371 @@ export class PagePower extends Page {
         }
         return null;
     };
+    static async getPowerPageConfig(
+        adapter: NspanelLovelaceUi,
+        index: number,
+        configManager: ConfigManager,
+    ): Promise<pages.PageBaseConfig> {
+        const config = adapter.config.pagePowerdata[index];
+
+        /* const stateLeftTopExist =
+            config.power1_state !== undefined && (await configManager.existsState(config.power1_state));
+        const Power1 = stateLeftTopExist ? (config.power1_state !== undefined ? config.power1_state : '') : '';
+        const stateLeftMiddleExist =
+            config.power2_state !== undefined && (await configManager.existsState(config.power2_state));
+        const Power2 = stateLeftMiddleExist ? (config.power2_state !== undefined ? config.power2_state : '') : '';
+        const stateLeftBottomExist =
+            config.power3_state !== undefined && (await configManager.existsState(config.power3_state));
+        const Power3 = stateLeftBottomExist ? (config.power3_state !== undefined ? config.power3_state : '') : '';
+        const stateRightTopExist =
+            config.power4_state !== undefined && (await configManager.existsState(config.power4_state));
+        const Power4 = stateRightTopExist ? (config.power4_state !== undefined ? config.power4_state : '') : '';
+        const stateRightMiddleExist =
+            config.power5_state !== undefined && (await configManager.existsState(config.power5_state));
+        const Power5 = stateRightMiddleExist ? (config.power5_state !== undefined ? config.power5_state : '') : '';
+        const stateRightBottomExist =
+            config.power6_state !== undefined && (await configManager.existsState(config.power6_state));
+        const Power6 = stateRightBottomExist ? (config.power6_state !== undefined ? config.power6_state : '') : '';
+        const statePowerHomeExist =
+            config.power7_state !== undefined && (await configManager.existsState(config.power7_state));
+        const PowerHome = statePowerHomeExist ? (config.power7_state !== undefined ? config.power7_state : '') : ''; */
+
+        const states: string[] = [];
+
+        for (let i = 1; i <= 7; i++) {
+            const key = `power${i}_state` as keyof typeof config;
+            if (typeof config[key] === 'string' && (await configManager.existsState(config[key]))) {
+                states.push(config[key]);
+            } else {
+                states.push('');
+            }
+        }
+        /*const Icon1 = config.power1_icon !== undefined ? config.power1_icon : '';
+        const Icon2 = config.power2_icon !== undefined ? config.power2_icon : '';
+        const Icon3 = config.power3_icon !== undefined ? config.power3_icon : '';
+        const Icon4 = config.power4_icon !== undefined ? config.power4_icon : '';
+        const Icon5 = config.power5_icon !== undefined ? config.power5_icon : '';
+        const Icon6 = config.power6_icon !== undefined ? config.power6_icon : ''; */
+
+        const icons: string[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_icon` as keyof typeof config;
+            if (typeof config[key] === 'string') {
+                icons.push(config[key]);
+            } else {
+                icons.push('');
+            }
+        }
+
+        const minSpeedScale: number[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_minSpeedScale` as keyof typeof config;
+            if (typeof config[key] === 'number') {
+                minSpeedScale.push(config[key]);
+            } else {
+                minSpeedScale.push(0);
+            }
+        }
+
+        const maxSpeedScale: number[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_maxSpeedScale` as keyof typeof config;
+            if (typeof config[key] === 'number') {
+                maxSpeedScale.push(config[key]);
+            } else {
+                maxSpeedScale.push(100);
+            }
+        }
+
+        const iconColor: string[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_iconColor` as keyof typeof config;
+            if (typeof config[key] === 'string') {
+                iconColor.push(config[key]);
+            } else {
+                iconColor.push('#ffffff');
+            }
+        }
+
+        const result: pages.PageBaseConfig = {
+            uniqueID: config.pageName,
+            alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
+            config: {
+                card: 'cardPower',
+                index: index,
+                data: {
+                    headline: { type: 'const', constVal: config.headline },
+                    homeIcon: { true: { value: { type: 'const', constVal: 'home' } }, false: undefined },
+                    homeValueTop: {
+                        value: { type: 'state', dp: states[6] },
+                    },
+                    homeValueBot: {
+                        value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
+                        math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
+                    },
+                    leftTop: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: icons[0],
+                                },
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[0],
+                                },
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[0],
+                            },
+                        },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[0],
+                            },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[0],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[0],
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: states[0] },
+                        },
+                    },
+                    leftMiddle: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: icons[1],
+                                },
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[1],
+                                },
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[1],
+                            },
+                        },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[1],
+                            },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[1],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[1],
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: states[1] },
+                        },
+                    },
+                    leftBottom: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: icons[2],
+                                },
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[2],
+                                },
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[2],
+                            },
+                        },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[2],
+                            },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[2],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[2],
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: states[2] },
+                        },
+                    },
+                    rightTop: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: icons[3],
+                                },
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[3],
+                                },
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[3],
+                            },
+                        },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[3],
+                            },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[3],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[3],
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: states[3] },
+                        },
+                    },
+                    rightMiddle: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: icons[4],
+                                },
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[4],
+                                },
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[4],
+                            },
+                        },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[4],
+                            },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[4],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[4],
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: states[4] },
+                        },
+                    },
+                    rightBottom: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: icons[5],
+                                },
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[5],
+                                },
+                            },
+                            false: undefined,
+                        },
+                        value: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[5],
+                            },
+                        },
+                        speed: {
+                            value: {
+                                type: 'triggered',
+                                dp: states[5],
+                            },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[5],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[5],
+                            },
+                        },
+                        text: {
+                            true: { type: 'state', dp: states[5] },
+                        },
+                    },
+                },
+            },
+            pageItems: [],
+        };
+        return result;
+    }
+
     public async update(): Promise<void> {
         if (!this.visibility) {
             return;
         }
         const message: Partial<pages.PagePowerMessage> = {};
-        const items = this.items;
-        if (!items || items.card !== 'cardPower') {
-            return;
+        const config = this.adapter.config.pagePowerdata[this.index];
+        if (this.items && config != null) {
+            const items = this.items;
+            message.headline = this.library.getTranslation(
+                (items.data.headline && (await items.data.headline.getString())) ?? config.headline ?? '',
+            );
+            message.navigation = this.getNavigation();
+
+            const data = items.data;
+
+            message.homeIcon = await getIconEntryValue(data.homeIcon, true, '');
+            message.homeColor = await getIconEntryColor(data.homeIcon, true, Color.White);
+            message.homeValueTop = (await getValueEntryString(data.homeValueTop)) ?? '';
+            message.homeValueBot = (await getValueEntryString(data.homeValueBot)) ?? '';
+
+            // to much work to change types to partial in getMessage we assign a full object to this.
+            message.leftTop = (await this.getElementUpdate(data.leftTop)) as pages.PagePowerMessageItem;
+            message.leftMiddle = (await this.getElementUpdate(data.leftMiddle)) as pages.PagePowerMessageItem;
+            message.leftBottom = (await this.getElementUpdate(data.leftBottom)) as pages.PagePowerMessageItem;
+            message.rightTop = (await this.getElementUpdate(data.rightTop)) as pages.PagePowerMessageItem;
+            message.rightMiddle = (await this.getElementUpdate(data.rightMiddle)) as pages.PagePowerMessageItem;
+            message.rightBottom = (await this.getElementUpdate(data.rightBottom)) as pages.PagePowerMessageItem;
         }
-        const data = items.data;
-        message.headline = this.library.getTranslation(
-            (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
-        );
-        message.navigation = this.getNavigation();
-
-        message.homeIcon = await getIconEntryValue(data.homeIcon, true, '');
-        message.homeColor = await getIconEntryColor(data.homeIcon, true, Color.White);
-        message.homeValueTop = (await getValueEntryString(data.homeValueTop)) ?? '';
-        message.homeValueBot = (await getValueEntryString(data.homeValueBot)) ?? '';
-
-        // to much work to change types to partial in getMessage we assign a full object to this.
-        message.leftTop = (await this.getElementUpdate(data.leftTop)) as pages.PagePowerMessageItem;
-        message.leftMiddle = (await this.getElementUpdate(data.leftMiddle)) as pages.PagePowerMessageItem;
-        message.leftBottom = (await this.getElementUpdate(data.leftBottom)) as pages.PagePowerMessageItem;
-        message.rightTop = (await this.getElementUpdate(data.rightTop)) as pages.PagePowerMessageItem;
-        message.rightMiddle = (await this.getElementUpdate(data.rightMiddle)) as pages.PagePowerMessageItem;
-        message.rightBottom = (await this.getElementUpdate(data.rightBottom)) as pages.PagePowerMessageItem;
-
         this.sendToPanel(this.getMessage(message));
     }
 

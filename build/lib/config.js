@@ -556,6 +556,7 @@ const pagePowerTest1 = {
   pageItems: [],
   config: {
     card: "cardPower",
+    index: 0,
     data: {
       headline: { type: "const", constVal: "headline" },
       homeValueTop: {

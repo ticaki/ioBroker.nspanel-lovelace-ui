@@ -659,6 +659,7 @@ export function isQRButtonEvent(F: any): F is QRButtonEvent {
 
 export type cardPowerDataItemOptions = {
     card: 'cardPower';
+    index: number;
     data: ChangeTypeOfKeys<PageGridPowerConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardPowerDataItems = {
