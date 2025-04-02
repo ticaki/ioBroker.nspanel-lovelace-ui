@@ -194,6 +194,26 @@ export class PagePower extends Page {
             }
         }
 
+        const minSpeedScale: number[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_minSpeedScale` as keyof typeof config;
+            if (typeof config[key] === 'number') {
+                minSpeedScale.push(config[key]);
+            } else {
+                minSpeedScale.push(0);
+            }
+        }
+
+        const maxSpeedScale: number[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_maxSpeedScale` as keyof typeof config;
+            if (typeof config[key] === 'number') {
+                maxSpeedScale.push(config[key]);
+            } else {
+                maxSpeedScale.push(100);
+            }
+        }
+
         const result: pages.PageBaseConfig = {
             uniqueID: config.pageName,
             alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
@@ -232,6 +252,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[0],
                             },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[0],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[0],
+                            },
                         },
                         text: {
                             true: { type: 'state', dp: states[0] },
@@ -258,6 +286,14 @@ export class PagePower extends Page {
                             value: {
                                 type: 'triggered',
                                 dp: states[1],
+                            },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[1],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[1],
                             },
                         },
                         text: {
@@ -286,6 +322,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[2],
                             },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[2],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[2],
+                            },
                         },
                         text: {
                             true: { type: 'state', dp: states[2] },
@@ -312,6 +356,14 @@ export class PagePower extends Page {
                             value: {
                                 type: 'triggered',
                                 dp: states[3],
+                            },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[3],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[3],
                             },
                         },
                         text: {
@@ -340,6 +392,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[4],
                             },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[4],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[4],
+                            },
                         },
                         text: {
                             true: { type: 'state', dp: states[4] },
@@ -366,6 +426,14 @@ export class PagePower extends Page {
                             value: {
                                 type: 'triggered',
                                 dp: states[5],
+                            },
+                            minScale: {
+                                type: 'const',
+                                constVal: minSpeedScale[5],
+                            },
+                            maxScale: {
+                                type: 'const',
+                                constVal: maxSpeedScale[5],
                             },
                         },
                         text: {
