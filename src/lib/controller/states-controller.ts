@@ -306,8 +306,9 @@ export class StatesControler extends BaseClass {
         for (const id in this.triggerDB) {
             const entry = this.triggerDB[id];
             const removeIndex = [];
-            for (const i of entry.to) {
-                if (i.unload) {
+            for (let i = 0; i < entry.to.length; i++) {
+                const item = entry.to[i];
+                if (item.unload) {
                     //this.log.debug('Unload element:  ' + entry.to[i].name);
                     removeIndex.push(Number(i));
                 }

@@ -287,6 +287,15 @@ ${message.text}`;
       }
     }
   }
+  async onVisibilityChange(val) {
+    if (val) {
+      if (!this.pageItems || this.pageItems.length === 0) {
+        await this.createPageItems();
+      }
+      this.sendType();
+      await this.update();
+    }
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

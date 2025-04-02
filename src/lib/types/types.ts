@@ -106,6 +106,7 @@ export type InternalStatesObject = {
     noTrigger?: boolean;
 };
 export type PanelInternalCommand =
+    | 'info/PopupInfo'
     | 'cmd/power2'
     | 'cmd/power1'
     | 'cmd/bigIconRight'
@@ -432,6 +433,7 @@ type DataItemsOptionsInternal = {
     dp: string;
     read?: string | ((val: any) => any);
     write?: string | ((val: any) => any);
+    change?: 'ts';
 };
 
 type DataItemsOptionsInternalState = {

@@ -52,9 +52,23 @@ const buttonTemplates = {
         true: { type: "const", constVal: "big" },
         false: { type: "const", constVal: "medium" }
       },
-      setValue1: {
-        type: "internal",
-        dp: "cmd/bigIconLeft"
+      /*setValue1: {
+          type: 'internal',
+          dp: 'cmd/bigIconLeft',
+      },*/
+      popup: {
+        isActive: {
+          type: "const",
+          constVal: true
+        },
+        getMessage: {
+          type: "const",
+          constVal: "test with screensaver options"
+        },
+        setMessage: {
+          type: "internal",
+          dp: "info/PopupInfo"
+        }
       }
     }
   },

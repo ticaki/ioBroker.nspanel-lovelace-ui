@@ -149,9 +149,8 @@ export class PageItem extends BaseClassTriggerd {
         }
         if (
             this.parent &&
-            (this.parent.card === 'screensaver' ||
-                this.parent.card === 'screensaver2' ||
-                this.parent.card === 'screensaver3')
+            ['screensaver', 'screensaver2', 'screensaver3', 'popupNotify', 'popupNotify2'].indexOf(this.parent.card) !==
+                -1
         ) {
             if (!this.panel.persistentPageItems[this.id]) {
                 if (this.config.modeScr) {
@@ -1369,6 +1368,20 @@ export class PageItem extends BaseClassTriggerd {
                         }
                         this.confirmClick = 'lock';
                         this.parent && (await this.parent.update());
+                    }
+                    if (item.popup) {
+                        const test = (item.popup.isActive && (await item.popup.isActive.getBoolean())) ?? true;
+                        if (test && item.popup.getMessage && item.popup.setMessage) {
+                            const message = await item.popup.getMessage.getString();
+                            const headline =
+                                (item.popup.getHeadline && (await item.popup.getHeadline.getString())) ?? '';
+                            if (message) {
+                                await item.popup.setMessage.setStateAsync(
+                                    JSON.stringify({ headline: headline, message: message }),
+                                );
+                            }
+                        }
+                        break;
                     }
                     let value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
                     if (value !== null) {

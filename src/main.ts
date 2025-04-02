@@ -1559,6 +1559,31 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'getIcons': {
+                    const icons = Array.from(Icons.iconMap, ([name]) => name).map(a => {
+                        return { label: a, value: a };
+                    });
+                    this.sendTo(obj.from, obj.command, icons, obj.callback);
+                    break;
+                }
+                case 'getIconBase64': {
+                    try {
+                        if (fs.existsSync(path.join(__dirname, '../script'))) {
+                            const fileContent = fs.readFileSync(path.join(__dirname, '../script/icons.json'), 'utf-8');
+                            const icons = JSON.parse(fileContent);
+                            const index = icons.findIndex((a: { name: string }) => a.name === obj.message.icon);
+                            let img = '';
+                            if (index !== -1) {
+                                img = icons[index].base64;
+                            }
+                            this.sendTo(obj.from, obj.command, img, obj.callback);
+                        }
+                    } catch (error) {
+                        console.error('Fehler beim Verarbeiten der Datei:', error);
+                    }
+
+                    break;
+                }
                 default: {
                     // Send response in callback if required
                     if (obj.callback) {

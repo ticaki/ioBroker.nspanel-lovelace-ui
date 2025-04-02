@@ -1559,6 +1559,17 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
                 write: true,
             },
         },
+        'info/PopupInfo': {
+            val: true,
+            ack: true,
+            common: {
+                name: '',
+                type: 'string',
+                role: 'text',
+                read: true,
+                write: true,
+            },
+        },
     },
 };
 

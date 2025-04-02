@@ -252,8 +252,9 @@ class StatesControler extends import_library.BaseClass {
     for (const id in this.triggerDB) {
       const entry = this.triggerDB[id];
       const removeIndex = [];
-      for (const i of entry.to) {
-        if (i.unload) {
+      for (let i = 0; i < entry.to.length; i++) {
+        const item = entry.to[i];
+        if (item.unload) {
           removeIndex.push(Number(i));
         }
       }
