@@ -104,6 +104,41 @@ const popupNotification2 = {
   pageItems: [],
   items: void 0
 };
+const popupInfo = {
+  dpInit: "",
+  alwaysOn: "ignore",
+  uniqueID: "///PopupInfo",
+  config: {
+    card: "popupNotify",
+    data: {
+      entity1: { value: { type: "const", constVal: "hm" } },
+      headline: {
+        type: "internal",
+        dp: "info/PopupInfo",
+        read: `if (typeof val === 'string') {try {return JSON.parse(val).headline} catch {}} return ''} `
+      },
+      colorHeadline: { true: { color: { type: "const", constVal: import_Color.Color.Yellow } } },
+      buttonLeft: { type: "const", constVal: "" },
+      colorButtonLeft: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
+      buttonRight: { type: "const", constVal: "" },
+      colorButtonRight: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
+      text: {
+        type: "internal",
+        dp: "info/PopupInfo",
+        read: `if (typeof val === 'string') {try {return JSON.parse(val).message} catch {}} return ''} `
+      },
+      // text: { type: 'const', constVal: 'Text Test ${pl}' },
+      colorText: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
+      timeout: { type: "const", constVal: 3 }
+      // {placeholder: {text: '' oder dp: ''}} im Text muss dann ${dieserKeyStehtImText} stehen
+      // optionalValue: { type: 'const', constVal: { dieserKeyStehtImText: { text: 'das ist ein placeholder' } } },
+      //setValue1: { type: 'const', constVal: true }, // alleine ist es ein switch
+      //setValue2: { type: 'const', constVal: true }, // mit setValue2 wird 1, bei yes und 2 bei no auf true gesetzt
+    }
+  },
+  pageItems: [],
+  items: void 0
+};
 const AdapterInformation = {
   //type: 'sonstiges',
   //card: 'cardEntities',
@@ -1136,7 +1171,8 @@ const systemPages = [
   ScreensaverOptions,
   RelaisOption,
   DeviceOption,
-  NetworkOption
+  NetworkOption,
+  popupInfo
 ];
 const systemNavigation = [
   {
@@ -1216,6 +1252,14 @@ const systemNavigation = [
     name: "///NetworkOption",
     //main ist die erste Seite
     page: "///NetworkOption",
+    left: { double: "///Overview" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///PopupInfo",
+    //main ist die erste Seite
+    page: "///PopupInfo",
     left: { double: "///Overview" }
     // Die 4 bezieht sich auf den name: 4
     //right: { single: 'abfall1', double: 'main' },

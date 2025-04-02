@@ -109,7 +109,7 @@ class Dataitem extends import_library.BaseClass {
         if (this.options.type == "triggered") {
           await this.stateDB.setTrigger(this.options.dp, this.parent, false, void 0, this.options.change);
         } else if (this.options.type == "internal") {
-          await this.stateDB.setTrigger(this.options.dp, this.parent, true);
+          await this.stateDB.setTrigger(this.options.dp, this.parent, true, void 0, this.options.change);
         } else if (this.options.type == "internalState") {
           await this.stateDB.setTrigger(this.options.dp, this.parent, true, false);
         }

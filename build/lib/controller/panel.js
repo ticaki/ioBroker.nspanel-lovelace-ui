@@ -68,6 +68,7 @@ class Panel extends import_library.BaseClass {
   loopTimeout;
   pages = [];
   _activePage = void 0;
+  data = {};
   screenSaver;
   InitProcess = "";
   _isOnline = false;
@@ -1246,6 +1247,7 @@ class Panel extends import_library.BaseClass {
     }
   };
   onInternalCommand = async (id, state) => {
+    var _a;
     if (!id.startsWith(this.name)) {
       return null;
     }
@@ -1407,6 +1409,9 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        case "info/PopupInfo": {
+          this.data["info/PopupInfo"] = state.val;
+        }
       }
       await this.statesControler.setInternalState(id, state.val, true);
     }
@@ -1481,6 +1486,9 @@ ${this.info.tasmota.onlineVersion}`;
           return import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode);
         }
         break;
+      }
+      case "info/PopupInfo": {
+        return (_a = this.data["info/PopupInfo"]) != null ? _a : null;
       }
     }
     return null;

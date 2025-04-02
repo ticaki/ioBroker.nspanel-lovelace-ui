@@ -279,4 +279,13 @@ export class PageNotify extends Page {
             }
         }
     }
+    protected async onVisibilityChange(val: boolean): Promise<void> {
+        if (val) {
+            if (!this.pageItems || this.pageItems.length === 0) {
+                await this.createPageItems();
+            }
+            this.sendType();
+            await this.update();
+        }
+    }
 }

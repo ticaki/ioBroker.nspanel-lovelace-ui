@@ -1506,6 +1506,17 @@ const InternalStates = {
         read: true,
         write: true
       }
+    },
+    "info/PopupInfo": {
+      val: true,
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "text",
+        read: true,
+        write: true
+      }
     }
   }
 };

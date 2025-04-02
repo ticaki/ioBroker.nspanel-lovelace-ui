@@ -142,7 +142,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         break;
       }
     }
-    if (this.parent && (this.parent.card === "screensaver" || this.parent.card === "screensaver2" || this.parent.card === "screensaver3")) {
+    if (this.parent && ["screensaver", "screensaver2", "screensaver3", "popupNotify", "popupNotify2"].indexOf(this.parent.card) !== -1) {
       if (!this.panel.persistentPageItems[this.id]) {
         if (this.config.modeScr) {
           switch (this.config.modeScr) {
@@ -1139,7 +1139,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
     this.parent = void 0;
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -1186,16 +1186,29 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             this.confirmClick = "lock";
             this.parent && await this.parent.update();
           }
-          let value2 = (_a = item.setNavi && await item.setNavi.getString()) != null ? _a : null;
+          if (item.popup) {
+            const test = (_a = item.popup.isActive && await item.popup.isActive.getBoolean()) != null ? _a : true;
+            if (test && item.popup.getMessage && item.popup.setMessage) {
+              const message = await item.popup.getMessage.getString();
+              const headline = (_b = item.popup.getHeadline && await item.popup.getHeadline.getString()) != null ? _b : "";
+              if (message) {
+                await item.popup.setMessage.setStateAsync(
+                  JSON.stringify({ headline, message })
+                );
+              }
+            }
+            break;
+          }
+          let value2 = (_c = item.setNavi && await item.setNavi.getString()) != null ? _c : null;
           if (value2 !== null) {
             await this.panel.navigation.setTargetPageByName(value2);
             break;
           }
-          value2 = (_b = item.entity1 && item.entity1.set && await item.entity1.set.getBoolean()) != null ? _b : null;
+          value2 = (_d = item.entity1 && item.entity1.set && await item.entity1.set.getBoolean()) != null ? _d : null;
           if (value2 !== null && item.entity1 && item.entity1.set) {
             await item.entity1.set.setStateFlip();
           }
-          value2 = (_c = item.setValue1 && await item.setValue1.getBoolean()) != null ? _c : null;
+          value2 = (_e = item.setValue1 && await item.setValue1.getBoolean()) != null ? _e : null;
           if (value2 !== null && item.setValue1) {
             await item.setValue1.setStateFlip();
           }
@@ -1570,7 +1583,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, parseInt(t), 0, 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_d = this.dataItems.data.entity1) == null ? void 0 : _d.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_f = this.dataItems.data.entity1) == null ? void 0 : _f.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
             }
             break;
           }
@@ -1580,7 +1593,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, parseInt(t), 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_e = this.dataItems.data.entity1) == null ? void 0 : _e.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_g = this.dataItems.data.entity1) == null ? void 0 : _g.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
             }
             break;
           }
@@ -1611,7 +1624,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
             case "ex-timer": {
               const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)).getTime();
               if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-                ((_f = this.dataItems.data.entity1) == null ? void 0 : _f.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+                ((_h = this.dataItems.data.entity1) == null ? void 0 : _h.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
               }
               break;
             }

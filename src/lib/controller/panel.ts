@@ -67,6 +67,7 @@ export class Panel extends BaseClass {
     private loopTimeout: ioBroker.Timeout | undefined;
     private pages: (Page | undefined)[] = [];
     private _activePage: Page | undefined = undefined;
+    private data: Record<string, any> = {};
     public screenSaver: Screensaver | undefined;
     private InitProcess: '' | 'awaiting' | 'done' = '';
     private _isOnline: boolean = false;
@@ -1527,6 +1528,9 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'info/PopupInfo': {
+                    this.data['info/PopupInfo'] = state.val;
+                }
             }
             await this.statesControler.setInternalState(id, state.val, true);
         }
@@ -1600,6 +1604,9 @@ export class Panel extends BaseClass {
                     return Screensaver.mapModeToNumber(this.screenSaver.mode);
                 }
                 break;
+            }
+            case 'info/PopupInfo': {
+                return this.data['info/PopupInfo'] ?? null;
             }
         }
         return null;

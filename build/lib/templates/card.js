@@ -670,6 +670,7 @@ const cardTemplates = {
           icon: {
             true: {
               value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.0\.Mode$/ },
+              //line.mode
               //value: { type:'const', constVal: ' bus'},
               color: { type: "const", constVal: import_Color.Color.Red }
             },
@@ -681,6 +682,7 @@ const cardTemplates = {
           },
           entity1: {
             value: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.0\.DepartureDelayed$/ }
+            //delay
           },
           entity2: {
             value: {
@@ -689,6 +691,7 @@ const cardTemplates = {
               type: "state",
               dp: "",
               regexp: /\.0\.Departure$/,
+              //when
               read: "return val === 0 ? null : val"
             },
             dateFormat: {
@@ -698,6 +701,7 @@ const cardTemplates = {
           },
           text: {
             true: { role: "state", mode: "auto", type: "state", dp: "", regexp: /\.0\.Direction$/ },
+            //direction
             false: void 0
           },
           text1: {
@@ -707,6 +711,7 @@ const cardTemplates = {
               type: "state",
               dp: "",
               regexp: /\.0\.DeparturePlanned$/,
+              //plannedWhen
               read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
             },
             false: void 0

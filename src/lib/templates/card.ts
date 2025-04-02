@@ -664,7 +664,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                 data: {
                     icon: {
                         true: {
-                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.0\.Mode$/ },
+                            value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.0\.Mode$/ }, //line.mode
                             //value: { type:'const', constVal: ' bus'},
                             color: { type: 'const', constVal: Color.Red },
                         },
@@ -675,7 +675,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                         },
                     },
                     entity1: {
-                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.0\.DepartureDelayed$/ },
+                        value: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.0\.DepartureDelayed$/ }, //delay
                     },
                     entity2: {
                         value: {
@@ -683,7 +683,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                             mode: 'auto',
                             type: 'state',
                             dp: '',
-                            regexp: /\.0\.Departure$/,
+                            regexp: /\.0\.Departure$/, //when
                             read: 'return val === 0 ? null : val',
                         },
                         dateFormat: {
@@ -692,7 +692,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                         },
                     },
                     text: {
-                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.0\.Direction$/ },
+                        true: { role: 'state', mode: 'auto', type: 'state', dp: '', regexp: /\.0\.Direction$/ }, //direction
                         false: undefined,
                     },
                     text1: {
@@ -701,7 +701,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                             mode: 'auto',
                             type: 'state',
                             dp: '',
-                            regexp: /\.0\.DeparturePlanned$/,
+                            regexp: /\.0\.DeparturePlanned$/, //plannedWhen
                             read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`,
                         },
                         false: undefined,

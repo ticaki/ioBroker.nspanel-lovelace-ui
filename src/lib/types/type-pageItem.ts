@@ -284,6 +284,7 @@ export type PageItemButton = Pick<
     | 'setNavi'
     | 'confirm'
     | 'entity4'
+    | 'popup'
 >;
 export type PageItemButtonDataItemsOptions = {
     type: 'button' | 'switch';
@@ -423,6 +424,7 @@ export type PageItemBase = {
     setNavi?: number;
     confirm?: string;
     setList?: number;
+    popup?: PopupEntryType;
     /**
      * use with slider
      */
@@ -514,6 +516,16 @@ export type IconEntryType =
 export type TextEntryType = Record<Types.BooleanUnion, string>;
 export type TextSizeEntryType = ValueEntryType & { textSize?: number };
 export type TextEntryType2 = Record<Types.BooleanUnion, { value: string; prefix: string; suffix: string }>;
+
+export type PopupEntryType =
+    | {
+          isActive?: boolean;
+          getMessage: string;
+          getHeadline?: string;
+          setMessage: string;
+      }
+    | undefined;
+
 export type ValueEntryType =
     | {
           value: number;

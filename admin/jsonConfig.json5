@@ -468,7 +468,31 @@
             "type": "panel",
             "label": "maintain",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
-            "items": {
+            "items": {            
+                "_showIcon": {
+                    "type": "imageSendTo",
+                    "label": "showIcon",
+                    "jsonData": "{\"icon\": \"${data._IconAutocompleteSendTo}\"}",
+                    "command": "getIconBase64",
+                    "alsoDependsOn": [
+                        "_IconAutocompleteSendTo"
+                    ],
+                    "newLine": false,
+                    "width": 50,
+                    "height": 50
+                    
+                },
+                "_IconAutocompleteSendTo": {
+                    "type": "autocompleteSendTo",
+                    "command": "getIcons",
+                    "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
+                    "label": "icon",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "_RefreshMaintainTable": {
                     "type": "sendTo",
                     "label": "refresh",
