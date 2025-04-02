@@ -115,7 +115,16 @@ const popupInfo = {
       headline: {
         type: "internal",
         dp: "info/PopupInfo",
-        read: `if (typeof val === 'string') {try {return JSON.parse(val).headline} catch {}} return ''} `
+        read: `{
+                    if (typeof val === 'string') {
+                        try {
+                            return JSON.parse(val).headline;
+                        } catch {
+                            // nothing
+                        }
+                    }
+                    return '';
+                }`
       },
       colorHeadline: { true: { color: { type: "const", constVal: import_Color.Color.Yellow } } },
       buttonLeft: { type: "const", constVal: "" },
@@ -125,11 +134,20 @@ const popupInfo = {
       text: {
         type: "internal",
         dp: "info/PopupInfo",
-        read: `if (typeof val === 'string') {try {return JSON.parse(val).message} catch {}} return ''} `
+        read: `{
+                    if (typeof val === 'string') {
+                        try {
+                            return JSON.parse(val).message;
+                        } catch {
+                            // nothing
+                        }
+                    }
+                    return '';
+                }`
       },
       // text: { type: 'const', constVal: 'Text Test ${pl}' },
       colorText: { true: { color: { type: "const", constVal: import_Color.Color.White } } },
-      timeout: { type: "const", constVal: 3 }
+      timeout: { type: "const", constVal: 30 }
       // {placeholder: {text: '' oder dp: ''}} im Text muss dann ${dieserKeyStehtImText} stehen
       // optionalValue: { type: 'const', constVal: { dieserKeyStehtImText: { text: 'das ist ein placeholder' } } },
       //setValue1: { type: 'const', constVal: true }, // alleine ist es ein switch

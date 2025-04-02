@@ -32,11 +32,11 @@ export const buttonTemplates: TemplateItems = {
                 true: { type: 'const', constVal: 'big' },
                 false: { type: 'const', constVal: 'medium' },
             },
-            /*setValue1: {
+            setValue1: {
                 type: 'internal',
                 dp: 'cmd/bigIconLeft',
-            },*/
-            popup: {
+            },
+            /*popup: {
                 isActive: {
                     type: 'const',
                     constVal: true,
@@ -49,7 +49,7 @@ export const buttonTemplates: TemplateItems = {
                     type: 'internal',
                     dp: 'info/PopupInfo',
                 },
-            },
+            },*/
         },
     },
     'button.iconRightSize': {
