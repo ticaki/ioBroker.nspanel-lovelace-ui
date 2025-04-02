@@ -214,6 +214,16 @@ export class PagePower extends Page {
             }
         }
 
+        const iconColor: string[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_iconColor` as keyof typeof config;
+            if (typeof config[key] === 'string') {
+                iconColor.push(config[key]);
+            } else {
+                iconColor.push('#ffffff');
+            }
+        }
+
         const result: pages.PageBaseConfig = {
             uniqueID: config.pageName,
             alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
@@ -237,7 +247,10 @@ export class PagePower extends Page {
                                     type: 'const',
                                     constVal: icons[0],
                                 },
-                                color: undefined,
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[0],
+                                },
                             },
                             false: undefined,
                         },
@@ -272,7 +285,10 @@ export class PagePower extends Page {
                                     type: 'const',
                                     constVal: icons[1],
                                 },
-                                color: undefined,
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[1],
+                                },
                             },
                             false: undefined,
                         },
@@ -307,7 +323,10 @@ export class PagePower extends Page {
                                     type: 'const',
                                     constVal: icons[2],
                                 },
-                                color: undefined,
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[2],
+                                },
                             },
                             false: undefined,
                         },
@@ -342,7 +361,10 @@ export class PagePower extends Page {
                                     type: 'const',
                                     constVal: icons[3],
                                 },
-                                color: undefined,
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[3],
+                                },
                             },
                             false: undefined,
                         },
@@ -377,7 +399,10 @@ export class PagePower extends Page {
                                     type: 'const',
                                     constVal: icons[4],
                                 },
-                                color: undefined,
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[4],
+                                },
                             },
                             false: undefined,
                         },
@@ -412,7 +437,10 @@ export class PagePower extends Page {
                                     type: 'const',
                                     constVal: icons[5],
                                 },
-                                color: undefined,
+                                color: {
+                                    type: 'const',
+                                    constVal: iconColor[5],
+                                },
                             },
                             false: undefined,
                         },
