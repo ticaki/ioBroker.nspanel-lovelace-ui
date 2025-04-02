@@ -144,7 +144,8 @@ export class PagePower extends Page {
         configManager: ConfigManager,
     ): Promise<pages.PageBaseConfig> {
         const config = adapter.config.pagePowerdata[index];
-        const stateLeftTopExist =
+
+        /* const stateLeftTopExist =
             config.power1_state !== undefined && (await configManager.existsState(config.power1_state));
         const Power1 = stateLeftTopExist ? (config.power1_state !== undefined ? config.power1_state : '') : '';
         const stateLeftMiddleExist =
@@ -164,8 +165,18 @@ export class PagePower extends Page {
         const Power6 = stateRightBottomExist ? (config.power6_state !== undefined ? config.power6_state : '') : '';
         const statePowerHomeExist =
             config.power7_state !== undefined && (await configManager.existsState(config.power7_state));
-        const PowerHome = statePowerHomeExist ? (config.power7_state !== undefined ? config.power7_state : '') : '';
+        const PowerHome = statePowerHomeExist ? (config.power7_state !== undefined ? config.power7_state : '') : ''; */
 
+        const states: string[] = [];
+
+        for (let i = 1; i <= 7; i++) {
+            const key = `power${i}_state` as keyof typeof config;
+            if (typeof config[key] === 'string' && (await configManager.existsState(config[key]))) {
+                states.push(config[key]);
+            } else {
+                states.push('');
+            }
+        }
         /*const Icon1 = config.power1_icon !== undefined ? config.power1_icon : '';
         const Icon2 = config.power2_icon !== undefined ? config.power2_icon : '';
         const Icon3 = config.power3_icon !== undefined ? config.power3_icon : '';
