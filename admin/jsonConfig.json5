@@ -872,6 +872,17 @@
                             "default": "arrow-top-left"
                         },
                         {
+                            "attr": "power1_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
                             "attr": "power1_state",
                             "xs": 12,
                             "sm": 12,
@@ -894,7 +905,7 @@
                             "default": false
                         },
                         {
-                            "attr": "power1_minSpeed",
+                            "attr": "power1_minSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -907,7 +918,7 @@
                             "hidden": "!data._power1_more"
                         },
                         {
-                            "attr": "power1_maxSpeed",
+                            "attr": "power1_maxSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -953,6 +964,17 @@
                             "default": "arrow-top-left"
                         },
                         {
+                            "attr": "power2_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
                             "attr": "power2_state",
                             "xs": 12,
                             "sm": 12,
@@ -975,7 +997,7 @@
                             "default": false
                         },
                         {
-                            "attr": "power2_minSpeed",
+                            "attr": "power2_minSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -988,7 +1010,7 @@
                             "hidden": "!data._power2_more"
                         },
                         {
-                            "attr": "power2_maxSpeed",
+                            "attr": "power2_maxSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1035,6 +1057,17 @@
                             "default": "arrow-top-left"
                         },
                         {
+                            "attr": "power3_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
                             "attr": "power3_state",
                             "xs": 12,
                             "sm": 12,
@@ -1057,7 +1090,7 @@
                             "default": false
                         },
                         {
-                            "attr": "power3_minSpeed",
+                            "attr": "power3_minSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1070,7 +1103,7 @@
                             "hidden": "!data._power3_more"
                         },
                         {
-                            "attr": "power3_maxSpeed",
+                            "attr": "power3_maxSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1117,6 +1150,17 @@
                             "default": "arrow-top-left"
                         },
                         {
+                            "attr": "power4_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
                             "attr": "power4_state",
                             "xs": 12,
                             "sm": 12,
@@ -1139,7 +1183,7 @@
                             "default": false
                         },
                         {
-                            "attr": "power4_minSpeed",
+                            "attr": "power4_minSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1152,7 +1196,7 @@
                             "hidden": "!data._power4_more"
                         },
                         {
-                            "attr": "power4_maxSpeed",
+                            "attr": "power4_maxSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1199,6 +1243,17 @@
                             "default": "arrow-top-left"
                         },
                         {
+                            "attr": "power5_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
                             "attr": "power5_state",
                             "xs": 12,
                             "sm": 12,
@@ -1221,7 +1276,7 @@
                             "default": false
                         },
                         {
-                            "attr": "power5_minSpeed",
+                            "attr": "power5_minSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1234,7 +1289,7 @@
                             "hidden": "!data._power5_more"
                         },
                         {
-                            "attr": "power5_maxSpeed",
+                            "attr": "power5_maxSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1281,6 +1336,17 @@
                             "default": "arrow-top-left"
                         },
                         {
+                            "attr": "power6_iconColor",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff"
+                        },
+                        {
                             "attr": "power6_state",
                             "xs": 12,
                             "sm": 12,
@@ -1303,7 +1369,7 @@
                             "default": false
                         },
                         {
-                            "attr": "power6_minSpeed",
+                            "attr": "power6_minSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1316,7 +1382,7 @@
                             "hidden": "!data._power6_more"
                         },
                         {
-                            "attr": "power6_maxSpeed",
+                            "attr": "power6_maxSpeedScale",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,

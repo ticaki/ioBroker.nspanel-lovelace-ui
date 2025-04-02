@@ -135,20 +135,15 @@ class PagePower extends import_Page.Page {
   };
   static async getPowerPageConfig(adapter, index, configManager) {
     const config = adapter.config.pagePowerdata[index];
-    const stateLeftTopExist = config.power1_state !== void 0 && await configManager.existsState(config.power1_state);
-    const Power1 = stateLeftTopExist ? config.power1_state !== void 0 ? config.power1_state : "" : "";
-    const stateLeftMiddleExist = config.power2_state !== void 0 && await configManager.existsState(config.power2_state);
-    const Power2 = stateLeftMiddleExist ? config.power2_state !== void 0 ? config.power2_state : "" : "";
-    const stateLeftBottomExist = config.power3_state !== void 0 && await configManager.existsState(config.power3_state);
-    const Power3 = stateLeftBottomExist ? config.power3_state !== void 0 ? config.power3_state : "" : "";
-    const stateRightTopExist = config.power4_state !== void 0 && await configManager.existsState(config.power4_state);
-    const Power4 = stateRightTopExist ? config.power4_state !== void 0 ? config.power4_state : "" : "";
-    const stateRightMiddleExist = config.power5_state !== void 0 && await configManager.existsState(config.power5_state);
-    const Power5 = stateRightMiddleExist ? config.power5_state !== void 0 ? config.power5_state : "" : "";
-    const stateRightBottomExist = config.power6_state !== void 0 && await configManager.existsState(config.power6_state);
-    const Power6 = stateRightBottomExist ? config.power6_state !== void 0 ? config.power6_state : "" : "";
-    const statePowerHomeExist = config.power7_state !== void 0 && await configManager.existsState(config.power7_state);
-    const PowerHome = statePowerHomeExist ? config.power7_state !== void 0 ? config.power7_state : "" : "";
+    const states = [];
+    for (let i = 1; i <= 7; i++) {
+      const key = `power${i}_state`;
+      if (typeof config[key] === "string" && await configManager.existsState(config[key])) {
+        states.push(config[key]);
+      } else {
+        states.push("");
+      }
+    }
     const icons = [];
     for (let i = 1; i <= 6; i++) {
       const key = `power${i}_icon`;
@@ -156,6 +151,33 @@ class PagePower extends import_Page.Page {
         icons.push(config[key]);
       } else {
         icons.push("");
+      }
+    }
+    const minSpeedScale = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_minSpeedScale`;
+      if (typeof config[key] === "number") {
+        minSpeedScale.push(config[key]);
+      } else {
+        minSpeedScale.push(0);
+      }
+    }
+    const maxSpeedScale = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_maxSpeedScale`;
+      if (typeof config[key] === "number") {
+        maxSpeedScale.push(config[key]);
+      } else {
+        maxSpeedScale.push(100);
+      }
+    }
+    const iconColor = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_iconColor`;
+      if (typeof config[key] === "string") {
+        iconColor.push(config[key]);
+      } else {
+        iconColor.push("#ffffff");
       }
     }
     const result = {
@@ -168,7 +190,7 @@ class PagePower extends import_Page.Page {
           headline: { type: "const", constVal: config.headline },
           homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
           homeValueTop: {
-            value: { type: "state", dp: PowerHome }
+            value: { type: "state", dp: states[6] }
           },
           homeValueBot: {
             value: { type: "internal", dp: `///${config.pageName}/powerSum` },
@@ -181,24 +203,35 @@ class PagePower extends import_Page.Page {
                   type: "const",
                   constVal: icons[0]
                 },
-                color: void 0
+                color: {
+                  type: "const",
+                  constVal: iconColor[0]
+                }
               },
               false: void 0
             },
             value: {
               value: {
                 type: "triggered",
-                dp: Power1
+                dp: states[0]
               }
             },
             speed: {
               value: {
                 type: "triggered",
-                dp: Power1
+                dp: states[0]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[0]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[0]
               }
             },
             text: {
-              true: { type: "state", dp: Power1 }
+              true: { type: "state", dp: states[0] }
             }
           },
           leftMiddle: {
@@ -208,24 +241,35 @@ class PagePower extends import_Page.Page {
                   type: "const",
                   constVal: icons[1]
                 },
-                color: void 0
+                color: {
+                  type: "const",
+                  constVal: iconColor[1]
+                }
               },
               false: void 0
             },
             value: {
               value: {
                 type: "triggered",
-                dp: Power2
+                dp: states[1]
               }
             },
             speed: {
               value: {
                 type: "triggered",
-                dp: Power2
+                dp: states[1]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[1]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[1]
               }
             },
             text: {
-              true: { type: "state", dp: Power2 }
+              true: { type: "state", dp: states[1] }
             }
           },
           leftBottom: {
@@ -235,24 +279,35 @@ class PagePower extends import_Page.Page {
                   type: "const",
                   constVal: icons[2]
                 },
-                color: void 0
+                color: {
+                  type: "const",
+                  constVal: iconColor[2]
+                }
               },
               false: void 0
             },
             value: {
               value: {
                 type: "triggered",
-                dp: Power3
+                dp: states[2]
               }
             },
             speed: {
               value: {
                 type: "triggered",
-                dp: Power3
+                dp: states[2]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[2]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[2]
               }
             },
             text: {
-              true: { type: "state", dp: Power3 }
+              true: { type: "state", dp: states[2] }
             }
           },
           rightTop: {
@@ -262,24 +317,35 @@ class PagePower extends import_Page.Page {
                   type: "const",
                   constVal: icons[3]
                 },
-                color: void 0
+                color: {
+                  type: "const",
+                  constVal: iconColor[3]
+                }
               },
               false: void 0
             },
             value: {
               value: {
                 type: "triggered",
-                dp: Power4
+                dp: states[3]
               }
             },
             speed: {
               value: {
                 type: "triggered",
-                dp: Power4
+                dp: states[3]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[3]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[3]
               }
             },
             text: {
-              true: { type: "state", dp: Power4 }
+              true: { type: "state", dp: states[3] }
             }
           },
           rightMiddle: {
@@ -289,24 +355,35 @@ class PagePower extends import_Page.Page {
                   type: "const",
                   constVal: icons[4]
                 },
-                color: void 0
+                color: {
+                  type: "const",
+                  constVal: iconColor[4]
+                }
               },
               false: void 0
             },
             value: {
               value: {
                 type: "triggered",
-                dp: Power5
+                dp: states[4]
               }
             },
             speed: {
               value: {
                 type: "triggered",
-                dp: Power5
+                dp: states[4]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[4]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[4]
               }
             },
             text: {
-              true: { type: "state", dp: Power5 }
+              true: { type: "state", dp: states[4] }
             }
           },
           rightBottom: {
@@ -316,24 +393,35 @@ class PagePower extends import_Page.Page {
                   type: "const",
                   constVal: icons[5]
                 },
-                color: void 0
+                color: {
+                  type: "const",
+                  constVal: iconColor[5]
+                }
               },
               false: void 0
             },
             value: {
               value: {
                 type: "triggered",
-                dp: Power6
+                dp: states[5]
               }
             },
             speed: {
               value: {
                 type: "triggered",
-                dp: Power6
+                dp: states[5]
+              },
+              minScale: {
+                type: "const",
+                constVal: minSpeedScale[5]
+              },
+              maxScale: {
+                type: "const",
+                constVal: maxSpeedScale[5]
               }
             },
             text: {
-              true: { type: "state", dp: Power6 }
+              true: { type: "state", dp: states[5] }
             }
           }
         }
