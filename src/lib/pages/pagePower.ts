@@ -204,7 +204,7 @@ export class PagePower extends Page {
                     headline: { type: 'const', constVal: config.headline },
                     homeIcon: { true: { value: { type: 'const', constVal: 'home' } }, false: undefined },
                     homeValueTop: {
-                        value: { type: 'state', dp: PowerHome },
+                        value: { type: 'state', dp: states[6] },
                     },
                     homeValueBot: {
                         value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
@@ -224,17 +224,17 @@ export class PagePower extends Page {
                         value: {
                             value: {
                                 type: 'triggered',
-                                dp: Power1,
+                                dp: states[0],
                             },
                         },
                         speed: {
                             value: {
                                 type: 'triggered',
-                                dp: Power1,
+                                dp: states[0],
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: Power1 },
+                            true: { type: 'state', dp: states[0] },
                         },
                     },
                     leftMiddle: {
@@ -251,17 +251,17 @@ export class PagePower extends Page {
                         value: {
                             value: {
                                 type: 'triggered',
-                                dp: Power2,
+                                dp: states[1],
                             },
                         },
                         speed: {
                             value: {
                                 type: 'triggered',
-                                dp: Power2,
+                                dp: states[1],
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: Power2 },
+                            true: { type: 'state', dp: states[1] },
                         },
                     },
                     leftBottom: {
@@ -278,17 +278,17 @@ export class PagePower extends Page {
                         value: {
                             value: {
                                 type: 'triggered',
-                                dp: Power3,
+                                dp: states[2],
                             },
                         },
                         speed: {
                             value: {
                                 type: 'triggered',
-                                dp: Power3,
+                                dp: states[2],
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: Power3 },
+                            true: { type: 'state', dp: states[2] },
                         },
                     },
                     rightTop: {
@@ -305,17 +305,17 @@ export class PagePower extends Page {
                         value: {
                             value: {
                                 type: 'triggered',
-                                dp: Power4,
+                                dp: states[3],
                             },
                         },
                         speed: {
                             value: {
                                 type: 'triggered',
-                                dp: Power4,
+                                dp: states[3],
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: Power4 },
+                            true: { type: 'state', dp: states[3] },
                         },
                     },
                     rightMiddle: {
@@ -332,17 +332,17 @@ export class PagePower extends Page {
                         value: {
                             value: {
                                 type: 'triggered',
-                                dp: Power5,
+                                dp: states[4],
                             },
                         },
                         speed: {
                             value: {
                                 type: 'triggered',
-                                dp: Power5,
+                                dp: states[4],
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: Power5 },
+                            true: { type: 'state', dp: states[4] },
                         },
                     },
                     rightBottom: {
@@ -359,17 +359,17 @@ export class PagePower extends Page {
                         value: {
                             value: {
                                 type: 'triggered',
-                                dp: Power6,
+                                dp: states[5],
                             },
                         },
                         speed: {
                             value: {
                                 type: 'triggered',
-                                dp: Power6,
+                                dp: states[5],
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: Power6 },
+                            true: { type: 'state', dp: states[5] },
                         },
                     },
                 },
