@@ -64,7 +64,7 @@ class PageEntities extends import_pageMenu.PageMenu {
       return;
     }
     const message = {};
-    const arr = (await this.getOptions([])).slice(0, 4);
+    const arr = (await this.getOptions([])).slice(0, this.maxItems);
     message.options = arr;
     message.headline = this.library.getTranslation(
       (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""

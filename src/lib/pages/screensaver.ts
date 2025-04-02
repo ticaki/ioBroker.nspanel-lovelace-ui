@@ -1,5 +1,6 @@
 import * as Definition from '../const/definition';
 import * as Types from '../types/types';
+import { Icons } from '../const/icon_mapping';
 
 //import dayjs from 'dayjs';
 //import moment from 'moment';
@@ -24,6 +25,7 @@ export class Screensaver extends Page {
     rotationTime: number = 300000;
     public screensaverIndicatorButtons: boolean = false;
     public screensaverSwipe: boolean = false;
+    private _alert: boolean = true;
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
     //readonly mode: Types.ScreensaverModeType = 'standard';
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
@@ -162,6 +164,15 @@ export class Screensaver extends Page {
         }
         return message;
     }
+
+    get alert(): boolean {
+        return this._alert;
+    }
+    set alert(alert: boolean) {
+        this._alert = alert;
+        void this.HandleTime();
+    }
+
     async update(): Promise<void> {
         if (!this.visibility) {
             return;
@@ -196,6 +207,7 @@ export class Screensaver extends Page {
             this.sendType();
             //await this.update();
             await this.rotationLoop();
+            await this.HandleTime();
         } else {
             if (this.timoutRotation) {
                 this.adapter.clearTimeout(this.timoutRotation);
@@ -281,7 +293,9 @@ export class Screensaver extends Page {
             this.log.debug('HandleTime: no message, no time or panel is offline');
             return;
         }
-        this.sendToPanel(`time~${message.options.time[0].split('~')[5]}`);
+        this.sendToPanel(
+            `time~${message.options.time[0].split('~')[5]}${this.alert ? `~${Icons.GetIcon('bell-ring-outline')}` : ''}`,
+        );
     }
     async HandleDate(): Promise<void> {
         const message = await this.getData(['date']);

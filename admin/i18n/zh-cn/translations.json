@@ -95,5 +95,10 @@
     "wlantype": "WiFi加密",
     "qrPass": "WiFi密码",
     "pwdHidden": "隐藏的WiFi密码",
-    "switchForWifi": "切换到激活WLAN"
+    "switchForWifi": "切换到激活WLAN",
+    "tftInstallSendToMQTT": "更新TFT",
+    "createScript": "脚本",
+    "tasmotaSendToHelp": "将Tasmota设置发送到面板。",
+    "createScriptHelp": "创建或更新面板的设置脚本",
+    "tftInstallSendToMQTTHelp": "在面板上更新TFT固件。"
 }

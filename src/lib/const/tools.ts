@@ -636,7 +636,10 @@ export async function getValueEntryString(
             if (nval <= 0) {
                 return null;
             }
-            res = new Date(nval).toLocaleString(format.local, format.format);
+            const temp = new Date(nval);
+            if (isValidDate(temp)) {
+                res = temp.toLocaleString(format.local, format.format);
+            }
         } else {
             const d = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
             if (d !== null && d !== false) {
@@ -656,7 +659,10 @@ export async function getValueEntryString(
     let opt = '';
     if (res != null) {
         if (isValueDateFormat(format)) {
-            res = new Date(res).toLocaleString(format.local, format.format);
+            const temp = new Date(res);
+            if (isValidDate(temp)) {
+                res = temp.toLocaleString(format.local, format.format);
+            }
         }
         res += (i.unit && (await i.unit.getString())) ?? i.value.common.unit ?? '';
         if (isTextSizeEntryType(i)) {
@@ -916,4 +922,11 @@ export function insertLinebreak(text: string, lineLength: number): string {
         text = `${text.slice(0, a)}\n${text.slice(++a)}`;
     }
     return text;
+}
+
+export function isValidDate(d: Date): d is Date {
+    if (!d) {
+        return false;
+    }
+    return d instanceof Date && !isNaN(d.getTime());
 }

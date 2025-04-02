@@ -95,5 +95,10 @@
     "wlantype": "Wifi -codering",
     "qrPass": "Wifi -wachtwoord",
     "pwdHidden": "verborgen wifi -wachtwoord",
-    "switchForWifi": "Schakel over om WLAN te activeren"
+    "switchForWifi": "Schakel over om WLAN te activeren",
+    "tftInstallSendToMQTT": "Update TFT",
+    "createScript": "Script",
+    "tasmotaSendToHelp": "Stuur Tasmota -instellingen naar het paneel.",
+    "createScriptHelp": "Maak of werk het instellingenscript voor het paneel aan",
+    "tftInstallSendToMQTTHelp": "Update TFT -firmware op het paneel."
 }

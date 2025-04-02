@@ -56,7 +56,7 @@ export class PageEntities extends PageMenu {
             return;
         }
         const message: Partial<pages.PageEntitiesMessage> = {};
-        const arr = (await this.getOptions([])).slice(0, 4);
+        const arr = (await this.getOptions([])).slice(0, this.maxItems);
         message.options = arr as typeof message.options;
 
         message.headline = this.library.getTranslation(

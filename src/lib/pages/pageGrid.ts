@@ -34,7 +34,6 @@ export class PageGrid extends PageMenu {
         ) {
             this.items = options.items;
         }
-        this.maxItems = this.card === 'cardGrid' ? 6 : 8;
         this.minUpdateInterval = 2000;
     }
 
@@ -75,7 +74,7 @@ export class PageGrid extends PageMenu {
         ) {
             return;
         }
-        const arr = (await this.getOptions([])).slice(0, 8);
+        const arr = (await this.getOptions([])).slice(0, this.maxItems);
         message.options = arr as typeof message.options;
 
         message.headline = this.library.getTranslation(

@@ -95,5 +95,10 @@
     "wlantype": "Crittografia WiFi",
     "qrPass": "Password WiFi",
     "pwdHidden": "password wifi nascosta",
-    "switchForWifi": "Passa per attivare WLAN"
+    "switchForWifi": "Passa per attivare WLAN",
+    "tftInstallSendToMQTT": "Aggiorna TFT",
+    "createScript": "Sceneggiatura",
+    "tasmotaSendToHelp": "Invia le impostazioni di Tasmota al pannello.",
+    "createScriptHelp": "Crea o aggiorna lo script di impostazioni per il pannello",
+    "tftInstallSendToMQTTHelp": "Aggiorna il firmware TFT sul pannello."
 }

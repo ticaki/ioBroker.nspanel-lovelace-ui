@@ -22,7 +22,9 @@ import axios from 'axios';
 import { URL } from 'url';
 import type { HttpServer } from './lib/classes/http-server';
 import type * as pages from './lib/types/pages';
+import * as fs from 'fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
+import path from 'path';
 //import fs from 'fs';
 axios.defaults.timeout = 3000;
 
@@ -208,6 +210,32 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
             }
             if (scriptConfig) {
+                // merge all pages into every pages array
+                for (let b = 0; b < scriptConfig.length; b++) {
+                    for (let c = b <= 0 ? 1 : b - 1; c < scriptConfig.length; c++) {
+                        if (c === b || !scriptConfig[c] || !scriptConfig[b].pages || !scriptConfig[c].pages) {
+                            continue;
+                        }
+                        let pages = JSON.parse(JSON.stringify(scriptConfig[c].pages)) as panelConfigPartial['pages'];
+                        if (pages) {
+                            pages = pages.filter(a => {
+                                if (
+                                    a.config?.card === 'screensaver' ||
+                                    a.config?.card === 'screensaver2' ||
+                                    a.config?.card === 'screensaver3'
+                                ) {
+                                    return false;
+                                }
+                                if (scriptConfig[b].pages!.find(b => b.uniqueID === a.uniqueID)) {
+                                    return false;
+                                }
+                                return true;
+                            });
+
+                            scriptConfig[b].pages = scriptConfig[b].pages!.concat(pages);
+                        }
+                    }
+                }
                 for (let b = 0; b < scriptConfig.length; b++) {
                     const s = scriptConfig[b];
                     if (!s || !s.pages) {
@@ -429,6 +457,8 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (counter === 0) {
                 return;
             }
+
+            // clone the configuration and update navigation from admin
             const config = structuredClone(this.mainConfiguration);
             {
                 const o = await this.getForeignObjectAsync(this.namespace);
@@ -440,6 +470,24 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                 }
             }
+            // remove unused pages except screensaver - pages must be in navigation
+            config.forEach(a => {
+                if (a && a.pages) {
+                    a.pages = a.pages.filter(b => {
+                        if (
+                            b.config?.card === 'screensaver' ||
+                            b.config?.card === 'screensaver2' ||
+                            b.config?.card === 'screensaver3'
+                        ) {
+                            return true;
+                        }
+                        if (a.navigation.find(c => c && c.name === b.uniqueID)) {
+                            return true;
+                        }
+                        return false;
+                    });
+                }
+            });
 
             const mem = process.memoryUsage().heapUsed / 1024;
             this.log.debug(String(`${mem}k`));
@@ -572,6 +620,11 @@ class NspanelLovelaceUi extends utils.Adapter {
     private async onMessage(obj: ioBroker.Message): Promise<void> {
         if (typeof obj === 'object' && obj.message) {
             //this.log.info(JSON.stringify(obj));
+            if (obj.command === 'tftInstallSendToMQTT') {
+                if (obj.message.online === 'no') {
+                    obj.command = 'tftInstallSendTo';
+                }
+            }
             switch (obj.command) {
                 case 'config': {
                     const obj1 = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
@@ -1120,6 +1173,59 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'tftInstallSendToMQTT': {
+                    if (obj.message) {
+                        if (obj.message.topic /*&& obj.message.internalServerIp*/) {
+                            try {
+                                const result = await axios.get(
+                                    'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
+                                );
+                                if (!result.data) {
+                                    this.log.error('No version found!');
+                                    if (obj.callback) {
+                                        this.sendTo(
+                                            obj.from,
+                                            obj.command,
+                                            { error: 'sendToRequestFail' },
+                                            obj.callback,
+                                        );
+                                    }
+                                    break;
+                                }
+
+                                const version = obj.message.useBetaTFT
+                                    ? result.data['tft-beta'].split('_')[0]
+                                    : result.data.tft.split('_')[0];
+                                const fileName = `nspanel-v${version}.tft`;
+
+                                const cmnd = `FlashNextion http://nspanel.de/${fileName}`;
+                                this.log.debug(cmnd);
+                                if (this.controller?.panels) {
+                                    const index = this.controller.panels.findIndex(a => a.topic === obj.message.topic);
+                                    if (index !== -1) {
+                                        const panel = this.controller.panels[index];
+                                        panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+                                    }
+                                }
+
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, [], obj.callback);
+                                }
+                            } catch (e: any) {
+                                this.log.error(`Error: ${e}`);
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+
                 case 'getRandomMqttCredentials': {
                     if (obj.message) {
                         const allowedChars: string[] = [
@@ -1335,6 +1441,121 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+                case 'tasmotaRestartSendTo': {
+                    if (obj.message) {
+                        if (obj.message.tasmotaIP /*&& obj.message.internalServerIp*/) {
+                            try {
+                                const url =
+                                    `http://${obj.message.tasmotaIP}/cm?` +
+                                    `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                    `&cmnd=Restart 1`;
+                                this.log.debug(url);
+                                await axios.get(url);
+
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, [], obj.callback);
+                                }
+                            } catch (e: any) {
+                                this.log.error(`Error: ${e}`);
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+                case 'refreshMaintainTable': {
+                    if (this.controller?.panels) {
+                        const result = this.controller.panels.map(a => {
+                            const tv = a.info?.tasmota?.firmwareversion?.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                            return {
+                                name: a.friendlyName,
+                                ip: a.info?.tasmota?.net?.IPAddress ? a.info.tasmota.net.IPAddress : '',
+                                online: a.isOnline ? 'yes' : 'no',
+                                topic: a.topic,
+                                id: a.info?.tasmota?.net?.Mac ? a.info.tasmota.net.Mac : '',
+                                tftVersion: a.info?.nspanel?.displayVersion ? a.info.nspanel.displayVersion : '???',
+                                tasmotaVersion: tv && tv[1] ? tv[1] : '???',
+                            };
+                        });
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, { native: { _maintainPanels: result } }, obj.callback);
+                        }
+                        break;
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+                case 'createScript': {
+                    const folder: ioBroker.ChannelObject = {
+                        type: 'channel',
+                        _id: `script.js.${this.name}`,
+                        common: {
+                            name: this.name,
+                            expert: true,
+                        },
+                        native: {},
+                    };
+                    await this.extendForeignObjectAsync(`script.js.${this.name}`, folder);
+
+                    // Skript erstellen
+                    const scriptId = `script.js.${this.name}.${obj.message.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}`;
+                    this.log.debug(`Create script ${path.join(__dirname, '../script')}`);
+                    if (fs.existsSync(path.join(__dirname, '../script')) && obj.message.name && obj.message.topic) {
+                        let file = fs.readFileSync(
+                            path.join(__dirname, '../script/example_sendTo_script_iobroker.ts'),
+                            'utf8',
+                        );
+                        const o = await this.getForeignObjectAsync(scriptId);
+                        if (file) {
+                            if (o) {
+                                const token =
+                                    '*  END STOP END STOP END - No more configuration - END STOP END STOP END       *';
+                                const indexFrom = file.indexOf(token);
+                                const indexTo = o.common.source.indexOf(token);
+                                if (indexFrom !== -1 && indexTo !== -1) {
+                                    this.log.info(`Update script ${scriptId}`);
+                                    file = o.common.source.substring(0, indexTo) + file.substring(indexFrom);
+                                } else {
+                                    if (obj.callback) {
+                                        this.sendTo(obj.from, obj.command, null, obj.callback);
+                                    }
+                                    this.log.warn(`Update script ${scriptId} something whent wrong!`);
+                                    break;
+                                }
+                            } else {
+                                this.log.info(`Create script ${scriptId}`);
+                                file = file.replace(`panelTopic: 'topic',`, `panelTopic: '${obj.message.topic}',`);
+                            }
+                            const script: ioBroker.ScriptObject = {
+                                type: 'script',
+                                _id: scriptId,
+                                common: {
+                                    name: obj.message.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_'),
+                                    engineType: 'TypeScript/ts',
+                                    engine: `system.adapter.javascript.0`,
+                                    source: file,
+                                    debug: false,
+                                    verbose: false,
+                                    enabled: false,
+                                },
+                                native: {},
+                            };
+                            await this.extendForeignObjectAsync(scriptId, script);
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, null, obj.callback);
                     }
                     break;
                 }

@@ -50,6 +50,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
   // use this to save some data while object is active
   tempInterval;
   confirmClick = "lock";
+  timeouts = {};
   constructor(config, options) {
     super({ ...config });
     this.panel = config.panel;
@@ -1492,12 +1493,25 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         break;
       }
       case "number-set": {
+        if (this.timeouts["number-set"]) {
+          this.adapter.clearTimeout(this.timeouts["number-set"]);
+        }
         if (entry.type === "number") {
-          const item = entry.data;
-          await tools.setValueEntry(item.entity1, parseInt(value), false);
+          this.timeouts["number-set"] = this.adapter.setTimeout(
+            async (value2) => {
+              await tools.setValueEntry(entry.data.entity1, parseInt(value2), false);
+            },
+            500,
+            value
+          );
         } else if (entry.type === "fan") {
-          const item = entry.data;
-          await tools.setValueEntry(item.speed, parseInt(value), false);
+          this.timeouts["number-set"] = this.adapter.setTimeout(
+            async (value2) => {
+              await tools.setValueEntry(entry.data.speed, parseInt(value2), false);
+            },
+            500,
+            value
+          );
         }
         break;
       }

@@ -33,6 +33,8 @@ var import_config_manager = require("./lib/classes/config-manager");
 var import_readme = require("./lib/tools/readme");
 var import_axios = __toESM(require("axios"));
 var import_url = require("url");
+var fs = __toESM(require("fs"));
+var import_path = __toESM(require("path"));
 import_axios.default.defaults.timeout = 3e3;
 class NspanelLovelaceUi extends utils.Adapter {
   library;
@@ -173,6 +175,27 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
       }
       if (scriptConfig) {
+        for (let b = 0; b < scriptConfig.length; b++) {
+          for (let c = b <= 0 ? 1 : b - 1; c < scriptConfig.length; c++) {
+            if (c === b || !scriptConfig[c] || !scriptConfig[b].pages || !scriptConfig[c].pages) {
+              continue;
+            }
+            let pages = JSON.parse(JSON.stringify(scriptConfig[c].pages));
+            if (pages) {
+              pages = pages.filter((a) => {
+                var _a2, _b2, _c2;
+                if (((_a2 = a.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b2 = a.config) == null ? void 0 : _b2.card) === "screensaver2" || ((_c2 = a.config) == null ? void 0 : _c2.card) === "screensaver3") {
+                  return false;
+                }
+                if (scriptConfig[b].pages.find((b2) => b2.uniqueID === a.uniqueID)) {
+                  return false;
+                }
+                return true;
+              });
+              scriptConfig[b].pages = scriptConfig[b].pages.concat(pages);
+            }
+          }
+        }
         for (let b = 0; b < scriptConfig.length; b++) {
           const s = scriptConfig[b];
           if (!s || !s.pages) {
@@ -347,6 +370,20 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
         }
       }
+      config.forEach((a) => {
+        if (a && a.pages) {
+          a.pages = a.pages.filter((b) => {
+            var _a2, _b2, _c2;
+            if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b2 = b.config) == null ? void 0 : _b2.card) === "screensaver2" || ((_c2 = b.config) == null ? void 0 : _c2.card) === "screensaver3") {
+              return true;
+            }
+            if (a.navigation.find((c) => c && c.name === b.uniqueID)) {
+              return true;
+            }
+            return false;
+          });
+        }
+      });
       const mem = process.memoryUsage().heapUsed / 1024;
       this.log.debug(String(`${mem}k`));
       this.controller = new import_controller.Controller(this, {
@@ -462,8 +499,13 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     if (typeof obj === "object" && obj.message) {
+      if (obj.command === "tftInstallSendToMQTT") {
+        if (obj.message.online === "no") {
+          obj.command = "tftInstallSendTo";
+        }
+      }
       switch (obj.command) {
         case "config": {
           const obj1 = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
@@ -921,6 +963,53 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           break;
         }
+        case "tftInstallSendToMQTT": {
+          if (obj.message) {
+            if (obj.message.topic) {
+              try {
+                const result = await import_axios.default.get(
+                  "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
+                );
+                if (!result.data) {
+                  this.log.error("No version found!");
+                  if (obj.callback) {
+                    this.sendTo(
+                      obj.from,
+                      obj.command,
+                      { error: "sendToRequestFail" },
+                      obj.callback
+                    );
+                  }
+                  break;
+                }
+                const version = obj.message.useBetaTFT ? result.data["tft-beta"].split("_")[0] : result.data.tft.split("_")[0];
+                const fileName = `nspanel-v${version}.tft`;
+                const cmnd = `FlashNextion http://nspanel.de/${fileName}`;
+                this.log.debug(cmnd);
+                if ((_b = this.controller) == null ? void 0 : _b.panels) {
+                  const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
+                  if (index !== -1) {
+                    const panel = this.controller.panels[index];
+                    panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+                  }
+                }
+                if (obj.callback) {
+                  this.sendTo(obj.from, obj.command, [], obj.callback);
+                }
+              } catch (e) {
+                this.log.error(`Error: ${e}`);
+                if (obj.callback) {
+                  this.sendTo(obj.from, obj.command, { error: "sendToRequestFail" }, obj.callback);
+                }
+              }
+              break;
+            }
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);
+          }
+          break;
+        }
         case "getRandomMqttCredentials": {
           if (obj.message) {
             const allowedChars = [
@@ -963,7 +1052,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "selectPanel": {
-          if (this.mainConfiguration && ((_b = obj.message) == null ? void 0 : _b.id)) {
+          if (this.mainConfiguration && ((_c = obj.message) == null ? void 0 : _c.id)) {
             let msg = [];
             switch (obj.message.id) {
               case "panel": {
@@ -1016,7 +1105,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "_loadNavigationOverview": {
-          if (this.mainConfiguration && ((_c = obj.message) == null ? void 0 : _c.panel)) {
+          if (this.mainConfiguration && ((_d = obj.message) == null ? void 0 : _d.panel)) {
             let msg = [];
             let useNavigation = false;
             let configFrom = "";
@@ -1024,7 +1113,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (index !== -1) {
               let nav = [];
               const o = await this.getForeignObjectAsync(this.namespace);
-              if (((_d = o == null ? void 0 : o.native) == null ? void 0 : _d.navigation) && o.native.navigation[obj.message.panel]) {
+              if (((_e = o == null ? void 0 : o.native) == null ? void 0 : _e.navigation) && o.native.navigation[obj.message.panel]) {
                 nav = o.native.navigation[obj.message.panel].data;
                 useNavigation = o.native.navigation[obj.message.panel].useNavigation;
                 configFrom = "Adminconfiguration";
@@ -1067,7 +1156,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "_saveNavigationOverview": {
-          if (((_e = obj.message) == null ? void 0 : _e.table) && ((_f = obj.message) == null ? void 0 : _f.panel) && this.mainConfiguration) {
+          if (((_f = obj.message) == null ? void 0 : _f.table) && ((_g = obj.message) == null ? void 0 : _g.panel) && this.mainConfiguration) {
             const o = await this.getForeignObjectAsync(this.namespace);
             if (o && o.native) {
               const index = this.mainConfiguration.findIndex((a) => a.topic === obj.message.panel);
@@ -1083,7 +1172,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                 );
                 result = result.filter((a) => a);
-                o.native.navigation = (_g = o.native.navigation) != null ? _g : {};
+                o.native.navigation = (_h = o.native.navigation) != null ? _h : {};
                 o.native.navigation[obj.message.panel] = {
                   useNavigation: obj.message.useNavigation === "true",
                   data: result
@@ -1102,7 +1191,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "_clearNavigationOverview": {
-          if (((_h = obj.message) == null ? void 0 : _h.table) && ((_i = obj.message) == null ? void 0 : _i.panel) && this.mainConfiguration) {
+          if (((_i = obj.message) == null ? void 0 : _i.table) && ((_j = obj.message) == null ? void 0 : _j.panel) && this.mainConfiguration) {
             const o = await this.getForeignObjectAsync(this.namespace);
             if (o && o.native && o.native.navigation && o.native.navigation[obj.message.panel]) {
               o.native.navigation[obj.message.panel] = void 0;
@@ -1126,6 +1215,115 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);
+          }
+          break;
+        }
+        case "tasmotaRestartSendTo": {
+          if (obj.message) {
+            if (obj.message.tasmotaIP) {
+              try {
+                const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Restart 1`;
+                this.log.debug(url);
+                await import_axios.default.get(url);
+                if (obj.callback) {
+                  this.sendTo(obj.from, obj.command, [], obj.callback);
+                }
+              } catch (e) {
+                this.log.error(`Error: ${e}`);
+                if (obj.callback) {
+                  this.sendTo(obj.from, obj.command, { error: "sendToRequestFail" }, obj.callback);
+                }
+              }
+              break;
+            }
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);
+          }
+          break;
+        }
+        case "refreshMaintainTable": {
+          if ((_k = this.controller) == null ? void 0 : _k.panels) {
+            const result = this.controller.panels.map((a) => {
+              var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2, _k2;
+              const tv = (_c2 = (_b2 = (_a2 = a.info) == null ? void 0 : _a2.tasmota) == null ? void 0 : _b2.firmwareversion) == null ? void 0 : _c2.match(/([0-9]+\.[0-9]+\.[0-9])/);
+              return {
+                name: a.friendlyName,
+                ip: ((_f2 = (_e2 = (_d2 = a.info) == null ? void 0 : _d2.tasmota) == null ? void 0 : _e2.net) == null ? void 0 : _f2.IPAddress) ? a.info.tasmota.net.IPAddress : "",
+                online: a.isOnline ? "yes" : "no",
+                topic: a.topic,
+                id: ((_i2 = (_h2 = (_g2 = a.info) == null ? void 0 : _g2.tasmota) == null ? void 0 : _h2.net) == null ? void 0 : _i2.Mac) ? a.info.tasmota.net.Mac : "",
+                tftVersion: ((_k2 = (_j2 = a.info) == null ? void 0 : _j2.nspanel) == null ? void 0 : _k2.displayVersion) ? a.info.nspanel.displayVersion : "???",
+                tasmotaVersion: tv && tv[1] ? tv[1] : "???"
+              };
+            });
+            if (obj.callback) {
+              this.sendTo(obj.from, obj.command, { native: { _maintainPanels: result } }, obj.callback);
+            }
+            break;
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);
+          }
+          break;
+        }
+        case "createScript": {
+          const folder = {
+            type: "channel",
+            _id: `script.js.${this.name}`,
+            common: {
+              name: this.name,
+              expert: true
+            },
+            native: {}
+          };
+          await this.extendForeignObjectAsync(`script.js.${this.name}`, folder);
+          const scriptId = `script.js.${this.name}.${obj.message.name.replaceAll(/[^a-zA-Z0-9_-]/g, "_")}`;
+          this.log.debug(`Create script ${import_path.default.join(__dirname, "../script")}`);
+          if (fs.existsSync(import_path.default.join(__dirname, "../script")) && obj.message.name && obj.message.topic) {
+            let file = fs.readFileSync(
+              import_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"),
+              "utf8"
+            );
+            const o = await this.getForeignObjectAsync(scriptId);
+            if (file) {
+              if (o) {
+                const token = "*  END STOP END STOP END - No more configuration - END STOP END STOP END       *";
+                const indexFrom = file.indexOf(token);
+                const indexTo = o.common.source.indexOf(token);
+                if (indexFrom !== -1 && indexTo !== -1) {
+                  this.log.info(`Update script ${scriptId}`);
+                  file = o.common.source.substring(0, indexTo) + file.substring(indexFrom);
+                } else {
+                  if (obj.callback) {
+                    this.sendTo(obj.from, obj.command, null, obj.callback);
+                  }
+                  this.log.warn(`Update script ${scriptId} something whent wrong!`);
+                  break;
+                }
+              } else {
+                this.log.info(`Create script ${scriptId}`);
+                file = file.replace(`panelTopic: 'topic',`, `panelTopic: '${obj.message.topic}',`);
+              }
+              const script = {
+                type: "script",
+                _id: scriptId,
+                common: {
+                  name: obj.message.name.replaceAll(/[^a-zA-Z0-9_-]/g, "_"),
+                  engineType: "TypeScript/ts",
+                  engine: `system.adapter.javascript.0`,
+                  source: file,
+                  debug: false,
+                  verbose: false,
+                  enabled: false
+                },
+                native: {}
+              };
+              await this.extendForeignObjectAsync(scriptId, script);
+            }
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, null, obj.callback);
           }
           break;
         }

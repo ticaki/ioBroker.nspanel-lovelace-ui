@@ -23,7 +23,8 @@ export type PageTypeCards =
     | 'cardBurnRec'
     | 'cardItemSpecial' // besonders, interne Card zum verwalten von pageItems
     | 'popupNotify'
-    | 'popupNotify2';
+    | 'popupNotify2'
+    | 'cardSchedule';
 
 export const arrayOfAll =
     <T>() =>
@@ -443,7 +444,8 @@ export type PageBaseConfigTemplate =
               | cardQRDataItemOptions
               | screensaverDataItemOptions
               | cardNotifyDataItemOptions
-              | cardNotify2DataItemOptions;
+              | cardNotify2DataItemOptions
+              | cardScheduleDataItemOptions;
           items: undefined;
       }
     | {
@@ -491,7 +493,8 @@ export type PageBaseConfig = (
                     | cardNotify2DataItemOptions
                     | cardQRDataItemOptions
                     | cardChartDataItemOptions
-                    | cardLChartDataItemOptions;
+                    | cardLChartDataItemOptions
+                    | cardScheduleDataItemOptions;
             }
           | {
                 //    type: PlayerType;
@@ -531,7 +534,8 @@ export type PageBaseConfig = (
         | cardNotify2DataItems
         | cardQRDataItems
         | cardChartDataItems
-        | cardLChartDataItems;
+        | cardLChartDataItems
+        | cardScheduleDataItems;
 };
 type PageNotifyConfig = {
     headline: string;
@@ -684,6 +688,18 @@ export type cardEntitiesDataItemOptions = {
 };
 export type cardEntitiesDataItems = {
     card: 'cardEntities';
+    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
+};
+
+export type cardScheduleDataItemOptions = {
+    card: 'cardSchedule';
+    cardRole?: CardRole;
+    scrollType?: 'page';
+    filterType?: 'true' | 'false';
+    data: ChangeTypeOfKeys<PageEntitiesBaseConfig, Types.DataItemsOptions | undefined>;
+};
+export type cardScheduleDataItems = {
+    card: 'cardSchedule';
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
 };
 
@@ -1018,6 +1034,13 @@ export type screensaverMessage = {
 };
 
 export type PageEntitiesMessage = {
+    event: 'entityUpd';
+    headline: string;
+    navigation: string;
+    options: [string?, string?, string?, string?, string?, string?, string?, string?];
+};
+
+export type PageScheduleMessage = {
     event: 'entityUpd';
     headline: string;
     navigation: string;

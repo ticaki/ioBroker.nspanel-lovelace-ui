@@ -47,7 +47,7 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.7.2";
+  scriptVersion = "0.8.0";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -1051,7 +1051,57 @@ class ConfigManager extends import_library.BaseClass {
       []
     );
     switch (role) {
-      case "socket":
+      case "socket": {
+        let icon;
+        let icon2;
+        if (item.role) {
+          switch (item.role) {
+            case "socket": {
+              icon = "power-socket-de";
+              icon2 = "power-socket-de";
+              break;
+            }
+          }
+        }
+        icon = item.icon || icon || "power";
+        icon2 = item.icon2 || icon2 || icon || "power-standby";
+        const tempItem = {
+          type: "button",
+          role: "button",
+          data: {
+            icon: {
+              true: {
+                value: {
+                  type: "const",
+                  constVal: icon
+                },
+                color: await this.getIconColor(item.onColor, this.colorOn)
+              },
+              false: {
+                value: {
+                  type: "const",
+                  constVal: icon2
+                },
+                color: await this.getIconColor(item.offColor, this.colorOff)
+              },
+              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+              maxBri: void 0,
+              minBri: void 0
+            },
+            text1: {
+              true: { type: "const", constVal: "on" },
+              false: { type: "const", constVal: "off" }
+            },
+            text,
+            entity1: {
+              value: foundedStates[role].ACTUAL
+            },
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        itemConfig = tempItem;
+        break;
+      }
       case "light":
       case "dimmer":
       case "hue":
@@ -1066,14 +1116,14 @@ class ConfigManager extends import_library.BaseClass {
               true: {
                 value: {
                   type: "const",
-                  constVal: item.icon || (role === "socket" ? "power-socket-de" : "lightbulb")
+                  constVal: item.icon || "lightbulb"
                 },
                 color: await this.getIconColor(item.onColor, this.colorOn)
               },
               false: {
                 value: {
                   type: "const",
-                  constVal: item.icon2 || item.icon || (role === "socket" ? "power-socket-de" : "lightbulb-outline")
+                  constVal: item.icon2 || item.icon || "lightbulb-outline"
                 },
                 color: await this.getIconColor(item.offColor, this.colorOff)
               },
@@ -1123,7 +1173,9 @@ class ConfigManager extends import_library.BaseClass {
               false: { type: "const", constVal: "off" }
             },
             text,
-            entity1: role === void 0 ? void 0 : { value: foundedStates[role].ACTUAL },
+            entity1: {
+              value: foundedStates[role].ACTUAL
+            },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
         };
@@ -1691,7 +1743,40 @@ class ConfigManager extends import_library.BaseClass {
             };
             break;
           }
-          case "socket":
+          case "socket": {
+            const tempItem = {
+              type: "switch",
+              role: "",
+              data: {
+                icon: {
+                  true: {
+                    value: {
+                      type: "const",
+                      constVal: item.icon || "power-socket-de"
+                    },
+                    color: await this.getIconColor(item.onColor, this.colorOn)
+                  },
+                  false: {
+                    value: {
+                      type: "const",
+                      constVal: item.icon2 || "power-socket-de"
+                    },
+                    color: await this.getIconColor(item.offColor, this.colorOff)
+                  },
+                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+                  maxBri: void 0,
+                  minBri: void 0
+                },
+                text,
+                entity1: {
+                  value: foundedStates[role].ACTUAL,
+                  set: foundedStates[role].SET
+                }
+              }
+            };
+            itemConfig = tempItem;
+            break;
+          }
           case "light": {
             const tempItem = {
               type: "light",
@@ -1701,14 +1786,14 @@ class ConfigManager extends import_library.BaseClass {
                   true: {
                     value: {
                       type: "const",
-                      constVal: item.icon || (role === "socket" ? "power-socket-de" : "lightbulb")
+                      constVal: item.icon || "lightbulb"
                     },
                     color: await this.getIconColor(item.onColor, this.colorOn)
                   },
                   false: {
                     value: {
                       type: "const",
-                      constVal: item.icon2 || (role === "socket" ? "power-socket-de" : "lightbulb-outline")
+                      constVal: item.icon2 || "lightbulb-outline"
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
@@ -1850,7 +1935,7 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "button": {
             const tempItem = {
-              type: foundedStates[role].SET ? "switch" : "button",
+              type: "button",
               role: "button",
               data: {
                 icon: {
@@ -1878,8 +1963,9 @@ class ConfigManager extends import_library.BaseClass {
                   false: { type: "const", constVal: "off" }
                 },
                 entity1: {
-                  value: foundedStates[role].SET
-                }
+                  value: foundedStates[role].ACTUAL
+                },
+                setValue2: foundedStates[role].SET
               }
             };
             itemConfig = tempItem;

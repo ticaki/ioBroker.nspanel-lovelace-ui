@@ -19,6 +19,39 @@ export class PageMenu extends Page {
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
+        if (options.config) {
+            switch (options.config.card) {
+                case 'cardSchedule':
+                case 'cardGrid':
+                    this.maxItems = 6;
+                    break;
+                case 'cardGrid2':
+                    this.maxItems = 8;
+                    break;
+                case 'cardGrid3':
+                case 'cardEntities':
+                    this.maxItems = 4;
+                    break;
+
+                case 'cardChart':
+                case 'cardLChart':
+                case 'cardThermo':
+                case 'cardMedia':
+                case 'cardQR':
+                case 'cardAlarm':
+                case 'cardPower':
+                case 'screensaver':
+                case 'screensaver2':
+                case 'screensaver3':
+                case 'popupNotify':
+                case 'popupNotify2':
+                default:
+                    this.log.warn(
+                        `PageMenu: ${config.card} is not supported in this class. Please use the correct class for this card.`,
+                    );
+                    break;
+            }
+        }
     }
 
     public async getOptions(result: string[]): Promise<string[]> {
@@ -26,6 +59,7 @@ export class PageMenu extends Page {
             if (
                 this.config &&
                 (this.config.card === 'cardEntities' ||
+                    this.config.card === 'cardSchedule' ||
                     this.config.card === 'cardGrid' ||
                     this.config.card === 'cardGrid3' ||
                     this.config.card === 'cardGrid2')
@@ -53,7 +87,7 @@ export class PageMenu extends Page {
                     pageItems = this.tempItems;
                 }
 
-                const isEntities = this.config.card === 'cardEntities';
+                const isEntities = this.config.card === 'cardEntities' || this.config.card === 'cardSchedule';
                 let maxItems = this.maxItems;
                 let a = 0;
                 if (this.pageItems.length > maxItems) {
@@ -84,6 +118,7 @@ export class PageMenu extends Page {
             if (
                 this.config &&
                 (this.config.card === 'cardEntities' ||
+                    this.config.card === 'cardSchedule' ||
                     this.config.card === 'cardGrid' ||
                     this.config.card === 'cardGrid3' ||
                     this.config.card === 'cardGrid2')
@@ -101,6 +136,7 @@ export class PageMenu extends Page {
         if (
             !this.config ||
             (this.config.card !== 'cardEntities' &&
+                this.config.card !== 'cardSchedule' &&
                 this.config.card !== 'cardGrid' &&
                 this.config.card !== 'cardGrid2' &&
                 this.config.card !== 'cardGrid3')
@@ -139,6 +175,7 @@ export class PageMenu extends Page {
         if (
             !this.config ||
             (this.config.card !== 'cardEntities' &&
+                this.config.card !== 'cardSchedule' &&
                 this.config.card !== 'cardGrid' &&
                 this.config.card !== 'cardGrid2' &&
                 this.config.card !== 'cardGrid3')
@@ -168,8 +205,12 @@ export class PageMenu extends Page {
         const pageScroll = this.config.scrollType === 'page';
 
         const length = this.tempItems ? this.tempItems.length : this.pageItems ? this.pageItems.length : 0;
-        const maxItemsPage = this.config.card === 'cardEntities' ? this.maxItems : this.maxItems / 2;
-        const maxItemsPagePlus = this.config.card === 'cardEntities' ? 0 : this.maxItems / 2;
+        const maxItemsPage =
+            this.config.card === 'cardEntities' || this.config.card === 'cardSchedule'
+                ? this.maxItems
+                : this.maxItems / 2;
+        const maxItemsPagePlus =
+            this.config.card === 'cardEntities' || this.config.card === 'cardSchedule' ? 0 : this.maxItems / 2;
         if (
             !pageScroll ? ++this.step + this.maxItems > length : ++this.step * maxItemsPage + maxItemsPagePlus >= length
         ) {
@@ -183,6 +224,7 @@ export class PageMenu extends Page {
         if (
             !this.config ||
             (this.config.card !== 'cardEntities' &&
+                this.config.card !== 'cardSchedule' &&
                 this.config.card !== 'cardGrid' &&
                 this.config.card !== 'cardGrid2' &&
                 this.config.card !== 'cardGrid3')
@@ -199,8 +241,12 @@ export class PageMenu extends Page {
         if (this.step <= 0) {
             left = this.panel.navigation.buildNavigationString('left');
         }
-        const maxItemsPage = this.config.card === 'cardEntities' ? this.maxItems : this.maxItems / 2;
-        const maxItemsPagePlus = this.config.card === 'cardEntities' ? 0 : this.maxItems / 2;
+        const maxItemsPage =
+            this.config.card === 'cardEntities' || this.config.card === 'cardSchedule'
+                ? this.maxItems
+                : this.maxItems / 2;
+        const maxItemsPagePlus =
+            this.config.card === 'cardEntities' || this.config.card === 'cardSchedule' ? 0 : this.maxItems / 2;
         if (
             !pageScroll
                 ? this.step + this.maxItems >= length

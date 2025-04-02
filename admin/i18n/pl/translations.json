@@ -95,5 +95,10 @@
     "wlantype": "Szyfrowanie Wi -Fi",
     "qrPass": "Hasło Wi -Fi",
     "pwdHidden": "Ukryte hasło Wi -Fi",
-    "switchForWifi": "Przełącz się, aby aktywować WLAN"
+    "switchForWifi": "Przełącz się, aby aktywować WLAN",
+    "tftInstallSendToMQTT": "Zaktualizuj TFT",
+    "createScript": "Scenariusz",
+    "tasmotaSendToHelp": "Wyślij ustawienia Tasmota do panelu.",
+    "createScriptHelp": "Utwórz lub zaktualizuj skrypt Ustawienia dla panelu",
+    "tftInstallSendToMQTTHelp": "Zaktualizuj oprogramowanie układowe TFT na panelu."
 }

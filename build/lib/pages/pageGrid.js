@@ -48,7 +48,6 @@ class PageGrid extends import_pageMenu.PageMenu {
     if (options.items && (options.items.card == "cardGrid" || options.items.card == "cardGrid2" || options.items.card == "cardGrid3")) {
       this.items = options.items;
     }
-    this.maxItems = this.card === "cardGrid" ? 6 : 8;
     this.minUpdateInterval = 2e3;
   }
   async init() {
@@ -75,7 +74,7 @@ class PageGrid extends import_pageMenu.PageMenu {
     if (!this.config || this.config.card !== "cardGrid" && this.config.card !== "cardGrid2" && this.config.card !== "cardGrid3") {
       return;
     }
-    const arr = (await this.getOptions([])).slice(0, 8);
+    const arr = (await this.getOptions([])).slice(0, this.maxItems);
     message.options = arr;
     message.headline = this.library.getTranslation(
       (_a = this.items && this.items.data.headline && await this.items.data.headline.getString()) != null ? _a : ""

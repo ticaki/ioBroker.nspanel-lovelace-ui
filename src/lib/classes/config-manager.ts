@@ -21,7 +21,7 @@ export class ConfigManager extends BaseClass {
     dontWrite: boolean = false;
     extraConfigLogging: boolean = false;
 
-    readonly scriptVersion = '0.7.2';
+    readonly scriptVersion = '0.8.0';
     readonly breakingVersion = '0.6.0';
 
     statesController: StatesControler | undefined;
@@ -1240,7 +1240,57 @@ export class ConfigManager extends BaseClass {
         }*/
 
         switch (role) {
-            case 'socket':
+            case 'socket': {
+                let icon: AllIcons | undefined;
+                let icon2: AllIcons | undefined;
+                if (item.role) {
+                    switch (item.role) {
+                        case 'socket': {
+                            icon = 'power-socket-de';
+                            icon2 = 'power-socket-de';
+                            break;
+                        }
+                    }
+                }
+                icon = item.icon || icon || 'power';
+                icon2 = item.icon2 || icon2 || icon || 'power-standby';
+                const tempItem: typePageItem.PageItemDataItemsOptions = {
+                    type: 'button',
+                    role: 'button',
+                    data: {
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'const',
+                                    constVal: icon,
+                                },
+                                color: await this.getIconColor(item.onColor, this.colorOn),
+                            },
+                            false: {
+                                value: {
+                                    type: 'const',
+                                    constVal: icon2,
+                                },
+                                color: await this.getIconColor(item.offColor, this.colorOff),
+                            },
+                            scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        text1: {
+                            true: { type: 'const', constVal: 'on' },
+                            false: { type: 'const', constVal: 'off' },
+                        },
+                        text: text,
+                        entity1: {
+                            value: foundedStates[role].ACTUAL,
+                        },
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
+                itemConfig = tempItem;
+                break;
+            }
             case 'light':
             case 'dimmer':
             case 'hue':
@@ -1255,17 +1305,14 @@ export class ConfigManager extends BaseClass {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: item.icon || (role === 'socket' ? 'power-socket-de' : 'lightbulb'),
+                                    constVal: item.icon || 'lightbulb',
                                 },
                                 color: await this.getIconColor(item.onColor, this.colorOn),
                             },
                             false: {
                                 value: {
                                     type: 'const',
-                                    constVal:
-                                        item.icon2 ||
-                                        item.icon ||
-                                        (role === 'socket' ? 'power-socket-de' : 'lightbulb-outline'),
+                                    constVal: item.icon2 || item.icon || 'lightbulb-outline',
                                 },
                                 color: await this.getIconColor(item.offColor, this.colorOff),
                             },
@@ -1319,7 +1366,9 @@ export class ConfigManager extends BaseClass {
                             false: { type: 'const', constVal: 'off' },
                         },
                         text: text,
-                        entity1: role === undefined ? undefined : { value: foundedStates[role].ACTUAL },
+                        entity1: {
+                            value: foundedStates[role].ACTUAL,
+                        },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
@@ -1976,7 +2025,41 @@ export class ConfigManager extends BaseClass {
                         };
                         break;
                     }
-                    case 'socket':
+                    case 'socket': {
+                        const tempItem: typePageItem.PageItemDataItemsOptions = {
+                            type: 'switch',
+                            role: '',
+                            data: {
+                                icon: {
+                                    true: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: item.icon || 'power-socket-de',
+                                        },
+                                        color: await this.getIconColor(item.onColor, this.colorOn),
+                                    },
+                                    false: {
+                                        value: {
+                                            type: 'const',
+                                            constVal: item.icon2 || 'power-socket-de',
+                                        },
+                                        color: await this.getIconColor(item.offColor, this.colorOff),
+                                    },
+                                    scale: item.colorScale ? { type: 'const', constVal: item.colorScale } : undefined,
+                                    maxBri: undefined,
+                                    minBri: undefined,
+                                },
+                                text: text,
+                                entity1: {
+                                    value: foundedStates[role].ACTUAL,
+                                    set: foundedStates[role].SET,
+                                },
+                            },
+                        };
+                        itemConfig = tempItem;
+
+                        break;
+                    }
                     case 'light': {
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'light',
@@ -1986,17 +2069,14 @@ export class ConfigManager extends BaseClass {
                                     true: {
                                         value: {
                                             type: 'const',
-                                            constVal:
-                                                item.icon || (role === 'socket' ? 'power-socket-de' : 'lightbulb'),
+                                            constVal: item.icon || 'lightbulb',
                                         },
                                         color: await this.getIconColor(item.onColor, this.colorOn),
                                     },
                                     false: {
                                         value: {
                                             type: 'const',
-                                            constVal:
-                                                item.icon2 ||
-                                                (role === 'socket' ? 'power-socket-de' : 'lightbulb-outline'),
+                                            constVal: item.icon2 || 'lightbulb-outline',
                                         },
                                         color: await this.getIconColor(item.offColor, this.colorOff),
                                     },
@@ -2173,7 +2253,7 @@ export class ConfigManager extends BaseClass {
                     }
                     case 'button': {
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
-                            type: foundedStates[role].SET ? 'switch' : 'button',
+                            type: 'button',
                             role: 'button',
                             data: {
                                 icon: {
@@ -2202,8 +2282,9 @@ export class ConfigManager extends BaseClass {
                                     false: { type: 'const', constVal: 'off' },
                                 },
                                 entity1: {
-                                    value: foundedStates[role].SET,
+                                    value: foundedStates[role].ACTUAL,
                                 },
+                                setValue2: foundedStates[role].SET,
                             },
                         };
                         itemConfig = tempItem;

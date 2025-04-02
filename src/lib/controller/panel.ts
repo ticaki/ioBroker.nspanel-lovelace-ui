@@ -25,6 +25,7 @@ import { PageLChart } from '../pages/pageLChart';
 import { PageQR } from '../pages/pageQR';
 import { Dataitem } from '../classes/data-item';
 import { Color } from '../const/Color';
+import { PageSchedule } from '../pages/pageSchedule';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -102,7 +103,7 @@ export class Panel extends BaseClass {
     info: Types.PanelInfo = {
         isOnline: false,
         nspanel: {
-            displayVersion: 0,
+            displayVersion: '0.0.0',
             model: '',
             bigIconLeft: false,
             bigIconRight: false,
@@ -242,6 +243,11 @@ export class Panel extends BaseClass {
                 case 'cardEntities': {
                     pageConfig = Page.getPage(pageConfig, this);
                     this.pages[a] = new PageEntities(pmconfig, pageConfig);
+                    break;
+                }
+                case 'cardSchedule': {
+                    pageConfig = Page.getPage(pageConfig, this);
+                    this.pages[a] = new PageSchedule(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardGrid3':
@@ -1180,7 +1186,7 @@ export class Panel extends BaseClass {
             case 'startup': {
                 this.isOnline = true;
 
-                this.info.nspanel.displayVersion = parseInt(event.id);
+                this.info.nspanel.displayVersion = event.opt;
                 this.info.nspanel.model = event.action;
 
                 await this.writeInfo();

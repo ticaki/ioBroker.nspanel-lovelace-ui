@@ -23,6 +23,7 @@ export class PageItem extends BaseClassTriggerd {
     tempData: any = undefined; // use this to save some data while object is active
     tempInterval: ioBroker.Interval | undefined;
     confirmClick: number | 'lock' | 'unlock' = 'lock';
+    timeouts: Record<string, ioBroker.Timeout | undefined> = {};
     constructor(
         config: Omit<PageItemInterface, 'pageItemsConfig'>,
         options: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined,
@@ -1686,12 +1687,25 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'number-set': {
+                if (this.timeouts['number-set']) {
+                    this.adapter.clearTimeout(this.timeouts['number-set']);
+                }
                 if (entry.type === 'number') {
-                    const item = entry.data;
-                    await tools.setValueEntry(item.entity1, parseInt(value), false);
+                    this.timeouts['number-set'] = this.adapter.setTimeout(
+                        async value => {
+                            await tools.setValueEntry(entry.data.entity1, parseInt(value), false);
+                        },
+                        500,
+                        value,
+                    );
                 } else if (entry.type === 'fan') {
-                    const item = entry.data;
-                    await tools.setValueEntry(item.speed, parseInt(value), false);
+                    this.timeouts['number-set'] = this.adapter.setTimeout(
+                        async value => {
+                            await tools.setValueEntry(entry.data.speed, parseInt(value), false);
+                        },
+                        500,
+                        value,
+                    );
                 }
                 break;
             }

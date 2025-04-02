@@ -240,6 +240,24 @@
                             "readOnly": true,
                             "validatorErrorText": "mustBeUnique"
                         },
+                        
+                        {
+                            "attr": "_tasmotaRestartSendTo",
+                            "type": "sendTo",
+                            "label": "Restart",
+                            "jsonData": "{ \"tasmotaIP\": \"${data.ip}\"}",
+                            "showProcess": true,
+                            "command": "tasmotaRestartSendTo",
+                            "disabled": "!data.ip",
+                            "width": "5%",
+                            "variant": "outlined",
+                            "confirm": {
+                                "title": "Tasmota restart",
+                                "text": "Restart the Tasmota NS panel.",
+                                "ok": "Restart",
+                                "cancel": "Cancel"
+                            }
+                        },
                         {
                             "attr": "_tasmotaSendTo",
                             "type": "sendTo",
@@ -257,6 +275,18 @@
                                 "cancel": "Cancel"
                             }
                         }
+                        }/*,
+                        {
+                            "attr": "_RefreshDevices",
+                            "type": "sendTo",
+                            "label": "Refresh Device",
+                            "command": "RefreshDevices",
+                            "jsonData": "{\"id\": \"${data.id}\", \"name\": \"${data.name}\", \"topic\": \"${data.topic}\", \"ip\": \"${data.ip}\"}",
+                            "showProcess": true,
+                            "useNative": true,
+                            "timeout": 8000,
+                            "disabled": "!data.topic || !data.name"
+                        }*/
                     ]
                 },
                 "_header2": {
@@ -444,6 +474,132 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                }
+            }
+        },
+        "maintain": {
+            "type": "panel",
+            "label": "maintain",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
+            "items": {
+                "_RefreshMaintainTable": {
+                    "type": "sendTo",
+                    "label": "refresh",
+                    "jsonData": "{ \"internalServerIp\": \"${globalData.internalServerIp}\" }",
+                    "showProcess": true,
+                    "command": "refreshMaintainTable",
+                    "variant": "outlined",
+                    "useNative": true
+                },
+                "_maintainPanels": {
+                    "type": "table",
+                    "label": "overviewOfPanels",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "uniqueColumns": [
+                        "name",
+                        "topic",
+                        "ip"
+                    ],
+                    "items": [
+                        {
+                            "type": "text",
+                            "attr": "id",
+                            "label": "macAdressOfPanel",
+                            "readOnly": true
+                        },
+                        {
+                            "type": "text",
+                            "attr": "ip",
+                            "validator": "data.ip",
+                            "default": "",
+                            "label": "ipFromPanel",
+                            "readOnly": true
+                        },
+                        {
+                            "type": "text",
+                            "attr": "name",
+                            "label": "panelName",
+                            "readOnly": true,
+                            "width": "10%"
+                        },
+                        {
+                            "type": "text",
+                            "attr": "topic",
+                            "label": "panelTopic",
+                            "readOnly": true,
+                            "width": "10%"
+                        },
+                        {
+                            "type": "text",
+                            "attr": "online",
+                            "label": "isOnline",
+                            "readOnly": true,
+                            "width": "5%"
+                        },
+                        {
+                            "type": "text",
+                            "attr": "tasmotaVersion",
+                            "label": "vTasmota",
+                            "readOnly": true,
+                            "width": "6%"
+                        },
+                        {
+                            "type": "text",
+                            "attr": "tftVersion",
+                            "label": "vTFT",
+                            "readOnly": true,
+                            "width": "6%",
+                            
+                            
+                        },
+                        {
+                            "attr": "_tasmotaSendTo",
+                            "type": "sendTo",
+                            "label": "Tasmota",
+                            "tooltip": "tasmotaSendToHelp",
+                            "jsonData": "{ \"tasmotaName\": \"${data.name}\", \"tasmotaIP\": \"${data.ip}\", \"tasmotaTopic\":\"${data.topic}\", \"mqttServer\": \"${globalData.mqttServer}\", \"mqttIp\": \"${globalData.mqttIp}\", \"mqttPort\": ${globalData.mqttPort}, \"mqttUsername\": \"${globalData.mqttUsername}\", \"mqttPassword\": \"${globalData.mqttPassword}\", \"internalServerIp\": \"${globalData.internalServerIp}\" }",
+                            "showProcess": true,
+                            "command": "tasmotaSendTo",
+                            "disabled": "return !data.ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data.ip || data.ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data.topic || data.topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data.name ",
+                            "width": "5%",
+                            "variant": "contained",
+                            "confirm": {
+                                "title": "Tasmota Configuration",
+                                "text": "Update the configuration of the Tasmota NS panel with the current settings.",
+                                "ok": "Update",
+                                "cancel": "Cancel"
+                            }
+                        },
+                        {
+                            "attr": "_createScript",
+                            "type": "sendTo",
+                            "label": "createScript",
+                            "jsonData": "{\"name\": \"${data.name}\", \"topic\": \"${data.topic}\", \"useBetaTFT\": ${globalData.useBetaTFT} }",
+                            "showProcess": true,
+                            "command": "createScript",
+                            "tooltip": "createScriptHelp",
+                            "disabled": "!data.name || !data.topic",
+                            "newLine": true,
+                            "variant": "outlined",
+                            "width": "5%"
+                        },
+                        {
+                            "attr": "_tftInstallSendToMQtt",
+                            "type": "sendTo",
+                            "label": "tftInstallSendToMQTT",
+                            "tooltip": "tftInstallSendToMQTTHelp",
+                            "jsonData": "{\"tasmotaIP\": \"${data.ip}\", \"topic\": \"${data.topic}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT},\"online\": \"${data.online}\" }",
+                            "showProcess": true,
+                            "command": "tftInstallSendToMQTT",
+                            "disabled": "data.online === 'no' && data.ip === ''",
+                            "newLine": true,
+                            "variant": "contained",
+                            "width": "5%"
+                        }
+                    ]
                 }
             }
         },
