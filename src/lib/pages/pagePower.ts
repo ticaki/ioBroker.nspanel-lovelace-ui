@@ -14,7 +14,6 @@ import type * as pages from '../types/pages';
 import type { IncomingEvent, nsPanelState } from '../types/types';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { ConfigManager } from '../classes/config-manager';
-import { Icons } from '../const/icon_mapping';
 
 const PagePowerMessageDefault: pages.PagePowerMessage = {
     event: 'entityUpd',
