@@ -144,8 +144,8 @@ export class PagePower extends Page {
     ): Promise<pages.PageBaseConfig> {
         const config = adapter.config.pagePowerdata[index];
 
+        //array of states
         const states: string[] = [];
-
         for (let i = 1; i <= 7; i++) {
             const key = `power${i}_state` as keyof typeof config;
             if (typeof config[key] === 'string' && (await configManager.existsState(config[key]))) {
@@ -155,6 +155,7 @@ export class PagePower extends Page {
             }
         }
 
+        //array of icons
         const icons: string[] = [];
         for (let i = 1; i <= 6; i++) {
             const key = `power${i}_icon` as keyof typeof config;
@@ -165,6 +166,7 @@ export class PagePower extends Page {
             }
         }
 
+        //array of minSpeedScale
         const minSpeedScale: number[] = [];
         for (let i = 1; i <= 6; i++) {
             const key = `power${i}_minSpeedScale` as keyof typeof config;
@@ -175,6 +177,7 @@ export class PagePower extends Page {
             }
         }
 
+        //array of maxSpeedScale
         const maxSpeedScale: number[] = [];
         for (let i = 1; i <= 6; i++) {
             const key = `power${i}_maxSpeedScale` as keyof typeof config;
@@ -185,6 +188,7 @@ export class PagePower extends Page {
             }
         }
 
+        //array of iconColors
         const iconColor: string[] = [];
         for (let i = 1; i <= 6; i++) {
             const key = `power${i}_iconColor` as keyof typeof config;
@@ -233,8 +237,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'triggered',
-                                dp: states[0],
+                                type: 'const',
+                                constVal: states[0],
                             },
                             minScale: {
                                 type: 'const',
@@ -271,8 +275,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'triggered',
-                                dp: states[1],
+                                type: 'const',
+                                constVal: states[1],
                             },
                             minScale: {
                                 type: 'const',
@@ -309,8 +313,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'triggered',
-                                dp: states[2],
+                                type: 'const',
+                                constVal: states[2],
                             },
                             minScale: {
                                 type: 'const',
@@ -347,8 +351,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'triggered',
-                                dp: states[3],
+                                type: 'const',
+                                constVal: states[3],
                             },
                             minScale: {
                                 type: 'const',
@@ -385,8 +389,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'triggered',
-                                dp: states[4],
+                                type: 'const',
+                                constVal: states[4],
                             },
                             minScale: {
                                 type: 'const',
@@ -423,8 +427,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'triggered',
-                                dp: states[5],
+                                type: 'const',
+                                constVal: states[5],
                             },
                             minScale: {
                                 type: 'const',
