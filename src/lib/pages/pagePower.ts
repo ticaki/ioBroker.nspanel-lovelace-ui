@@ -210,6 +210,19 @@ export class PagePower extends Page {
             }
         }
 
+        // array of speedReverse
+        const speedReverse: number[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_reverse` as keyof typeof config;
+            if (typeof config[key] === 'boolean') {
+                if (config[key]) {
+                    speedReverse.push(-1);
+                } else {
+                    speedReverse.push(1);
+                }
+            }
+        }
+
         const result: pages.PageBaseConfig = {
             uniqueID: config.pageName,
             alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
@@ -259,6 +272,10 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[0],
                             },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[0],
+                            },
                         },
                         text: {
                             true: { type: 'const', constVal: entityHeadline[0] },
@@ -296,6 +313,10 @@ export class PagePower extends Page {
                             maxScale: {
                                 type: 'const',
                                 constVal: maxSpeedScale[1],
+                            },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[1],
                             },
                         },
                         text: {
@@ -335,6 +356,10 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[2],
                             },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[2],
+                            },
                         },
                         text: {
                             true: { type: 'const', constVal: entityHeadline[2] },
@@ -372,6 +397,10 @@ export class PagePower extends Page {
                             maxScale: {
                                 type: 'const',
                                 constVal: maxSpeedScale[3],
+                            },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[3],
                             },
                         },
                         text: {
@@ -411,6 +440,10 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[4],
                             },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[4],
+                            },
                         },
                         text: {
                             true: { type: 'const', constVal: entityHeadline[4] },
@@ -448,6 +481,10 @@ export class PagePower extends Page {
                             maxScale: {
                                 type: 'const',
                                 constVal: maxSpeedScale[5],
+                            },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[5],
                             },
                         },
                         text: {
