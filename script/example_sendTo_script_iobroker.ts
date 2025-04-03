@@ -1128,6 +1128,9 @@ declare namespace ScriptConfig {
         val_max: number;
         val_best?: number;
         /**
+         * The 3. color for color best. Only with val_best.
+         */
+        color_best?: RGB;/**
          * The color mix mode. Default is 'mixed'.
          * ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
          * 'cie': the target colour is achieved by mixing according to the CIE colour table. 

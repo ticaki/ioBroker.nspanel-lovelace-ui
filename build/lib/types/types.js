@@ -99,9 +99,9 @@ function isIconColorScaleElement(F) {
     return false;
   }
   if ("color_best" in F && F.color_best) {
-    F.color_best.r = (_a = F.color.red) != null ? _a : F.color_best.r;
-    F.color_best.g = (_b = F.color.green) != null ? _b : F.color_best.g;
-    F.color_best.b = (_c = F.color.blue) != null ? _c : F.color_best.b;
+    F.color_best.r = (_a = F.color_best.red) != null ? _a : F.color_best.r;
+    F.color_best.g = (_b = F.color_best.green) != null ? _b : F.color_best.g;
+    F.color_best.b = (_c = F.color_best.blue) != null ? _c : F.color_best.b;
   }
   return "val_min" in F && "val_max" in F;
 }

@@ -375,9 +375,9 @@ export function isIconColorScaleElement(F: any): F is IconColorElement {
         return false;
     }
     if ('color_best' in F && F.color_best) {
-        F.color_best.r = F.color.red ?? F.color_best.r;
-        F.color_best.g = F.color.green ?? F.color_best.g;
-        F.color_best.b = F.color.blue ?? F.color_best.b;
+        F.color_best.r = F.color_best.red ?? F.color_best.r;
+        F.color_best.g = F.color_best.green ?? F.color_best.g;
+        F.color_best.b = F.color_best.blue ?? F.color_best.b;
     }
     return 'val_min' in (F as IconColorElement) && 'val_max' in (F as IconColorElement);
 }
