@@ -321,9 +321,19 @@ export class Color extends ColorBase {
     static InterpolateNum(d1: number, d2: number, fraction: number): number {
         return d1 + (d2 - d1) * fraction;
     }
+    static brightness(c: RGB, s: number): RGB {
+        //s = Color.scale(s, 0, 1, 0, 0.6);
+        let r = c.r * s;
+        let g = c.g * s;
+        let b = c.b * s;
+        r = Math.min(255, Math.max(1, r));
+        g = Math.min(255, Math.max(1, g));
+        b = Math.min(255, Math.max(1, b));
+        return { r, g, b };
+    }
 
     static darken(c: RGB, s: number): RGB {
-        s = Color.scale(s, 0, 1, 0, 0.6);
+        s = Color.scale(s, 0, 1, 0, 0.5);
         return colord(c).darken(s).toRgb();
     }
     /**

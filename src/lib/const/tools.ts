@@ -145,24 +145,20 @@ export async function getTemperaturColorFromValue(
     if (!i) {
         return null;
     }
-    let nval = i.value && (await i.value.getNumber());
+    const nval = i.value && (await i.value.getNumber());
     const mode = i.mode && (await i.mode.getString());
     let kelvin = 3500;
     if (nval !== null && nval !== undefined) {
-        if (i.minScale !== undefined && i.maxScale !== undefined) {
-            const min = await i.minScale.getNumber();
-            const max = await i.maxScale.getNumber();
-            nval = getScaledNumberRaw(nval, min, max);
-        }
         if (mode === 'mired') {
             kelvin = 10 ** 6 / nval;
         } else {
             kelvin = nval;
         }
-        kelvin = kelvin > 7000 ? 7000 : kelvin < 1800 ? 1800 : kelvin;
+
+        //kelvin = kelvin > 7000 ? 7000 : kelvin < 1800 ? 1800 : kelvin;
 
         let r = Color.kelvinToRGB[Math.trunc(kelvin / 100) * 100];
-        r = Color.darken(r, Color.scale(dimmer, 100, 0, 0, 1));
+        r = Color.brightness(r, Color.scale(dimmer, 100, 0, 0.3, 1));
         return r ? String(Color.rgb_dec565(r)) : null;
     }
     return null;
@@ -182,23 +178,22 @@ export async function getSliderCTFromValue(
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
             if (min !== null && max !== null) {
-                nval = Math.round(Color.scale(nval, max, min, 1800, 7000));
+                if (mode === 'mired') {
+                    r = Math.round(Color.scale(nval, max, min, 100, 0));
+                } else {
+                    r = Math.round(Color.scale(nval, min, max, 0, 100));
+                }
             }
         } else if (i.value && i.value.common && i.value.common.min !== undefined && i.value.common.max !== undefined) {
             if (mode === 'mired') {
-                nval = Math.round(Color.scale(nval, i.value.common.max, i.value.common.min, 1800, 7000));
+                nval = Math.round(Color.scale(nval, i.value.common.max, i.value.common.min, 100, 0));
             } else {
-                nval = Math.round(Color.scale(nval, i.value.common.min, i.value.common.max, 1800, 7000));
+                nval = Math.round(Color.scale(nval, i.value.common.min, i.value.common.max, 0, 100));
             }
-        }
-        if (mode === 'mired') {
-            r = 10 ** 6 / nval;
         } else {
-            r = nval;
+            r = Math.round(Color.scale(nval, 1800, 7000, 0, 100));
         }
-        r = r > 7000 ? 7000 : r < 1800 ? 1800 : r;
 
-        r = getScaledNumberRaw(r, 1800, 7000);
         return r !== null ? String(r) : null;
     }
     return null;
@@ -210,34 +205,33 @@ export async function setSliderCTFromValue(
     if (!i || !i.value) {
         return;
     }
-    const nval = (i.value && (await i.value.getNumber())) ?? null;
     const mode = i.mode && (await i.mode.getString());
     //value = 100 - value;
-    if (nval !== null) {
-        let r = getScaledNumberRaw(value, 1800, 7000, false);
-        r = r > 7000 ? 7000 : r < 1800 ? 1800 : r;
-        if (mode === 'mired') {
-            r = 10 ** 6 / r;
-        }
-        if (i.minScale !== undefined && i.maxScale !== undefined) {
-            const min = await i.minScale.getNumber();
-            const max = await i.maxScale.getNumber();
-            if (min !== null && max !== null) {
-                r = Math.round(Color.scale(nval, 7000, 1800, min, max));
-            }
-        }
-        if (i.value && i.value.common && i.value.common.min !== undefined && i.value.common.max !== undefined) {
+    let r = value;
+
+    if (i.minScale !== undefined && i.maxScale !== undefined) {
+        const min = await i.minScale.getNumber();
+        const max = await i.maxScale.getNumber();
+        if (min !== null && max !== null) {
             if (mode === 'mired') {
-                r = Math.round(Color.scale(r, i.value.common.max, i.value.common.min, 1800, 7000));
+                r = Math.round(Color.scale(r, 0, 100, max, min));
             } else {
-                r = Math.round(Color.scale(r, i.value.common.min, i.value.common.max, 1800, 7000));
+                r = Math.round(Color.scale(r, 0, 100, min, max));
             }
         }
-        if (i.set && i.set.writeable) {
-            await i.value.setStateAsync(r);
-        } else if (nval !== value) {
-            await i.value.setStateAsync(r);
+    } else if (i.value && i.value.common && i.value.common.min !== undefined && i.value.common.max !== undefined) {
+        if (mode === 'mired') {
+            r = Math.round(Color.scale(r, 0, 100, i.value.common.max, i.value.common.min));
+        } else {
+            r = Math.round(Color.scale(r, 0, 100, i.value.common.min, i.value.common.max));
         }
+    } else {
+        r = Math.round(Color.scale(r, 0, 100, 1800, 7000));
+    }
+    if (i.set && i.set.writeable) {
+        await i.value.setStateAsync(r);
+    } else {
+        await i.value.setStateAsync(r);
     }
 }
 
