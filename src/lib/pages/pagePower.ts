@@ -223,6 +223,28 @@ export class PagePower extends Page {
             }
         }
 
+        //array of valueDecimal
+        const valueDecimal: number[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_valueDecimal` as keyof typeof config;
+            if (typeof config[key] === 'number') {
+                valueDecimal.push(config[key]);
+            } else {
+                valueDecimal.push(0);
+            }
+        }
+
+        //array of valueUnit
+        const valueUnit: string[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_valueUnit` as keyof typeof config;
+            if (typeof config[key] === 'string') {
+                valueUnit.push(config[key]);
+            } else {
+                valueUnit.push('W');
+            }
+        }
+
         const result: pages.PageBaseConfig = {
             uniqueID: config.pageName,
             alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
@@ -257,6 +279,14 @@ export class PagePower extends Page {
                             value: {
                                 type: 'triggered',
                                 dp: states[0],
+                            },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[0],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[0],
                             },
                         },
                         speed: {
@@ -300,6 +330,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[1],
                             },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[1],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[1],
+                            },
                         },
                         speed: {
                             value: {
@@ -341,6 +379,14 @@ export class PagePower extends Page {
                             value: {
                                 type: 'triggered',
                                 dp: states[2],
+                            },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[2],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[2],
                             },
                         },
                         speed: {
@@ -384,6 +430,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[3],
                             },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[3],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[3],
+                            },
                         },
                         speed: {
                             value: {
@@ -426,6 +480,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[4],
                             },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[4],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[4],
+                            },
                         },
                         speed: {
                             value: {
@@ -467,6 +529,14 @@ export class PagePower extends Page {
                             value: {
                                 type: 'triggered',
                                 dp: states[5],
+                            },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[5],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[5],
                             },
                         },
                         speed: {

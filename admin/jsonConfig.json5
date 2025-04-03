@@ -918,6 +918,46 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power1_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": valueDecimal"
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power1_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
+                        },
+                        {
                             "attr": "_power1_more",
                             "xs": 12,
                             "sm": 12,
@@ -1019,6 +1059,46 @@
                             "type": "objectId",
                             "label": "powerState",
                             "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "power2_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": valueDecimal"
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power2_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
                         },
                         {
                             "attr": "_power2_more",
@@ -1125,6 +1205,46 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power3_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": valueDecimal"
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power3_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
+                        },
+                        {
                             "attr": "_power3_more",
                             "xs": 12,
                             "sm": 12,
@@ -1227,6 +1347,46 @@
                             "type": "objectId",
                             "label": "powerState",
                             "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "power4_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": valueDecimal"
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power4_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
                         },
                         {
                             "attr": "_power4_more",
@@ -1333,6 +1493,46 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power5_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": valueDecimal"
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power5_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
+                        },
+                        {
                             "attr": "_power5_more",
                             "xs": 12,
                             "sm": 12,
@@ -1435,6 +1635,46 @@
                             "type": "objectId",
                             "label": "powerState",
                             "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "power6_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": valueDecimal"
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power6_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
                         },
                         {
                             "attr": "_power6_more",
