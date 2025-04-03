@@ -166,7 +166,9 @@ async function getTemperaturColorFromValue(i, dimmer = 100) {
       kelvin = nval;
     }
     let r = import_Color.Color.kelvinToRGB[Math.trunc(kelvin / 100) * 100];
-    r = import_Color.Color.brightness(r, import_Color.Color.scale(dimmer, 100, 0, 0.3, 1));
+    if (r) {
+      r = import_Color.Color.brightness(r, import_Color.Color.scale(dimmer, 100, 0, 0.3, 1));
+    }
     return r ? String(import_Color.Color.rgb_dec565(r)) : null;
   }
   return null;

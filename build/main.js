@@ -402,11 +402,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       try {
         this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
         await import_axios.default.get(
-          `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog MqttRetry 11`
-        );
-        await this.delay(300);
-        await import_axios.default.get(
-          `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog MqttRetry 10`
+          `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog Restart 1`
         );
       } catch (e) {
         this.log.warn(

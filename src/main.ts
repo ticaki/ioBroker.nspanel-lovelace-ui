@@ -515,13 +515,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 await axios.get(
                     `http://${tasmota.ip}/cm?` +
                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-                        `&cmnd=Backlog MqttRetry 11`,
-                );
-                await this.delay(300);
-                await axios.get(
-                    `http://${tasmota.ip}/cm?` +
-                        `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-                        `&cmnd=Backlog MqttRetry 10`,
+                        `&cmnd=Backlog Restart 1`,
                 );
             } catch (e: any) {
                 this.log.warn(

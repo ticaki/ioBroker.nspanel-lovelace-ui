@@ -158,7 +158,9 @@ export async function getTemperaturColorFromValue(
         //kelvin = kelvin > 7000 ? 7000 : kelvin < 1800 ? 1800 : kelvin;
 
         let r = Color.kelvinToRGB[Math.trunc(kelvin / 100) * 100];
-        r = Color.brightness(r, Color.scale(dimmer, 100, 0, 0.3, 1));
+        if (r) {
+            r = Color.brightness(r, Color.scale(dimmer, 100, 0, 0.3, 1));
+        }
         return r ? String(Color.rgb_dec565(r)) : null;
     }
     return null;

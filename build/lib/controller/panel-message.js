@@ -34,17 +34,17 @@ class PanelSend extends import_library.BaseClass {
   _losingDelay = 1e3;
   _panel = void 0;
   get losingDelay() {
-    this._losingDelay = this._losingDelay + 2e3;
+    if (this._losingDelay < 3e4) {
+      this._losingDelay = this._losingDelay + 2e3;
+    }
     return this._losingDelay;
   }
   set losingDelay(value) {
     if (value > 3e4) {
-      this._losingDelay = 3e4;
-      return;
+      value = 3e4;
     }
-    if (value === 0) {
-      this._losingDelay = 2e3;
-      return;
+    if (value < 2e3) {
+      value = 2e3;
     }
     this._losingDelay = value;
   }
@@ -112,11 +112,11 @@ class PanelSend extends import_library.BaseClass {
     if (this._panel && !this._panel.isOnline) {
       this.messageDb = [];
     }
-    this.addMessageTasmota(this.topic, msg.payload, msg.opt);
     if (this.unload) {
       return;
     }
     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
+    this.addMessageTasmota(this.topic, msg.payload, msg.opt);
   };
   addMessageTasmota = (topic, payload, opt) => {
     if (this.messageDbTasmota.length > 0 && this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt)) {

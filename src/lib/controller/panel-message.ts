@@ -22,17 +22,17 @@ export class PanelSend extends BaseClass {
     _panel: Panel | undefined = undefined;
 
     get losingDelay(): number {
-        this._losingDelay = this._losingDelay + 2000;
+        if (this._losingDelay < 30000) {
+            this._losingDelay = this._losingDelay + 2000;
+        }
         return this._losingDelay;
     }
     set losingDelay(value: number) {
         if (value > 30000) {
-            this._losingDelay = 30000;
-            return;
+            value = 30000;
         }
-        if (value === 0) {
-            this._losingDelay = 2000;
-            return;
+        if (value < 2000) {
+            value = 2000;
         }
         this._losingDelay = value;
     }
@@ -108,12 +108,11 @@ export class PanelSend extends BaseClass {
         if (this._panel && !this._panel.isOnline) {
             this.messageDb = [];
         }
-
-        this.addMessageTasmota(this.topic, msg.payload, msg.opt);
         if (this.unload) {
             return;
         }
         this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
+        this.addMessageTasmota(this.topic, msg.payload, msg.opt);
     };
 
     readonly addMessageTasmota = (topic: string, payload: string, opt?: IClientPublishOptions): void => {
