@@ -199,6 +199,17 @@ export class PagePower extends Page {
             }
         }
 
+        //array of entityHeadline
+        const entityHeadline: string[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_entityHeadline` as keyof typeof config;
+            if (typeof config[key] === 'string') {
+                entityHeadline.push(config[key]);
+            } else {
+                entityHeadline.push('');
+            }
+        }
+
         const result: pages.PageBaseConfig = {
             uniqueID: config.pageName,
             alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
@@ -250,7 +261,7 @@ export class PagePower extends Page {
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: states[0] },
+                            true: { type: 'const', constVal: entityHeadline[0] },
                         },
                     },
                     leftMiddle: {
@@ -288,7 +299,7 @@ export class PagePower extends Page {
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: states[1] },
+                            true: { type: 'const', constVal: entityHeadline[1] },
                         },
                     },
                     leftBottom: {
@@ -326,7 +337,7 @@ export class PagePower extends Page {
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: states[2] },
+                            true: { type: 'const', constVal: entityHeadline[2] },
                         },
                     },
                     rightTop: {
@@ -364,7 +375,7 @@ export class PagePower extends Page {
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: states[3] },
+                            true: { type: 'const', constVal: entityHeadline[3] },
                         },
                     },
                     rightMiddle: {
@@ -402,7 +413,7 @@ export class PagePower extends Page {
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: states[4] },
+                            true: { type: 'const', constVal: entityHeadline[4] },
                         },
                     },
                     rightBottom: {
@@ -440,7 +451,7 @@ export class PagePower extends Page {
                             },
                         },
                         text: {
-                            true: { type: 'state', dp: states[5] },
+                            true: { type: 'const', constVal: entityHeadline[5] },
                         },
                     },
                 },

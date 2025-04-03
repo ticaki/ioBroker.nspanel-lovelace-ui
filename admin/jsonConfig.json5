@@ -929,6 +929,17 @@
                             "default": false
                         },
                         {
+                            "attr": "power1_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": ""                            
+                        },
+                        {
                             "attr": "power1_minSpeedScale",
                             "xs": 12,
                             "sm": 12,
@@ -1019,6 +1030,17 @@
                             "type": "checkbox",
                             "label": "more",
                             "default": false
+                        },
+                        {
+                            "attr": "power2_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": ""                            
                         },
                         {
                             "attr": "power2_minSpeedScale",
@@ -1114,6 +1136,17 @@
                             "default": false
                         },
                         {
+                            "attr": "power3_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": ""                            
+                        },
+                        {
                             "attr": "power3_minSpeedScale",
                             "xs": 12,
                             "sm": 12,
@@ -1205,6 +1238,17 @@
                             "type": "checkbox",
                             "label": "more",
                             "default": false
+                        },
+                        {
+                            "attr": "power4_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": ""                            
                         },
                         {
                             "attr": "power4_minSpeedScale",
@@ -1300,6 +1344,17 @@
                             "default": false
                         },
                         {
+                            "attr": "power5_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": ""                            
+                        },
+                        {
                             "attr": "power5_minSpeedScale",
                             "xs": 12,
                             "sm": 12,
@@ -1391,6 +1446,17 @@
                             "type": "checkbox",
                             "label": "more",
                             "default": false
+                        },
+                        {
+                            "attr": "power6_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": ""                            
                         },
                         {
                             "attr": "power6_minSpeedScale",
