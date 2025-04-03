@@ -811,8 +811,7 @@ declare namespace ScriptConfig {
 
     export type PagePower = {
         type: 'cardPower';
-        items: [PageItem];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
 
     export type PageChart = {
         type: 'cardChart' | 'cardLChart';
