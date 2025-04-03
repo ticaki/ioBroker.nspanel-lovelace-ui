@@ -1695,7 +1695,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -1864,6 +1864,13 @@ class ConfigManager extends import_library.BaseClass {
           case "ct":
           case "rgb":
           case "hue": {
+            let isKelvin = true;
+            if ((_a = foundedStates[role].TEMPERATURE) == null ? void 0 : _a.dp) {
+              const state = await this.adapter.getForeignStateAsync(foundedStates[role].TEMPERATURE.dp);
+              if (state && typeof state.val === "number" && state.val <= 1e3) {
+                isKelvin = false;
+              }
+            }
             const tempItem = {
               type: "light",
               role: role === "hue" ? "hue" : role === "rgb" ? "rgbThree" : role === "rgbSingle" ? "rgbSingle" : "ct",
@@ -1905,7 +1912,8 @@ class ConfigManager extends import_library.BaseClass {
                 ct: {
                   value: foundedStates[role].TEMPERATURE,
                   maxScale: item.maxValueColorTemp ? { type: "const", constVal: item.maxValueColorTemp } : void 0,
-                  minScale: item.minValueColorTemp ? { type: "const", constVal: item.minValueColorTemp } : void 0
+                  minScale: item.minValueColorTemp ? { type: "const", constVal: item.minValueColorTemp } : void 0,
+                  mode: { type: "const", constVal: isKelvin ? "kelvin" : "mired" }
                 },
                 text1: {
                   true: {
@@ -2000,7 +2008,7 @@ class ConfigManager extends import_library.BaseClass {
                   },
                   scale: {
                     type: "const",
-                    constVal: (_a = Types.isIconColorScaleElement(item.colorScale)) != null ? _a : {
+                    constVal: (_b = Types.isIconColorScaleElement(item.colorScale)) != null ? _b : {
                       val_min: 0,
                       val_max: 100
                     }
@@ -2012,14 +2020,14 @@ class ConfigManager extends import_library.BaseClass {
                 headline,
                 entity1: {
                   value: foundedStates[role].ACTUAL,
-                  minScale: { type: "const", constVal: (_b = item.minValueLevel) != null ? _b : 0 },
-                  maxScale: { type: "const", constVal: (_c = item.maxValueLevel) != null ? _c : 100 },
+                  minScale: { type: "const", constVal: (_c = item.minValueLevel) != null ? _c : 0 },
+                  maxScale: { type: "const", constVal: (_d = item.maxValueLevel) != null ? _d : 100 },
                   set: foundedStates[role].SET
                 },
                 entity2: {
                   value: foundedStates[role].TILT_ACTUAL,
-                  minScale: { type: "const", constVal: (_d = item.minValueTilt) != null ? _d : 100 },
-                  maxScale: { type: "const", constVal: (_e = item.maxValueTilt) != null ? _e : 0 },
+                  minScale: { type: "const", constVal: (_e = item.minValueTilt) != null ? _e : 100 },
+                  maxScale: { type: "const", constVal: (_f = item.maxValueTilt) != null ? _f : 0 },
                   set: foundedStates[role].TILT_SET
                 },
                 up: foundedStates[role].OPEN,

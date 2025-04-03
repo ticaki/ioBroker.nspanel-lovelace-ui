@@ -177,7 +177,7 @@ async function getSliderCTFromValue(i) {
   if (!i) {
     return null;
   }
-  let nval = i.value && await i.value.getNumber();
+  const nval = i.value && await i.value.getNumber();
   const mode = i.mode && await i.mode.getString();
   let r = 3500;
   if (nval !== null && nval !== void 0) {
@@ -193,12 +193,16 @@ async function getSliderCTFromValue(i) {
       }
     } else if (i.value && i.value.common && i.value.common.min !== void 0 && i.value.common.max !== void 0) {
       if (mode === "mired") {
-        nval = Math.round(import_Color.Color.scale(nval, i.value.common.max, i.value.common.min, 100, 0));
+        r = Math.round(import_Color.Color.scale(nval, i.value.common.max, i.value.common.min, 100, 0));
       } else {
-        nval = Math.round(import_Color.Color.scale(nval, i.value.common.min, i.value.common.max, 0, 100));
+        r = Math.round(import_Color.Color.scale(nval, i.value.common.min, i.value.common.max, 0, 100));
       }
     } else {
-      r = Math.round(import_Color.Color.scale(nval, 1800, 7e3, 0, 100));
+      if (mode === "mired") {
+        r = Math.round(import_Color.Color.scale(nval, 500, 130, 0, 100));
+      } else {
+        r = Math.round(import_Color.Color.scale(nval, 1800, 7e3, 0, 100));
+      }
     }
     return r !== null ? String(r) : null;
   }
@@ -227,7 +231,11 @@ async function setSliderCTFromValue(i, value) {
       r = Math.round(import_Color.Color.scale(r, 0, 100, i.value.common.min, i.value.common.max));
     }
   } else {
-    r = Math.round(import_Color.Color.scale(r, 0, 100, 1800, 7e3));
+    if (mode === "mired") {
+      r = Math.round(import_Color.Color.scale(r, 0, 100, 500, 130));
+    } else {
+      r = Math.round(import_Color.Color.scale(r, 0, 100, 1800, 7e3));
+    }
   }
   if (i.set && i.set.writeable) {
     await i.value.setStateAsync(r);

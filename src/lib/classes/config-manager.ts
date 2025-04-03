@@ -2178,6 +2178,13 @@ export class ConfigManager extends BaseClass {
                     case 'ct':
                     case 'rgb':
                     case 'hue': {
+                        let isKelvin = true;
+                        if (foundedStates[role].TEMPERATURE?.dp) {
+                            const state = await this.adapter.getForeignStateAsync(foundedStates[role].TEMPERATURE.dp);
+                            if (state && typeof state.val === 'number' && state.val <= 1000) {
+                                isKelvin = false;
+                            }
+                        }
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'light',
                             role:
@@ -2244,6 +2251,7 @@ export class ConfigManager extends BaseClass {
                                     minScale: item.minValueColorTemp
                                         ? { type: 'const', constVal: item.minValueColorTemp }
                                         : undefined,
+                                    mode: { type: 'const', constVal: isKelvin ? 'kelvin' : 'mired' },
                                 },
                                 text1: {
                                     true: {

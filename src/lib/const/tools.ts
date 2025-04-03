@@ -155,7 +155,7 @@ export async function getTemperaturColorFromValue(
             kelvin = nval;
         }
 
-        //kelvin = kelvin > 7000 ? 7000 : kelvin < 1800 ? 1800 : kelvin;
+        //kelvin = kelvin > 6500 ? 6500 : kelvin < 2200 ? 2200 : kelvin;
 
         let r = Color.kelvinToRGB[Math.trunc(kelvin / 100) * 100];
         if (r) {
@@ -172,7 +172,7 @@ export async function getSliderCTFromValue(
     if (!i) {
         return null;
     }
-    let nval = i.value && (await i.value.getNumber());
+    const nval = i.value && (await i.value.getNumber());
     const mode = i.mode && (await i.mode.getString());
     let r = 3500;
     if (nval !== null && nval !== undefined) {
@@ -188,12 +188,16 @@ export async function getSliderCTFromValue(
             }
         } else if (i.value && i.value.common && i.value.common.min !== undefined && i.value.common.max !== undefined) {
             if (mode === 'mired') {
-                nval = Math.round(Color.scale(nval, i.value.common.max, i.value.common.min, 100, 0));
+                r = Math.round(Color.scale(nval, i.value.common.max, i.value.common.min, 100, 0));
             } else {
-                nval = Math.round(Color.scale(nval, i.value.common.min, i.value.common.max, 0, 100));
+                r = Math.round(Color.scale(nval, i.value.common.min, i.value.common.max, 0, 100));
             }
         } else {
-            r = Math.round(Color.scale(nval, 1800, 7000, 0, 100));
+            if (mode === 'mired') {
+                r = Math.round(Color.scale(nval, 500, 153, 0, 100));
+            } else {
+                r = Math.round(Color.scale(nval, 2200, 6500, 0, 100));
+            }
         }
 
         return r !== null ? String(r) : null;
@@ -228,7 +232,11 @@ export async function setSliderCTFromValue(
             r = Math.round(Color.scale(r, 0, 100, i.value.common.min, i.value.common.max));
         }
     } else {
-        r = Math.round(Color.scale(r, 0, 100, 1800, 7000));
+        if (mode === 'mired') {
+            r = Math.round(Color.scale(r, 0, 100, 500, 153));
+        } else {
+            r = Math.round(Color.scale(r, 0, 100, 2200, 6500));
+        }
     }
     if (i.set && i.set.writeable) {
         await i.value.setStateAsync(r);
