@@ -974,7 +974,8 @@
                             "xl": 2,
                             "type": "text",
                             "label": "entityHeadline",
-                            "default": ""                            
+                            "default": "",
+                            "hidden": "!data._power1_more"                          
                         },
                         {
                             "attr": "power1_minSpeedScale",
@@ -1033,7 +1034,7 @@
                             "xl": 2,
                             "type": "text",
                             "label": "powerIcon",
-                            "default": "arrow-top-left"
+                            "default": "arrow-left"
                         },
                         {
                             "attr": "power2_iconColor",
@@ -1117,7 +1118,8 @@
                             "xl": 2,
                             "type": "text",
                             "label": "entityHeadline",
-                            "default": ""                            
+                            "default": "",
+                            "hidden": "!data._power2_more"                         
                         },
                         {
                             "attr": "power2_minSpeedScale",
@@ -1177,7 +1179,7 @@
                             "xl": 2,
                             "type": "text",
                             "label": "powerIcon",
-                            "default": "arrow-top-left"
+                            "default": "arrow-bottom-left"
                         },
                         {
                             "attr": "power3_iconColor",
@@ -1261,7 +1263,8 @@
                             "xl": 2,
                             "type": "text",
                             "label": "entityHeadline",
-                            "default": ""                            
+                            "default": "",
+                            "hidden": "!data._power3_more"                            
                         },
                         {
                             "attr": "power3_minSpeedScale",
@@ -1321,7 +1324,7 @@
                             "xl": 2,
                             "type": "text",
                             "label": "powerIcon",
-                            "default": "arrow-top-left"
+                            "default": "arrow-top-right"
                         },
                         {
                             "attr": "power4_iconColor",
@@ -1405,7 +1408,8 @@
                             "xl": 2,
                             "type": "text",
                             "label": "entityHeadline",
-                            "default": ""                            
+                            "default": "",
+                            "hidden": "!data._power4_more"                            
                         },
                         {
                             "attr": "power4_minSpeedScale",
@@ -1465,7 +1469,7 @@
                             "xl": 2,
                             "type": "text",
                             "label": "powerIcon",
-                            "default": "arrow-top-left"
+                            "default": "arrow-right"
                         },
                         {
                             "attr": "power5_iconColor",
@@ -1549,7 +1553,8 @@
                             "xl": 2,
                             "type": "text",
                             "label": "entityHeadline",
-                            "default": ""                            
+                            "default": "",
+                            "hidden": "!data._power5_more"                            
                         },
                         {
                             "attr": "power5_minSpeedScale",
@@ -1609,7 +1614,7 @@
                             "xl": 2,
                             "type": "text",
                             "label": "powerIcon",
-                            "default": "arrow-top-left"
+                            "default": "arrow-bottom-right"
                         },
                         {
                             "attr": "power6_iconColor",
@@ -1693,7 +1698,8 @@
                             "xl": 2,
                             "type": "text",
                             "label": "entityHeadline",
-                            "default": ""                            
+                            "default": "",
+                            "hidden": "!data._power6_more"                            
                         },
                         {
                             "attr": "power6_minSpeedScale",

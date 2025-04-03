@@ -527,7 +527,7 @@ class PagePower extends import_Page.Page {
               },
               factor: {
                 type: "const",
-                constVal: speedReverse[5]
+                constVal: -1
               }
             },
             text: {
