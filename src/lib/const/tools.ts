@@ -103,9 +103,9 @@ function getScaledNumberRaw(
 ): number {
     if (min !== null && max !== null) {
         if (oldValue === null) {
-            n = Math.round(Color.scale(n, max, min, 0, 100));
+            n = Math.round(Color.scale(n, min, max, 0, 100));
         } else {
-            n = Color.scale(n, 100, 0, min, max);
+            n = Color.scale(n, 0, 100, min, max);
             if (oldValue !== false) {
                 if (oldValue >= n) {
                     n = Math.floor(n);
@@ -408,11 +408,13 @@ export async function getIconEntryColor(
                     factor = getLogFromIconScale(scale, factor);
                     rColor = func(cfrom, cto, factor);
                 } else if (value >= vBest) {
+                    cfrom = scale.val_best !== undefined && scale.color_best ? scale.color_best : cfrom;
                     factor = 1 - (value - vBest) / (vMax - vBest);
                     factor = Math.min(1, Math.max(0, factor));
                     factor = getLogFromIconScale(scale, factor);
                     rColor = func(cfrom, cto, factor);
                 } else {
+                    cto = scale.val_best !== undefined && scale.color_best ? scale.color_best : cto;
                     factor = (value - vMin) / (vBest - vMin);
                     factor = Math.min(1, Math.max(0, factor));
                     factor = 1 - getLogFromIconScale(scale, 1 - factor);

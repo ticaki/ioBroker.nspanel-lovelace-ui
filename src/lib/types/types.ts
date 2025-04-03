@@ -355,9 +355,9 @@ export type IconColorElement = {
     val_max: number;
     val_best?: number;
     /**
-     * The logarithm scaling to max, min or leave undefined for linear scaling.
+     * The 3. color for color best. Only with val_best.
      */
-    log10?: 'max' | 'min';
+    color_best?: RGB;
     /**
      * The color mix mode. Default is 'mixed'.
      * ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
@@ -365,10 +365,21 @@ export type IconColorElement = {
      * 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
      */
     mode?: 'mixed' | 'hue' | 'cie';
+    /**
+     * The logarithm scaling to max, min or leave undefined for linear scaling.
+     */
+    log10?: 'max' | 'min';
 };
-
 export function isIconColorScaleElement(F: any): F is IconColorElement {
-    return F && 'val_min' in (F as IconColorElement) && 'val_max' in (F as IconColorElement);
+    if (!F) {
+        return false;
+    }
+    if ('color_best' in F && F.color_best) {
+        F.color_best.r = F.color.red ?? F.color_best.r;
+        F.color_best.g = F.color.green ?? F.color_best.g;
+        F.color_best.b = F.color.blue ?? F.color_best.b;
+    }
+    return 'val_min' in (F as IconColorElement) && 'val_max' in (F as IconColorElement);
 }
 export function isPartialColorScaleElement(F: any): F is IconColorElement {
     return F && ('val_min' in (F as IconColorElement) || 'val_max' in (F as IconColorElement));
