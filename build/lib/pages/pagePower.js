@@ -180,6 +180,44 @@ class PagePower extends import_Page.Page {
         iconColor.push("#ffffff");
       }
     }
+    const entityHeadline = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_entityHeadline`;
+      if (typeof config[key] === "string") {
+        entityHeadline.push(config[key]);
+      } else {
+        entityHeadline.push("");
+      }
+    }
+    const speedReverse = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_reverse`;
+      if (typeof config[key] === "boolean") {
+        if (config[key]) {
+          speedReverse.push(-1);
+        } else {
+          speedReverse.push(1);
+        }
+      }
+    }
+    const valueDecimal = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_valueDecimal`;
+      if (typeof config[key] === "number") {
+        valueDecimal.push(config[key]);
+      } else {
+        valueDecimal.push(0);
+      }
+    }
+    const valueUnit = [];
+    for (let i = 1; i <= 6; i++) {
+      const key = `power${i}_valueUnit`;
+      if (typeof config[key] === "string") {
+        valueUnit.push(config[key]);
+      } else {
+        valueUnit.push("W");
+      }
+    }
     const result = {
       uniqueID: config.pageName,
       alwaysOn: config.alwaysOnDisplay ? "always" : "none",
@@ -214,12 +252,20 @@ class PagePower extends import_Page.Page {
               value: {
                 type: "triggered",
                 dp: states[0]
+              },
+              decimal: {
+                type: "const",
+                constVal: valueDecimal[0]
+              },
+              unit: {
+                type: "const",
+                constVal: valueUnit[0]
               }
             },
             speed: {
               value: {
-                type: "triggered",
-                dp: states[0]
+                type: "const",
+                constVal: states[0]
               },
               minScale: {
                 type: "const",
@@ -228,10 +274,14 @@ class PagePower extends import_Page.Page {
               maxScale: {
                 type: "const",
                 constVal: maxSpeedScale[0]
+              },
+              factor: {
+                type: "const",
+                constVal: speedReverse[0]
               }
             },
             text: {
-              true: { type: "state", dp: states[0] }
+              true: { type: "const", constVal: entityHeadline[0] }
             }
           },
           leftMiddle: {
@@ -252,12 +302,20 @@ class PagePower extends import_Page.Page {
               value: {
                 type: "triggered",
                 dp: states[1]
+              },
+              decimal: {
+                type: "const",
+                constVal: valueDecimal[1]
+              },
+              unit: {
+                type: "const",
+                constVal: valueUnit[1]
               }
             },
             speed: {
               value: {
-                type: "triggered",
-                dp: states[1]
+                type: "const",
+                constVal: states[1]
               },
               minScale: {
                 type: "const",
@@ -266,10 +324,14 @@ class PagePower extends import_Page.Page {
               maxScale: {
                 type: "const",
                 constVal: maxSpeedScale[1]
+              },
+              factor: {
+                type: "const",
+                constVal: speedReverse[1]
               }
             },
             text: {
-              true: { type: "state", dp: states[1] }
+              true: { type: "const", constVal: entityHeadline[1] }
             }
           },
           leftBottom: {
@@ -290,12 +352,20 @@ class PagePower extends import_Page.Page {
               value: {
                 type: "triggered",
                 dp: states[2]
+              },
+              decimal: {
+                type: "const",
+                constVal: valueDecimal[2]
+              },
+              unit: {
+                type: "const",
+                constVal: valueUnit[2]
               }
             },
             speed: {
               value: {
-                type: "triggered",
-                dp: states[2]
+                type: "const",
+                constVal: states[2]
               },
               minScale: {
                 type: "const",
@@ -304,10 +374,14 @@ class PagePower extends import_Page.Page {
               maxScale: {
                 type: "const",
                 constVal: maxSpeedScale[2]
+              },
+              factor: {
+                type: "const",
+                constVal: speedReverse[2]
               }
             },
             text: {
-              true: { type: "state", dp: states[2] }
+              true: { type: "const", constVal: entityHeadline[2] }
             }
           },
           rightTop: {
@@ -328,12 +402,20 @@ class PagePower extends import_Page.Page {
               value: {
                 type: "triggered",
                 dp: states[3]
+              },
+              decimal: {
+                type: "const",
+                constVal: valueDecimal[3]
+              },
+              unit: {
+                type: "const",
+                constVal: valueUnit[3]
               }
             },
             speed: {
               value: {
-                type: "triggered",
-                dp: states[3]
+                type: "const",
+                constVal: states[3]
               },
               minScale: {
                 type: "const",
@@ -342,10 +424,14 @@ class PagePower extends import_Page.Page {
               maxScale: {
                 type: "const",
                 constVal: maxSpeedScale[3]
+              },
+              factor: {
+                type: "const",
+                constVal: speedReverse[3]
               }
             },
             text: {
-              true: { type: "state", dp: states[3] }
+              true: { type: "const", constVal: entityHeadline[3] }
             }
           },
           rightMiddle: {
@@ -366,12 +452,20 @@ class PagePower extends import_Page.Page {
               value: {
                 type: "triggered",
                 dp: states[4]
+              },
+              decimal: {
+                type: "const",
+                constVal: valueDecimal[4]
+              },
+              unit: {
+                type: "const",
+                constVal: valueUnit[4]
               }
             },
             speed: {
               value: {
-                type: "triggered",
-                dp: states[4]
+                type: "const",
+                constVal: states[4]
               },
               minScale: {
                 type: "const",
@@ -380,10 +474,14 @@ class PagePower extends import_Page.Page {
               maxScale: {
                 type: "const",
                 constVal: maxSpeedScale[4]
+              },
+              factor: {
+                type: "const",
+                constVal: speedReverse[4]
               }
             },
             text: {
-              true: { type: "state", dp: states[4] }
+              true: { type: "const", constVal: entityHeadline[4] }
             }
           },
           rightBottom: {
@@ -404,12 +502,20 @@ class PagePower extends import_Page.Page {
               value: {
                 type: "triggered",
                 dp: states[5]
+              },
+              decimal: {
+                type: "const",
+                constVal: valueDecimal[5]
+              },
+              unit: {
+                type: "const",
+                constVal: valueUnit[5]
               }
             },
             speed: {
               value: {
-                type: "triggered",
-                dp: states[5]
+                type: "const",
+                constVal: states[5]
               },
               minScale: {
                 type: "const",
@@ -418,10 +524,14 @@ class PagePower extends import_Page.Page {
               maxScale: {
                 type: "const",
                 constVal: maxSpeedScale[5]
+              },
+              factor: {
+                type: "const",
+                constVal: speedReverse[5]
               }
             },
             text: {
-              true: { type: "state", dp: states[5] }
+              true: { type: "const", constVal: entityHeadline[5] }
             }
           }
         }
