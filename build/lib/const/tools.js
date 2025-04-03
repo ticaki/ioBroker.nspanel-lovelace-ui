@@ -372,7 +372,7 @@ async function getIconEntryColor(i, value, def, defOff = null) {
         let vBest = (_d = scale.val_best) != null ? _d : void 0;
         vBest = vBest !== void 0 ? Math.min(vMax, Math.max(vMin, vBest)) : void 0;
         let factor = 1;
-        const func = scale.mode === "hue" ? import_Color.Color.mixColorHue : scale.mode === "cie" ? import_Color.Color.mixColorCie : import_Color.Color.mixColor;
+        const func = scale.mode === "hue" ? import_Color.Color.mixColorHue : scale.mode === "cie" ? import_Color.Color.mixColorCie : scale.mode === "triGrad" ? import_Color.Color.perc2color : import_Color.Color.mixColor;
         if (vMin == vMax) {
           rColor = cto;
         } else if (vBest === void 0) {

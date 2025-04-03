@@ -399,7 +399,9 @@ export async function getIconEntryColor(
                         ? Color.mixColorHue
                         : scale.mode === 'cie'
                           ? Color.mixColorCie
-                          : Color.mixColor;
+                          : scale.mode === 'triGrad'
+                            ? Color.perc2color
+                            : Color.mixColor;
                 if (vMin == vMax) {
                     rColor = cto;
                 } else if (vBest === undefined) {

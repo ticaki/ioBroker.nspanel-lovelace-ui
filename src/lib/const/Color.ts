@@ -280,7 +280,20 @@ export class Color extends ColorBase {
         const b: number = Color.InterpolateNum(color1.b, color2.b, fraction);
         return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
     }
-
+    static perc2color(_from: RGB, _to: RGB, percent: number): RGB {
+        percent = percent * 100;
+        let r = 0;
+        let g = 0;
+        const b = 0;
+        if (percent < 50) {
+            r = 255;
+            g = Math.round(5.1 * percent);
+        } else {
+            g = 255;
+            r = Math.round(510 - 5.1 * percent);
+        }
+        return { r, g, b };
+    }
     /**
      *
      * @param c1 from this color

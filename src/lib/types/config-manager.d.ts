@@ -595,8 +595,9 @@ declare namespace ScriptConfig {
          * ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
          * 'cie': the target colour is achieved by mixing according to the CIE colour table.
          * 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
+         * 'triGrad': the target colour is interpolated in a three-color gradient from red to green.
          */
-        mode?: 'mixed' | 'hue' | 'cie';
+        mode?: 'mixed' | 'hue' | 'cie' | 'triGrad';
         /**
          * The logarithm scaling to max, min or leave undefined for linear scaling.
          */
