@@ -309,8 +309,17 @@ class Color extends ColorBase {
   static InterpolateNum(d1, d2, fraction) {
     return d1 + (d2 - d1) * fraction;
   }
+  static brightness(c, s) {
+    let r = c.r * s;
+    let g = c.g * s;
+    let b = c.b * s;
+    r = Math.min(255, Math.max(1, r));
+    g = Math.min(255, Math.max(1, g));
+    b = Math.min(255, Math.max(1, b));
+    return { r, g, b };
+  }
   static darken(c, s) {
-    s = Color.scale(s, 0, 1, 0, 0.6);
+    s = Color.scale(s, 0, 1, 0, 0.5);
     return (0, import_colord.colord)(c).darken(s).toRgb();
   }
   /**
