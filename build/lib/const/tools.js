@@ -121,9 +121,9 @@ async function getValueEntryNumber(i, s = true) {
 function getScaledNumberRaw(n, min, max, oldValue = null) {
   if (min !== null && max !== null) {
     if (oldValue === null) {
-      n = Math.round(import_Color.Color.scale(n, max, min, 0, 100));
+      n = Math.round(import_Color.Color.scale(n, min, max, 0, 100));
     } else {
-      n = import_Color.Color.scale(n, 100, 0, min, max);
+      n = import_Color.Color.scale(n, 0, 100, min, max);
       if (oldValue !== false) {
         if (oldValue >= n) {
           n = Math.floor(n);
@@ -372,7 +372,7 @@ async function getIconEntryColor(i, value, def, defOff = null) {
         let vBest = (_d = scale.val_best) != null ? _d : void 0;
         vBest = vBest !== void 0 ? Math.min(vMax, Math.max(vMin, vBest)) : void 0;
         let factor = 1;
-        const func = scale.mode === "hue" ? import_Color.Color.mixColorHue : scale.mode === "cie" ? import_Color.Color.mixColorCie : import_Color.Color.mixColor;
+        const func = scale.mode === "hue" ? import_Color.Color.mixColorHue : scale.mode === "cie" ? import_Color.Color.mixColorCie : scale.mode === "triGrad" ? import_Color.Color.perc2color : import_Color.Color.mixColor;
         if (vMin == vMax) {
           rColor = cto;
         } else if (vBest === void 0) {
@@ -381,11 +381,13 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           factor = getLogFromIconScale(scale, factor);
           rColor = func(cfrom, cto, factor);
         } else if (value >= vBest) {
+          cfrom = scale.val_best !== void 0 && scale.color_best ? scale.color_best : cfrom;
           factor = 1 - (value - vBest) / (vMax - vBest);
           factor = Math.min(1, Math.max(0, factor));
           factor = getLogFromIconScale(scale, factor);
           rColor = func(cfrom, cto, factor);
         } else {
+          cto = scale.val_best !== void 0 && scale.color_best ? scale.color_best : cto;
           factor = (value - vMin) / (vBest - vMin);
           factor = Math.min(1, Math.max(0, factor));
           factor = 1 - getLogFromIconScale(scale, 1 - factor);

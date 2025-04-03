@@ -575,17 +575,29 @@ declare namespace ScriptConfig {
     );
 
     type ScreenSaverType = 'template' | 'script' | 'native';
-    export type IconScaleElement = {
+    export type IconScaleElement = IconColorElement | IconSelectElement;
+
+    export type IconSelectElement = {
+        valIcon_min: number;
+        valIcon_max: number;
+        valIcon_best?: number;
+    };
+    export type IconColorElement = {
         val_min: number;
         val_max: number;
         val_best?: number;
+        /**
+         * The 3. color for color best. Only with val_best.
+         */
+        color_best?: RGB;
         /**
          * The color mix mode. Default is 'mixed'.
          * ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
          * 'cie': the target colour is achieved by mixing according to the CIE colour table.
          * 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
+         * 'triGrad': the target colour is interpolated in a three-color gradient from red to green.
          */
-        mode?: 'mixed' | 'hue' | 'cie';
+        mode?: 'mixed' | 'hue' | 'cie' | 'triGrad';
         /**
          * The logarithm scaling to max, min or leave undefined for linear scaling.
          */

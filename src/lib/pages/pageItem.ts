@@ -206,11 +206,33 @@ export class PageItem extends BaseClassTriggerd {
                         rgb = Color.hsv2RGB(nhue, 1, 1) ?? null;
                     }
                     message.icon = await tools.getIconEntryValue(item.icon, v, '', '');
-                    const colorMode: 'ct' | 'hue' | 'none' = !item.colorMode
+                    let colorMode: 'ct' | 'hue' | 'none' = !item.colorMode
                         ? 'none'
                         : (await item.colorMode.getBoolean())
                           ? 'hue'
                           : 'ct';
+
+                    if (colorMode === 'none') {
+                        const ctState = item.ct && item.ct.value && (await item.ct.value.getState());
+                        const colorState =
+                            (item.Red && (await item.Red.getState())) ??
+                            (item.Green && (await item.Green.getState())) ??
+                            (item.Blue && (await item.Blue.getState())) ??
+                            (item.color && item.color.true && (await item.color.true.getState())) ??
+                            (item.hue && (await item.hue.getState())) ??
+                            null;
+                        if (ctState && colorState) {
+                            if (ctState.ts > colorState.ts) {
+                                colorMode = 'ct';
+                            } else {
+                                colorMode = 'hue';
+                            }
+                        } else if (ctState) {
+                            colorMode = 'ct';
+                        } else if (colorState) {
+                            colorMode = 'hue';
+                        }
+                    }
 
                     message.iconColor =
                         (colorMode === 'hue'
@@ -873,12 +895,32 @@ export class PageItem extends BaseClassTriggerd {
                                 message.slider2Pos = parseInt(ct);
                             }
                         }
-                        const colorMode: 'ct' | 'hue' | 'none' = !item.colorMode
+                        let colorMode: 'ct' | 'hue' | 'none' = !item.colorMode
                             ? 'none'
                             : (await item.colorMode.getBoolean())
                               ? 'hue'
                               : 'ct';
-
+                        if (colorMode === 'none') {
+                            const ctState = item.ct && item.ct.value && (await item.ct.value.getState());
+                            const colorState =
+                                (item.Red && (await item.Red.getState())) ??
+                                (item.Green && (await item.Green.getState())) ??
+                                (item.Blue && (await item.Blue.getState())) ??
+                                (item.color && item.color.true && (await item.color.true.getState())) ??
+                                (item.hue && (await item.hue.getState())) ??
+                                null;
+                            if (ctState && colorState) {
+                                if (ctState.ts > colorState.ts) {
+                                    colorMode = 'ct';
+                                } else {
+                                    colorMode = 'hue';
+                                }
+                            } else if (ctState) {
+                                colorMode = 'ct';
+                            } else if (colorState) {
+                                colorMode = 'hue';
+                            }
+                        }
                         message.hueMode = rgb !== null;
                         if (rgb !== null && colorMode === 'hue') {
                             message.slidersColor = await tools.GetIconColor(
@@ -1414,31 +1456,53 @@ export class PageItem extends BaseClassTriggerd {
             case 'brightnessSlider': {
                 if (entry.type === 'light') {
                     const item = entry.data;
-                    if (item && item.dimmer && item.dimmer.value && item.dimmer.value.writeable) {
-                        const dimmer = await tools.getScaledNumber(item.dimmer);
-                        if (dimmer !== null && String(dimmer) != value) {
-                            await tools.setScaledNumber(item.dimmer, parseInt(value));
-                        }
-                    } else {
-                        this.log.warn('Dimmer is not writeable!');
+                    if (this.timeouts.brightnessSlider) {
+                        this.adapter.clearTimeout(this.timeouts.brightnessSlider);
                     }
+                    this.timeouts.brightnessSlider = this.adapter.setTimeout(
+                        async (item, value) => {
+                            if (item && item.dimmer && item.dimmer.value && item.dimmer.value.writeable) {
+                                const dimmer = await tools.getScaledNumber(item.dimmer);
+                                if (dimmer !== null && String(dimmer) != value) {
+                                    await tools.setScaledNumber(item.dimmer, parseInt(value));
+                                }
+                            } else {
+                                this.log.warn('Dimmer is not writeable!');
+                            }
+                        },
+                        150,
+                        item,
+                        value,
+                    );
                 }
                 break;
             }
             case 'colorTempSlider': {
                 if (entry.type === 'light') {
                     const item = entry.data;
-                    if (item && item.White && item.White.value) {
-                        await tools.setScaledNumber(item.White, parseInt(value));
+                    if (this.timeouts.colorTempSlider) {
+                        this.adapter.clearTimeout(this.timeouts.colorTempSlider);
                     }
-                    if (item && item.ct && item.ct.value && item.ct.value.writeable) {
-                        const ct = await tools.getSliderCTFromValue(item.ct);
-                        if (ct !== null && String(ct) != value) {
-                            await tools.setSliderCTFromValue(item.ct, parseInt(value));
-                        }
-                    } else {
-                        this.log.warn('ct is not writeable!');
-                    }
+                    this.timeouts.colorTempSlider = this.adapter.setTimeout(
+                        async (item: typeof entry.data, value) => {
+                            if (item && item.White && item.White.value) {
+                                await tools.setScaledNumber(item.White, parseInt(value));
+                            }
+                            if (item && item.ct && item.ct.value && item.ct.value.writeable) {
+                                const ct = await tools.getSliderCTFromValue(item.ct);
+                                if (ct !== null && String(ct) != value) {
+                                    await tools.setSliderCTFromValue(item.ct, parseInt(value));
+                                }
+                            } else {
+                                this.log.warn(
+                                    `ct ${item.ct && item.ct.value ? item.ct.value.options.dp : ''} is not writeable!`,
+                                );
+                            }
+                        },
+                        150,
+                        item,
+                        value,
+                    );
                 }
                 break;
             }
@@ -1708,7 +1772,7 @@ export class PageItem extends BaseClassTriggerd {
                         async value => {
                             await tools.setValueEntry(entry.data.entity1, parseInt(value), false);
                         },
-                        500,
+                        150,
                         value,
                     );
                 } else if (entry.type === 'fan') {
@@ -1716,7 +1780,7 @@ export class PageItem extends BaseClassTriggerd {
                         async value => {
                             await tools.setValueEntry(entry.data.speed, parseInt(value), false);
                         },
-                        500,
+                        150,
                         value,
                     );
                 }
