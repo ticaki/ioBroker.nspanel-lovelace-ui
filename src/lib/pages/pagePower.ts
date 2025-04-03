@@ -554,7 +554,7 @@ export class PagePower extends Page {
                             },
                             factor: {
                                 type: 'const',
-                                constVal: speedReverse[5],
+                                constVal: -1,
                             },
                         },
                         text: {
