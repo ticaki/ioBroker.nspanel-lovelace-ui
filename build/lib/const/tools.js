@@ -138,11 +138,13 @@ function getScaledNumberRaw(n, min, max, oldValue = null) {
   return n;
 }
 async function getScaledNumber(i) {
+  var _a;
   if (!i) {
     return null;
   }
   let nval = i.value && await i.value.getNumber();
-  if (nval !== null && nval !== void 0) {
+  if (nval != null) {
+    nval = nval * ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
     if (i.minScale !== void 0 && i.maxScale !== void 0) {
       const min = await i.minScale.getNumber();
       const max = await i.maxScale.getNumber();

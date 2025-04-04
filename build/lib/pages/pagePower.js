@@ -264,8 +264,8 @@ class PagePower extends import_Page.Page {
             },
             speed: {
               value: {
-                type: "const",
-                constVal: states[0]
+                type: "triggered",
+                dp: states[0]
               },
               minScale: {
                 type: "const",
@@ -314,8 +314,8 @@ class PagePower extends import_Page.Page {
             },
             speed: {
               value: {
-                type: "const",
-                constVal: states[1]
+                type: "triggered",
+                dp: states[1]
               },
               minScale: {
                 type: "const",
@@ -364,8 +364,8 @@ class PagePower extends import_Page.Page {
             },
             speed: {
               value: {
-                type: "const",
-                constVal: states[2]
+                type: "triggered",
+                dp: states[2]
               },
               minScale: {
                 type: "const",
@@ -414,8 +414,8 @@ class PagePower extends import_Page.Page {
             },
             speed: {
               value: {
-                type: "const",
-                constVal: states[3]
+                type: "triggered",
+                dp: states[3]
               },
               minScale: {
                 type: "const",
@@ -464,8 +464,8 @@ class PagePower extends import_Page.Page {
             },
             speed: {
               value: {
-                type: "const",
-                constVal: states[4]
+                type: "triggered",
+                dp: states[4]
               },
               minScale: {
                 type: "const",
@@ -514,8 +514,8 @@ class PagePower extends import_Page.Page {
             },
             speed: {
               value: {
-                type: "const",
-                constVal: states[5]
+                type: "triggered",
+                dp: states[5]
               },
               minScale: {
                 type: "const",
@@ -527,7 +527,7 @@ class PagePower extends import_Page.Page {
               },
               factor: {
                 type: "const",
-                constVal: -1
+                constVal: speedReverse[5]
               }
             },
             text: {

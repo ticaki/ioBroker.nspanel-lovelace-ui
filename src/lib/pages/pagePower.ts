@@ -291,8 +291,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'const',
-                                constVal: states[0],
+                                type: 'triggered',
+                                dp: states[0],
                             },
                             minScale: {
                                 type: 'const',
@@ -341,8 +341,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'const',
-                                constVal: states[1],
+                                type: 'triggered',
+                                dp: states[1],
                             },
                             minScale: {
                                 type: 'const',
@@ -391,8 +391,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'const',
-                                constVal: states[2],
+                                type: 'triggered',
+                                dp: states[2],
                             },
                             minScale: {
                                 type: 'const',
@@ -441,8 +441,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'const',
-                                constVal: states[3],
+                                type: 'triggered',
+                                dp: states[3],
                             },
                             minScale: {
                                 type: 'const',
@@ -491,8 +491,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'const',
-                                constVal: states[4],
+                                type: 'triggered',
+                                dp: states[4],
                             },
                             minScale: {
                                 type: 'const',
@@ -541,8 +541,8 @@ export class PagePower extends Page {
                         },
                         speed: {
                             value: {
-                                type: 'const',
-                                constVal: states[5],
+                                type: 'triggered',
+                                dp: states[5],
                             },
                             minScale: {
                                 type: 'const',

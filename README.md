@@ -107,7 +107,7 @@ Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
 - [x] cardUnlock
 - [x] cardQR
 - [ ] cardAlarm
-- [ ] cardPower
+- [x] cardPower
 
 ### PageItems
 - [x] light
@@ -304,11 +304,12 @@ Sind natürlich alles Dataitems
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) added navigation in admin
+- (tt-tom17) added cardPower incl. admin
 
 ### 0.1.9 (2025-03-21)
 - (ticaki) added: tasmota web ui user & password Fixes #164
 - (ticaki) BREAKING: Internal server use TLS - New tasmota config for internal server.
-- (TT-Tom) added servicepage items
+- (tt-tom17) added servicepage items
 - (ticaki) added lock
 - (ticaki) cardThermo with input_sel
 - (ticaki) Added: Admin option to fix wrong common.type=state in alias.0 to common.type=mixed
