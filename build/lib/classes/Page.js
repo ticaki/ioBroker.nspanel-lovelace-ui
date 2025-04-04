@@ -22,21 +22,22 @@ __export(Page_exports, {
   isMediaButtonActionType: () => isMediaButtonActionType
 });
 module.exports = __toCommonJS(Page_exports);
-var import_states_controller = require("../controller/states-controller");
+var import_BaseClassPage = require("./BaseClassPage");
 var import_types = require("../types/types");
 var import_pageItem = require("../pages/pageItem");
-var import_card = require("../templates/card");
 var import_tools = require("../const/tools");
 var import_templateArray = require("../templates/templateArray");
-class Page extends import_states_controller.BaseClassPage {
+class Page extends import_BaseClassPage.BaseClassPage {
   card;
   id;
+  isScreensaver;
   //readonly enums: string | string[];
   config;
   //config: Card['config'];
-  constructor(card, pageItemsConfig) {
+  constructor(card, pageItemsConfig, isScreensaver = false) {
     var _a;
     super(card, pageItemsConfig && pageItemsConfig.pageItems);
+    this.isScreensaver = isScreensaver;
     this.card = card.card;
     this.id = card.id;
     this.enums = pageItemsConfig && "enums" in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : "";
@@ -170,28 +171,6 @@ class Page extends import_states_controller.BaseClassPage {
       this.sendToPanel(`pageType~${this.card}`);
     }
     this.panel.lastCard = this.card;
-  }
-  static getPage(config, that) {
-    if ("template" in config && config.template) {
-      const template = import_card.cardTemplates[config.template];
-      if (!template) {
-        that.log.error(`dont find template ${config.template}`);
-        return config;
-      }
-      if (config.dpInit && typeof config.dpInit === "string") {
-        const reg = (0, import_tools.getRegExp)(config.dpInit);
-        if (reg) {
-          config.dpInit = reg;
-        }
-        if (template.adapter && typeof config.dpInit === "string" && !config.dpInit.startsWith(template.adapter)) {
-          return config;
-        }
-      }
-      const newTemplate = structuredClone(template);
-      delete newTemplate.adapter;
-      config = (0, import_tools.deepAssign)(newTemplate, config);
-    }
-    return config;
   }
   async createPageItems() {
     if (this.pageItemConfig) {

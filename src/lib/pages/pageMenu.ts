@@ -1,4 +1,5 @@
-import { Page, type PageInterface } from '../classes/Page';
+import { Page } from '../classes/Page';
+import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { getPayload } from '../const/tools';

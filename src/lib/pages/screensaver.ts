@@ -5,11 +5,12 @@ import { Icons } from '../const/icon_mapping';
 //import dayjs from 'dayjs';
 //import moment from 'moment';
 //import parseFormat from 'moment-parseformat';
-import { Page, type PageInterface } from '../classes/Page';
+import { Page } from '../classes/Page';
 import * as pages from '../types/pages';
 import * as tools from '../const/tools';
 import { PageItem } from './pageItem';
-import type { BaseClassTriggerd } from '../controller/states-controller';
+import type { PageInterface } from '../classes/PageInterface';
+import type { BaseClassTriggerd } from '../classes/BaseClassPage';
 
 export type ScreensaverConfigType = {
     momentLocale: string;

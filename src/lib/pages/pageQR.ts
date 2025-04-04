@@ -1,5 +1,6 @@
 import type { ConfigManager } from '../classes/config-manager';
-import { Page, type PageInterface } from '../classes/Page';
+import { Page } from '../classes/Page';
+import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
 import { getPayload } from '../const/tools';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';

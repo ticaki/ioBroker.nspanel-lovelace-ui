@@ -4,7 +4,8 @@ import { Icons } from '../const/icon_mapping';
 import type { ColorEntryType } from '../types/type-pageItem';
 import type * as pages from '../types/pages';
 import type { BooleanUnion, IncomingEvent } from '../types/types';
-import { Page, isMediaButtonActionType, type PageInterface } from '../classes/Page';
+import { Page, isMediaButtonActionType } from '../classes/Page';
+import { type PageInterface } from '../classes/PageInterface';
 import { getPayload, getPayloadArray, getScaledNumber, setScaledNumber } from '../const/tools';
 
 const PageMediaMessageDefault: pages.PageMediaMessage = {

@@ -94,7 +94,20 @@ function isValueDateFormat(F) {
   return F && typeof F === "object" && F.local !== void 0 && F.format !== void 0;
 }
 function isIconColorScaleElement(F) {
-  return F && "val_min" in F && "val_max" in F;
+  if (!F) {
+    return false;
+  }
+  if ("color_best" in F && F.color_best) {
+    F.color_best = convertColorScaleBest(F.color_best);
+  }
+  return "val_min" in F && "val_max" in F;
+}
+function convertColorScaleBest(F) {
+  var _a, _b, _c;
+  if (F) {
+    return { r: (_a = F.red) != null ? _a : F.r, g: (_b = F.green) != null ? _b : F.g, b: (_c = F.blue) != null ? _c : F.b };
+  }
+  return void 0;
 }
 function isPartialColorScaleElement(F) {
   return F && ("val_min" in F || "val_max" in F);

@@ -355,20 +355,37 @@ export type IconColorElement = {
     val_max: number;
     val_best?: number;
     /**
-     * The logarithm scaling to max, min or leave undefined for linear scaling.
+     * The 3. color for color best. Only with val_best.
      */
-    log10?: 'max' | 'min';
+    color_best?: RGB;
     /**
      * The color mix mode. Default is 'mixed'.
      * ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
      * 'cie': the target colour is achieved by mixing according to the CIE colour table.
      * 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
+     * 'triGrad': the target colour is interpolated in a three-color gradient from red to green.
      */
-    mode?: 'mixed' | 'hue' | 'cie';
+    mode?: 'mixed' | 'hue' | 'cie' | 'triGrad';
+    /**
+     * The logarithm scaling to max, min or leave undefined for linear scaling.
+     */
+    log10?: 'max' | 'min';
 };
-
 export function isIconColorScaleElement(F: any): F is IconColorElement {
-    return F && 'val_min' in (F as IconColorElement) && 'val_max' in (F as IconColorElement);
+    if (!F) {
+        return false;
+    }
+    if ('color_best' in F && F.color_best) {
+        F.color_best = convertColorScaleBest(F.color_best);
+    }
+    return 'val_min' in (F as IconColorElement) && 'val_max' in (F as IconColorElement);
+}
+
+function convertColorScaleBest(F: any): IconColorElement['color_best'] {
+    if (F) {
+        return { r: F.red ?? F.r, g: F.green ?? F.g, b: F.blue ?? F.b };
+    }
+    return undefined;
 }
 export function isPartialColorScaleElement(F: any): F is IconColorElement {
     return F && ('val_min' in (F as IconColorElement) || 'val_max' in (F as IconColorElement));

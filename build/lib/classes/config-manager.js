@@ -38,6 +38,7 @@ var import_pageQR = require("../pages/pageQR");
 var import_pagePower = require("../pages/pagePower");
 var import_readme = require("../tools/readme");
 var import_pages = require("../types/pages");
+var Types = __toESM(require("../types/types"));
 var import_library = require("./library");
 var import_navigation = require("./navigation");
 class ConfigManager extends import_library.BaseClass {
@@ -47,7 +48,7 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.8.0";
+  scriptVersion = "0.8.2";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -987,7 +988,7 @@ class ConfigManager extends import_library.BaseClass {
     return { gridItem, messages };
   }
   async getPageNaviItemConfig(item, page) {
-    var _a, _b, _c;
+    var _a, _b;
     if (!(page.type === "cardGrid" || page.type === "cardGrid2" || page.type === "cardGrid3" || page.type === "cardEntities") || !item.targetPage || !item.navigate) {
       this.log.warn(`Page type ${page.type} not supported for navigation item!`);
       return void 0;
@@ -1026,7 +1027,7 @@ class ConfigManager extends import_library.BaseClass {
               },
               color: await this.getIconColor(item.onColor, this.colorOn)
             },
-            scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+            scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
             maxBri: void 0,
             minBri: void 0
           },
@@ -1084,7 +1085,7 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 color: await this.getIconColor(item.offColor, this.colorOff)
               },
-              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
               maxBri: void 0,
               minBri: void 0
             },
@@ -1127,7 +1128,7 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 color: await this.getIconColor(item.offColor, this.colorOff)
               },
-              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
               maxBri: void 0,
               minBri: void 0
             },
@@ -1164,7 +1165,7 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 color: await this.getIconColor(item.offColor, this.colorOff)
               },
-              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
               maxBri: void 0,
               minBri: void 0
             },
@@ -1220,7 +1221,7 @@ class ConfigManager extends import_library.BaseClass {
                   textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
                 }
               },
-              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0
+              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
             },
             text,
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
@@ -1268,7 +1269,7 @@ class ConfigManager extends import_library.BaseClass {
                   textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
                 }
               },
-              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0
+              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
             },
             text,
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
@@ -1285,7 +1286,7 @@ class ConfigManager extends import_library.BaseClass {
             color: {
               true: await this.getIconColor(item.onColor, this.colorOn),
               false: await this.getIconColor(item.offColor, this.colorOff),
-              scale: item.colorScale ? item.colorScale : void 0
+              scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
             },
             icon: {
               true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1309,7 +1310,7 @@ class ConfigManager extends import_library.BaseClass {
             color: {
               true: await this.getIconColor(item.onColor, this.colorOn),
               false: await this.getIconColor(item.offColor, this.colorOff),
-              scale: item.colorScale ? item.colorScale : void 0
+              scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
             },
             icon: {
               true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1336,7 +1337,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
-            scale: item.colorScale ? item.colorScale : void 0
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1362,7 +1363,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
-            scale: item.colorScale ? item.colorScale : void 0
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1388,7 +1389,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
-            scale: item.colorScale ? item.colorScale : void 0
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1421,7 +1422,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
-            scale: item.colorScale ? item.colorScale : void 0
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1446,7 +1447,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
             false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
-            scale: item.colorScale ? item.colorScale : void 0
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1469,7 +1470,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
             false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
-            scale: item.colorScale
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1500,7 +1501,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor || `${item.id}.COLORDEC`, this.colorOn),
             false: await this.getIconColor(item.offColor || `${item.id}.COLORDEC`, this.colorOff),
-            scale: (_a = item.colorScale) != null ? _a : { val_min: 0, val_max: 100 }
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : { val_min: 0, val_max: 100 }
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1514,8 +1515,8 @@ class ConfigManager extends import_library.BaseClass {
             text,
             entity1: {
               value: foundedStates[role].ACTUAL,
-              minScale: { type: "const", constVal: (_b = item.minValueLevel) != null ? _b : 0 },
-              maxScale: { type: "const", constVal: (_c = item.maxValueLevel) != null ? _c : 100 }
+              minScale: { type: "const", constVal: (_a = item.minValueLevel) != null ? _a : 0 },
+              maxScale: { type: "const", constVal: (_b = item.maxValueLevel) != null ? _b : 100 }
             },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
@@ -1532,7 +1533,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
-            scale: item.colorScale ? item.colorScale : void 0
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1559,7 +1560,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
-            scale: item.colorScale
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1590,7 +1591,7 @@ class ConfigManager extends import_library.BaseClass {
           color: {
             true: await this.getIconColor(item.onColor, this.colorOn),
             false: await this.getIconColor(item.offColor, this.colorOff),
-            scale: item.colorScale ? item.colorScale : void 0
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
           },
           icon: {
             true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -1622,7 +1623,7 @@ class ConfigManager extends import_library.BaseClass {
                 value: { type: "const", constVal: item.icon2 || "timer" },
                 color: await this.getIconColor(item.offColor, this.colorOff)
               },
-              scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0
+              scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0
             },
             entity1: foundedStates[role].ACTUAL ? {
               value: foundedStates[role].ACTUAL
@@ -1694,7 +1695,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -1763,7 +1764,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
-                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -1797,7 +1798,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
-                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -1832,7 +1833,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
-                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
                   minBri: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
                 },
@@ -1863,6 +1864,21 @@ class ConfigManager extends import_library.BaseClass {
           case "ct":
           case "rgb":
           case "hue": {
+            let isKelvin = true;
+            if ((_a = foundedStates[role].TEMPERATURE) == null ? void 0 : _a.dp) {
+              const state = await this.adapter.getForeignStateAsync(foundedStates[role].TEMPERATURE.dp);
+              if (state && typeof state.val === "number" && state.val <= 1e3) {
+                isKelvin = false;
+              }
+            }
+            let valueList2 = void 0;
+            const selectExist = item.inSel_Alias && await this.existsState(item.inSel_Alias);
+            if (selectExist && item.inSel_Alias) {
+              const select = await this.adapter.getForeignObjectAsync(item.inSel_Alias);
+              if (select && select.common && select.common.type === "string") {
+                valueList2 = item.modeList ? { type: "const", constVal: item.modeList } : void 0;
+              }
+            }
             const tempItem = {
               type: "light",
               role: role === "hue" ? "hue" : role === "rgb" ? "rgbThree" : role === "rgbSingle" ? "rgbSingle" : "ct",
@@ -1882,7 +1898,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
-                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: item.maxValueBrightness ? { type: "const", constVal: item.maxValueBrightness } : void 0,
                   minBri: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
                 },
@@ -1904,7 +1920,8 @@ class ConfigManager extends import_library.BaseClass {
                 ct: {
                   value: foundedStates[role].TEMPERATURE,
                   maxScale: item.maxValueColorTemp ? { type: "const", constVal: item.maxValueColorTemp } : void 0,
-                  minScale: item.minValueColorTemp ? { type: "const", constVal: item.minValueColorTemp } : void 0
+                  minScale: item.minValueColorTemp ? { type: "const", constVal: item.minValueColorTemp } : void 0,
+                  mode: { type: "const", constVal: isKelvin ? "kelvin" : "mired" }
                 },
                 text1: {
                   true: {
@@ -1927,6 +1944,12 @@ class ConfigManager extends import_library.BaseClass {
                 entity1: {
                   value: foundedStates[role].ON_ACTUAL,
                   set: foundedStates[role].ON
+                },
+                valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0,
+                valueList2,
+                entityInSel: {
+                  value: item.inSel_Alias && selectExist ? { type: "triggered", dp: item.inSel_Alias } : void 0,
+                  set: item.inSel_Alias && selectExist ? { type: "triggered", dp: item.inSel_Alias } : void 0
                 }
               }
             };
@@ -1953,7 +1976,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
-                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -1997,7 +2020,13 @@ class ConfigManager extends import_library.BaseClass {
                       constVal: item.icon3 || "window-shutter-alert"
                     }
                   },
-                  scale: { type: "const", constVal: (_a = item.colorScale) != null ? _a : { val_min: 0, val_max: 100 } },
+                  scale: {
+                    type: "const",
+                    constVal: (_b = Types.isIconColorScaleElement(item.colorScale)) != null ? _b : {
+                      val_min: 0,
+                      val_max: 100
+                    }
+                  },
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -2005,14 +2034,14 @@ class ConfigManager extends import_library.BaseClass {
                 headline,
                 entity1: {
                   value: foundedStates[role].ACTUAL,
-                  minScale: { type: "const", constVal: (_b = item.minValueLevel) != null ? _b : 0 },
-                  maxScale: { type: "const", constVal: (_c = item.maxValueLevel) != null ? _c : 100 },
+                  minScale: { type: "const", constVal: (_c = item.minValueLevel) != null ? _c : 0 },
+                  maxScale: { type: "const", constVal: (_d = item.maxValueLevel) != null ? _d : 100 },
                   set: foundedStates[role].SET
                 },
                 entity2: {
                   value: foundedStates[role].TILT_ACTUAL,
-                  minScale: { type: "const", constVal: (_d = item.minValueTilt) != null ? _d : 100 },
-                  maxScale: { type: "const", constVal: (_e = item.maxValueTilt) != null ? _e : 0 },
+                  minScale: { type: "const", constVal: (_e = item.minValueTilt) != null ? _e : 100 },
+                  maxScale: { type: "const", constVal: (_f = item.maxValueTilt) != null ? _f : 0 },
                   set: foundedStates[role].TILT_SET
                 },
                 up: foundedStates[role].OPEN,
@@ -2076,7 +2105,7 @@ class ConfigManager extends import_library.BaseClass {
                 color: {
                   true: await this.getIconColor(item.onColor, this.colorOn),
                   false: await this.getIconColor(item.offColor, this.colorOff),
-                  scale: item.colorScale
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
                 },
                 data: {
                   entity1: { value: foundedStates[role].ACTUAL }
@@ -2193,7 +2222,7 @@ class ConfigManager extends import_library.BaseClass {
                   unstable: {
                     value: await this.getFieldAsDataItemConfig(item.icon3 || iconUnstable)
                   },
-                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -2230,7 +2259,7 @@ class ConfigManager extends import_library.BaseClass {
               color: {
                 true: await this.getIconColor(item.onColor, this.colorOn),
                 false: await this.getIconColor(item.offColor, this.colorOff),
-                scale: item.colorScale
+                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
               },
               icon: {
                 true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -2258,7 +2287,7 @@ class ConfigManager extends import_library.BaseClass {
               color: {
                 true: await this.getIconColor(item.onColor, this.colorOn),
                 false: await this.getIconColor(item.offColor, this.colorOff),
-                scale: item.colorScale ? item.colorScale : void 0
+                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
               },
               icon: {
                 true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -2293,7 +2322,7 @@ class ConfigManager extends import_library.BaseClass {
               color: {
                 true: await this.getIconColor(item.onColor, this.colorOn),
                 false: await this.getIconColor(item.offColor, this.colorOff),
-                scale: item.colorScale
+                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
               },
               icon: {
                 true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -2364,7 +2393,7 @@ class ConfigManager extends import_library.BaseClass {
               color: {
                 true: await this.getIconColor(item.onColor, this.colorOn),
                 false: await this.getIconColor(item.offColor, this.colorOff),
-                scale: item.colorScale
+                scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
               },
               icon: {
                 true: item.icon ? { type: "const", constVal: item.icon } : void 0,
@@ -2395,7 +2424,7 @@ class ConfigManager extends import_library.BaseClass {
                     value: { type: "const", constVal: item.icon2 || "timer" },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
-                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
                   minBri: void 0
                 },
@@ -2436,7 +2465,7 @@ class ConfigManager extends import_library.BaseClass {
                     },
                     color: await this.getIconColor(item.offColor, this.colorOff)
                   },
-                  scale: item.colorScale ? { type: "const", constVal: item.colorScale } : void 0,
+                  scale: Types.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
                   maxBri: void 0,
                   minBri: void 0
                 },

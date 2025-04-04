@@ -447,7 +447,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.8.0';
+const version = '0.8.2';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -916,6 +916,7 @@ declare namespace ScriptConfig {
             useValue?: boolean;
             monobutton?: boolean;
             inSel_ChoiceState?: boolean;
+            inSel_Alias?: string;
             iconArray?: string[];
             customIcons?: any[];
             fontSize?: number;
@@ -1127,12 +1128,17 @@ declare namespace ScriptConfig {
         val_max: number;
         val_best?: number;
         /**
+         * The 3. color for color best. Only with val_best.
+         */
+        color_best?: RGB;/**
+         /**
          * The color mix mode. Default is 'mixed'.
          * ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
-         * 'cie': the target colour is achieved by mixing according to the CIE colour table. 
+         * 'cie': the target colour is achieved by mixing according to the CIE colour table.
          * 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
+         * 'triGrad': the target colour is interpolated in a three-color gradient from red to green.
          */
-        mode?: 'mixed' | 'hue' | 'cie';
+        mode?: 'mixed' | 'hue' | 'cie' | 'triGrad';
         /**
          * The logarithm scaling to max, min or leave undefined for linear scaling.
          */

@@ -385,7 +385,7 @@ const requiredScriptDataPoints = {
     name: "ct",
     description: "f\xFCr Lampen die das wei\xDFe Licht zwischen kalt und warm \xE4ndern k\xF6nnen",
     data: {
-      DIMMER: { role: "level.dimmer", type: "number", required: true, writeable: true },
+      DIMMER: { role: "level.dimmer", type: "number", required: true, trigger: true, writeable: true },
       ON: { role: "switch.light", type: "boolean", required: true, writeable: true },
       ON_ACTUAL: {
         role: ["sensor.light", "switch.light"],
@@ -432,7 +432,7 @@ const requiredScriptDataPoints = {
     name: "hue",
     description: "",
     data: {
-      DIMMER: { role: "level.dimmer", type: "number", required: true, writeable: true },
+      DIMMER: { role: "level.dimmer", type: "number", required: true, trigger: true, writeable: true },
       ON: { role: "switch.light", type: "boolean", required: true, writeable: true },
       ON_ACTUAL: {
         role: ["sensor.light", "switch.light"],

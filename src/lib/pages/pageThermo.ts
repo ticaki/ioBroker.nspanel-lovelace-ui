@@ -1,4 +1,5 @@
-import { Page, type PageInterface } from '../classes/Page';
+import { Page } from '../classes/Page';
+import { type PageInterface } from '../classes/PageInterface';
 import { Icons } from '../const/icon_mapping';
 import { getPayload, getPayloadArray, getValueEntryString } from '../const/tools';
 import type * as pages from '../types/pages';

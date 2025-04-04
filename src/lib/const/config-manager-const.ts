@@ -796,7 +796,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'ct',
         description: 'für Lampen die das weiße Licht zwischen kalt und warm ändern können',
         data: {
-            DIMMER: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
+            DIMMER: { role: 'level.dimmer', type: 'number', required: true, trigger: true, writeable: true },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
             ON_ACTUAL: {
                 role: ['sensor.light', 'switch.light'],
@@ -841,7 +841,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'hue',
         description: '',
         data: {
-            DIMMER: { role: 'level.dimmer', type: 'number', required: true, writeable: true },
+            DIMMER: { role: 'level.dimmer', type: 'number', required: true, trigger: true, writeable: true },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
             ON_ACTUAL: {
                 role: ['sensor.light', 'switch.light'],

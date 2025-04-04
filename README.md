@@ -303,6 +303,9 @@ Sind natürlich alles Dataitems
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) added configuration script tools in admin
+- (ticaki) added/fixed some pageitems
+- (ticaki) added maintain in admin
 - (ticaki) added navigation in admin
 - (tt-tom17) added cardPower incl. admin
 
