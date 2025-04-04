@@ -135,11 +135,11 @@ class NspanelLovelaceUi extends utils.Adapter {
       let sum = 0;
       this.log.info(`Found ${Object.entries(__states).length} states`);
       for (const o in __states) {
-        if (__states[o]) {
+        if (__states[o].type === "channel") {
           sum++;
         }
       }
-      this.log.info(`Found ${sum} broken objects`);
+      this.log.info(`Found ${sum} channels with getObject `);
     }
     const _channels = await this.getObjectViewAsync("system", "channel", {});
     if (_channels) {
