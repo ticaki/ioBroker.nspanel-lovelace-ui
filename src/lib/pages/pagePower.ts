@@ -145,31 +145,9 @@ export class PagePower extends Page {
     ): Promise<pages.PageBaseConfig> {
         const config = adapter.config.pagePowerdata[index];
 
-        /* const stateLeftTopExist =
-            config.power1_state !== undefined && (await configManager.existsState(config.power1_state));
-        const Power1 = stateLeftTopExist ? (config.power1_state !== undefined ? config.power1_state : '') : '';
-        const stateLeftMiddleExist =
-            config.power2_state !== undefined && (await configManager.existsState(config.power2_state));
-        const Power2 = stateLeftMiddleExist ? (config.power2_state !== undefined ? config.power2_state : '') : '';
-        const stateLeftBottomExist =
-            config.power3_state !== undefined && (await configManager.existsState(config.power3_state));
-        const Power3 = stateLeftBottomExist ? (config.power3_state !== undefined ? config.power3_state : '') : '';
-        const stateRightTopExist =
-            config.power4_state !== undefined && (await configManager.existsState(config.power4_state));
-        const Power4 = stateRightTopExist ? (config.power4_state !== undefined ? config.power4_state : '') : '';
-        const stateRightMiddleExist =
-            config.power5_state !== undefined && (await configManager.existsState(config.power5_state));
-        const Power5 = stateRightMiddleExist ? (config.power5_state !== undefined ? config.power5_state : '') : '';
-        const stateRightBottomExist =
-            config.power6_state !== undefined && (await configManager.existsState(config.power6_state));
-        const Power6 = stateRightBottomExist ? (config.power6_state !== undefined ? config.power6_state : '') : '';
-        const statePowerHomeExist =
-            config.power7_state !== undefined && (await configManager.existsState(config.power7_state));
-        const PowerHome = statePowerHomeExist ? (config.power7_state !== undefined ? config.power7_state : '') : ''; */
-
+        //array of states
         const states: string[] = [];
-
-        for (let i = 1; i <= 7; i++) {
+        for (let i = 1; i <= 8; i++) {
             const key = `power${i}_state` as keyof typeof config;
             if (typeof config[key] === 'string' && (await configManager.existsState(config[key]))) {
                 states.push(config[key]);
@@ -177,13 +155,8 @@ export class PagePower extends Page {
                 states.push('');
             }
         }
-        /*const Icon1 = config.power1_icon !== undefined ? config.power1_icon : '';
-        const Icon2 = config.power2_icon !== undefined ? config.power2_icon : '';
-        const Icon3 = config.power3_icon !== undefined ? config.power3_icon : '';
-        const Icon4 = config.power4_icon !== undefined ? config.power4_icon : '';
-        const Icon5 = config.power5_icon !== undefined ? config.power5_icon : '';
-        const Icon6 = config.power6_icon !== undefined ? config.power6_icon : ''; */
 
+        //array of icons
         const icons: string[] = [];
         for (let i = 1; i <= 6; i++) {
             const key = `power${i}_icon` as keyof typeof config;
@@ -194,6 +167,7 @@ export class PagePower extends Page {
             }
         }
 
+        //array of minSpeedScale
         const minSpeedScale: number[] = [];
         for (let i = 1; i <= 6; i++) {
             const key = `power${i}_minSpeedScale` as keyof typeof config;
@@ -204,6 +178,7 @@ export class PagePower extends Page {
             }
         }
 
+        //array of maxSpeedScale
         const maxSpeedScale: number[] = [];
         for (let i = 1; i <= 6; i++) {
             const key = `power${i}_maxSpeedScale` as keyof typeof config;
@@ -214,6 +189,7 @@ export class PagePower extends Page {
             }
         }
 
+        //array of iconColors
         const iconColor: string[] = [];
         for (let i = 1; i <= 6; i++) {
             const key = `power${i}_iconColor` as keyof typeof config;
@@ -221,6 +197,52 @@ export class PagePower extends Page {
                 iconColor.push(config[key]);
             } else {
                 iconColor.push('#ffffff');
+            }
+        }
+
+        //array of entityHeadline
+        const entityHeadline: string[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_entityHeadline` as keyof typeof config;
+            if (typeof config[key] === 'string') {
+                entityHeadline.push(config[key]);
+            } else {
+                entityHeadline.push('');
+            }
+        }
+
+        // array of speedReverse
+        const speedReverse: number[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_reverse` as keyof typeof config;
+            if (typeof config[key] === 'boolean') {
+                if (config[key]) {
+                    speedReverse.push(-1);
+                } else {
+                    speedReverse.push(1);
+                }
+            }
+        }
+
+        //array of valueDecimal
+        const valueDecimal: number[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_valueDecimal` as keyof typeof config;
+            if (typeof config[key] === 'number') {
+                valueDecimal.push(config[key]);
+            } else {
+                valueDecimal.push(0);
+            }
+        }
+
+        //array of valueUnit
+        const valueUnit: string[] = [];
+        for (let i = 1; i <= 6; i++) {
+            const key = `power${i}_valueUnit` as keyof typeof config;
+            if (typeof config[key] === 'string') {
+                valueUnit.push(config[key]);
+            } else {
+                valueUnit.push('W');
             }
         }
 
@@ -234,12 +256,15 @@ export class PagePower extends Page {
                     headline: { type: 'const', constVal: config.headline },
                     homeIcon: { true: { value: { type: 'const', constVal: 'home' } }, false: undefined },
                     homeValueTop: {
-                        value: { type: 'state', dp: states[6] },
+                        value: { type: 'triggered', dp: states[6] },
                     },
                     homeValueBot: {
+                        value: { type: 'triggered', dp: states[7] },
+                    },
+                    /* homeValueBot: {
                         value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
                         math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
-                    },
+                    }, */
                     leftTop: {
                         icon: {
                             true: {
@@ -259,6 +284,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[0],
                             },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[0],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[0],
+                            },
                         },
                         speed: {
                             value: {
@@ -273,9 +306,13 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[0],
                             },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[0],
+                            },
                         },
                         text: {
-                            true: { type: 'state', dp: states[0] },
+                            true: { type: 'const', constVal: entityHeadline[0] },
                         },
                     },
                     leftMiddle: {
@@ -297,6 +334,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[1],
                             },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[1],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[1],
+                            },
                         },
                         speed: {
                             value: {
@@ -311,9 +356,13 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[1],
                             },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[1],
+                            },
                         },
                         text: {
-                            true: { type: 'state', dp: states[1] },
+                            true: { type: 'const', constVal: entityHeadline[1] },
                         },
                     },
                     leftBottom: {
@@ -335,6 +384,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[2],
                             },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[2],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[2],
+                            },
                         },
                         speed: {
                             value: {
@@ -349,9 +406,13 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[2],
                             },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[2],
+                            },
                         },
                         text: {
-                            true: { type: 'state', dp: states[2] },
+                            true: { type: 'const', constVal: entityHeadline[2] },
                         },
                     },
                     rightTop: {
@@ -373,6 +434,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[3],
                             },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[3],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[3],
+                            },
                         },
                         speed: {
                             value: {
@@ -387,9 +456,13 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[3],
                             },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[3],
+                            },
                         },
                         text: {
-                            true: { type: 'state', dp: states[3] },
+                            true: { type: 'const', constVal: entityHeadline[3] },
                         },
                     },
                     rightMiddle: {
@@ -411,6 +484,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[4],
                             },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[4],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[4],
+                            },
                         },
                         speed: {
                             value: {
@@ -425,9 +506,13 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[4],
                             },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[4],
+                            },
                         },
                         text: {
-                            true: { type: 'state', dp: states[4] },
+                            true: { type: 'const', constVal: entityHeadline[4] },
                         },
                     },
                     rightBottom: {
@@ -449,6 +534,14 @@ export class PagePower extends Page {
                                 type: 'triggered',
                                 dp: states[5],
                             },
+                            decimal: {
+                                type: 'const',
+                                constVal: valueDecimal[5],
+                            },
+                            unit: {
+                                type: 'const',
+                                constVal: valueUnit[5],
+                            },
                         },
                         speed: {
                             value: {
@@ -463,9 +556,13 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[5],
                             },
+                            factor: {
+                                type: 'const',
+                                constVal: speedReverse[5],
+                            },
                         },
                         text: {
-                            true: { type: 'state', dp: states[5] },
+                            true: { type: 'const', constVal: entityHeadline[5] },
                         },
                     },
                 },

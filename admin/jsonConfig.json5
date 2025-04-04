@@ -480,7 +480,6 @@
                     "newLine": false,
                     "width": 50,
                     "height": 50
-                    
                 },
                 "_IconAutocompleteSendTo": {
                     "type": "autocompleteSendTo",
@@ -557,9 +556,7 @@
                             "attr": "_tftVersion",
                             "label": "vTFT",
                             "readOnly": true,
-                            "width": "6%",
-                            
-                            
+                            "width": "6%"
                         },
                         {
                             "attr": "_tasmotaSendTo",
@@ -913,6 +910,46 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power1_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": "valueDecimal",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power1_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
+                        },
+                        {
                             "attr": "_power1_more",
                             "xs": 12,
                             "sm": 12,
@@ -922,6 +959,18 @@
                             "type": "checkbox",
                             "label": "more",
                             "default": false
+                        },
+                        {
+                            "attr": "power1_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
+                            "hidden": "!data._power1_more"                          
                         },
                         {
                             "attr": "power1_minSpeedScale",
@@ -980,7 +1029,7 @@
                             "xl": 2,
                             "type": "text",
                             "label": "powerIcon",
-                            "default": "arrow-top-left"
+                            "default": "arrow-left"
                         },
                         {
                             "attr": "power2_iconColor",
@@ -1005,6 +1054,46 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power2_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": "valueDecimal",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power2_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
+                        },
+                        {
                             "attr": "_power2_more",
                             "xs": 12,
                             "sm": 12,
@@ -1014,6 +1103,18 @@
                             "type": "checkbox",
                             "label": "more",
                             "default": false
+                        },
+                        {
+                            "attr": "power2_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
+                            "hidden": "!data._power2_more"                         
                         },
                         {
                             "attr": "power2_minSpeedScale",
@@ -1073,7 +1174,7 @@
                             "xl": 2,
                             "type": "text",
                             "label": "powerIcon",
-                            "default": "arrow-top-left"
+                            "default": "arrow-bottom-left"
                         },
                         {
                             "attr": "power3_iconColor",
@@ -1098,6 +1199,46 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power3_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": "valueDecimal",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power3_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
+                        },
+                        {
                             "attr": "_power3_more",
                             "xs": 12,
                             "sm": 12,
@@ -1107,6 +1248,18 @@
                             "type": "checkbox",
                             "label": "more",
                             "default": false
+                        },
+                        {
+                            "attr": "power3_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
+                            "hidden": "!data._power3_more"                            
                         },
                         {
                             "attr": "power3_minSpeedScale",
@@ -1166,7 +1319,7 @@
                             "xl": 2,
                             "type": "text",
                             "label": "powerIcon",
-                            "default": "arrow-top-left"
+                            "default": "arrow-top-right"
                         },
                         {
                             "attr": "power4_iconColor",
@@ -1191,6 +1344,46 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power4_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": "valueDecimal",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power4_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
+                        },
+                        {
                             "attr": "_power4_more",
                             "xs": 12,
                             "sm": 12,
@@ -1200,6 +1393,18 @@
                             "type": "checkbox",
                             "label": "more",
                             "default": false
+                        },
+                        {
+                            "attr": "power4_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
+                            "hidden": "!data._power4_more"                            
                         },
                         {
                             "attr": "power4_minSpeedScale",
@@ -1259,7 +1464,7 @@
                             "xl": 2,
                             "type": "text",
                             "label": "powerIcon",
-                            "default": "arrow-top-left"
+                            "default": "arrow-right"
                         },
                         {
                             "attr": "power5_iconColor",
@@ -1284,6 +1489,46 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power5_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": "valueDecimal",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power5_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
+                        },
+                        {
                             "attr": "_power5_more",
                             "xs": 12,
                             "sm": 12,
@@ -1293,6 +1538,18 @@
                             "type": "checkbox",
                             "label": "more",
                             "default": false
+                        },
+                        {
+                            "attr": "power5_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
+                            "hidden": "!data._power5_more"                            
                         },
                         {
                             "attr": "power5_minSpeedScale",
@@ -1352,7 +1609,7 @@
                             "xl": 2,
                             "type": "text",
                             "label": "powerIcon",
-                            "default": "arrow-top-left"
+                            "default": "arrow-bottom-right"
                         },
                         {
                             "attr": "power6_iconColor",
@@ -1377,6 +1634,46 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "power6_valueDecimal",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": "valueDecimal",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "0.001",
+                                    "value": 3
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "power6_valueUnit",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "valueUnit",
+                            "default": "kW"
+                        },
+                        {
                             "attr": "_power6_more",
                             "xs": 12,
                             "sm": 12,
@@ -1386,6 +1683,18 @@
                             "type": "checkbox",
                             "label": "more",
                             "default": false
+                        },
+                        {
+                            "attr": "power6_entityHeadline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 4,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
+                            "hidden": "!data._power6_more"                            
                         },
                         {
                             "attr": "power6_minSpeedScale",
@@ -1438,6 +1747,18 @@
                         {
                             "newLine": true,
                             "attr": "power7_state",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 8,
+                            "xl": 8,
+                            "type": "objectId",
+                            "label": "powerState",
+                            "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "newLine": true,
+                            "attr": "power8_state",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
