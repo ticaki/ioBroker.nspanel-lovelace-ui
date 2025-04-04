@@ -7,7 +7,8 @@ import type { Controller } from './controller';
 import { BaseClass, type AdapterClassDefinition } from '../classes/library';
 import type { callbackMessageType } from '../classes/mqtt';
 import { InternalStates, ReiveTopicAppendix, genericStateObjects } from '../const/definition';
-import { Page, type PageConfigAll, type PageInterface } from '../classes/Page';
+import { type Page, type PageConfigAll } from '../classes/Page';
+import { type PageInterface } from '../classes/PageInterface';
 import { PageMedia } from '../pages/pageMedia';
 import type { IClientPublishOptions } from 'mqtt';
 import type { StatesControler } from './states-controller';
@@ -26,6 +27,8 @@ import { PageQR } from '../pages/pageQR';
 import { Dataitem } from '../classes/data-item';
 import { Color } from '../const/Color';
 import { PageSchedule } from '../pages/pageSchedule';
+import { cardTemplates } from '../templates/card';
+import { deepAssign, getRegExp } from '../const/tools';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -215,7 +218,7 @@ export class Panel extends BaseClass {
 
         let scsFound = 0;
         for (let a = 0; a < options.pages.length; a++) {
-            let pageConfig = options.pages[a] ? Page.getPage(options.pages[a], this) : options.pages[a];
+            let pageConfig = options.pages[a] ? Panel.getPage(options.pages[a], this) : options.pages[a];
 
             if (!pageConfig || !pageConfig.config) {
                 continue;
@@ -232,62 +235,62 @@ export class Panel extends BaseClass {
             };
             switch (pageConfig.config.card) {
                 case 'cardChart': {
-                    pageConfig = Page.getPage(pageConfig, this);
+                    pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PageChart(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardLChart': {
-                    pageConfig = Page.getPage(pageConfig, this);
+                    pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PageLChart(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardEntities': {
-                    pageConfig = Page.getPage(pageConfig, this);
+                    pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PageEntities(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardSchedule': {
-                    pageConfig = Page.getPage(pageConfig, this);
+                    pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PageSchedule(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardGrid3':
                 case 'cardGrid2':
                 case 'cardGrid': {
-                    pageConfig = Page.getPage(pageConfig, this);
+                    pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PageGrid(pmconfig, pageConfig);
                     break;
                 }
 
                 case 'cardThermo': {
-                    pageConfig = Page.getPage(pageConfig, this);
+                    pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PageThermo(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardMedia': {
-                    pageConfig = Page.getPage(pageConfig, this);
+                    pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PageMedia(pmconfig, pageConfig);
                     break;
                 }
 
                 case 'cardQR': {
-                    pageConfig = Page.getPage(pageConfig, this);
+                    pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PageQR(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardAlarm': {
-                    pageConfig = Page.getPage(pageConfig, this);
+                    pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PageAlarm(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardPower': {
-                    pageConfig = Page.getPage(pageConfig, this);
+                    pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PagePower(pmconfig, pageConfig);
                     break;
                 }
                 case 'popupNotify2':
                 case 'popupNotify': {
-                    pageConfig = Page.getPage(pageConfig, this);
+                    pageConfig = Panel.getPage(pageConfig, this);
                     this.pages[a] = new PageNotify(pmconfig, pageConfig);
                     break;
                 }
@@ -1698,6 +1701,33 @@ export class Panel extends BaseClass {
                 genericStateObjects.panel.panels.buttons.screensaverGesture,
             );
         }
+    }
+    static getPage(config: pages.PageBaseConfig, that: BaseClass): pages.PageBaseConfig {
+        if ('template' in config && config.template) {
+            const template = cardTemplates[config.template];
+            if (!template) {
+                that.log.error(`dont find template ${config.template}`);
+                return config;
+            }
+            if (config.dpInit && typeof config.dpInit === 'string') {
+                const reg = getRegExp(config.dpInit);
+                if (reg) {
+                    config.dpInit = reg;
+                }
+                if (
+                    template.adapter &&
+                    typeof config.dpInit === 'string' &&
+                    !config.dpInit.startsWith(template.adapter)
+                ) {
+                    return config;
+                }
+            }
+            const newTemplate = structuredClone(template) as Partial<pages.PageBaseConfigTemplate>;
+            delete newTemplate.adapter;
+
+            config = deepAssign(newTemplate, config);
+        }
+        return config;
     }
 
     /*

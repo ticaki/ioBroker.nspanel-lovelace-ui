@@ -1239,20 +1239,43 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "refreshMaintainTable": {
+          const added = [];
+          let result = [];
           if ((_k = this.controller) == null ? void 0 : _k.panels) {
-            const result = this.controller.panels.map((a) => {
+            const temp = this.controller.panels.map((a) => {
               var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2, _k2;
               const tv = (_c2 = (_b2 = (_a2 = a.info) == null ? void 0 : _a2.tasmota) == null ? void 0 : _b2.firmwareversion) == null ? void 0 : _c2.match(/([0-9]+\.[0-9]+\.[0-9])/);
+              added.push(a.topic);
               return {
-                name: a.friendlyName,
-                ip: ((_f2 = (_e2 = (_d2 = a.info) == null ? void 0 : _d2.tasmota) == null ? void 0 : _e2.net) == null ? void 0 : _f2.IPAddress) ? a.info.tasmota.net.IPAddress : "",
-                online: a.isOnline ? "yes" : "no",
-                topic: a.topic,
-                id: ((_i2 = (_h2 = (_g2 = a.info) == null ? void 0 : _g2.tasmota) == null ? void 0 : _h2.net) == null ? void 0 : _i2.Mac) ? a.info.tasmota.net.Mac : "",
-                tftVersion: ((_k2 = (_j2 = a.info) == null ? void 0 : _j2.nspanel) == null ? void 0 : _k2.displayVersion) ? a.info.nspanel.displayVersion : "???",
-                tasmotaVersion: tv && tv[1] ? tv[1] : "???"
+                _name: a.friendlyName,
+                _ip: ((_f2 = (_e2 = (_d2 = a.info) == null ? void 0 : _d2.tasmota) == null ? void 0 : _e2.net) == null ? void 0 : _f2.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
+                _online: a.isOnline ? "yes" : "no",
+                _topic: a.topic,
+                _id: ((_i2 = (_h2 = (_g2 = a.info) == null ? void 0 : _g2.tasmota) == null ? void 0 : _h2.net) == null ? void 0 : _i2.Mac) ? a.info.tasmota.net.Mac : "",
+                _tftVersion: ((_k2 = (_j2 = a.info) == null ? void 0 : _j2.nspanel) == null ? void 0 : _k2.displayVersion) ? a.info.nspanel.displayVersion : "???",
+                _tasmotaVersion: tv && tv[1] ? tv[1] : "???"
               };
             });
+            result = result.concat(temp);
+          }
+          if (this.config.panels) {
+            const temp = this.config.panels.filter((a) => {
+              return added.findIndex((b) => b === a.topic) === -1;
+            }).map((a) => {
+              return {
+                _name: a.name,
+                _ip: this.config.Testconfig2 ? this.config.Testconfig2.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline",
+                _online: "no",
+                _topic: a.topic,
+                _id: "",
+                _tftVersion: "---",
+                _tasmotaVersion: "---"
+              };
+            });
+            result = result.concat(temp);
+          }
+          if (result.length > 0) {
+            result.sort((a, b) => a._name.localeCompare(b._name));
             if (obj.callback) {
               this.sendTo(obj.from, obj.command, { native: { _maintainPanels: result } }, obj.callback);
             }

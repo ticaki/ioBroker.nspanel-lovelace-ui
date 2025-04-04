@@ -37,7 +37,6 @@ var Types = __toESM(require("../types/types"));
 var pages = __toESM(require("../types/pages"));
 var import_library = require("../classes/library");
 var import_definition = require("../const/definition");
-var import_Page = require("../classes/Page");
 var import_pageMedia = require("../pages/pageMedia");
 var import_pageGrid = require("../pages/pageGrid");
 var import_navigation = require("../classes/navigation");
@@ -53,6 +52,8 @@ var import_pageQR = require("../pages/pageQR");
 var import_data_item = require("../classes/data-item");
 var import_Color = require("../const/Color");
 var import_pageSchedule = require("../pages/pageSchedule");
+var import_card = require("../templates/card");
+var import_tools = require("../const/tools");
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -200,7 +201,7 @@ class Panel extends import_library.BaseClass {
     options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
-      let pageConfig = options.pages[a] ? import_Page.Page.getPage(options.pages[a], this) : options.pages[a];
+      let pageConfig = options.pages[a] ? Panel.getPage(options.pages[a], this) : options.pages[a];
       if (!pageConfig || !pageConfig.config) {
         continue;
       }
@@ -216,60 +217,60 @@ class Panel extends import_library.BaseClass {
       };
       switch (pageConfig.config.card) {
         case "cardChart": {
-          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pageChart.PageChart(pmconfig, pageConfig);
           break;
         }
         case "cardLChart": {
-          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pageLChart.PageLChart(pmconfig, pageConfig);
           break;
         }
         case "cardEntities": {
-          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pageEntities.PageEntities(pmconfig, pageConfig);
           break;
         }
         case "cardSchedule": {
-          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pageSchedule.PageSchedule(pmconfig, pageConfig);
           break;
         }
         case "cardGrid3":
         case "cardGrid2":
         case "cardGrid": {
-          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pageGrid.PageGrid(pmconfig, pageConfig);
           break;
         }
         case "cardThermo": {
-          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pageThermo.PageThermo(pmconfig, pageConfig);
           break;
         }
         case "cardMedia": {
-          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pageMedia.PageMedia(pmconfig, pageConfig);
           break;
         }
         case "cardQR": {
-          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pageQR.PageQR(pmconfig, pageConfig);
           break;
         }
         case "cardAlarm": {
-          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pageAlarm.PageAlarm(pmconfig, pageConfig);
           break;
         }
         case "cardPower": {
-          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pagePower.PagePower(pmconfig, pageConfig);
           break;
         }
         case "popupNotify2":
         case "popupNotify": {
-          pageConfig = import_Page.Page.getPage(pageConfig, this);
+          pageConfig = Panel.getPage(pageConfig, this);
           this.pages[a] = new import_pageNotification.PageNotify(pmconfig, pageConfig);
           break;
         }
@@ -1579,6 +1580,28 @@ ${this.info.tasmota.onlineVersion}`;
         import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
       );
     }
+  }
+  static getPage(config, that) {
+    if ("template" in config && config.template) {
+      const template = import_card.cardTemplates[config.template];
+      if (!template) {
+        that.log.error(`dont find template ${config.template}`);
+        return config;
+      }
+      if (config.dpInit && typeof config.dpInit === "string") {
+        const reg = (0, import_tools.getRegExp)(config.dpInit);
+        if (reg) {
+          config.dpInit = reg;
+        }
+        if (template.adapter && typeof config.dpInit === "string" && !config.dpInit.startsWith(template.adapter)) {
+          return config;
+        }
+      }
+      const newTemplate = structuredClone(template);
+      delete newTemplate.adapter;
+      config = (0, import_tools.deepAssign)(newTemplate, config);
+    }
+    return config;
   }
   /*
   function HandleMessage(typ: string, method: NSPanel.EventMethod, page: number | undefined, words: string[] | undefined): void {

@@ -34,10 +34,9 @@ module.exports = __toCommonJS(pageItem_exports);
 var import_Color = require("../const/Color");
 var typePageItem = __toESM(require("../types/type-pageItem"));
 var tools = __toESM(require("../const/tools"));
-var import_states_controller = require("../controller/states-controller");
 var import_icon_mapping = require("../const/icon_mapping");
-var import_screensaver = require("./screensaver");
-class PageItem extends import_states_controller.BaseClassTriggerd {
+var import_BaseClassPage = require("../classes/BaseClassPage");
+class PageItem extends import_BaseClassPage.BaseClassTriggerd {
   defaultOnColor = import_Color.Color.White;
   defaultOffColor = import_Color.Color.Blue;
   config;
@@ -1189,7 +1188,7 @@ class PageItem extends import_states_controller.BaseClassTriggerd {
         break;
       case "button": {
         if (entry.type === "button") {
-          if (this.parent && this.parent instanceof import_screensaver.Screensaver) {
+          if (this.parent && this.parent.isScreensaver) {
             if (!this.parent.screensaverIndicatorButtons) {
               this.panel.navigation.resetPosition();
               await this.panel.navigation.setCurrentPage();

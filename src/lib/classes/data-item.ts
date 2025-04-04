@@ -1,6 +1,8 @@
 import { Color, type RGB } from '../const/Color';
 import { BaseClass } from './library';
-import type { BaseClassTriggerd, StatesControler } from '../controller/states-controller';
+import type { StatesControler } from '../controller/states-controller';
+import type { BaseClassTriggerd } from '../classes/BaseClassPage';
+
 import * as NSPanel from '../types/types';
 
 export class Dataitem extends BaseClass {
