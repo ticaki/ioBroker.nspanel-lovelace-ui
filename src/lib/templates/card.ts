@@ -641,12 +641,12 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
     'entities.fahrplan.departure-timetable': {
         //Anzeigetafel Fahrplan
         adapter: 'fahrplan.0',
-        card: 'cardEntities',
+        card: 'cardSchedule',
         alwaysOn: 'none',
         useColor: false,
         items: undefined,
         config: {
-            card: 'cardEntities',
+            card: 'cardSchedule',
             scrollType: 'page',
             data: {
                 headline: {
@@ -1172,12 +1172,12 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
     'entities.fahrplan.routes': {
         //Route Fahrplan
         adapter: 'fahrplan.0',
-        card: 'cardEntities',
+        card: 'cardSchedule',
         alwaysOn: 'none',
         useColor: false,
         items: undefined,
         config: {
-            card: 'cardEntities',
+            card: 'cardSchedule',
             scrollType: 'page',
             data: {
                 headline: {
