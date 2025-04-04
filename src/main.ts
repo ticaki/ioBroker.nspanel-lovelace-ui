@@ -138,17 +138,28 @@ class NspanelLovelaceUi extends utils.Adapter {
         if (_states) {
             this.log.info(`Found ${_states?.rows.length} states`);
         }
+        const __states = await this.getForeignObjectsAsync('*');
+        if (__states) {
+            let sum = 0;
+            this.log.info(`Found ${Object.entries(__states).length} states`);
+            for (const o in __states) {
+                if (__states[o]) {
+                    sum++;
+                }
+            }
+            this.log.info(`Found ${sum} broken objects`);
+        }
         const _channels = await this.getObjectViewAsync('system', 'channel', {});
         if (_channels) {
-            this.log.info(`Found ${_channels?.rows.length} states`);
+            this.log.info(`Found ${_channels?.rows.length} _channels`);
         }
         const _devices = await this.getObjectViewAsync('system', 'device', {});
         if (_devices) {
-            this.log.info(`Found ${_devices?.rows.length} states`);
+            this.log.info(`Found ${_devices?.rows.length} device`);
         }
         const _enums = await this.getObjectViewAsync('system', 'enum', {});
         if (_enums) {
-            this.log.info(`Found ${_enums?.rows.length} states`);
+            this.log.info(`Found ${_enums?.rows.length} enum`);
         }
         /*if (!this.config.Testconfig2) {
             if (this.config.onlyStartFromSystemConfig) {
