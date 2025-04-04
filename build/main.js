@@ -237,6 +237,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     await this.delay(4e3);
     try {
       import_icon_mapping.Icons.adapter = this;
+      await this.onMqttConnect();
       await this.library.init();
       const states = await this.getStatesAsync("*");
       await this.library.initStates(states);
@@ -264,7 +265,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         (topic, message) => {
           this.log.debug(`${topic} ${message}`);
         },
-        this.onMqttConnect,
+        void 0,
         async () => {
           await this.setState("info.connection", false, true);
         }

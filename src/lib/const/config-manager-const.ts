@@ -262,7 +262,6 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         ACTUAL: null,
     },
     button: {
-        ACTUAL: null,
         SET: null,
     },
     select: {
@@ -582,7 +581,6 @@ type requiredDatapoints2 = {
     };
     button: {
         data: {
-            ACTUAL: Datapoint;
             SET: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
@@ -1068,14 +1066,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'button',
         description: 'Switch',
         data: {
-            ACTUAL: {
-                role: '',
-                type: ['boolean', 'string', 'boolean'],
-                required: false,
-                writeable: false,
-                useKey: true,
-            },
-            SET: { role: 'switch', type: 'boolean', required: true, writeable: true },
+            SET: { role: 'button', type: 'boolean', required: true, writeable: true },
         },
     },
     select: {

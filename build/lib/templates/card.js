@@ -646,12 +646,12 @@ const cardTemplates = {
   "entities.fahrplan.departure-timetable": {
     //Anzeigetafel Fahrplan
     adapter: "fahrplan.0",
-    card: "cardEntities",
+    card: "cardSchedule",
     alwaysOn: "none",
     useColor: false,
     items: void 0,
     config: {
-      card: "cardEntities",
+      card: "cardSchedule",
       scrollType: "page",
       data: {
         headline: {
@@ -1182,12 +1182,12 @@ const cardTemplates = {
   "entities.fahrplan.routes": {
     //Route Fahrplan
     adapter: "fahrplan.0",
-    card: "cardEntities",
+    card: "cardSchedule",
     alwaysOn: "none",
     useColor: false,
     items: void 0,
     config: {
-      card: "cardEntities",
+      card: "cardSchedule",
       scrollType: "page",
       data: {
         headline: {

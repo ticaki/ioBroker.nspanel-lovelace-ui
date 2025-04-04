@@ -2332,11 +2332,7 @@ export class ConfigManager extends BaseClass {
                                 text: text,
 
                                 text1: {
-                                    true: { type: 'const', constVal: 'on' },
-                                    false: { type: 'const', constVal: 'off' },
-                                },
-                                entity1: {
-                                    value: foundedStates[role].ACTUAL,
+                                    true: { type: 'const', constVal: 'press' },
                                 },
                                 setValue2: foundedStates[role].SET,
                             },
