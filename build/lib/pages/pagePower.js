@@ -243,13 +243,15 @@ class PagePower extends import_Page.Page {
                 value: {
                   type: "const",
                   constVal: icons[0]
-                },
-                color: {
-                  type: "const",
-                  constVal: iconColor[0]
                 }
+                /* color: {
+                    type: 'const',
+                    constVal: iconColor[0], //undefined,
+                }, */
               },
-              false: void 0
+              false: void 0,
+              scale: { type: "const", constVal: { val_min: 0, val_max: 100 } }
+              //in key schreiben
             },
             value: {
               value: {

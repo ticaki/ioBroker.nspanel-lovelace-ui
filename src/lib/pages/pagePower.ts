@@ -272,12 +272,13 @@ export class PagePower extends Page {
                                     type: 'const',
                                     constVal: icons[0],
                                 },
-                                color: {
+                                /* color: {
                                     type: 'const',
-                                    constVal: iconColor[0],
-                                },
+                                    constVal: iconColor[0], //undefined,
+                                }, */
                             },
                             false: undefined,
+                            scale: { type: 'const', constVal: { val_min: 0, val_max: 100 } }, //in key schreiben
                         },
                         value: {
                             value: {
