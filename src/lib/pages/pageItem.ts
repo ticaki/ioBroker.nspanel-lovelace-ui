@@ -937,7 +937,7 @@ export class PageItem extends BaseClassTriggerd {
                                 (await tools.getTemperaturColorFromValue(item.ct, dimmer ?? 100)) ?? '';
                         }
 
-                        message.popup = message.slider2Pos !== 'disable' && rgb !== null;
+                        message.popup = !!item.entityInSel?.value; //message.slider2Pos !== 'disable' && rgb !== null;
 
                         message.slider1Translation =
                             (item.text1 && item.text1.true && (await item.text1.true.getString())) ?? undefined;
@@ -2176,10 +2176,13 @@ export class PageItem extends BaseClassTriggerd {
             entityInSel &&
             entityInSel.value &&
             ['string', 'number'].indexOf(entityInSel.value.type ?? '') !== -1 &&
-            (role == 'spotify-playlist' || (await entityInSel.value.getCommonStates()))
+            (role == 'spotify-playlist' || (await entityInSel.value.getCommonStates()) || valueList2 != null)
         ) {
             let states: Record<string | number, string> | undefined = undefined;
             const value = await tools.getValueEntryString(entityInSel);
+            if (valueList && valueList2) {
+                role = '2values';
+            }
             switch (role) {
                 case 'spotify-playlist': {
                     if (valueList) {

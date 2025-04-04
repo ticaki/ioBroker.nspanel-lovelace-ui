@@ -48,7 +48,7 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.8.0";
+  scriptVersion = "0.8.2";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -1871,6 +1871,14 @@ class ConfigManager extends import_library.BaseClass {
                 isKelvin = false;
               }
             }
+            let valueList2 = void 0;
+            const selectExist = item.inSel_Alias && await this.existsState(item.inSel_Alias);
+            if (selectExist && item.inSel_Alias) {
+              const select = await this.adapter.getForeignObjectAsync(item.inSel_Alias);
+              if (select && select.common && select.common.type === "string") {
+                valueList2 = item.modeList ? { type: "const", constVal: item.modeList } : void 0;
+              }
+            }
             const tempItem = {
               type: "light",
               role: role === "hue" ? "hue" : role === "rgb" ? "rgbThree" : role === "rgbSingle" ? "rgbSingle" : "ct",
@@ -1936,6 +1944,12 @@ class ConfigManager extends import_library.BaseClass {
                 entity1: {
                   value: foundedStates[role].ON_ACTUAL,
                   set: foundedStates[role].ON
+                },
+                valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0,
+                valueList2,
+                entityInSel: {
+                  value: item.inSel_Alias && selectExist ? { type: "triggered", dp: item.inSel_Alias } : void 0,
+                  set: item.inSel_Alias && selectExist ? { type: "triggered", dp: item.inSel_Alias } : void 0
                 }
               }
             };

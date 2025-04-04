@@ -199,9 +199,9 @@ async function getSliderCTFromValue(i) {
       }
     } else {
       if (mode === "mired") {
-        r = Math.round(import_Color.Color.scale(nval, 500, 130, 0, 100));
+        r = Math.round(import_Color.Color.scale(nval, 500, 153, 0, 100));
       } else {
-        r = Math.round(import_Color.Color.scale(nval, 1800, 7e3, 0, 100));
+        r = Math.round(import_Color.Color.scale(nval, 2200, 6500, 0, 100));
       }
     }
     return r !== null ? String(r) : null;
@@ -232,9 +232,9 @@ async function setSliderCTFromValue(i, value) {
     }
   } else {
     if (mode === "mired") {
-      r = Math.round(import_Color.Color.scale(r, 0, 100, 500, 130));
+      r = Math.round(import_Color.Color.scale(r, 0, 100, 500, 153));
     } else {
-      r = Math.round(import_Color.Color.scale(r, 0, 100, 1800, 7e3));
+      r = Math.round(import_Color.Color.scale(r, 0, 100, 2200, 6500));
     }
   }
   if (i.set && i.set.writeable) {
