@@ -146,7 +146,7 @@ export class PagePower extends Page {
 
         //array of states
         const states: string[] = [];
-        for (let i = 1; i <= 7; i++) {
+        for (let i = 1; i <= 8; i++) {
             const key = `power${i}_state` as keyof typeof config;
             if (typeof config[key] === 'string' && (await configManager.existsState(config[key]))) {
                 states.push(config[key]);
@@ -255,12 +255,15 @@ export class PagePower extends Page {
                     headline: { type: 'const', constVal: config.headline },
                     homeIcon: { true: { value: { type: 'const', constVal: 'home' } }, false: undefined },
                     homeValueTop: {
-                        value: { type: 'state', dp: states[6] },
+                        value: { type: 'triggered', dp: states[6] },
                     },
                     homeValueBot: {
+                        value: { type: 'triggered', dp: states[7] },
+                    },
+                    /* homeValueBot: {
                         value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
                         math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
-                    },
+                    }, */
                     leftTop: {
                         icon: {
                             true: {

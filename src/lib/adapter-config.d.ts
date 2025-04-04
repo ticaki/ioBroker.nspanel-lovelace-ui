@@ -107,7 +107,8 @@ declare global {
                 power6_minSpeedScale: number,
                 power6_maxSpeedScale: number,
                 power6_reverse: boolean,
-                power7_state: string
+                power7_state: string,
+                power8_state: string
             }[];
         }
     }

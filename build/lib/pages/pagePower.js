@@ -136,7 +136,7 @@ class PagePower extends import_Page.Page {
   static async getPowerPageConfig(adapter, index, configManager) {
     const config = adapter.config.pagePowerdata[index];
     const states = [];
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 8; i++) {
       const key = `power${i}_state`;
       if (typeof config[key] === "string" && await configManager.existsState(config[key])) {
         states.push(config[key]);
@@ -228,12 +228,15 @@ class PagePower extends import_Page.Page {
           headline: { type: "const", constVal: config.headline },
           homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
           homeValueTop: {
-            value: { type: "state", dp: states[6] }
+            value: { type: "triggered", dp: states[6] }
           },
           homeValueBot: {
-            value: { type: "internal", dp: `///${config.pageName}/powerSum` },
-            math: { type: "const", constVal: "return r1+r2+r3+l1+l2+l3 -999" }
+            value: { type: "triggered", dp: states[7] }
           },
+          /* homeValueBot: {
+              value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
+              math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
+          }, */
           leftTop: {
             icon: {
               true: {

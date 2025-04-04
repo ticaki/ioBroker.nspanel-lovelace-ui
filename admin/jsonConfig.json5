@@ -1760,6 +1760,18 @@
                             "type": "objectId",
                             "label": "powerState",
                             "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "newLine": true,
+                            "attr": "power8_state",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 8,
+                            "xl": 8,
+                            "type": "objectId",
+                            "label": "powerState",
+                            "filterFunc": "return obj.common.type === 'number'"
                         }
                     ]
                 }
