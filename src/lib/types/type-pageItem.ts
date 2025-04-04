@@ -311,6 +311,7 @@ export type PageItemTextDataItems = {
 export type PageItemLight = Pick<
     PageItemBase,
     | 'valueList'
+    | 'valueList2'
     | 'setList'
     | 'text1'
     | 'text2'

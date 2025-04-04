@@ -21,7 +21,7 @@ export class ConfigManager extends BaseClass {
     dontWrite: boolean = false;
     extraConfigLogging: boolean = false;
 
-    readonly scriptVersion = '0.8.0';
+    readonly scriptVersion = '0.8.2';
     readonly breakingVersion = '0.6.0';
 
     statesController: StatesControler | undefined;
@@ -2185,6 +2185,14 @@ export class ConfigManager extends BaseClass {
                                 isKelvin = false;
                             }
                         }
+                        let valueList2: any = undefined;
+                        const selectExist = item.inSel_Alias && (await this.existsState(item.inSel_Alias));
+                        if (selectExist && item.inSel_Alias) {
+                            const select = await this.adapter.getForeignObjectAsync(item.inSel_Alias);
+                            if (select && select.common && select.common.type === 'string') {
+                                valueList2 = item.modeList ? { type: 'const', constVal: item.modeList } : undefined;
+                            }
+                        }
                         const tempItem: typePageItem.PageItemDataItemsOptions = {
                             type: 'light',
                             role:
@@ -2277,6 +2285,18 @@ export class ConfigManager extends BaseClass {
                                 entity1: {
                                     value: foundedStates[role].ON_ACTUAL,
                                     set: foundedStates[role].ON,
+                                },
+                                valueList: item.modeList ? { type: 'const', constVal: item.modeList } : undefined,
+                                valueList2: valueList2,
+                                entityInSel: {
+                                    value:
+                                        item.inSel_Alias && selectExist
+                                            ? { type: 'triggered', dp: item.inSel_Alias }
+                                            : undefined,
+                                    set:
+                                        item.inSel_Alias && selectExist
+                                            ? { type: 'triggered', dp: item.inSel_Alias }
+                                            : undefined,
                                 },
                             },
                         };

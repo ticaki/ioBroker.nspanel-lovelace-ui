@@ -435,6 +435,7 @@ declare namespace ScriptConfig {
         useValue?: boolean;
         monobutton?: boolean;
         inSel_ChoiceState?: boolean;
+        inSel_Alias?: string;
         iconArray?: string[];
         customIcons?: any[];
         fontSize?: number;
