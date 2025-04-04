@@ -127,7 +127,8 @@ export async function getScaledNumber(
         return null;
     }
     let nval = i.value && (await i.value.getNumber());
-    if (nval !== null && nval !== undefined) {
+    if (nval != null) {
+        nval = nval * ((i.factor && (await i.factor.getNumber())) ?? 1);
         if (i.minScale !== undefined && i.maxScale !== undefined) {
             const min = await i.minScale.getNumber();
             const max = await i.maxScale.getNumber();
