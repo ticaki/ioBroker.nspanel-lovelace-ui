@@ -134,33 +134,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.warn('Testcase mode!');
         }
 
-        const _states = await this.getObjectViewAsync('system', 'state', {});
-        if (_states) {
-            this.log.info(`Found ${_states?.rows.length} states`);
-        }
-        const __states = await this.getForeignObjectsAsync('*');
-        if (__states) {
-            let sum = 0;
-            this.log.info(`Found ${Object.entries(__states).length} states`);
-            for (const o in __states) {
-                if (__states[o].type === 'channel') {
-                    sum++;
-                }
-            }
-            this.log.info(`Found ${sum} channels with getObject `);
-        }
-        const _channels = await this.getObjectViewAsync('system', 'channel', {});
-        if (_channels) {
-            this.log.info(`Found ${_channels?.rows.length} _channels`);
-        }
-        const _devices = await this.getObjectViewAsync('system', 'device', {});
-        if (_devices) {
-            this.log.info(`Found ${_devices?.rows.length} device`);
-        }
-        const _enums = await this.getObjectViewAsync('system', 'enum', {});
-        if (_enums) {
-            this.log.info(`Found ${_enums?.rows.length} enum`);
-        }
+        
         /*if (!this.config.Testconfig2) {
             if (this.config.onlyStartFromSystemConfig) {
                 this.log.warn('No configuration stopped!');
