@@ -1585,7 +1585,7 @@ ${this.info.tasmota.onlineVersion}`;
     if ("template" in config && config.template) {
       const template = import_card.cardTemplates[config.template];
       if (!template) {
-        that.log.error(`dont find template ${config.template}`);
+        that.log.error(`Template not found: ${config.template}`);
         return config;
       }
       if (config.dpInit && typeof config.dpInit === "string") {
