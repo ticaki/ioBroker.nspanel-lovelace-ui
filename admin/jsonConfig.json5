@@ -467,7 +467,7 @@
         "maintain": {
             "type": "panel",
             "label": "maintain",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
             "items": {            
                 "_showIcon": {
                     "type": "imageSendTo",
@@ -609,7 +609,7 @@
         "pageQR": {
             "type": "panel",
             "label": "Page QR",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
             "items": {
                 "pageQRdata": {
                     "type": "accordion",
@@ -824,13 +824,19 @@
         "pagePower": {
             "type": "panel",
             "label": "Page Power",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
             "items": {
                 "pagePowerdata": {
                     "type": "accordion",
                     "label": "pagePowerdata",
                     "titleAttr": "pageName",
                     "items": [
+                        {
+                            "attr": "general_header",
+                            "type": "header",
+                            "text": "general",
+                            "size": 2
+                        },
                         {
                             "attr": "pageName",
                             "xs": 12,
@@ -865,16 +871,10 @@
                             "default": false
                         },
                         {
-                            "attr": "_divider1",
-                            "type": "divider",
-                            "newLine": true,
-                            "height": 5,
-                            "color": "blue",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
+                            "attr": "power1_header",
+                            "type": "header",
+                            "text": "power1",
+                            "size": 3
                         },
                         {
                             "attr": "power1_icon",
@@ -962,6 +962,7 @@
                         },
                         {
                             "attr": "power1_entityHeadline",
+                            "newLine": true,
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -982,7 +983,6 @@
                             "type": "number",
                             "label": "powerMinSpeed",
                             "default": "0",
-                            "newLine": true,
                             "hidden": "!data._power1_more"
                         },
                         {
@@ -1010,15 +1010,10 @@
                             "hidden": "!data._power1_more"
                         },
                         {
-                            "attr": "_divider2",
-                            "type": "divider",
-                            "height": 5,
-                            "color": "red",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
+                            "attr": "power2_header",
+                            "type": "header",
+                            "text": "power2",
+                            "size": 3
                         },
                         {
                             "attr": "power2_icon",
@@ -1106,6 +1101,7 @@
                         },
                         {
                             "attr": "power2_entityHeadline",
+                            "newLine": true,
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1126,7 +1122,6 @@
                             "type": "number",
                             "label": "powerMinSpeed",
                             "default": "0",
-                            "newLine": true,
                             "hidden": "!data._power2_more"
                         },
                         {
@@ -1154,15 +1149,10 @@
                             "hidden": "!data._power2_more"
                         },
                         {
-                            "attr": "_divider3",
-                            "type": "divider",
-                            "height": 5,
-                            "color": "red",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
+                            "attr": "power3_header",
+                            "type": "header",
+                            "text": "power3",
+                            "size": 3
                         },
                         {
                             "newLine": true,
@@ -1251,6 +1241,7 @@
                         },
                         {
                             "attr": "power3_entityHeadline",
+                            "newLine": true,
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1271,7 +1262,6 @@
                             "type": "number",
                             "label": "powerMinSpeed",
                             "default": "0",
-                            "newLine": true,
                             "hidden": "!data._power3_more"
                         },
                         {
@@ -1299,15 +1289,10 @@
                             "hidden": "!data._power3_more"
                         },
                         {
-                            "attr": "_divider4",
-                            "type": "divider",
-                            "height": 5,
-                            "color": "red",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
+                            "attr": "power4_header",
+                            "type": "header",
+                            "text": "power4",
+                            "size": 3
                         },
                         {
                             "newLine": true,
@@ -1396,6 +1381,7 @@
                         },
                         {
                             "attr": "power4_entityHeadline",
+                            "newLine": true,
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1416,7 +1402,6 @@
                             "type": "number",
                             "label": "powerMinSpeed",
                             "default": "0",
-                            "newLine": true,
                             "hidden": "!data._power4_more"
                         },
                         {
@@ -1444,15 +1429,10 @@
                             "hidden": "!data._power4_more"
                         },
                         {
-                            "attr": "_divider5",
-                            "type": "divider",
-                            "height": 5,
-                            "color": "red",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
+                            "attr": "power5_header",
+                            "type": "header",
+                            "text": "power5",
+                            "size": 3
                         },
                         {
                             "newLine": true,
@@ -1541,6 +1521,7 @@
                         },
                         {
                             "attr": "power5_entityHeadline",
+                            "newLine": true,
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1561,7 +1542,6 @@
                             "type": "number",
                             "label": "powerMinSpeed",
                             "default": "0",
-                            "newLine": true,
                             "hidden": "!data._power5_more"
                         },
                         {
@@ -1589,15 +1569,10 @@
                             "hidden": "!data._power5_more"
                         },
                         {
-                            "attr": "_divider6",
-                            "type": "divider",
-                            "height": 5,
-                            "color": "red",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
+                            "attr": "power6_header",
+                            "type": "header",
+                            "text": "power6",
+                            "size": 3
                         },
                         {
                             "newLine": true,
@@ -1686,6 +1661,7 @@
                         },
                         {
                             "attr": "power6_entityHeadline",
+                            "newLine": true,
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
@@ -1706,7 +1682,6 @@
                             "type": "number",
                             "label": "powerMinSpeed",
                             "default": "0",
-                            "newLine": true,
                             "hidden": "!data._power6_more"
                         },
                         {
@@ -1734,15 +1709,10 @@
                             "hidden": "!data._power6_more"
                         },
                         {
-                            "attr": "_divider7",
-                            "type": "divider",
-                            "height": 5,
-                            "color": "blue",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4
+                            "attr": "powerHome_header",
+                            "type": "header",
+                            "text": "powerHome",
+                            "size": 2
                         },
                         {
                             "newLine": true,
@@ -1775,6 +1745,7 @@
         "NavigationOverview": {
             "type": "panel",
             "label": "Navigation Overview",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
             "items": {
                 "_selectPanel": {
                     "type": "selectSendTo",
