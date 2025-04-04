@@ -134,7 +134,6 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.warn('Testcase mode!');
         }
 
-        
         /*if (!this.config.Testconfig2) {
             if (this.config.onlyStartFromSystemConfig) {
                 this.log.warn('No configuration stopped!');
