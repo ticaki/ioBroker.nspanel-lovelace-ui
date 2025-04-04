@@ -300,7 +300,6 @@ class Screensaver extends import_Page.Page {
   async HandleScreensaverStatusIcons() {
     var _a, _b, _c, _d;
     if (!this.visibility) {
-      this.log.error("get update command but not visible!");
       return;
     }
     const message = await this.getData(["mricon"]);

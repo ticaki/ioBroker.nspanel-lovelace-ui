@@ -632,6 +632,7 @@ export class Panel extends BaseClass {
         this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
         this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
         this.sendRules();
+        //this.restartLoops();
     };
 
     private sendToPanelClass: (payload: string, opt?: IClientPublishOptions) => void = () => {};
@@ -641,14 +642,16 @@ export class Panel extends BaseClass {
     ) => {
         this.sendToPanelClass(payload, opt);
     };
-    async setActivePage(_page?: Page | boolean, _notSleep?: boolean): Promise<void> {
+    async setActivePage(_page?: Page | boolean, _notSleep?: boolean, _force?: boolean): Promise<void> {
         if (_page === undefined) {
             return;
         }
         let page = this._activePage;
         let sleep = false;
+        let force = _force ?? false;
         if (typeof _page === 'boolean') {
             sleep = !_page;
+            force = !!sleep;
         } else {
             page = _page;
             sleep = _notSleep ?? false;
@@ -661,8 +664,8 @@ export class Panel extends BaseClass {
             await page.setVisibility(true);
 
             this._activePage = page;
-        } else if (sleep !== this._activePage.sleep || page !== this._activePage) {
-            if (page != this._activePage) {
+        } else if (sleep !== this._activePage.sleep || page !== this._activePage || force) {
+            if (page != this._activePage || force) {
                 if (this._activePage) {
                     await this._activePage.setVisibility(false);
                 }
@@ -845,7 +848,7 @@ export class Panel extends BaseClass {
                     : ''
             }`,
         );
-        this.sendToTasmota(`${this.topic}/cmnd/Rule3`, 'ON');
+        this.sendToTasmota(`${this.topic}/cmnd/Rule3`, '1');
     }
 
     async onStateChange(id: string, state: Types.nsPanelState): Promise<void> {
@@ -1189,7 +1192,6 @@ export class Panel extends BaseClass {
         switch (event.method) {
             case 'startup': {
                 this.isOnline = true;
-
                 this.info.nspanel.displayVersion = event.opt;
                 this.info.nspanel.model = event.action;
 
@@ -1201,8 +1203,9 @@ export class Panel extends BaseClass {
                 const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
                 const popup = i !== -1 ? this.pages[i] : undefined;
                 if (popup) {
-                    await this.setActivePage(popup);
+                    await this.setActivePage(popup, false, true);
                 }
+                await this.adapter.delay(100);
                 if (this.screenSaver) {
                     await this.screenSaver.createPageItems();
                     //this.controller && (await this.controller.statesControler.activateTrigger(this.screenSaver));

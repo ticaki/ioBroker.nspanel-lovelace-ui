@@ -309,7 +309,6 @@ export class Screensaver extends Page {
 
     async HandleScreensaverStatusIcons(): Promise<void> {
         if (!this.visibility) {
-            this.log.error('get update command but not visible!');
             return;
         }
 

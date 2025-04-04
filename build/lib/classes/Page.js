@@ -30,6 +30,7 @@ var import_templateArray = require("../templates/templateArray");
 class Page extends import_BaseClassPage.BaseClassPage {
   card;
   id;
+  lastCardCounter = 0;
   isScreensaver;
   //readonly enums: string | string[];
   config;
@@ -169,6 +170,11 @@ class Page extends import_BaseClassPage.BaseClassPage {
   sendType() {
     if (this.panel.lastCard !== this.card || this.card === "cardThermo") {
       this.sendToPanel(`pageType~${this.card}`);
+    } else {
+      if (this.lastCardCounter++ > 5) {
+        this.lastCardCounter = 0;
+        this.sendToPanel(`pageType~${this.card}`);
+      }
     }
     this.panel.lastCard = this.card;
   }

@@ -591,15 +591,17 @@ class Panel extends import_library.BaseClass {
   sendToPanel = (payload, opt) => {
     this.sendToPanelClass(payload, opt);
   };
-  async setActivePage(_page, _notSleep) {
+  async setActivePage(_page, _notSleep, _force) {
     var _a, _b, _c;
     if (_page === void 0) {
       return;
     }
     let page = this._activePage;
     let sleep = false;
+    let force = _force != null ? _force : false;
     if (typeof _page === "boolean") {
       sleep = !_page;
+      force = !!sleep;
     } else {
       page = _page;
       sleep = _notSleep != null ? _notSleep : false;
@@ -611,8 +613,8 @@ class Panel extends import_library.BaseClass {
       page.setLastPage((_a = this._activePage) != null ? _a : void 0);
       await page.setVisibility(true);
       this._activePage = page;
-    } else if (sleep !== this._activePage.sleep || page !== this._activePage) {
-      if (page != this._activePage) {
+    } else if (sleep !== this._activePage.sleep || page !== this._activePage || force) {
+      if (page != this._activePage || force) {
         if (this._activePage) {
           await this._activePage.setVisibility(false);
         }
@@ -779,7 +781,7 @@ class Panel extends import_library.BaseClass {
       `${this.topic}/cmnd/Rule3`,
       `ON CustomSend DO RuleTimer1 120 ENDON ON Rules#Timer=1 DO CustomSend pageType~pageStartup ENDON${this.detach.left ? ` ON Button1#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button1"} ENDON` : ""}${this.detach.right ? ` ON Button2#state do Publish ${this.topic}/tele/RESULT {"CustomRecv":"event,button2"} ENDON` : ""}`
     );
-    this.sendToTasmota(`${this.topic}/cmnd/Rule3`, "ON");
+    this.sendToTasmota(`${this.topic}/cmnd/Rule3`, "1");
   }
   async onStateChange(id, state) {
     if (state.ack) {
@@ -1101,8 +1103,9 @@ class Panel extends import_library.BaseClass {
         const i = this.pages.findIndex((a) => a && a.name === "///WelcomePopup");
         const popup = i !== -1 ? this.pages[i] : void 0;
         if (popup) {
-          await this.setActivePage(popup);
+          await this.setActivePage(popup, false, true);
         }
+        await this.adapter.delay(100);
         if (this.screenSaver) {
           await this.screenSaver.createPageItems();
           await this.screenSaver.HandleDate();

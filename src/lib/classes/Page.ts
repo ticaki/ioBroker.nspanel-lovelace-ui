@@ -19,6 +19,7 @@ export type PageConfigAll = pages.PageBaseConfig;
 export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
     readonly id: string;
+    private lastCardCounter: number = 0;
     public readonly isScreensaver: boolean;
     //readonly enums: string | string[];
     config: pages.PageBaseConfig['config'];
@@ -198,6 +199,11 @@ export class Page extends BaseClassPage {
     sendType(): void {
         if (this.panel.lastCard !== this.card || this.card === 'cardThermo') {
             this.sendToPanel(`pageType~${this.card}`);
+        } else {
+            if (this.lastCardCounter++ > 5) {
+                this.lastCardCounter = 0;
+                this.sendToPanel(`pageType~${this.card}`);
+            }
         }
         this.panel.lastCard = this.card;
     }

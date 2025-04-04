@@ -259,7 +259,6 @@ const checkedDatapoints = {
     ACTUAL: null
   },
   button: {
-    ACTUAL: null,
     SET: null
   },
   select: {
@@ -669,14 +668,7 @@ const requiredScriptDataPoints = {
     name: "button",
     description: "Switch",
     data: {
-      ACTUAL: {
-        role: "",
-        type: ["boolean", "string", "boolean"],
-        required: false,
-        writeable: false,
-        useKey: true
-      },
-      SET: { role: "switch", type: "boolean", required: true, writeable: true }
+      SET: { role: "button", type: "boolean", required: true, writeable: true }
     }
   },
   select: {
