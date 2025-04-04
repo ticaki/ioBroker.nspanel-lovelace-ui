@@ -234,10 +234,10 @@ class NspanelLovelaceUi extends utils.Adapter {
     if (this.config.doubleClickTime === void 0 || typeof this.config.doubleClickTime !== "number" || !(this.config.doubleClickTime > 0)) {
       this.config.doubleClickTime = 350;
     }
-    await this.delay(4e3);
     try {
       import_icon_mapping.Icons.adapter = this;
       await this.onMqttConnect();
+      await this.delay(4e3);
       await this.library.init();
       const states = await this.getStatesAsync("*");
       await this.library.initStates(states);

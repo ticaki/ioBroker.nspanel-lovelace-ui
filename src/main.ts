@@ -289,12 +289,12 @@ class NspanelLovelaceUi extends utils.Adapter {
         ) {
             this.config.doubleClickTime = 350;
         }
-        await this.delay(4000);
 
         //check config
         try {
             Icons.adapter = this;
             await this.onMqttConnect();
+            await this.delay(4000);
             await this.library.init();
             const states = await this.getStatesAsync('*');
             await this.library.initStates(states);
