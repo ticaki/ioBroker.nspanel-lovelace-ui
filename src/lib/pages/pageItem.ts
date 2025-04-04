@@ -1,14 +1,15 @@
 import { Color, type RGB } from '../const/Color';
-import type { Page, PageItemInterface } from '../classes/Page';
+import type { Page } from '../classes/Page';
+import type { PageItemInterface } from '../classes/PageInterface';
 import * as typePageItem from '../types/type-pageItem';
 import * as tools from '../const/tools';
 import type { PopupType } from '../types/types';
 import type { Panel } from '../controller/panel';
-import { BaseClassTriggerd } from '../controller/states-controller';
 import { Icons } from '../const/icon_mapping';
 import type { Dataitem } from '../classes/data-item';
 import type { ChangeTypeOfKeys, DeviceRole } from '../types/pages';
-import { Screensaver } from './screensaver';
+import type { Screensaver } from './screensaver';
+import { BaseClassTriggerd } from '../classes/BaseClassPage';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseClassTriggerd {
@@ -1384,8 +1385,8 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             case 'button': {
                 if (entry.type === 'button') {
-                    if (this.parent && this.parent instanceof Screensaver) {
-                        if (!this.parent.screensaverIndicatorButtons) {
+                    if (this.parent && this.parent.isScreensaver) {
+                        if (!(this.parent as Screensaver).screensaverIndicatorButtons) {
                             this.panel.navigation.resetPosition();
                             await this.panel.navigation.setCurrentPage();
                             break;

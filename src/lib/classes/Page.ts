@@ -1,6 +1,5 @@
-import type { Panel } from '../controller/panel';
-import { BaseClassPage, type BaseClassTriggerdInterface } from '../controller/states-controller';
 import type * as pages from '../types/pages';
+import { BaseClassPage } from './BaseClassPage';
 import {
     isPopupType,
     type ButtonActionType,
@@ -9,24 +8,10 @@ import {
     type TemplateIdent,
 } from '../types/types';
 import { PageItem } from '../pages/pageItem';
-import type { BaseClass } from './library';
-import { cardTemplates } from '../templates/card';
 import { deepAssign, getRegExp } from '../const/tools';
 import type { PageItemDataItemsOptions, PageItemOptionsTemplate } from '../types/type-pageItem';
 import { pageItemTemplates } from '../templates/templateArray';
-
-export type PageItemInterface = BaseClassTriggerdInterface & {
-    card: pages.PageTypeCards;
-    panel: Panel;
-    id: string;
-    parent: Page;
-};
-
-export type PageInterface = BaseClassTriggerdInterface & {
-    card: pages.PageTypeCards;
-    panel: Panel;
-    id: string;
-};
+import type { PageInterface, PageItemInterface } from './PageInterface';
 
 //interface Page extends BaseClass | PageConfig..
 export type PageConfigAll = pages.PageBaseConfig;
@@ -34,11 +19,17 @@ export type PageConfigAll = pages.PageBaseConfig;
 export class Page extends BaseClassPage {
     readonly card: pages.PageTypeCards;
     readonly id: string;
+    public readonly isScreensaver: boolean;
     //readonly enums: string | string[];
     config: pages.PageBaseConfig['config'];
     //config: Card['config'];
-    constructor(card: PageInterface, pageItemsConfig: pages.PageBaseConfig | undefined) {
+    constructor(
+        card: PageInterface,
+        pageItemsConfig: pages.PageBaseConfig | undefined,
+        isScreensaver: boolean = false,
+    ) {
         super(card, pageItemsConfig && pageItemsConfig.pageItems);
+        this.isScreensaver = isScreensaver;
         this.card = card.card;
         this.id = card.id;
         this.enums =
@@ -211,33 +202,6 @@ export class Page extends BaseClassPage {
         this.panel.lastCard = this.card;
     }
 
-    static getPage(config: pages.PageBaseConfig, that: BaseClass): pages.PageBaseConfig {
-        if ('template' in config && config.template) {
-            const template = cardTemplates[config.template];
-            if (!template) {
-                that.log.error(`dont find template ${config.template}`);
-                return config;
-            }
-            if (config.dpInit && typeof config.dpInit === 'string') {
-                const reg = getRegExp(config.dpInit);
-                if (reg) {
-                    config.dpInit = reg;
-                }
-                if (
-                    template.adapter &&
-                    typeof config.dpInit === 'string' &&
-                    !config.dpInit.startsWith(template.adapter)
-                ) {
-                    return config;
-                }
-            }
-            const newTemplate = structuredClone(template) as Partial<pages.PageBaseConfigTemplate>;
-            delete newTemplate.adapter;
-
-            config = deepAssign(newTemplate, config);
-        }
-        return config;
-    }
     protected async createPageItems(): Promise<void> {
         if (this.pageItemConfig) {
             this.pageItems = [];

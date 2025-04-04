@@ -1467,19 +1467,51 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
                 case 'refreshMaintainTable': {
+                    const added: string[] = [];
+                    let result: any[] = [];
                     if (this.controller?.panels) {
-                        const result = this.controller.panels.map(a => {
+                        const temp = this.controller.panels.map(a => {
                             const tv = a.info?.tasmota?.firmwareversion?.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                            added.push(a.topic);
+
                             return {
-                                name: a.friendlyName,
-                                ip: a.info?.tasmota?.net?.IPAddress ? a.info.tasmota.net.IPAddress : '',
-                                online: a.isOnline ? 'yes' : 'no',
-                                topic: a.topic,
-                                id: a.info?.tasmota?.net?.Mac ? a.info.tasmota.net.Mac : '',
-                                tftVersion: a.info?.nspanel?.displayVersion ? a.info.nspanel.displayVersion : '???',
-                                tasmotaVersion: tv && tv[1] ? tv[1] : '???',
+                                _name: a.friendlyName,
+                                _ip: a.info?.tasmota?.net?.IPAddress
+                                    ? a.info.tasmota.net.IPAddress
+                                    : 'offline - waiting',
+                                _online: a.isOnline ? 'yes' : 'no',
+                                _topic: a.topic,
+                                _id: a.info?.tasmota?.net?.Mac ? a.info.tasmota.net.Mac : '',
+                                _tftVersion: a.info?.nspanel?.displayVersion ? a.info.nspanel.displayVersion : '???',
+                                _tasmotaVersion: tv && tv[1] ? tv[1] : '???',
                             };
                         });
+                        result = result.concat(temp);
+                    }
+                    if (this.config.panels) {
+                        const temp = this.config.panels
+                            .filter(a => {
+                                return added.findIndex(b => b === a.topic) === -1;
+                            })
+                            .map(a => {
+                                return {
+                                    _name: a.name,
+                                    _ip: this.config.Testconfig2
+                                        ? this.config.Testconfig2.findIndex(b => b.topic === a.topic) === -1
+                                            ? 'Missing configuration!'
+                                            : 'offline - waiting'
+                                        : 'offline',
+                                    _online: 'no',
+                                    _topic: a.topic,
+                                    _id: '',
+                                    _tftVersion: '---',
+                                    _tasmotaVersion: '---',
+                                };
+                            });
+                        result = result.concat(temp);
+                    }
+                    if (result.length > 0) {
+                        result.sort((a, b) => a._name.localeCompare(b._name));
                         if (obj.callback) {
                             this.sendTo(obj.from, obj.command, { native: { _maintainPanels: result } }, obj.callback);
                         }

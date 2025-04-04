@@ -1,4 +1,4 @@
-import type { PageInterface } from '../classes/Page';
+import type { PageInterface } from '../classes/PageInterface';
 import { getPayload, getPayloadArray } from '../const/tools';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';

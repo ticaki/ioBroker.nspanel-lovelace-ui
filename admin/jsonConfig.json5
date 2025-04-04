@@ -509,21 +509,16 @@
                     "md": 12,
                     "lg": 12,
                     "xl": 12,
-                    "uniqueColumns": [
-                        "name",
-                        "topic",
-                        "ip"
-                    ],
                     "items": [
                         {
                             "type": "text",
-                            "attr": "id",
+                            "attr": "_id",
                             "label": "macAdressOfPanel",
                             "readOnly": true
                         },
                         {
                             "type": "text",
-                            "attr": "ip",
+                            "attr": "_ip",
                             "validator": "data.ip",
                             "default": "",
                             "label": "ipFromPanel",
@@ -531,35 +526,35 @@
                         },
                         {
                             "type": "text",
-                            "attr": "name",
+                            "attr": "_name",
                             "label": "panelName",
                             "readOnly": true,
                             "width": "10%"
                         },
                         {
                             "type": "text",
-                            "attr": "topic",
+                            "attr": "_topic",
                             "label": "panelTopic",
                             "readOnly": true,
                             "width": "10%"
                         },
                         {
                             "type": "text",
-                            "attr": "online",
+                            "attr": "_online",
                             "label": "isOnline",
                             "readOnly": true,
-                            "width": "5%"
+                            "width": "6%"
                         },
                         {
                             "type": "text",
-                            "attr": "tasmotaVersion",
+                            "attr": "_tasmotaVersion",
                             "label": "vTasmota",
                             "readOnly": true,
                             "width": "6%"
                         },
                         {
                             "type": "text",
-                            "attr": "tftVersion",
+                            "attr": "_tftVersion",
                             "label": "vTFT",
                             "readOnly": true,
                             "width": "6%",
@@ -571,10 +566,10 @@
                             "type": "sendTo",
                             "label": "Tasmota",
                             "tooltip": "tasmotaSendToHelp",
-                            "jsonData": "{ \"tasmotaName\": \"${data.name}\", \"tasmotaIP\": \"${data.ip}\", \"tasmotaTopic\":\"${data.topic}\", \"mqttServer\": \"${globalData.mqttServer}\", \"mqttIp\": \"${globalData.mqttIp}\", \"mqttPort\": ${globalData.mqttPort}, \"mqttUsername\": \"${globalData.mqttUsername}\", \"mqttPassword\": \"${globalData.mqttPassword}\", \"internalServerIp\": \"${globalData.internalServerIp}\" }",
+                            "jsonData": "{ \"tasmotaName\": \"${data._name}\", \"tasmotaIP\": \"${data._ip}\", \"tasmotaTopic\":\"${data._topic}\", \"mqttServer\": \"${globalData.mqttServer}\", \"mqttIp\": \"${globalData.mqttIp}\", \"mqttPort\": ${globalData.mqttPort}, \"mqttUsername\": \"${globalData.mqttUsername}\", \"mqttPassword\": \"${globalData.mqttPassword}\", \"internalServerIp\": \"${globalData.internalServerIp}\" }",
                             "showProcess": true,
                             "command": "tasmotaSendTo",
-                            "disabled": "return !data.ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data.ip || data.ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data.topic || data.topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data.name ",
+                            "disabled": "return !data._ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data._ip || data._ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._topic || data.topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data._name || !data._online === 'no'",
                             "width": "5%",
                             "variant": "contained",
                             "confirm": {
@@ -588,11 +583,11 @@
                             "attr": "_createScript",
                             "type": "sendTo",
                             "label": "createScript",
-                            "jsonData": "{\"name\": \"${data.name}\", \"topic\": \"${data.topic}\", \"useBetaTFT\": ${globalData.useBetaTFT} }",
+                            "jsonData": "{\"name\": \"${data._name}\", \"topic\": \"${data._topic}\", \"useBetaTFT\": ${globalData.useBetaTFT} }",
                             "showProcess": true,
                             "command": "createScript",
                             "tooltip": "createScriptHelp",
-                            "disabled": "!data.name || !data.topic",
+                            "disabled": "!data._name || !data._topic",
                             "newLine": true,
                             "variant": "outlined",
                             "width": "5%"
@@ -602,10 +597,10 @@
                             "type": "sendTo",
                             "label": "tftInstallSendToMQTT",
                             "tooltip": "tftInstallSendToMQTTHelp",
-                            "jsonData": "{\"tasmotaIP\": \"${data.ip}\", \"topic\": \"${data.topic}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT},\"online\": \"${data.online}\" }",
+                            "jsonData": "{\"tasmotaIP\": \"${data._ip}\", \"topic\": \"${data._topic}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT},\"online\": \"${data._online}\" }",
                             "showProcess": true,
                             "command": "tftInstallSendToMQTT",
-                            "disabled": "data.online === 'no' && data.ip === ''",
+                            "disabled": "data._online === 'no' || data._ip === ''",
                             "newLine": true,
                             "variant": "contained",
                             "width": "5%"
