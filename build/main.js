@@ -126,6 +126,22 @@ class NspanelLovelaceUi extends utils.Adapter {
     if (this.config.testCase) {
       this.log.warn("Testcase mode!");
     }
+    const _states = await this.getObjectViewAsync("system", "state", {});
+    if (_states) {
+      this.log.info(`Found ${_states == null ? void 0 : _states.rows.length} states`);
+    }
+    const _channels = await this.getObjectViewAsync("system", "channel", {});
+    if (_channels) {
+      this.log.info(`Found ${_channels == null ? void 0 : _channels.rows.length} states`);
+    }
+    const _devices = await this.getObjectViewAsync("system", "device", {});
+    if (_devices) {
+      this.log.info(`Found ${_devices == null ? void 0 : _devices.rows.length} states`);
+    }
+    const _enums = await this.getObjectViewAsync("system", "enum", {});
+    if (_enums) {
+      this.log.info(`Found ${_enums == null ? void 0 : _enums.rows.length} states`);
+    }
     this.config.Testconfig2 = [];
     const obj = await this.getForeignObjectAsync(this.namespace);
     if (obj && obj.native) {
