@@ -621,6 +621,18 @@ export const genericStateObjects: {
                         },
                         native: {},
                     },
+                    safeboot: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.safeboot',
+                            type: 'boolean',
+                            role: 'indicator',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
                     onlineVersion: {
                         _id: '',
                         type: 'state',

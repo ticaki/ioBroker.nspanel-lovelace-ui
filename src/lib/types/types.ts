@@ -766,6 +766,7 @@ export type PanelInfo = {
     tasmota: {
         firmwareversion: string;
         onlineVersion: string;
+        safeboot: boolean;
         net: STATUS0['StatusNET'];
         uptime: string;
         sts: STATUS0['StatusSTS'];

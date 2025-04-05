@@ -1676,6 +1676,23 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                     break;
                 }
+                case 'updateTasmota': {
+                    let language = this.library.getLocalLanguage();
+                    language = language === 'zh-cn' ? 'en' : language;
+                    const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
+
+                    if (this.controller?.panels) {
+                        const index = this.controller.panels.findIndex(a => a.topic === obj.message.topic);
+                        if (index !== -1) {
+                            const panel = this.controller.panels[index];
+                            panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, [], obj.callback);
+                    }
+                    break;
+                }
                 default: {
                     // Send response in callback if required
                     if (obj.callback) {
