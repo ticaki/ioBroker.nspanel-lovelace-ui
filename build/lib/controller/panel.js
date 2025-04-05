@@ -591,17 +591,15 @@ class Panel extends import_library.BaseClass {
   sendToPanel = (payload, opt) => {
     this.sendToPanelClass(payload, opt);
   };
-  async setActivePage(_page, _notSleep, _force) {
+  async setActivePage(_page, _notSleep) {
     var _a, _b, _c;
     if (_page === void 0) {
       return;
     }
     let page = this._activePage;
     let sleep = false;
-    let force = _force != null ? _force : false;
     if (typeof _page === "boolean") {
       sleep = !_page;
-      force = !!sleep;
     } else {
       page = _page;
       sleep = _notSleep != null ? _notSleep : false;
@@ -613,8 +611,8 @@ class Panel extends import_library.BaseClass {
       page.setLastPage((_a = this._activePage) != null ? _a : void 0);
       await page.setVisibility(true);
       this._activePage = page;
-    } else if (sleep !== this._activePage.sleep || page !== this._activePage || force) {
-      if (page != this._activePage || force) {
+    } else if (sleep !== this._activePage.sleep || page !== this._activePage) {
+      if (page != this._activePage) {
         if (this._activePage) {
           await this._activePage.setVisibility(false);
         }
