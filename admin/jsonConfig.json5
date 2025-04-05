@@ -468,7 +468,7 @@
             "type": "panel",
             "label": "maintain",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
-            "items": {            
+            "items": {
                 "_showIcon": {
                     "type": "imageSendTo",
                     "label": "showIcon",
@@ -499,21 +499,32 @@
                     "showProcess": true,
                     "command": "refreshMaintainTable",
                     "variant": "outlined",
-                    "useNative": true
+                    "useNative": true,
+                    "onLoaded": true
                 },
                 "_maintainPanels": {
-                    "type": "table",
+                    "type": "accordion",
                     "label": "overviewOfPanels",
+                    "xs": 12,
                     "sm": 12,
                     "md": 12,
                     "lg": 12,
                     "xl": 12,
+                    "titleAttr": "_Headline",
+                    
+                    "noDelete": true,
                     "items": [
                         {
                             "type": "text",
                             "attr": "_id",
                             "label": "macAdressOfPanel",
-                            "readOnly": true
+                            "readOnly": true,
+                            "hidden": "true",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "type": "text",
@@ -521,53 +532,101 @@
                             "validator": "data.ip",
                             "default": "",
                             "label": "ipFromPanel",
-                            "readOnly": true
+                            "readOnly": true,
+                            "hidden": "true",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "type": "text",
+                            "attr": "_Headline",
+                            "label": "panelName",
+                            "readOnly": true,
+                            "hidden": "true",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "type": "text",
                             "attr": "_name",
                             "label": "panelName",
                             "readOnly": true,
-                            "width": "10%"
+                            "hidden": "true",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "type": "text",
                             "attr": "_topic",
                             "label": "panelTopic",
                             "readOnly": true,
-                            "width": "10%"
+                            "hidden": "true",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "type": "text",
                             "attr": "_online",
                             "label": "isOnline",
+                            "hidden": "true",
                             "readOnly": true,
-                            "width": "6%"
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "type": "text",
                             "attr": "_tasmotaVersion",
                             "label": "vTasmota",
                             "readOnly": true,
-                            "width": "6%"
+                            "validator": "!data._tasmotaVersion.endsWith(')')",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "type": "text",
                             "attr": "_tftVersion",
                             "label": "vTFT",
                             "readOnly": true,
-                            "width": "6%"
+                            "validator": "!data._tftVersion.endsWith(')')",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         },
                         {
                             "attr": "_tasmotaSendTo",
                             "type": "sendTo",
                             "label": "Tasmota",
                             "tooltip": "tasmotaSendToHelp",
+                            "newLine": true,
                             "jsonData": "{ \"tasmotaName\": \"${data._name}\", \"tasmotaIP\": \"${data._ip}\", \"tasmotaTopic\":\"${data._topic}\", \"mqttServer\": \"${globalData.mqttServer}\", \"mqttIp\": \"${globalData.mqttIp}\", \"mqttPort\": ${globalData.mqttPort}, \"mqttUsername\": \"${globalData.mqttUsername}\", \"mqttPassword\": \"${globalData.mqttPassword}\", \"internalServerIp\": \"${globalData.internalServerIp}\" }",
                             "showProcess": true,
                             "command": "tasmotaSendTo",
                             "disabled": "return !data._ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data._ip || data._ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._topic || data.topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data._name || !data._online === 'no'",
-                            "width": "5%",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
                             "variant": "contained",
                             "confirm": {
                                 "title": "Tasmota Configuration",
@@ -575,19 +634,6 @@
                                 "ok": "Update",
                                 "cancel": "Cancel"
                             }
-                        },
-                        {
-                            "attr": "_createScript",
-                            "type": "sendTo",
-                            "label": "createScript",
-                            "jsonData": "{\"name\": \"${data._name}\", \"topic\": \"${data._topic}\", \"useBetaTFT\": ${globalData.useBetaTFT} }",
-                            "showProcess": true,
-                            "command": "createScript",
-                            "tooltip": "createScriptHelp",
-                            "disabled": "!data._name || !data._topic",
-                            "newLine": true,
-                            "variant": "outlined",
-                            "width": "5%"
                         },
                         {
                             "attr": "_tftInstallSendToMQtt",
@@ -598,9 +644,28 @@
                             "showProcess": true,
                             "command": "tftInstallSendToMQTT",
                             "disabled": "data._online === 'no' || data._ip === ''",
-                            "newLine": true,
+                            "variant": "outlined",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "attr": "_createScript",
+                            "type": "sendTo",
+                            "label": "createScript",
+                            "jsonData": "{\"name\": \"${data._name}\", \"topic\": \"${data._topic}\", \"useBetaTFT\": ${globalData.useBetaTFT} }",
+                            "showProcess": true,
+                            "command": "createScript",
+                            "tooltip": "createScriptHelp",
+                            "disabled": "!data._name || !data._topic",
                             "variant": "contained",
-                            "width": "5%"
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
                         }
                     ]
                 }
@@ -970,7 +1035,7 @@
                             "type": "text",
                             "label": "entityHeadline",
                             "default": "",
-                            "hidden": "!data._power1_more"                          
+                            "hidden": "!data._power1_more"
                         },
                         {
                             "attr": "power1_minSpeedScale",
@@ -1114,7 +1179,7 @@
                             "type": "text",
                             "label": "entityHeadline",
                             "default": "",
-                            "hidden": "!data._power2_more"                         
+                            "hidden": "!data._power2_more"
                         },
                         {
                             "attr": "power2_minSpeedScale",
@@ -1259,7 +1324,7 @@
                             "type": "text",
                             "label": "entityHeadline",
                             "default": "",
-                            "hidden": "!data._power3_more"                            
+                            "hidden": "!data._power3_more"
                         },
                         {
                             "attr": "power3_minSpeedScale",
@@ -1404,7 +1469,7 @@
                             "type": "text",
                             "label": "entityHeadline",
                             "default": "",
-                            "hidden": "!data._power4_more"                            
+                            "hidden": "!data._power4_more"
                         },
                         {
                             "attr": "power4_minSpeedScale",
@@ -1549,7 +1614,7 @@
                             "type": "text",
                             "label": "entityHeadline",
                             "default": "",
-                            "hidden": "!data._power5_more"                            
+                            "hidden": "!data._power5_more"
                         },
                         {
                             "attr": "power5_minSpeedScale",
@@ -1694,7 +1759,7 @@
                             "type": "text",
                             "label": "entityHeadline",
                             "default": "",
-                            "hidden": "!data._power6_more"                            
+                            "hidden": "!data._power6_more"
                         },
                         {
                             "attr": "power6_minSpeedScale",

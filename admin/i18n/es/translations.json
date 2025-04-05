@@ -100,5 +100,7 @@
     "createScript": "Guion",
     "tasmotaSendToHelp": "Envíe la configuración de Tasmota al panel.",
     "createScriptHelp": "Crear o actualizar el script de configuración para el panel",
-    "tftInstallSendToMQTTHelp": "Actualice el firmware TFT en el panel."
+    "tftInstallSendToMQTTHelp": "Actualice el firmware TFT en el panel.",
+    "check!": "¡Controlar!",
+    "updateAvailable": "Actualización disponible"
 }

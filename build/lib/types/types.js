@@ -37,7 +37,9 @@ __export(types_exports, {
   isPartialColorScaleElement: () => isPartialColorScaleElement,
   isPartialIconSelectScaleElement: () => isPartialIconSelectScaleElement,
   isPopupType: () => isPopupType,
-  isValueDateFormat: () => isValueDateFormat
+  isValueDateFormat: () => isValueDateFormat,
+  screenSaverInfoIcons: () => screenSaverInfoIcons,
+  screenSaverInfoIconsUseable: () => screenSaverInfoIconsUseable
 });
 module.exports = __toCommonJS(types_exports);
 var pages = __toESM(require("./pages"));
@@ -93,6 +95,26 @@ const SerialTypeArray = [
 function isValueDateFormat(F) {
   return F && typeof F === "object" && F.local !== void 0 && F.format !== void 0;
 }
+const screenSaverInfoIconsUseable = {
+  none: "",
+  "clock!": "clock-alert-outline",
+  "weather!": "weather-sunny-alert",
+  "news!": "bell-ring-outline",
+  "calendar!": "calendar-alert",
+  "alarm!": "alarm",
+  "info!": "information-outline",
+  "error!": "alert-circle-outline",
+  "critical!": "alert-circle"
+};
+const screenSaverInfoIcons = swapKeyValue(screenSaverInfoIconsUseable);
+function swapKeyValue(obj) {
+  const swapped = {};
+  for (const key in obj) {
+    const value = obj[key];
+    swapped[value] = key;
+  }
+  return swapped;
+}
 function isIconColorScaleElement(F) {
   if (!F) {
     return false;
@@ -134,6 +156,8 @@ const arrayOfScreensaverModes = arrayOfModes(["standard", "alternate", "advanced
   isPartialColorScaleElement,
   isPartialIconSelectScaleElement,
   isPopupType,
-  isValueDateFormat
+  isValueDateFormat,
+  screenSaverInfoIcons,
+  screenSaverInfoIconsUseable
 });
 //# sourceMappingURL=types.js.map

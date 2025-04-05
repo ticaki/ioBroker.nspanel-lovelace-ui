@@ -1,13 +1,4 @@
-import {
-    arrayOfScreensaverModes,
-    type InternalStatesObject,
-    type NSpanelModel,
-    type PanelInfo,
-    type PanelInternalCommand,
-    type ScreenSaverPlaces,
-    type ScreensaverModeType,
-    type ScreensaverModeTypeAsNumber,
-} from '../types/types';
+import * as types from '../types/types';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object
     ? {
@@ -51,21 +42,23 @@ export const genericStateObjects: {
                     schedule: ioBroker.StateObject;
                     delay: ioBroker.StateObject;
                 };
-                power1: ioBroker.StateObject;
-                power2: ioBroker.StateObject;
-                screenSaverTimeout: ioBroker.StateObject;
-
-                screenSaverRotationTime: ioBroker.StateObject;
+                screenSaver: customChannelType & {
+                    infoIcon: ioBroker.StateObject;
+                    timeout: ioBroker.StateObject;
+                    doubleClick: ioBroker.StateObject;
+                    layout: Omit<ioBroker.StateObject, 'common'> & {
+                        common: Omit<ioBroker.StateObject['common'], 'states'>;
+                    } & {
+                        common: { states: Record<types.ScreensaverModeTypeAsNumber, string> };
+                    };
+                    rotationTime: ioBroker.StateObject;
+                };
                 goToNavigationPoint: ioBroker.StateObject;
                 mainNavigationPoint: ioBroker.StateObject;
-                screenSaverLayout: Omit<ioBroker.StateObject, 'common'> & {
-                    common: Omit<ioBroker.StateObject['common'], 'states'>;
-                } & {
-                    common: { states: Record<ScreensaverModeTypeAsNumber, string> };
-                };
+                power1: ioBroker.StateObject;
+                power2: ioBroker.StateObject;
                 detachRight: ioBroker.StateObject;
                 detachLeft: ioBroker.StateObject;
-                screenSaverDoubleClick: ioBroker.StateObject;
             };
 
             buttons: customChannelType & {
@@ -76,7 +69,7 @@ export const genericStateObjects: {
             };
             info: customChannelType & {
                 status: ioBroker.StateObject;
-            } & ChangeTypeOfKeysForState<Required<PanelInfo>, ioBroker.StateObject>;
+            } & ChangeTypeOfKeysForState<Required<types.PanelInfo>, ioBroker.StateObject>;
             alarm: customChannelType & {
                 cardAlarm: customChannelType & {
                     status: ioBroker.StateObject;
@@ -189,19 +182,7 @@ export const genericStateObjects: {
                     },
                     native: {},
                 },
-                screenSaverLayout: {
-                    _id: '',
-                    type: 'state',
-                    common: {
-                        name: 'StateObjects.screenSaverLayout',
-                        type: 'number',
-                        role: 'level',
-                        read: true,
-                        write: true,
-                        states: arrayOfScreensaverModes,
-                    },
-                    native: {},
-                },
+
                 mainNavigationPoint: {
                     _id: '',
                     type: 'state',
@@ -276,18 +257,84 @@ export const genericStateObjects: {
                     },
                     native: {},
                 },
-                screenSaverTimeout: {
-                    _id: '',
-                    type: 'state',
-                    common: {
-                        name: 'StateObjects.screenSaverTimeout',
-                        type: 'number',
-                        role: 'level',
-                        unit: 's',
-                        read: true,
-                        write: true,
+
+                screenSaver: {
+                    _channel: {
+                        _id: '',
+                        type: 'folder',
+                        common: {
+                            name: 'StateObjects.screenSaver.screenSaver',
+                        },
+                        native: {},
                     },
-                    native: {},
+                    infoIcon: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.infoIcon',
+                            type: 'string',
+                            role: 'text',
+                            states: types.screenSaverInfoIcons,
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    timeout: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.timeout',
+                            type: 'number',
+                            role: 'level',
+                            unit: 's',
+                            read: true,
+                            write: true,
+                        },
+                        native: {},
+                    },
+                    layout: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.layout',
+                            type: 'number',
+                            role: 'level',
+                            read: true,
+                            write: true,
+                            states: types.arrayOfScreensaverModes,
+                        },
+                        native: {},
+                    },
+                    rotationTime: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.rotationTime',
+                            type: 'number',
+                            role: 'level',
+                            unit: 's',
+                            min: 0,
+                            max: 3600,
+                            step: 1,
+                            read: true,
+                            write: true,
+                        },
+                        native: {},
+                    },
+                    doubleClick: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.doubleClick',
+                            type: 'boolean',
+                            role: 'switch',
+                            read: true,
+                            write: true,
+                        },
+                        native: {},
+                    },
                 },
                 dim: {
                     _channel: {
@@ -423,34 +470,6 @@ export const genericStateObjects: {
                         native: {},
                     },
                 },
-                screenSaverRotationTime: {
-                    _id: '',
-                    type: 'state',
-                    common: {
-                        name: 'StateObjects.screenSaverRotationTime',
-                        type: 'number',
-                        role: 'level',
-                        unit: 's',
-                        min: 0,
-                        max: 3600,
-                        step: 1,
-                        read: true,
-                        write: true,
-                    },
-                    native: {},
-                },
-                screenSaverDoubleClick: {
-                    _id: '',
-                    type: 'state',
-                    common: {
-                        name: 'StateObjects.screenSaverDoubleClick',
-                        type: 'boolean',
-                        role: 'switch',
-                        read: true,
-                        write: true,
-                    },
-                    native: {},
-                },
             },
             info: {
                 _channel: {
@@ -503,6 +522,32 @@ export const genericStateObjects: {
                             role: 'text',
                             read: true,
                             write: false,
+                        },
+                        native: {},
+                    },
+                    onlineVersion: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.onlineVersion',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
+                    firmwareUpdate: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.firmwareUpdate',
+                            type: 'number',
+                            role: 'value',
+                            read: true,
+                            write: false,
+                            def: 100,
+                            unit: '%',
                         },
                         native: {},
                     },
@@ -1246,7 +1291,7 @@ export const Defaults = {
     },
 };
 
-export const InternalStates: { panel: Record<PanelInternalCommand, InternalStatesObject> } = {
+export const InternalStates: { panel: Record<types.PanelInternalCommand, types.InternalStatesObject> } = {
     panel: {
         'cmd/power2': {
             val: false,
@@ -1402,7 +1447,7 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
                 role: 'level',
                 read: true,
                 write: true,
-                states: arrayOfScreensaverModes,
+                states: types.arrayOfScreensaverModes,
             },
         },
         'cmd/NotificationCleared2': {
@@ -1559,6 +1604,19 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
                 write: true,
             },
         },
+        'cmd/screenSaverInfoIcon': {
+            val: true,
+            ack: true,
+            common: {
+                name: '',
+                type: 'string',
+                role: 'text',
+                read: true,
+                write: true,
+                states: types.screenSaverInfoIcons,
+                def: 'none',
+            },
+        },
         'info/PopupInfo': {
             val: true,
             ack: true,
@@ -1576,8 +1634,8 @@ export const InternalStates: { panel: Record<PanelInternalCommand, InternalState
 export const tasmotaOtaUrl = 'http://ota.tasmota.com/tasmota32/release/';
 
 export const ScreenSaverConst: Record<
-    ScreensaverModeType,
-    Record<ScreenSaverPlaces, { maxEntries: Record<NSpanelModel, number> }>
+    types.ScreensaverModeType,
+    Record<types.ScreenSaverPlaces, { maxEntries: Record<types.NSpanelModel, number> }>
 > = {
     standard: {
         left: {

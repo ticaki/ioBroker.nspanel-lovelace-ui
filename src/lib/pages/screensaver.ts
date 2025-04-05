@@ -26,7 +26,7 @@ export class Screensaver extends Page {
     rotationTime: number = 300000;
     public screensaverIndicatorButtons: boolean = false;
     public screensaverSwipe: boolean = false;
-    private _alert: boolean = true;
+    private _infoIcon: any = '';
     private timoutRotation: ioBroker.Timeout | undefined = undefined;
     //readonly mode: Types.ScreensaverModeType = 'standard';
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
@@ -166,11 +166,11 @@ export class Screensaver extends Page {
         return message;
     }
 
-    get alert(): boolean {
-        return this._alert;
+    get infoIcon(): string {
+        return this._infoIcon;
     }
-    set alert(alert: boolean) {
-        this._alert = alert;
+    set infoIcon(infoIcon: string) {
+        this._infoIcon = infoIcon;
         void this.HandleTime();
     }
 
@@ -294,8 +294,9 @@ export class Screensaver extends Page {
             this.log.debug('HandleTime: no message, no time or panel is offline');
             return;
         }
+
         this.sendToPanel(
-            `time~${message.options.time[0].split('~')[5]}${this.alert ? `~${Icons.GetIcon('bell-ring-outline')}` : ''}`,
+            `time~${message.options.time[0].split('~')[5]}${this.infoIcon ? `~${Icons.GetIcon(this.infoIcon)}` : ''}`,
         );
     }
     async HandleDate(): Promise<void> {

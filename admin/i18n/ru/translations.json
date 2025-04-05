@@ -100,5 +100,7 @@
     "createScript": "Сценарий",
     "tasmotaSendToHelp": "Отправьте настройки Tasmota на панель.",
     "createScriptHelp": "Создать или обновить скрипт настроек для панели",
-    "tftInstallSendToMQTTHelp": "Обновите прошивку TFT на панели."
+    "tftInstallSendToMQTTHelp": "Обновите прошивку TFT на панели.",
+    "check!": "Проверять!",
+    "updateAvailable": "Обновление доступно"
 }

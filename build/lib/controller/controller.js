@@ -269,6 +269,7 @@ class Controller extends Library.BaseClass {
     void this.minuteLoop();
     void this.dateUpdateLoop();
     await this.getTasmotaVersion();
+    await this.getTFTVersion();
     this.dailyIntervalTimeout = this.adapter.setInterval(this.dailyInterval, 24 * 60 * 60 * 1e3);
   }
   async delete() {
@@ -301,8 +302,27 @@ class Controller extends Library.BaseClass {
     await this.statesControler.setInternalState("///Notifications", true, true);
   }
   dailyInterval = async () => {
+    await this.getTFTVersion();
     await this.getTasmotaVersion();
   };
+  async getTFTVersion() {
+    try {
+      const result = await import_axios.default.get(
+        "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
+      );
+      if (result.status !== 200) {
+        this.log.warn(`Error getting TFT version: ${result.status}`);
+        return;
+      }
+      const version = this.adapter.config.useBetaTFT ? result.data["tft-beta"].split("_")[0] : result.data.tft.split("_")[0];
+      for (const p of this.panels) {
+        if (p) {
+          p.info.nspanel.onlineVersion = version;
+        }
+      }
+    } catch {
+    }
+  }
   async getTasmotaVersion() {
     const urlString = "https://api.github.com/repositories/80286288/releases/latest";
     try {

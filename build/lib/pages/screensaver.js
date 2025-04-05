@@ -45,7 +45,7 @@ class Screensaver extends import_Page.Page {
   rotationTime = 3e5;
   screensaverIndicatorButtons = false;
   screensaverSwipe = false;
-  _alert = true;
+  _infoIcon = "";
   timoutRotation = void 0;
   //readonly mode: Types.ScreensaverModeType = 'standard';
   constructor(config, options) {
@@ -169,11 +169,11 @@ class Screensaver extends import_Page.Page {
     }
     return message;
   }
-  get alert() {
-    return this._alert;
+  get infoIcon() {
+    return this._infoIcon;
   }
-  set alert(alert) {
-    this._alert = alert;
+  set infoIcon(infoIcon) {
+    this._infoIcon = infoIcon;
     void this.HandleTime();
   }
   async update() {
@@ -286,7 +286,7 @@ class Screensaver extends import_Page.Page {
       return;
     }
     this.sendToPanel(
-      `time~${message.options.time[0].split("~")[5]}${this.alert ? `~${import_icon_mapping.Icons.GetIcon("bell-ring-outline")}` : ""}`
+      `time~${message.options.time[0].split("~")[5]}${this.infoIcon ? `~${import_icon_mapping.Icons.GetIcon(this.infoIcon)}` : ""}`
     );
   }
   async HandleDate() {
