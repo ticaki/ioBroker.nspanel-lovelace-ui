@@ -213,9 +213,9 @@ class PagePower extends import_Page.Page {
     for (let i = 1; i <= 6; i++) {
       const key = `power${i}_valueUnit`;
       if (typeof config[key] === "string") {
-        valueUnit.push(config[key]);
+        valueUnit.push(` ${config[key]}`);
       } else {
-        valueUnit.push("W");
+        valueUnit.push(" W");
       }
     }
     const result = {
