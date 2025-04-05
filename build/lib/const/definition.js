@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var definition_exports = {};
 __export(definition_exports, {
@@ -28,7 +38,7 @@ __export(definition_exports, {
   tasmotaOtaUrl: () => tasmotaOtaUrl
 });
 module.exports = __toCommonJS(definition_exports);
-var import_types = require("../types/types");
+var types = __toESM(require("../types/types"));
 const defaultChannel = {
   _id: "",
   type: "channel",
@@ -141,19 +151,6 @@ const genericStateObjects = {
           },
           native: {}
         },
-        screenSaverLayout: {
-          _id: "",
-          type: "state",
-          common: {
-            name: "StateObjects.screenSaverLayout",
-            type: "number",
-            role: "level",
-            read: true,
-            write: true,
-            states: import_types.arrayOfScreensaverModes
-          },
-          native: {}
-        },
         mainNavigationPoint: {
           _id: "",
           type: "state",
@@ -228,18 +225,83 @@ const genericStateObjects = {
           },
           native: {}
         },
-        screenSaverTimeout: {
-          _id: "",
-          type: "state",
-          common: {
-            name: "StateObjects.screenSaverTimeout",
-            type: "number",
-            role: "level",
-            unit: "s",
-            read: true,
-            write: true
+        screenSaver: {
+          _channel: {
+            _id: "",
+            type: "folder",
+            common: {
+              name: "StateObjects.screenSaver.screenSaver"
+            },
+            native: {}
           },
-          native: {}
+          infoIcon: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.infoIcon",
+              type: "string",
+              role: "text",
+              states: types.screenSaverInfoIcons,
+              read: true,
+              write: true,
+              def: ""
+            },
+            native: {}
+          },
+          timeout: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.timeout",
+              type: "number",
+              role: "level",
+              unit: "s",
+              read: true,
+              write: true
+            },
+            native: {}
+          },
+          layout: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.layout",
+              type: "number",
+              role: "level",
+              read: true,
+              write: true,
+              states: types.arrayOfScreensaverModes
+            },
+            native: {}
+          },
+          rotationTime: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.rotationTime",
+              type: "number",
+              role: "level",
+              unit: "s",
+              min: 0,
+              max: 3600,
+              step: 1,
+              read: true,
+              write: true
+            },
+            native: {}
+          },
+          doubleClick: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.doubleClick",
+              type: "boolean",
+              role: "switch",
+              read: true,
+              write: true
+            },
+            native: {}
+          }
         },
         dim: {
           _channel: {
@@ -374,34 +436,6 @@ const genericStateObjects = {
             },
             native: {}
           }
-        },
-        screenSaverRotationTime: {
-          _id: "",
-          type: "state",
-          common: {
-            name: "StateObjects.screenSaverRotationTime",
-            type: "number",
-            role: "level",
-            unit: "s",
-            min: 0,
-            max: 3600,
-            step: 1,
-            read: true,
-            write: true
-          },
-          native: {}
-        },
-        screenSaverDoubleClick: {
-          _id: "",
-          type: "state",
-          common: {
-            name: "StateObjects.screenSaverDoubleClick",
-            type: "boolean",
-            role: "switch",
-            read: true,
-            write: true
-          },
-          native: {}
         }
       },
       info: {
@@ -1350,7 +1384,7 @@ const InternalStates = {
         role: "level",
         read: true,
         write: true,
-        states: import_types.arrayOfScreensaverModes
+        states: types.arrayOfScreensaverModes
       }
     },
     "cmd/NotificationCleared2": {
@@ -1505,6 +1539,19 @@ const InternalStates = {
         role: "switch",
         read: true,
         write: true
+      }
+    },
+    "cmd/screenSaverInfoIcon": {
+      val: true,
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "text",
+        read: true,
+        write: true,
+        states: types.screenSaverInfoIcons,
+        def: "none"
       }
     },
     "info/PopupInfo": {

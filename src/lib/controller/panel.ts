@@ -353,6 +353,11 @@ export class Panel extends BaseClass {
             genericStateObjects.panel.panels.cmd.dim._channel,
         );
         await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver`,
+            undefined,
+            genericStateObjects.panel.panels.cmd.screenSaver._channel,
+        );
+        await this.library.writedp(
             `panels.${this.name}.alarm`,
             undefined,
             genericStateObjects.panel.panels.alarm._channel,
@@ -453,14 +458,14 @@ export class Panel extends BaseClass {
             this.dimMode.delay,
             genericStateObjects.panel.panels.cmd.dim.delay,
         );
-        state = this.library.readdb(`panels.${this.name}.cmd.screenSaverDoubleClick`);
+        state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.doubleClick`);
         if (state && state.val != null) {
             this.screenSaverDoubleClick = !!state.val;
         }
         await this.library.writedp(
-            `panels.${this.name}.cmd.screenSaverDoubleClick`,
+            `panels.${this.name}.cmd.screenSaver.doubleClick`,
             this.screenSaverDoubleClick,
-            genericStateObjects.panel.panels.cmd.screenSaverDoubleClick,
+            genericStateObjects.panel.panels.cmd.screenSaver.doubleClick,
         );
 
         if (state && !state.val) {
@@ -495,14 +500,14 @@ export class Panel extends BaseClass {
             this.detach.left,
             genericStateObjects.panel.panels.cmd.detachLeft,
         );
-        state = this.library.readdb(`panels.${this.name}.cmd.screenSaverTimeout`);
+        state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.timeout`);
         if (state) {
             this.timeout = parseInt(String(state.val));
         }
         await this.library.writedp(
-            `panels.${this.name}.cmd.screenSaverTimeout`,
+            `panels.${this.name}.cmd.screenSaver.timeout`,
             this.timeout,
-            genericStateObjects.panel.panels.cmd.screenSaverTimeout,
+            genericStateObjects.panel.panels.cmd.screenSaver.timeout,
         );
 
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
@@ -552,7 +557,7 @@ export class Panel extends BaseClass {
             );
         }
 
-        const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaverLayout`);
+        const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver.layout`);
         const scs: Page[] = this.pages.filter(
             a => a && (a.card === 'screensaver' || a.card === 'screensaver2' || a.card === 'screensaver3'),
         ) as Page[];
@@ -573,13 +578,13 @@ export class Panel extends BaseClass {
             easyview: 'Easyview',
         };
 
-        genericStateObjects.panel.panels.cmd.screenSaverLayout.common.states = states;*/
+        genericStateObjects.panel.panels.cmd.screenSaver.layout.common.states = states;*/
         await this.library.writedp(
-            `panels.${this.name}.cmd.screenSaverLayout`,
+            `panels.${this.name}.cmd.screenSaver.layout`,
             this.screenSaver && this.screenSaver.mode ? Screensaver.mapModeToNumber(this.screenSaver.mode) : 0,
-            genericStateObjects.panel.panels.cmd.screenSaverLayout,
+            genericStateObjects.panel.panels.cmd.screenSaver.layout,
         );
-        let state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
+        let state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.rotationTime`);
         let temp: any = 0;
         if (state && typeof state.val === 'number') {
             temp = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
@@ -588,9 +593,19 @@ export class Panel extends BaseClass {
             }
         }
         await this.library.writedp(
-            `panels.${this.name}.cmd.screenSaverRotationTime`,
+            `panels.${this.name}.cmd.screenSaver.rotationTime`,
             temp,
-            genericStateObjects.panel.panels.cmd.screenSaverRotationTime,
+            genericStateObjects.panel.panels.cmd.screenSaver.rotationTime,
+        );
+
+        state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.infoIcon`);
+        if (state && typeof state.val === 'string' && this.screenSaver) {
+            this.screenSaver.infoIcon = state.val;
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver.infoIcon`,
+            this.screenSaver?.infoIcon ?? '',
+            genericStateObjects.panel.panels.cmd.screenSaver.infoIcon,
         );
 
         if (this.buttons) {
@@ -880,7 +895,7 @@ export class Panel extends BaseClass {
                     await this.navigation.setTargetPageByName(state.val ? String(state.val) : 'main');
                     break;
                 }
-                case 'screenSaverTimeout': {
+                case 'screenSaver.timeout': {
                     if (state && state.val != null && typeof state.val === 'number') {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/screenSaverTimeout`,
@@ -1001,9 +1016,18 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
-                case 'screenSaverDoubleClick': {
+                case 'screenSaver.infoIcon': {
+                    if (state && state.val != null && typeof state.val === 'string') {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/screenSaverInfoIcon`,
+                            state.val,
+                            false,
+                        );
+                    }
+                    break;
+                }
+                case 'screenSaver.doubleClick': {
                     if (state && state.val != null) {
-                        this.screenSaverDoubleClick = !!state.val;
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/screenSaverDoubleClick`,
                             !!state.val,
@@ -1032,7 +1056,7 @@ export class Panel extends BaseClass {
                     await this.statesControler.setInternalState(`${this.name}/cmd/detachRight`, !!state.val, false);
                     break;
                 }
-                case 'screenSaverLayout': {
+                case 'screenSaver.layout': {
                     if (typeof state.val === 'number' && pages.isScreenSaverModeAsNumber(state.val)) {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/screenSaverLayout`,
@@ -1042,7 +1066,7 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
-                case 'screenSaverRotationTime': {
+                case 'screenSaver.rotationTime': {
                     if (state && state.val != null && typeof state.val === 'number') {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/screenSaverRotationTime`,
@@ -1418,7 +1442,7 @@ export class Panel extends BaseClass {
                         this.timeout = val;
                         this.sendScreeensaverTimeout(this.timeout);
                         await this.statesControler.setInternalState(`${this.name}/cmd/screenSaverTimeout`, val, true);
-                        await this.library.writedp(`panels.${this.name}.cmd.screenSaverTimeout`, this.timeout);
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaver.timeout`, this.timeout);
                     }
                     break;
                 }
@@ -1513,14 +1537,21 @@ export class Panel extends BaseClass {
                             this.screenSaver.rotationTime = val * 1000;
                             await this.screenSaver.restartRotationLoop();
                         }
-                        await this.library.writedp(`panels.${this.name}.cmd.screenSaverRotationTime`, val);
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaver.rotationTime`, val);
                     }
                     break;
                 }
                 case 'cmd/screenSaverDoubleClick': {
                     if (this.screenSaver && typeof state.val === 'boolean') {
                         this.screenSaverDoubleClick = !!state.val;
-                        await this.library.writedp(`panels.${this.name}.cmd.screenSaverDoubleClick`, state.val);
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaver.doubleClick`, state.val);
+                    }
+                    break;
+                }
+                case 'cmd/screenSaverInfoIcon': {
+                    if (this.screenSaver && typeof state.val === 'string') {
+                        this.screenSaver.infoIcon = state.val;
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoIcon`, state.val);
                     }
                     break;
                 }
@@ -1528,7 +1559,7 @@ export class Panel extends BaseClass {
                     if (typeof state.val === 'number' && pages.isScreenSaverModeAsNumber(state.val)) {
                         if (this.screenSaver) {
                             this.screenSaver.overwriteModel(state.val);
-                            await this.library.writedp(`panels.${this.name}.cmd.screenSaverLayout`, state.val);
+                            await this.library.writedp(`panels.${this.name}.cmd.screenSaver.layout`, state.val);
                         }
                     }
                     break;
@@ -1603,6 +1634,9 @@ export class Panel extends BaseClass {
             }
             case 'cmd/screenSaverDoubleClick': {
                 return this.screenSaverDoubleClick;
+            }
+            case 'cmd/screenSaverInfoIcon': {
+                return this.screenSaver?.infoIcon ?? '';
             }
             case 'cmd/screenSaverLayout': {
                 if (this.screenSaver) {

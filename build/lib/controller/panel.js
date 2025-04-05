@@ -328,6 +328,11 @@ class Panel extends import_library.BaseClass {
       import_definition.genericStateObjects.panel.panels.cmd.dim._channel
     );
     await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver`,
+      void 0,
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaver._channel
+    );
+    await this.library.writedp(
       `panels.${this.name}.alarm`,
       void 0,
       import_definition.genericStateObjects.panel.panels.alarm._channel
@@ -428,14 +433,14 @@ class Panel extends import_library.BaseClass {
       this.dimMode.delay,
       import_definition.genericStateObjects.panel.panels.cmd.dim.delay
     );
-    state = this.library.readdb(`panels.${this.name}.cmd.screenSaverDoubleClick`);
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.doubleClick`);
     if (state && state.val != null) {
       this.screenSaverDoubleClick = !!state.val;
     }
     await this.library.writedp(
-      `panels.${this.name}.cmd.screenSaverDoubleClick`,
+      `panels.${this.name}.cmd.screenSaver.doubleClick`,
       this.screenSaverDoubleClick,
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaverDoubleClick
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.doubleClick
     );
     if (state && !state.val) {
       await this.library.writedp(
@@ -468,14 +473,14 @@ class Panel extends import_library.BaseClass {
       this.detach.left,
       import_definition.genericStateObjects.panel.panels.cmd.detachLeft
     );
-    state = this.library.readdb(`panels.${this.name}.cmd.screenSaverTimeout`);
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.timeout`);
     if (state) {
       this.timeout = parseInt(String(state.val));
     }
     await this.library.writedp(
-      `panels.${this.name}.cmd.screenSaverTimeout`,
+      `panels.${this.name}.cmd.screenSaver.timeout`,
       this.timeout,
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaverTimeout
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.timeout
     );
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
     this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
@@ -483,6 +488,7 @@ class Panel extends import_library.BaseClass {
     this.restartLoops();
   };
   start = async () => {
+    var _a, _b;
     for (const id in import_definition.InternalStates.panel) {
       const obj = import_definition.InternalStates.panel[id];
       await this.statesControler.setInternalState(
@@ -517,7 +523,7 @@ class Panel extends import_library.BaseClass {
         import_definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint
       );
     }
-    const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaverLayout`);
+    const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver.layout`);
     const scs = this.pages.filter(
       (a) => a && (a.card === "screensaver" || a.card === "screensaver2" || a.card === "screensaver3")
     );
@@ -530,11 +536,11 @@ class Panel extends import_library.BaseClass {
       }
     }
     await this.library.writedp(
-      `panels.${this.name}.cmd.screenSaverLayout`,
+      `panels.${this.name}.cmd.screenSaver.layout`,
       this.screenSaver && this.screenSaver.mode ? import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode) : 0,
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaverLayout
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.layout
     );
-    let state = this.library.readdb(`panels.${this.name}.cmd.screenSaverRotationTime`);
+    let state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.rotationTime`);
     let temp = 0;
     if (state && typeof state.val === "number") {
       temp = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
@@ -543,9 +549,18 @@ class Panel extends import_library.BaseClass {
       }
     }
     await this.library.writedp(
-      `panels.${this.name}.cmd.screenSaverRotationTime`,
+      `panels.${this.name}.cmd.screenSaver.rotationTime`,
       temp,
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaverRotationTime
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.rotationTime
+    );
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.infoIcon`);
+    if (state && typeof state.val === "string" && this.screenSaver) {
+      this.screenSaver.infoIcon = state.val;
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.infoIcon`,
+      (_b = (_a = this.screenSaver) == null ? void 0 : _a.infoIcon) != null ? _b : "",
+      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.infoIcon
     );
     if (this.buttons) {
       for (const b in this.buttons) {
@@ -809,7 +824,7 @@ class Panel extends import_library.BaseClass {
           await this.navigation.setTargetPageByName(state.val ? String(state.val) : "main");
           break;
         }
-        case "screenSaverTimeout": {
+        case "screenSaver.timeout": {
           if (state && state.val != null && typeof state.val === "number") {
             await this.statesControler.setInternalState(
               `${this.name}/cmd/screenSaverTimeout`,
@@ -921,9 +936,18 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
-        case "screenSaverDoubleClick": {
+        case "screenSaver.infoIcon": {
+          if (state && state.val != null && typeof state.val === "string") {
+            await this.statesControler.setInternalState(
+              `${this.name}/cmd/screenSaverInfoIcon`,
+              state.val,
+              false
+            );
+          }
+          break;
+        }
+        case "screenSaver.doubleClick": {
           if (state && state.val != null) {
-            this.screenSaverDoubleClick = !!state.val;
             await this.statesControler.setInternalState(
               `${this.name}/cmd/screenSaverDoubleClick`,
               !!state.val,
@@ -940,7 +964,7 @@ class Panel extends import_library.BaseClass {
           await this.statesControler.setInternalState(`${this.name}/cmd/detachRight`, !!state.val, false);
           break;
         }
-        case "screenSaverLayout": {
+        case "screenSaver.layout": {
           if (typeof state.val === "number" && pages.isScreenSaverModeAsNumber(state.val)) {
             await this.statesControler.setInternalState(
               `${this.name}/cmd/screenSaverLayout`,
@@ -950,7 +974,7 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
-        case "screenSaverRotationTime": {
+        case "screenSaver.rotationTime": {
           if (state && state.val != null && typeof state.val === "number") {
             await this.statesControler.setInternalState(
               `${this.name}/cmd/screenSaverRotationTime`,
@@ -1249,7 +1273,7 @@ class Panel extends import_library.BaseClass {
     }
   };
   onInternalCommand = async (id, state) => {
-    var _a;
+    var _a, _b, _c;
     if (!id.startsWith(this.name)) {
       return null;
     }
@@ -1304,7 +1328,7 @@ class Panel extends import_library.BaseClass {
             this.timeout = val;
             this.sendScreeensaverTimeout(this.timeout);
             await this.statesControler.setInternalState(`${this.name}/cmd/screenSaverTimeout`, val, true);
-            await this.library.writedp(`panels.${this.name}.cmd.screenSaverTimeout`, this.timeout);
+            await this.library.writedp(`panels.${this.name}.cmd.screenSaver.timeout`, this.timeout);
           }
           break;
         }
@@ -1391,14 +1415,21 @@ class Panel extends import_library.BaseClass {
               this.screenSaver.rotationTime = val * 1e3;
               await this.screenSaver.restartRotationLoop();
             }
-            await this.library.writedp(`panels.${this.name}.cmd.screenSaverRotationTime`, val);
+            await this.library.writedp(`panels.${this.name}.cmd.screenSaver.rotationTime`, val);
           }
           break;
         }
         case "cmd/screenSaverDoubleClick": {
           if (this.screenSaver && typeof state.val === "boolean") {
             this.screenSaverDoubleClick = !!state.val;
-            await this.library.writedp(`panels.${this.name}.cmd.screenSaverDoubleClick`, state.val);
+            await this.library.writedp(`panels.${this.name}.cmd.screenSaver.doubleClick`, state.val);
+          }
+          break;
+        }
+        case "cmd/screenSaverInfoIcon": {
+          if (this.screenSaver && typeof state.val === "string") {
+            this.screenSaver.infoIcon = state.val;
+            await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoIcon`, state.val);
           }
           break;
         }
@@ -1406,7 +1437,7 @@ class Panel extends import_library.BaseClass {
           if (typeof state.val === "number" && pages.isScreenSaverModeAsNumber(state.val)) {
             if (this.screenSaver) {
               this.screenSaver.overwriteModel(state.val);
-              await this.library.writedp(`panels.${this.name}.cmd.screenSaverLayout`, state.val);
+              await this.library.writedp(`panels.${this.name}.cmd.screenSaver.layout`, state.val);
             }
           }
           break;
@@ -1483,6 +1514,9 @@ ${this.info.tasmota.onlineVersion}`;
       case "cmd/screenSaverDoubleClick": {
         return this.screenSaverDoubleClick;
       }
+      case "cmd/screenSaverInfoIcon": {
+        return (_b = (_a = this.screenSaver) == null ? void 0 : _a.infoIcon) != null ? _b : "";
+      }
       case "cmd/screenSaverLayout": {
         if (this.screenSaver) {
           return import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode);
@@ -1490,7 +1524,7 @@ ${this.info.tasmota.onlineVersion}`;
         break;
       }
       case "info/PopupInfo": {
-        return (_a = this.data["info/PopupInfo"]) != null ? _a : null;
+        return (_c = this.data["info/PopupInfo"]) != null ? _c : null;
       }
     }
     return null;

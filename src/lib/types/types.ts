@@ -106,6 +106,7 @@ export type InternalStatesObject = {
     noTrigger?: boolean;
 };
 export type PanelInternalCommand =
+    | 'cmd/screenSaverInfoIcon'
     | 'info/PopupInfo'
     | 'cmd/power2'
     | 'cmd/power1'
@@ -287,6 +288,28 @@ export type ValueDateFormat = { local: string; format: any };
 
 export function isValueDateFormat(F: any): F is ValueDateFormat {
     return F && typeof F === 'object' && F.local !== undefined && F.format !== undefined;
+}
+export const screenSaverInfoIconsUseable = {
+    none: '',
+    'clock!': 'clock-alert-outline',
+    'weather!': 'weather-sunny-alert',
+    'news!': 'bell-ring-outline',
+    'calendar!': 'calendar-alert',
+    'alarm!': 'alarm',
+    'info!': 'information-outline',
+    'error!': 'alert-circle-outline',
+    'critical!': 'alert-circle',
+} as const;
+
+export const screenSaverInfoIcons = swapKeyValue(screenSaverInfoIconsUseable);
+
+function swapKeyValue(obj: Record<string, string>): Record<string, string> {
+    const swapped: Record<string, string> = {};
+    for (const key in obj) {
+        const value = obj[key];
+        swapped[value] = key;
+    }
+    return swapped;
 }
 
 export type ScreenSaverPlaces = 'left' | 'bottom' | 'indicator' | 'alternate' | 'favorit' | 'mricon' | 'time' | 'date';
