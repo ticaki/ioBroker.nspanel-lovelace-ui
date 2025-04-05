@@ -501,7 +501,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
     if (typeof obj === "object" && obj.message) {
       this.log.debug(JSON.stringify(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -1423,6 +1423,22 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
           } catch (error) {
             console.error("Fehler beim Verarbeiten der Datei:", error);
+          }
+          break;
+        }
+        case "updateTasmota": {
+          let language = this.library.getLocalLanguage();
+          language = language === "zh-cn" ? "en" : language;
+          const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
+          if ((_l = this.controller) == null ? void 0 : _l.panels) {
+            const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
+            if (index !== -1) {
+              const panel = this.controller.panels[index];
+              panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+            }
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, [], obj.callback);
           }
           break;
         }
