@@ -17,6 +17,8 @@ declare global {
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             scstype: string;
 
+            useBetaTFT: boolean;
+            
             fixBrokenCommonTypes: boolean;
 
             onlyStartFromSystemConfig: boolean;

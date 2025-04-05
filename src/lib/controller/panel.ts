@@ -107,10 +107,12 @@ export class Panel extends BaseClass {
     info: Types.PanelInfo = {
         isOnline: false,
         nspanel: {
-            displayVersion: '0.0.0',
+            displayVersion: '',
             model: '',
             bigIconLeft: false,
             bigIconRight: false,
+            onlineVersion: '',
+            firmwareUpdate: 100,
 
             currentPage: '',
         },
@@ -173,15 +175,11 @@ export class Panel extends BaseClass {
             },
         },
     };
-    friendlyName: string = '';
-    configName: string = '';
 
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
-        super(adapter, options.name);
-        this.friendlyName = options.friendlyName ?? options.name;
-        this.configName = options.name;
+        super(adapter, options.name, options.friendlyName ?? options.name);
         this.panelSend = new PanelSend(adapter, {
-            name: `${options.name}-SendClass`,
+            name: `${this.friendlyName}-SendClass`,
             mqttClient: options.controller.mqttClient,
             topic: options.topic,
         });
@@ -343,7 +341,7 @@ export class Panel extends BaseClass {
             topic: this.topic,
             tasmotaName: this.friendlyName,
             name: this.name,
-            configName: this.configName,
+            //configName: this.configName,
         };
         await this.library.writedp(`panels.${this.name}`, undefined, channelObj);
         await this.library.writedp(`panels.${this.name}.cmd`, undefined, genericStateObjects.panel.panels.cmd._channel);
@@ -508,6 +506,12 @@ export class Panel extends BaseClass {
             `panels.${this.name}.cmd.screenSaver.timeout`,
             this.timeout,
             genericStateObjects.panel.panels.cmd.screenSaver.timeout,
+        );
+        state = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
+        await this.library.writedp(
+            `panels.${this.name}.info.nspanel.firmwareUpdate`,
+            state && typeof state.val === 'number' ? (state.val >= 99 ? 100 : state.val) : undefined,
+            genericStateObjects.panel.panels.info.nspanel.firmwareUpdate,
         );
 
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
@@ -762,6 +766,11 @@ export class Panel extends BaseClass {
                 if ('Flashing' in msg) {
                     this.isOnline = false;
                     this.log.info(`Flashing: ${msg.Flashing.complete}%`);
+                    await this.library.writedp(
+                        `panels.${this.name}.info.nspanel.firmwareUpdate`,
+                        msg.Flashing.complete >= 99 ? 100 : msg.Flashing.complete,
+                        genericStateObjects.panel.panels.info.nspanel.firmwareUpdate,
+                    );
                     return;
                 }
             }

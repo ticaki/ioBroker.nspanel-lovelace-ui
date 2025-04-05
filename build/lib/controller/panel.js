@@ -95,10 +95,12 @@ class Panel extends import_library.BaseClass {
   info = {
     isOnline: false,
     nspanel: {
-      displayVersion: "0.0.0",
+      displayVersion: "",
       model: "",
       bigIconLeft: false,
       bigIconRight: false,
+      onlineVersion: "",
+      firmwareUpdate: 100,
       currentPage: ""
     },
     tasmota: {
@@ -160,15 +162,11 @@ class Panel extends import_library.BaseClass {
       }
     }
   };
-  friendlyName = "";
-  configName = "";
   constructor(adapter, options) {
     var _a, _b, _c, _d;
-    super(adapter, options.name);
-    this.friendlyName = (_a = options.friendlyName) != null ? _a : options.name;
-    this.configName = options.name;
+    super(adapter, options.name, (_a = options.friendlyName) != null ? _a : options.name);
     this.panelSend = new import_panel_message.PanelSend(adapter, {
-      name: `${options.name}-SendClass`,
+      name: `${this.friendlyName}-SendClass`,
       mqttClient: options.controller.mqttClient,
       topic: options.topic
     });
@@ -317,8 +315,8 @@ class Panel extends import_library.BaseClass {
     channelObj.native = {
       topic: this.topic,
       tasmotaName: this.friendlyName,
-      name: this.name,
-      configName: this.configName
+      name: this.name
+      //configName: this.configName,
     };
     await this.library.writedp(`panels.${this.name}`, void 0, channelObj);
     await this.library.writedp(`panels.${this.name}.cmd`, void 0, import_definition.genericStateObjects.panel.panels.cmd._channel);
@@ -481,6 +479,12 @@ class Panel extends import_library.BaseClass {
       `panels.${this.name}.cmd.screenSaver.timeout`,
       this.timeout,
       import_definition.genericStateObjects.panel.panels.cmd.screenSaver.timeout
+    );
+    state = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
+    await this.library.writedp(
+      `panels.${this.name}.info.nspanel.firmwareUpdate`,
+      state && typeof state.val === "number" ? state.val >= 99 ? 100 : state.val : void 0,
+      import_definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
     );
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
     this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
@@ -707,6 +711,11 @@ class Panel extends import_library.BaseClass {
         if ("Flashing" in msg) {
           this.isOnline = false;
           this.log.info(`Flashing: ${msg.Flashing.complete}%`);
+          await this.library.writedp(
+            `panels.${this.name}.info.nspanel.firmwareUpdate`,
+            msg.Flashing.complete >= 99 ? 100 : msg.Flashing.complete,
+            import_definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
+          );
           return;
         }
       }

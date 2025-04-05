@@ -492,6 +492,32 @@ const genericStateObjects = {
             },
             native: {}
           },
+          onlineVersion: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.onlineVersion",
+              type: "string",
+              role: "text",
+              read: true,
+              write: false
+            },
+            native: {}
+          },
+          firmwareUpdate: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.firmwareUpdate",
+              type: "number",
+              role: "value",
+              read: true,
+              write: false,
+              def: 100,
+              unit: "%"
+            },
+            native: {}
+          },
           model: {
             _id: "",
             type: "state",

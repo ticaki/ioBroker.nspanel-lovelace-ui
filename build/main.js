@@ -401,10 +401,15 @@ class NspanelLovelaceUi extends utils.Adapter {
   onMqttConnect = async () => {
     const _helper = async (tasmota) => {
       try {
-        this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
-        await import_axios.default.get(
-          `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog Restart 1`
-        );
+        const state = this.library.readdb(`panels.${tasmota.id}.info.nspanel.firmwareUpdate`);
+        if (!state || typeof state.val !== "number" || state.val < 0 && state.val >= 100) {
+          this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
+          await import_axios.default.get(
+            `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog Restart 1`
+          );
+        } else {
+          this.log.info(`Update detected on the Nspanel with the ip ${tasmota.ip}!!`);
+        }
       } catch (e) {
         this.log.warn(
           `Error: This usually means that the NSpanel with ip ${tasmota.ip} is not online or has not been set up properly in the configuration! ${e}`
@@ -498,6 +503,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   async onMessage(obj) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     if (typeof obj === "object" && obj.message) {
+      this.log.debug(JSON.stringify(obj));
       if (obj.command === "tftInstallSendToMQTT") {
         if (obj.message.online === "no") {
           obj.command = "tftInstallSendTo";
@@ -1242,19 +1248,65 @@ class NspanelLovelaceUi extends utils.Adapter {
         case "refreshMaintainTable": {
           const added = [];
           let result = [];
+          const flashingText = this.library.getTranslation("Updating");
+          const flashingObj = {};
+          for (let a = 0; a < this.config.panels.length; a++) {
+            const panel = this.config.panels[a];
+            const state = this.library.readdb(`panels.${panel.id}.info.nspanel.firmwareUpdate`);
+            if (state && typeof state.val === "number" && state.val < 100) {
+              flashingObj[panel.id] = `${flashingText}: ${state.val}%`;
+            }
+          }
           if ((_k = this.controller) == null ? void 0 : _k.panels) {
+            const updateText = this.library.getTranslation("updateAvailable");
+            const checkText = this.library.getTranslation("check!");
             const temp = this.controller.panels.map((a) => {
-              var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2, _k2;
-              const tv = (_c2 = (_b2 = (_a2 = a.info) == null ? void 0 : _a2.tasmota) == null ? void 0 : _b2.firmwareversion) == null ? void 0 : _c2.match(/([0-9]+\.[0-9]+\.[0-9])/);
+              var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2;
+              let check = false;
+              let tv = "";
+              let nv = "";
+              const ft = flashingObj[a.name];
+              if (a.info) {
+                if ((_a2 = a.info.tasmota) == null ? void 0 : _a2.firmwareversion) {
+                  const temp2 = a.info.tasmota.firmwareversion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                  if (temp2 && temp2[1]) {
+                    tv = `${temp2[1]}`;
+                  }
+                }
+                if (((_b2 = a.info.tasmota) == null ? void 0 : _b2.onlineVersion) && tv) {
+                  const temp2 = a.info.tasmota.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                  if (temp2 && temp2[1] && temp2[1] !== tv) {
+                    tv += ` (${updateText})`;
+                    check = true;
+                  }
+                }
+                tv = tv ? `v${tv}` : "";
+                if ((_c2 = a.info.nspanel) == null ? void 0 : _c2.displayVersion) {
+                  const temp2 = a.info.nspanel.displayVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                  if (temp2 && temp2[1]) {
+                    nv = `${temp2[1]}`;
+                  }
+                }
+                if (((_d2 = a.info.nspanel) == null ? void 0 : _d2.onlineVersion) && nv) {
+                  const temp2 = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                  if (temp2 && temp2[1] && temp2[1] !== nv) {
+                    nv += ` (${updateText})`;
+                    check = true;
+                  }
+                }
+                nv = nv ? `v${nv}` : "";
+              }
               added.push(a.topic);
               return {
+                _check: check,
+                _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? "online" : "offline"}`}`})`,
                 _name: a.friendlyName,
-                _ip: ((_f2 = (_e2 = (_d2 = a.info) == null ? void 0 : _d2.tasmota) == null ? void 0 : _e2.net) == null ? void 0 : _f2.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
+                _ip: ((_g2 = (_f2 = (_e2 = a.info) == null ? void 0 : _e2.tasmota) == null ? void 0 : _f2.net) == null ? void 0 : _g2.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
                 _online: a.isOnline ? "yes" : "no",
                 _topic: a.topic,
-                _id: ((_i2 = (_h2 = (_g2 = a.info) == null ? void 0 : _g2.tasmota) == null ? void 0 : _h2.net) == null ? void 0 : _i2.Mac) ? a.info.tasmota.net.Mac : "",
-                _tftVersion: ((_k2 = (_j2 = a.info) == null ? void 0 : _j2.nspanel) == null ? void 0 : _k2.displayVersion) ? a.info.nspanel.displayVersion : "???",
-                _tasmotaVersion: tv && tv[1] ? tv[1] : "???"
+                _id: ((_j2 = (_i2 = (_h2 = a.info) == null ? void 0 : _h2.tasmota) == null ? void 0 : _i2.net) == null ? void 0 : _j2.Mac) ? a.info.tasmota.net.Mac : "",
+                _tftVersion: nv ? nv : "???",
+                _tasmotaVersion: tv ? tv : "???"
               };
             });
             result = result.concat(temp);
@@ -1263,7 +1315,10 @@ class NspanelLovelaceUi extends utils.Adapter {
             const temp = this.config.panels.filter((a) => {
               return added.findIndex((b) => b === a.topic) === -1;
             }).map((a) => {
+              const ft = flashingObj[a.name];
               return {
+                _check: true,
+                _Headline: `${a.name} (${ft ? ft : `${this.config.Testconfig2 ? this.config.Testconfig2.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline"}`})`,
                 _name: a.name,
                 _ip: this.config.Testconfig2 ? this.config.Testconfig2.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline",
                 _online: "no",

@@ -100,5 +100,7 @@
     "createScript": "Sceneggiatura",
     "tasmotaSendToHelp": "Invia le impostazioni di Tasmota al pannello.",
     "createScriptHelp": "Crea o aggiorna lo script di impostazioni per il pannello",
-    "tftInstallSendToMQTTHelp": "Aggiorna il firmware TFT sul pannello."
+    "tftInstallSendToMQTTHelp": "Aggiorna il firmware TFT sul pannello.",
+    "check!": "Controllo!",
+    "updateAvailable": "Aggiornamento disponibile"
 }

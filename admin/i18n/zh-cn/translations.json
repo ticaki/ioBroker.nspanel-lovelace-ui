@@ -100,5 +100,7 @@
     "createScript": "脚本",
     "tasmotaSendToHelp": "将Tasmota设置发送到面板。",
     "createScriptHelp": "创建或更新面板的设置脚本",
-    "tftInstallSendToMQTTHelp": "在面板上更新TFT固件。"
+    "tftInstallSendToMQTTHelp": "在面板上更新TFT固件。",
+    "check!": "查看！",
+    "updateAvailable": "更新可用"
 }

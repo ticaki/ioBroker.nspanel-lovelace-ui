@@ -758,6 +758,8 @@ export type PanelInfo = {
         model: string;
         bigIconLeft: boolean;
         bigIconRight: boolean;
+        onlineVersion: string;
+        firmwareUpdate: number;
 
         currentPage: string;
     };
