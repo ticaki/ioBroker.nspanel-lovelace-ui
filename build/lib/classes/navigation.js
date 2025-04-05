@@ -73,19 +73,25 @@ class Navigation extends import_library.BaseClass {
   mainPage = "main";
   doubleClickTimeout;
   _currentItem = 0;
+  initDone = false;
   get currentItem() {
     return this._currentItem;
   }
   set currentItem(value) {
     const c = this.navigationConfig[value];
     if (c) {
-      const states = this.buildCommonStates();
-      import_definition.genericStateObjects.panel.panels.cmd.goToNavigationPoint.common.states = states;
-      void this.library.writedp(
-        `panels.${this.panel.name}.cmd.goToNavigationPoint`,
-        c.name,
-        import_definition.genericStateObjects.panel.panels.cmd.goToNavigationPoint
-      ).catch();
+      if (!this.initDone) {
+        const states = this.buildCommonStates();
+        import_definition.genericStateObjects.panel.panels.cmd.goToNavigationPoint.common.states = states;
+        void this.library.writedp(
+          `panels.${this.panel.name}.cmd.goToNavigationPoint`,
+          c.name,
+          import_definition.genericStateObjects.panel.panels.cmd.goToNavigationPoint
+        ).catch();
+        this.initDone = true;
+      } else {
+        void this.library.writedp(`panels.${this.panel.name}.cmd.goToNavigationPoint`, c.name).catch();
+      }
     }
     this._currentItem = value;
   }
@@ -195,7 +201,27 @@ class Navigation extends import_library.BaseClass {
   }
   buildCommonStates() {
     const result = {};
-    for (const n of this.navigationConfig) {
+    const clone = structuredClone(this.navigationConfig);
+    clone.sort((a, b) => {
+      const aName = a.name.toLowerCase();
+      const bName = b.name.toLowerCase();
+      if (!(bName.startsWith("///") && aName.startsWith("///"))) {
+        if (bName.startsWith("///")) {
+          return -1;
+        }
+        if (aName.startsWith("///")) {
+          return 1;
+        }
+      }
+      if (aName > bName) {
+        return 1;
+      }
+      if (aName < bName) {
+        return -1;
+      }
+      return 0;
+    });
+    for (const n of clone) {
       if (n) {
         result[n.name] = n.name;
       }

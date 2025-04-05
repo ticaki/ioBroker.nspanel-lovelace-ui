@@ -93,21 +93,27 @@ export class Navigation extends BaseClass {
     private mainPage = 'main';
     private doubleClickTimeout: ioBroker.Timeout | undefined;
     private _currentItem: number = 0;
+    private initDone = false;
     public get currentItem(): number {
         return this._currentItem;
     }
     public set currentItem(value: number) {
         const c = this.navigationConfig[value];
         if (c) {
-            const states = this.buildCommonStates();
-            genericStateObjects.panel.panels.cmd.goToNavigationPoint.common.states = states;
-            void this.library
-                .writedp(
-                    `panels.${this.panel.name}.cmd.goToNavigationPoint`,
-                    c.name,
-                    genericStateObjects.panel.panels.cmd.goToNavigationPoint,
-                )
-                .catch();
+            if (!this.initDone) {
+                const states = this.buildCommonStates();
+                genericStateObjects.panel.panels.cmd.goToNavigationPoint.common.states = states;
+                void this.library
+                    .writedp(
+                        `panels.${this.panel.name}.cmd.goToNavigationPoint`,
+                        c.name,
+                        genericStateObjects.panel.panels.cmd.goToNavigationPoint,
+                    )
+                    .catch();
+                this.initDone = true;
+            } else {
+                void this.library.writedp(`panels.${this.panel.name}.cmd.goToNavigationPoint`, c.name).catch();
+            }
         }
         this._currentItem = value;
     }
@@ -220,7 +226,27 @@ export class Navigation extends BaseClass {
 
     buildCommonStates(): Record<string, string> {
         const result: Record<string, string> = {};
-        for (const n of this.navigationConfig) {
+        const clone = structuredClone(this.navigationConfig);
+        clone.sort((a, b) => {
+            const aName = a.name.toLowerCase();
+            const bName = b.name.toLowerCase();
+            if (!(bName.startsWith('///') && aName.startsWith('///'))) {
+                if (bName.startsWith('///')) {
+                    return -1;
+                }
+                if (aName.startsWith('///')) {
+                    return 1;
+                }
+            }
+            if (aName > bName) {
+                return 1;
+            }
+            if (aName < bName) {
+                return -1;
+            }
+            return 0;
+        });
+        for (const n of clone) {
             if (n) {
                 result[n.name] = n.name;
             }
