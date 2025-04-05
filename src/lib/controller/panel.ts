@@ -119,6 +119,7 @@ export class Panel extends BaseClass {
         tasmota: {
             firmwareversion: '',
             onlineVersion: '',
+            safeboot: false,
             net: {
                 Hostname: '',
                 IPAddress: '',
@@ -839,6 +840,7 @@ export class Panel extends BaseClass {
                         );
                         this.info.tasmota.net = data.StatusNET;
                         this.info.tasmota.firmwareversion = data.StatusFWR.Version;
+                        this.info.tasmota.safeboot = data.StatusFWR.Version.includes('Safeboot');
                         this.info.tasmota.uptime = data.StatusSTS.Uptime;
                         this.info.tasmota.sts = data.StatusSTS;
 

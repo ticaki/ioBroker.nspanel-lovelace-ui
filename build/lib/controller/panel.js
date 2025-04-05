@@ -106,6 +106,7 @@ class Panel extends import_library.BaseClass {
     tasmota: {
       firmwareversion: "",
       onlineVersion: "",
+      safeboot: false,
       net: {
         Hostname: "",
         IPAddress: "",
@@ -781,6 +782,7 @@ class Panel extends import_library.BaseClass {
             );
             this.info.tasmota.net = data.StatusNET;
             this.info.tasmota.firmwareversion = data.StatusFWR.Version;
+            this.info.tasmota.safeboot = data.StatusFWR.Version.includes("Safeboot");
             this.info.tasmota.uptime = data.StatusSTS.Uptime;
             this.info.tasmota.sts = data.StatusSTS;
             if (!i) {
