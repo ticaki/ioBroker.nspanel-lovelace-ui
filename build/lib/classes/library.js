@@ -49,9 +49,11 @@ class BaseClass {
   adapter;
   library;
   name = ``;
-  constructor(adapter, name = "") {
+  friendlyName = ``;
+  constructor(adapter, name = "", logName = "") {
     this.name = name;
-    this.log = new CustomLog(adapter, this.name);
+    this.friendlyName = logName ? logName : this.name;
+    this.log = new CustomLog(adapter, this.friendlyName);
     this.adapter = adapter;
     this.library = adapter.library;
   }

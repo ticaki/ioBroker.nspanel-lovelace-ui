@@ -28,10 +28,12 @@ export class BaseClass {
     adapter: AdapterClassDefinition;
     library: Library;
     name: string = ``;
+    friendlyName: string = ``;
 
-    constructor(adapter: AdapterClassDefinition, name: string = '') {
+    constructor(adapter: AdapterClassDefinition, name: string = '', logName: string = '') {
         this.name = name;
-        this.log = new CustomLog(adapter, this.name);
+        this.friendlyName = logName ? logName : this.name;
+        this.log = new CustomLog(adapter, this.friendlyName);
         this.adapter = adapter;
         this.library = adapter.library;
     }

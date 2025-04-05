@@ -511,12 +511,17 @@ class NspanelLovelaceUi extends utils.Adapter {
     private onMqttConnect = async (): Promise<void> => {
         const _helper = async (tasmota: any): Promise<void> => {
             try {
-                this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
-                await axios.get(
-                    `http://${tasmota.ip}/cm?` +
-                        `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-                        `&cmnd=Backlog Restart 1`,
-                );
+                const state = this.library.readdb(`panels.${tasmota.id}.info.nspanel.firmwareUpdate`);
+                if (!state || typeof state.val !== 'number' || (state.val < 0 && state.val >= 100)) {
+                    this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
+                    await axios.get(
+                        `http://${tasmota.ip}/cm?` +
+                            `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                            `&cmnd=Backlog Restart 1`,
+                    );
+                } else {
+                    this.log.info(`Update detected on the Nspanel with the ip ${tasmota.ip}!!`);
+                }
             } catch (e: any) {
                 this.log.warn(
                     `Error: This usually means that the NSpanel with ip ${tasmota.ip} is not online or has not been set up properly in the configuration! ${e}`,
@@ -613,7 +618,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     //  */
     private async onMessage(obj: ioBroker.Message): Promise<void> {
         if (typeof obj === 'object' && obj.message) {
-            //this.log.info(JSON.stringify(obj));
+            this.log.debug(JSON.stringify(obj));
             if (obj.command === 'tftInstallSendToMQTT') {
                 if (obj.message.online === 'no') {
                     obj.command = 'tftInstallSendTo';
@@ -1469,12 +1474,59 @@ class NspanelLovelaceUi extends utils.Adapter {
                 case 'refreshMaintainTable': {
                     const added: string[] = [];
                     let result: any[] = [];
+                    const flashingText = this.library.getTranslation('Updating');
+                    const flashingObj: Record<string, string> = {};
+                    for (let a = 0; a < this.config.panels.length; a++) {
+                        const panel = this.config.panels[a];
+                        const state = this.library.readdb(`panels.${panel.id}.info.nspanel.firmwareUpdate`);
+                        if (state && typeof state.val === 'number' && state.val < 100) {
+                            flashingObj[panel.id] = `${flashingText}: ${state.val}%`;
+                        }
+                    }
                     if (this.controller?.panels) {
+                        const updateText = this.library.getTranslation('updateAvailable');
+                        const checkText = this.library.getTranslation('check!');
                         const temp = this.controller.panels.map(a => {
-                            const tv = a.info?.tasmota?.firmwareversion?.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                            let check = false;
+                            let tv = '';
+                            let nv = '';
+                            const ft = flashingObj[a.name];
+
+                            if (a.info) {
+                                if (a.info.tasmota?.firmwareversion) {
+                                    const temp = a.info.tasmota.firmwareversion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                                    if (temp && temp[1]) {
+                                        tv = `${temp[1]}`;
+                                    }
+                                }
+                                if (a.info.tasmota?.onlineVersion && tv) {
+                                    const temp = a.info.tasmota.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                                    if (temp && temp[1] && temp[1] !== tv) {
+                                        tv += ` (${updateText})`;
+                                        check = true;
+                                    }
+                                }
+                                tv = tv ? `v${tv}` : '';
+                                if (a.info.nspanel?.displayVersion) {
+                                    const temp = a.info.nspanel.displayVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                                    if (temp && temp[1]) {
+                                        nv = `${temp[1]}`;
+                                    }
+                                }
+                                if (a.info.nspanel?.onlineVersion && nv) {
+                                    const temp = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
+                                    if (temp && temp[1] && temp[1] !== nv) {
+                                        nv += ` (${updateText})`;
+                                        check = true;
+                                    }
+                                }
+                                nv = nv ? `v${nv}` : '';
+                            }
                             added.push(a.topic);
 
                             return {
+                                _check: check,
+                                _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? 'online' : 'offline'}`}`})`,
                                 _name: a.friendlyName,
                                 _ip: a.info?.tasmota?.net?.IPAddress
                                     ? a.info.tasmota.net.IPAddress
@@ -1482,8 +1534,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _online: a.isOnline ? 'yes' : 'no',
                                 _topic: a.topic,
                                 _id: a.info?.tasmota?.net?.Mac ? a.info.tasmota.net.Mac : '',
-                                _tftVersion: a.info?.nspanel?.displayVersion ? a.info.nspanel.displayVersion : '???',
-                                _tasmotaVersion: tv && tv[1] ? tv[1] : '???',
+                                _tftVersion: nv ? nv : '???',
+                                _tasmotaVersion: tv ? tv : '???',
                             };
                         });
                         result = result.concat(temp);
@@ -1494,7 +1546,21 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 return added.findIndex(b => b === a.topic) === -1;
                             })
                             .map(a => {
+                                const ft = flashingObj[a.name];
                                 return {
+                                    _check: true,
+                                    _Headline: `${a.name} (${
+                                        ft
+                                            ? ft
+                                            : `${
+                                                  this.config.Testconfig2
+                                                      ? this.config.Testconfig2.findIndex(b => b.topic === a.topic) ===
+                                                        -1
+                                                          ? 'Missing configuration!'
+                                                          : 'offline - waiting'
+                                                      : 'offline'
+                                              }`
+                                    })`,
                                     _name: a.name,
                                     _ip: this.config.Testconfig2
                                         ? this.config.Testconfig2.findIndex(b => b.topic === a.topic) === -1
