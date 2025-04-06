@@ -151,8 +151,8 @@ export class BaseClassTriggerd extends BaseClass {
     getVisibility = (): boolean => {
         return this.visibility;
     };
-    setVisibility = async (v: boolean, force: boolean = false): Promise<void> => {
-        if (v !== this.visibility || force) {
+    setVisibility = async (v: boolean): Promise<void> => {
+        if (v !== this.visibility) {
             this.visibility = v;
             if (this.visibility) {
                 if (this.unload) {
@@ -178,7 +178,7 @@ export class BaseClassTriggerd extends BaseClass {
                     }
                 }*/
 
-                this.log.debug(`Switch page to visible${force ? ' (forced)' : ''}!`);
+                this.log.debug(`Switch page to visible!`);
                 this.resetLastMessage();
                 this.controller && (await this.controller.statesControler.activateTrigger(this));
 
@@ -192,7 +192,7 @@ export class BaseClassTriggerd extends BaseClass {
                 if (this.alwaysOnState) {
                     this.adapter.clearTimeout(this.alwaysOnState);
                 }
-                this.log.debug(`Switch page to invisible${force ? ' (forced)' : ''}!`);
+                this.log.debug(`Switch page to invisible!`);
                 if (!this.neverDeactivateTrigger) {
                     this.stopTriggerTimeout();
                     this.controller && (await this.controller.statesControler.deactivateTrigger(this));

@@ -174,7 +174,7 @@ class Panel extends import_library.BaseClass {
     }
   };
   constructor(adapter, options) {
-    var _a, _b, _c, _d;
+    var _a, _b;
     super(adapter, options.name, (_a = options.friendlyName) != null ? _a : options.name);
     this.panelSend = new import_panel_message.PanelSend(adapter, {
       name: `${this.friendlyName}-SendClass`,
@@ -195,17 +195,6 @@ class Panel extends import_library.BaseClass {
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     }
     this.statesControler = options.controller.statesControler;
-    this.dim = {
-      standby: (_c = options.dimLow) != null ? _c : 70,
-      active: (_d = options.dimHigh) != null ? _d : 90,
-      delay: 5,
-      dayMode: true,
-      nightStandby: 0,
-      nightActive: 50,
-      nightHourStart: 22,
-      nightHourEnd: 6,
-      schedule: false
-    };
     options.pages = options.pages.concat(import_system_templates.systemPages);
     options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
     let scsFound = 0;
@@ -322,6 +311,7 @@ class Panel extends import_library.BaseClass {
     this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
     this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
     this.isOnline = false;
+    this.sendStatusToTasmota();
     this.restartLoops();
     this.sendToTasmota(`${this.topic}/cmnd/POWER1`, "");
     this.sendToTasmota(`${this.topic}/cmnd/POWER2`, "");
@@ -375,7 +365,7 @@ class Panel extends import_library.BaseClass {
       }
       await this.library.writedp(
         `panels.${this.name}.cmd.dim.${key}`,
-        d,
+        this.dim[key],
         import_definition.genericStateObjects.panel.panels.cmd.dim[key]
       );
     }
@@ -587,7 +577,7 @@ class Panel extends import_library.BaseClass {
       } else if (sleep !== this._activePage.sleep) {
         page.setLastPage((_c = this._activePage) != null ? _c : void 0);
         if (!sleep) {
-          await this._activePage.setVisibility(true, true);
+          await this._activePage.setVisibility(true);
         }
         this._activePage.sleep = sleep;
       }
@@ -786,7 +776,7 @@ class Panel extends import_library.BaseClass {
         }
         case "dim.dayMode": {
           if (this.dim.schedule) {
-            this.log.warn("Timer is active - User input overwritten!");
+            this.log.warn("Dim schedule is active - User input ignored!");
           } else {
             this.dim.dayMode = !!state.val;
             this.sendDimmode();
@@ -804,7 +794,7 @@ class Panel extends import_library.BaseClass {
             this.sendDimmode();
           }
           await this.library.writedp(
-            `panels.${this.name}.cmd.dayMode`,
+            `panels.${this.name}.cmd.dim.schedule`,
             this.dim.schedule,
             import_definition.genericStateObjects.panel.panels.cmd.dim.schedule
           );
@@ -970,11 +960,10 @@ class Panel extends import_library.BaseClass {
    *
    */
   loop = () => {
-    this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, "");
     this.pages = this.pages.filter((a) => a && !a.unload);
-    let t = 3e5 + Math.random() * 3e4 - 15e3;
+    let t = Math.random() * 3e4 + 1e4;
     if (!this.isOnline) {
-      t = 15e3;
+      t = 5e3;
       this.sendToPanel("pageType~pageStartup", { retain: true });
     }
     if (this.unload) {
@@ -982,6 +971,9 @@ class Panel extends import_library.BaseClass {
     }
     this.loopTimeout = this.adapter.setTimeout(this.loop, t);
   };
+  sendStatusToTasmota() {
+    this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, "");
+  }
   async delete() {
     await super.delete();
     if (this.blockStartup) {
@@ -1057,7 +1049,12 @@ class Panel extends import_library.BaseClass {
         const i = this.pages.findIndex((a) => a && a.name === "///WelcomePopup");
         const popup = i !== -1 ? this.pages[i] : void 0;
         if (popup) {
-          await this.setActivePage(popup, false);
+          if (this._activePage === popup) {
+            this._activePage.sendType(true);
+            await this._activePage.update();
+          } else {
+            await this.setActivePage(popup, false);
+          }
         }
         await this.adapter.delay(100);
         if (this.screenSaver) {

@@ -211,7 +211,7 @@ export class Panel extends BaseClass {
 
         this.statesControler = options.controller.statesControler;
 
-        this.dim = {
+        /*this.dim = {
             standby: options.dimLow ?? 70,
             active: options.dimHigh ?? 90,
             delay: 5,
@@ -221,7 +221,7 @@ export class Panel extends BaseClass {
             nightHourStart: 22,
             nightHourEnd: 6,
             schedule: false,
-        };
+        };*/
 
         options.pages = options.pages.concat(systemPages);
         options.navigation = (options.navigation || []).concat(systemNavigation);
@@ -345,7 +345,7 @@ export class Panel extends BaseClass {
         this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
         this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
         this.isOnline = false;
-
+        this.sendStatusToTasmota();
         this.restartLoops();
         this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
         this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
@@ -402,7 +402,7 @@ export class Panel extends BaseClass {
             }
             await this.library.writedp(
                 `panels.${this.name}.cmd.dim.${key}`,
-                d,
+                this.dim[key],
                 genericStateObjects.panel.panels.cmd.dim[key],
             );
         }
@@ -600,7 +600,6 @@ export class Panel extends BaseClass {
         }
         let page = this._activePage;
         let sleep = false;
-
         if (typeof _page === 'boolean') {
             sleep = !_page;
         } else {
@@ -631,7 +630,7 @@ export class Panel extends BaseClass {
             } else if (sleep !== this._activePage.sleep) {
                 page.setLastPage(this._activePage ?? undefined);
                 if (!sleep) {
-                    await this._activePage.setVisibility(true, true);
+                    await this._activePage.setVisibility(true);
                 }
                 this._activePage.sleep = sleep;
             }
@@ -662,7 +661,6 @@ export class Panel extends BaseClass {
             } else {
                 this.log.warn('is offline!');
             }
-            //this.restartLoops();
         }
         this._isOnline = s;
     }
@@ -853,7 +851,7 @@ export class Panel extends BaseClass {
                 }
                 case 'dim.dayMode': {
                     if (this.dim.schedule) {
-                        this.log.warn('Timer is active - User input overwritten!');
+                        this.log.warn('Dim schedule is active - User input ignored!');
                     } else {
                         this.dim.dayMode = !!state.val;
                         this.sendDimmode();
@@ -873,7 +871,7 @@ export class Panel extends BaseClass {
                     }
 
                     await this.library.writedp(
-                        `panels.${this.name}.cmd.dayMode`,
+                        `panels.${this.name}.cmd.dim.schedule`,
                         this.dim.schedule,
                         genericStateObjects.panel.panels.cmd.dim.schedule,
                     );
@@ -1059,11 +1057,10 @@ export class Panel extends BaseClass {
      *
      */
     loop = (): void => {
-        this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, '');
         this.pages = this.pages.filter(a => a && !a.unload);
-        let t = 300000 + Math.random() * 30000 - 15000;
+        let t = Math.random() * 30000 + 10000;
         if (!this.isOnline) {
-            t = 15000;
+            t = 5000;
             this.sendToPanel('pageType~pageStartup', { retain: true });
         }
         if (this.unload) {
@@ -1071,6 +1068,9 @@ export class Panel extends BaseClass {
         }
         this.loopTimeout = this.adapter.setTimeout(this.loop, t);
     };
+    sendStatusToTasmota(): void {
+        this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, '');
+    }
 
     async delete(): Promise<void> {
         await super.delete();
@@ -1151,7 +1151,12 @@ export class Panel extends BaseClass {
                 const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
                 const popup = i !== -1 ? this.pages[i] : undefined;
                 if (popup) {
-                    await this.setActivePage(popup, false);
+                    if (this._activePage === popup) {
+                        this._activePage.sendType(true);
+                        await this._activePage.update();
+                    } else {
+                        await this.setActivePage(popup, false);
+                    }
                 }
                 await this.adapter.delay(100);
                 if (this.screenSaver) {

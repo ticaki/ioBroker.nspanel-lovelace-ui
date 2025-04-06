@@ -321,7 +321,8 @@ const genericStateObjects = {
               role: "level",
               unit: "%",
               read: true,
-              write: true
+              write: true,
+              def: 15
             },
             native: {}
           },
@@ -334,7 +335,8 @@ const genericStateObjects = {
               role: "level",
               unit: "%",
               read: true,
-              write: true
+              write: true,
+              def: 80
             },
             native: {}
           },
@@ -359,7 +361,8 @@ const genericStateObjects = {
               role: "level",
               unit: "%",
               read: true,
-              write: true
+              write: true,
+              def: 0
             },
             native: {}
           },
@@ -372,7 +375,8 @@ const genericStateObjects = {
               role: "level",
               unit: "%",
               read: true,
-              write: true
+              write: true,
+              def: 30
             },
             native: {}
           },
