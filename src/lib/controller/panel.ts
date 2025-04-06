@@ -71,7 +71,7 @@ export class Panel extends BaseClass {
     private pages: (Page | undefined)[] = [];
     private _activePage: Page | undefined = undefined;
     private data: Record<string, any> = {};
-    private blockStartup: ioBroker.Timeout | null = null;
+    private blockStartup: ioBroker.Timeout | undefined = null;
     private _isOnline: boolean = false;
 
     public screenSaver: Screensaver | undefined;
