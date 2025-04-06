@@ -70,8 +70,9 @@ class Panel extends import_library.BaseClass {
   pages = [];
   _activePage = void 0;
   data = {};
-  screenSaver;
+  blockStartup = null;
   _isOnline = false;
+  screenSaver;
   lastCard = "";
   notifyIndex = -1;
   buttons;
@@ -983,6 +984,9 @@ class Panel extends import_library.BaseClass {
   };
   async delete() {
     await super.delete();
+    if (this.blockStartup) {
+      this.adapter.clearTimeout(this.blockStartup);
+    }
     this.isOnline = false;
     if (this.loopTimeout) {
       this.adapter.clearTimeout(this.loopTimeout);
@@ -1039,6 +1043,9 @@ class Panel extends import_library.BaseClass {
     }
     switch (event.method) {
       case "startup": {
+        if (this.blockStartup) {
+          return;
+        }
         this.isOnline = true;
         this.info.nspanel.displayVersion = event.opt;
         this.info.nspanel.model = event.action;
@@ -1059,6 +1066,9 @@ class Panel extends import_library.BaseClass {
           await this.screenSaver.HandleTime();
         }
         this.log.info("Panel startup finished!");
+        this.blockStartup = this.adapter.setTimeout(() => {
+          this.blockStartup = null;
+        }, 3e3);
         break;
       }
       case "sleepReached": {

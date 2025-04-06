@@ -71,8 +71,10 @@ export class Panel extends BaseClass {
     private pages: (Page | undefined)[] = [];
     private _activePage: Page | undefined = undefined;
     private data: Record<string, any> = {};
-    public screenSaver: Screensaver | undefined;
+    private blockStartup: ioBroker.Timeout | null = null;
     private _isOnline: boolean = false;
+
+    public screenSaver: Screensaver | undefined;
     public lastCard: string = '';
     public notifyIndex: number = -1;
     readonly buttons: panelConfigPartial['buttons'];
@@ -1072,6 +1074,9 @@ export class Panel extends BaseClass {
 
     async delete(): Promise<void> {
         await super.delete();
+        if (this.blockStartup) {
+            this.adapter.clearTimeout(this.blockStartup);
+        }
         this.isOnline = false;
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
@@ -1131,6 +1136,9 @@ export class Panel extends BaseClass {
 
         switch (event.method) {
             case 'startup': {
+                if (this.blockStartup) {
+                    return;
+                }
                 this.isOnline = true;
                 this.info.nspanel.displayVersion = event.opt;
                 this.info.nspanel.model = event.action;
@@ -1153,6 +1161,9 @@ export class Panel extends BaseClass {
                     await this.screenSaver.HandleTime();
                 }
                 this.log.info('Panel startup finished!');
+                this.blockStartup = this.adapter.setTimeout(() => {
+                    this.blockStartup = null;
+                }, 3000);
                 break;
             }
             case 'sleepReached': {
