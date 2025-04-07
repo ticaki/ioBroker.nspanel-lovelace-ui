@@ -43,6 +43,7 @@ class StatesControler extends import_library.BaseClass {
     }, 18e5);
   }
   deletePageLoop = () => {
+    var _a, _b;
     const removeId = [];
     for (const id in this.triggerDB) {
       const entry = this.triggerDB[id];
@@ -50,6 +51,8 @@ class StatesControler extends import_library.BaseClass {
       for (let i = 0; i < entry.to.length; i++) {
         const item = entry.to[i];
         if (item.unload) {
+          removeIndex.push(Number(i));
+        } else if ((_b = (_a = item.parent) == null ? void 0 : _a.panel) == null ? void 0 : _b.unload) {
           removeIndex.push(Number(i));
         }
       }
@@ -430,9 +433,10 @@ class StatesControler extends import_library.BaseClass {
    * @param parent Page etc.
    * @param target optional target
    * @param path optional path
+   * @param options so far only constant to use in getState().read
    * @returns then json with values dataitem or undefined
    */
-  async createDataItems(data, parent, target = {}, path = "data") {
+  async createDataItems(data, parent, target = {}, path = "data", options) {
     var _a;
     for (const i in data) {
       const d = data[i];
@@ -444,12 +448,13 @@ class StatesControler extends import_library.BaseClass {
           d,
           parent,
           ((_a = target[i]) != null ? _a : Array.isArray(d)) ? [] : {},
-          `${path}.${i}`
+          `${path}.${i}`,
+          options
         );
       } else if (typeof d === "object" && "type" in d) {
         target[i] = data[i] !== void 0 ? new import_data_item.Dataitem(
           this.adapter,
-          { ...d, name: `${this.name}.${parent.name}.${i}.${path}` },
+          { ...d, name: `${this.name}.${parent.name}.${i}.${path}`, constants: options },
           parent,
           this
         ) : void 0;

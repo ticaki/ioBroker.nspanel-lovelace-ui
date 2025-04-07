@@ -32,8 +32,11 @@ class PanelSend extends import_library.BaseClass {
   topic = "";
   losingMessageCount = 0;
   _losingDelay = 1e3;
-  _panel = void 0;
+  panel = void 0;
   get losingDelay() {
+    if (this.panel && this._losingDelay >= 2e3) {
+      this.panel.isOnline = false;
+    }
     if (this._losingDelay < 3e4) {
       this._losingDelay = this._losingDelay + 2e3;
     }
@@ -53,9 +56,7 @@ class PanelSend extends import_library.BaseClass {
     this.mqttClient = config.mqttClient;
     this.mqttClient.subscript(`${config.topic}/stat/RESULT`, this.onMessage);
     this.topic = config.topic + import_definition.SendTopicAppendix;
-  }
-  set panel(panel) {
-    this._panel = panel;
+    this.panel = config.panel;
   }
   onMessage = async (topic, message) => {
     if (!topic.endsWith("/stat/RESULT")) {
@@ -83,12 +84,6 @@ class PanelSend extends import_library.BaseClass {
       }
     }
   };
-  get panel() {
-    if (!this._panel) {
-      throw new Error("Error P1: Panel undefinied!");
-    }
-    return this._panel;
-  }
   addMessage = (payload, opt) => {
     if (this.messageTimeout !== void 0 && this.messageDb.length > 0 && this.messageDb.some((a) => a.payload === payload && a.opt === opt)) {
       return;
@@ -105,11 +100,11 @@ class PanelSend extends import_library.BaseClass {
       return;
     }
     if (this.losingMessageCount++ > 3) {
-      if (this._panel) {
-        this._panel.isOnline = false;
+      if (this.panel) {
+        this.panel.isOnline = false;
       }
     }
-    if (this._panel && !this._panel.isOnline) {
+    if (this.panel && !this.panel.isOnline) {
       this.messageDb = [];
     }
     if (this.unload) {
@@ -143,6 +138,7 @@ class PanelSend extends import_library.BaseClass {
   };
   async delete() {
     await super.delete();
+    this.mqttClient.unsubscribe(`${this.topic}/stat/RESULT`);
     if (this.messageTimeout) {
       this.adapter.clearTimeout(this.messageTimeout);
     }

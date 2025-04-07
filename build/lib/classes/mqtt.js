@@ -96,6 +96,14 @@ class MQTTClientClass extends import_library.BaseClass {
     }
     await this.client.publishAsync(topic, message, opt);
   }
+  unsubscribe(topic) {
+    const index = this.subscriptDB.findIndex((m) => m.topic === topic);
+    if (index !== -1) {
+      this.subscriptDB.splice(index, 1);
+      this.log.debug(`unsubscribe from: ${topic}`);
+      this.client.unsubscribe(topic);
+    }
+  }
   subscript(topic, callback) {
     if (this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback) !== -1) {
       return;

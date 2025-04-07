@@ -1104,6 +1104,7 @@ declare namespace ScriptConfig {
             type: 'template';
             template: string;
             dpInit: string;
+            readOptions?: Record<string, any>;
             modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
         }
     );

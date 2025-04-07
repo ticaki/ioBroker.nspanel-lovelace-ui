@@ -41,6 +41,7 @@ class Page extends import_BaseClassPage.BaseClassPage {
     this.isScreensaver = isScreensaver;
     this.card = card.card;
     this.id = card.id;
+    this.panel = card.panel;
     this.enums = pageItemsConfig && "enums" in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : "";
     this.device = pageItemsConfig && "device" in pageItemsConfig && pageItemsConfig.device ? pageItemsConfig.device : "";
     if (this.device) {
@@ -264,6 +265,11 @@ class Page extends import_BaseClassPage.BaseClassPage {
   }
   async delete() {
     await super.delete();
+    if (this.pageItems) {
+      for (const item of this.pageItems) {
+        item && await item.delete();
+      }
+    }
     this.pageItems = [];
   }
 }

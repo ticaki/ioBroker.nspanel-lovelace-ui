@@ -72,6 +72,7 @@ class Panel extends import_library.BaseClass {
   data = {};
   blockStartup = null;
   _isOnline = false;
+  options;
   screenSaver;
   lastCard = "";
   notifyIndex = -1;
@@ -179,8 +180,10 @@ class Panel extends import_library.BaseClass {
     this.panelSend = new import_panel_message.PanelSend(adapter, {
       name: `${this.friendlyName}-SendClass`,
       mqttClient: options.controller.mqttClient,
-      topic: options.topic
+      topic: options.topic,
+      panel: this
     });
+    this.options = options;
     this.timeout = options.timeout || 15;
     this.buttons = options.buttons;
     this.CustomFormat = (_b = options.CustomFormat) != null ? _b : "";
@@ -195,6 +198,16 @@ class Panel extends import_library.BaseClass {
       this.sendToTasmota = this.panelSend.addMessageTasmota;
     }
     this.statesControler = options.controller.statesControler;
+    options.pages = options.pages.filter((b) => {
+      var _a2, _b2, _c;
+      if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b2 = b.config) == null ? void 0 : _b2.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3") {
+        return true;
+      }
+      if (options.navigation.find((c) => c && c.name === b.uniqueID)) {
+        return true;
+      }
+      return false;
+    });
     options.pages = options.pages.concat(import_system_templates.systemPages);
     options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
     let scsFound = 0;
@@ -606,6 +619,9 @@ class Panel extends import_library.BaseClass {
       if (s) {
         this.log.info("is online!");
       } else {
+        void this.controller.removePanel(this);
+        void this.controller.addPanel(this.options);
+        this._activePage = void 0;
         this.log.warn("is offline!");
       }
     }
@@ -975,6 +991,7 @@ class Panel extends import_library.BaseClass {
     this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, "");
   }
   async delete() {
+    var _a;
     await super.delete();
     if (this.blockStartup) {
       this.adapter.clearTimeout(this.blockStartup);
@@ -990,6 +1007,7 @@ class Panel extends import_library.BaseClass {
     );
     await this.panelSend.delete();
     await this.navigation.delete();
+    await ((_a = this.screenSaver) == null ? void 0 : _a.delete());
     for (const a of this.pages) {
       if (a) {
         await a.delete();

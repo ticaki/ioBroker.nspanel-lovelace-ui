@@ -33,6 +33,7 @@ export class Page extends BaseClassPage {
         this.isScreensaver = isScreensaver;
         this.card = card.card;
         this.id = card.id;
+        this.panel = card.panel;
         this.enums =
             pageItemsConfig && 'enums' in pageItemsConfig && pageItemsConfig.enums ? pageItemsConfig.enums : '';
         this.device =
@@ -304,6 +305,11 @@ export class Page extends BaseClassPage {
     }
     async delete(): Promise<void> {
         await super.delete();
+        if (this.pageItems) {
+            for (const item of this.pageItems) {
+                item && (await item.delete());
+            }
+        }
         this.pageItems = [];
     }
 }

@@ -492,6 +492,7 @@ export type PageTypeUnionTemplate = {
 export type PageItemUnion = {
     role?: pages.DeviceRole;
     template?: undefined;
+    readOptions?: Record<string, string>;
     dpInit?: string | RegExp;
     enums?: string | string[];
     device?: string;

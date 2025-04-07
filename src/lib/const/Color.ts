@@ -4,6 +4,10 @@ import mixPlugin from 'colord/plugins/mix';
 
 extend([namesPlugin, mixPlugin]);
 
+export type mixedOptions = {
+    swap?: boolean;
+    anchorHigh?: boolean;
+};
 export type RGB = {
     r: number;
     g: number;
@@ -230,7 +234,7 @@ export class Color extends ColorBase {
         return outMax + outMin - (((number - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin);
     }
 
-    static mixColorHue(startRGB: RGB, endRGB: RGB, t: number): RGB {
+    static mixColorHue(startRGB: RGB, endRGB: RGB, t: number, _options?: mixedOptions): RGB {
         const startHSB = colord(startRGB).toHsv();
         const endHSB = colord(endRGB).toHsv();
 
@@ -280,17 +284,41 @@ export class Color extends ColorBase {
         const b: number = Color.InterpolateNum(color1.b, color2.b, fraction);
         return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
     }
-    static perc2color(_from: RGB, _to: RGB, percent: number): RGB {
-        percent = percent * 100;
+
+    static triGradAnchor(_from: RGB, _to: RGB, factor: number, _options?: mixedOptions): RGB {
+        factor = _options?.anchorHigh ? (1 - factor) / 2 + 0.5 : factor / 2;
+        return Color.perc2color(_from, _to, factor, { ..._options });
+    }
+    /**
+     * Interpolate between two colors
+     *
+     * @param _from from this color
+     * @param _to to this
+     * @param factor 0-1 mix value
+     * @param _options swap input and use triGradAnchor
+     * @returns RGB
+     */
+    static perc2color(_from: RGB, _to: RGB, factor: number, _options?: mixedOptions): RGB {
+        factor = Math.min(1, Math.max(0, factor));
         let r = 0;
         let g = 0;
         const b = 0;
-        if (percent < 50) {
-            r = 255;
-            g = Math.round(5.1 * percent);
+        if (_options?.swap === false) {
+            if (factor < 0.5) {
+                r = 255;
+                g = Math.round(510 * factor);
+            } else {
+                g = 255;
+                r = Math.round(510 - 510 * factor);
+            }
         } else {
-            g = 255;
-            r = Math.round(510 - 5.1 * percent);
+            if (factor < 0.5) {
+                g = 255;
+                r = Math.round(510 * factor);
+            } else {
+                r = 255;
+                g = Math.round(510 - 510 * factor);
+            }
         }
         return { r, g, b };
     }
@@ -299,9 +327,10 @@ export class Color extends ColorBase {
      * @param c1 from this color
      * @param c2 to this
      * @param r 0-1 mix value
+     * @param _options no use
      * @returns RGB
      */
-    static mixColorCie(c1: RGB, c2: RGB, r: number): RGB {
+    static mixColorCie(c1: RGB, c2: RGB, r: number, _options?: mixedOptions): RGB {
         return colord(c1).mix(c2, r).toRgb();
     }
 
@@ -310,9 +339,10 @@ export class Color extends ColorBase {
      * @param c1 from this color
      * @param c2 to this
      * @param x 0-1 mix value
+     * @param _options no use
      * @returns RGB
      */
-    static mixColor(c1: RGB, c2: RGB, x: number): RGB {
+    static mixColor(c1: RGB, c2: RGB, x: number, _options?: mixedOptions): RGB {
         const r = Math.round(c1.r + (c2.r - c1.r) * x);
         const g = Math.round(c1.g + (c2.g - c1.g) * x);
         const b = Math.round(c1.b + (c2.b - c1.b) * x);
