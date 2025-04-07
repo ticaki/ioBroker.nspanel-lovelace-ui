@@ -174,10 +174,11 @@ class PagePower extends import_Page.Page {
     const iconColor = [];
     for (let i = 1; i <= 6; i++) {
       const key = `power${i}_iconColor`;
-      if (typeof config[key] === "string") {
+      const useScale = `_power${i}_color`;
+      if (typeof config[key] === "string" && typeof config[useScale] === "boolean" && !config[useScale]) {
         iconColor.push(config[key]);
       } else {
-        iconColor.push("#ffffff");
+        iconColor.push("undefined");
       }
     }
     const entityHeadline = [];

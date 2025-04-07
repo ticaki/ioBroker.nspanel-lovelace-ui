@@ -193,10 +193,11 @@ export class PagePower extends Page {
         const iconColor: string[] = [];
         for (let i = 1; i <= 6; i++) {
             const key = `power${i}_iconColor` as keyof typeof config;
-            if (typeof config[key] === 'string') {
+            const useScale = `_power${i}_color` as keyof typeof config;
+            if (typeof config[key] === 'string' && typeof config[useScale] === 'boolean' && !config[useScale]) {
                 iconColor.push(config[key]);
             } else {
-                iconColor.push('#ffffff');
+                iconColor.push('undefined');
             }
         }
 

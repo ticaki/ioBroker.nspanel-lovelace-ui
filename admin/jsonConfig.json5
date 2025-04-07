@@ -1069,7 +1069,7 @@
                             "hidden": "!data._power1_more"
                         },
                         {
-                            "attr": "_power1_color",
+                            "attr": "_power1_useColorScale",
                             "xs": 2,
                             "sm": 2,
                             "md": 2,
@@ -1091,7 +1091,7 @@
                             "type": "color",
                             "label": "selectColorForIcon",
                             "default": "#ffffff",
-                            "hidden": "!data._power1_more  || data._power1_color"
+                            "hidden": "!data._power1_more  || data._power1_useColorScale"
                         },
                         {
                             "attr": "power1_minColorScale",
@@ -1103,7 +1103,7 @@
                             "type": "number",
                             "label": "powerMinValueForClor",
                             "default": "0",
-                            "hidden": "!data._power1_more || !data._power1_color"
+                            "hidden": "!data._power1_more || !data._power1_useColorScale"
                         },
                         {
                             "attr": "power1_maxColorScale",
@@ -1115,7 +1115,7 @@
                             "type": "number",
                             "label": "powerMaxValueForColor",
                             "default": "10000",
-                            "hidden": "!data._power1_more || !data._power1_color"
+                            "hidden": "!data._power1_more || !data._power1_useColorScale"
                         },
                         {
                             "attr": "power1_bestColorScale",
@@ -1127,7 +1127,7 @@
                             "type": "number",
                             "label": "powerBestValueForColor",
                             "default": "",
-                            "hidden": "!data._power1_more || !data._power1_color"
+                            "hidden": "!data._power1_more || !data._power1_useColorScale"
                         },
                         {
                             "attr": "power1_entityHeadline",
@@ -1276,7 +1276,7 @@
                             "hidden": "!data._power2_more"
                         },
                         {
-                            "attr": "_power2_color",
+                            "attr": "_power2_useColorScale",
                             "xs": 2,
                             "sm": 2,
                             "md": 2,
@@ -1298,7 +1298,7 @@
                             "type": "color",
                             "label": "selectColorForIcon",
                             "default": "#ffffff",
-                            "hidden": "!data._power2_more  || data._power2_color"
+                            "hidden": "!data._power2_more  || data._power2_useColorScale"
                         },
                         {
                             "attr": "power2_minColorScale",
@@ -1310,7 +1310,7 @@
                             "type": "number",
                             "label": "powerMinValueForClor",
                             "default": "0",
-                            "hidden": "!data._power2_more || !data._power2_color"
+                            "hidden": "!data._power2_more || !data._power2_useColorScale"
                         },
                         {
                             "attr": "power2_maxColorScale",
@@ -1322,7 +1322,7 @@
                             "type": "number",
                             "label": "powerMaxValueForColor",
                             "default": "10000",
-                            "hidden": "!data._power2_more || !data._power2_color"
+                            "hidden": "!data._power2_more || !data._power2_useColorScale"
                         },
                         {
                             "attr": "power2_bestColorScale",
@@ -1334,7 +1334,7 @@
                             "type": "number",
                             "label": "powerBestValueForColor",
                             "default": "",
-                            "hidden": "!data._power2_more || !data._power2_color"
+                            "hidden": "!data._power2_more || !data._power2_useColorScale"
                         },
                         {
                             "attr": "power2_entityHeadline",
@@ -1483,7 +1483,7 @@
                             "hidden": "!data._power3_more"
                         },
                         {
-                            "attr": "_power3_color",
+                            "attr": "_power3_useColorScale",
                             "xs": 2,
                             "sm": 2,
                             "md": 2,
@@ -1505,7 +1505,7 @@
                             "type": "color",
                             "label": "selectColorForIcon",
                             "default": "#ffffff",
-                            "hidden": "!data._power3_more  || data._power3_color"
+                            "hidden": "!data._power3_more  || data._power3_useColorScale"
                         },
                         {
                             "attr": "power3_minColorScale",
@@ -1517,7 +1517,7 @@
                             "type": "number",
                             "label": "powerMinValueForClor",
                             "default": "0",
-                            "hidden": "!data._power3_more || !data._power3_color"
+                            "hidden": "!data._power3_more || !data._power3_useColorScale"
                         },
                         {
                             "attr": "power3_maxColorScale",
@@ -1529,7 +1529,7 @@
                             "type": "number",
                             "label": "powerMaxValueForColor",
                             "default": "10000",
-                            "hidden": "!data._power3_more || !data._power3_color"
+                            "hidden": "!data._power3_more || !data._power3_useColorScale"
                         },
                         {
                             "attr": "power3_bestColorScale",
@@ -1541,7 +1541,7 @@
                             "type": "number",
                             "label": "powerBestValueForColor",
                             "default": "",
-                            "hidden": "!data._power3_more || !data._power3_color"
+                            "hidden": "!data._power3_more || !data._power3_useColorScale"
                         },
                         {
                             "attr": "power3_entityHeadline",
@@ -1690,7 +1690,7 @@
                             "hidden": "!data._power4_more"
                         },
                         {
-                            "attr": "_power4_color",
+                            "attr": "_power4_useColorScale",
                             "xs": 2,
                             "sm": 2,
                             "md": 2,
@@ -1712,7 +1712,7 @@
                             "type": "color",
                             "label": "selectColorForIcon",
                             "default": "#ffffff",
-                            "hidden": "!data._power4_more  || data._power4_color"
+                            "hidden": "!data._power4_more  || data._power4_useColorScale"
                         },
                         {
                             "attr": "power4_minColorScale",
@@ -1724,7 +1724,7 @@
                             "type": "number",
                             "label": "powerMinValueForClor",
                             "default": "0",
-                            "hidden": "!data._power4_more || !data._power4_color"
+                            "hidden": "!data._power4_more || !data._power4_useColorScale"
                         },
                         {
                             "attr": "power4_maxColorScale",
@@ -1736,7 +1736,7 @@
                             "type": "number",
                             "label": "powerMaxValueForColor",
                             "default": "10000",
-                            "hidden": "!data._power4_more || !data._power4_color"
+                            "hidden": "!data._power4_more || !data._power4_useColorScale"
                         },
                         {
                             "attr": "power4_bestColorScale",
@@ -1748,7 +1748,7 @@
                             "type": "number",
                             "label": "powerBestValueForColor",
                             "default": "",
-                            "hidden": "!data._power4_more || !data._power4_color"
+                            "hidden": "!data._power4_more || !data._power4_useColorScale"
                         },
                         {
                             "attr": "power4_entityHeadline",
@@ -1897,7 +1897,7 @@
                             "hidden": "!data._power5_more"
                         },
                         {
-                            "attr": "_power5_color",
+                            "attr": "_power5_useColorScale",
                             "xs": 2,
                             "sm": 2,
                             "md": 2,
@@ -1919,7 +1919,7 @@
                             "type": "color",
                             "label": "selectColorForIcon",
                             "default": "#ffffff",
-                            "hidden": "!data._power5_more  || data._power5_color"
+                            "hidden": "!data._power5_more  || data._power5_useColorScale"
                         },
                         {
                             "attr": "power5_minColorScale",
@@ -1931,7 +1931,7 @@
                             "type": "number",
                             "label": "powerMinValueForClor",
                             "default": "0",
-                            "hidden": "!data._power5_more || !data._power5_color"
+                            "hidden": "!data._power5_more || !data._power5_useColorScale"
                         },
                         {
                             "attr": "power5_maxColorScale",
@@ -1943,7 +1943,7 @@
                             "type": "number",
                             "label": "powerMaxValueForColor",
                             "default": "10000",
-                            "hidden": "!data._power5_more || !data._power5_color"
+                            "hidden": "!data._power5_more || !data._power5_useColorScale"
                         },
                         {
                             "attr": "power5_bestColorScale",
@@ -1955,7 +1955,7 @@
                             "type": "number",
                             "label": "powerBestValueForColor",
                             "default": "",
-                            "hidden": "!data._power5_more || !data._power5_color"
+                            "hidden": "!data._power5_more || !data._power5_useColorScale"
                         },
                         {
                             "attr": "power5_entityHeadline",
@@ -2104,7 +2104,7 @@
                             "hidden": "!data._power6_more"
                         },
                         {
-                            "attr": "_power6_color",
+                            "attr": "_power6_useColorScale",
                             "xs": 2,
                             "sm": 2,
                             "md": 2,
@@ -2126,7 +2126,7 @@
                             "type": "color",
                             "label": "selectColorForIcon",
                             "default": "#ffffff",
-                            "hidden": "!data._power6_more  || data._power6_color"
+                            "hidden": "!data._power6_more  || data._power6_useColorScale"
                         },
                         {
                             "attr": "power6_minColorScale",
@@ -2138,7 +2138,7 @@
                             "type": "number",
                             "label": "powerMinValueForClor",
                             "default": "0",
-                            "hidden": "!data._power6_more || !data._power6_color"
+                            "hidden": "!data._power6_more || !data._power6_useColorScale"
                         },
                         {
                             "attr": "power6_maxColorScale",
@@ -2150,7 +2150,7 @@
                             "type": "number",
                             "label": "powerMaxValueForColor",
                             "default": "10000",
-                            "hidden": "!data._power6_more || !data._power6_color"
+                            "hidden": "!data._power6_more || !data._power6_useColorScale"
                         },
                         {
                             "attr": "power6_bestColorScale",
@@ -2162,7 +2162,7 @@
                             "type": "number",
                             "label": "powerBestValueForColor",
                             "default": "",
-                            "hidden": "!data._power6_more || !data._power6_color"
+                            "hidden": "!data._power6_more || !data._power6_useColorScale"
                         },
                         {
                             "attr": "power6_entityHeadline",
