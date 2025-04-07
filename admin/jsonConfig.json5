@@ -967,17 +967,6 @@
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
                         {
-                            "attr": "power1_iconColor",
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "color",
-                            "label": "selectColorForIcon",
-                            "default": "#ffffff"
-                        },
-                        {
                             "attr": "power1_state",
                             "xs": 12,
                             "sm": 12,
@@ -989,7 +978,20 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power1_more",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false,
+                            "newLine": true
+                        },
+                        {
                             "attr": "power1_valueDecimal",
+                            "newLine": true,
                             "xs": 6,
                             "sm": 6,
                             "md": 2,
@@ -1015,7 +1017,8 @@
                                     "label": "0.001",
                                     "value": 3
                                 }
-                            ]
+                            ],
+                            "hidden": "!data._power1_more"
                         },
                         {
                             "attr": "power1_valueUnit",
@@ -1026,30 +1029,6 @@
                             "xl": 1,
                             "type": "text",
                             "label": "valueUnit",
-                            "default": "W"
-                        },
-                        {
-                            "attr": "_power1_more",
-                            "xs": 2,
-                            "sm": 2,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "checkbox",
-                            "label": "more",
-                            "default": false,
-                            "newLine": true
-                        },
-                        {
-                            "attr": "power1_entityHeadline",
-                            "newLine": true,
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 4,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "text",
-                            "label": "entityHeadline",
                             "default": "",
                             "hidden": "!data._power1_more"
                         },
@@ -1074,7 +1053,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100",
+                            "default": "10000",
                             "hidden": "!data._power1_more"
                         },
                         {
@@ -1087,6 +1066,80 @@
                             "type": "checkbox",
                             "label": "powerReverse",
                             "default": false,
+                            "hidden": "!data._power1_more"
+                        },
+                        {
+                            "attr": "_power1_color",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "useColorScala",
+                            "default": false,
+                            "hidden": "!data._power1_more",
+                            "newLine": true
+                        },
+                        {
+                            "attr": "power1_iconColor",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff",
+                            "hidden": "!data._power1_more  || data._power1_color"
+                        },
+                        {
+                            "attr": "power1_minColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinValueForClor",
+                            "default": "0",
+                            "hidden": "!data._power1_more || !data._power1_color"
+                        },
+                        {
+                            "attr": "power1_maxColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxValueForColor",
+                            "default": "10000",
+                            "hidden": "!data._power1_more || !data._power1_color"
+                        },
+                        {
+                            "attr": "power1_bestColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerBestValueForColor",
+                            "default": "",
+                            "hidden": "!data._power1_more || !data._power1_color"
+                        },
+                        {
+                            "attr": "power1_entityHeadline",
+                            "newLine": true,
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
                             "hidden": "!data._power1_more"
                         },
                         {
@@ -1121,17 +1174,6 @@
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
                         {
-                            "attr": "power2_iconColor",
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "color",
-                            "label": "selectColorForIcon",
-                            "default": "#ffffff"
-                        },
-                        {
                             "attr": "power2_state",
                             "xs": 12,
                             "sm": 12,
@@ -1143,7 +1185,20 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power2_more",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false,
+                            "newLine": true
+                        },
+                        {
                             "attr": "power2_valueDecimal",
+                            "newLine": true,
                             "xs": 6,
                             "sm": 6,
                             "md": 2,
@@ -1169,7 +1224,8 @@
                                     "label": "0.001",
                                     "value": 3
                                 }
-                            ]
+                            ],
+                            "hidden": "!data._power2_more"
                         },
                         {
                             "attr": "power2_valueUnit",
@@ -1180,30 +1236,6 @@
                             "xl": 1,
                             "type": "text",
                             "label": "valueUnit",
-                            "default": "W"
-                        },
-                        {
-                            "attr": "_power2_more",
-                            "xs": 2,
-                            "sm": 2,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "checkbox",
-                            "label": "more",
-                            "default": false,
-                            "newLine": true
-                        },
-                        {
-                            "attr": "power2_entityHeadline",
-                            "newLine": true,
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 4,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "text",
-                            "label": "entityHeadline",
                             "default": "",
                             "hidden": "!data._power2_more"
                         },
@@ -1228,7 +1260,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100",
+                            "default": "10000",
                             "hidden": "!data._power2_more"
                         },
                         {
@@ -1241,6 +1273,80 @@
                             "type": "checkbox",
                             "label": "powerReverse",
                             "default": false,
+                            "hidden": "!data._power2_more"
+                        },
+                        {
+                            "attr": "_power2_color",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "useColorScala",
+                            "default": false,
+                            "hidden": "!data._power2_more",
+                            "newLine": true
+                        },
+                        {
+                            "attr": "power2_iconColor",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff",
+                            "hidden": "!data._power2_more  || data._power2_color"
+                        },
+                        {
+                            "attr": "power2_minColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinValueForClor",
+                            "default": "0",
+                            "hidden": "!data._power2_more || !data._power2_color"
+                        },
+                        {
+                            "attr": "power2_maxColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxValueForColor",
+                            "default": "10000",
+                            "hidden": "!data._power2_more || !data._power2_color"
+                        },
+                        {
+                            "attr": "power2_bestColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerBestValueForColor",
+                            "default": "",
+                            "hidden": "!data._power2_more || !data._power2_color"
+                        },
+                        {
+                            "attr": "power2_entityHeadline",
+                            "newLine": true,
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
                             "hidden": "!data._power2_more"
                         },
                         {
@@ -1275,17 +1381,6 @@
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
                         {
-                            "attr": "power3_iconColor",
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "color",
-                            "label": "selectColorForIcon",
-                            "default": "#ffffff"
-                        },
-                        {
                             "attr": "power3_state",
                             "xs": 12,
                             "sm": 12,
@@ -1297,7 +1392,20 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power3_more",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false,
+                            "newLine": true
+                        },
+                        {
                             "attr": "power3_valueDecimal",
+                            "newLine": true,
                             "xs": 6,
                             "sm": 6,
                             "md": 2,
@@ -1323,7 +1431,8 @@
                                     "label": "0.001",
                                     "value": 3
                                 }
-                            ]
+                            ],
+                            "hidden": "!data._power3_more"
                         },
                         {
                             "attr": "power3_valueUnit",
@@ -1334,30 +1443,6 @@
                             "xl": 1,
                             "type": "text",
                             "label": "valueUnit",
-                            "default": "W"
-                        },
-                        {
-                            "attr": "_power3_more",
-                            "xs": 2,
-                            "sm": 2,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "checkbox",
-                            "label": "more",
-                            "default": false,
-                            "newLine": true
-                        },
-                        {
-                            "attr": "power3_entityHeadline",
-                            "newLine": true,
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 4,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "text",
-                            "label": "entityHeadline",
                             "default": "",
                             "hidden": "!data._power3_more"
                         },
@@ -1382,7 +1467,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100",
+                            "default": "10000",
                             "hidden": "!data._power3_more"
                         },
                         {
@@ -1395,6 +1480,80 @@
                             "type": "checkbox",
                             "label": "powerReverse",
                             "default": false,
+                            "hidden": "!data._power3_more"
+                        },
+                        {
+                            "attr": "_power3_color",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "useColorScala",
+                            "default": false,
+                            "hidden": "!data._power3_more",
+                            "newLine": true
+                        },
+                        {
+                            "attr": "power3_iconColor",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff",
+                            "hidden": "!data._power3_more  || data._power3_color"
+                        },
+                        {
+                            "attr": "power3_minColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinValueForClor",
+                            "default": "0",
+                            "hidden": "!data._power3_more || !data._power3_color"
+                        },
+                        {
+                            "attr": "power3_maxColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxValueForColor",
+                            "default": "10000",
+                            "hidden": "!data._power3_more || !data._power3_color"
+                        },
+                        {
+                            "attr": "power3_bestColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerBestValueForColor",
+                            "default": "",
+                            "hidden": "!data._power3_more || !data._power3_color"
+                        },
+                        {
+                            "attr": "power3_entityHeadline",
+                            "newLine": true,
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
                             "hidden": "!data._power3_more"
                         },
                         {
@@ -1429,17 +1588,6 @@
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
                         {
-                            "attr": "power4_iconColor",
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "color",
-                            "label": "selectColorForIcon",
-                            "default": "#ffffff"
-                        },
-                        {
                             "attr": "power4_state",
                             "xs": 12,
                             "sm": 12,
@@ -1451,7 +1599,20 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power4_more",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false,
+                            "newLine": true
+                        },
+                        {
                             "attr": "power4_valueDecimal",
+                            "newLine": true,
                             "xs": 6,
                             "sm": 6,
                             "md": 2,
@@ -1477,7 +1638,8 @@
                                     "label": "0.001",
                                     "value": 3
                                 }
-                            ]
+                            ],
+                            "hidden": "!data._power4_more"
                         },
                         {
                             "attr": "power4_valueUnit",
@@ -1488,30 +1650,6 @@
                             "xl": 1,
                             "type": "text",
                             "label": "valueUnit",
-                            "default": "W"
-                        },
-                        {
-                            "attr": "_power4_more",
-                            "xs": 2,
-                            "sm": 2,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "checkbox",
-                            "label": "more",
-                            "default": false,
-                            "newLine": true
-                        },
-                        {
-                            "attr": "power4_entityHeadline",
-                            "newLine": true,
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 4,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "text",
-                            "label": "entityHeadline",
                             "default": "",
                             "hidden": "!data._power4_more"
                         },
@@ -1536,7 +1674,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100",
+                            "default": "10000",
                             "hidden": "!data._power4_more"
                         },
                         {
@@ -1549,6 +1687,80 @@
                             "type": "checkbox",
                             "label": "powerReverse",
                             "default": false,
+                            "hidden": "!data._power4_more"
+                        },
+                        {
+                            "attr": "_power4_color",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "useColorScala",
+                            "default": false,
+                            "hidden": "!data._power4_more",
+                            "newLine": true
+                        },
+                        {
+                            "attr": "power4_iconColor",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff",
+                            "hidden": "!data._power4_more  || data._power4_color"
+                        },
+                        {
+                            "attr": "power4_minColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinValueForClor",
+                            "default": "0",
+                            "hidden": "!data._power4_more || !data._power4_color"
+                        },
+                        {
+                            "attr": "power4_maxColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxValueForColor",
+                            "default": "10000",
+                            "hidden": "!data._power4_more || !data._power4_color"
+                        },
+                        {
+                            "attr": "power4_bestColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerBestValueForColor",
+                            "default": "",
+                            "hidden": "!data._power4_more || !data._power4_color"
+                        },
+                        {
+                            "attr": "power4_entityHeadline",
+                            "newLine": true,
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
                             "hidden": "!data._power4_more"
                         },
                         {
@@ -1583,17 +1795,6 @@
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
                         {
-                            "attr": "power5_iconColor",
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "color",
-                            "label": "selectColorForIcon",
-                            "default": "#ffffff"
-                        },
-                        {
                             "attr": "power5_state",
                             "xs": 12,
                             "sm": 12,
@@ -1605,7 +1806,20 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power5_more",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false,
+                            "newLine": true
+                        },
+                        {
                             "attr": "power5_valueDecimal",
+                            "newLine": true,
                             "xs": 6,
                             "sm": 6,
                             "md": 2,
@@ -1631,7 +1845,8 @@
                                     "label": "0.001",
                                     "value": 3
                                 }
-                            ]
+                            ],
+                            "hidden": "!data._power5_more"
                         },
                         {
                             "attr": "power5_valueUnit",
@@ -1642,30 +1857,6 @@
                             "xl": 1,
                             "type": "text",
                             "label": "valueUnit",
-                            "default": "W"
-                        },
-                        {
-                            "attr": "_power5_more",
-                            "xs": 2,
-                            "sm": 2,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "checkbox",
-                            "label": "more",
-                            "default": false,
-                            "newLine": true
-                        },
-                        {
-                            "attr": "power5_entityHeadline",
-                            "newLine": true,
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 4,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "text",
-                            "label": "entityHeadline",
                             "default": "",
                             "hidden": "!data._power5_more"
                         },
@@ -1690,7 +1881,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100",
+                            "default": "10000",
                             "hidden": "!data._power5_more"
                         },
                         {
@@ -1703,6 +1894,80 @@
                             "type": "checkbox",
                             "label": "powerReverse",
                             "default": false,
+                            "hidden": "!data._power5_more"
+                        },
+                        {
+                            "attr": "_power5_color",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "useColorScala",
+                            "default": false,
+                            "hidden": "!data._power5_more",
+                            "newLine": true
+                        },
+                        {
+                            "attr": "power5_iconColor",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff",
+                            "hidden": "!data._power5_more  || data._power5_color"
+                        },
+                        {
+                            "attr": "power5_minColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinValueForClor",
+                            "default": "0",
+                            "hidden": "!data._power5_more || !data._power5_color"
+                        },
+                        {
+                            "attr": "power5_maxColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxValueForColor",
+                            "default": "10000",
+                            "hidden": "!data._power5_more || !data._power5_color"
+                        },
+                        {
+                            "attr": "power5_bestColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerBestValueForColor",
+                            "default": "",
+                            "hidden": "!data._power5_more || !data._power5_color"
+                        },
+                        {
+                            "attr": "power5_entityHeadline",
+                            "newLine": true,
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
                             "hidden": "!data._power5_more"
                         },
                         {
@@ -1737,17 +2002,6 @@
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
                         {
-                            "attr": "power6_iconColor",
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "color",
-                            "label": "selectColorForIcon",
-                            "default": "#ffffff"
-                        },
-                        {
                             "attr": "power6_state",
                             "xs": 12,
                             "sm": 12,
@@ -1759,7 +2013,20 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power6_more",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false,
+                            "newLine": true
+                        },
+                        {
                             "attr": "power6_valueDecimal",
+                            "newLine": true,
                             "xs": 6,
                             "sm": 6,
                             "md": 2,
@@ -1785,7 +2052,8 @@
                                     "label": "0.001",
                                     "value": 3
                                 }
-                            ]
+                            ],
+                            "hidden": "!data._power6_more"
                         },
                         {
                             "attr": "power6_valueUnit",
@@ -1796,30 +2064,6 @@
                             "xl": 1,
                             "type": "text",
                             "label": "valueUnit",
-                            "default": "W"
-                        },
-                        {
-                            "attr": "_power6_more",
-                            "xs": 2,
-                            "sm": 2,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "checkbox",
-                            "label": "more",
-                            "default": false,
-                            "newLine": true
-                        },
-                        {
-                            "attr": "power6_entityHeadline",
-                            "newLine": true,
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 4,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "text",
-                            "label": "entityHeadline",
                             "default": "",
                             "hidden": "!data._power6_more"
                         },
@@ -1844,7 +2088,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxSpeed",
-                            "default": "100",
+                            "default": "10000",
                             "hidden": "!data._power6_more"
                         },
                         {
@@ -1860,10 +2104,84 @@
                             "hidden": "!data._power6_more"
                         },
                         {
+                            "attr": "_power6_color",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "useColorScala",
+                            "default": false,
+                            "hidden": "!data._power6_more",
+                            "newLine": true
+                        },
+                        {
+                            "attr": "power6_iconColor",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForIcon",
+                            "default": "#ffffff",
+                            "hidden": "!data._power6_more  || data._power6_color"
+                        },
+                        {
+                            "attr": "power6_minColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMinValueForClor",
+                            "default": "0",
+                            "hidden": "!data._power6_more || !data._power6_color"
+                        },
+                        {
+                            "attr": "power6_maxColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerMaxValueForColor",
+                            "default": "10000",
+                            "hidden": "!data._power6_more || !data._power6_color"
+                        },
+                        {
+                            "attr": "power6_bestColorScale",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "powerBestValueForColor",
+                            "default": "",
+                            "hidden": "!data._power6_more || !data._power6_color"
+                        },
+                        {
+                            "attr": "power6_entityHeadline",
+                            "newLine": true,
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 4,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "entityHeadline",
+                            "default": "",
+                            "hidden": "!data._power6_more"
+                        },
+                        {
                             "attr": "powerHome_header",
                             "type": "header",
                             "text": "powerHome",
-                            "size": 2
+                            "size": 3
                         },
                         {
                             "newLine": true,
@@ -1874,7 +2192,7 @@
                             "lg": 8,
                             "xl": 8,
                             "type": "objectId",
-                            "label": "powerState",
+                            "label": "powerStateHomeTop",
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
@@ -1886,7 +2204,7 @@
                             "lg": 8,
                             "xl": 8,
                             "type": "objectId",
-                            "label": "powerState",
+                            "label": "powerStateHomeBottom",
                             "filterFunc": "return obj.common.type === 'number'"
                         }
                     ]
