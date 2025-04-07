@@ -20,6 +20,7 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'text.sainlogic.windcombo'
     | 'button.slider'
     | 'number.slider'
     | 'text.lock'
@@ -432,6 +433,7 @@ export type DataItemsOptions = {
     name?: string;
     scale?: { min: number; max: number };
     dp?: string | undefined;
+    constants?: Record<string, string>;
 } & (
     | DataItemsOptionsConst
     | DataItemsOptionsState

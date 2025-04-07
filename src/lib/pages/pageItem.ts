@@ -62,6 +62,9 @@ export class PageItem extends BaseClassTriggerd {
         const tempItem: typePageItem.PageItemDataItems['data'] = (await this.panel.statesControler.createDataItems(
             config.data,
             this,
+            {},
+            'data',
+            config.readOptions,
         )) as typePageItem.PageItemDataItems['data'];
         this.dataItems = { ...config, data: tempItem } as typePageItem.PageItemDataItems;
 

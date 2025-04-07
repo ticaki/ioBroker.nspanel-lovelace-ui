@@ -79,7 +79,10 @@ class PageItem extends import_BaseClassPage.BaseClassTriggerd {
     const config = structuredClone(this.config);
     const tempItem = await this.panel.statesControler.createDataItems(
       config.data,
-      this
+      this,
+      {},
+      "data",
+      config.readOptions
     );
     this.dataItems = { ...config, data: tempItem };
     switch (this.dataItems.type) {

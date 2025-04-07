@@ -3350,10 +3350,10 @@ export class ConfigManager extends BaseClass {
         };
 
         if (entity.type === 'native') {
-            const temp = JSON.parse(JSON.stringify(entity.native)) as typePageItem.PageItemDataItemsOptions;
+            const temp = structuredClone(entity.native) as typePageItem.PageItemDataItemsOptions;
             return temp;
         } else if (entity.type === 'template') {
-            const temp = JSON.parse(JSON.stringify(entity)) as unknown as typePageItem.PageItemDataItemsOptions;
+            const temp = structuredClone(entity) as unknown as typePageItem.PageItemDataItemsOptions;
             delete temp.type;
             return temp;
         }
