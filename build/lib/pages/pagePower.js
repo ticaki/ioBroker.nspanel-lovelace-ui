@@ -213,7 +213,12 @@ class PagePower extends import_Page.Page {
     for (let i = 1; i <= 6; i++) {
       const key = `power${i}_valueUnit`;
       if (typeof config[key] === "string") {
-        valueUnit.push(` ${config[key]}`);
+        const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
+        if (o && o.common && o.common.unit) {
+          valueUnit.push(` ${o.common.unit}`);
+        } else {
+          valueUnit.push(` ${config[key]}`);
+        }
       } else {
         valueUnit.push(" W");
       }
