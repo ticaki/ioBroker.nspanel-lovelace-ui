@@ -282,17 +282,26 @@ export class Color extends ColorBase {
     }
     static perc2color(_from: RGB, _to: RGB, percent: number, _swap?: boolean): RGB {
         percent = percent * 100;
-        percent = _swap ? 100 - percent : percent;
         percent = Math.min(100, Math.max(0, percent));
         let r = 0;
         let g = 0;
         const b = 0;
-        if (percent < 50) {
-            r = 255;
-            g = Math.round(5.1 * percent);
+        if (_swap === false) {
+            if (percent < 50) {
+                r = 255;
+                g = Math.round(5.1 * percent);
+            } else {
+                g = 255;
+                r = Math.round(510 - 5.1 * percent);
+            }
         } else {
-            g = 255;
-            r = Math.round(510 - 5.1 * percent);
+            if (percent < 50) {
+                g = 255;
+                r = Math.round(5.1 * percent);
+            } else {
+                r = 255;
+                g = Math.round(510 - 5.1 * percent);
+            }
         }
         return { r, g, b };
     }
