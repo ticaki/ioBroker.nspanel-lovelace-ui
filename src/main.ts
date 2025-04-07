@@ -216,7 +216,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         if (c === b || !scriptConfig[c] || !scriptConfig[b].pages || !scriptConfig[c].pages) {
                             continue;
                         }
-                        let pages = JSON.parse(JSON.stringify(scriptConfig[c].pages)) as panelConfigPartial['pages'];
+                        let pages = structuredClone(scriptConfig[c].pages);
                         if (pages) {
                             pages = pages.filter(a => {
                                 if (
@@ -478,44 +478,12 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (counter === 0) {
                 return;
             }
-
-            // clone the configuration and update navigation from admin
-            const config = structuredClone(this.mainConfiguration);
-            {
-                const o = await this.getForeignObjectAsync(this.namespace);
-                if (o && o.native && o.native.navigation) {
-                    for (const b of config) {
-                        if (o.native.navigation[b.topic] && o.native.navigation[b.topic].useNavigation) {
-                            b.navigation = o.native.navigation[b.topic].data;
-                        }
-                    }
-                }
-            }
-            // remove unused pages except screensaver - pages must be in navigation
-            config.forEach(a => {
-                if (a && a.pages) {
-                    a.pages = a.pages.filter(b => {
-                        if (
-                            b.config?.card === 'screensaver' ||
-                            b.config?.card === 'screensaver2' ||
-                            b.config?.card === 'screensaver3'
-                        ) {
-                            return true;
-                        }
-                        if (a.navigation.find(c => c && c.name === b.uniqueID)) {
-                            return true;
-                        }
-                        return false;
-                    });
-                }
-            });
-
             const mem = process.memoryUsage().heapUsed / 1024;
             this.log.debug(String(`${mem}k`));
             this.controller = new Controller(this, {
                 mqttClient: this.mqttClient,
                 name: 'controller',
-                panels: config,
+                panels: structuredClone(this.mainConfiguration),
             });
             await this.controller.init();
             /*setInterval(() => {

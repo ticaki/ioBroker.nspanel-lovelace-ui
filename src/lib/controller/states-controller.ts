@@ -60,6 +60,9 @@ export class StatesControler extends BaseClass {
                 if (item.unload) {
                     //this.log.debug('Unload element:  ' + entry.to[i].name);
                     removeIndex.push(Number(i));
+                } else if (item.parent?.panel?.unload) {
+                    //this.log.debug('Unload element:  ' + entry.to[i].name);
+                    removeIndex.push(Number(i));
                 }
             }
             for (const i of removeIndex) {

@@ -43,6 +43,7 @@ class StatesControler extends import_library.BaseClass {
     }, 18e5);
   }
   deletePageLoop = () => {
+    var _a, _b;
     const removeId = [];
     for (const id in this.triggerDB) {
       const entry = this.triggerDB[id];
@@ -50,6 +51,8 @@ class StatesControler extends import_library.BaseClass {
       for (let i = 0; i < entry.to.length; i++) {
         const item = entry.to[i];
         if (item.unload) {
+          removeIndex.push(Number(i));
+        } else if ((_b = (_a = item.parent) == null ? void 0 : _a.panel) == null ? void 0 : _b.unload) {
           removeIndex.push(Number(i));
         }
       }

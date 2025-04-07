@@ -33,12 +33,14 @@ export class Controller extends Library.BaseClass {
         this.adapter.controller = this;
         this.mqttClient = options.mqttClient;
         this.statesControler = new StatesControler(this.adapter);
+        this.systemNotification = new SystemNotifications(this.adapter);
 
         for (const panelConfig of options.panels) {
             if (panelConfig === undefined) {
                 continue;
             }
-            const index = this.adapter.config.panels.findIndex(panel => panel.topic === panelConfig.topic);
+            void this.addPanel(panelConfig);
+            /*const index = this.adapter.config.panels.findIndex(panel => panel.topic === panelConfig.topic);
             if (index === -1) {
                 this.adapter.testSuccessful = false;
                 this.adapter.log.error(`Panel ${panelConfig.name} with topic ${panelConfig.topic} not found in config`);
@@ -49,9 +51,8 @@ export class Controller extends Library.BaseClass {
             panelConfig.controller = this;
             this.adapter.log.info(`Create panel ${panelConfig.name} with topic ${panelConfig.topic}`);
             const panel = new Panel.Panel(adapter, panelConfig as Panel.panelConfigPartial);
-            this.panels.push(panel);
+            this.panels.push(panel);*/
         }
-        this.systemNotification = new SystemNotifications(this.adapter);
         this.log.debug(`${this.name} created`);
     }
 
@@ -234,12 +235,12 @@ export class Controller extends Library.BaseClass {
             getInternalDefaults('boolean', 'indicator', false),
             this.onInternalCommand,
         );
-        const newPanels = [];
+        //const newPanels = [];
         // erzeuge übergeordneten channel
         await this.library.writedp(`panels`, undefined, genericStateObjects.panel._channel);
 
         void this.systemNotification.init();
-        this.log.debug(`Create ${this.panels.length} panels`);
+        /*this.log.debug(`Create ${this.panels.length} panels`);
         for (const panel of this.panels) {
             await this.adapter.delay(100);
             if (await panel.isValid()) {
@@ -251,13 +252,61 @@ export class Controller extends Library.BaseClass {
                 this.log.error(`Panel ${panel.name} has a invalid configuration.`);
             }
         }
-        this.panels = newPanels;
+        this.panels = newPanels;*/
         void this.minuteLoop();
         void this.dateUpdateLoop();
         await this.getTasmotaVersion();
         await this.getTFTVersion();
         this.dailyIntervalTimeout = this.adapter.setInterval(this.dailyInterval, 24 * 60 * 60 * 1000);
     }
+
+    addPanel = async (panel: Partial<Panel.panelConfigPartial>): Promise<void> => {
+        let index = this.panels.findIndex(p => p.topic === panel.topic);
+        if (index !== -1) {
+            this.adapter.testSuccessful = false;
+            this.adapter.log.error(`Panel ${panel.name} with topic ${panel.topic} already exists`);
+            return;
+        }
+        index = this.adapter.config.panels.findIndex(p => p.topic === panel.topic);
+        if (index === -1) {
+            this.adapter.testSuccessful = false;
+            this.adapter.log.error(`Panel ${panel.name} with topic ${panel.topic} not found in config`);
+            return;
+        }
+
+        panel.name = this.adapter.config.panels[index].id;
+        panel.friendlyName = this.adapter.config.panels[index].name;
+        panel.controller = this;
+        // merge adapter navigation
+        const o = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
+        if (panel?.topic && o && o.native && o.native.navigation) {
+            if (o.native.navigation[panel.topic] && o.native.navigation[panel.topic].useNavigation) {
+                panel.navigation = o.native.navigation[panel.topic].data;
+            }
+        }
+        const newPanel = new Panel.Panel(this.adapter, panel as Panel.panelConfigPartial);
+        await this.adapter.delay(100);
+        if (await newPanel.isValid()) {
+            this.panels.push(newPanel);
+            await newPanel.init();
+            this.log.debug(`Panel ${newPanel.name} created`);
+        } else {
+            await newPanel.delete();
+            this.adapter.testSuccessful = false;
+            this.log.error(`Panel ${panel.name} has a invalid configuration.`);
+        }
+    };
+
+    removePanel = async (panel: Panel.Panel): Promise<void> => {
+        const index = this.panels.findIndex(p => p.topic === panel.topic);
+        if (index !== -1) {
+            this.panels.splice(index, 1);
+            await panel.delete();
+            this.log.info(`Panel ${panel.topic} deleted`);
+        } else {
+            this.log.error(`Panel ${panel.topic} not found`);
+        }
+    };
 
     async delete(): Promise<void> {
         await super.delete();

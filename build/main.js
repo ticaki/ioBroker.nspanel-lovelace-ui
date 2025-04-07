@@ -180,7 +180,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (c === b || !scriptConfig[c] || !scriptConfig[b].pages || !scriptConfig[c].pages) {
               continue;
             }
-            let pages = JSON.parse(JSON.stringify(scriptConfig[c].pages));
+            let pages = structuredClone(scriptConfig[c].pages);
             if (pages) {
               pages = pages.filter((a) => {
                 var _a2, _b2, _c2;
@@ -360,37 +360,12 @@ class NspanelLovelaceUi extends utils.Adapter {
       if (counter === 0) {
         return;
       }
-      const config = structuredClone(this.mainConfiguration);
-      {
-        const o = await this.getForeignObjectAsync(this.namespace);
-        if (o && o.native && o.native.navigation) {
-          for (const b of config) {
-            if (o.native.navigation[b.topic] && o.native.navigation[b.topic].useNavigation) {
-              b.navigation = o.native.navigation[b.topic].data;
-            }
-          }
-        }
-      }
-      config.forEach((a) => {
-        if (a && a.pages) {
-          a.pages = a.pages.filter((b) => {
-            var _a2, _b2, _c2;
-            if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b2 = b.config) == null ? void 0 : _b2.card) === "screensaver2" || ((_c2 = b.config) == null ? void 0 : _c2.card) === "screensaver3") {
-              return true;
-            }
-            if (a.navigation.find((c) => c && c.name === b.uniqueID)) {
-              return true;
-            }
-            return false;
-          });
-        }
-      });
       const mem = process.memoryUsage().heapUsed / 1024;
       this.log.debug(String(`${mem}k`));
       this.controller = new import_controller.Controller(this, {
         mqttClient: this.mqttClient,
         name: "controller",
-        panels: config
+        panels: structuredClone(this.mainConfiguration)
       });
       await this.controller.init();
     } catch (e) {

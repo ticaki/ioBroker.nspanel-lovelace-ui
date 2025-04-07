@@ -41,7 +41,6 @@ class PageItem extends import_BaseClassPage.BaseClassTriggerd {
   defaultOffColor = import_Color.Color.Blue;
   config;
   dataItems;
-  panel;
   id;
   lastPopupType = void 0;
   parent;
@@ -1165,6 +1164,7 @@ class PageItem extends import_BaseClassPage.BaseClassTriggerd {
       if (!this.panel.unload) {
         return;
       }
+      delete this.panel.persistentPageItems[this.id];
     }
     await super.delete();
     this.controller.statesControler.deletePageLoop();

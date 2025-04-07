@@ -4,7 +4,6 @@ import type { PageItemInterface } from '../classes/PageInterface';
 import * as typePageItem from '../types/type-pageItem';
 import * as tools from '../const/tools';
 import type { PopupType } from '../types/types';
-import type { Panel } from '../controller/panel';
 import { Icons } from '../const/icon_mapping';
 import type { Dataitem } from '../classes/data-item';
 import type { ChangeTypeOfKeys, DeviceRole } from '../types/pages';
@@ -17,7 +16,6 @@ export class PageItem extends BaseClassTriggerd {
     defaultOffColor = Color.Blue;
     config: typePageItem.PageItemDataItemsOptionsWithOutTemplate | undefined;
     dataItems: typePageItem.PageItemDataItems | undefined;
-    panel: Panel;
     id: string;
     lastPopupType: PopupType | undefined = undefined;
     parent: Page | undefined;
@@ -1361,6 +1359,8 @@ export class PageItem extends BaseClassTriggerd {
             if (!this.panel.unload) {
                 return;
             }
+
+            delete this.panel.persistentPageItems[this.id];
         }
         await super.delete();
         this.controller.statesControler.deletePageLoop();

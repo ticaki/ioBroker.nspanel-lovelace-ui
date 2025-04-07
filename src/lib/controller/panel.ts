@@ -73,7 +73,7 @@ export class Panel extends BaseClass {
     private data: Record<string, any> = {};
     private blockStartup: ioBroker.Timeout | undefined = null;
     private _isOnline: boolean = false;
-
+    options: panelConfigPartial;
     public screenSaver: Screensaver | undefined;
     public lastCard: string = '';
     public notifyIndex: number = -1;
@@ -194,7 +194,9 @@ export class Panel extends BaseClass {
             name: `${this.friendlyName}-SendClass`,
             mqttClient: options.controller.mqttClient,
             topic: options.topic,
+            panel: this,
         });
+        this.options = options;
         this.timeout = options.timeout || 15;
         this.buttons = options.buttons;
         this.CustomFormat = options.CustomFormat ?? '';
@@ -208,6 +210,7 @@ export class Panel extends BaseClass {
         if (typeof this.panelSend.addMessageTasmota === 'function') {
             this.sendToTasmota = this.panelSend.addMessageTasmota;
         }
+        // remove unused pages except screensaver - pages must be in navigation
 
         this.statesControler = options.controller.statesControler;
 
@@ -223,6 +226,19 @@ export class Panel extends BaseClass {
             schedule: false,
         };*/
 
+        options.pages = options.pages.filter(b => {
+            if (
+                b.config?.card === 'screensaver' ||
+                b.config?.card === 'screensaver2' ||
+                b.config?.card === 'screensaver3'
+            ) {
+                return true;
+            }
+            if (options.navigation.find(c => c && c.name === b.uniqueID)) {
+                return true;
+            }
+            return false;
+        });
         options.pages = options.pages.concat(systemPages);
         options.navigation = (options.navigation || []).concat(systemNavigation);
 
@@ -659,6 +675,9 @@ export class Panel extends BaseClass {
             if (s) {
                 this.log.info('is online!');
             } else {
+                void this.controller.removePanel(this);
+                void this.controller.addPanel(this.options);
+                this._activePage = undefined;
                 this.log.warn('is offline!');
             }
         }
@@ -1088,6 +1107,7 @@ export class Panel extends BaseClass {
         );
         await this.panelSend.delete();
         await this.navigation.delete();
+        await this.screenSaver?.delete();
         for (const a of this.pages) {
             if (a) {
                 await a.delete();
