@@ -289,8 +289,12 @@ export class Screensaver extends Page {
         }
     };
     async HandleTime(): Promise<void> {
+        if (this.panel.isOnline === false) {
+            return;
+        }
         const message = await this.getData(['time']);
-        if (message === null || !message.options.time[0] || this.panel.isOnline === false) {
+
+        if (message === null || !message.options.time[0]) {
             this.log.debug('HandleTime: no message, no time or panel is offline');
             return;
         }
@@ -300,8 +304,11 @@ export class Screensaver extends Page {
         );
     }
     async HandleDate(): Promise<void> {
+        if (this.panel.isOnline === false) {
+            return;
+        }
         const message = await this.getData(['date']);
-        if (message === null || !message.options.date[0] || this.panel.isOnline === false) {
+        if (message === null || !message.options.date[0]) {
             this.log.debug('HandleDate: no message, no date or panel is offline');
             return;
         }

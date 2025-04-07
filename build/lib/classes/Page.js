@@ -167,11 +167,11 @@ class Page extends import_BaseClassPage.BaseClassPage {
   async onButtonEvent(event) {
     this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
   }
-  sendType() {
-    if (this.panel.lastCard !== this.card || this.card === "cardThermo") {
+  sendType(force) {
+    if (force || this.panel.lastCard !== this.card || this.card === "cardThermo") {
       this.sendToPanel(`pageType~${this.card}`);
     } else {
-      if (this.lastCardCounter++ > 5) {
+      if (this.lastCardCounter++ > 10) {
         this.lastCardCounter = 0;
         this.sendToPanel(`pageType~${this.card}`);
       }

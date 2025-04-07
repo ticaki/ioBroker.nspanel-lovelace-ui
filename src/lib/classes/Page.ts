@@ -196,11 +196,11 @@ export class Page extends BaseClassPage {
     async onButtonEvent(event: IncomingEvent): Promise<void> {
         this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
     }
-    sendType(): void {
-        if (this.panel.lastCard !== this.card || this.card === 'cardThermo') {
+    sendType(force?: boolean): void {
+        if (force || this.panel.lastCard !== this.card || this.card === 'cardThermo') {
             this.sendToPanel(`pageType~${this.card}`);
         } else {
-            if (this.lastCardCounter++ > 5) {
+            if (this.lastCardCounter++ > 10) {
                 this.lastCardCounter = 0;
                 this.sendToPanel(`pageType~${this.card}`);
             }
