@@ -20,7 +20,8 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
-    | 'text.sainlogic.windcombo'
+    | 'text.hmip.windcombo'
+    | 'text.sainlogic.windarrow'
     | 'button.slider'
     | 'number.slider'
     | 'text.lock'

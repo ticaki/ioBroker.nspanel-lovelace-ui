@@ -1561,7 +1561,7 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
-    'text.sainlogic.windcombo': {
+    'text.sainlogic.windarrow': {
         role: 'text',
         type: 'text',
         modeScr: 'bottom',
@@ -1650,6 +1650,92 @@ export const textTemplates: TemplateItems = {
                 scale: {
                     type: 'const',
                     constVal: { val_min: 50, val_max: 0, val_best: 10, mode: 'triGradAnchor' },
+                },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: {
+                true: {
+                    type: 'const',
+                    constVal: 'Wind',
+                },
+                false: undefined,
+            },
+        },
+    },
+    'text.hmip.windcombo': {
+        role: 'textNotIcon',
+        type: 'text',
+        modeScr: 'bottom',
+        adapter: 'hmip',
+        data: {
+            entity1: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /.channels\.1\.windSpeed/,
+                    dp: ``,
+                },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                unit: undefined,
+            },
+            entity2: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /.channels\.1\.windSpeed/,
+                    dp: ``,
+                },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                unit: {
+                    type: 'const',
+                    constVal: 'km/h',
+                },
+            },
+            icon: {
+                true: {
+                    text: {
+                        value: {
+                            mode: 'auto',
+                            role: '',
+                            type: 'triggered',
+                            regexp: /\.channels\.1\.windDirection/,
+                            dp: ``,
+                            read: `{
+                                const directions = [
+                                    "N",  "NNO", "NO",  "ONO",
+                                    "O",  "OSO", "SO",  "SSO",
+                                    "S",  "SSW", "SW",  "WSW",
+                                    "W",  "WNW", "NW",  "NNW"
+                                ];
+
+                                const index = Math.round((val % 360) / 22.5) % 16;
+                                return directions[index];
+                            }`,
+                        },
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSRed,
+                    },
+                },
+                false: {
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSGreen,
+                    },
+                },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 130, val_max: 0, mode: 'triGrad' },
                 },
                 maxBri: undefined,
                 minBri: undefined,

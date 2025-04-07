@@ -289,6 +289,27 @@ class NspanelLovelaceUi extends utils.Adapter {
         ) {
             this.config.doubleClickTime = 350;
         }
+        /*await this.extendForeignObjectAsync('hmip.0.devices.3014F711A000185F2999676C.channels.1.windSpeed', {
+            type: 'state',
+            common: {
+                name: 'windSpeed',
+                type: 'number',
+                role: 'value.speed',
+                read: true,
+                write: false,
+            },
+            native: {},
+            _id: 'hmip.0.devices.3014F711A000185F2999676C.channels.1.windSpeed',
+            acl: {
+                object: 1636,
+                state: 1636,
+                owner: 'system.user.admin',
+                ownerGroup: 'system.group.administrator',
+            },
+            from: 'system.adapter.hmip.0',
+            user: 'system.user.admin',
+            ts: 1743869733951,
+        });*/
 
         //check config
         try {
