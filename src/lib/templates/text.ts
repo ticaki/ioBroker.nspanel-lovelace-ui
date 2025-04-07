@@ -1649,7 +1649,7 @@ export const textTemplates: TemplateItems = {
                 },
                 scale: {
                     type: 'const',
-                    constVal: { val_min: 0, val_max: 50, mode: 'triGrad' },
+                    constVal: { val_min: 60, val_max: 0, mode: 'triGrad', log: 'max' },
                 },
                 maxBri: undefined,
                 minBri: undefined,

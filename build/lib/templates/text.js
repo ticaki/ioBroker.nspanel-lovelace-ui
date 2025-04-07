@@ -1658,7 +1658,7 @@ const textTemplates = {
         },
         scale: {
           type: "const",
-          constVal: { val_min: 0, val_max: 50, mode: "triGrad" }
+          constVal: { val_min: 60, val_max: 0, mode: "triGrad", log: "max" }
         },
         maxBri: void 0,
         minBri: void 0
