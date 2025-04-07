@@ -71,6 +71,11 @@ class Controller extends Library.BaseClass {
         panel.sendDimmode();
       });
     }
+    if (minute % 5 === 1) {
+      this.panels.forEach((panel) => {
+        panel.requestStatusTasmota();
+      });
+    }
     await this.statesControler.setInternalState("///time", await this.getCurrentTime(), true);
     const diff = 6e4 - Date.now() % 6e4 + 10;
     if (this.unload) {

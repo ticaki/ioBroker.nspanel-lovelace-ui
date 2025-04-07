@@ -361,7 +361,7 @@ export class Panel extends BaseClass {
         this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
         this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
         this.isOnline = false;
-        this.sendStatusToTasmota();
+        this.requestStatusTasmota();
         this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
         this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
         this.sendRules();
@@ -1088,7 +1088,7 @@ export class Panel extends BaseClass {
         this.loopTimeout = this.adapter.setTimeout(this.loop, t);
     };
 
-    sendStatusToTasmota(): void {
+    requestStatusTasmota(): void {
         this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, '');
     }
 
@@ -1160,6 +1160,9 @@ export class Panel extends BaseClass {
                 if (this.blockStartup) {
                     return;
                 }
+                this.blockStartup = this.adapter.setTimeout(() => {
+                    this.blockStartup = null;
+                }, 3000);
                 this.isOnline = true;
                 this.info.nspanel.displayVersion = event.opt;
                 this.info.nspanel.model = event.action;
@@ -1187,9 +1190,6 @@ export class Panel extends BaseClass {
                     await this.screenSaver.HandleTime();
                 }
                 this.log.info('Panel startup finished!');
-                this.blockStartup = this.adapter.setTimeout(() => {
-                    this.blockStartup = null;
-                }, 3000);
                 break;
             }
             case 'sleepReached': {
