@@ -1611,8 +1611,8 @@ export const textTemplates: TemplateItems = {
                             dir = (dir - (options?.directionOfPanel || 0) + 360) % 360
 
                             let icon = 'arrow-'
-                            let icontop: 'bottom-' | 'top-' | 'down-' | 'up-' | '' = ''
-                            let iconleft: 'left-' | 'right-' | '' = ''
+                            let icontop: /*'bottom-' | 'top-' | 'down-' | 'up-' | ''*/ = ''
+                            let iconleft: /*'left-' | 'right-' | ''*/ = ''
                             if (dir > 292.5 || dir < 67.5) {
                                 icontop = 'top-'
                             }
