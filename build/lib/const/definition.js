@@ -348,7 +348,8 @@ const genericStateObjects = {
               type: "boolean",
               role: "switch",
               read: true,
-              write: true
+              write: true,
+              def: true
             },
             native: {}
           },
@@ -436,7 +437,8 @@ const genericStateObjects = {
               role: "level",
               unit: "s",
               read: true,
-              write: true
+              write: true,
+              def: 30
             },
             native: {}
           }
