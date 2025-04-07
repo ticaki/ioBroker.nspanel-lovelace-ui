@@ -230,7 +230,7 @@ export class Color extends ColorBase {
         return outMax + outMin - (((number - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin);
     }
 
-    static mixColorHue(startRGB: RGB, endRGB: RGB, t: number): RGB {
+    static mixColorHue(startRGB: RGB, endRGB: RGB, t: number, _swap?: boolean): RGB {
         const startHSB = colord(startRGB).toHsv();
         const endHSB = colord(endRGB).toHsv();
 
@@ -280,8 +280,10 @@ export class Color extends ColorBase {
         const b: number = Color.InterpolateNum(color1.b, color2.b, fraction);
         return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
     }
-    static perc2color(_from: RGB, _to: RGB, percent: number): RGB {
+    static perc2color(_from: RGB, _to: RGB, percent: number, _swap?: boolean): RGB {
         percent = percent * 100;
+        percent = _swap ? 100 - percent : percent;
+        percent = Math.min(100, Math.max(0, percent));
         let r = 0;
         let g = 0;
         const b = 0;
@@ -299,9 +301,10 @@ export class Color extends ColorBase {
      * @param c1 from this color
      * @param c2 to this
      * @param r 0-1 mix value
+     * @param _swap no use
      * @returns RGB
      */
-    static mixColorCie(c1: RGB, c2: RGB, r: number): RGB {
+    static mixColorCie(c1: RGB, c2: RGB, r: number, _swap?: boolean): RGB {
         return colord(c1).mix(c2, r).toRgb();
     }
 
@@ -310,9 +313,10 @@ export class Color extends ColorBase {
      * @param c1 from this color
      * @param c2 to this
      * @param x 0-1 mix value
+     * @param _swap no use
      * @returns RGB
      */
-    static mixColor(c1: RGB, c2: RGB, x: number): RGB {
+    static mixColor(c1: RGB, c2: RGB, x: number, _swap?: boolean): RGB {
         const r = Math.round(c1.r + (c2.r - c1.r) * x);
         const g = Math.round(c1.g + (c2.g - c1.g) * x);
         const b = Math.round(c1.b + (c2.b - c1.b) * x);

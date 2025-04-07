@@ -361,6 +361,7 @@ async function getIconEntryColor(i, value, def, defOff = null) {
     if (cto && cfrom && scale) {
       let rColor = cto;
       if ((0, import_types.isIconColorScaleElement)(scale)) {
+        let swap = false;
         let vMin = scale.val_min < value ? scale.val_min : value;
         let vMax = scale.val_max > value ? scale.val_max : value;
         if (vMax < vMin) {
@@ -370,6 +371,7 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           const temp2 = cto;
           cto = cfrom;
           cfrom = temp2;
+          swap = true;
         }
         let vBest = (_d = scale.val_best) != null ? _d : void 0;
         vBest = vBest !== void 0 ? Math.min(vMax, Math.max(vMin, vBest)) : void 0;
@@ -381,19 +383,19 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           factor = (value - vMin) / (vMax - vMin);
           factor = Math.min(1, Math.max(0, factor));
           factor = getLogFromIconScale(scale, factor);
-          rColor = func(cfrom, cto, factor);
+          rColor = func(cfrom, cto, factor, swap);
         } else if (value >= vBest) {
           cfrom = scale.val_best !== void 0 && scale.color_best ? scale.color_best : cfrom;
           factor = 1 - (value - vBest) / (vMax - vBest);
           factor = Math.min(1, Math.max(0, factor));
           factor = getLogFromIconScale(scale, factor);
-          rColor = func(cfrom, cto, factor);
+          rColor = func(cfrom, cto, factor, swap);
         } else {
           cto = scale.val_best !== void 0 && scale.color_best ? scale.color_best : cto;
           factor = (value - vMin) / (vBest - vMin);
           factor = Math.min(1, Math.max(0, factor));
           factor = 1 - getLogFromIconScale(scale, 1 - factor);
-          rColor = func(cfrom, cto, factor);
+          rColor = func(cfrom, cto, factor, swap);
         }
         return String(import_Color.Color.rgb_dec565(rColor));
       } else if ((0, import_types.isPartialColorScaleElement)(scale)) {

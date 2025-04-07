@@ -386,6 +386,7 @@ export async function getIconEntryColor(
         if (cto && cfrom && scale) {
             let rColor: RGB = cto;
             if (isIconColorScaleElement(scale)) {
+                let swap = false;
                 let vMin = scale.val_min < value ? scale.val_min : value;
                 let vMax = scale.val_max > value ? scale.val_max : value;
                 if (vMax < vMin) {
@@ -395,6 +396,7 @@ export async function getIconEntryColor(
                     const temp2 = cto;
                     cto = cfrom;
                     cfrom = temp2;
+                    swap = true;
                 }
                 let vBest = scale.val_best ?? undefined;
                 vBest = vBest !== undefined ? Math.min(vMax, Math.max(vMin, vBest)) : undefined;
@@ -413,19 +415,19 @@ export async function getIconEntryColor(
                     factor = (value - vMin) / (vMax - vMin);
                     factor = Math.min(1, Math.max(0, factor));
                     factor = getLogFromIconScale(scale, factor);
-                    rColor = func(cfrom, cto, factor);
+                    rColor = func(cfrom, cto, factor, swap);
                 } else if (value >= vBest) {
                     cfrom = scale.val_best !== undefined && scale.color_best ? scale.color_best : cfrom;
                     factor = 1 - (value - vBest) / (vMax - vBest);
                     factor = Math.min(1, Math.max(0, factor));
                     factor = getLogFromIconScale(scale, factor);
-                    rColor = func(cfrom, cto, factor);
+                    rColor = func(cfrom, cto, factor, swap);
                 } else {
                     cto = scale.val_best !== undefined && scale.color_best ? scale.color_best : cto;
                     factor = (value - vMin) / (vBest - vMin);
                     factor = Math.min(1, Math.max(0, factor));
                     factor = 1 - getLogFromIconScale(scale, 1 - factor);
-                    rColor = func(cfrom, cto, factor);
+                    rColor = func(cfrom, cto, factor, swap);
                 }
                 return String(Color.rgb_dec565(rColor));
             } else if (isPartialColorScaleElement(scale)) {
