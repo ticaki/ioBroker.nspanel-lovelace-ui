@@ -41,7 +41,6 @@ class PageItem extends import_BaseClassPage.BaseClassTriggerd {
   defaultOffColor = import_Color.Color.Blue;
   config;
   dataItems;
-  panel;
   id;
   lastPopupType = void 0;
   parent;
@@ -79,7 +78,10 @@ class PageItem extends import_BaseClassPage.BaseClassTriggerd {
     const config = structuredClone(this.config);
     const tempItem = await this.panel.statesControler.createDataItems(
       config.data,
-      this
+      this,
+      {},
+      "data",
+      config.readOptions
     );
     this.dataItems = { ...config, data: tempItem };
     switch (this.dataItems.type) {
@@ -1162,6 +1164,7 @@ class PageItem extends import_BaseClassPage.BaseClassTriggerd {
       if (!this.panel.unload) {
         return;
       }
+      delete this.panel.persistentPageItems[this.id];
     }
     await super.delete();
     this.controller.statesControler.deletePageLoop();

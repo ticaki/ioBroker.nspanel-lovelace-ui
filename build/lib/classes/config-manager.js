@@ -2874,10 +2874,10 @@ class ConfigManager extends import_library.BaseClass {
       data: { entity1: {} }
     };
     if (entity.type === "native") {
-      const temp = JSON.parse(JSON.stringify(entity.native));
+      const temp = structuredClone(entity.native);
       return temp;
     } else if (entity.type === "template") {
-      const temp = JSON.parse(JSON.stringify(entity));
+      const temp = structuredClone(entity);
       delete temp.type;
       return temp;
     }

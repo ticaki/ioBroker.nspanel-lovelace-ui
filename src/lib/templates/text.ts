@@ -1561,4 +1561,192 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.sainlogic.windarrow': {
+        role: 'text',
+        type: 'text',
+        modeScr: 'bottom',
+        adapter: 'sainlogic',
+        data: {
+            entity1: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /^sainlogic\.[0-9]+\.weather\.current\.windgustspeed/,
+                    dp: ``,
+                },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                unit: undefined,
+            },
+            entity2: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /^sainlogic\.[0-9]+\.weather\.current\.windgustspeed/,
+                    dp: ``,
+                },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                unit: {
+                    type: 'const',
+                    constVal: 'km/h',
+                },
+            },
+            icon: {
+                true: {
+                    value: {
+                        mode: 'auto',
+                        role: '',
+                        type: 'triggered',
+                        regexp: /^sainlogic\.[0-9]+\.weather\.current\.winddir/,
+                        dp: ``,
+                        read: `{
+                            let dir = (val || 0)
+                            dir = (dir - (options?.directionOfPanel || 0) + 360) % 360
+
+                            let icon = 'arrow-'
+                            let icontop/*: 'bottom-' | 'top-' | 'down-' | 'up-' | ''*/ = ''
+                            let iconleft/*: 'left-' | 'right-' | ''*/ = ''
+                            if (dir > 292.5 || dir < 67.5) {
+                                icontop = 'top-'
+                            }
+                            else if(dir < 247.5 && dir > 112.5) {
+                                icontop = 'bottom-'
+                            }
+                            if (dir < 337.5 && dir > 212.5) {
+                                iconleft = 'left-'
+                            }
+                            else if((dir < 157.5 && dir > 32.5)) {
+                                iconleft = 'right-'
+                            }
+                            if (iconleft === '' && icontop) {
+                                if (icontop === 'top-') {
+                                    icontop = 'up-';
+                                } else {
+                                    icontop = 'down-';
+                                }
+
+                            }
+                            return icon + icontop + iconleft + (options?.icon || 'bold-outline')
+                        }`,
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSRed,
+                    },
+                },
+                false: {
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSGreen,
+                    },
+                },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 50, val_max: 0, val_best: 10, mode: 'triGradAnchor' },
+                },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: {
+                true: {
+                    type: 'const',
+                    constVal: 'Wind',
+                },
+                false: undefined,
+            },
+        },
+    },
+    'text.hmip.windcombo': {
+        role: 'textNotIcon',
+        type: 'text',
+        modeScr: 'bottom',
+        adapter: 'hmip',
+        data: {
+            entity1: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /.channels\.1\.windSpeed/,
+                    dp: ``,
+                },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                unit: undefined,
+            },
+            entity2: {
+                value: {
+                    mode: 'auto',
+                    role: '',
+                    type: 'triggered',
+                    regexp: /.channels\.1\.windSpeed/,
+                    dp: ``,
+                },
+                decimal: {
+                    type: 'const',
+                    constVal: 0,
+                },
+                unit: {
+                    type: 'const',
+                    constVal: 'km/h',
+                },
+            },
+            icon: {
+                true: {
+                    text: {
+                        value: {
+                            mode: 'auto',
+                            role: '',
+                            type: 'triggered',
+                            regexp: /\.channels\.1\.windDirection/,
+                            dp: ``,
+                            read: `{
+                                const directions = [
+                                    "N",  "NNO", "NO",  "ONO",
+                                    "O",  "OSO", "SO",  "SSO",
+                                    "S",  "SSW", "SW",  "WSW",
+                                    "W",  "WNW", "NW",  "NNW"
+                                ];
+
+                                const index = Math.round((val % 360) / 22.5) % 16;
+                                return directions[index];
+                            }`,
+                        },
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSRed,
+                    },
+                },
+                false: {
+                    color: {
+                        type: 'const',
+                        constVal: Color.MSGreen,
+                    },
+                },
+                scale: {
+                    type: 'const',
+                    constVal: { val_min: 130, val_max: 0, mode: 'triGrad' },
+                },
+                maxBri: undefined,
+                minBri: undefined,
+            },
+            text: {
+                true: {
+                    type: 'const',
+                    constVal: 'Wind',
+                },
+                false: undefined,
+            },
+        },
+    },
 };

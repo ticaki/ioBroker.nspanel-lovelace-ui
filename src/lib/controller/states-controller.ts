@@ -60,6 +60,9 @@ export class StatesControler extends BaseClass {
                 if (item.unload) {
                     //this.log.debug('Unload element:  ' + entry.to[i].name);
                     removeIndex.push(Number(i));
+                } else if (item.parent?.panel?.unload) {
+                    //this.log.debug('Unload element:  ' + entry.to[i].name);
+                    removeIndex.push(Number(i));
                 }
             }
             for (const i of removeIndex) {
@@ -495,9 +498,16 @@ export class StatesControler extends BaseClass {
      * @param parent Page etc.
      * @param target optional target
      * @param path optional path
+     * @param options so far only constant to use in getState().read
      * @returns then json with values dataitem or undefined
      */
-    async createDataItems(data: any, parent: any, target: any = {}, path: string = 'data'): Promise<any> {
+    async createDataItems(
+        data: any,
+        parent: any,
+        target: any = {},
+        path: string = 'data',
+        options?: Record<string, string>,
+    ): Promise<any> {
         for (const i in data) {
             const d = data[i];
             if (d === undefined) {
@@ -509,13 +519,14 @@ export class StatesControler extends BaseClass {
                     parent,
                     (target[i] ?? Array.isArray(d)) ? [] : {},
                     `${path}.${i}`,
+                    options,
                 );
             } else if (typeof d === 'object' && 'type' in d) {
                 target[i] =
                     data[i] !== undefined
                         ? new Dataitem(
                               this.adapter,
-                              { ...d, name: `${this.name}.${parent.name}.${i}.${path}` },
+                              { ...d, name: `${this.name}.${parent.name}.${i}.${path}`, constants: options },
                               parent,
                               this,
                           )

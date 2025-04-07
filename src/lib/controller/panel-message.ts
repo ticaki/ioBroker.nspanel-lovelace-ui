@@ -19,9 +19,12 @@ export class PanelSend extends BaseClass {
     private losingMessageCount = 0;
 
     private _losingDelay = 1000;
-    _panel: Panel | undefined = undefined;
+    panel: Panel | undefined = undefined;
 
     get losingDelay(): number {
+        if (this.panel && this._losingDelay >= 2000) {
+            this.panel.isOnline = false;
+        }
         if (this._losingDelay < 30000) {
             this._losingDelay = this._losingDelay + 2000;
         }
@@ -36,14 +39,15 @@ export class PanelSend extends BaseClass {
         }
         this._losingDelay = value;
     }
-    constructor(adapter: AdapterClassDefinition, config: { name: string; mqttClient: MQTTClientClass; topic: string }) {
+    constructor(
+        adapter: AdapterClassDefinition,
+        config: { name: string; mqttClient: MQTTClientClass; topic: string; panel: Panel },
+    ) {
         super(adapter, config.name);
         this.mqttClient = config.mqttClient;
         this.mqttClient.subscript(`${config.topic}/stat/RESULT`, this.onMessage);
         this.topic = config.topic + SendTopicAppendix;
-    }
-    public set panel(panel: Panel) {
-        this._panel = panel;
+        this.panel = config.panel;
     }
 
     onMessage: callbackMessageType = async (topic: string, message: string) => {
@@ -73,12 +77,6 @@ export class PanelSend extends BaseClass {
             }
         }
     };
-    public get panel(): Panel {
-        if (!this._panel) {
-            throw new Error('Error P1: Panel undefinied!');
-        }
-        return this._panel;
-    }
 
     readonly addMessage = (payload: string, opt?: IClientPublishOptions): void => {
         if (
@@ -101,11 +99,11 @@ export class PanelSend extends BaseClass {
             return;
         }
         if (this.losingMessageCount++ > 3) {
-            if (this._panel) {
-                this._panel.isOnline = false;
+            if (this.panel) {
+                this.panel.isOnline = false;
             }
         }
-        if (this._panel && !this._panel.isOnline) {
+        if (this.panel && !this.panel.isOnline) {
             this.messageDb = [];
         }
         if (this.unload) {
@@ -145,6 +143,7 @@ export class PanelSend extends BaseClass {
 
     async delete(): Promise<void> {
         await super.delete();
+        this.mqttClient.unsubscribe(`${this.topic}/stat/RESULT`);
         if (this.messageTimeout) {
             this.adapter.clearTimeout(this.messageTimeout);
         }
