@@ -34,9 +34,6 @@ class PanelSend extends import_library.BaseClass {
   _losingDelay = 1e3;
   panel = void 0;
   get losingDelay() {
-    if (this.panel && this._losingDelay >= 2e3) {
-      this.panel.isOnline = false;
-    }
     if (this._losingDelay < 3e4) {
       this._losingDelay = this._losingDelay + 2e3;
     }

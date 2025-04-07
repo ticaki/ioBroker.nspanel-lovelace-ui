@@ -362,7 +362,6 @@ export class Panel extends BaseClass {
         this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
         this.isOnline = false;
         this.sendStatusToTasmota();
-        this.restartLoops();
         this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
         this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
         this.sendRules();
@@ -601,6 +600,7 @@ export class Panel extends BaseClass {
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
         this.info.nspanel.bigIconRight = state ? !!state.val : false;
+        this.restartLoops();
     };
 
     private sendToPanelClass: (payload: string, opt?: IClientPublishOptions) => void = () => {};
@@ -1069,7 +1069,7 @@ export class Panel extends BaseClass {
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
-        this.loop();
+        this.loopTimeout = this.adapter.setTimeout(this.loop, 3000);
     }
     /**
      * Do panel work always at full minute
@@ -1087,6 +1087,7 @@ export class Panel extends BaseClass {
         }
         this.loopTimeout = this.adapter.setTimeout(this.loop, t);
     };
+
     sendStatusToTasmota(): void {
         this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, '');
     }
