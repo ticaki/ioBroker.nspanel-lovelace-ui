@@ -388,8 +388,9 @@ export type IconColorElement = {
      * 'cie': the target colour is achieved by mixing according to the CIE colour table.
      * 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
      * 'triGrad': the target colour is interpolated in a three-color gradient from red to green.
+     * 'triGradAnchor': the target colour is interpolated in a three-color gradient from red to green, Yellow is anchored to val_best.
      */
-    mode?: 'mixed' | 'hue' | 'cie' | 'triGrad';
+    mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor';
     /**
      * The logarithm scaling to max, min or leave undefined for linear scaling.
      */
