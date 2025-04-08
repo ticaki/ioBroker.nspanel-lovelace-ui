@@ -104,7 +104,7 @@ class MQTTClientClass extends import_library.BaseClass {
       this.client.unsubscribe(topic);
     }
   }
-  subscript(topic, callback) {
+  async subscript(topic, callback) {
     if (this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback) !== -1) {
       return;
     }
@@ -112,11 +112,7 @@ class MQTTClientClass extends import_library.BaseClass {
     this.subscriptDB.push({ topic, callback });
     if (aNewOne) {
       this.log.debug(`subscripe to: ${topic}`);
-      this.client.subscribe(topic, (err) => {
-        if (err) {
-          this.log.error(`On subscribe: ${err}`);
-        }
-      });
+      await this.client.subscribeAsync(topic, { qos: 1 });
     }
   }
   async destroy() {

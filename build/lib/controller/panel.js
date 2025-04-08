@@ -321,8 +321,8 @@ class Panel extends import_library.BaseClass {
   }
   init = async () => {
     var _a, _b;
-    this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
-    this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
+    await this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
+    await this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
     this.isOnline = false;
     this.requestStatusTasmota();
     this.sendToTasmota(`${this.topic}/cmnd/POWER1`, "");

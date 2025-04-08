@@ -309,7 +309,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             throw new Error("Test mqttClient not ready!");
           }
         }
-        test.subscript("test/123456/cmnd/#", async (topic, message) => {
+        await test.subscript("test/123456/cmnd/#", async (topic, message) => {
           this.log.debug(`Testcase ${topic}`);
           if (message === "pageType~pageStartup") {
             await test.publish("test/123456/stat/RESULT", '{"CustomSend": "Done"}');
@@ -555,7 +555,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.timeoutAdmin = null;
                 resolve({ status: false, id: "", ip: "" });
               }, 5e3);
-              mqtt2.subscript(`${topic}/stat/STATUS0`, (_topic, _message) => {
+              void mqtt2.subscript(`${topic}/stat/STATUS0`, (_topic, _message) => {
                 const msg = JSON.parse(_message);
                 if (msg.StatusNET) {
                   resolve({
@@ -564,8 +564,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                     id: this.library.cleandp(msg.StatusNET.Mac, false, true)
                   });
                 }
+              }).then(() => {
+                void mqtt2.publish(`${topic}/cmnd/STATUS0`, "");
               });
-              void mqtt2.publish(`${topic}/cmnd/STATUS0`, "");
             });
           };
           const result = await checkTasmota(mqtt, device.topic);
@@ -652,7 +653,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                       timeoutIndex: -1
                     };
                     if (mqtt2 && topic) {
-                      mqtt2.subscript(
+                      void mqtt2.subscript(
                         `${topic}/stat/STATUS0`,
                         (_topic, _message) => {
                           const msg = JSON.parse(_message);
@@ -797,7 +798,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     );
                     result2.timeoutIndex = this.timeoutAdminArray.length - 1;
                     if (mqtt2 && topic) {
-                      mqtt2.subscript(
+                      void mqtt2.subscript(
                         `${topic}/stat/STATUS0`,
                         (_topic, _message) => {
                           const msg = JSON.parse(_message);

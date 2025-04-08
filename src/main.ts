@@ -398,7 +398,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                 }
 
-                test.subscript('test/123456/cmnd/#', async (topic, message) => {
+                await test.subscript('test/123456/cmnd/#', async (topic, message) => {
                     this.log.debug(`Testcase ${topic}`);
                     if (message === 'pageType~pageStartup') {
                         await test.publish('test/123456/stat/RESULT', '{"CustomSend": "Done"}');
@@ -700,17 +700,20 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 this.timeoutAdmin = null;
                                 resolve({ status: false, id: '', ip: '' });
                             }, 5000);
-                            mqtt.subscript(`${topic}/stat/STATUS0`, (_topic: string, _message: string) => {
-                                const msg = JSON.parse(_message) as STATUS0;
-                                if (msg.StatusNET) {
-                                    resolve({
-                                        status: true,
-                                        ip: msg.StatusNET.IPAddress,
-                                        id: this.library.cleandp(msg.StatusNET.Mac, false, true),
-                                    });
-                                }
-                            });
-                            void mqtt.publish(`${topic}/cmnd/STATUS0`, '');
+                            void mqtt
+                                .subscript(`${topic}/stat/STATUS0`, (_topic: string, _message: string) => {
+                                    const msg = JSON.parse(_message) as STATUS0;
+                                    if (msg.StatusNET) {
+                                        resolve({
+                                            status: true,
+                                            ip: msg.StatusNET.IPAddress,
+                                            id: this.library.cleandp(msg.StatusNET.Mac, false, true),
+                                        });
+                                    }
+                                })
+                                .then(() => {
+                                    void mqtt.publish(`${topic}/cmnd/STATUS0`, '');
+                                });
                         });
                     };
 
@@ -828,7 +831,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             timeoutIndex: -1,
                                         };
                                         if (mqtt && topic) {
-                                            mqtt.subscript(
+                                            void mqtt.subscript(
                                                 `${topic}/stat/STATUS0`,
                                                 (_topic: string, _message: string) => {
                                                     const msg = JSON.parse(_message) as STATUS0;
@@ -998,7 +1001,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                         );
                                         result.timeoutIndex = this.timeoutAdminArray.length - 1;
                                         if (mqtt && topic) {
-                                            mqtt.subscript(
+                                            void mqtt.subscript(
                                                 `${topic}/stat/STATUS0`,
                                                 (_topic: string, _message: string) => {
                                                     const msg = JSON.parse(_message) as STATUS0;

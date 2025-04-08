@@ -100,7 +100,7 @@ export class MQTTClientClass extends BaseClass {
         }
     }
 
-    subscript(topic: string, callback: callbackMessageType): void {
+    async subscript(topic: string, callback: callbackMessageType): Promise<void> {
         if (this.subscriptDB.findIndex(m => m.topic === topic && m.callback === callback) !== -1) {
             return;
         }
@@ -109,11 +109,7 @@ export class MQTTClientClass extends BaseClass {
         if (aNewOne) {
             this.log.debug(`subscripe to: ${topic}`);
 
-            this.client.subscribe(topic, err => {
-                if (err) {
-                    this.log.error(`On subscribe: ${err}`);
-                }
-            });
+            await this.client.subscribeAsync(topic, { qos: 1 });
         }
     }
     async destroy(): Promise<void> {
