@@ -92,7 +92,7 @@ export class PageLChart extends Page {
                 currentTick += tick;
             }
         }
-        this.sendToPanel(this.getMessage(message));
+        this.sendToPanel(this.getMessage(message), false);
     }
 
     private getMessage(_message: Partial<pages.PageChartMessage>): string {

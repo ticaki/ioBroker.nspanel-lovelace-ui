@@ -123,7 +123,7 @@ export class PageQR extends Page {
                     break;
                 default:
                     this.log.debug(`qrType = none`);
-                    this.sendToPanel(this.getMessage(message));
+                    this.sendToPanel(this.getMessage(message), false);
                     return;
             }
 
@@ -164,7 +164,7 @@ export class PageQR extends Page {
         if (message.textQR) {
             this.log.debug(message.textQR);
         }
-        this.sendToPanel(this.getMessage(message));
+        this.sendToPanel(this.getMessage(message), false);
     }
     static async getQRPageConfig(
         adapter: NspanelLovelaceUi,

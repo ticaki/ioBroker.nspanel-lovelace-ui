@@ -154,14 +154,14 @@ export class PageNotify extends Page {
             message.timeout = (data.timeout && (await data.timeout.getNumber())) ?? 0;
         }
         if (items.card === 'popupNotify') {
-            this.sendToPanel(this.getMessage(message));
+            this.sendToPanel(this.getMessage(message), false);
             return;
         } else if (items.card === 'popupNotify2') {
             const data = items.data;
             message.fontSet = (data.textSize && (await data.textSize.getString())) ?? '';
             message.icon = await getIconEntryValue(data.icon, value, '');
             message.iconColor = await getIconEntryColor(data.icon, value, Color.White);
-            this.sendToPanel(this.getMessage2(message));
+            this.sendToPanel(this.getMessage2(message), false);
             return;
         }
     }

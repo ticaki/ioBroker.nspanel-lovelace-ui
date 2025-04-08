@@ -99,7 +99,7 @@ class PageLChart extends import_Page.Page {
         currentTick += tick;
       }
     }
-    this.sendToPanel(this.getMessage(message));
+    this.sendToPanel(this.getMessage(message), false);
   }
   getMessage(_message) {
     let result = PageLChartMessageDefault;

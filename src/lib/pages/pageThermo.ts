@@ -222,7 +222,7 @@ export class PageThermo extends Page {
         }
         const msg: pages.PageThermoMessage = Object.assign(PageThermoMessageDefault, message);
 
-        this.sendToPanel(this.getMessage(msg));
+        this.sendToPanel(this.getMessage(msg), false);
     }
 
     async onButtonEvent(event: IncomingEvent): Promise<void> {
@@ -305,7 +305,7 @@ export class PageThermo extends Page {
             await item.onCommand('mode-insel', value);
         }
         if (msg !== null) {
-            this.sendToPanel(msg);
+            this.sendToPanel(msg, false);
         }
     }
 

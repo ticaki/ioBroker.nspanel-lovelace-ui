@@ -59,20 +59,23 @@ class PanelSend extends import_library.BaseClass {
     if (!topic.endsWith("/stat/RESULT")) {
       return;
     }
+    this.log.debug(`Receive command ${topic} with ${message}`);
     const msg = JSON.parse(message);
+    const ackForType = this.messageDb[0] && this.messageDb[0].ackForType;
     if (msg) {
-      if (msg.CustomSend === "Done") {
+      if (ackForType && msg.CustomSend === "renderCurrentPage" || !ackForType && msg.CustomSend === "Done") {
+        this.log.debug(`Receive ack for ${JSON.stringify(msg)}`);
         if (this.messageTimeout) {
           this.adapter.clearTimeout(this.messageTimeout);
         }
         this.losingMessageCount = 0;
         this._losingDelay = 0;
-        const msg2 = this.messageDb.shift();
-        if (msg2) {
-          if (msg2.payload === "pageType~pageStartup") {
+        const oldMessage = this.messageDb.shift();
+        if (oldMessage) {
+          if (oldMessage.payload === "pageType~pageStartup") {
             this.messageDb = [];
           }
-          this.log.debug(`Receive ack for ${JSON.stringify(msg2)}`);
+          this.log.debug(`Receive ack for ${JSON.stringify(msg)}`);
         }
         if (this.unload) {
           return;
@@ -81,11 +84,11 @@ class PanelSend extends import_library.BaseClass {
       }
     }
   };
-  addMessage = (payload, opt) => {
+  addMessage = (payload, ackForType, opt) => {
     if (this.messageTimeout !== void 0 && this.messageDb.length > 0 && this.messageDb.some((a) => a.payload === payload && a.opt === opt)) {
       return;
     }
-    this.messageDb.push({ payload, opt });
+    this.messageDb.push({ payload, opt, ackForType });
     if (this.messageTimeout === void 0) {
       void this.sendMessageLoop();
     }

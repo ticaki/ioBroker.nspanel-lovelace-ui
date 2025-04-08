@@ -194,7 +194,7 @@ export class Screensaver extends Page {
         );
         const msg = tools.getPayload('weatherUpdate', tools.getPayloadArray(arr));
 
-        this.sendToPanel(msg);
+        this.sendToPanel(msg, false);
         await this.HandleScreensaverStatusIcons();
     }
     async createPageItems(): Promise<void> {
@@ -301,6 +301,7 @@ export class Screensaver extends Page {
 
         this.sendToPanel(
             `time~${message.options.time[0].split('~')[5]}${this.infoIcon ? `~${Icons.GetIcon(this.infoIcon)}` : ''}`,
+            false,
         );
     }
     async HandleDate(): Promise<void> {
@@ -312,7 +313,7 @@ export class Screensaver extends Page {
             this.log.debug('HandleDate: no message, no date or panel is offline');
             return;
         }
-        this.sendToPanel(`date~${message.options.date[0].split('~')[5]}`);
+        this.sendToPanel(`date~${message.options.date[0].split('~')[5]}`, false);
     }
 
     async HandleScreensaverStatusIcons(): Promise<void> {
@@ -336,7 +337,7 @@ export class Screensaver extends Page {
             this.panel.info.nspanel.bigIconRight ? '1' : '',
         ];
         const msg = tools.getPayloadArray(msgArray);
-        this.sendToPanel(msg);
+        this.sendToPanel(msg, false);
     }
 
     async onButtonEvent(event: Types.IncomingEvent): Promise<void> {

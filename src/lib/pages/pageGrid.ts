@@ -86,7 +86,7 @@ export class PageGrid extends PageMenu {
             message,
         );
 
-        this.sendToPanel(this.getMessage(msg));
+        this.sendToPanel(this.getMessage(msg), false);
     }
     private getMessage(message: pages.PageGridMessage): string {
         return getPayload('entityUpd', message.headline, message.navigation, getPayloadArray(message.options));

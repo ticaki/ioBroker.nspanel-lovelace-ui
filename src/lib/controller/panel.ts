@@ -598,12 +598,13 @@ export class Panel extends BaseClass {
         this.restartLoops();
     };
 
-    private sendToPanelClass: (payload: string, opt?: IClientPublishOptions) => void = () => {};
-    protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
+    private sendToPanelClass: (payload: string, ackForType: boolean, opt?: IClientPublishOptions) => void = () => {};
+    protected sendToPanel: (payload: string, ackForType: boolean, opt?: IClientPublishOptions) => void = (
         payload: string,
+        ackForType: boolean,
         opt?: IClientPublishOptions,
     ) => {
-        this.sendToPanelClass(payload, opt);
+        this.sendToPanelClass(payload, ackForType, opt);
     };
     async setActivePage(_page?: Page | boolean, _notSleep?: boolean): Promise<void> {
         if (_page === undefined) {
@@ -670,8 +671,8 @@ export class Panel extends BaseClass {
             if (s) {
                 this.log.info('is online!');
             } else {
-                void this.controller.removePanel(this);
-                void this.controller.addPanel(this.options);
+                //void this.controller.removePanel(this);
+                //void this.controller.addPanel(this.options);
                 this._activePage = undefined;
                 this.log.warn('is offline!');
             }
@@ -1023,7 +1024,7 @@ export class Panel extends BaseClass {
      */
     sendScreeensaverTimeout(sec: number): void {
         this.log.debug(`Set screeensaver timeout to ${sec}s.`);
-        this.sendToPanel(`timeout~${sec}`);
+        this.sendToPanel(`timeout~${sec}`, false);
     }
 
     sendDimmode(): void {
@@ -1057,7 +1058,7 @@ export class Panel extends BaseClass {
                 genericStateObjects.panel.panels.cmd.dim.dayMode,
             );
         }
-        this.sendToPanel(cmd);
+        this.sendToPanel(cmd, false);
     }
 
     restartLoops(): void {
@@ -1075,7 +1076,7 @@ export class Panel extends BaseClass {
         let t = Math.random() * 30000 + 10000;
         if (!this.isOnline) {
             t = 5000;
-            this.sendToPanel('pageType~pageStartup', { retain: true });
+            this.sendToPanel('pageType~pageStartup', false, { retain: true });
         }
         if (this.unload) {
             return;
@@ -1286,7 +1287,7 @@ export class Panel extends BaseClass {
                 break;
             }
             case 'renderCurrentPage': {
-                // Event only for HA at this Moment
+                this.panelSend.onMessage('/stat/RESULT', `{ "CustomSend": "${event.method}" }`);
                 break;
             }
             case 'button1': {

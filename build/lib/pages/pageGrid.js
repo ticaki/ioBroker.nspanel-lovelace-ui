@@ -84,7 +84,7 @@ class PageGrid extends import_pageMenu.PageMenu {
       this.card === "cardGrid" ? PageGridMessageDefault : PageGrid2MessageDefault,
       message
     );
-    this.sendToPanel(this.getMessage(msg));
+    this.sendToPanel(this.getMessage(msg), false);
   }
   getMessage(message) {
     return (0, import_tools.getPayload)("entityUpd", message.headline, message.navigation, (0, import_tools.getPayloadArray)(message.options));

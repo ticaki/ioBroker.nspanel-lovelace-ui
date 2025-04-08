@@ -568,7 +568,7 @@ class PagePower extends import_Page.Page {
       message.rightMiddle = await this.getElementUpdate(data.rightMiddle);
       message.rightBottom = await this.getElementUpdate(data.rightBottom);
     }
-    this.sendToPanel(this.getMessage(message));
+    this.sendToPanel(this.getMessage(message), false);
   }
   async getElementSum(item, num) {
     if (item === void 0) {

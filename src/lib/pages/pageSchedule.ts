@@ -65,7 +65,7 @@ export class PageSchedule extends PageMenu {
         message.navigation = this.getNavigation();
         const msg: pages.PageScheduleMessage = Object.assign(structuredClone(PageScheduleMessageDefault), message);
 
-        this.sendToPanel(this.getMessage(msg));
+        this.sendToPanel(this.getMessage(msg), false);
     }
     private getMessage(message: pages.PageScheduleMessage): string {
         return getPayload('entityUpd', message.headline, message.navigation, getPayloadArray(message.options));

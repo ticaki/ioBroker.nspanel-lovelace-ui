@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var Page_exports = {};
 __export(Page_exports, {
@@ -22,6 +32,7 @@ __export(Page_exports, {
   isMediaButtonActionType: () => isMediaButtonActionType
 });
 module.exports = __toCommonJS(Page_exports);
+var pages = __toESM(require("../types/pages"));
 var import_BaseClassPage = require("./BaseClassPage");
 var import_types = require("../types/types");
 var import_pageItem = require("../pages/pageItem");
@@ -169,12 +180,42 @@ class Page extends import_BaseClassPage.BaseClassPage {
     this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
   }
   sendType(force) {
+    let renderCurrentPage = false;
+    switch (this.card) {
+      case "cardChart":
+      case "cardLChart":
+      case "cardEntities":
+      case "cardGrid":
+      case "cardGrid2":
+      case "cardGrid3":
+      case "cardThermo":
+      case "cardMedia":
+      case "cardUnlock":
+      case "cardQR":
+      case "cardAlarm":
+      case "cardPower":
+      case "screensaver":
+      case "screensaver2":
+      case "screensaver3":
+      case "cardBurnRec":
+      case "cardItemSpecial":
+      case "cardSchedule":
+        renderCurrentPage = true;
+        break;
+      case "popupNotify":
+      case "popupNotify2":
+        renderCurrentPage = false;
+        break;
+      default:
+        pages.exhaustiveCheck(this.card);
+        break;
+    }
     if (force || this.panel.lastCard !== this.card || this.card === "cardThermo") {
-      this.sendToPanel(`pageType~${this.card}`);
+      this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
     } else {
       if (this.lastCardCounter++ > 10) {
         this.lastCardCounter = 0;
-        this.sendToPanel(`pageType~${this.card}`);
+        this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
       }
     }
     this.panel.lastCard = this.card;
@@ -260,7 +301,7 @@ class Page extends import_BaseClassPage.BaseClassPage {
     }
     if (msg !== null) {
       this.sleep = true;
-      this.sendToPanel(msg);
+      this.sendToPanel(msg, false);
     }
   }
   async delete() {

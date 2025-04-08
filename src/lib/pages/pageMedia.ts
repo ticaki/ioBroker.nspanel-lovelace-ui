@@ -259,7 +259,7 @@ export class PageMedia extends Page {
             id: 'media',
             options: opts,
         });
-        this.sendToPanel(this.getMessage(msg));
+        this.sendToPanel(this.getMessage(msg), false);
         //this.log.warn(JSON.stringify(this.getMessage(msg)));
     }
     private async getMediaState(): Promise<boolean | null> {
