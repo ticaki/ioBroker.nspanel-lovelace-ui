@@ -178,7 +178,7 @@ class PagePower extends import_Page.Page {
       if (typeof config[key] === "string" && typeof config[useScale] === "boolean" && !config[useScale]) {
         iconColor.push(config[key]);
       } else {
-        iconColor.push("undefined");
+        iconColor.push("");
       }
     }
     const entityHeadline = [];
@@ -214,11 +214,13 @@ class PagePower extends import_Page.Page {
     for (let i = 1; i <= 6; i++) {
       const key = `power${i}_valueUnit`;
       if (typeof config[key] === "string") {
-        const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
-        if (o && o.common && o.common.unit) {
-          valueUnit.push(` ${o.common.unit}`);
-        } else {
-          valueUnit.push(` ${config[key]}`);
+        if (states[i - 1] != null && states[i - 1] != "") {
+          const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
+          if (o && o.common && o.common.unit) {
+            valueUnit.push(` ${o.common.unit}`);
+          } else {
+            valueUnit.push(` ${config[key]}`);
+          }
         }
       } else {
         valueUnit.push(" W");
