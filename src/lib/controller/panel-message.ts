@@ -22,9 +22,6 @@ export class PanelSend extends BaseClass {
     panel: Panel | undefined = undefined;
 
     get losingDelay(): number {
-        if (this.panel && this._losingDelay >= 2000) {
-            this.panel.isOnline = false;
-        }
         if (this._losingDelay < 30000) {
             this._losingDelay = this._losingDelay + 2000;
         }

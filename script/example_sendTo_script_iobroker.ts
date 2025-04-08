@@ -175,18 +175,19 @@ async function configuration(): Promise<void> {
         bottomScreensaverEntity: [
             // bottomScreensaverEntity 1
             {
-                type: 'script',
-                ScreensaverEntity: 'accuweather.0.Daily.Day1.Sunrise',
-                ScreensaverEntityFactor: 1,
-                ScreensaverEntityDecimalPlaces: 0,
-                ScreensaverEntityDateFormat: {hour: '2-digit', minute: '2-digit'}, // Description at Wiki-Pages
-                ScreensaverEntityIconOn: 'weather-sunset-up',
-                ScreensaverEntityIconOff: null,
-                ScreensaverEntityText: 'Sonne',
-                ScreensaverEntityUnitText: '%',
-                ScreensaverEntityIconColor: MSYellow //{'val_min': 0, 'val_max': 100}
+                type: 'template',
+                template: 'text.accuweather.sunriseset',
+                dpInit: 'accuweather.0',
+                modeScr: 'bottom'
             },
             // bottomScreensaverEntity 2
+            /*{
+                type: 'template',
+                template: 'text.hmip.windcombo',
+                dpInit: 'hmip.0.devices.3014F711A000185F2999676C',
+                modeScr: 'bottom',
+                //readOptions: {directionOfPanel: 81}
+            },*/ 
             {
                 type: 'script',
                 ScreensaverEntity: 'accuweather.0.Current.WindSpeed',
