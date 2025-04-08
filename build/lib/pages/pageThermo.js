@@ -203,7 +203,7 @@ class PageThermo extends import_Page.Page {
       message.btDetail = this.pageItems && this.pageItems.some((a) => a && a.dataItems && a.dataItems.type === "input_sel") ? "0" : "1";
     }
     const msg = Object.assign(PageThermoMessageDefault, message);
-    this.sendToPanel(this.getMessage(msg));
+    this.sendToPanel(this.getMessage(msg), false);
   }
   async onButtonEvent(event) {
     var _a, _b, _c;
@@ -273,7 +273,7 @@ class PageThermo extends import_Page.Page {
       await item.onCommand("mode-insel", value);
     }
     if (msg !== null) {
-      this.sendToPanel(msg);
+      this.sendToPanel(msg, false);
     }
   }
   getMessage(message) {

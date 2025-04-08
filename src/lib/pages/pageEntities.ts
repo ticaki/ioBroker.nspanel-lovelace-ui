@@ -65,7 +65,7 @@ export class PageEntities extends PageMenu {
         message.navigation = this.getNavigation();
         const msg: pages.PageEntitiesMessage = Object.assign(structuredClone(PageEntitiesMessageDefault), message);
 
-        this.sendToPanel(this.getMessage(msg));
+        this.sendToPanel(this.getMessage(msg), false);
     }
     private getMessage(message: pages.PageEntitiesMessage): string {
         return getPayload('entityUpd', message.headline, message.navigation, getPayloadArray(message.options));

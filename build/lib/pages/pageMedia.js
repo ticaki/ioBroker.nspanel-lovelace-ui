@@ -245,7 +245,7 @@ class PageMedia extends import_Page.Page {
       id: "media",
       options: opts
     });
-    this.sendToPanel(this.getMessage(msg));
+    this.sendToPanel(this.getMessage(msg), false);
   }
   async getMediaState() {
     if (!this.items || this.items.card !== "cardMedia") {

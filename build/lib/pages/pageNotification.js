@@ -160,14 +160,14 @@ ${message.text}`;
       message.timeout = (_i = data.timeout && await data.timeout.getNumber()) != null ? _i : 0;
     }
     if (items.card === "popupNotify") {
-      this.sendToPanel(this.getMessage(message));
+      this.sendToPanel(this.getMessage(message), false);
       return;
     } else if (items.card === "popupNotify2") {
       const data = items.data;
       message.fontSet = (_j = data.textSize && await data.textSize.getString()) != null ? _j : "";
       message.icon = await (0, import_tools.getIconEntryValue)(data.icon, value, "");
       message.iconColor = await (0, import_tools.getIconEntryColor)(data.icon, value, import_Color.Color.White);
-      this.sendToPanel(this.getMessage2(message));
+      this.sendToPanel(this.getMessage2(message), false);
       return;
     }
   }

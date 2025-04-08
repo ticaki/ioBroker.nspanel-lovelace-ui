@@ -150,7 +150,7 @@ class PageQR extends import_Page.Page {
           break;
         default:
           this.log.debug(`qrType = none`);
-          this.sendToPanel(this.getMessage(message));
+          this.sendToPanel(this.getMessage(message), false);
           return;
       }
       if (this.pageItems) {
@@ -189,7 +189,7 @@ class PageQR extends import_Page.Page {
     if (message.textQR) {
       this.log.debug(message.textQR);
     }
-    this.sendToPanel(this.getMessage(message));
+    this.sendToPanel(this.getMessage(message), false);
   }
   static async getQRPageConfig(adapter, index, configManager) {
     const config = adapter.config.pageQRdata[index];

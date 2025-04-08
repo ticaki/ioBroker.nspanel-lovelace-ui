@@ -600,7 +600,7 @@ export class PagePower extends Page {
             message.rightMiddle = (await this.getElementUpdate(data.rightMiddle)) as pages.PagePowerMessageItem;
             message.rightBottom = (await this.getElementUpdate(data.rightBottom)) as pages.PagePowerMessageItem;
         }
-        this.sendToPanel(this.getMessage(message));
+        this.sendToPanel(this.getMessage(message), false);
     }
 
     private async getElementSum(item: pages.cardPowerDataItems['data']['leftBottom'], num: number): Promise<number> {

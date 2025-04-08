@@ -44,12 +44,12 @@ class BaseClassTriggerd extends import_library.BaseClass {
   dpInit = "";
   enums = "";
   device = "";
-  sendToPanel = (payload, opt) => {
+  sendToPanel = (payload, ackForType, opt) => {
     if (this.filterDuplicateMessages && payload == this.lastMessage) {
       return;
     }
     this.lastMessage = payload;
-    this.sendToPanelClass(payload, opt);
+    this.sendToPanelClass(payload, ackForType, opt);
   };
   resetLastMessage() {
     this.lastMessage = "";

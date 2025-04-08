@@ -1737,7 +1737,7 @@ class PageItem extends import_BaseClassPage.BaseClassTriggerd {
       }
       const msg = await this.GeneratePopup(this.lastPopupType);
       if (msg) {
-        this.sendToPanel(msg);
+        this.sendToPanel(msg, false);
       }
     }
     if (from && this.panel.isOnline && this.parent === this.panel.screenSaver && this.panel.screenSaver) {
