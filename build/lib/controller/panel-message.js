@@ -35,7 +35,7 @@ class PanelSend extends import_library.BaseClass {
   panel = void 0;
   get losingDelay() {
     if (this._losingDelay < 3e4) {
-      this._losingDelay = this._losingDelay + 2e3;
+      this._losingDelay = this._losingDelay + 1e3;
     }
     return this._losingDelay;
   }
@@ -43,8 +43,8 @@ class PanelSend extends import_library.BaseClass {
     if (value > 3e4) {
       value = 3e4;
     }
-    if (value < 2e3) {
-      value = 2e3;
+    if (value < 1e3) {
+      value = 1e3;
     }
     this._losingDelay = value;
   }
@@ -95,6 +95,9 @@ class PanelSend extends import_library.BaseClass {
     if (msg === void 0 || this.unload) {
       this.messageTimeout = void 0;
       return;
+    }
+    if (this.losingMessageCount > 0) {
+      this.log.warn(`send payload: ${JSON.stringify(msg)} to panel. Losing count: ${this.losingMessageCount}`);
     }
     if (this.losingMessageCount++ > 3) {
       if (this.panel) {
