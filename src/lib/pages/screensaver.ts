@@ -10,7 +10,7 @@ import * as pages from '../types/pages';
 import * as tools from '../const/tools';
 import { PageItem } from './pageItem';
 import type { PageInterface } from '../classes/PageInterface';
-import type { BaseClassTriggerd } from '../classes/BaseClassPage';
+import type { BaseClassTriggerd } from '../classes/baseClassPage';
 
 export type ScreensaverConfigType = {
     momentLocale: string;

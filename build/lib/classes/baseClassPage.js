@@ -16,12 +16,12 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var BaseClassPage_exports = {};
-__export(BaseClassPage_exports, {
+var baseClassPage_exports = {};
+__export(baseClassPage_exports, {
   BaseClassPage: () => BaseClassPage,
   BaseClassTriggerd: () => BaseClassTriggerd
 });
-module.exports = __toCommonJS(BaseClassPage_exports);
+module.exports = __toCommonJS(baseClassPage_exports);
 var import_library = require("./library");
 var import_definition = require("../const/definition");
 class BaseClassTriggerd extends import_library.BaseClass {
@@ -199,6 +199,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
       }
     } else {
       this.visibility = v;
+      await this.onVisibilityChange(v);
     }
   };
   /**
@@ -228,4 +229,4 @@ class BaseClassPage extends BaseClassTriggerd {
   BaseClassPage,
   BaseClassTriggerd
 });
-//# sourceMappingURL=BaseClassPage.js.map
+//# sourceMappingURL=baseClassPage.js.map

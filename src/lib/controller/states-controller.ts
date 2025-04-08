@@ -6,7 +6,7 @@ import type { DataItemsOptions, nsPanelState, nsPanelStateVal } from '../types/t
 import { getRegExp } from '../const/tools';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { StateRole } from '../types/pages';
-import type { BaseClassTriggerd } from '../classes/BaseClassPage';
+import type { BaseClassTriggerd } from '../classes/baseClassPage';
 
 type getInternalFunctionType = (
     id: string,
