@@ -23,7 +23,7 @@ export class PanelSend extends BaseClass {
 
     get losingDelay(): number {
         if (this._losingDelay < 30000) {
-            this._losingDelay = this._losingDelay + 2000;
+            this._losingDelay = this._losingDelay + 1000;
         }
         return this._losingDelay;
     }
@@ -31,8 +31,8 @@ export class PanelSend extends BaseClass {
         if (value > 30000) {
             value = 30000;
         }
-        if (value < 2000) {
-            value = 2000;
+        if (value < 1000) {
+            value = 1000;
         }
         this._losingDelay = value;
     }
@@ -94,6 +94,9 @@ export class PanelSend extends BaseClass {
         if (msg === undefined || this.unload) {
             this.messageTimeout = undefined;
             return;
+        }
+        if (this.losingMessageCount > 0) {
+            this.log.warn(`send payload: ${JSON.stringify(msg)} to panel. Losing count: ${this.losingMessageCount}`);
         }
         if (this.losingMessageCount++ > 3) {
             if (this.panel) {

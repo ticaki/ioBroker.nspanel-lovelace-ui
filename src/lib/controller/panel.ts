@@ -361,11 +361,6 @@ export class Panel extends BaseClass {
         await this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
         await this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
         this.isOnline = false;
-        this.requestStatusTasmota();
-        this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
-        this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
-        this.sendRules();
-
         const channelObj = this.library.cloneObject(genericStateObjects.panel.panels._channel);
 
         channelObj.common.name = this.friendlyName;
@@ -1162,11 +1157,16 @@ export class Panel extends BaseClass {
                 }
                 this.blockStartup = this.adapter.setTimeout(() => {
                     this.blockStartup = null;
-                }, 3000);
+                }, 5000);
                 this.isOnline = true;
                 this.info.nspanel.displayVersion = event.opt;
                 this.info.nspanel.model = event.action;
 
+                this.requestStatusTasmota();
+                this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
+                this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
+                this.sendRules();
+                await this.adapter.delay(200);
                 await this.writeInfo();
                 this.sendScreeensaverTimeout(this.timeout);
                 this.sendDimmode();
