@@ -358,8 +358,8 @@ export class Panel extends BaseClass {
     }
 
     init = async (): Promise<void> => {
-        this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
-        this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
+        await this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
+        await this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
         this.isOnline = false;
         this.requestStatusTasmota();
         this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');

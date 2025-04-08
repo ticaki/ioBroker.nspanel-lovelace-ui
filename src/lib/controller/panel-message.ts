@@ -42,7 +42,7 @@ export class PanelSend extends BaseClass {
     ) {
         super(adapter, config.name);
         this.mqttClient = config.mqttClient;
-        this.mqttClient.subscript(`${config.topic}/stat/RESULT`, this.onMessage);
+        void this.mqttClient.subscript(`${config.topic}/stat/RESULT`, this.onMessage);
         this.topic = config.topic + SendTopicAppendix;
         this.panel = config.panel;
     }
@@ -131,7 +131,7 @@ export class PanelSend extends BaseClass {
         }
         this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
         this.messageTimeoutTasmota = true;
-        await this.mqttClient.publish(msg.topic, msg.payload, msg.opt);
+        await this.mqttClient.publish(msg.topic, msg.payload, { ...msg.opt, qos: 1 });
         if (this.unload) {
             return;
         }

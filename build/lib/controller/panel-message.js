@@ -51,7 +51,7 @@ class PanelSend extends import_library.BaseClass {
   constructor(adapter, config) {
     super(adapter, config.name);
     this.mqttClient = config.mqttClient;
-    this.mqttClient.subscript(`${config.topic}/stat/RESULT`, this.onMessage);
+    void this.mqttClient.subscript(`${config.topic}/stat/RESULT`, this.onMessage);
     this.topic = config.topic + import_definition.SendTopicAppendix;
     this.panel = config.panel;
   }
@@ -127,7 +127,7 @@ class PanelSend extends import_library.BaseClass {
     }
     this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
     this.messageTimeoutTasmota = true;
-    await this.mqttClient.publish(msg.topic, msg.payload, msg.opt);
+    await this.mqttClient.publish(msg.topic, msg.payload, { ...msg.opt, qos: 1 });
     if (this.unload) {
       return;
     }
