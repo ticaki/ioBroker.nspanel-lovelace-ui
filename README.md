@@ -302,7 +302,8 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.1.10 (2025-04-08)
+- (ticaki) refactoring startup
 - (ticaki) added configuration script tools in admin
 - (ticaki) added/fixed some pageitems
 - (ticaki) added maintain in admin

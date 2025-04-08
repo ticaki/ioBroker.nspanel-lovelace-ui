@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.1.9",
+    "version": "0.1.10",
     "news": {
+      "0.1.10": {
+        "en": "refactoring startup\nadded configuration script tools in admin\nadded/fixed some pageitems\nadded maintain in admin\nadded navigation in admin\nadded cardPower incl. admin",
+        "de": "refactoring start\nkonfigurationsskript-tools in admin hinzugefügt\neinige pageitems hinzugefügt/fixiert\npflege in admin\nnavigation in admin\nzusatzkarte Leistung inkl. admin",
+        "ru": "рефакторинг стартапа\nдобавлены инструменты скриптов конфигурации в admin\nдобавить/исправить некоторые заголовки\nдобавить в admin\nдобавлена навигация в admin\nдобавить карту Власть в т.ч. админ",
+        "pt": "startup de refatoração\nferramentas de script de configuração adicionadas em admin\nadicionado/fixado alguns pageitems\nadicionado manter em admin\nnavegação adicional em admin\ncartão adicionado Poder incl. administrador",
+        "nl": "refactoring opstarten\ntoegevoegd configuratiescript tools in admin\ntoegevoegde/vaste pagina's\nadded maintain in admin\nnavigatie toegevoegd in admin\ntoegevoegde kaart Vermogen incl. admin",
+        "fr": "redémarrage\najouté des outils de script de configuration dans admin\najouté/fixé certains éléments de page\najouté maintenir dans admin\nnavigation ajoutée dans admin\ncarte ajoutée Puissance incl. administrateur",
+        "it": "refactoring startup\nstrumenti di script di configurazione aggiunti in admin\naggiunto/fisso alcune pagine\naggiunto manutenzione in admin\naggiunta di navigazione in admin\nscheda aggiunta Potenza inclusa. admin",
+        "es": "refactoring startup\nherramientas de script de configuración agregadas en admin\nañadir/fixed some pageitems\nmantenimiento añadido en administración\nnavegación agregada en admin\ntarjeta Poder incl. admin",
+        "pl": "refaktoring startup\ndodane narzędzia skryptu konfiguracyjnego w admin\ndodano / naprawiono niektóre elementy konkursów\ndodane utrzymanie w admin\ndodana nawigacja w admin\ndodana karta Moc w tym. admin",
+        "uk": "рефакторинг стартап\nдодано конфігурацію сценаріїв інструментів в адмін\nдодано/фіксовано деякі сторінки\nдодано підтримку в адміні\nдодана навігація в адмін\nдодано картку Потужність вкл. адмін",
+        "zh-cn": "正在重构启动\n在管理员中添加配置脚本工具\n添加/固定了一些页面项目\n在管理员中添加维护\n在管理员中添加导航\n添加卡片 包括电源 管理员"
+      },
       "0.1.9": {
         "en": "added: tasmota web ui user & password Fixes #164\nBREAKING: Internal server use TLS - New tasmota config for internal server.\nadded servicepage items\nadded lock\ncardThermo with input_sel\nAdded: Admin option to fix wrong common.type=state in alias.0 to common.type=mixed\nRequired data points are found via role, type etc. The designation only plays a role in rare cases.",
         "de": "hinzugefügt: tasmota web ui user & passwort Fixes #164\nBREAKING: Interner Server verwendet TLS - Neue tasmota config für internen Server.\nzusätzliche serviceseite\nzusätzliches schloss\nkarte Thermo mit input_sel\nHinzugefügt: Admin-Option, um falsch häufig zu beheben. type=state in alias.0 zu common.type=gemischt\nErforderliche Datenpunkte werden über Rolle, Art etc. gefunden. Die Bezeichnung spielt in seltenen Fällen nur eine Rolle.",
@@ -80,19 +93,6 @@
         "pl": "poprawki # 131",
         "uk": "застібки #131",
         "zh-cn": "修正 # 131"
-      },
-      "0.1.3": {
-        "en": "fixes #130\nData point generation changed\nDimming mode (data points) completed\nScreensaver double-click added",
-        "de": "fixes #130\nÄnderung der Datenpunkterzeugung\nDimmmodus (Datenpunkte) abgeschlossen\nScreensaver Doppelklick hinzugefügt",
-        "ru": "обсуждение #130\nГенерация точек данных изменилась\nРежим затемнения (точки данных) завершен\nДобавлен двойной клик Screensaver",
-        "pt": "correções #130\nA geração de pontos de dados mudou\nModo de escurecimento (pontos de dados) concluído\nScreensaver duplo clique adicionado",
-        "nl": "fixes #130\nAanmaken van gegevenspunten gewijzigd\nDimmenmodus (gegevenspunten) voltooid\nScreensaver dubbelklik toegevoegd",
-        "fr": "correctifs n°130\nChangement de génération de points de données\nMode de gradation (points de données) complété\nEcran de veille double-clic ajouté",
-        "it": "correzioni #130\nGenerazione dei punti di dati cambiata\nModalità di dimming (punti dati completati)\nScreensaver doppio clic aggiunto",
-        "es": "fijaciones #130\nCambio de la generación de puntos de datos\nModo de regulación (puntos de datos) completado\nScreensaver doble clic añadido",
-        "pl": "poprawki # 130\nZmieniona generacja punktów danych\nTryb przyciemniania (punkty danych) zakończony\nDwukrotne kliknięcie wygaszacza ekranu",
-        "uk": "застібки #130\nЗмінено генерацію точки даних\nРежим дозування (таблички даних) завершено\nScreensaver double-click додано",
-        "zh-cn": "修正 # 130\n数据点生成已改变\n缩小模式( 数据点)\n添加双击屏幕保护器"
       }
     },
     "title": "NSPanel-Lovelace-UI Next Level",
