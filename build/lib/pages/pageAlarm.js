@@ -206,7 +206,7 @@ class PageAlarm extends import_Page.Page {
       message.numpad = "enable";
       message.flashing = "enable";
     }
-    this.sendToPanel(this.getMessage(message));
+    this.sendToPanel(this.getMessage(message), false);
   }
   getMessage(message) {
     let result = PageAlarmMessageDefault;

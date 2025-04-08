@@ -71,7 +71,7 @@ class PageEntities extends import_pageMenu.PageMenu {
     );
     message.navigation = this.getNavigation();
     const msg = Object.assign(structuredClone(PageEntitiesMessageDefault), message);
-    this.sendToPanel(this.getMessage(msg));
+    this.sendToPanel(this.getMessage(msg), false);
   }
   getMessage(message) {
     return (0, import_tools.getPayload)("entityUpd", message.headline, message.navigation, (0, import_tools.getPayloadArray)(message.options));

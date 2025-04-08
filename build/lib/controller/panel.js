@@ -547,8 +547,8 @@ class Panel extends import_library.BaseClass {
   };
   sendToPanelClass = () => {
   };
-  sendToPanel = (payload, opt) => {
-    this.sendToPanelClass(payload, opt);
+  sendToPanel = (payload, ackForType, opt) => {
+    this.sendToPanelClass(payload, ackForType, opt);
   };
   async setActivePage(_page, _notSleep) {
     var _a, _b, _c;
@@ -615,8 +615,6 @@ class Panel extends import_library.BaseClass {
       if (s) {
         this.log.info("is online!");
       } else {
-        void this.controller.removePanel(this);
-        void this.controller.addPanel(this.options);
         this._activePage = void 0;
         this.log.warn("is offline!");
       }
@@ -926,7 +924,7 @@ class Panel extends import_library.BaseClass {
    */
   sendScreeensaverTimeout(sec) {
     this.log.debug(`Set screeensaver timeout to ${sec}s.`);
-    this.sendToPanel(`timeout~${sec}`);
+    this.sendToPanel(`timeout~${sec}`, false);
   }
   sendDimmode() {
     const hour = (/* @__PURE__ */ new Date()).getHours();
@@ -959,7 +957,7 @@ class Panel extends import_library.BaseClass {
         import_definition.genericStateObjects.panel.panels.cmd.dim.dayMode
       );
     }
-    this.sendToPanel(cmd);
+    this.sendToPanel(cmd, false);
   }
   restartLoops() {
     if (this.loopTimeout) {
@@ -976,7 +974,7 @@ class Panel extends import_library.BaseClass {
     let t = Math.random() * 3e4 + 1e4;
     if (!this.isOnline) {
       t = 5e3;
-      this.sendToPanel("pageType~pageStartup", { retain: true });
+      this.sendToPanel("pageType~pageStartup", false, { retain: true });
     }
     if (this.unload) {
       return;
@@ -1178,6 +1176,7 @@ class Panel extends import_library.BaseClass {
         break;
       }
       case "renderCurrentPage": {
+        this.panelSend.onMessage("/stat/RESULT", `{ "CustomSend": "${event.method}" }`);
         break;
       }
       case "button1": {

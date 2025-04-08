@@ -9,7 +9,7 @@ import type { Panel } from './panel';
  * 1 * pro Klasse Panel
  */
 export class PanelSend extends BaseClass {
-    private messageDb: { payload: string; opt?: IClientPublishOptions }[] = [];
+    private messageDb: { payload: string; opt?: IClientPublishOptions; ackForType: boolean }[] = [];
     private messageDbTasmota: { topic: string; payload: string; opt?: IClientPublishOptions }[] = [];
 
     private messageTimeout: ioBroker.Timeout | undefined;
@@ -52,17 +52,20 @@ export class PanelSend extends BaseClass {
             //this.log.debug(`Receive command ${topic} with ${message}`);
             return;
         }
+        this.log.debug(`Receive command ${topic} with ${message}`);
         const msg = JSON.parse(message);
+        const ackForType = this.messageDb[0] && this.messageDb[0].ackForType;
         if (msg) {
-            if (msg.CustomSend === 'Done') {
+            if ((ackForType && msg.CustomSend === 'renderCurrentPage') || (!ackForType && msg.CustomSend === 'Done')) {
+                this.log.debug(`Receive ack for ${JSON.stringify(msg)}`);
                 if (this.messageTimeout) {
                     this.adapter.clearTimeout(this.messageTimeout);
                 }
                 this.losingMessageCount = 0;
                 this._losingDelay = 0;
-                const msg = this.messageDb.shift();
-                if (msg) {
-                    if (msg.payload === 'pageType~pageStartup') {
+                const oldMessage = this.messageDb.shift();
+                if (oldMessage) {
+                    if (oldMessage.payload === 'pageType~pageStartup') {
                         this.messageDb = [];
                     }
                     this.log.debug(`Receive ack for ${JSON.stringify(msg)}`);
@@ -70,12 +73,12 @@ export class PanelSend extends BaseClass {
                 if (this.unload) {
                     return;
                 }
-                this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 50);
+                this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
             }
         }
     };
 
-    readonly addMessage = (payload: string, opt?: IClientPublishOptions): void => {
+    readonly addMessage = (payload: string, ackForType: boolean, opt?: IClientPublishOptions): void => {
         if (
             this.messageTimeout !== undefined &&
             this.messageDb.length > 0 &&
@@ -83,7 +86,7 @@ export class PanelSend extends BaseClass {
         ) {
             return;
         }
-        this.messageDb.push({ payload: payload, opt: opt });
+        this.messageDb.push({ payload: payload, opt: opt, ackForType: ackForType });
         if (this.messageTimeout === undefined) {
             void this.sendMessageLoop();
         }

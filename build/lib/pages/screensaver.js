@@ -194,7 +194,7 @@ class Screensaver extends import_Page.Page {
       message.options.indicator
     );
     const msg = tools.getPayload("weatherUpdate", tools.getPayloadArray(arr));
-    this.sendToPanel(msg);
+    this.sendToPanel(msg, false);
     await this.HandleScreensaverStatusIcons();
   }
   async createPageItems() {
@@ -289,7 +289,8 @@ class Screensaver extends import_Page.Page {
       return;
     }
     this.sendToPanel(
-      `time~${message.options.time[0].split("~")[5]}${this.infoIcon ? `~${import_icon_mapping.Icons.GetIcon(this.infoIcon)}` : ""}`
+      `time~${message.options.time[0].split("~")[5]}${this.infoIcon ? `~${import_icon_mapping.Icons.GetIcon(this.infoIcon)}` : ""}`,
+      false
     );
   }
   async HandleDate() {
@@ -301,7 +302,7 @@ class Screensaver extends import_Page.Page {
       this.log.debug("HandleDate: no message, no date or panel is offline");
       return;
     }
-    this.sendToPanel(`date~${message.options.date[0].split("~")[5]}`);
+    this.sendToPanel(`date~${message.options.date[0].split("~")[5]}`, false);
   }
   async HandleScreensaverStatusIcons() {
     var _a, _b, _c, _d;
@@ -324,7 +325,7 @@ class Screensaver extends import_Page.Page {
       this.panel.info.nspanel.bigIconRight ? "1" : ""
     ];
     const msg = tools.getPayloadArray(msgArray);
-    this.sendToPanel(msg);
+    this.sendToPanel(msg, false);
   }
   async onButtonEvent(event) {
     if (event.page && event.id && this.pageItems && this.pageItems[event.id]) {

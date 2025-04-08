@@ -1,4 +1,4 @@
-import type * as pages from '../types/pages';
+import * as pages from '../types/pages';
 import { BaseClassPage } from './BaseClassPage';
 import {
     isPopupType,
@@ -198,12 +198,42 @@ export class Page extends BaseClassPage {
         this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
     }
     sendType(force?: boolean): void {
+        let renderCurrentPage = false;
+        switch (this.card) {
+            case 'cardChart':
+            case 'cardLChart':
+            case 'cardEntities':
+            case 'cardGrid':
+            case 'cardGrid2':
+            case 'cardGrid3':
+            case 'cardThermo':
+            case 'cardMedia':
+            case 'cardUnlock':
+            case 'cardQR':
+            case 'cardAlarm':
+            case 'cardPower':
+            case 'screensaver':
+            case 'screensaver2':
+            case 'screensaver3':
+            case 'cardBurnRec':
+            case 'cardItemSpecial':
+            case 'cardSchedule':
+                renderCurrentPage = true;
+                break;
+            case 'popupNotify':
+            case 'popupNotify2':
+                renderCurrentPage = false;
+                break;
+            default:
+                pages.exhaustiveCheck(this.card);
+                break;
+        }
         if (force || this.panel.lastCard !== this.card || this.card === 'cardThermo') {
-            this.sendToPanel(`pageType~${this.card}`);
+            this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
         } else {
             if (this.lastCardCounter++ > 10) {
                 this.lastCardCounter = 0;
-                this.sendToPanel(`pageType~${this.card}`);
+                this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
             }
         }
         this.panel.lastCard = this.card;
@@ -300,7 +330,7 @@ export class Page extends BaseClassPage {
         }
         if (msg !== null) {
             this.sleep = true;
-            this.sendToPanel(msg);
+            this.sendToPanel(msg, false);
         }
     }
     async delete(): Promise<void> {

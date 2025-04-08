@@ -43,8 +43,9 @@ export class BaseClassTriggerd extends BaseClass {
     dpInit: string | RegExp = '';
     protected enums: string | string[] = '';
     protected device: string = '';
-    protected sendToPanel: (payload: string, opt?: IClientPublishOptions) => void = (
+    protected sendToPanel: (payload: string, ackForType: boolean, opt?: IClientPublishOptions) => void = (
         payload: string,
+        ackForType: boolean,
         opt?: IClientPublishOptions,
     ) => {
         if (this.filterDuplicateMessages && payload == this.lastMessage) {
@@ -52,12 +53,12 @@ export class BaseClassTriggerd extends BaseClass {
         }
         this.lastMessage = payload;
 
-        this.sendToPanelClass(payload, opt);
+        this.sendToPanelClass(payload, ackForType, opt);
     };
     resetLastMessage(): void {
         this.lastMessage = '';
     }
-    private sendToPanelClass: (payload: string, opt?: IClientPublishOptions) => void = () => {};
+    private sendToPanelClass: (payload: string, ackForType: boolean, opt?: IClientPublishOptions) => void = () => {};
 
     constructor(card: BaseClassTriggerdInterface) {
         super(card.adapter, card.name);

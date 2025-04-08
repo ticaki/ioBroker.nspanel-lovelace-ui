@@ -211,7 +211,7 @@ export class PageAlarm extends Page {
         //message.numpad = 'enable';
         //message.flashing = 'enable';
 
-        this.sendToPanel(this.getMessage(message));
+        this.sendToPanel(this.getMessage(message), false);
     }
 
     private getMessage(message: Partial<pages.PageAlarmMessage>): string {
