@@ -383,6 +383,9 @@ class Navigation extends import_library.BaseClass {
   }
   async delete() {
     await super.delete();
+    this.navigationConfig = [];
+    this.database = [];
+    this.panel = {};
     if (this.doubleClickTimeout) {
       this.adapter.clearTimeout(this.doubleClickTimeout);
     }

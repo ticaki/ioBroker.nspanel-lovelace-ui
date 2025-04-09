@@ -56,6 +56,9 @@ class Controller extends Library.BaseClass {
     this.mqttClient = options.mqttClient;
     this.statesControler = new import_states_controller.StatesControler(this.adapter);
     this.systemNotification = new import_system_notifications.SystemNotifications(this.adapter);
+    if (this.adapter.mqttServer) {
+      this.adapter.mqttServer.controller = this;
+    }
     for (const panelConfig of options.panels) {
       if (panelConfig === void 0) {
         continue;
@@ -295,6 +298,19 @@ class Controller extends Library.BaseClass {
     } else {
       this.log.error(`Panel ${panel.topic} not found`);
     }
+  };
+  mqttClientConnected = (id) => {
+    if (id === this.mqttClient.clientId) {
+      return true;
+    }
+    const index = this.panels.findIndex((p) => id.startsWith(this.library.cleandp(p.friendlyName)));
+    if (index !== -1) {
+      if (this.panels[index].initDone) {
+        this.panels[index].restartLoops();
+        return true;
+      }
+    }
+    return false;
   };
   async delete() {
     await super.delete();

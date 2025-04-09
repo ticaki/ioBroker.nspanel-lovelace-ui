@@ -651,6 +651,18 @@ export const genericStateObjects: {
                         },
                         native: {},
                     },
+                    mqttClient: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.mqttClientId',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {},
+                    },
                     uptime: {
                         _id: '',
                         type: 'state',

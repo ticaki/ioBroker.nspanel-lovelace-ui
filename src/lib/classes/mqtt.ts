@@ -10,6 +10,7 @@ import Aedes, { type Client } from 'aedes';
 import { type Server } from 'net';
 import { randomUUID } from 'node:crypto';
 import * as forge from 'node-forge';
+import type { Controller } from '../controller/controller';
 export type callbackMessageType = (topic: string, message: string) => void;
 export type callbackConnectType = () => Promise<void>;
 
@@ -128,6 +129,8 @@ export class MQTTClientClass extends BaseClass {
 export class MQTTServerClass extends BaseClass {
     aedes: Aedes;
     server: Server;
+    controller: Controller | undefined;
+    intervals: (ioBroker.Interval | undefined)[] = [];
     ready: boolean = false;
 
     static async createMQTTServer(
@@ -220,13 +223,47 @@ export class MQTTServerClass extends BaseClass {
             if (!confirm) {
                 this.log.warn(`Login denied client: ${client.id}. User name or password wrong! ${pw?.toString()}`);
             } else {
-                this.log.info(`Client ${client.id} login successful.`);
+                this.log.debug(`Client ${client.id} login successful.`);
             }
             callback(null, confirm);
         };
+        this.aedes.on('client', (client: Client) => {
+            const interval: ioBroker.Interval | undefined = this.adapter.setInterval(
+                index => {
+                    if (this.controller) {
+                        const result = this.controller.mqttClientConnected(client.id);
+                        if (result) {
+                            this.log.debug(`Client ${client.id} connected.`);
+                        }
+                        if (result || result === undefined) {
+                            this.adapter.clearInterval(this.intervals[index]);
+                            this.intervals[index] = undefined;
+
+                            // clear outdated intervals from top to bottom. Break if one is not undefined
+                            for (let a = this.intervals.length - 1; a >= 0; a--) {
+                                if (this.intervals[a] === undefined) {
+                                    this.intervals.splice(a, 1);
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                },
+                1000,
+                this.intervals.length,
+            );
+            this.intervals.push(interval);
+        });
     }
     destroy(): void {
         void this.delete();
+        for (let a = this.intervals.length - 1; a >= 0; a--) {
+            if (this.intervals[a] !== undefined) {
+                this.adapter.clearInterval(this.intervals[a]);
+            }
+        }
+        this.intervals = [];
         this.aedes.close();
         this.server.close();
     }

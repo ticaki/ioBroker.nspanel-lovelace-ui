@@ -153,5 +153,7 @@ export class PanelSend extends BaseClass {
         if (this.messageTimeoutTasmota && this.messageTimeoutTasmota !== true) {
             this.adapter.clearTimeout(this.messageTimeoutTasmota);
         }
+        this.messageDb = [];
+        this.messageDbTasmota = [];
     }
 }
