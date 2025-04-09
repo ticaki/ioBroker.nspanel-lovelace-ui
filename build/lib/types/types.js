@@ -122,7 +122,7 @@ function isIconColorScaleElement(F) {
   if ("color_best" in F && F.color_best) {
     F.color_best = convertColorScaleBest(F.color_best);
   }
-  return "val_min" in F && "val_max" in F;
+  return "val_min" in F && "val_max" in F && typeof F.val_min === "number" && typeof F.val_max === "number";
 }
 function convertColorScaleBest(F) {
   var _a, _b, _c;

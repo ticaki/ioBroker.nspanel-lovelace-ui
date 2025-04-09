@@ -404,7 +404,12 @@ export function isIconColorScaleElement(F: any): F is IconColorElement {
     if ('color_best' in F && F.color_best) {
         F.color_best = convertColorScaleBest(F.color_best);
     }
-    return 'val_min' in (F as IconColorElement) && 'val_max' in (F as IconColorElement);
+    return (
+        'val_min' in (F as IconColorElement) &&
+        'val_max' in (F as IconColorElement) &&
+        typeof F.val_min === 'number' &&
+        typeof F.val_max === 'number'
+    );
 }
 
 function convertColorScaleBest(F: any): IconColorElement['color_best'] {
