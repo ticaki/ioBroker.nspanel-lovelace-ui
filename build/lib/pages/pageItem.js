@@ -35,8 +35,8 @@ var import_Color = require("../const/Color");
 var typePageItem = __toESM(require("../types/type-pageItem"));
 var tools = __toESM(require("../const/tools"));
 var import_icon_mapping = require("../const/icon_mapping");
-var import_BaseClassPage = require("../classes/BaseClassPage");
-class PageItem extends import_BaseClassPage.BaseClassTriggerd {
+var import_baseClassPage = require("../classes/baseClassPage");
+class PageItem extends import_baseClassPage.BaseClassTriggerd {
   defaultOnColor = import_Color.Color.White;
   defaultOffColor = import_Color.Color.Blue;
   config;

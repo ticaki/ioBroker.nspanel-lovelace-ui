@@ -8,7 +8,7 @@ import { Icons } from '../const/icon_mapping';
 import type { Dataitem } from '../classes/data-item';
 import type { ChangeTypeOfKeys, DeviceRole } from '../types/pages';
 import type { Screensaver } from './screensaver';
-import { BaseClassTriggerd } from '../classes/BaseClassPage';
+import { BaseClassTriggerd } from '../classes/baseClassPage';
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseClassTriggerd {
