@@ -301,10 +301,10 @@ export class PagePower extends Page {
                                     type: 'const',
                                     constVal: icons[0],
                                 },
-                                /* color: {
+                                color: {
                                     type: 'const',
                                     constVal: iconColor[0], //undefined,
-                                }, */
+                                },
                             },
                             false: undefined,
                             scale: {
@@ -366,6 +366,15 @@ export class PagePower extends Page {
                                 },
                             },
                             false: undefined,
+                            scale: {
+                                type: 'const',
+                                constVal: {
+                                    val_min: iconColorScale[1][0],
+                                    val_max: iconColorScale[1][1],
+                                    val_best: iconColorScale[1][2],
+                                    mode: 'triGrad',
+                                },
+                            },
                         },
                         value: {
                             value: {
@@ -416,6 +425,15 @@ export class PagePower extends Page {
                                 },
                             },
                             false: undefined,
+                            scale: {
+                                type: 'const',
+                                constVal: {
+                                    val_min: iconColorScale[2][0],
+                                    val_max: iconColorScale[2][1],
+                                    val_best: iconColorScale[2][2],
+                                    mode: 'triGrad',
+                                },
+                            },
                         },
                         value: {
                             value: {
@@ -466,6 +484,15 @@ export class PagePower extends Page {
                                 },
                             },
                             false: undefined,
+                            scale: {
+                                type: 'const',
+                                constVal: {
+                                    val_min: iconColorScale[3][0],
+                                    val_max: iconColorScale[3][1],
+                                    val_best: iconColorScale[3][2],
+                                    mode: 'triGrad',
+                                },
+                            },
                         },
                         value: {
                             value: {
@@ -516,6 +543,15 @@ export class PagePower extends Page {
                                 },
                             },
                             false: undefined,
+                            scale: {
+                                type: 'const',
+                                constVal: {
+                                    val_min: iconColorScale[4][0],
+                                    val_max: iconColorScale[4][1],
+                                    val_best: iconColorScale[4][2],
+                                    mode: 'triGrad',
+                                },
+                            },
                         },
                         value: {
                             value: {
@@ -566,6 +602,15 @@ export class PagePower extends Page {
                                 },
                             },
                             false: undefined,
+                            scale: {
+                                type: 'const',
+                                constVal: {
+                                    val_min: iconColorScale[5][0],
+                                    val_max: iconColorScale[5][1],
+                                    val_best: iconColorScale[5][2],
+                                    mode: 'triGrad',
+                                },
+                            },
                         },
                         value: {
                             value: {
