@@ -358,6 +358,20 @@ async function getIconEntryColor(i, value, def, defOff = null) {
     let cto = i.true && i.true.color && await i.true.color.getRGBValue();
     let cfrom = i.false && i.false.color && await i.false.color.getRGBValue();
     const scale = i.scale && await i.scale.getObject();
+    if ((!cto || !cfrom) && (0, import_types.isIconColorScaleElement)(scale)) {
+      switch (scale.mode) {
+        case "hue":
+        case "cie":
+        case "mixed": {
+          break;
+        }
+        case "triGrad":
+        case "triGradAnchor": {
+          cto = cto || import_Color.Color.HMIOn;
+          cto = cfrom || import_Color.Color.HMIOff;
+        }
+      }
+    }
     if (cto && cfrom && scale) {
       let rColor = cto;
       if ((0, import_types.isIconColorScaleElement)(scale)) {
