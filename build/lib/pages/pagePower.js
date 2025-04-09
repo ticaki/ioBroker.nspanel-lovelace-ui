@@ -168,17 +168,29 @@ class PagePower extends import_Page.Page {
       if (typeof config[key] === "number") {
         maxSpeedScale.push(config[key]);
       } else {
-        maxSpeedScale.push(100);
+        maxSpeedScale.push(1e4);
       }
     }
     const iconColor = [];
     for (let i = 1; i <= 6; i++) {
-      const key = `power${i}_iconColor`;
-      const useScale = `_power${i}_color`;
-      if (typeof config[key] === "string" && typeof config[useScale] === "boolean" && !config[useScale]) {
-        iconColor.push(config[key]);
+      const color = `power${i}_iconColor`;
+      const useScale = `_power${i}_useColorScale`;
+      if (typeof config[color] === "string" && typeof config[useScale] === "boolean" && !config[useScale]) {
+        iconColor.push(config[color]);
       } else {
-        iconColor.push("");
+        iconColor.push("undefinied");
+      }
+    }
+    const iconColorScale = [];
+    for (let i = 1; i <= 6; i++) {
+      const minColor = `power${i}_minColorScale`;
+      const maxColor = `power${i}_maxColorScale`;
+      const bestColor = `power${i}_bestColorscale`;
+      const useScale = `_power${i}_useColorScale`;
+      if (typeof config[minColor] === "number" && typeof config[maxColor] === "number" && typeof config[bestColor] === "number" && typeof config[useScale] === "boolean" && config[useScale]) {
+        iconColorScale.push([config[minColor], config[maxColor], config[bestColor]]);
+      } else {
+        iconColorScale.push([]);
       }
     }
     const entityHeadline = [];
@@ -213,17 +225,17 @@ class PagePower extends import_Page.Page {
     const valueUnit = [];
     for (let i = 1; i <= 6; i++) {
       const key = `power${i}_valueUnit`;
-      if (typeof config[key] === "string") {
-        if (states[i - 1] != null && states[i - 1] != "") {
-          const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
-          if (o && o.common && o.common.unit) {
-            valueUnit.push(` ${o.common.unit}`);
-          } else {
+      if (states[i - 1] != null && states[i - 1] != "") {
+        const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
+        if (o && o.common && o.common.unit) {
+          valueUnit.push(` ${o.common.unit}`);
+        } else {
+          if (typeof config[key] === "string" && config[key] != "") {
             valueUnit.push(` ${config[key]}`);
+          } else {
+            valueUnit.push(" W");
           }
         }
-      } else {
-        valueUnit.push(" W");
       }
     }
     const result = {
@@ -258,8 +270,15 @@ class PagePower extends import_Page.Page {
                 }, */
               },
               false: void 0,
-              scale: { type: "const", constVal: { val_min: 0, val_max: 100 } }
-              //in key schreiben
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[0][0],
+                  val_max: iconColorScale[0][1],
+                  val_best: iconColorScale[0][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {

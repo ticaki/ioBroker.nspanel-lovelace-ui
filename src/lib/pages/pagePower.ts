@@ -185,19 +185,40 @@ export class PagePower extends Page {
             if (typeof config[key] === 'number') {
                 maxSpeedScale.push(config[key]);
             } else {
-                maxSpeedScale.push(100);
+                maxSpeedScale.push(10000);
             }
         }
 
         //array of iconColors
         const iconColor: string[] = [];
         for (let i = 1; i <= 6; i++) {
-            const key = `power${i}_iconColor` as keyof typeof config;
-            const useScale = `_power${i}_color` as keyof typeof config;
-            if (typeof config[key] === 'string' && typeof config[useScale] === 'boolean' && !config[useScale]) {
-                iconColor.push(config[key]);
+            const color = `power${i}_iconColor` as keyof typeof config;
+            const useScale = `_power${i}_useColorScale` as keyof typeof config;
+            if (typeof config[color] === 'string' && typeof config[useScale] === 'boolean' && !config[useScale]) {
+                iconColor.push(config[color]);
             } else {
-                iconColor.push('');
+                iconColor.push('undefinied');
+            }
+        }
+        //array of colorScale
+        const iconColorScale: number[][] = [];
+        for (let i = 1; i <= 6; i++) {
+            const minColor = `power${i}_minColorScale` as keyof typeof config;
+            const maxColor = `power${i}_maxColorScale` as keyof typeof config;
+            const bestColor = `power${i}_bestColorscale` as keyof typeof config;
+            const useScale = `_power${i}_useColorScale` as keyof typeof config;
+
+            if (
+                typeof config[minColor] === 'number' &&
+                typeof config[maxColor] === 'number' &&
+                typeof config[bestColor] === 'number' &&
+                typeof config[useScale] === 'boolean' &&
+                config[useScale]
+            ) {
+                //iconColorScale.push([0, 800, 500]);
+                iconColorScale.push([config[minColor], config[maxColor], config[bestColor]]);
+            } else {
+                iconColorScale.push([]); // Leeres Array, falls die Bedingungen nicht erfüllt sind
             }
         }
 
@@ -240,17 +261,17 @@ export class PagePower extends Page {
         const valueUnit: string[] = [];
         for (let i = 1; i <= 6; i++) {
             const key = `power${i}_valueUnit` as keyof typeof config;
-            if (typeof config[key] === 'string') {
-                if (states[i - 1] != null && states[i - 1] != '') {
-                    const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
-                    if (o && o.common && o.common.unit) {
-                        valueUnit.push(` ${o.common.unit}`);
-                    } else {
+            if (states[i - 1] != null && states[i - 1] != '') {
+                const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
+                if (o && o.common && o.common.unit) {
+                    valueUnit.push(` ${o.common.unit}`);
+                } else {
+                    if (typeof config[key] === 'string' && config[key] != '') {
                         valueUnit.push(` ${config[key]}`);
+                    } else {
+                        valueUnit.push(' W');
                     }
                 }
-            } else {
-                valueUnit.push(' W');
             }
         }
 
@@ -286,7 +307,15 @@ export class PagePower extends Page {
                                 }, */
                             },
                             false: undefined,
-                            scale: { type: 'const', constVal: { val_min: 0, val_max: 100 } }, //in key schreiben
+                            scale: {
+                                type: 'const',
+                                constVal: {
+                                    val_min: iconColorScale[0][0],
+                                    val_max: iconColorScale[0][1],
+                                    val_best: iconColorScale[0][2],
+                                    mode: 'triGrad',
+                                },
+                            },
                         },
                         value: {
                             value: {

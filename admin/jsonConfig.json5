@@ -1040,8 +1040,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMinSpeed",
-                            "default": "0",
+                            "label": "powerMinValueForSpeed",
+                            "default": 0,
                             "hidden": "!data._power1_more"
                         },
                         {
@@ -1052,8 +1052,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMaxSpeed",
-                            "default": "10000",
+                            "label": "powerMaxValueForSpeed",
+                            "default": 10000,
                             "hidden": "!data._power1_more"
                         },
                         {
@@ -1064,7 +1064,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "powerReverse",
+                            "label": "powerDirectionReverse",
                             "default": false,
                             "hidden": "!data._power1_more"
                         },
@@ -1076,7 +1076,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "useColorScala",
+                            "label": "useColorScale",
                             "default": false,
                             "hidden": "!data._power1_more",
                             "newLine": true
@@ -1102,7 +1102,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinValueForClor",
-                            "default": "0",
+                            "default": 0,
                             "hidden": "!data._power1_more || !data._power1_useColorScale"
                         },
                         {
@@ -1114,7 +1114,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxValueForColor",
-                            "default": "10000",
+                            "default": 10000,
                             "hidden": "!data._power1_more || !data._power1_useColorScale"
                         },
                         {
@@ -1126,7 +1126,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerBestValueForColor",
-                            "default": "",
+                            "default": 0,
                             "hidden": "!data._power1_more || !data._power1_useColorScale"
                         },
                         {
@@ -1247,8 +1247,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMinSpeed",
-                            "default": "0",
+                            "label": "powerMinValueForSpeed",
+                            "default": 0,
                             "hidden": "!data._power2_more"
                         },
                         {
@@ -1259,8 +1259,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMaxSpeed",
-                            "default": "10000",
+                            "label": "powerMaxValueForSpeed",
+                            "default": 10000,
                             "hidden": "!data._power2_more"
                         },
                         {
@@ -1271,7 +1271,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "powerReverse",
+                            "label": "powerDirectionReverse",
                             "default": false,
                             "hidden": "!data._power2_more"
                         },
@@ -1283,7 +1283,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "useColorScala",
+                            "label": "useColorScale",
                             "default": false,
                             "hidden": "!data._power2_more",
                             "newLine": true
@@ -1309,7 +1309,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinValueForClor",
-                            "default": "0",
+                            "default": 0,
                             "hidden": "!data._power2_more || !data._power2_useColorScale"
                         },
                         {
@@ -1321,7 +1321,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxValueForColor",
-                            "default": "10000",
+                            "default": 10000,
                             "hidden": "!data._power2_more || !data._power2_useColorScale"
                         },
                         {
@@ -1333,7 +1333,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerBestValueForColor",
-                            "default": "",
+                            "default": 0,
                             "hidden": "!data._power2_more || !data._power2_useColorScale"
                         },
                         {
@@ -1454,8 +1454,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMinSpeed",
-                            "default": "0",
+                            "label": "powerMinValueForSpeed",
+                            "default": 0,
                             "hidden": "!data._power3_more"
                         },
                         {
@@ -1466,8 +1466,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMaxSpeed",
-                            "default": "10000",
+                            "label": "powerMaxValueForSpeed",
+                            "default": 10000,
                             "hidden": "!data._power3_more"
                         },
                         {
@@ -1478,7 +1478,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "powerReverse",
+                            "label": "powerDirectionReverse",
                             "default": false,
                             "hidden": "!data._power3_more"
                         },
@@ -1490,7 +1490,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "useColorScala",
+                            "label": "useColorScale",
                             "default": false,
                             "hidden": "!data._power3_more",
                             "newLine": true
@@ -1516,7 +1516,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinValueForClor",
-                            "default": "0",
+                            "default": 0,
                             "hidden": "!data._power3_more || !data._power3_useColorScale"
                         },
                         {
@@ -1528,7 +1528,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxValueForColor",
-                            "default": "10000",
+                            "default": 10000,
                             "hidden": "!data._power3_more || !data._power3_useColorScale"
                         },
                         {
@@ -1540,7 +1540,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerBestValueForColor",
-                            "default": "",
+                            "default": 0,
                             "hidden": "!data._power3_more || !data._power3_useColorScale"
                         },
                         {
@@ -1661,8 +1661,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMinSpeed",
-                            "default": "0",
+                            "label": "powerMinValueForSpeed",
+                            "default": 0,
                             "hidden": "!data._power4_more"
                         },
                         {
@@ -1673,8 +1673,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMaxSpeed",
-                            "default": "10000",
+                            "label": "powerMaxValueForSpeed",
+                            "default": 10000,
                             "hidden": "!data._power4_more"
                         },
                         {
@@ -1685,7 +1685,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "powerReverse",
+                            "label": "powerDirectionReverse",
                             "default": false,
                             "hidden": "!data._power4_more"
                         },
@@ -1697,7 +1697,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "useColorScala",
+                            "label": "useColorScale",
                             "default": false,
                             "hidden": "!data._power4_more",
                             "newLine": true
@@ -1723,7 +1723,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinValueForClor",
-                            "default": "0",
+                            "default": 0,
                             "hidden": "!data._power4_more || !data._power4_useColorScale"
                         },
                         {
@@ -1735,7 +1735,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxValueForColor",
-                            "default": "10000",
+                            "default": 10000,
                             "hidden": "!data._power4_more || !data._power4_useColorScale"
                         },
                         {
@@ -1747,7 +1747,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerBestValueForColor",
-                            "default": "",
+                            "default": 0,
                             "hidden": "!data._power4_more || !data._power4_useColorScale"
                         },
                         {
@@ -1868,8 +1868,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMinSpeed",
-                            "default": "0",
+                            "label": "powerMinValueForSpeed",
+                            "default": 0,
                             "hidden": "!data._power5_more"
                         },
                         {
@@ -1880,8 +1880,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMaxSpeed",
-                            "default": "10000",
+                            "label": "powerMaxValueForSpeed",
+                            "default": 10000,
                             "hidden": "!data._power5_more"
                         },
                         {
@@ -1892,7 +1892,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "powerReverse",
+                            "label": "powerDirectionReverse",
                             "default": false,
                             "hidden": "!data._power5_more"
                         },
@@ -1904,7 +1904,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "useColorScala",
+                            "label": "useColorScale",
                             "default": false,
                             "hidden": "!data._power5_more",
                             "newLine": true
@@ -1930,7 +1930,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinValueForClor",
-                            "default": "0",
+                            "default": 0,
                             "hidden": "!data._power5_more || !data._power5_useColorScale"
                         },
                         {
@@ -1942,7 +1942,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxValueForColor",
-                            "default": "10000",
+                            "default": 10000,
                             "hidden": "!data._power5_more || !data._power5_useColorScale"
                         },
                         {
@@ -1954,7 +1954,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerBestValueForColor",
-                            "default": "",
+                            "default": 0,
                             "hidden": "!data._power5_more || !data._power5_useColorScale"
                         },
                         {
@@ -2075,8 +2075,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMinSpeed",
-                            "default": "0",
+                            "label": "powerMinValueForSpeed",
+                            "default": 0,
                             "hidden": "!data._power6_more"
                         },
                         {
@@ -2087,8 +2087,8 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMaxSpeed",
-                            "default": "10000",
+                            "label": "powerMaxValueForSpeed",
+                            "default": 10000,
                             "hidden": "!data._power6_more"
                         },
                         {
@@ -2099,7 +2099,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "powerReverse",
+                            "label": "powerDirectionReverse",
                             "default": false,
                             "hidden": "!data._power6_more"
                         },
@@ -2111,7 +2111,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "useColorScala",
+                            "label": "useColorScale",
                             "default": false,
                             "hidden": "!data._power6_more",
                             "newLine": true
@@ -2137,7 +2137,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMinValueForClor",
-                            "default": "0",
+                            "default": 0,
                             "hidden": "!data._power6_more || !data._power6_useColorScale"
                         },
                         {
@@ -2149,7 +2149,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerMaxValueForColor",
-                            "default": "10000",
+                            "default": 10000,
                             "hidden": "!data._power6_more || !data._power6_useColorScale"
                         },
                         {
@@ -2161,7 +2161,7 @@
                             "xl": 2,
                             "type": "number",
                             "label": "powerBestValueForColor",
-                            "default": "",
+                            "default": 0,
                             "hidden": "!data._power6_more || !data._power6_useColorScale"
                         },
                         {
