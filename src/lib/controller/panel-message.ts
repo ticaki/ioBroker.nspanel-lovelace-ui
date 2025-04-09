@@ -57,7 +57,6 @@ export class PanelSend extends BaseClass {
         const ackForType = this.messageDb[0] && this.messageDb[0].ackForType;
         if (msg) {
             if ((ackForType && msg.CustomSend === 'renderCurrentPage') || (!ackForType && msg.CustomSend === 'Done')) {
-                this.log.debug(`Receive ack for ${JSON.stringify(msg)}`);
                 if (this.messageTimeout) {
                     this.adapter.clearTimeout(this.messageTimeout);
                 }
@@ -68,7 +67,7 @@ export class PanelSend extends BaseClass {
                     if (oldMessage.payload === 'pageType~pageStartup') {
                         this.messageDb = [];
                     }
-                    this.log.debug(`Receive ack for ${JSON.stringify(msg)}`);
+                    this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
                 }
                 if (this.unload) {
                     return;
@@ -98,17 +97,18 @@ export class PanelSend extends BaseClass {
             this.messageTimeout = undefined;
             return;
         }
+        if (this.panel && !this.panel.isOnline) {
+            this.messageDb = [];
+        }
         if (this.losingMessageCount > 0) {
             this.log.warn(`send payload: ${JSON.stringify(msg)} to panel. Losing count: ${this.losingMessageCount}`);
         }
-        if (this.losingMessageCount++ > 3) {
+        if (this.losingMessageCount++ > 30) {
             if (this.panel) {
                 this.panel.isOnline = false;
             }
         }
-        if (this.panel && !this.panel.isOnline) {
-            this.messageDb = [];
-        }
+
         if (this.unload) {
             return;
         }

@@ -33,12 +33,12 @@ __export(Page_exports, {
 });
 module.exports = __toCommonJS(Page_exports);
 var pages = __toESM(require("../types/pages"));
-var import_BaseClassPage = require("./BaseClassPage");
+var import_baseClassPage = require("./baseClassPage");
 var import_types = require("../types/types");
 var import_pageItem = require("../pages/pageItem");
 var import_tools = require("../const/tools");
 var import_templateArray = require("../templates/templateArray");
-class Page extends import_BaseClassPage.BaseClassPage {
+class Page extends import_baseClassPage.BaseClassPage {
   card;
   id;
   lastCardCounter = 0;

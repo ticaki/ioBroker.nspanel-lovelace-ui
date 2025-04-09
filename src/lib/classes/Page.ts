@@ -1,5 +1,5 @@
 import * as pages from '../types/pages';
-import { BaseClassPage } from './BaseClassPage';
+import { BaseClassPage } from './baseClassPage';
 import {
     isPopupType,
     type ButtonActionType,

@@ -226,6 +226,8 @@ export class BaseClassTriggerd extends BaseClass {
             }
         } else {
             this.visibility = v;
+            // bin mir nicht sicher ob das für alles passt.
+            await this.onVisibilityChange(v);
         }
     };
     /**

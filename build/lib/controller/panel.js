@@ -660,6 +660,10 @@ class Panel extends import_library.BaseClass {
           return;
         }
       }
+    } else if (topic.endsWith("/tele/LWT")) {
+      if (message === "Offline") {
+        this.isOnline = false;
+      }
     } else {
       const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) || [])[0];
       if (command) {

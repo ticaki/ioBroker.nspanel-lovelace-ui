@@ -1,5 +1,5 @@
 import type { Panel } from '../controller/panel';
-import type { BaseClassTriggerdInterface } from './BaseClassPage';
+import type { BaseClassTriggerdInterface } from './baseClassPage';
 import type * as pages from '../types/pages';
 import type { Page } from './Page';
 
