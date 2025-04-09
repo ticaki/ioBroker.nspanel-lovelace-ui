@@ -197,7 +197,7 @@ export class PagePower extends Page {
             if (typeof config[color] === 'string' && typeof config[useScale] === 'boolean' && !config[useScale]) {
                 iconColor.push(config[color]);
             } else {
-                iconColor.push('undefinied');
+                iconColor.push('');
             }
         }
         //array of colorScale

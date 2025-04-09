@@ -178,7 +178,7 @@ class PagePower extends import_Page.Page {
       if (typeof config[color] === "string" && typeof config[useScale] === "boolean" && !config[useScale]) {
         iconColor.push(config[color]);
       } else {
-        iconColor.push("undefinied");
+        iconColor.push("");
       }
     }
     const iconColorScale = [];
