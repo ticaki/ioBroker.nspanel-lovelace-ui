@@ -393,7 +393,7 @@ export async function getIconEntryColor(
                 case 'triGrad':
                 case 'triGradAnchor': {
                     cto = cto || Color.HMIOn;
-                    cto = cfrom || Color.HMIOff;
+                    cfrom = cfrom || Color.HMIOff;
                 }
             }
         }
