@@ -91,15 +91,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                 './mqtt',
             );
             this.config.mqttIp = '127.0.0.1';
-            await this.delay(100);
-            let c = 0;
-            while (!this.mqttServer.ready) {
-                this.log.debug('Wait for mqttServer');
-                await this.delay(1000);
-                if (c++ > 6) {
-                    throw new Error('mqttServer not ready!');
-                }
-            }
         }
 
         if (this.config.fixBrokenCommonTypes) {
@@ -315,7 +306,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         try {
             Icons.adapter = this;
             await this.onMqttConnect();
-            await this.delay(3000);
+            await this.delay(2000);
             await this.library.init();
             const states = await this.getStatesAsync('*');
             await this.library.initStates(states);
@@ -501,7 +492,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         const _helper = async (tasmota: any): Promise<void> => {
             try {
                 const state = this.library.readdb(`panels.${tasmota.id}.info.nspanel.firmwareUpdate`);
-                if (!state || typeof state.val !== 'number' || (state.val < 0 && state.val >= 100)) {
+                if (state && typeof state.val === 'number' && state.val >= 100) {
                     this.log.info(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
                     await axios.get(
                         `http://${tasmota.ip}/cm?` +
@@ -790,7 +781,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     ` FullTopic ${`${obj.message.tasmotaTopic}/%prefix%/`.replaceAll('//', '/')};` +
                                     ` MqttRetry 10; FriendlyName1 ${obj.message.tasmotaName}; Hostname ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, '_')};` +
                                     ` WebLog 2; template {"NAME":"${obj.message.tasmotaName}", "GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1};` +
-                                    ` Module 0; MqttClient ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}-%06X;` +
+                                    ` Module 0; MqttClient ${this.library.cleandp(obj.message.tasmotaName)}-%06X;` +
                                     ` ${obj.message.mqttServer ? 'SetOption132 1; SetOption103 1 ' : 'SetOption132 0; SetOption103 0'}; Restart 1`;
                                 const u = new URL(
                                     `http://${obj.message.tasmotaIP}/cm?` +
@@ -1581,20 +1572,21 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
                 case 'createScript': {
+                    const scriptPath = this.library.cleandp(`script.js.${this.namespace}`);
                     const folder: ioBroker.ChannelObject = {
                         type: 'channel',
-                        _id: `script.js.${this.name}`,
+                        _id: scriptPath,
                         common: {
-                            name: this.name,
+                            name: this.namespace,
                             expert: true,
                         },
                         native: {},
                     };
-                    await this.extendForeignObjectAsync(`script.js.${this.name}`, folder);
+                    await this.extendForeignObjectAsync(scriptPath, folder);
 
                     // Skript erstellen
-                    const scriptId = `script.js.${this.name}.${obj.message.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}`;
-                    this.log.debug(`Create script ${path.join(__dirname, '../script')}`);
+                    const scriptId = this.library.cleandp(`${scriptPath}.${obj.message.name}`);
+                    this.log.debug(`Create script ${scriptId}`);
                     if (fs.existsSync(path.join(__dirname, '../script')) && obj.message.name && obj.message.topic) {
                         let file = fs.readFileSync(
                             path.join(__dirname, '../script/example_sendTo_script_iobroker.ts'),
@@ -1602,6 +1594,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                         );
                         const o = await this.getForeignObjectAsync(scriptId);
                         if (file) {
+                            file = file.replace(`panelTopic: 'topic',`, `panelTopic: '${obj.message.topic}',`);
+                            file = file.replace(
+                                /await sendToAsync\('nspanel-lovelace-ui\.0', 'ScriptConfig',/,
+                                `await sendToAsync('${this.namespace}', 'ScriptConfig',`,
+                            );
                             if (o) {
                                 const token =
                                     '*  END STOP END STOP END - No more configuration - END STOP END STOP END       *';
@@ -1619,13 +1616,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                             } else {
                                 this.log.info(`Create script ${scriptId}`);
-                                file = file.replace(`panelTopic: 'topic',`, `panelTopic: '${obj.message.topic}',`);
                             }
                             const script: ioBroker.ScriptObject = {
                                 type: 'script',
                                 _id: scriptId,
                                 common: {
-                                    name: obj.message.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_'),
+                                    name: obj.message.name,
                                     engineType: 'TypeScript/ts',
                                     engine: `system.adapter.javascript.0`,
                                     source: file,

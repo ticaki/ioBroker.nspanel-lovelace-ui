@@ -147,6 +147,8 @@ class PanelSend extends import_library.BaseClass {
     if (this.messageTimeoutTasmota && this.messageTimeoutTasmota !== true) {
       this.adapter.clearTimeout(this.messageTimeoutTasmota);
     }
+    this.messageDb = [];
+    this.messageDbTasmota = [];
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

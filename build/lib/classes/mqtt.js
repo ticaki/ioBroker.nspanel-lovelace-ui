@@ -130,6 +130,8 @@ class MQTTClientClass extends import_library.BaseClass {
 class MQTTServerClass extends import_library.BaseClass {
   aedes;
   server;
+  controller;
+  intervals = [];
   ready = false;
   static async createMQTTServer(adapter, port, username, password, path) {
     let keys = {};
@@ -183,13 +185,45 @@ class MQTTServerClass extends import_library.BaseClass {
       if (!confirm) {
         this.log.warn(`Login denied client: ${client.id}. User name or password wrong! ${pw == null ? void 0 : pw.toString()}`);
       } else {
-        this.log.info(`Client ${client.id} login successful.`);
+        this.log.debug(`Client ${client.id} login successful.`);
       }
       callback(null, confirm);
     };
+    this.aedes.on("client", (client) => {
+      const interval = this.adapter.setInterval(
+        (index) => {
+          if (this.controller) {
+            const result = this.controller.mqttClientConnected(client.id);
+            if (result) {
+              this.log.debug(`Client ${client.id} connected.`);
+            }
+            if (result || result === void 0) {
+              this.adapter.clearInterval(this.intervals[index]);
+              this.intervals[index] = void 0;
+              for (let a = this.intervals.length - 1; a >= 0; a--) {
+                if (this.intervals[a] === void 0) {
+                  this.intervals.splice(a, 1);
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+        },
+        1e3,
+        this.intervals.length
+      );
+      this.intervals.push(interval);
+    });
   }
   destroy() {
     void this.delete();
+    for (let a = this.intervals.length - 1; a >= 0; a--) {
+      if (this.intervals[a] !== void 0) {
+        this.adapter.clearInterval(this.intervals[a]);
+      }
+    }
+    this.intervals = [];
     this.aedes.close();
     this.server.close();
   }

@@ -77,6 +77,7 @@ export class Panel extends BaseClass {
     public screenSaver: Screensaver | undefined;
     public lastCard: string = '';
     public notifyIndex: number = -1;
+    public initDone: boolean = false;
     readonly buttons: panelConfigPartial['buttons'];
     readonly navigation: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
@@ -131,6 +132,7 @@ export class Panel extends BaseClass {
             firmwareversion: '',
             onlineVersion: '',
             safeboot: false,
+            mqttClient: '',
             net: {
                 Hostname: '',
                 IPAddress: '',
@@ -196,6 +198,7 @@ export class Panel extends BaseClass {
             topic: options.topic,
             panel: this,
         });
+        this.info.tasmota.mqttClient = this.library.cleandp(this.name);
         this.options = options;
         this.timeout = options.timeout || 15;
         this.buttons = options.buttons;
@@ -595,7 +598,10 @@ export class Panel extends BaseClass {
         this.info.nspanel.bigIconLeft = state ? !!state.val : false;
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
         this.info.nspanel.bigIconRight = state ? !!state.val : false;
-        this.restartLoops();
+        this.initDone = true;
+        if (!this.adapter.config.mqttServer) {
+            this.restartLoops();
+        }
     };
 
     private sendToPanelClass: (payload: string, ackForType: boolean, opt?: IClientPublishOptions) => void = () => {};
@@ -776,6 +782,7 @@ export class Panel extends BaseClass {
                             message,
                             genericStateObjects.panel.panels.info.status,
                         );
+                        this.info.tasmota.mqttClient = data.StatusMQT.MqttClient;
                         this.info.tasmota.net = data.StatusNET;
                         this.info.tasmota.firmwareversion = data.StatusFWR.Version;
                         this.info.tasmota.safeboot = data.StatusFWR.Version.includes('Safeboot');
@@ -1069,7 +1076,7 @@ export class Panel extends BaseClass {
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
-        this.loopTimeout = this.adapter.setTimeout(this.loop, 3000);
+        this.loopTimeout = this.adapter.setTimeout(this.loop, 100);
     }
     /**
      * Do panel work always at full minute
@@ -1115,6 +1122,10 @@ export class Panel extends BaseClass {
             }
         }
         this.persistentPageItems = {};
+        this.pages = [];
+        this._activePage = undefined;
+        this.data = {};
+        this.screenSaver = undefined;
     }
 
     getPagebyUniqueID(uniqueID: string): Page | null {
