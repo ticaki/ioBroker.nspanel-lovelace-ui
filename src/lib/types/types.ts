@@ -764,7 +764,6 @@ export type PanelInfo = {
         bigIconRight: boolean;
         onlineVersion: string;
         firmwareUpdate: number;
-
         currentPage: string;
     };
     tasmota: {
@@ -774,6 +773,7 @@ export type PanelInfo = {
         net: STATUS0['StatusNET'];
         uptime: string;
         sts: STATUS0['StatusSTS'];
+        mqttClient: string;
     };
 };
 

@@ -76,6 +76,7 @@ class Panel extends import_library.BaseClass {
   screenSaver;
   lastCard = "";
   notifyIndex = -1;
+  initDone = false;
   buttons;
   navigation;
   format;
@@ -118,6 +119,7 @@ class Panel extends import_library.BaseClass {
       firmwareversion: "",
       onlineVersion: "",
       safeboot: false,
+      mqttClient: "",
       net: {
         Hostname: "",
         IPAddress: "",
@@ -183,6 +185,7 @@ class Panel extends import_library.BaseClass {
       topic: options.topic,
       panel: this
     });
+    this.info.tasmota.mqttClient = this.library.cleandp(this.name);
     this.options = options;
     this.timeout = options.timeout || 15;
     this.buttons = options.buttons;
@@ -543,7 +546,7 @@ class Panel extends import_library.BaseClass {
     this.info.nspanel.bigIconLeft = state ? !!state.val : false;
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
     this.info.nspanel.bigIconRight = state ? !!state.val : false;
-    this.restartLoops();
+    this.initDone = true;
   };
   sendToPanelClass = () => {
   };
@@ -712,6 +715,7 @@ class Panel extends import_library.BaseClass {
               message,
               import_definition.genericStateObjects.panel.panels.info.status
             );
+            this.info.tasmota.mqttClient = data.StatusMQT.MqttClient;
             this.info.tasmota.net = data.StatusNET;
             this.info.tasmota.firmwareversion = data.StatusFWR.Version;
             this.info.tasmota.safeboot = data.StatusFWR.Version.includes("Safeboot");
@@ -967,7 +971,7 @@ class Panel extends import_library.BaseClass {
     if (this.loopTimeout) {
       this.adapter.clearTimeout(this.loopTimeout);
     }
-    this.loopTimeout = this.adapter.setTimeout(this.loop, 3e3);
+    this.loopTimeout = this.adapter.setTimeout(this.loop, 100);
   }
   /**
    * Do panel work always at full minute
@@ -1012,6 +1016,10 @@ class Panel extends import_library.BaseClass {
       }
     }
     this.persistentPageItems = {};
+    this.pages = [];
+    this._activePage = void 0;
+    this.data = {};
+    this.screenSaver = void 0;
   }
   getPagebyUniqueID(uniqueID) {
     var _a;

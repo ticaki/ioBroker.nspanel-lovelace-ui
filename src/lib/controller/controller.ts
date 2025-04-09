@@ -22,6 +22,7 @@ export class Controller extends Library.BaseClass {
     private dateUpdateTimeout: ioBroker.Timeout | undefined;
     private dailyIntervalTimeout: ioBroker.Interval | undefined;
     private dataCache: Record<string, { time: number; data: any }> = {};
+
     systemNotification: SystemNotifications;
 
     constructor(
@@ -34,7 +35,9 @@ export class Controller extends Library.BaseClass {
         this.mqttClient = options.mqttClient;
         this.statesControler = new StatesControler(this.adapter);
         this.systemNotification = new SystemNotifications(this.adapter);
-
+        if (this.adapter.mqttServer) {
+            this.adapter.mqttServer.controller = this;
+        }
         for (const panelConfig of options.panels) {
             if (panelConfig === undefined) {
                 continue;
@@ -311,6 +314,20 @@ export class Controller extends Library.BaseClass {
         } else {
             this.log.error(`Panel ${panel.topic} not found`);
         }
+    };
+
+    mqttClientConnected = (id: string): boolean | undefined => {
+        if (id === this.mqttClient.clientId) {
+            return true;
+        }
+        const index = this.panels.findIndex(p => id.startsWith(this.library.cleandp(p.friendlyName)));
+        if (index !== -1) {
+            if (this.panels[index].initDone) {
+                this.panels[index].restartLoops();
+                return true;
+            }
+        }
+        return false;
     };
 
     async delete(): Promise<void> {
