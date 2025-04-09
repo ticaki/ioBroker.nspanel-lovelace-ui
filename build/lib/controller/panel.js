@@ -547,6 +547,9 @@ class Panel extends import_library.BaseClass {
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
     this.info.nspanel.bigIconRight = state ? !!state.val : false;
     this.initDone = true;
+    if (!this.adapter.config.mqttServer) {
+      this.restartLoops();
+    }
   };
   sendToPanelClass = () => {
   };

@@ -599,6 +599,9 @@ export class Panel extends BaseClass {
         state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
         this.info.nspanel.bigIconRight = state ? !!state.val : false;
         this.initDone = true;
+        if (!this.adapter.config.mqttServer) {
+            this.restartLoops();
+        }
     };
 
     private sendToPanelClass: (payload: string, ackForType: boolean, opt?: IClientPublishOptions) => void = () => {};
