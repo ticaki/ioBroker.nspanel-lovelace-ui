@@ -203,20 +203,18 @@ export class PagePower extends Page {
         //array of colorScale
         const iconColorScale: number[][] = [];
         for (let i = 1; i <= 6; i++) {
-            const minColor = `power${i}_minColorScale` as keyof typeof config;
-            const maxColor = `power${i}_maxColorScale` as keyof typeof config;
-            const bestColor = `power${i}_bestColorscale` as keyof typeof config;
-            const useScale = `_power${i}_useColorScale` as keyof typeof config;
+            const prefix = `power${i}_`;
+            const surfix = `ColorScale`;
+            const scale = [
+                config[`${prefix}min${surfix}` as keyof typeof config],
+                config[`${prefix}max${surfix}` as keyof typeof config],
+                config[`${prefix}best${surfix}` as keyof typeof config],
+            ];
+            const useScale = config[`_${prefix}use${surfix}` as keyof typeof config];
 
-            if (
-                typeof config[minColor] === 'number' &&
-                typeof config[maxColor] === 'number' &&
-                typeof config[bestColor] === 'number' &&
-                typeof config[useScale] === 'boolean' &&
-                config[useScale]
-            ) {
+            if (scale.every(s => typeof s === 'number') && useScale === true) {
                 //iconColorScale.push([0, 800, 500]);
-                iconColorScale.push([config[minColor], config[maxColor], config[bestColor]]);
+                iconColorScale.push(scale);
             } else {
                 iconColorScale.push([]); // Leeres Array, falls die Bedingungen nicht erfüllt sind
             }

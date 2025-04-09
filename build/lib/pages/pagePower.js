@@ -183,12 +183,16 @@ class PagePower extends import_Page.Page {
     }
     const iconColorScale = [];
     for (let i = 1; i <= 6; i++) {
-      const minColor = `power${i}_minColorScale`;
-      const maxColor = `power${i}_maxColorScale`;
-      const bestColor = `power${i}_bestColorscale`;
-      const useScale = `_power${i}_useColorScale`;
-      if (typeof config[minColor] === "number" && typeof config[maxColor] === "number" && typeof config[bestColor] === "number" && typeof config[useScale] === "boolean" && config[useScale]) {
-        iconColorScale.push([config[minColor], config[maxColor], config[bestColor]]);
+      const prefix = `power${i}_`;
+      const surfix = `ColorScale`;
+      const scale = [
+        config[`${prefix}min${surfix}`],
+        config[`${prefix}max${surfix}`],
+        config[`${prefix}best${surfix}`]
+      ];
+      const useScale = config[`_${prefix}use${surfix}`];
+      if (scale.every((s) => typeof s === "number") && useScale === true) {
+        iconColorScale.push(scale);
       } else {
         iconColorScale.push([]);
       }
@@ -263,11 +267,12 @@ class PagePower extends import_Page.Page {
                 value: {
                   type: "const",
                   constVal: icons[0]
+                },
+                color: {
+                  type: "const",
+                  constVal: iconColor[0]
+                  //undefined,
                 }
-                /* color: {
-                    type: 'const',
-                    constVal: iconColor[0], //undefined,
-                }, */
               },
               false: void 0,
               scale: {
@@ -328,7 +333,16 @@ class PagePower extends import_Page.Page {
                   constVal: iconColor[1]
                 }
               },
-              false: void 0
+              false: void 0,
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[1][0],
+                  val_max: iconColorScale[1][1],
+                  val_best: iconColorScale[1][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {
@@ -378,7 +392,16 @@ class PagePower extends import_Page.Page {
                   constVal: iconColor[2]
                 }
               },
-              false: void 0
+              false: void 0,
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[2][0],
+                  val_max: iconColorScale[2][1],
+                  val_best: iconColorScale[2][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {
@@ -428,7 +451,16 @@ class PagePower extends import_Page.Page {
                   constVal: iconColor[3]
                 }
               },
-              false: void 0
+              false: void 0,
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[3][0],
+                  val_max: iconColorScale[3][1],
+                  val_best: iconColorScale[3][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {
@@ -478,7 +510,16 @@ class PagePower extends import_Page.Page {
                   constVal: iconColor[4]
                 }
               },
-              false: void 0
+              false: void 0,
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[4][0],
+                  val_max: iconColorScale[4][1],
+                  val_best: iconColorScale[4][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {
@@ -528,7 +569,16 @@ class PagePower extends import_Page.Page {
                   constVal: iconColor[5]
                 }
               },
-              false: void 0
+              false: void 0,
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[5][0],
+                  val_max: iconColorScale[5][1],
+                  val_best: iconColorScale[5][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {
