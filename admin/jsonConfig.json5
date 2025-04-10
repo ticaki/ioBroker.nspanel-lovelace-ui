@@ -1059,9 +1059,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power1_more"
                         },
                         {
@@ -1262,9 +1276,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power2_more"
                         },
                         {
@@ -1465,9 +1493,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power3_more"
                         },
                         {
@@ -1668,9 +1710,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power4_more"
                         },
                         {
@@ -1871,9 +1927,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power5_more"
                         },
                         {
@@ -2074,9 +2144,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power6_more"
                         },
                         {
@@ -2253,9 +2337,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power7_more"
                         },
                         {
@@ -2316,9 +2414,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power8_more"
                         }
                     ]
