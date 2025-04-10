@@ -219,11 +219,26 @@ class Color extends ColorBase {
     }
     return result;
   }
+  /**
+   * Scales a number from one range to another range.
+   *
+   * This function takes a number and maps it from an input range
+   * (defined by `inMin` and `inMax`) to an output range
+   * (defined by `outMin` and `outMax`). If either `inMin` or `inMax`
+   * is `null`, the function returns the input number unchanged.
+   *
+   * @param number - The number to be scaled.
+   * @param inMin - The minimum value of the input range. If `null`, scaling is skipped.
+   * @param inMax - The maximum value of the input range. If `null`, scaling is skipped.
+   * @param outMin - The minimum value of the output range.
+   * @param outMax - The maximum value of the output range.
+   * @returns The scaled number, or the input number if `inMin` or `inMax` is `null`.
+   */
   static scale(number, inMin, inMax, outMin, outMax) {
-    if (inMin === null || inMax === null) {
+    if (inMax === null || inMin === null) {
       return number;
     }
-    return outMax + outMin - ((number - inMin) * (outMax - outMin) / (inMax - inMin) + outMin);
+    return outMax + outMin - ((number - inMax) * (outMax - outMin) / (inMin - inMax) + outMin);
   }
   static mixColorHue(startRGB, endRGB, t, _options) {
     const startHSB = (0, import_colord.colord)(startRGB).toHsv();

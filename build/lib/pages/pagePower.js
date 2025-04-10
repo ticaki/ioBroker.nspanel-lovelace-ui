@@ -168,16 +168,33 @@ class PagePower extends import_Page.Page {
       if (typeof config[key] === "number") {
         maxSpeedScale.push(config[key]);
       } else {
-        maxSpeedScale.push(100);
+        maxSpeedScale.push(1e4);
       }
     }
     const iconColor = [];
     for (let i = 1; i <= 6; i++) {
-      const key = `power${i}_iconColor`;
-      if (typeof config[key] === "string") {
-        iconColor.push(config[key]);
+      const color = `power${i}_iconColor`;
+      const useScale = `_power${i}_useColorScale`;
+      if (typeof config[color] === "string" && typeof config[useScale] === "boolean" && !config[useScale]) {
+        iconColor.push(config[color]);
       } else {
-        iconColor.push("#ffffff");
+        iconColor.push("");
+      }
+    }
+    const iconColorScale = [];
+    for (let i = 1; i <= 6; i++) {
+      const prefix = `power${i}_`;
+      const surfix = `ColorScale`;
+      const scale = [
+        config[`${prefix}min${surfix}`],
+        config[`${prefix}max${surfix}`],
+        config[`${prefix}best${surfix}`]
+      ];
+      const useScale = config[`_${prefix}use${surfix}`];
+      if (scale.every((s) => typeof s === "number") && useScale === true) {
+        iconColorScale.push(scale);
+      } else {
+        iconColorScale.push([]);
       }
     }
     const entityHeadline = [];
@@ -212,10 +229,17 @@ class PagePower extends import_Page.Page {
     const valueUnit = [];
     for (let i = 1; i <= 6; i++) {
       const key = `power${i}_valueUnit`;
-      if (typeof config[key] === "string") {
-        valueUnit.push(config[key]);
-      } else {
-        valueUnit.push("W");
+      if (states[i - 1] != null && states[i - 1] != "") {
+        const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
+        if (o && o.common && o.common.unit) {
+          valueUnit.push(` ${o.common.unit}`);
+        } else {
+          if (typeof config[key] === "string" && config[key] != "") {
+            valueUnit.push(` ${config[key]}`);
+          } else {
+            valueUnit.push(" W");
+          }
+        }
       }
     }
     const result = {
@@ -247,9 +271,19 @@ class PagePower extends import_Page.Page {
                 color: {
                   type: "const",
                   constVal: iconColor[0]
+                  //undefined,
                 }
               },
-              false: void 0
+              false: void 0,
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[0][0],
+                  val_max: iconColorScale[0][1],
+                  val_best: iconColorScale[0][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {
@@ -299,7 +333,16 @@ class PagePower extends import_Page.Page {
                   constVal: iconColor[1]
                 }
               },
-              false: void 0
+              false: void 0,
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[1][0],
+                  val_max: iconColorScale[1][1],
+                  val_best: iconColorScale[1][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {
@@ -349,7 +392,16 @@ class PagePower extends import_Page.Page {
                   constVal: iconColor[2]
                 }
               },
-              false: void 0
+              false: void 0,
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[2][0],
+                  val_max: iconColorScale[2][1],
+                  val_best: iconColorScale[2][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {
@@ -399,7 +451,16 @@ class PagePower extends import_Page.Page {
                   constVal: iconColor[3]
                 }
               },
-              false: void 0
+              false: void 0,
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[3][0],
+                  val_max: iconColorScale[3][1],
+                  val_best: iconColorScale[3][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {
@@ -449,7 +510,16 @@ class PagePower extends import_Page.Page {
                   constVal: iconColor[4]
                 }
               },
-              false: void 0
+              false: void 0,
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[4][0],
+                  val_max: iconColorScale[4][1],
+                  val_best: iconColorScale[4][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {
@@ -499,7 +569,16 @@ class PagePower extends import_Page.Page {
                   constVal: iconColor[5]
                 }
               },
-              false: void 0
+              false: void 0,
+              scale: {
+                type: "const",
+                constVal: {
+                  val_min: iconColorScale[5][0],
+                  val_max: iconColorScale[5][1],
+                  val_best: iconColorScale[5][2],
+                  mode: "triGrad"
+                }
+              }
             },
             value: {
               value: {
