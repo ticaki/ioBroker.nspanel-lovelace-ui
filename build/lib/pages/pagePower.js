@@ -218,7 +218,7 @@ class PagePower extends import_Page.Page {
       }
     }
     const valueDecimal = [];
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= 8; i++) {
       const key = `power${i}_valueDecimal`;
       if (typeof config[key] === "number") {
         valueDecimal.push(config[key]);
@@ -227,7 +227,7 @@ class PagePower extends import_Page.Page {
       }
     }
     const valueUnit = [];
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= 8; i++) {
       const key = `power${i}_valueUnit`;
       if (states[i - 1] != null && states[i - 1] != "") {
         const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
@@ -240,6 +240,8 @@ class PagePower extends import_Page.Page {
             valueUnit.push(" W");
           }
         }
+      } else {
+        valueUnit.push("");
       }
     }
     const result = {
@@ -252,15 +254,15 @@ class PagePower extends import_Page.Page {
           headline: { type: "const", constVal: config.headline },
           homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
           homeValueTop: {
-            value: { type: "triggered", dp: states[6] }
+            value: { type: "triggered", dp: states[6] },
+            decimal: { type: "const", constVal: valueDecimal[6] },
+            unit: { type: "const", constVal: valueUnit[6] }
           },
           homeValueBot: {
-            value: { type: "triggered", dp: states[7] }
+            value: { type: "triggered", dp: states[7] },
+            decimal: { type: "const", constVal: valueDecimal[7] },
+            unit: { type: "const", constVal: valueUnit[7] }
           },
-          /* homeValueBot: {
-              value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
-              math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
-          }, */
           leftTop: {
             icon: {
               true: {

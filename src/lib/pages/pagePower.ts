@@ -270,6 +270,8 @@ export class PagePower extends Page {
                         valueUnit.push(' W');
                     }
                 }
+            } else {
+                valueUnit.push('');
             }
         }
 
