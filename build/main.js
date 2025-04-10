@@ -1414,6 +1414,17 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           break;
         }
+        case "openLinkToTasmota": {
+          if (obj.callback) {
+            this.sendTo(
+              obj.from,
+              obj.command,
+              { openUrl: `http://${obj.message.ip}:80`, saveConfig: false },
+              obj.callback
+            );
+          }
+          break;
+        }
         default: {
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, { error: "sendToAnyError" }, obj.callback);

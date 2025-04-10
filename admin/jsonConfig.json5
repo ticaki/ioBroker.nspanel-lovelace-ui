@@ -321,6 +321,10 @@
                         {
                             "label": "tftTool",
                             "value": "3"
+                        },
+                        {
+                            "label": "openLinkToTasmota",
+                            "value": "4"
                         }
                     ],
                     "newLine": true,
@@ -449,6 +453,22 @@
                     "variant": "contained",
                     "hidden": "data._selectTool != '3'"
                 },
+                "_openLinkToTasmota":{
+                    "type": "sendTo",
+                    "label": "openLinkToTasmota",
+                    "jsonData": "{\"ip\": \"${data._tasmotaIP}\"}",
+                    "openUrl": true,
+                    "hidden": "data._selectTool != '4'",
+                    "command": "openLinkToTasmota",
+                    "disabled": "!data._tasmotaIP",
+                    "variant": "contained",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "useBetaTFT": {
                     "type": "checkbox",
                     "label": "useBetaTFT",
@@ -495,7 +515,7 @@
                 "_RefreshMaintainTable": {
                     "type": "sendTo",
                     "label": "refresh",
-                    "jsonData": "{ \"internalServerIp\": \"${globalData.internalServerIp}\" }",
+                    "jsonData": "{ \"internalServerIp\": \"${data.internalServerIp}\" }",
                     "showProcess": true,
                     "command": "refreshMaintainTable",
                     "variant": "outlined",
@@ -621,7 +641,7 @@
                             "jsonData": "{ \"topic\":\"${data._topic}\" }",
                             "showProcess": true,
                             "command": "updateTasmota",
-                            "disabled": "return !data._ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data._ip || data._ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._topic || data.topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data._name || !data._online === 'no'",
+                            "disabled": "return !data._ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data._ip || data._ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._topic || data._topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data._name || !data._online === 'no'",
                             "xs": 12,
                             "sm": 12,
                             "md": 6,
@@ -661,6 +681,22 @@
                             "tooltip": "createScriptHelp",
                             "disabled": "!data._name || !data._topic",
                             "variant": "contained",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
+                            "attr": "_openLinkToTasmota",
+                            "type": "sendTo",
+                            "label": "openLinkToTasmota",
+                            "jsonData": "{\"ip\": \"${data._ip}\"}",
+                            "openUrl": true,
+                            "command": "openLinkToTasmota",
+                            "disabled": "!data._ip",
+                            "variant": "contained",
+                            "newLine": true,
                             "xs": 12,
                             "sm": 12,
                             "md": 6,
