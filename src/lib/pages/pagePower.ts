@@ -246,7 +246,7 @@ export class PagePower extends Page {
 
         //array of valueDecimal
         const valueDecimal: number[] = [];
-        for (let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 8; i++) {
             const key = `power${i}_valueDecimal` as keyof typeof config;
             if (typeof config[key] === 'number') {
                 valueDecimal.push(config[key]);
@@ -257,7 +257,7 @@ export class PagePower extends Page {
 
         //array of valueUnit
         const valueUnit: string[] = [];
-        for (let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 8; i++) {
             const key = `power${i}_valueUnit` as keyof typeof config;
             if (states[i - 1] != null && states[i - 1] != '') {
                 const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
@@ -284,14 +284,14 @@ export class PagePower extends Page {
                     homeIcon: { true: { value: { type: 'const', constVal: 'home' } }, false: undefined },
                     homeValueTop: {
                         value: { type: 'triggered', dp: states[6] },
+                        decimal: { type: 'const', constVal: valueDecimal[6] },
+                        unit: { type: 'const', constVal: valueUnit[6] },
                     },
                     homeValueBot: {
                         value: { type: 'triggered', dp: states[7] },
+                        decimal: { type: 'const', constVal: valueDecimal[7] },
+                        unit: { type: 'const', constVal: valueUnit[7] },
                     },
-                    /* homeValueBot: {
-                        value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
-                        math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
-                    }, */
                     leftTop: {
                         icon: {
                             true: {
