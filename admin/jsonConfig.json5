@@ -633,6 +633,18 @@
                             "xl": 4
                         },
                         {
+                            "type": "text",
+                            "attr": "_ScriptVersion",
+                            "label": "vScript",
+                            "readOnly": true,
+                            "validator": "!data._ScriptVersion.endsWith(')')",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
                             "attr": "_tasmotaSendTo",
                             "type": "sendTo",
                             "label": "tasmotaUpdate",
@@ -688,12 +700,12 @@
                             "xl": 4
                         },
                         {
-                            "attr": "_openLinkToTasmota",
+                            "attr": "_openTasmotaConsole",
                             "type": "sendTo",
-                            "label": "openLinkToTasmota",
+                            "label": "openTasmotaConsole",
                             "jsonData": "{\"ip\": \"${data._ip}\"}",
                             "openUrl": true,
-                            "command": "openLinkToTasmota",
+                            "command": "openTasmotaConsole",
                             "disabled": "!data._ip",
                             "variant": "contained",
                             "newLine": true,

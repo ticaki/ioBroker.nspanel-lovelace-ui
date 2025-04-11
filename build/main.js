@@ -467,7 +467,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
     if (typeof obj === "object" && obj.message) {
       this.log.debug(JSON.stringify(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -475,6 +475,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           obj.command = "tftInstallSendTo";
         }
       }
+      const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
       switch (obj.command) {
         case "config": {
           const obj1 = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
@@ -1217,6 +1218,15 @@ class NspanelLovelaceUi extends utils.Adapter {
           let result = [];
           const flashingText = this.library.getTranslation("Updating");
           const flashingObj = {};
+          let file = void 0;
+          if (fs.existsSync(import_path.default.join(__dirname, "../script"))) {
+            file = fs.readFileSync(
+              import_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"),
+              "utf8"
+            );
+          }
+          const vTemp = (file == null ? void 0 : file.match(/const.version.+'(\d\.\d\.\d)';/)) || [];
+          const version = vTemp[1] ? vTemp[1] : "";
           for (let a = 0; a < this.config.panels.length; a++) {
             const panel = this.config.panels[a];
             const state = this.library.readdb(`panels.${panel.id}.info.nspanel.firmwareUpdate`);
@@ -1227,20 +1237,34 @@ class NspanelLovelaceUi extends utils.Adapter {
           if ((_k = this.controller) == null ? void 0 : _k.panels) {
             const updateText = this.library.getTranslation("updateAvailable");
             const checkText = this.library.getTranslation("check!");
-            const temp = this.controller.panels.map((a) => {
-              var _a2, _b2, _c2, _d2, _e2, _f2, _g2, _h2, _i2, _j2;
+            const temp = [];
+            for (const a of this.controller.panels) {
               let check = false;
               let tv = "";
               let nv = "";
+              let sv = "";
               const ft = flashingObj[a.name];
+              const scriptId = this.library.cleandp(
+                `${scriptPath}.${this.library.cleandp(a.friendlyName, false, true)}`
+              );
+              const o = await this.getForeignObjectAsync(scriptId);
+              if (o) {
+                const temp2 = (_m = (_l = o.common.source.match(/const.version.+'(\d\.\d\.\d)';/)) == null ? void 0 : _l[1]) != null ? _m : "";
+                if (temp2 !== version) {
+                  check = true;
+                  sv = `${temp2} (${updateText}: v${version})`;
+                } else {
+                  sv = temp2;
+                }
+              }
               if (a.info) {
-                if ((_a2 = a.info.tasmota) == null ? void 0 : _a2.firmwareversion) {
+                if ((_n = a.info.tasmota) == null ? void 0 : _n.firmwareversion) {
                   const temp2 = a.info.tasmota.firmwareversion.match(/([0-9]+\.[0-9]+\.[0-9])/);
                   if (temp2 && temp2[1]) {
                     tv = `${temp2[1]}`;
                   }
                 }
-                if (((_b2 = a.info.tasmota) == null ? void 0 : _b2.onlineVersion) && tv) {
+                if (((_o = a.info.tasmota) == null ? void 0 : _o.onlineVersion) && tv) {
                   const temp2 = a.info.tasmota.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
                   if (temp2 && temp2[1] && temp2[1] !== tv) {
                     tv += ` (${updateText})`;
@@ -1248,13 +1272,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                 }
                 tv = tv ? `v${tv}` : "";
-                if ((_c2 = a.info.nspanel) == null ? void 0 : _c2.displayVersion) {
+                if ((_p = a.info.nspanel) == null ? void 0 : _p.displayVersion) {
                   const temp2 = a.info.nspanel.displayVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
                   if (temp2 && temp2[1]) {
                     nv = `${temp2[1]}`;
                   }
                 }
-                if (((_d2 = a.info.nspanel) == null ? void 0 : _d2.onlineVersion) && nv) {
+                if (((_q = a.info.nspanel) == null ? void 0 : _q.onlineVersion) && nv) {
                   const temp2 = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9])/);
                   if (temp2 && temp2[1] && temp2[1] !== nv) {
                     nv += ` (${updateText})`;
@@ -1264,26 +1288,40 @@ class NspanelLovelaceUi extends utils.Adapter {
                 nv = nv ? `v${nv}` : "";
               }
               added.push(a.topic);
-              return {
+              temp.push({
                 _check: check,
                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? "online" : "offline"}`}`})`,
                 _name: a.friendlyName,
-                _ip: ((_g2 = (_f2 = (_e2 = a.info) == null ? void 0 : _e2.tasmota) == null ? void 0 : _f2.net) == null ? void 0 : _g2.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
+                _ip: ((_t = (_s = (_r = a.info) == null ? void 0 : _r.tasmota) == null ? void 0 : _s.net) == null ? void 0 : _t.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
                 _online: a.isOnline ? "yes" : "no",
                 _topic: a.topic,
-                _id: ((_j2 = (_i2 = (_h2 = a.info) == null ? void 0 : _h2.tasmota) == null ? void 0 : _i2.net) == null ? void 0 : _j2.Mac) ? a.info.tasmota.net.Mac : "",
+                _id: ((_w = (_v = (_u = a.info) == null ? void 0 : _u.tasmota) == null ? void 0 : _v.net) == null ? void 0 : _w.Mac) ? a.info.tasmota.net.Mac : "",
                 _tftVersion: nv ? nv : "???",
-                _tasmotaVersion: tv ? tv : "???"
-              };
-            });
+                _tasmotaVersion: tv ? tv : "???",
+                _ScriptVersion: sv ? `v${sv}` : "???"
+              });
+            }
             result = result.concat(temp);
           }
           if (this.config.panels) {
-            const temp = this.config.panels.filter((a) => {
+            const temp2 = this.config.panels.filter((a) => {
               return added.findIndex((b) => b === a.topic) === -1;
-            }).map((a) => {
+            });
+            const temp = [];
+            for (const a of temp2) {
               const ft = flashingObj[a.name];
-              return {
+              let sv = version;
+              const scriptId = this.library.cleandp(
+                `${scriptPath}.${this.library.cleandp(a.name, false, true)}`
+              );
+              const o = await this.getForeignObjectAsync(scriptId);
+              if (o) {
+                const temp3 = (_y = (_x = o.common.source.match(/const.version.+'(\d\.\d\.\d)';/)) == null ? void 0 : _x[1]) != null ? _y : "";
+                if (temp3 !== version) {
+                  sv = temp3 ? temp3 : version;
+                }
+              }
+              temp.push({
                 _check: true,
                 _Headline: `${a.name} (${ft ? ft : `${this.config.Testconfig2 ? this.config.Testconfig2.findIndex((b) => b.topic === a.topic) === -1 ? "Missing configuration!" : "offline - waiting" : "offline"}`})`,
                 _name: a.name,
@@ -1292,9 +1330,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                 _topic: a.topic,
                 _id: "",
                 _tftVersion: "---",
-                _tasmotaVersion: "---"
-              };
-            });
+                _tasmotaVersion: "---",
+                _ScriptVersion: sv ? `v${sv}` : "???"
+              });
+            }
             result = result.concat(temp);
           }
           if (result.length > 0) {
@@ -1310,7 +1349,6 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "createScript": {
-          const scriptPath = this.library.cleandp(`script.js.${this.namespace}`);
           const folder = {
             type: "channel",
             _id: scriptPath,
@@ -1321,7 +1359,9 @@ class NspanelLovelaceUi extends utils.Adapter {
             native: {}
           };
           await this.extendForeignObjectAsync(scriptPath, folder);
-          const scriptId = this.library.cleandp(`${scriptPath}.${obj.message.name}`);
+          const scriptId = this.library.cleandp(
+            `${scriptPath}.${this.library.cleandp(obj.message.name, false, true)}`
+          );
           this.log.debug(`Create script ${scriptId}`);
           if (fs.existsSync(import_path.default.join(__dirname, "../script")) && obj.message.name && obj.message.topic) {
             let file = fs.readFileSync(
@@ -1402,7 +1442,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           let language = this.library.getLocalLanguage();
           language = language === "zh-cn" ? "en" : language;
           const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
-          if ((_l = this.controller) == null ? void 0 : _l.panels) {
+          if ((_z = this.controller) == null ? void 0 : _z.panels) {
             const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
             if (index !== -1) {
               const panel = this.controller.panels[index];
@@ -1414,12 +1454,16 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           break;
         }
+        case "openTasmotaConsole":
         case "openLinkToTasmota": {
           if (obj.callback) {
             this.sendTo(
               obj.from,
               obj.command,
-              { openUrl: `http://${obj.message.ip}:80`, saveConfig: false },
+              {
+                openUrl: `http://${obj.message.ip}/${obj.command === "openTasmotaConsole" ? "cs?" : ""}:80`,
+                saveConfig: false
+              },
               obj.callback
             );
           }
