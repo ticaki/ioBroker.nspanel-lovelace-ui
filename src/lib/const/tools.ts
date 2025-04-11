@@ -704,7 +704,52 @@ export async function getValueEntryString(
     return res;
 }
 
-export async function getValueEntryNumberPowerAutoScaled(
+/**
+ * Aligns a given text to the specified size and alignment.
+ * If the text length is greater than or equal to the specified size,
+ * the original text is returned unchanged. Otherwise, the text is padded
+ * with spaces to match the desired size and alignment.
+ *
+ * @param text - The input string to be aligned.
+ * @param size - The total size of the resulting string after alignment.
+ *               If the input text is shorter than this size, it will be padded with spaces.
+ * @param align - The alignment type. Can be one of the following:
+ *                - `'left'`: Aligns the text to the left and pads with spaces on the right.
+ *                - `'right'`: Aligns the text to the right and pads with spaces on the left.
+ *                - `'center'`: Centers the text and pads with spaces equally on both sides.
+ *                             If the padding is uneven, the extra space is added to the right.
+ * @returns A promise that resolves to the aligned string.
+ * @example
+ * ```typescript
+ * const result = await alignText("Hello", 10, "left");
+ * console.log(result); // "Hello     "
+ *
+ * const result = await alignText("Hello", 10, "right");
+ * console.log(result); // "     Hello"
+ *
+ * const result = await alignText("Hello", 10, "center");
+ * console.log(result); // "  Hello   "
+ * ```
+ */
+export async function alignText(text: string, size: number, align: 'left' | 'right' | 'center'): Promise<string> {
+    if (text.length >= size) {
+        return text;
+    }
+    let text2 = '';
+    const diff = size - text.length;
+    if (align === 'left') {
+        text2 = text + ' '.repeat(diff);
+    } else if (align === 'right') {
+        text2 = ' '.repeat(diff) + text;
+    } else if (align === 'center') {
+        const left = Math.floor(diff / 2);
+        const right = diff - left;
+        text2 = ' '.repeat(left) + text + ' '.repeat(right);
+    }
+    return text2;
+}
+
+export async function getValueAutoScaled(
     i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
     v: number | null,
     space: number,

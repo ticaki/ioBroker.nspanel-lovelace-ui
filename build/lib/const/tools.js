@@ -19,6 +19,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var tools_exports = {};
 __export(tools_exports, {
   GetIconColor: () => GetIconColor,
+  alignText: () => alignText,
   deepAssign: () => deepAssign,
   formatInSelText: () => formatInSelText,
   getDecfromHue: () => getDecfromHue,
@@ -37,9 +38,9 @@ __export(tools_exports, {
   getSliderCTFromValue: () => getSliderCTFromValue,
   getTemperaturColorFromValue: () => getTemperaturColorFromValue,
   getTranslation: () => getTranslation,
+  getValueAutoScaled: () => getValueAutoScaled,
   getValueEntryBoolean: () => getValueEntryBoolean,
   getValueEntryNumber: () => getValueEntryNumber,
-  getValueEntryNumberPowerAutoScaled: () => getValueEntryNumberPowerAutoScaled,
   getValueEntryString: () => getValueEntryString,
   ifValueEntryIs: () => ifValueEntryIs,
   insertLinebreak: () => insertLinebreak,
@@ -639,7 +640,24 @@ async function getValueEntryString(i, v = null) {
   }
   return res;
 }
-async function getValueEntryNumberPowerAutoScaled(i, v, space, unit = null, startFactor = null, minFactor = 0) {
+async function alignText(text, size, align) {
+  if (text.length >= size) {
+    return text;
+  }
+  let text2 = "";
+  const diff = size - text.length;
+  if (align === "left") {
+    text2 = text + " ".repeat(diff);
+  } else if (align === "right") {
+    text2 = " ".repeat(diff) + text;
+  } else if (align === "center") {
+    const left = Math.floor(diff / 2);
+    const right = diff - left;
+    text2 = " ".repeat(left) + text + " ".repeat(right);
+  }
+  return text2;
+}
+async function getValueAutoScaled(i, v, space, unit = null, startFactor = null, minFactor = 0) {
   var _a, _b, _c;
   if (!i || !i.value) {
     return null;
@@ -941,6 +959,7 @@ function isValidDate(d) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
+  alignText,
   deepAssign,
   formatInSelText,
   getDecfromHue,
@@ -959,9 +978,9 @@ function isValidDate(d) {
   getSliderCTFromValue,
   getTemperaturColorFromValue,
   getTranslation,
+  getValueAutoScaled,
   getValueEntryBoolean,
   getValueEntryNumber,
-  getValueEntryNumberPowerAutoScaled,
   getValueEntryString,
   ifValueEntryIs,
   insertLinebreak,
