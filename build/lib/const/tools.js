@@ -640,7 +640,7 @@ async function getValueEntryString(i, v = null) {
   }
   return res;
 }
-async function alignText(text, size, align) {
+function alignText(text, size, align) {
   if (text.length >= size) {
     return text;
   }

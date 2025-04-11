@@ -731,7 +731,7 @@ export async function getValueEntryString(
  * console.log(result); // "  Hello   "
  * ```
  */
-export async function alignText(text: string, size: number, align: 'left' | 'right' | 'center'): Promise<string> {
+export function alignText(text: string, size: number, align: 'left' | 'right' | 'center'): string {
     if (text.length >= size) {
         return text;
     }
