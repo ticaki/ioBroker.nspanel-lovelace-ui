@@ -742,8 +742,8 @@ export function alignText(text: string, size: number, align: 'left' | 'right' | 
     } else if (align === 'right') {
         text2 = ' '.repeat(diff) + text;
     } else if (align === 'center') {
-        const left = Math.floor(diff / 2);
-        const right = diff - left;
+        const right = Math.floor(diff / 2);
+        const left = diff - right;
         text2 = ' '.repeat(left) + text + ' '.repeat(right);
     }
     return text2;
