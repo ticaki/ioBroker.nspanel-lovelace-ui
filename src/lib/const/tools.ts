@@ -704,6 +704,139 @@ export async function getValueEntryString(
     return res;
 }
 
+/**
+ * Aligns a given text to the specified size and alignment.
+ * If the text length is greater than or equal to the specified size,
+ * the original text is returned unchanged. Otherwise, the text is padded
+ * with spaces to match the desired size and alignment.
+ *
+ * @param text - The input string to be aligned.
+ * @param size - The total size of the resulting string after alignment.
+ *               If the input text is shorter than this size, it will be padded with spaces.
+ * @param align - The alignment type. Can be one of the following:
+ *                - `'left'`: Aligns the text to the left and pads with spaces on the right.
+ *                - `'right'`: Aligns the text to the right and pads with spaces on the left.
+ *                - `'center'`: Centers the text and pads with spaces equally on both sides.
+ *                             If the padding is uneven, the extra space is added to the right.
+ * @returns A promise that resolves to the aligned string.
+ * @example
+ * ```typescript
+ * const result = await alignText("Hello", 10, "left");
+ * console.log(result); // "Hello     "
+ *
+ * const result = await alignText("Hello", 10, "right");
+ * console.log(result); // "     Hello"
+ *
+ * const result = await alignText("Hello", 10, "center");
+ * console.log(result); // "  Hello   "
+ * ```
+ */
+export function alignText(text: string, size: number, align: 'left' | 'right' | 'center'): string {
+    if (text.length >= size) {
+        return text;
+    }
+    let text2 = '';
+    const diff = size - text.length;
+    if (align === 'left') {
+        text2 = text + ' '.repeat(diff);
+    } else if (align === 'right') {
+        text2 = ' '.repeat(diff) + text;
+    } else if (align === 'center') {
+        const left = Math.floor(diff / 2);
+        const right = diff - left;
+        text2 = ' '.repeat(left) + text + ' '.repeat(right);
+    }
+    return text2;
+}
+
+export async function getValueAutoUnit(
+    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
+    v: number | null,
+    space: number,
+    unit: string | null = null,
+    startFactor: number | null = null,
+    minFactor: number = 0,
+): Promise<{ value: string; unit: string | null; endFactor: number } | null> {
+    if (!i || !i.value) {
+        return null;
+    }
+    const siPrefixes = [
+        // Unterhalb von 0
+        { prefix: 'f', name: 'femto', factor: -5 },
+        { prefix: 'p', name: 'pico', factor: -4 },
+        { prefix: 'n', name: 'nano', factor: -3 },
+        { prefix: 'μ', name: 'micro', factor: -2 },
+        { prefix: 'm', name: 'milli', factor: -1 },
+
+        // Oberhalb von 0
+        { prefix: 'k', name: 'kilo', factor: 1 },
+        { prefix: 'M', name: 'mega', factor: 2 },
+        { prefix: 'G', name: 'giga', factor: 3 },
+        { prefix: 'T', name: 'tera', factor: 4 },
+        { prefix: 'P', name: 'peta', factor: 5 },
+    ];
+    if ((v != null && unit == null) || (v == null && unit != null)) {
+        throw new Error('v and unit must be both null or both not null');
+    }
+    let value = v != null ? v : await getValueEntryNumber(i);
+    const cUnit = (i.unit && (await i.unit.getString())) ?? i.value.common.unit ?? '';
+
+    const decimal = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
+    const fits = false;
+
+    let res = '';
+    //let opt = '';
+    let unitFactor = startFactor ?? 0;
+
+    if (value !== null && value !== undefined) {
+        let factor = 0;
+        if (unit == null && cUnit !== null) {
+            for (const p of siPrefixes) {
+                if (cUnit.startsWith(p.prefix)) {
+                    unit = cUnit.substring(p.prefix.length);
+                    factor = p.factor;
+                    break;
+                }
+            }
+            if (unit === null) {
+                unit = cUnit;
+            }
+        }
+        value *= 10 ** (3 * factor);
+        let tempValue = value / 10 ** (3 * unitFactor);
+
+        const d = decimal != null && decimal !== false && decimal <= 2 ? decimal : 2;
+        while (!fits) {
+            if (unitFactor > 5 || unitFactor < minFactor) {
+                res = '0';
+                unitFactor = 0;
+                break;
+            }
+            tempValue = Math.round(tempValue * 10 ** d) / 10 ** d;
+            if (Math.round(tempValue) === 0) {
+                tempValue = value / 10 ** (3 * --unitFactor);
+                continue;
+            }
+            res = tempValue.toFixed(d);
+            if (res.length > space) {
+                if (tempValue > 10 ** (space - 1)) {
+                    tempValue = value / 10 ** (3 * ++unitFactor);
+                    continue;
+                }
+            } else {
+                break;
+            }
+        }
+
+        //if (isTextSizeEntryType(i)) {
+        //    opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
+        //}
+    }
+    const index = siPrefixes.findIndex(a => a.factor === unitFactor);
+    unit = index !== -1 ? siPrefixes[index].prefix + unit : unit;
+    return { value: res, unit: unit, endFactor: unitFactor };
+}
+
 export function getTranslation(library: Library, key1: any, key2?: string): string {
     let result = key2 ?? key1;
     if (key2 !== undefined) {

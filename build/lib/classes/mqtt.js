@@ -91,10 +91,14 @@ class MQTTClientClass extends import_library.BaseClass {
     });
   }
   async publish(topic, message, opt) {
-    if (!this.client.connected) {
-      return;
+    try {
+      if (!this.client.connected) {
+        return;
+      }
+      await this.client.publishAsync(topic, message, opt);
+    } catch (e) {
+      this.log.error(`Error in publish: ${e}`);
     }
-    await this.client.publishAsync(topic, message, opt);
   }
   unsubscribe(topic) {
     const index = this.subscriptDB.findIndex((m) => m.topic === topic);
