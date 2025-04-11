@@ -38,7 +38,7 @@ __export(tools_exports, {
   getSliderCTFromValue: () => getSliderCTFromValue,
   getTemperaturColorFromValue: () => getTemperaturColorFromValue,
   getTranslation: () => getTranslation,
-  getValueAutoScaled: () => getValueAutoScaled,
+  getValueAutoUnit: () => getValueAutoUnit,
   getValueEntryBoolean: () => getValueEntryBoolean,
   getValueEntryNumber: () => getValueEntryNumber,
   getValueEntryString: () => getValueEntryString,
@@ -657,7 +657,7 @@ function alignText(text, size, align) {
   }
   return text2;
 }
-async function getValueAutoScaled(i, v, space, unit = null, startFactor = null, minFactor = 0) {
+async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, minFactor = 0) {
   var _a, _b, _c;
   if (!i || !i.value) {
     return null;
@@ -978,7 +978,7 @@ function isValidDate(d) {
   getSliderCTFromValue,
   getTemperaturColorFromValue,
   getTranslation,
-  getValueAutoScaled,
+  getValueAutoUnit,
   getValueEntryBoolean,
   getValueEntryNumber,
   getValueEntryString,

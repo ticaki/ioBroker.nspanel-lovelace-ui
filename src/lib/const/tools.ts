@@ -749,7 +749,7 @@ export function alignText(text: string, size: number, align: 'left' | 'right' | 
     return text2;
 }
 
-export async function getValueAutoScaled(
+export async function getValueAutoUnit(
     i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
     v: number | null,
     space: number,
