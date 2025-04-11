@@ -704,6 +704,94 @@ export async function getValueEntryString(
     return res;
 }
 
+export async function getValueEntryNumberPowerAutoScaled(
+    i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
+    v: number | null,
+    space: number,
+    unit: string | null = null,
+    startFactor: number | null = null,
+    minFactor: number = 0,
+): Promise<{ value: string; unit: string | null; endFactor: number } | null> {
+    if (!i || !i.value) {
+        return null;
+    }
+    const siPrefixes = [
+        // Unterhalb von 0
+        { prefix: 'f', name: 'femto', factor: -5 },
+        { prefix: 'p', name: 'pico', factor: -4 },
+        { prefix: 'n', name: 'nano', factor: -3 },
+        { prefix: 'μ', name: 'micro', factor: -2 },
+        { prefix: 'm', name: 'milli', factor: -1 },
+
+        // Oberhalb von 0
+        { prefix: 'k', name: 'kilo', factor: 1 },
+        { prefix: 'M', name: 'mega', factor: 2 },
+        { prefix: 'G', name: 'giga', factor: 3 },
+        { prefix: 'T', name: 'tera', factor: 4 },
+        { prefix: 'P', name: 'peta', factor: 5 },
+    ];
+    if ((v != null && unit == null) || (v == null && unit != null)) {
+        throw new Error('v and unit must be both null or both not null');
+    }
+    let value = v != null ? v : await getValueEntryNumber(i);
+    const cUnit = (i.unit && (await i.unit.getString())) ?? i.value.common.unit ?? '';
+
+    const decimal = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
+    const fits = false;
+
+    let res = '';
+    //let opt = '';
+    let unitFactor = startFactor ?? 0;
+
+    if (value !== null && value !== undefined) {
+        let factor = 0;
+        if (unit == null && cUnit !== null) {
+            for (const p of siPrefixes) {
+                if (cUnit.startsWith(p.prefix)) {
+                    unit = cUnit.substring(p.prefix.length);
+                    factor = p.factor;
+                    break;
+                }
+            }
+            if (unit === null) {
+                unit = cUnit;
+            }
+        }
+        value *= 10 ** (3 * factor);
+        let tempValue = value / 10 ** (3 * unitFactor);
+
+        const d = decimal != null && decimal !== false && decimal <= 2 ? decimal : 2;
+        while (!fits) {
+            if (unitFactor > 5 || unitFactor < minFactor) {
+                res = '0';
+                unitFactor = 0;
+                break;
+            }
+            tempValue = Math.round(tempValue * 10 ** d) / 10 ** d;
+            if (Math.round(tempValue) === 0) {
+                tempValue = value / 10 ** (3 * --unitFactor);
+                continue;
+            }
+            res = tempValue.toFixed(d);
+            if (res.length > space) {
+                if (tempValue > 10 ** (space - 1)) {
+                    tempValue = value / 10 ** (3 * ++unitFactor);
+                    continue;
+                }
+            } else {
+                break;
+            }
+        }
+
+        //if (isTextSizeEntryType(i)) {
+        //    opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
+        //}
+    }
+    const index = siPrefixes.findIndex(a => a.factor === unitFactor);
+    unit = index !== -1 ? siPrefixes[index].prefix + unit : unit;
+    return { value: res, unit: unit, endFactor: unitFactor };
+}
+
 export function getTranslation(library: Library, key1: any, key2?: string): string {
     let result = key2 ?? key1;
     if (key2 !== undefined) {

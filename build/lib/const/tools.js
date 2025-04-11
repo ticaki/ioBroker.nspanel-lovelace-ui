@@ -39,6 +39,7 @@ __export(tools_exports, {
   getTranslation: () => getTranslation,
   getValueEntryBoolean: () => getValueEntryBoolean,
   getValueEntryNumber: () => getValueEntryNumber,
+  getValueEntryNumberPowerAutoScaled: () => getValueEntryNumberPowerAutoScaled,
   getValueEntryString: () => getValueEntryString,
   ifValueEntryIs: () => ifValueEntryIs,
   insertLinebreak: () => insertLinebreak,
@@ -638,6 +639,77 @@ async function getValueEntryString(i, v = null) {
   }
   return res;
 }
+async function getValueEntryNumberPowerAutoScaled(i, v, space, unit = null, startFactor = null, minFactor = 0) {
+  var _a, _b, _c;
+  if (!i || !i.value) {
+    return null;
+  }
+  const siPrefixes = [
+    // Unterhalb von 0
+    { prefix: "f", name: "femto", factor: -5 },
+    { prefix: "p", name: "pico", factor: -4 },
+    { prefix: "n", name: "nano", factor: -3 },
+    { prefix: "\u03BC", name: "micro", factor: -2 },
+    { prefix: "m", name: "milli", factor: -1 },
+    // Oberhalb von 0
+    { prefix: "k", name: "kilo", factor: 1 },
+    { prefix: "M", name: "mega", factor: 2 },
+    { prefix: "G", name: "giga", factor: 3 },
+    { prefix: "T", name: "tera", factor: 4 },
+    { prefix: "P", name: "peta", factor: 5 }
+  ];
+  if (v != null && unit == null || v == null && unit != null) {
+    throw new Error("v and unit must be both null or both not null");
+  }
+  let value = v != null ? v : await getValueEntryNumber(i);
+  const cUnit = (_b = (_a = i.unit && await i.unit.getString()) != null ? _a : i.value.common.unit) != null ? _b : "";
+  const decimal = (_c = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _c : null;
+  const fits = false;
+  let res = "";
+  let unitFactor = startFactor != null ? startFactor : 0;
+  if (value !== null && value !== void 0) {
+    let factor = 0;
+    if (unit == null && cUnit !== null) {
+      for (const p of siPrefixes) {
+        if (cUnit.startsWith(p.prefix)) {
+          unit = cUnit.substring(p.prefix.length);
+          factor = p.factor;
+          break;
+        }
+      }
+      if (unit === null) {
+        unit = cUnit;
+      }
+    }
+    value *= 10 ** (3 * factor);
+    let tempValue = value / 10 ** (3 * unitFactor);
+    const d = decimal != null && decimal !== false && decimal <= 2 ? decimal : 2;
+    while (!fits) {
+      if (unitFactor > 5 || unitFactor < minFactor) {
+        res = "0";
+        unitFactor = 0;
+        break;
+      }
+      tempValue = Math.round(tempValue * 10 ** d) / 10 ** d;
+      if (Math.round(tempValue) === 0) {
+        tempValue = value / 10 ** (3 * --unitFactor);
+        continue;
+      }
+      res = tempValue.toFixed(d);
+      if (res.length > space) {
+        if (tempValue > 10 ** (space - 1)) {
+          tempValue = value / 10 ** (3 * ++unitFactor);
+          continue;
+        }
+      } else {
+        break;
+      }
+    }
+  }
+  const index = siPrefixes.findIndex((a) => a.factor === unitFactor);
+  unit = index !== -1 ? siPrefixes[index].prefix + unit : unit;
+  return { value: res, unit, endFactor: unitFactor };
+}
 function getTranslation(library, key1, key2) {
   let result = key2 != null ? key2 : key1;
   if (key2 !== void 0) {
@@ -889,6 +961,7 @@ function isValidDate(d) {
   getTranslation,
   getValueEntryBoolean,
   getValueEntryNumber,
+  getValueEntryNumberPowerAutoScaled,
   getValueEntryString,
   ifValueEntryIs,
   insertLinebreak,

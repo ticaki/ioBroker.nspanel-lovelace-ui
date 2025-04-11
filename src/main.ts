@@ -604,6 +604,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     obj.command = 'tftInstallSendTo';
                 }
             }
+            const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
             switch (obj.command) {
                 case 'config': {
                     const obj1 = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
@@ -1459,6 +1460,17 @@ class NspanelLovelaceUi extends utils.Adapter {
                     let result: any[] = [];
                     const flashingText = this.library.getTranslation('Updating');
                     const flashingObj: Record<string, string> = {};
+
+                    let file = undefined;
+                    if (fs.existsSync(path.join(__dirname, '../script'))) {
+                        file = fs.readFileSync(
+                            path.join(__dirname, '../script/example_sendTo_script_iobroker.ts'),
+                            'utf8',
+                        );
+                    }
+                    const vTemp = file?.match(/const.version.+'(\d\.\d\.\d)';/) || [];
+                    const version = vTemp[1] ? vTemp[1] : '';
+
                     for (let a = 0; a < this.config.panels.length; a++) {
                         const panel = this.config.panels[a];
                         const state = this.library.readdb(`panels.${panel.id}.info.nspanel.firmwareUpdate`);
@@ -1466,15 +1478,30 @@ class NspanelLovelaceUi extends utils.Adapter {
                             flashingObj[panel.id] = `${flashingText}: ${state.val}%`;
                         }
                     }
+
                     if (this.controller?.panels) {
                         const updateText = this.library.getTranslation('updateAvailable');
                         const checkText = this.library.getTranslation('check!');
-                        const temp = this.controller.panels.map(a => {
+                        const temp = [];
+                        for (const a of this.controller.panels) {
                             let check = false;
                             let tv = '';
                             let nv = '';
+                            let sv = '';
                             const ft = flashingObj[a.name];
-
+                            const scriptId = this.library.cleandp(
+                                `${scriptPath}.${this.library.cleandp(a.friendlyName, false, true)}`,
+                            );
+                            const o = await this.getForeignObjectAsync(scriptId);
+                            if (o) {
+                                const temp = o.common.source.match(/const.version.+'(\d\.\d\.\d)';/)?.[1] ?? '';
+                                if (temp !== version) {
+                                    check = true;
+                                    sv = `${temp} (${updateText}: v${version})`;
+                                } else {
+                                    sv = temp;
+                                }
+                            }
                             if (a.info) {
                                 if (a.info.tasmota?.firmwareversion) {
                                     const temp = a.info.tasmota.firmwareversion.match(/([0-9]+\.[0-9]+\.[0-9])/);
@@ -1507,7 +1534,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             }
                             added.push(a.topic);
 
-                            return {
+                            temp.push({
                                 _check: check,
                                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? 'online' : 'offline'}`}`})`,
                                 _name: a.friendlyName,
@@ -1519,44 +1546,56 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _id: a.info?.tasmota?.net?.Mac ? a.info.tasmota.net.Mac : '',
                                 _tftVersion: nv ? nv : '???',
                                 _tasmotaVersion: tv ? tv : '???',
-                            };
-                        });
+                                _ScriptVersion: sv ? `v${sv}` : '???',
+                            });
+                        }
                         result = result.concat(temp);
                     }
                     if (this.config.panels) {
-                        const temp = this.config.panels
-                            .filter(a => {
-                                return added.findIndex(b => b === a.topic) === -1;
-                            })
-                            .map(a => {
-                                const ft = flashingObj[a.name];
-                                return {
-                                    _check: true,
-                                    _Headline: `${a.name} (${
-                                        ft
-                                            ? ft
-                                            : `${
-                                                  this.config.Testconfig2
-                                                      ? this.config.Testconfig2.findIndex(b => b.topic === a.topic) ===
-                                                        -1
-                                                          ? 'Missing configuration!'
-                                                          : 'offline - waiting'
-                                                      : 'offline'
-                                              }`
-                                    })`,
-                                    _name: a.name,
-                                    _ip: this.config.Testconfig2
-                                        ? this.config.Testconfig2.findIndex(b => b.topic === a.topic) === -1
-                                            ? 'Missing configuration!'
-                                            : 'offline - waiting'
-                                        : 'offline',
-                                    _online: 'no',
-                                    _topic: a.topic,
-                                    _id: '',
-                                    _tftVersion: '---',
-                                    _tasmotaVersion: '---',
-                                };
+                        const temp2 = this.config.panels.filter(a => {
+                            return added.findIndex(b => b === a.topic) === -1;
+                        });
+                        const temp = [];
+                        for (const a of temp2) {
+                            const ft = flashingObj[a.name];
+                            let sv = version;
+                            const scriptId = this.library.cleandp(
+                                `${scriptPath}.${this.library.cleandp(a.name, false, true)}`,
+                            );
+                            const o = await this.getForeignObjectAsync(scriptId);
+                            if (o) {
+                                const temp = o.common.source.match(/const.version.+'(\d\.\d\.\d)';/)?.[1] ?? '';
+                                if (temp !== version) {
+                                    sv = temp ? temp : version;
+                                }
+                            }
+                            temp.push({
+                                _check: true,
+                                _Headline: `${a.name} (${
+                                    ft
+                                        ? ft
+                                        : `${
+                                              this.config.Testconfig2
+                                                  ? this.config.Testconfig2.findIndex(b => b.topic === a.topic) === -1
+                                                      ? 'Missing configuration!'
+                                                      : 'offline - waiting'
+                                                  : 'offline'
+                                          }`
+                                })`,
+                                _name: a.name,
+                                _ip: this.config.Testconfig2
+                                    ? this.config.Testconfig2.findIndex(b => b.topic === a.topic) === -1
+                                        ? 'Missing configuration!'
+                                        : 'offline - waiting'
+                                    : 'offline',
+                                _online: 'no',
+                                _topic: a.topic,
+                                _id: '',
+                                _tftVersion: '---',
+                                _tasmotaVersion: '---',
+                                _ScriptVersion: sv ? `v${sv}` : '???',
                             });
+                        }
                         result = result.concat(temp);
                     }
                     if (result.length > 0) {
@@ -1572,7 +1611,6 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
                 case 'createScript': {
-                    const scriptPath = this.library.cleandp(`script.js.${this.namespace}`);
                     const folder: ioBroker.ChannelObject = {
                         type: 'channel',
                         _id: scriptPath,
@@ -1585,7 +1623,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                     await this.extendForeignObjectAsync(scriptPath, folder);
 
                     // Skript erstellen
-                    const scriptId = this.library.cleandp(`${scriptPath}.${obj.message.name}`);
+                    const scriptId = this.library.cleandp(
+                        `${scriptPath}.${this.library.cleandp(obj.message.name, false, true)}`,
+                    );
                     this.log.debug(`Create script ${scriptId}`);
                     if (fs.existsSync(path.join(__dirname, '../script')) && obj.message.name && obj.message.topic) {
                         let file = fs.readFileSync(
@@ -1681,12 +1721,16 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'openTasmotaConsole':
                 case 'openLinkToTasmota': {
                     if (obj.callback) {
                         this.sendTo(
                             obj.from,
                             obj.command,
-                            { openUrl: `http://${obj.message.ip}:80`, saveConfig: false },
+                            {
+                                openUrl: `http://${obj.message.ip}/${obj.command === 'openTasmotaConsole' ? 'cs?' : ''}:80`,
+                                saveConfig: false,
+                            },
                             obj.callback,
                         );
                     }
