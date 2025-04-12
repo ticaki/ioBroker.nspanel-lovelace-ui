@@ -238,9 +238,7 @@ export class BaseClassTriggerd extends BaseClass {
     protected async onVisibilityChange(val: boolean): Promise<void> {
         val;
         this.adapter.log.warn(
-            `<- instance of [${Object.getPrototypeOf(
-                this,
-            )}] not react on onVisibilityChange(), or call super.onVisibilityChange()`,
+            `<- instance of [${this.name}] not react on onVisibilityChange(), or call super.onVisibilityChange()`,
         );
     }
 }

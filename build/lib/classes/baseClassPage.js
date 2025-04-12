@@ -210,9 +210,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   async onVisibilityChange(val) {
     val;
     this.adapter.log.warn(
-      `<- instance of [${Object.getPrototypeOf(
-        this
-      )}] not react on onVisibilityChange(), or call super.onVisibilityChange()`
+      `<- instance of [${this.name}] not react on onVisibilityChange(), or call super.onVisibilityChange()`
     );
   }
 }
