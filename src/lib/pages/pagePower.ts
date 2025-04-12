@@ -8,6 +8,7 @@ import {
     getIconEntryValue,
     getPayload,
     getScaledNumber,
+    getValueAutoUnit,
     getValueEntryNumber,
     getValueEntryString,
 } from '../const/tools';
@@ -676,12 +677,12 @@ export class PagePower extends Page {
             message.homeValueBot = (await getValueEntryString(data.homeValueBot)) ?? '';
 
             // to much work to change types to partial in getMessage we assign a full object to this.
-            message.leftTop = (await this.getElementUpdate(data.leftTop)) as pages.PagePowerMessageItem;
-            message.leftMiddle = (await this.getElementUpdate(data.leftMiddle)) as pages.PagePowerMessageItem;
-            message.leftBottom = (await this.getElementUpdate(data.leftBottom)) as pages.PagePowerMessageItem;
-            message.rightTop = (await this.getElementUpdate(data.rightTop)) as pages.PagePowerMessageItem;
-            message.rightMiddle = (await this.getElementUpdate(data.rightMiddle)) as pages.PagePowerMessageItem;
-            message.rightBottom = (await this.getElementUpdate(data.rightBottom)) as pages.PagePowerMessageItem;
+            message.leftTop = (await this.getElementUpdate(data.leftTop, 0)) as pages.PagePowerMessageItem;
+            message.leftMiddle = (await this.getElementUpdate(data.leftMiddle, 1)) as pages.PagePowerMessageItem;
+            message.leftBottom = (await this.getElementUpdate(data.leftBottom, 2)) as pages.PagePowerMessageItem;
+            message.rightTop = (await this.getElementUpdate(data.rightTop, 3)) as pages.PagePowerMessageItem;
+            message.rightMiddle = (await this.getElementUpdate(data.rightMiddle, 4)) as pages.PagePowerMessageItem;
+            message.rightBottom = (await this.getElementUpdate(data.rightBottom, 5)) as pages.PagePowerMessageItem;
         }
         this.sendToPanel(this.getMessage(message), false);
     }
@@ -696,6 +697,7 @@ export class PagePower extends Page {
 
     private async getElementUpdate(
         item: pages.cardPowerDataItems['data']['leftBottom'],
+        index: number,
     ): Promise<undefined | Partial<pages.PagePowerMessageItem>> {
         if (item === undefined) {
             return undefined;
