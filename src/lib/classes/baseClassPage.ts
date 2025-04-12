@@ -230,7 +230,9 @@ export class BaseClassTriggerd extends BaseClass {
             if (this.unload) {
                 return;
             }
-            await this.onVisibilityChange(v);
+            if (this.visibility) {
+                await this.onVisibilityChange(v);
+            }
         }
     };
     /**

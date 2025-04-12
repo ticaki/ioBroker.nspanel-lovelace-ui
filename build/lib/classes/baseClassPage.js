@@ -202,7 +202,9 @@ class BaseClassTriggerd extends import_library.BaseClass {
       if (this.unload) {
         return;
       }
-      await this.onVisibilityChange(v);
+      if (this.visibility) {
+        await this.onVisibilityChange(v);
+      }
     }
   };
   /**
