@@ -96,7 +96,7 @@ class Navigation extends import_library.BaseClass {
     this._currentItem = value;
   }
   constructor(config) {
-    super(config.adapter, `${config.panel.name}-navigation`);
+    super(config.adapter, `${config.panel.friendlyName}-navigation`);
     this.panel = config.panel;
     this.navigationConfig = config.navigationConfig.filter((a) => a !== null && a != null);
   }

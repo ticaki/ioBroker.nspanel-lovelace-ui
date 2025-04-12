@@ -118,7 +118,7 @@ export class Navigation extends BaseClass {
         this._currentItem = value;
     }
     constructor(config: NavigationConfig) {
-        super(config.adapter, `${config.panel.name}-navigation`);
+        super(config.adapter, `${config.panel.friendlyName}-navigation`);
         this.panel = config.panel;
         this.navigationConfig = config.navigationConfig.filter(a => a !== null && a != null);
     }
