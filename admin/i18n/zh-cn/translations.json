@@ -102,5 +102,6 @@
     "createScriptHelp": "创建或更新面板的设置脚本",
     "tftInstallSendToMQTTHelp": "在面板上更新TFT固件。",
     "check!": "查看！",
-    "updateAvailable": "更新可用"
+    "updateAvailable": "更新可用",
+    "nsPanelInit": "NSPANEL初始化"
 }

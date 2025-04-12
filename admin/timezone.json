@@ -1,0 +1,9 @@
+{
+    "timezone": {
+        "type": "select",
+        "label": "timezone",
+        "newLine": true,
+        "freeSolo": true,
+        "options": 
+    }
+}

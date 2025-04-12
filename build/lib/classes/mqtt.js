@@ -47,7 +47,9 @@ class MQTTClientClass extends import_library.BaseClass {
   messageCallback;
   clientId;
   subscriptDB = [];
-  constructor(adapter, ip, port, username, password, tls, callback, onConnect, onDisconnect) {
+  _onConnect;
+  _onDisconnect;
+  constructor(adapter, ip, port, username, password, tls, callback) {
     super(adapter, "mqttClient");
     this.clientId = `iobroker_${(0, import_node_crypto.randomUUID)()}`;
     this.messageCallback = callback;
@@ -60,17 +62,19 @@ class MQTTClientClass extends import_library.BaseClass {
     this.client.on("connect", () => {
       this.log.info(`Connection is active.`);
       this.ready = true;
-      if (onConnect) {
-        void onConnect();
+      if (this._onConnect) {
+        this._onConnect.callback(this._onConnect.timeout);
       }
+      void this.adapter.setState("info.connection", true, true);
     });
     this.client.on("disconnect", () => {
       this.log.info(`Disconnected.`);
       this.ready = false;
       this.log.debug(`disconnected`);
-      if (onDisconnect) {
-        void onDisconnect();
+      if (this._onDisconnect) {
+        void this._onDisconnect.callback(this._onDisconnect.timeout);
       }
+      void this.adapter.setState("info.connection", false, true);
     });
     this.client.on("error", (err) => {
       this.ready = false;
@@ -79,15 +83,63 @@ class MQTTClientClass extends import_library.BaseClass {
     this.client.on("close", () => {
       this.ready = false;
       this.log.info(`Connection is closed.`);
-      if (onDisconnect) {
-        void onDisconnect();
+      if (this._onDisconnect) {
+        void this._onDisconnect.callback(this._onDisconnect.timeout);
       }
+      void this.adapter.setState("info.connection", false, true);
     });
     this.client.on("message", (topic, message) => {
-      const callbacks = this.subscriptDB.filter((i) => {
-        return topic.startsWith(i.topic.replace("/#", ""));
+      const _helper = async (topic2, message2) => {
+        const callbacks = this.subscriptDB.filter((i) => {
+          return topic2.startsWith(i.topic.replace("/#", ""));
+        });
+        const remove = [];
+        for (const c of callbacks) {
+          if (await c.callback(topic2, message2.toString())) {
+            remove.push(c);
+          }
+        }
+        if (remove.length > 0) {
+          remove.forEach((a) => this.unsubscribe(a.topic));
+        }
+      };
+      void _helper(topic, message);
+    });
+  }
+  async waitConnectAsync(timeout) {
+    return new Promise((resolve, reject) => {
+      this._onConnect = {
+        timeout: this.adapter.setTimeout(() => {
+          reject(new Error(`Timeout for main mqttclient after ${timeout}ms`));
+        }, timeout),
+        callback: (timeout2) => {
+          if (timeout2) {
+            this.adapter.clearTimeout(timeout2);
+          }
+          this._onConnect = void 0;
+          resolve();
+        }
+      };
+    });
+  }
+  async waitPanelConnectAsync(_topic, timeout) {
+    return new Promise((resolve, reject) => {
+      const topic = `${_topic}/tele/INFO1`;
+      this.log.debug(`wait for panel connect: ${topic}`);
+      let ref = void 0;
+      if (timeout > 0) {
+        ref = this.adapter.setTimeout(() => {
+          reject(new Error(`Timeout for main mqttclient after ${timeout}ms`));
+        }, timeout);
+      }
+      void this.subscript(topic, async (_topic2, _message) => {
+        if (ref) {
+          this.adapter.clearTimeout(ref);
+        }
+        this.log.debug(`done connect: ${topic}`);
+        resolve();
+        return true;
       });
-      callbacks.forEach((c) => c.callback(topic, message.toString()));
     });
   }
   async publish(topic, message, opt) {
@@ -136,7 +188,9 @@ class MQTTServerClass extends import_library.BaseClass {
   server;
   controller;
   intervals = [];
+  callbacks = {};
   ready = false;
+  test = void 0;
   static async createMQTTServer(adapter, port, username, password, path) {
     let keys = {};
     if (!await adapter.fileExistsAsync(adapter.namespace, "keys/private-key.pem") || !await adapter.fileExistsAsync(adapter.namespace, "keys/public-key.pem") || !await adapter.fileExistsAsync(adapter.namespace, "keys/certificate.pem")) {
@@ -194,6 +248,19 @@ class MQTTServerClass extends import_library.BaseClass {
       callback(null, confirm);
     };
     this.aedes.on("client", (client) => {
+      for (const key in this.callbacks) {
+        if (this.callbacks[key]) {
+          if (client.id.startsWith(key)) {
+            this.log.debug(`Client ${client.id} connected. Call callback.`);
+            if (this.callbacks[key].timeout) {
+              this.adapter.clearTimeout(this.callbacks[key].timeout);
+              this.callbacks[key].timeout = void 0;
+            }
+            this.callbacks[key].callback();
+            delete this.callbacks[key];
+          }
+        }
+      }
       const interval = this.adapter.setInterval(
         (index) => {
           if (this.controller) {

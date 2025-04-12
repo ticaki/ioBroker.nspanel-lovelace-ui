@@ -102,5 +102,6 @@
     "createScriptHelp": "Crie ou atualize o script de configurações para o painel",
     "tftInstallSendToMQTTHelp": "Atualize o firmware TFT no painel.",
     "check!": "Verificar!",
-    "updateAvailable": "Atualização disponível"
+    "updateAvailable": "Atualização disponível",
+    "nsPanelInit": "Inicialização NSPALEL"
 }
