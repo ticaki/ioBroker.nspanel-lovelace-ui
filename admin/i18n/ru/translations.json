@@ -102,5 +102,6 @@
     "createScriptHelp": "Создать или обновить скрипт настроек для панели",
     "tftInstallSendToMQTTHelp": "Обновите прошивку TFT на панели.",
     "check!": "Проверять!",
-    "updateAvailable": "Обновление доступно"
+    "updateAvailable": "Обновление доступно",
+    "nsPanelInit": "NSPANEL Инициализация"
 }

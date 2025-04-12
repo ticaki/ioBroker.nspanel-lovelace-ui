@@ -102,5 +102,6 @@
     "createScriptHelp": "Maak of werk het instellingenscript voor het paneel aan",
     "tftInstallSendToMQTTHelp": "Update TFT -firmware op het paneel.",
     "check!": "Rekening!",
-    "updateAvailable": "Update beschikbaar"
+    "updateAvailable": "Update beschikbaar",
+    "nsPanelInit": "NSPANEL -initialisatie"
 }
