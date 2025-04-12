@@ -172,11 +172,11 @@ class BaseClassTriggerd extends import_library.BaseClass {
           this.controller && await this.controller.statesControler.deactivateTrigger(this);
         }
       }
+      if (this.unload) {
+        return;
+      }
       await this.onVisibilityChange(v);
       if (this.visibility) {
-        if (this.unload) {
-          return;
-        }
         if (this.alwaysOn != "ignore") {
           if (this.alwaysOn != "none") {
             if (this.alwaysOn === "action") {
@@ -199,6 +199,9 @@ class BaseClassTriggerd extends import_library.BaseClass {
       }
     } else {
       this.visibility = v;
+      if (this.unload) {
+        return;
+      }
       await this.onVisibilityChange(v);
     }
   };
