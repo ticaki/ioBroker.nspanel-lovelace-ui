@@ -73,6 +73,7 @@ class Panel extends import_library.BaseClass {
   blockStartup = null;
   _isOnline = false;
   options;
+  flashing = false;
   screenSaver;
   lastCard = "";
   notifyIndex = -1;
@@ -659,6 +660,7 @@ class Panel extends import_library.BaseClass {
         }
         if ("Flashing" in msg) {
           this.isOnline = false;
+          this.flashing = msg.Flashing.complete < 99;
           this.log.info(`Flashing: ${msg.Flashing.complete}%`);
           await this.library.writedp(
             `panels.${this.name}.info.nspanel.firmwareUpdate`,
@@ -989,7 +991,9 @@ class Panel extends import_library.BaseClass {
     let t = Math.random() * 3e4 + 1e4;
     if (!this.isOnline) {
       t = 5e3;
-      this.sendToPanel("pageType~pageStartup", false, { retain: true });
+      if (!this.flashing) {
+        this.sendToPanel("pageType~pageStartup", false, { retain: true });
+      }
     }
     if (this.unload) {
       return;

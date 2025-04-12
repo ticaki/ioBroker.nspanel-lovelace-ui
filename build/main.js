@@ -227,11 +227,11 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     try {
       import_icon_mapping.Icons.adapter = this;
-      await this.onMqttConnect();
-      await this.delay(2e3);
       await this.library.init();
       const states = await this.getStatesAsync("*");
       await this.library.initStates(states);
+      await this.onMqttConnect();
+      await this.delay(2e3);
       for (const id in states) {
         if (id.endsWith(".info.isOnline")) {
           await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);

@@ -74,6 +74,7 @@ export class Panel extends BaseClass {
     private blockStartup: ioBroker.Timeout | undefined = null;
     private _isOnline: boolean = false;
     options: panelConfigPartial;
+    flashing: boolean = false;
     public screenSaver: Screensaver | undefined;
     public lastCard: string = '';
     public notifyIndex: number = -1;
@@ -719,6 +720,7 @@ export class Panel extends BaseClass {
                 }
                 if ('Flashing' in msg) {
                     this.isOnline = false;
+                    this.flashing = msg.Flashing.complete < 99;
                     this.log.info(`Flashing: ${msg.Flashing.complete}%`);
                     await this.library.writedp(
                         `panels.${this.name}.info.nspanel.firmwareUpdate`,
@@ -1091,7 +1093,9 @@ export class Panel extends BaseClass {
         let t = Math.random() * 30000 + 10000;
         if (!this.isOnline) {
             t = 5000;
-            this.sendToPanel('pageType~pageStartup', false, { retain: true });
+            if (!this.flashing) {
+                this.sendToPanel('pageType~pageStartup', false, { retain: true });
+            }
         }
         if (this.unload) {
             return;

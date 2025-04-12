@@ -304,11 +304,11 @@ class NspanelLovelaceUi extends utils.Adapter {
         //check config
         try {
             Icons.adapter = this;
-            await this.onMqttConnect();
-            await this.delay(2000);
             await this.library.init();
             const states = await this.getStatesAsync('*');
             await this.library.initStates(states);
+            await this.onMqttConnect();
+            await this.delay(2000);
 
             // set all .info.nspanel.isOnline to false
             for (const id in states) {
