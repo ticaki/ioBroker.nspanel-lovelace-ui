@@ -386,7 +386,14 @@ export class ConfigManager extends BaseClass {
 
                 if ((config.subPages || []).includes(page)) {
                     const left = page.prev || page.parent || undefined;
-                    const right = page.next || page.home || undefined;
+                    let right = page.next || page.home || undefined;
+                    if (!left && !right) {
+                        const msg = `Page: ${page.uniqueName} dont have any navigation! Node 'main' provisionally added as home!`;
+                        messages.push(msg);
+                        this.log.warn(msg);
+                        page.home = 'main';
+                        right = page.home;
+                    }
                     if (left || right) {
                         const navItem: NavigationItemConfig = {
                             name: page.uniqueName,
