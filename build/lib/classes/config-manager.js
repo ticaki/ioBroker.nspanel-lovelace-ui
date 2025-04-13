@@ -333,7 +333,14 @@ class ConfigManager extends import_library.BaseClass {
         }
         if ((config.subPages || []).includes(page)) {
           const left = page.prev || page.parent || void 0;
-          const right = page.next || page.home || void 0;
+          let right = page.next || page.home || void 0;
+          if (!left && !right) {
+            const msg = `Page: ${page.uniqueName} dont have any navigation! Node 'main' provisionally added as home!`;
+            messages.push(msg);
+            this.log.warn(msg);
+            page.home = "main";
+            right = page.home;
+          }
           if (left || right) {
             const navItem = {
               name: page.uniqueName,

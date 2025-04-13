@@ -199,11 +199,11 @@ export class BaseClassTriggerd extends BaseClass {
                     this.controller && (await this.controller.statesControler.deactivateTrigger(this));
                 }
             }
+            if (this.unload) {
+                return;
+            }
             await this.onVisibilityChange(v);
             if (this.visibility) {
-                if (this.unload) {
-                    return;
-                }
                 if (this.alwaysOn != 'ignore') {
                     if (this.alwaysOn != 'none') {
                         if (this.alwaysOn === 'action') {
@@ -227,7 +227,12 @@ export class BaseClassTriggerd extends BaseClass {
         } else {
             this.visibility = v;
             // bin mir nicht sicher ob das für alles passt.
-            await this.onVisibilityChange(v);
+            if (this.unload) {
+                return;
+            }
+            if (this.visibility) {
+                await this.onVisibilityChange(v);
+            }
         }
     };
     /**
@@ -238,9 +243,7 @@ export class BaseClassTriggerd extends BaseClass {
     protected async onVisibilityChange(val: boolean): Promise<void> {
         val;
         this.adapter.log.warn(
-            `<- instance of [${Object.getPrototypeOf(
-                this,
-            )}] not react on onVisibilityChange(), or call super.onVisibilityChange()`,
+            `<- instance of [${this.name}] not react on onVisibilityChange(), or call super.onVisibilityChange()`,
         );
     }
 }

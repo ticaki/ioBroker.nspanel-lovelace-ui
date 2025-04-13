@@ -16,7 +16,7 @@ declare global {
             mediaid: string;
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             scstype: string;
-
+            timezone: string;
             useBetaTFT: boolean;
             
             fixBrokenCommonTypes: boolean;
