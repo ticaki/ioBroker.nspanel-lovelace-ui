@@ -84,9 +84,11 @@ export class MQTTClientClass extends BaseClass {
                 const callbacks = this.subscriptDB.filter(i => {
                     return topic.startsWith(i.topic.replace('/#', ''));
                 });
-                /*this.log.debug(
-                `Incoming message for ${callbacks.length} subproceses. topic: ${topic} message: ${message}}`,
-            );*/
+                if (this.adapter.config.debugLogMqtt) {
+                    this.log.debug(
+                        `Incoming message for ${callbacks.length} subproceses. topic: ${topic} message: ${message.toString()}`,
+                    );
+                }
                 const remove = [];
                 for (const c of callbacks) {
                     if (await c.callback(topic, message.toString())) {
@@ -140,8 +142,13 @@ export class MQTTClientClass extends BaseClass {
     async publish(topic: string, message: string, opt?: IClientPublishOptions): Promise<void> {
         try {
             if (!this.client.connected) {
-                //this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
+                if (this.adapter.config.debugLogMqtt) {
+                    this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
+                }
                 return;
+            }
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(`Publish topic: ${topic} with message: ${message}.`);
             }
             await this.client.publishAsync(topic, message, opt);
         } catch (e) {
@@ -206,6 +213,7 @@ export class MQTTServerClass extends BaseClass {
             !(await adapter.fileExistsAsync(adapter.namespace, 'keys/public-key.pem')) ||
             !(await adapter.fileExistsAsync(adapter.namespace, 'keys/certificate.pem'))
         ) {
+            adapter.log.info(`Create new keys for MQTT server.`);
             const prekeys = forge.pki.rsa.generateKeyPair(4096);
             keys.privateKey = forge.pki.privateKeyToPem(prekeys.privateKey);
             keys.publicKey = forge.pki.publicKeyToPem(prekeys.publicKey);
@@ -291,7 +299,9 @@ export class MQTTServerClass extends BaseClass {
             for (const key in this.callbacks) {
                 if (this.callbacks[key]) {
                     if (client.id.startsWith(key)) {
-                        this.log.debug(`Client ${client.id} connected. Call callback.`);
+                        if (this.adapter.config.debugLogMqtt) {
+                            this.log.debug(`Client ${client.id} connected. Call callback.`);
+                        }
                         if (this.callbacks[key].timeout) {
                             this.adapter.clearTimeout(this.callbacks[key].timeout);
                             this.callbacks[key].timeout = undefined;

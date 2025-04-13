@@ -130,6 +130,10 @@ declare global {
                 power7_state: string,
                 power8_state: string
             }[];
+            additionalLog: boolean;
+            debugLogMqtt: boolean;
+            debugLogStates: boolean;
+            debugLogPages: boolean;
         }
     }
 }

@@ -2482,6 +2482,53 @@
                     ]
                 }
             }
+        },
+        "developer": {
+            "type": "panel",
+            "label": "developer",
+            "expertMode": true,
+            "items": {
+                "additionalLog": {
+                    "type": "checkbox",
+                    "label": "additionalLog",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "debugLogMqtt": {
+                    "type": "checkbox",
+                    "label": "debugLogMqtt",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "debugLogStates": {
+                    "type": "checkbox",
+                    "label": "debugLogStates",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "debugLogPages": {
+                    "type": "checkbox",
+                    "label": "debugLogPages",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
+                }
+            }
         }
     }
 }

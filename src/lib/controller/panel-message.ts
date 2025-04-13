@@ -49,10 +49,11 @@ export class PanelSend extends BaseClass {
 
     onMessage: callbackMessageType = async (topic: string, message: string) => {
         if (!topic.endsWith('/stat/RESULT')) {
-            //this.log.debug(`Receive command ${topic} with ${message}`);
             return;
         }
-        this.log.debug(`Receive command ${topic} with ${message}`);
+        if (this.adapter.config.debugLogMqtt) {
+            this.log.debug(`Receive command ${topic} with ${message}`);
+        }
         const msg = JSON.parse(message);
         const ackForType = this.messageDb[0] && this.messageDb[0].ackForType;
         if (msg) {
@@ -67,7 +68,9 @@ export class PanelSend extends BaseClass {
                     if (oldMessage.payload === 'pageType~pageStartup') {
                         this.messageDb = [];
                     }
-                    this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
+                    if (this.adapter.config.debugLogMqtt) {
+                        this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
+                    }
                 }
                 if (this.unload) {
                     return;
@@ -100,7 +103,7 @@ export class PanelSend extends BaseClass {
         if (this.panel && !this.panel.isOnline) {
             this.messageDb = [];
         }
-        if (this.losingMessageCount > 0) {
+        if (this.losingMessageCount > 0 && this.adapter.config.additionalLog) {
             this.log.warn(`send payload: ${JSON.stringify(msg)} to panel. Losing count: ${this.losingMessageCount}`);
         }
         if (this.losingMessageCount++ > 30) {
@@ -135,7 +138,9 @@ export class PanelSend extends BaseClass {
             this.messageTimeoutTasmota = undefined;
             return;
         }
-        this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
+        if (this.adapter.config.debugLogMqtt) {
+            this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
+        }
         this.messageTimeoutTasmota = true;
         await this.mqttClient.publish(msg.topic, msg.payload, { ...msg.opt, qos: 1 });
         if (this.unload) {

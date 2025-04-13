@@ -124,7 +124,9 @@ export class StatesControler extends BaseClass {
                 this.triggerDB[id].subscribed.push(false);
                 this.triggerDB[id].triggerAllowed.push(trigger);
                 this.triggerDB[id].change.push(change ? change : 'ne');
-                this.log.debug(`Add a trigger for ${from.name} to ${id}`);
+                if (this.adapter.config.debugLogStates) {
+                    this.log.debug(`Add a trigger for ${from.name} to ${id}`);
+                }
             } else {
                 //nothing
             }
@@ -153,7 +155,9 @@ export class StatesControler extends BaseClass {
                 if (this.stateDB[id] !== undefined) {
                     delete this.stateDB[id];
                 }
-                this.log.debug(`Set a new trigger for ${from.panel.name}.${from.name} to ${id}`);
+                if (this.adapter.config.debugLogStates) {
+                    this.log.debug(`Set a new trigger for ${from.panel.name}.${from.name} to ${id}`);
+                }
             } else {
                 delete this.triggerDB[id];
             }
@@ -215,7 +219,9 @@ export class StatesControler extends BaseClass {
                 continue;
             }
             entry.subscribed[index] = false;
-            this.log.debug(`Deactivate trigger from ${to.name} to ${id}`);
+            if (this.adapter.config.debugLogStates) {
+                this.log.debug(`Deactivate trigger from ${to.name} to ${id}`);
+            }
             if (!entry.subscribed.some(a => a)) {
                 await this.adapter.unsubscribeForeignStatesAsync(id);
             }
@@ -334,7 +340,9 @@ export class StatesControler extends BaseClass {
     async onStateChange(dp: string, state: nsPanelState | ioBroker.State | null | undefined): Promise<void> {
         if (dp && state) {
             if (this.triggerDB[dp] && this.triggerDB[dp].state) {
-                this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
+                if (this.adapter.config.debugLogStates) {
+                    this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);
+                }
                 this.triggerDB[dp].ts = Date.now();
                 const oldState = { val: this.triggerDB[dp].state.val, ack: this.triggerDB[dp].state.ack };
                 this.triggerDB[dp].state = state;
@@ -475,7 +483,9 @@ export class StatesControler extends BaseClass {
 
             // create the db entry
         } else if (common) {
-            this.log.debug(`Add internal state ${id} with ${JSON.stringify(common)}`);
+            if (this.adapter.config.debugLogStates) {
+                this.log.debug(`Add internal state ${id} with ${JSON.stringify(common)}`);
+            }
             this.triggerDB[id] = {
                 state: { ts: Date.now(), val: null, ack: ack, from: '', lc: Date.now() },
                 to: [],

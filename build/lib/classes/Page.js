@@ -134,9 +134,6 @@ class Page extends import_baseClassPage.BaseClassPage {
       const iconFalse = (options.icon || {}).false;
       options.type = options.type || template.type;
       options.role = options.role || template.role;
-      if (options.appendix) {
-        this.log.debug("c");
-      }
       options = (0, import_tools.deepAssign)(newTemplate, options);
       if (template.template !== void 0) {
         if (loop > 10) {

@@ -269,7 +269,6 @@ export class Navigation extends BaseClass {
                 const index = i[d].double;
                 void this.setPageByIndex(index);
             }
-            this.log.debug('Navigation double click work.');
             // erster Klick und check obs ein Ziel für den 2. Klick gibt.
         } else if (!single && i && i[d] && i[d].double) {
             this.doubleClickTimeout = this.adapter.setTimeout(
@@ -288,15 +287,15 @@ export class Navigation extends BaseClass {
             if (i && i[d] && i[d].single !== undefined) {
                 const index = i[d].single;
                 void this.setPageByIndex(index);
-                this.log.debug(`Navigation single click with target ${i[d].single} work.`);
+                this.log.debug(`Navigation single click with target ${i[d].single} done.`);
                 return;
             } else if (i && i[d] && i[d].double !== undefined) {
                 const index = i[d].double;
                 void this.setPageByIndex(index);
-                this.log.debug(`Navigation single click (use double target) with target ${i[d].double} work.`);
+                this.log.debug(`Navigation single click (use double target) with target ${i[d].double} done.`);
                 return;
             }
-            this.log.debug('Navigation single click not work.');
+            this.log.debug('Navigation single click - failed.');
         }
     }
 
