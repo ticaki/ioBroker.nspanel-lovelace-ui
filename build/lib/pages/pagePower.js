@@ -658,6 +658,25 @@ class PagePower extends import_Page.Page {
     const value = await (0, import_tools.getValueEntryNumber)(item.value);
     return value !== null ? value + num : num;
   }
+  async getSpeedNumber(i) {
+    var _a, _b;
+    if (!i) {
+      return void 0;
+    }
+    let nval = i.value && await i.value.getNumber();
+    if (nval != null) {
+      nval = nval * ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
+      if (i.minScale !== void 0 && i.maxScale !== void 0) {
+        const min = await i.minScale.getNumber();
+        const max = await i.maxScale.getNumber();
+        nval = Math.round(import_Color.Color.scale(nval, min, max, 0, 100));
+      }
+      if (i.factor) {
+        nval = nval * ((_b = i.factor && await i.factor.getNumber()) != null ? _b : 1);
+      }
+      return nval;
+    }
+  }
   async getElementUpdate(item, index) {
     var _a, _b, _c, _d, _e;
     if (item === void 0) {
@@ -671,7 +690,7 @@ class PagePower extends import_Page.Page {
     message.icon = (_a = await (0, import_tools.getIconEntryValue)(item.icon, value >= 0, "")) != null ? _a : void 0;
     message.iconColor = (_b = await (0, import_tools.getIconEntryColor)(item.icon, value, import_Color.Color.White)) != null ? _b : void 0;
     message.name = (_c = await (0, import_tools.getEntryTextOnOff)(item.text, value >= 0)) != null ? _c : void 0;
-    message.speed = (_d = await (0, import_tools.getScaledNumber)(item.speed)) != null ? _d : void 0;
+    message.speed = (_d = await this.getSpeedNumber(item.speed)) != null ? _d : void 0;
     message.value = (_e = await (0, import_tools.getValueEntryString)(item.value, value)) != null ? _e : void 0;
     return message;
   }

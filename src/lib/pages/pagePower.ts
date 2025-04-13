@@ -695,6 +695,24 @@ export class PagePower extends Page {
         return value !== null ? value + num : num;
     }
 
+    private async getSpeedNumber(i: pages.cardPowerDataItems['data']['leftBottom']): Promise<number | undefined> {
+        if (!i) {
+            return undefined;
+        }
+        let nval = i.value && (await i.value.getNumber());
+        if (nval != null) {
+            if (i.minScale !== undefined && i.maxScale !== undefined) {
+                const min = await i.minScale.getNumber();
+                const max = await i.maxScale.getNumber();
+                nval = Math.round(Color.scale(nval, min, max, 0, 100));
+            }
+            if (i.factor) {
+                nval = nval * ((i.factor && (await i.factor.getNumber())) ?? 1);
+            }
+            return nval;
+        }
+    }
+
     private async getElementUpdate(
         item: pages.cardPowerDataItems['data']['leftBottom'],
         index: number,
@@ -713,7 +731,8 @@ export class PagePower extends Page {
         message.icon = (await getIconEntryValue(item.icon, value >= 0, '')) ?? undefined;
         message.iconColor = (await getIconEntryColor(item.icon, value, Color.White)) ?? undefined;
         message.name = (await getEntryTextOnOff(item.text, value >= 0)) ?? undefined;
-        message.speed = (await getScaledNumber(item.speed)) ?? undefined;
+        //message.speed = (await getScaledNumber(item.speed)) ?? undefined;
+        message.speed = (await this.getSpeedNumber(item.speed)) ?? undefined;
         message.value = (await getValueEntryString(item.value, value)) ?? undefined;
 
         return message;
