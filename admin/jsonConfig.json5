@@ -1120,6 +1120,7 @@
                         },
                         {
                             "attr": "power1_minSpeedScale",
+                            //"validator": "!data.power1_reverse || (data.power1_minSpeedScale <= 0 && data.power1_maxSpeedScale <= 0) || (data.power1_minSpeedScale >=0 && data.power1_maxSpeedScale >= 0)",
                             "xs": 4,
                             "sm": 4,
                             "md": 2,
@@ -1132,6 +1133,7 @@
                         },
                         {
                             "attr": "power1_maxSpeedScale",
+                            //"validator": "!data.power1_reverse || (data.power1_minSpeedScale <= 0 && data.power1_maxSpeedScale <= 0) || (data.power1_minSpeedScale >=0 && data.power1_maxSpeedScale >= 0)",
                             "xs": 4,
                             "sm": 4,
                             "md": 2,

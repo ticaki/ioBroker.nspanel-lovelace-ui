@@ -642,12 +642,12 @@ class PagePower extends import_Page.Page {
       message.homeColor = await (0, import_tools.getIconEntryColor)(data.homeIcon, true, import_Color.Color.White);
       message.homeValueTop = (_c = await (0, import_tools.getValueEntryString)(data.homeValueTop)) != null ? _c : "";
       message.homeValueBot = (_d = await (0, import_tools.getValueEntryString)(data.homeValueBot)) != null ? _d : "";
-      message.leftTop = await this.getElementUpdate(data.leftTop);
-      message.leftMiddle = await this.getElementUpdate(data.leftMiddle);
-      message.leftBottom = await this.getElementUpdate(data.leftBottom);
-      message.rightTop = await this.getElementUpdate(data.rightTop);
-      message.rightMiddle = await this.getElementUpdate(data.rightMiddle);
-      message.rightBottom = await this.getElementUpdate(data.rightBottom);
+      message.leftTop = await this.getElementUpdate(data.leftTop, 0);
+      message.leftMiddle = await this.getElementUpdate(data.leftMiddle, 1);
+      message.leftBottom = await this.getElementUpdate(data.leftBottom, 2);
+      message.rightTop = await this.getElementUpdate(data.rightTop, 3);
+      message.rightMiddle = await this.getElementUpdate(data.rightMiddle, 4);
+      message.rightBottom = await this.getElementUpdate(data.rightBottom, 5);
     }
     this.sendToPanel(this.getMessage(message), false);
   }
@@ -658,7 +658,7 @@ class PagePower extends import_Page.Page {
     const value = await (0, import_tools.getValueEntryNumber)(item.value);
     return value !== null ? value + num : num;
   }
-  async getElementUpdate(item) {
+  async getElementUpdate(item, index) {
     var _a, _b, _c, _d, _e;
     if (item === void 0) {
       return void 0;
