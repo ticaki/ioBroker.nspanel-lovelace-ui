@@ -103,5 +103,12 @@
     "tftInstallSendToMQTTHelp": "Update TFT -firmware op het paneel.",
     "check!": "Rekening!",
     "updateAvailable": "Update beschikbaar",
-    "nsPanelInit": "NSPANEL -initialisatie"
+    "nsPanelInit": "NSPANEL -initialisatie",
+    "nsPanelUpdate": "NSPANEL -configuratie -update",
+    "nsPanelModel": "Nspanel hardwaremodel",
+    "NSPanel_configuration_text": "De Tasmota NSPanel toegevoegd aan adapter. Overschrijf instellingen met standaardwaarden. Duurt ongeveer 40 seconden.",
+    "NSPanel_configuration_update_text": "Werk de Tasmota NSPanel bij. Overschrijf instellingen met standaardwaarden. Duurt ongeveer 40 seconden.",
+    "eu-Version": "EU-Landscape",
+    "us-l-Version": "US-Landscape",
+    "us-p-Version": "Amerikaanse portret"
 }

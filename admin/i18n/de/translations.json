@@ -103,5 +103,12 @@
     "tftInstallSendToMQTTHelp": "Aktualisiert die TFT-Firmware im Panel.",
     "check!": "Überprüfen!",
     "updateAvailable": "Update verfügbar",
-    "nsPanelInit": "Nspanel-Initialisierung"
+    "nsPanelInit": "Nspanel-Initialisierung",
+    "nsPanelModel": "Nspanel Hardwaremodel",
+    "eu-Version": "EU-Querformat",
+    "us-l-Version": "US-Querformat",
+    "us-p-Version": "US-Hochformat",
+    "nsPanelUpdate": "NSPanelkonfiguration aktualisieren",
+    "NSPanel_configuration_text": "Das Tasmota Nspanel zum Adapter hinzugefügt. Überschreibt die Einstellungen mit Standardwerten. Dauert ungefähr 40 Sekunden.",
+    "NSPanel_configuration_update_text": "Aktualisiert das Tasmota Nspanel. Überschreibt die Einstellungen mit Standardwerten. Dauert ungefähr 40 Sekunden."
 }

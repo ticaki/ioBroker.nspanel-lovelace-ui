@@ -103,5 +103,12 @@
     "tftInstallSendToMQTTHelp": "Zaktualizuj oprogramowanie układowe TFT na panelu.",
     "check!": "Sprawdzać!",
     "updateAvailable": "Aktualizacja dostępna",
-    "nsPanelInit": "Inicjalizacja nspanel"
+    "nsPanelInit": "Inicjalizacja nspanel",
+    "nsPanelUpdate": "Aktualizacja konfiguracji Nspanel",
+    "nsPanelModel": "Nspanel Hardwaremodel",
+    "NSPanel_configuration_text": "Dodano Nspanel Tasmota do adaptera. Zastąp ustawienia wartościami domyślnymi. Zajmuje około 40 sekund.",
+    "NSPanel_configuration_update_text": "Zaktualizuj Tasmota Nspanel. Zastąp ustawienia wartościami domyślnymi. Zajmuje około 40 sekund.",
+    "eu-Version": "Eu-Landscape",
+    "us-l-Version": "US-Landscape",
+    "us-p-Version": "Autor USA"
 }
