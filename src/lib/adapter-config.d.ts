@@ -29,7 +29,7 @@ declare global {
             useTasmotaAdmin: boolean;
             tasmotaAdmin: string;
             tasmotaAdminPassword: string;
-            panels: {name: string, topic: string, id: string, ip: string}[];
+            panels: {name: string, topic: string, id: string, ip: string, model: string}[];
             pw1: string;
 
             // PageQR

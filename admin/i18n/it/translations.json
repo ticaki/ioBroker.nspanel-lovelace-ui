@@ -103,5 +103,12 @@
     "tftInstallSendToMQTTHelp": "Aggiorna il firmware TFT sul pannello.",
     "check!": "Controllo!",
     "updateAvailable": "Aggiornamento disponibile",
-    "nsPanelInit": "Inizializzazione NSPanel"
+    "nsPanelInit": "Inizializzazione NSPanel",
+    "nsPanelUpdate": "Aggiornamento di configurazione NSPanel",
+    "nsPanelModel": "Nspanel hardwaremodel",
+    "NSPanel_configuration_text": "Aggiunto il Tasmota Nspanel all'adattatore. Sovrascrivi le impostazioni con valori predefiniti. Richiede circa 40 secondi.",
+    "NSPanel_configuration_update_text": "Aggiorna Tasmota Nspanel. Sovrascrivi le impostazioni con valori predefiniti. Richiede circa 40 secondi.",
+    "eu-Version": "Eu-Landscape",
+    "us-l-Version": "Scape US-LAND",
+    "us-p-Version": "US-PORTRAIT"
 }

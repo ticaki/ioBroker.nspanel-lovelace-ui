@@ -983,7 +983,7 @@ class Panel extends import_library.BaseClass {
     this.loopTimeout = this.adapter.setTimeout(this.loop, 100);
   }
   /**
-   * Do panel work always at full minute
+   * Do panel work always at full
    *
    */
   loop = () => {

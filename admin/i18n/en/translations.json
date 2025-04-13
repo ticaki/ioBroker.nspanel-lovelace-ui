@@ -103,5 +103,12 @@
     "tftInstallSendToMQTTHelp": "Update TFT firmware on the panel.",
     "check!": "Check!",
     "updateAvailable": "Update available",
-    "nsPanelInit": "NSPanel initialization"
+    "nsPanelInit": "NSPanel initialization",
+    "nsPanelUpdate": "NSPanel configuration update",
+    "nsPanelModel": "NSPanel Hardwaremodel",
+    "NSPanel_configuration_text": "Added the Tasmota NSPanel to Adapter. Overwrite settings with default values. Takes about 40 seconds.",
+    "NSPanel_configuration_update_text": "Update the Tasmota NSPanel. Overwrite settings with default values. Takes about 40 seconds.",
+    "eu-Version": "EU-Landscape",
+    "us-l-Version": "US-Landscape",
+    "us-p-Version": "US-Portrait"
 }
