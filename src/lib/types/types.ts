@@ -385,13 +385,15 @@ export type IconColorElement = {
     color_best?: RGB;
     /**
      * The color mix mode. Default is 'mixed'.
-     * ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
-     * 'cie': the target colour is achieved by mixing according to the CIE colour table.
-     * 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
-     * 'triGrad': the target colour is interpolated in a three-color gradient from red to green.
-     * 'triGradAnchor': the target colour is interpolated in a three-color gradient from red to green, Yellow is anchored to val_best.
+     * ‘mixed’: the target colour is achieved by scaling between the two RGB colours. 2 colours are required.
+     * 'cie': the target colour is achieved by mixing according to the CIE colour table. 2 colours are required.
+     * 'hue': the target colour is calculated by scaling via colour, saturation and brightness. 2 colours are required.
+     * 'triGrad': the target colour is interpolated in a three-color gradient from red to green. Colours are ignored
+     * 'triGradAnchor': the target colour is interpolated in a three-color gradient from red to green, Yellow is anchored to val_best. Colours are ignored
+     * 'quadriGrad': the target colour is interpolated in a four-color gradient from red to yellow, green and blue. Colours are ignored.
+     * 'quadriGradAnchor': the target colour is interpolated in a four-color gradient from red to yellow, green and blue. green is anchored to val_best. Colours are ignored.
      */
-    mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor';
+    mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
     /**
      * The logarithm scaling to max, min or leave undefined for linear scaling.
      */

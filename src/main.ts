@@ -833,10 +833,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     index === -1 ? { name: '', ip: '', topic: '', id: '', model: '' } : panels[index];
                                 const ipIndex = panels.findIndex(a => a.ip === obj.message.tasmotaIP);
                                 let update = false;
-                                if (ipIndex !== -1 && index !== -1 && ipIndex !== index) {
-                                    this.log.error('Topic and ip are already in use on different panels!');
+                                if (ipIndex === index) {
+                                    this.log.error('Topic and ip are not on the same panel!');
                                     if (obj.callback) {
-                                        this.sendTo(obj.from, obj.command, { error: 'sendToNameExist' }, obj.callback);
+                                        this.sendTo(
+                                            obj.from,
+                                            obj.command,
+                                            { error: 'sendToIpTopicDifferent' },
+                                            obj.callback,
+                                        );
                                     }
                                     break;
                                 } else {
@@ -1563,7 +1568,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             obj.from,
                             obj.command,
                             {
-                                openUrl: `http://${obj.message.ip}/${obj.command === 'openTasmotaConsole' ? 'cs?' : ''}:80`,
+                                openUrl: `http://${obj.message.ip}:80/${obj.command === 'openTasmotaConsole' ? 'cs?' : ''}`,
                                 saveConfig: false,
                             },
                             obj.callback,
