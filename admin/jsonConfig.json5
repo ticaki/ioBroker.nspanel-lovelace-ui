@@ -216,7 +216,7 @@
         },
         "overview": {
             "type": "panel",
-            "label": "Panels",
+            "label": "nsPanelSettings",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
             "items": {
                 "_useBetaTFTText": {
@@ -237,7 +237,7 @@
                 "_header3": {
                     "type": "header",
                     "text": "nsPanelInitLabel",
-                    "size": 4,
+                    "size": 3,
                     "newLine": true
                 },
                 "internalServerIp": {
@@ -495,7 +495,7 @@
                 },
                 "_header": {
                     "type": "header",
-                    "size": 2,
+                    "size": 4,
                     "text": "Expert Mode",
                     "xs": 12,
                     "sm": 12,
