@@ -302,39 +302,75 @@ export class Color extends ColorBase {
 
     static triGradAnchor(_from: RGB, _to: RGB, factor: number, _options?: mixedOptions): RGB {
         factor = _options?.anchorHigh ? (1 - factor) / 2 + 0.5 : factor / 2;
-        return Color.perc2color(_from, _to, factor, { ..._options });
+        return Color.triGradColorScale(_from, _to, factor, { ..._options });
     }
     /**
      * Interpolate between two colors
      *
-     * @param _from from this color
-     * @param _to to this
+     * @param _from ignored
+     * @param _to ignored
      * @param factor 0-1 mix value
      * @param _options swap input and use triGradAnchor
      * @returns RGB
      */
-    static perc2color(_from: RGB, _to: RGB, factor: number, _options?: mixedOptions): RGB {
+    static triGradColorScale(_from: RGB, _to: RGB, factor: number, _options?: mixedOptions): RGB {
         factor = Math.min(1, Math.max(0, factor));
         let r = 0;
         let g = 0;
         const b = 0;
         if (_options?.swap === false) {
-            if (factor < 0.5) {
-                r = 255;
-                g = Math.round(510 * factor);
-            } else {
-                g = 255;
-                r = Math.round(510 - 510 * factor);
-            }
-        } else {
-            if (factor < 0.5) {
-                g = 255;
-                r = Math.round(510 * factor);
-            } else {
-                r = 255;
-                g = Math.round(510 - 510 * factor);
-            }
+            factor = 1 - factor;
         }
+        if (factor < 0.5) {
+            r = 255;
+            g = Math.round(510 * factor);
+        } else {
+            g = 255;
+            r = Math.round(510 - 510 * factor);
+        }
+        return { r, g, b };
+    }
+
+    static quadriGradAnchor(_from: RGB, _to: RGB, factor: number, _options?: mixedOptions): RGB {
+        factor = _options?.anchorHigh ? (1 - factor) / 2 + 0.5 : factor / 2;
+        return Color.quadriGradColorScale(_from, _to, factor, { ..._options });
+    }
+    /**
+     * Generates a color gradient based on a four-segment scale, transitioning through red, green, and blue.
+     * The gradient is determined by the `factor` parameter, which ranges from 0 to 1.
+     *
+     * @param _from - The starting RGB color (not used in the current implementation).
+     * @param _to - The ending RGB color (not used in the current implementation).
+     * @param factor - A number between 0 and 1 that determines the position in the gradient.
+     *                 Values closer to 0 result in red, transitioning through green, and ending in blue.
+     * @param _options - Optional settings for the gradient generation.
+     *                   - `swap` (boolean): If `false`, the gradient direction is reversed.
+     * @returns An RGB object representing the interpolated color at the specified `factor`.
+     */
+    static quadriGradColorScale(_from: RGB, _to: RGB, factor: number, _options?: mixedOptions): RGB {
+        factor = Math.min(1, Math.max(0, factor));
+        let r = 0;
+        let g = 0;
+        let b = 0;
+
+        if (_options?.swap === false) {
+            factor = 1 - factor;
+        }
+        factor *= 2;
+        if (factor < 0.5) {
+            r = 255;
+            g = Math.round(510 * factor);
+        } else if (factor < 1) {
+            g = 255;
+            r = Math.round(510 - 510 * factor);
+        } else if (factor < 1.5) {
+            g = 255;
+            b = Math.round(510 * (factor - 1));
+        } else {
+            b = 255;
+            g = Math.round(510 - 510 * (factor - 1));
+        }
+
         return { r, g, b };
     }
     /**
