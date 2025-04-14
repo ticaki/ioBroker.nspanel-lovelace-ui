@@ -408,8 +408,8 @@
                 },
                 "_header2": {
                     "type": "header",
-                    "label": "nsPanelTools",
-                    "text": "nsPanelTools",
+                    "label": "tasmotaDeviceTools",
+                    "text": "tasmotaDeviceTools",
                     "size": 3,
                     "newLine": true
                 },

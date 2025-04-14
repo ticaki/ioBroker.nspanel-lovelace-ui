@@ -1563,7 +1563,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             obj.from,
                             obj.command,
                             {
-                                openUrl: `http://${obj.message.ip}/${obj.command === 'openTasmotaConsole' ? 'cs?:80' : ''}`, // webuI only IP
+                                openUrl: `http://${obj.message.ip}:80/${obj.command === 'openTasmotaConsole' ? 'cs?' : ''}`,
                                 saveConfig: false,
                             },
                             obj.callback,
