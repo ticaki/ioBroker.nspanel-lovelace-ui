@@ -362,6 +362,10 @@ export class Panel extends BaseClass {
     }
 
     init = async (): Promise<void> => {
+        if (this.unload) {
+            return;
+        }
+        this.log.debug(`Panel ${this.name} is initialised!`);
         await this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
         await this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
         this.isOnline = false;
@@ -495,9 +499,11 @@ export class Panel extends BaseClass {
 
         for (const page of this.pages) {
             if (page && page.name) {
-                this.log.debug(
-                    `Initialisation of page ${page.name} - card: ${page.card} - pageItems: ${(page.pageItemConfig || []).length}`,
-                );
+                if (this.adapter.config.debugLogPages) {
+                    this.log.debug(
+                        `Initialisation of page ${page.name} - card: ${page.card} - pageItems: ${(page.pageItemConfig || []).length}`,
+                    );
+                }
                 await page.init();
             } else {
                 this.log.error('Page failed or has no name!');
@@ -508,7 +514,9 @@ export class Panel extends BaseClass {
 
         this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
         this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
-        this.log.debug(`Panel ${this.name} is initialised!`);
+        if (this.adapter.config.debugLogPages) {
+            this.log.debug(`Panel ${this.name} is initialised!`);
+        }
 
         {
             const currentPage = this.library.readdb(`panels.${this.name}.cmd.mainNavigationPoint`);
@@ -703,8 +711,8 @@ export class Panel extends BaseClass {
                 await fn(topic, message);
             }
         }
+
         if (topic.endsWith(definition.ReiveTopicAppendix)) {
-            //this.log.debug(`Receive message ${topic} with ${message}`);
             const event: Types.IncomingEvent | null = this.convertToEvent(message);
             if (event) {
                 await this.HandleIncomingMessage(event);
@@ -740,7 +748,6 @@ export class Panel extends BaseClass {
             const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) ||
                 [])[0] as Types.TasmotaIncomingTopics | null;
             if (command) {
-                //this.log.debug(`Receive other message ${topic} with ${message}`);
                 switch (command) {
                     case 'stat/POWER2': {
                         await this.library.writedp(
@@ -796,6 +803,12 @@ export class Panel extends BaseClass {
                         this.info.tasmota.sts = data.StatusSTS;
 
                         await this.writeInfo();
+                        break;
+                    }
+                    default: {
+                        if (this.adapter.config.debugLogMqtt) {
+                            this.log.debug(`Receive other message ${topic} with ${message}`);
+                        }
                     }
                 }
             }
@@ -1085,7 +1098,7 @@ export class Panel extends BaseClass {
         this.loopTimeout = this.adapter.setTimeout(this.loop, 100);
     }
     /**
-     * Do panel work always at full minute
+     * Do panel work always at full
      *
      */
     loop = (): void => {
@@ -1162,7 +1175,7 @@ export class Panel extends BaseClass {
         if (!event.method) {
             return;
         }
-        if (this._activePage && this._activePage.card !== 'cardAlarm') {
+        if (this._activePage && this._activePage.card !== 'cardAlarm' && this.adapter.config.debugLogMqtt) {
             this.log.debug(`Receive message:${JSON.stringify(event)}`);
         }
 

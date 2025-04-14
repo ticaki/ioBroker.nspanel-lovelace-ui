@@ -457,7 +457,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B;
     if (typeof obj === "object" && obj.message) {
       this.log.debug(JSON.stringify(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -665,7 +665,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const config = this.config;
                 const panels = (_a = config.panels) != null ? _a : [];
                 const index = panels.findIndex((a) => a.topic === obj.message.tasmotaTopic);
-                const item = index === -1 ? { name: "", ip: "", topic: "", id: "" } : panels[index];
+                const item = index === -1 ? { name: "", ip: "", topic: "", id: "", model: "" } : panels[index];
                 const ipIndex = panels.findIndex((a) => a.ip === obj.message.tasmotaIP);
                 let update = false;
                 if (ipIndex !== -1 && index !== -1 && ipIndex !== index) {
@@ -678,6 +678,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   update = index !== -1;
                 }
                 mac = r.data.StatusNET.Mac;
+                item.model = obj.message.model;
                 item.name = obj.message.tasmotaName;
                 item.topic = topic;
                 item.id = this.library.cleandp(mac);
@@ -712,8 +713,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                   }
-                  const version = obj.message.useBetaTFT ? result.data["tft-beta"].split("_")[0] : result.data.tft.split("_")[0];
-                  const fileName = `nspanel-v${version}.tft`;
+                  const model = obj.message.model ? `-${obj.message.model}` : "";
+                  const version = obj.message.useBetaTFT ? result.data[`tft${model}-beta`].split("_")[0] : result.data[`tft${model}`].split("_")[0];
+                  const fileName = `nspanel-${model}v${version}.tft`;
                   if (this.mqttClient) {
                     await this.mqttClient.publish(
                       `${topic}/cmnd/Backlog`,
@@ -734,6 +736,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     );
                   }
                 }
+                await this.createConfigurationScript(item.name, item.topic);
                 if (obj.callback) {
                   this.sendTo(
                     obj.from,
@@ -803,8 +806,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                   break;
                 }
-                const version = obj.message.useBetaTFT ? result.data["tft-beta"].split("_")[0] : result.data.tft.split("_")[0];
-                const fileName = `nspanel-v${version}.tft`;
+                const model = obj.message.model ? `-${obj.message.model}` : "";
+                const version = obj.message.useBetaTFT ? result.data[`tft${model}-beta`].split("_")[0] : result.data[`tft${model}`].split("_")[0];
+                const fileName = `nspanel-${model}v${version}.tft`;
                 const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog FlashNextion http://nspanel.de/${fileName}`;
                 this.log.debug(url);
                 await import_axios.default.get(url);
@@ -844,7 +848,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                   break;
                 }
-                const version = obj.message.useBetaTFT ? result.data["tft-beta"].split("_")[0] : result.data.tft.split("_")[0];
+                const model = obj.message.model ? `-${obj.message.model}` : "";
+                const version = obj.message.useBetaTFT ? result.data[`tft${model}-beta`].split("_")[0] : result.data[`tft${model}`].split("_")[0];
                 const fileName = `nspanel-v${version}.tft`;
                 const cmnd = `FlashNextion http://nspanel.de/${fileName}`;
                 this.log.debug(cmnd);
@@ -1213,7 +1218,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 _id: ((_w = (_v = (_u = a.info) == null ? void 0 : _u.tasmota) == null ? void 0 : _v.net) == null ? void 0 : _w.Mac) ? a.info.tasmota.net.Mac : "",
                 _tftVersion: nv ? nv : "???",
                 _tasmotaVersion: tv ? tv : "???",
-                _ScriptVersion: sv ? `v${sv}` : "???"
+                _ScriptVersion: sv ? `v${sv}` : "???",
+                _nsPanelModel: ((_y = (_x = a.info) == null ? void 0 : _x.nspanel) == null ? void 0 : _y.model) ? a.info.nspanel.model == "eu" ? "" : a.info.nspanel.model : ""
               });
             }
             result = result.concat(temp);
@@ -1231,7 +1237,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               );
               const o = await this.getForeignObjectAsync(scriptId);
               if (o) {
-                const temp3 = (_y = (_x = o.common.source.match(/const.version.+'(\d\.\d\.\d)';/)) == null ? void 0 : _x[1]) != null ? _y : "";
+                const temp3 = (_A = (_z = o.common.source.match(/const.version.+'(\d\.\d\.\d)';/)) == null ? void 0 : _z[1]) != null ? _A : "";
                 if (temp3 !== version) {
                   sv = temp3 ? temp3 : version;
                 }
@@ -1246,7 +1252,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 _id: "",
                 _tftVersion: "---",
                 _tasmotaVersion: "---",
-                _ScriptVersion: sv ? `v${sv}` : "???"
+                _ScriptVersion: sv ? `v${sv}` : "???",
+                _nsPanelModel: a.model
               });
             }
             result = result.concat(temp);
@@ -1264,68 +1271,9 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "createScript": {
-          const folder = {
-            type: "channel",
-            _id: scriptPath,
-            common: {
-              name: this.namespace,
-              expert: true
-            },
-            native: {}
-          };
-          await this.extendForeignObjectAsync(scriptPath, folder);
-          const scriptId = this.library.cleandp(
-            `${scriptPath}.${this.library.cleandp(obj.message.name, false, true)}`
-          );
-          this.log.debug(`Create script ${scriptId}`);
-          if (fs.existsSync(import_path.default.join(__dirname, "../script")) && obj.message.name && obj.message.topic) {
-            let file = fs.readFileSync(
-              import_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"),
-              "utf8"
-            );
-            const o = await this.getForeignObjectAsync(scriptId);
-            if (file) {
-              file = file.replace(`panelTopic: 'topic',`, `panelTopic: '${obj.message.topic}',`);
-              file = file.replace(
-                /await sendToAsync\('nspanel-lovelace-ui\.0', 'ScriptConfig',/,
-                `await sendToAsync('${this.namespace}', 'ScriptConfig',`
-              );
-              if (o) {
-                const token = "*  END STOP END STOP END - No more configuration - END STOP END STOP END       *";
-                const indexFrom = file.indexOf(token);
-                const indexTo = o.common.source.indexOf(token);
-                if (indexFrom !== -1 && indexTo !== -1) {
-                  this.log.info(`Update script ${scriptId}`);
-                  file = o.common.source.substring(0, indexTo) + file.substring(indexFrom);
-                } else {
-                  if (obj.callback) {
-                    this.sendTo(obj.from, obj.command, null, obj.callback);
-                  }
-                  this.log.warn(`Update script ${scriptId} something whent wrong!`);
-                  break;
-                }
-              } else {
-                this.log.info(`Create script ${scriptId}`);
-              }
-              const script = {
-                type: "script",
-                _id: scriptId,
-                common: {
-                  name: obj.message.name,
-                  engineType: "TypeScript/ts",
-                  engine: `system.adapter.javascript.0`,
-                  source: file,
-                  debug: false,
-                  verbose: false,
-                  enabled: false
-                },
-                native: {}
-              };
-              await this.extendForeignObjectAsync(scriptId, script);
-            }
-          }
+          const result = await this.createConfigurationScript(obj.message.name, obj.message.topic);
           if (obj.callback) {
-            this.sendTo(obj.from, obj.command, null, obj.callback);
+            this.sendTo(obj.from, obj.command, result, obj.callback);
           }
           break;
         }
@@ -1357,7 +1305,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           let language = this.library.getLocalLanguage();
           language = language === "zh-cn" ? "en" : language;
           const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
-          if ((_z = this.controller) == null ? void 0 : _z.panels) {
+          if ((_B = this.controller) == null ? void 0 : _B.panels) {
             const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
             if (index !== -1) {
               const panel = this.controller.panels[index];
@@ -1407,6 +1355,62 @@ class NspanelLovelaceUi extends utils.Adapter {
       return;
     }
     await this.setForeignStateAsync(dp, val, false);
+  }
+  async createConfigurationScript(panelName, panelTopic) {
+    const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
+    const folder = {
+      type: "channel",
+      _id: scriptPath,
+      common: {
+        name: this.namespace,
+        expert: true
+      },
+      native: {}
+    };
+    await this.extendForeignObjectAsync(scriptPath, folder);
+    const scriptId = this.library.cleandp(`${scriptPath}.${this.library.cleandp(panelName, false, true)}`);
+    this.log.debug(`Create script ${scriptId}`);
+    if (fs.existsSync(import_path.default.join(__dirname, "../script")) && panelName && panelTopic) {
+      let file = fs.readFileSync(import_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"), "utf8");
+      const o = await this.getForeignObjectAsync(scriptId);
+      if (file) {
+        file = file.replace(`panelTopic: 'topic',`, `panelTopic: '${panelTopic}',`);
+        file = file.replace(
+          /await sendToAsync\('nspanel-lovelace-ui\.0', 'ScriptConfig',/,
+          `await sendToAsync('${this.namespace}', 'ScriptConfig',`
+        );
+        if (o) {
+          const token = "*  END STOP END STOP END - No more configuration - END STOP END STOP END       *";
+          const indexFrom = file.indexOf(token);
+          const indexTo = o.common.source.indexOf(token);
+          if (indexFrom !== -1 && indexTo !== -1) {
+            this.log.info(`Update script ${scriptId}`);
+            file = o.common.source.substring(0, indexTo) + file.substring(indexFrom);
+          } else {
+            this.log.warn(`Update script ${scriptId} something whent wrong!`);
+            return { error: `Update script ${scriptId} something whent wrong!` };
+          }
+        } else {
+          this.log.info(`Create script ${scriptId}`);
+        }
+        const script = {
+          type: "script",
+          _id: scriptId,
+          common: {
+            name: panelName,
+            engineType: "TypeScript/ts",
+            engine: `system.adapter.javascript.0`,
+            source: file,
+            debug: false,
+            verbose: false,
+            enabled: false
+          },
+          native: {}
+        };
+        await this.extendForeignObjectAsync(scriptId, script);
+        return [];
+      }
+    }
   }
 }
 if (require.main !== module) {

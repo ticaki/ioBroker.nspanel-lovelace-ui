@@ -91,6 +91,12 @@ export async function getValueEntryNumber(
         if (d !== null && d !== false) {
             res = Math.round(res * 10 ** d) / 10 ** d;
         }
+        if ('negate' in i && i.negate) {
+            const reverse = await i.negate.getBoolean();
+            if (reverse != null && reverse) {
+                res = -res;
+            }
+        }
         return res;
     }
     return null;

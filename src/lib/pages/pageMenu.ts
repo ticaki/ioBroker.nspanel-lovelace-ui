@@ -27,11 +27,13 @@ export class PageMenu extends Page {
                     this.maxItems = 6;
                     break;
                 case 'cardGrid2':
-                    this.maxItems = 8;
+                    this.maxItems = this.panel.info.nspanel.model === 'us-p' ? 9 : 8;
                     break;
                 case 'cardGrid3':
-                case 'cardEntities':
                     this.maxItems = 4;
+                    break;
+                case 'cardEntities':
+                    this.maxItems = this.panel.info.nspanel.model === 'us-p' ? 5 : 4;
                     break;
 
                 case 'cardChart':
@@ -124,6 +126,27 @@ export class PageMenu extends Page {
                     this.config.card === 'cardGrid3' ||
                     this.config.card === 'cardGrid2')
             ) {
+                switch (this.config.card) {
+                    case 'cardSchedule':
+                    case 'cardGrid':
+                        this.maxItems = 6;
+                        break;
+                    case 'cardGrid2':
+                        this.maxItems = this.panel.info.nspanel.model === 'us-p' ? 9 : 8;
+                        break;
+                    case 'cardGrid3':
+                        this.maxItems = 4;
+                        break;
+                    case 'cardEntities':
+                        this.maxItems = this.panel.info.nspanel.model === 'us-p' ? 5 : 4;
+                        break;
+                    default:
+                        this.log.error(
+                            //@ts-expect-error
+                            `PageMenu: ${this.config.card} is not supported in onVisibilityChange!`,
+                        );
+                        break;
+                }
                 const temp = await handleCardRole(this.adapter, this.config.cardRole, this);
                 if (temp) {
                     this.pageItemConfig = temp;

@@ -325,6 +325,10 @@ class Panel extends import_library.BaseClass {
   }
   init = async () => {
     var _a, _b;
+    if (this.unload) {
+      return;
+    }
+    this.log.debug(`Panel ${this.name} is initialised!`);
     await this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
     await this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
     this.isOnline = false;
@@ -452,9 +456,11 @@ class Panel extends import_library.BaseClass {
     }
     for (const page of this.pages) {
       if (page && page.name) {
-        this.log.debug(
-          `Initialisation of page ${page.name} - card: ${page.card} - pageItems: ${(page.pageItemConfig || []).length}`
-        );
+        if (this.adapter.config.debugLogPages) {
+          this.log.debug(
+            `Initialisation of page ${page.name} - card: ${page.card} - pageItems: ${(page.pageItemConfig || []).length}`
+          );
+        }
         await page.init();
       } else {
         this.log.error("Page failed or has no name!");
@@ -463,7 +469,9 @@ class Panel extends import_library.BaseClass {
     this.navigation.init();
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
     this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
-    this.log.debug(`Panel ${this.name} is initialised!`);
+    if (this.adapter.config.debugLogPages) {
+      this.log.debug(`Panel ${this.name} is initialised!`);
+    }
     {
       const currentPage = this.library.readdb(`panels.${this.name}.cmd.mainNavigationPoint`);
       if (currentPage && currentPage.val) {
@@ -731,6 +739,12 @@ class Panel extends import_library.BaseClass {
             this.info.tasmota.uptime = data.StatusSTS.Uptime;
             this.info.tasmota.sts = data.StatusSTS;
             await this.writeInfo();
+            break;
+          }
+          default: {
+            if (this.adapter.config.debugLogMqtt) {
+              this.log.debug(`Receive other message ${topic} with ${message}`);
+            }
           }
         }
       }
@@ -983,7 +997,7 @@ class Panel extends import_library.BaseClass {
     this.loopTimeout = this.adapter.setTimeout(this.loop, 100);
   }
   /**
-   * Do panel work always at full minute
+   * Do panel work always at full
    *
    */
   loop = () => {
@@ -1058,7 +1072,7 @@ class Panel extends import_library.BaseClass {
     if (!event.method) {
       return;
     }
-    if (this._activePage && this._activePage.card !== "cardAlarm") {
+    if (this._activePage && this._activePage.card !== "cardAlarm" && this.adapter.config.debugLogMqtt) {
       this.log.debug(`Receive message:${JSON.stringify(event)}`);
     }
     if (!this.screenSaver) {

@@ -59,7 +59,9 @@ class PanelSend extends import_library.BaseClass {
     if (!topic.endsWith("/stat/RESULT")) {
       return;
     }
-    this.log.debug(`Receive command ${topic} with ${message}`);
+    if (this.adapter.config.debugLogMqtt) {
+      this.log.debug(`Receive command ${topic} with ${message}`);
+    }
     const msg = JSON.parse(message);
     const ackForType = this.messageDb[0] && this.messageDb[0].ackForType;
     if (msg) {
@@ -74,7 +76,9 @@ class PanelSend extends import_library.BaseClass {
           if (oldMessage.payload === "pageType~pageStartup") {
             this.messageDb = [];
           }
-          this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
+          if (this.adapter.config.debugLogMqtt) {
+            this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
+          }
         }
         if (this.unload) {
           return;
@@ -101,7 +105,7 @@ class PanelSend extends import_library.BaseClass {
     if (this.panel && !this.panel.isOnline) {
       this.messageDb = [];
     }
-    if (this.losingMessageCount > 0) {
+    if (this.losingMessageCount > 0 && this.adapter.config.additionalLog) {
       this.log.warn(`send payload: ${JSON.stringify(msg)} to panel. Losing count: ${this.losingMessageCount}`);
     }
     if (this.losingMessageCount++ > 30) {
@@ -130,7 +134,9 @@ class PanelSend extends import_library.BaseClass {
       this.messageTimeoutTasmota = void 0;
       return;
     }
-    this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
+    if (this.adapter.config.debugLogMqtt) {
+      this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
+    }
     this.messageTimeoutTasmota = true;
     await this.mqttClient.publish(msg.topic, msg.payload, { ...msg.opt, qos: 1 });
     if (this.unload) {

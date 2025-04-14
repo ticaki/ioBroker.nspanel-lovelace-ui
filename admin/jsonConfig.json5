@@ -253,7 +253,7 @@
                     "sm": 6,
                     "md": 4,
                     "lg": 3,
-                    "xl": 3
+                    "xl": 2
                 },
                 "_tasmotaIP": {
                     "type": "text",
@@ -265,7 +265,7 @@
                     "sm": 6,
                     "md": 4,
                     "lg": 3,
-                    "xl": 3
+                    "xl": 2
                 },
                 "_tasmotaName": {
                     "type": "text",
@@ -276,7 +276,7 @@
                     "sm": 6,
                     "md": 4,
                     "lg": 3,
-                    "xl": 3
+                    "xl": 2
                 },
                 "_tasmotaTopic": {
                     "type": "text",
@@ -287,34 +287,76 @@
                     "sm": 6,
                     "md": 4,
                     "lg": 3,
-                    "xl": 3
+                    "xl": 2
+                },
+                "nsPanelModel": {
+                    "type": "select",
+                    "label": "nsPanelModel",
+                    "validator": "data.nsPanelModel != null",
+                    "default": "",
+                    "options": [
+                        {
+                            "label": "eu-Version",
+                            "value": ""
+                        },
+                        {
+                            "label": "us-l-Version",
+                            "value": "us-l"
+                        },
+                        {
+                            "label": "us-p-Version",
+                            "value": "us-p"
+                        }
+                    ],
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
                 },
                 "timezone": {
                     "type": "selectSendTo",
                     "command": "getTimeZones",
                     "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
                     "label": "timezone",
-                    "freeSolo": true,
-                    "newLine": true,
                     "xs": 12,
                     "sm": 6,
                     "md": 4,
                     "lg": 3,
-                    "xl": 3
+                    "xl": 2
                 },
                 "_nsPanelInit": {
                     "type": "sendTo",
                     "label": "nsPanelInit",
-                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT} }",
+                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
                     "showProcess": true,
                     "command": "nsPanelInit",
-                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
+                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName || data.nsPanelModel == null ",
+                    "hidden": "data.panels && data.panels.findIndex(panel => panel.topic === data._tasmotaTopic ) !== -1",
                     "newLine": true,
                     "variant": "contained",
                     "useNative": true,
                     "confirm": {
-                        "title": "NSPanel Configuration",
-                        "text": "Added the Tasmota NSPanel to Adapter. Overwrite settings with default values. Takes about 30 seconds.",
+                        "title": "nsPanelInit",
+                        "text": "NSPanel_configuration_text",
+                        "ok": "Start",
+                        "cancel": "Cancel"
+                    }
+                },
+                "_nsPanelUpdate": {
+                    "type": "sendTo",
+                    "label": "nsPanelUpdate",
+                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
+                    "showProcess": true,
+                    "command": "nsPanelInit",
+                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName || data.nsPanelModel == null ",
+                    "hidden": "!data.panels || data.panels.findIndex(panel => panel.topic === data._tasmotaTopic ) === -1",
+                    "newLine": true,
+                    "variant": "contained",
+                    "useNative": true,
+                    "confirm": {
+                        "title": "nsPanelUpdate",
+                        "text": "NSPanel_configuration_update_text",
                         "ok": "Start",
                         "cancel": "Cancel"
                     }
@@ -440,7 +482,7 @@
                 "_tftInstallSendTo": {
                     "type": "sendTo",
                     "label": "tftInstallSendTo",
-                    "jsonData": "{\"tasmotaIP\": \"${data._selectIpForTools}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT} }",
+                    "jsonData": "{\"tasmotaIP\": \"${data._selectIpForTools}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
                     "showProcess": true,
                     "command": "tftInstallSendTo",
                     "disabled": "!data._selectIpForTools || data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
@@ -700,7 +742,7 @@
                             "type": "sendTo",
                             "label": "tftInstallSendToMQTT",
                             "tooltip": "tftInstallSendToMQTTHelp",
-                            "jsonData": "{\"tasmotaIP\": \"${data._ip}\", \"topic\": \"${data._topic}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT},\"online\": \"${data._online}\" }",
+                            "jsonData": "{\"tasmotaIP\": \"${data._ip}\", \"topic\": \"${data._topic}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT},\"online\": \"${data._online}\", \"model\": \"${data._nsPanelModel}\" }",
                             "showProcess": true,
                             "command": "tftInstallSendToMQTT",
                             "disabled": "data._online === 'no' || data._ip === ''",
@@ -2630,6 +2672,53 @@
                             "width": "16%"
                         }
                     ]
+                }
+            }
+        },
+        "developer": {
+            "type": "panel",
+            "label": "developer",
+            "expertMode": true,
+            "items": {
+                "additionalLog": {
+                    "type": "checkbox",
+                    "label": "additionalLog",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "debugLogMqtt": {
+                    "type": "checkbox",
+                    "label": "debugLogMqtt",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "debugLogStates": {
+                    "type": "checkbox",
+                    "label": "debugLogStates",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "debugLogPages": {
+                    "type": "checkbox",
+                    "label": "debugLogPages",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
                 }
             }
         }

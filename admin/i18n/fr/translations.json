@@ -103,5 +103,12 @@
     "tftInstallSendToMQTTHelp": "Mettez à jour le micrologiciel TFT sur le panneau.",
     "check!": "Vérifier!",
     "updateAvailable": "Mise à jour disponible",
-    "nsPanelInit": "Initialisation NSPanel"
+    "nsPanelInit": "Initialisation NSPanel",
+    "nsPanelUpdate": "Mise à jour de la configuration NSPanel",
+    "nsPanelModel": "Nspanel hardwaremodel",
+    "NSPanel_configuration_text": "Ajout du tasmota nspanel à l'adaptateur. Écraser les paramètres avec des valeurs par défaut. Prend environ 40 secondes.",
+    "NSPanel_configuration_update_text": "Mettez à jour le tasmota nspanel. Écraser les paramètres avec des valeurs par défaut. Prend environ 40 secondes.",
+    "eu-Version": "Paysage de l'UE",
+    "us-l-Version": "Paysage américain",
+    "us-p-Version": "Portrait américain"
 }
