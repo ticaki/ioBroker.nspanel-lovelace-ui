@@ -425,16 +425,30 @@ export async function getIconEntryColor(
                 let vBest = scale.val_best ?? undefined;
                 vBest = vBest !== undefined ? Math.min(vMax, Math.max(vMin, vBest)) : undefined;
                 let factor = 1;
-                const func =
-                    scale.mode === 'hue'
-                        ? Color.mixColorHue
-                        : scale.mode === 'cie'
-                          ? Color.mixColorCie
-                          : scale.mode === 'triGrad'
-                            ? Color.perc2color
-                            : scale.mode === 'triGradAnchor'
-                              ? Color.triGradAnchor
-                              : Color.mixColor;
+                let func = Color.mixColor;
+                switch (scale.mode) {
+                    case 'hue':
+                        func = Color.mixColorHue;
+                        break;
+                    case 'cie':
+                        func = Color.mixColorCie;
+                        break;
+                    case 'mixed':
+                        func = Color.mixColor;
+                        break;
+                    case 'triGrad':
+                        func = Color.triGradColorScale;
+                        break;
+                    case 'triGradAnchor':
+                        func = Color.triGradAnchor;
+                        break;
+                    case 'quadriGrad':
+                        func = Color.quadriGradColorScale;
+                        break;
+                    case 'quadriGradAnchor':
+                        func = Color.quadriGradAnchor;
+                        break;
+                }
                 if (vMin == vMax) {
                     rColor = cto;
                 } else if (vBest === undefined) {
