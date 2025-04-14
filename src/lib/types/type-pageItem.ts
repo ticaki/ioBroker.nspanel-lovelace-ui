@@ -552,6 +552,7 @@ export type ScaledNumberType =
           factor?: number;
           set?: number;
           mode?: string; // atm 'kelvin' | 'mired'
+          negate?: boolean;
       }
     | undefined;
 export type listCommand = { id: string; value: string; command?: listCommandUnion };
