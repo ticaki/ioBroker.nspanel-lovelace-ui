@@ -413,21 +413,23 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           case "mixed":
             func = import_Color.Color.mixColor;
             break;
-          case "triGrad":
           case "triGradAnchor":
-            if (scale.val_best === void 0) {
-              func = import_Color.Color.triGradColorScale;
+            if (scale.val_best !== void 0) {
+              func = import_Color.Color.triGradAnchor;
               break;
             }
-            func = import_Color.Color.triGradAnchor;
+          // eslint-disable-next-line no-fallthrough
+          case "triGrad":
+            func = import_Color.Color.triGradColorScale;
             break;
-          case "quadriGrad":
           case "quadriGradAnchor":
-            if (scale.val_best === void 0) {
-              func = import_Color.Color.quadriGradColorScale;
+            if (scale.val_best !== void 0) {
+              func = import_Color.Color.quadriGradAnchor;
               break;
             }
-            func = import_Color.Color.quadriGradAnchor;
+          // eslint-disable-next-line no-fallthrough
+          case "quadriGrad":
+            func = import_Color.Color.quadriGradColorScale;
             break;
         }
         if (vMin == vMax) {

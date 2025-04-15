@@ -438,21 +438,23 @@ export async function getIconEntryColor(
                     case 'mixed':
                         func = Color.mixColor;
                         break;
-                    case 'triGrad':
                     case 'triGradAnchor':
-                        if (scale.val_best === undefined) {
-                            func = Color.triGradColorScale;
+                        if (scale.val_best !== undefined) {
+                            func = Color.triGradAnchor;
                             break;
                         }
-                        func = Color.triGradAnchor;
+                    // eslint-disable-next-line no-fallthrough
+                    case 'triGrad':
+                        func = Color.triGradColorScale;
                         break;
-                    case 'quadriGrad':
                     case 'quadriGradAnchor':
-                        if (scale.val_best === undefined) {
-                            func = Color.quadriGradColorScale;
+                        if (scale.val_best !== undefined) {
+                            func = Color.quadriGradAnchor;
                             break;
                         }
-                        func = Color.quadriGradAnchor;
+                    // eslint-disable-next-line no-fallthrough
+                    case 'quadriGrad':
+                        func = Color.quadriGradColorScale;
                         break;
                 }
                 if (vMin == vMax) {
