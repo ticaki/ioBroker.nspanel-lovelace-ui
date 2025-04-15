@@ -414,15 +414,19 @@ async function getIconEntryColor(i, value, def, defOff = null) {
             func = import_Color.Color.mixColor;
             break;
           case "triGrad":
-            func = import_Color.Color.triGradColorScale;
-            break;
           case "triGradAnchor":
+            if (scale.val_best === void 0) {
+              func = import_Color.Color.triGradColorScale;
+              break;
+            }
             func = import_Color.Color.triGradAnchor;
             break;
           case "quadriGrad":
-            func = import_Color.Color.quadriGradColorScale;
-            break;
           case "quadriGradAnchor":
+            if (scale.val_best === void 0) {
+              func = import_Color.Color.quadriGradColorScale;
+              break;
+            }
             func = import_Color.Color.quadriGradAnchor;
             break;
         }

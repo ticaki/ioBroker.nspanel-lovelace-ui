@@ -439,15 +439,19 @@ export async function getIconEntryColor(
                         func = Color.mixColor;
                         break;
                     case 'triGrad':
-                        func = Color.triGradColorScale;
-                        break;
                     case 'triGradAnchor':
+                        if (scale.val_best === undefined) {
+                            func = Color.triGradColorScale;
+                            break;
+                        }
                         func = Color.triGradAnchor;
                         break;
                     case 'quadriGrad':
-                        func = Color.quadriGradColorScale;
-                        break;
                     case 'quadriGradAnchor':
+                        if (scale.val_best === undefined) {
+                            func = Color.quadriGradColorScale;
+                            break;
+                        }
                         func = Color.quadriGradAnchor;
                         break;
                 }

@@ -389,9 +389,9 @@ export type IconColorElement = {
      * 'cie': the target colour is achieved by mixing according to the CIE colour table. 2 colours are required.
      * 'hue': the target colour is calculated by scaling via colour, saturation and brightness. 2 colours are required.
      * 'triGrad': the target colour is interpolated in a three-color gradient from red to green. Colours are ignored
-     * 'triGradAnchor': the target colour is interpolated in a three-color gradient from red to green, Yellow is anchored to val_best. Colours are ignored
+     * 'triGrad' with val_best: the target colour is interpolated in a three-color gradient from red to green, Yellow is anchored to val_best. Colours are ignored
      * 'quadriGrad': the target colour is interpolated in a four-color gradient from red to yellow, green and blue. Colours are ignored.
-     * 'quadriGradAnchor': the target colour is interpolated in a four-color gradient from red to yellow, green and blue. green is anchored to val_best. Colours are ignored.
+     * 'quadriGrad' with val_best: the target colour is interpolated in a four-color gradient from red to yellow, green and blue. green is anchored to val_best. Colours are ignored.
      */
     mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
     /**

@@ -345,7 +345,7 @@ export class Color extends ColorBase {
      *                 Values closer to 0 result in red, transitioning through green, and ending in blue.
      * @param _options - Optional settings for the gradient generation.
      *                   - `swap` (boolean): If `false`, the gradient direction is reversed.
-     * @returns An RGB object representing the interpolated color at the specified `factor`.
+     * @returns An RGB object representing the interpolated color at the specified `factor`..
      */
     static quadriGradColorScale(_from: RGB, _to: RGB, factor: number, _options?: mixedOptions): RGB {
         factor = Math.min(1, Math.max(0, factor));
@@ -370,7 +370,6 @@ export class Color extends ColorBase {
             b = 255;
             g = Math.round(510 - 510 * (factor - 1));
         }
-
         return { r, g, b };
     }
     /**
