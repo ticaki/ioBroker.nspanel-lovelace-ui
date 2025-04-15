@@ -374,7 +374,9 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           break;
         }
         case "triGrad":
-        case "triGradAnchor": {
+        case "triGradAnchor":
+        case "quadriGrad":
+        case "quadriGradAnchor": {
           cto = cto || import_Color.Color.HMIOn;
           cfrom = cfrom || import_Color.Color.HMIOff;
         }

@@ -318,7 +318,7 @@ export class Color extends ColorBase {
         let r = 0;
         let g = 0;
         const b = 0;
-        if (_options?.swap === false) {
+        if (_options?.swap === true) {
             factor = 1 - factor;
         }
         if (factor < 0.5) {
@@ -353,7 +353,7 @@ export class Color extends ColorBase {
         let g = 0;
         let b = 0;
 
-        if (_options?.swap === false) {
+        if (_options?.swap === true) {
             factor = 1 - factor;
         }
         factor *= 2;

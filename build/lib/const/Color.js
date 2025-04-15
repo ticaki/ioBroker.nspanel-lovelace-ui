@@ -302,7 +302,7 @@ class Color extends ColorBase {
     let r = 0;
     let g = 0;
     const b = 0;
-    if ((_options == null ? void 0 : _options.swap) === false) {
+    if ((_options == null ? void 0 : _options.swap) === true) {
       factor = 1 - factor;
     }
     if (factor < 0.5) {
@@ -335,7 +335,7 @@ class Color extends ColorBase {
     let r = 0;
     let g = 0;
     let b = 0;
-    if ((_options == null ? void 0 : _options.swap) === false) {
+    if ((_options == null ? void 0 : _options.swap) === true) {
       factor = 1 - factor;
     }
     factor *= 2;

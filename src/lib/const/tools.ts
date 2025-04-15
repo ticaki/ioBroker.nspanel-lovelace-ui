@@ -397,7 +397,9 @@ export async function getIconEntryColor(
                     break;
                 }
                 case 'triGrad':
-                case 'triGradAnchor': {
+                case 'triGradAnchor':
+                case 'quadriGrad':
+                case 'quadriGradAnchor': {
                     cto = cto || Color.HMIOn;
                     cfrom = cfrom || Color.HMIOff;
                 }
