@@ -140,6 +140,12 @@ export async function getScaledNumber(
             const max = await i.maxScale.getNumber();
             nval = getScaledNumberRaw(nval, min, max);
         }
+        if ('negate' in i && i.negate) {
+            const reverse = await i.negate.getBoolean();
+            if (reverse != null && reverse) {
+                nval = -nval;
+            }
+        }
         return nval;
     }
     return null;

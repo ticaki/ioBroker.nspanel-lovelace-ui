@@ -1130,10 +1130,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power1_more"
@@ -1145,13 +1141,28 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power1_more"
                         },
                         {
                             "attr": "power1_minSpeedScale",
+                            //"validator": "!data.power1_reverse || (data.power1_minSpeedScale <= 0 && data.power1_maxSpeedScale <= 0) || (data.power1_minSpeedScale >=0 && data.power1_maxSpeedScale >= 0)",
                             "xs": 4,
                             "sm": 4,
                             "md": 2,
@@ -1164,6 +1175,7 @@
                         },
                         {
                             "attr": "power1_maxSpeedScale",
+                            //"validator": "!data.power1_reverse || (data.power1_minSpeedScale <= 0 && data.power1_maxSpeedScale <= 0) || (data.power1_minSpeedScale >=0 && data.power1_maxSpeedScale >= 0)",
                             "xs": 4,
                             "sm": 4,
                             "md": 2,
@@ -1337,10 +1349,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power2_more"
@@ -1352,9 +1360,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power2_more"
                         },
                         {
@@ -1544,10 +1566,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power3_more"
@@ -1559,9 +1577,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power3_more"
                         },
                         {
@@ -1751,10 +1783,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power4_more"
@@ -1766,9 +1794,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power4_more"
                         },
                         {
@@ -1958,10 +2000,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power5_more"
@@ -1973,9 +2011,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power5_more"
                         },
                         {
@@ -2165,10 +2217,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power6_more"
@@ -2180,9 +2228,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power6_more"
                         },
                         {
@@ -2314,6 +2376,71 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power7_more",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false,
+                            "newLine": true
+                        },
+                        {
+                            "attr": "power7_valueDecimal",
+                            "newLine": true,
+                            "xs": 6,
+                            "sm": 6,
+                            "md": 2,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "select",
+                            "label": "valueDecimal",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                }
+                            ],
+                            "hidden": "!data._power7_more"
+                        },
+                        {
+                            "attr": "power7_valueUnit",
+                            "xs": 6,
+                            "sm": 6,
+                            "md": 2,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "select",
+                            "label": "valueUnit",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
+                            "hidden": "!data._power7_more"
+                        },
+                        {
                             "newLine": true,
                             "attr": "power8_state",
                             "xs": 12,
@@ -2324,6 +2451,71 @@
                             "type": "objectId",
                             "label": "powerStateHomeBottom",
                             "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "_power8_more",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false,
+                            "newLine": true
+                        },
+                        {
+                            "attr": "power8_valueDecimal",
+                            "newLine": true,
+                            "xs": 6,
+                            "sm": 6,
+                            "md": 2,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "select",
+                            "label": "valueDecimal",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                }
+                            ],
+                            "hidden": "!data._power8_more"
+                        },
+                        {
+                            "attr": "power8_valueUnit",
+                            "xs": 6,
+                            "sm": 6,
+                            "md": 2,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "select",
+                            "label": "valueUnit",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
+                            "hidden": "!data._power8_more"
                         }
                     ]
                 }

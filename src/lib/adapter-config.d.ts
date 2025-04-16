@@ -128,7 +128,11 @@ declare global {
                 power6_maxSpeedScale: number,
                 power6_reverse: boolean,
                 power7_state: string,
-                power8_state: string
+                power7_valueDecimal: number,
+                power7_valueUnit: string,
+                power8_state: string,
+                power8_valueDecimal: number,
+                power8_valueUnit: string
             }[];
             additionalLog: boolean;
             debugLogMqtt: boolean;

@@ -76,6 +76,7 @@ export class PagePower extends Page {
     //items: pages.PageBaseConfig['items'];
     items: pages.cardPowerDataItems | undefined;
     index: number = 0;
+    private autoUnit: number[] = [];
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
         if (options.config && options.config.card == 'cardPower') {
@@ -246,7 +247,7 @@ export class PagePower extends Page {
 
         //array of valueDecimal
         const valueDecimal: number[] = [];
-        for (let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 8; i++) {
             const key = `power${i}_valueDecimal` as keyof typeof config;
             if (typeof config[key] === 'number') {
                 valueDecimal.push(config[key]);
@@ -257,7 +258,7 @@ export class PagePower extends Page {
 
         //array of valueUnit
         const valueUnit: string[] = [];
-        for (let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 8; i++) {
             const key = `power${i}_valueUnit` as keyof typeof config;
             if (states[i - 1] != null && states[i - 1] != '') {
                 const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
@@ -270,6 +271,8 @@ export class PagePower extends Page {
                         valueUnit.push(' W');
                     }
                 }
+            } else {
+                valueUnit.push('');
             }
         }
 
@@ -284,14 +287,14 @@ export class PagePower extends Page {
                     homeIcon: { true: { value: { type: 'const', constVal: 'home' } }, false: undefined },
                     homeValueTop: {
                         value: { type: 'triggered', dp: states[6] },
+                        decimal: { type: 'const', constVal: valueDecimal[6] },
+                        unit: { type: 'const', constVal: valueUnit[6] },
                     },
                     homeValueBot: {
                         value: { type: 'triggered', dp: states[7] },
+                        decimal: { type: 'const', constVal: valueDecimal[7] },
+                        unit: { type: 'const', constVal: valueUnit[7] },
                     },
-                    /* homeValueBot: {
-                        value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
-                        math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
-                    }, */
                     leftTop: {
                         icon: {
                             true: {
@@ -342,7 +345,7 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[0],
                             },
-                            factor: {
+                            negate: {
                                 type: 'const',
                                 constVal: speedReverse[0],
                             },
@@ -401,7 +404,7 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[1],
                             },
-                            factor: {
+                            negate: {
                                 type: 'const',
                                 constVal: speedReverse[1],
                             },
@@ -460,7 +463,7 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[2],
                             },
-                            factor: {
+                            negate: {
                                 type: 'const',
                                 constVal: speedReverse[2],
                             },
@@ -519,7 +522,7 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[3],
                             },
-                            factor: {
+                            negate: {
                                 type: 'const',
                                 constVal: speedReverse[3],
                             },
@@ -578,7 +581,7 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[4],
                             },
-                            factor: {
+                            negate: {
                                 type: 'const',
                                 constVal: speedReverse[4],
                             },
@@ -637,7 +640,7 @@ export class PagePower extends Page {
                                 type: 'const',
                                 constVal: maxSpeedScale[5],
                             },
-                            factor: {
+                            negate: {
                                 type: 'const',
                                 constVal: speedReverse[5],
                             },
@@ -674,12 +677,12 @@ export class PagePower extends Page {
             message.homeValueBot = (await getValueEntryString(data.homeValueBot)) ?? '';
 
             // to much work to change types to partial in getMessage we assign a full object to this.
-            message.leftTop = (await this.getElementUpdate(data.leftTop)) as pages.PagePowerMessageItem;
-            message.leftMiddle = (await this.getElementUpdate(data.leftMiddle)) as pages.PagePowerMessageItem;
-            message.leftBottom = (await this.getElementUpdate(data.leftBottom)) as pages.PagePowerMessageItem;
-            message.rightTop = (await this.getElementUpdate(data.rightTop)) as pages.PagePowerMessageItem;
-            message.rightMiddle = (await this.getElementUpdate(data.rightMiddle)) as pages.PagePowerMessageItem;
-            message.rightBottom = (await this.getElementUpdate(data.rightBottom)) as pages.PagePowerMessageItem;
+            message.leftTop = (await this.getElementUpdate(data.leftTop, 0)) as pages.PagePowerMessageItem;
+            message.leftMiddle = (await this.getElementUpdate(data.leftMiddle, 1)) as pages.PagePowerMessageItem;
+            message.leftBottom = (await this.getElementUpdate(data.leftBottom, 2)) as pages.PagePowerMessageItem;
+            message.rightTop = (await this.getElementUpdate(data.rightTop, 3)) as pages.PagePowerMessageItem;
+            message.rightMiddle = (await this.getElementUpdate(data.rightMiddle, 4)) as pages.PagePowerMessageItem;
+            message.rightBottom = (await this.getElementUpdate(data.rightBottom, 5)) as pages.PagePowerMessageItem;
         }
         this.sendToPanel(this.getMessage(message), false);
     }
@@ -694,6 +697,7 @@ export class PagePower extends Page {
 
     private async getElementUpdate(
         item: pages.cardPowerDataItems['data']['leftBottom'],
+        index: number,
     ): Promise<undefined | Partial<pages.PagePowerMessageItem>> {
         if (item === undefined) {
             return undefined;
@@ -705,6 +709,7 @@ export class PagePower extends Page {
         if (value === null) {
             return undefined;
         }
+        this.autoUnit[index] = value;
 
         message.icon = (await getIconEntryValue(item.icon, value >= 0, '')) ?? undefined;
         message.iconColor = (await getIconEntryColor(item.icon, value, Color.White)) ?? undefined;

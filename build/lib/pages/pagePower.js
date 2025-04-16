@@ -80,6 +80,7 @@ class PagePower extends import_Page.Page {
   //items: pages.PageBaseConfig['items'];
   items;
   index = 0;
+  autoUnit = [];
   constructor(config, options) {
     super(config, options);
     if (options.config && options.config.card == "cardPower") {
@@ -218,7 +219,7 @@ class PagePower extends import_Page.Page {
       }
     }
     const valueDecimal = [];
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= 8; i++) {
       const key = `power${i}_valueDecimal`;
       if (typeof config[key] === "number") {
         valueDecimal.push(config[key]);
@@ -227,7 +228,7 @@ class PagePower extends import_Page.Page {
       }
     }
     const valueUnit = [];
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= 8; i++) {
       const key = `power${i}_valueUnit`;
       if (states[i - 1] != null && states[i - 1] != "") {
         const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
@@ -240,6 +241,8 @@ class PagePower extends import_Page.Page {
             valueUnit.push(" W");
           }
         }
+      } else {
+        valueUnit.push("");
       }
     }
     const result = {
@@ -252,15 +255,15 @@ class PagePower extends import_Page.Page {
           headline: { type: "const", constVal: config.headline },
           homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
           homeValueTop: {
-            value: { type: "triggered", dp: states[6] }
+            value: { type: "triggered", dp: states[6] },
+            decimal: { type: "const", constVal: valueDecimal[6] },
+            unit: { type: "const", constVal: valueUnit[6] }
           },
           homeValueBot: {
-            value: { type: "triggered", dp: states[7] }
+            value: { type: "triggered", dp: states[7] },
+            decimal: { type: "const", constVal: valueDecimal[7] },
+            unit: { type: "const", constVal: valueUnit[7] }
           },
-          /* homeValueBot: {
-              value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
-              math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
-          }, */
           leftTop: {
             icon: {
               true: {
@@ -312,7 +315,7 @@ class PagePower extends import_Page.Page {
                 type: "const",
                 constVal: maxSpeedScale[0]
               },
-              factor: {
+              negate: {
                 type: "const",
                 constVal: speedReverse[0]
               }
@@ -371,7 +374,7 @@ class PagePower extends import_Page.Page {
                 type: "const",
                 constVal: maxSpeedScale[1]
               },
-              factor: {
+              negate: {
                 type: "const",
                 constVal: speedReverse[1]
               }
@@ -430,7 +433,7 @@ class PagePower extends import_Page.Page {
                 type: "const",
                 constVal: maxSpeedScale[2]
               },
-              factor: {
+              negate: {
                 type: "const",
                 constVal: speedReverse[2]
               }
@@ -489,7 +492,7 @@ class PagePower extends import_Page.Page {
                 type: "const",
                 constVal: maxSpeedScale[3]
               },
-              factor: {
+              negate: {
                 type: "const",
                 constVal: speedReverse[3]
               }
@@ -548,7 +551,7 @@ class PagePower extends import_Page.Page {
                 type: "const",
                 constVal: maxSpeedScale[4]
               },
-              factor: {
+              negate: {
                 type: "const",
                 constVal: speedReverse[4]
               }
@@ -607,7 +610,7 @@ class PagePower extends import_Page.Page {
                 type: "const",
                 constVal: maxSpeedScale[5]
               },
-              factor: {
+              negate: {
                 type: "const",
                 constVal: speedReverse[5]
               }
@@ -640,12 +643,12 @@ class PagePower extends import_Page.Page {
       message.homeColor = await (0, import_tools.getIconEntryColor)(data.homeIcon, true, import_Color.Color.White);
       message.homeValueTop = (_c = await (0, import_tools.getValueEntryString)(data.homeValueTop)) != null ? _c : "";
       message.homeValueBot = (_d = await (0, import_tools.getValueEntryString)(data.homeValueBot)) != null ? _d : "";
-      message.leftTop = await this.getElementUpdate(data.leftTop);
-      message.leftMiddle = await this.getElementUpdate(data.leftMiddle);
-      message.leftBottom = await this.getElementUpdate(data.leftBottom);
-      message.rightTop = await this.getElementUpdate(data.rightTop);
-      message.rightMiddle = await this.getElementUpdate(data.rightMiddle);
-      message.rightBottom = await this.getElementUpdate(data.rightBottom);
+      message.leftTop = await this.getElementUpdate(data.leftTop, 0);
+      message.leftMiddle = await this.getElementUpdate(data.leftMiddle, 1);
+      message.leftBottom = await this.getElementUpdate(data.leftBottom, 2);
+      message.rightTop = await this.getElementUpdate(data.rightTop, 3);
+      message.rightMiddle = await this.getElementUpdate(data.rightMiddle, 4);
+      message.rightBottom = await this.getElementUpdate(data.rightBottom, 5);
     }
     this.sendToPanel(this.getMessage(message), false);
   }
@@ -656,7 +659,7 @@ class PagePower extends import_Page.Page {
     const value = await (0, import_tools.getValueEntryNumber)(item.value);
     return value !== null ? value + num : num;
   }
-  async getElementUpdate(item) {
+  async getElementUpdate(item, index) {
     var _a, _b, _c, _d, _e;
     if (item === void 0) {
       return void 0;
@@ -666,6 +669,7 @@ class PagePower extends import_Page.Page {
     if (value === null) {
       return void 0;
     }
+    this.autoUnit[index] = value;
     message.icon = (_a = await (0, import_tools.getIconEntryValue)(item.icon, value >= 0, "")) != null ? _a : void 0;
     message.iconColor = (_b = await (0, import_tools.getIconEntryColor)(item.icon, value, import_Color.Color.White)) != null ? _b : void 0;
     message.name = (_c = await (0, import_tools.getEntryTextOnOff)(item.text, value >= 0)) != null ? _c : void 0;
