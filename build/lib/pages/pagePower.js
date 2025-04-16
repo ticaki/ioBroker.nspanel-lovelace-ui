@@ -80,6 +80,7 @@ class PagePower extends import_Page.Page {
   //items: pages.PageBaseConfig['items'];
   items;
   index = 0;
+  autoUnit = [];
   constructor(config, options) {
     super(config, options);
     if (options.config && options.config.card == "cardPower") {
@@ -668,6 +669,7 @@ class PagePower extends import_Page.Page {
     if (value === null) {
       return void 0;
     }
+    this.autoUnit[index] = value;
     message.icon = (_a = await (0, import_tools.getIconEntryValue)(item.icon, value >= 0, "")) != null ? _a : void 0;
     message.iconColor = (_b = await (0, import_tools.getIconEntryColor)(item.icon, value, import_Color.Color.White)) != null ? _b : void 0;
     message.name = (_c = await (0, import_tools.getEntryTextOnOff)(item.text, value >= 0)) != null ? _c : void 0;

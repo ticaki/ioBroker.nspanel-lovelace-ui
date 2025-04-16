@@ -8,7 +8,6 @@ import {
     getIconEntryValue,
     getPayload,
     getScaledNumber,
-    getValueAutoUnit,
     getValueEntryNumber,
     getValueEntryString,
 } from '../const/tools';
@@ -77,6 +76,7 @@ export class PagePower extends Page {
     //items: pages.PageBaseConfig['items'];
     items: pages.cardPowerDataItems | undefined;
     index: number = 0;
+    private autoUnit: number[] = [];
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
         if (options.config && options.config.card == 'cardPower') {
@@ -709,6 +709,7 @@ export class PagePower extends Page {
         if (value === null) {
             return undefined;
         }
+        this.autoUnit[index] = value;
 
         message.icon = (await getIconEntryValue(item.icon, value >= 0, '')) ?? undefined;
         message.iconColor = (await getIconEntryColor(item.icon, value, Color.White)) ?? undefined;
