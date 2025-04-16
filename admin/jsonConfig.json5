@@ -495,7 +495,7 @@
                 },
                 "_header": {
                     "type": "header",
-                    "size": 4,
+                    "size": 5,
                     "text": "Expert Mode",
                     "xs": 12,
                     "sm": 12,
@@ -508,7 +508,7 @@
                     "label": "resetTasmota",
                     "jsonData": "{\"ip\": \"${data._selectIpForTools}\"}",
                     "openUrl": true,
-                    "command": "openLinkToTasmota",
+                    "command": "resetTasmota",
                     "disabled": "!data._selectIpForTools",
                     "variant": "contained",
                     "expertMode": true,

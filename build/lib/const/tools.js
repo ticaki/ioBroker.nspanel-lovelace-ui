@@ -380,7 +380,9 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           break;
         }
         case "triGrad":
-        case "triGradAnchor": {
+        case "triGradAnchor":
+        case "quadriGrad":
+        case "quadriGradAnchor": {
           cto = cto || import_Color.Color.HMIOn;
           cfrom = cfrom || import_Color.Color.HMIOff;
         }
@@ -417,17 +419,23 @@ async function getIconEntryColor(i, value, def, defOff = null) {
           case "mixed":
             func = import_Color.Color.mixColor;
             break;
+          case "triGradAnchor":
+            if (scale.val_best !== void 0) {
+              func = import_Color.Color.triGradAnchor;
+              break;
+            }
+          // eslint-disable-next-line no-fallthrough
           case "triGrad":
             func = import_Color.Color.triGradColorScale;
             break;
-          case "triGradAnchor":
-            func = import_Color.Color.triGradAnchor;
-            break;
+          case "quadriGradAnchor":
+            if (scale.val_best !== void 0) {
+              func = import_Color.Color.quadriGradAnchor;
+              break;
+            }
+          // eslint-disable-next-line no-fallthrough
           case "quadriGrad":
             func = import_Color.Color.quadriGradColorScale;
-            break;
-          case "quadriGradAnchor":
-            func = import_Color.Color.quadriGradAnchor;
             break;
         }
         if (vMin == vMax) {

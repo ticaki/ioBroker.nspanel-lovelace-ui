@@ -403,7 +403,9 @@ export async function getIconEntryColor(
                     break;
                 }
                 case 'triGrad':
-                case 'triGradAnchor': {
+                case 'triGradAnchor':
+                case 'quadriGrad':
+                case 'quadriGradAnchor': {
                     cto = cto || Color.HMIOn;
                     cfrom = cfrom || Color.HMIOff;
                 }
@@ -442,17 +444,23 @@ export async function getIconEntryColor(
                     case 'mixed':
                         func = Color.mixColor;
                         break;
+                    case 'triGradAnchor':
+                        if (scale.val_best !== undefined) {
+                            func = Color.triGradAnchor;
+                            break;
+                        }
+                    // eslint-disable-next-line no-fallthrough
                     case 'triGrad':
                         func = Color.triGradColorScale;
                         break;
-                    case 'triGradAnchor':
-                        func = Color.triGradAnchor;
-                        break;
+                    case 'quadriGradAnchor':
+                        if (scale.val_best !== undefined) {
+                            func = Color.quadriGradAnchor;
+                            break;
+                        }
+                    // eslint-disable-next-line no-fallthrough
                     case 'quadriGrad':
                         func = Color.quadriGradColorScale;
-                        break;
-                    case 'quadriGradAnchor':
-                        func = Color.quadriGradAnchor;
                         break;
                 }
                 if (vMin == vMax) {

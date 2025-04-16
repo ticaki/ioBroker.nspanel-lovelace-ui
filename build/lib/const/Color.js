@@ -302,7 +302,7 @@ class Color extends ColorBase {
     let r = 0;
     let g = 0;
     const b = 0;
-    if ((_options == null ? void 0 : _options.swap) === false) {
+    if ((_options == null ? void 0 : _options.swap) === true) {
       factor = 1 - factor;
     }
     if (factor < 0.5) {
@@ -328,14 +328,14 @@ class Color extends ColorBase {
    *                 Values closer to 0 result in red, transitioning through green, and ending in blue.
    * @param _options - Optional settings for the gradient generation.
    *                   - `swap` (boolean): If `false`, the gradient direction is reversed.
-   * @returns An RGB object representing the interpolated color at the specified `factor`.
+   * @returns An RGB object representing the interpolated color at the specified `factor`..
    */
   static quadriGradColorScale(_from, _to, factor, _options) {
     factor = Math.min(1, Math.max(0, factor));
     let r = 0;
     let g = 0;
     let b = 0;
-    if ((_options == null ? void 0 : _options.swap) === false) {
+    if ((_options == null ? void 0 : _options.swap) === true) {
       factor = 1 - factor;
     }
     factor *= 2;
