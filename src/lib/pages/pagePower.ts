@@ -8,6 +8,7 @@ import {
     getIconEntryValue,
     getPayload,
     getScaledNumber,
+    getValueAutoUnit,
     getValueEntryNumber,
     getValueEntryString,
 } from '../const/tools';
@@ -76,7 +77,7 @@ export class PagePower extends Page {
     //items: pages.PageBaseConfig['items'];
     items: pages.cardPowerDataItems | undefined;
     index: number = 0;
-    private autoUnit: number[] = [];
+    private autoUnit: (number | undefined)[] = [];
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
         if (options.config && options.config.card == 'cardPower') {
@@ -260,7 +261,7 @@ export class PagePower extends Page {
         const valueUnit: string[] = [];
         for (let i = 1; i <= 8; i++) {
             const key = `power${i}_valueUnit` as keyof typeof config;
-            if (states[i - 1] != null && states[i - 1] != '') {
+            if (states[i - 1] != null && states[i - 1] != '' && (await configManager.existsState(states[i - 1]))) {
                 const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
                 if (o && o.common && o.common.unit) {
                     valueUnit.push(` ${o.common.unit}`);
@@ -709,13 +710,19 @@ export class PagePower extends Page {
         if (value === null) {
             return undefined;
         }
-        this.autoUnit[index] = value;
 
         message.icon = (await getIconEntryValue(item.icon, value >= 0, '')) ?? undefined;
         message.iconColor = (await getIconEntryColor(item.icon, value, Color.White)) ?? undefined;
         message.name = (await getEntryTextOnOff(item.text, value >= 0)) ?? undefined;
         message.speed = (await getScaledNumber(item.speed)) ?? undefined;
-        message.value = (await getValueEntryString(item.value, value)) ?? undefined;
+        const {
+            value: newValue,
+            unit,
+            endFactor,
+        } = await getValueAutoUnit(item.value, null, 5, undefined, this.autoUnit[index]);
+        this.autoUnit[index] = endFactor || 0;
+        message.value = `${newValue}${unit ? ` ${unit}` : ''}`;
+        this.log.debug(`getElementUpdate ${value} ${newValue} ${unit} ${endFactor}1`);
 
         return message;
     }
@@ -757,6 +764,12 @@ export class PagePower extends Page {
     }
     protected async onStateTrigger(): Promise<void> {
         await this.update();
+    }
+    protected onVisibilityChange(val: boolean): Promise<void> {
+        if (val) {
+            this.autoUnit = [];
+        }
+        return super.onVisibilityChange(val);
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         //if (event.page && event.id && this.pageItems) {

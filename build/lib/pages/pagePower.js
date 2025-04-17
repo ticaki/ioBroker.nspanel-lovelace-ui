@@ -230,7 +230,7 @@ class PagePower extends import_Page.Page {
     const valueUnit = [];
     for (let i = 1; i <= 8; i++) {
       const key = `power${i}_valueUnit`;
-      if (states[i - 1] != null && states[i - 1] != "") {
+      if (states[i - 1] != null && states[i - 1] != "" && await configManager.existsState(states[i - 1])) {
         const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
         if (o && o.common && o.common.unit) {
           valueUnit.push(` ${o.common.unit}`);
@@ -660,7 +660,7 @@ class PagePower extends import_Page.Page {
     return value !== null ? value + num : num;
   }
   async getElementUpdate(item, index) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     if (item === void 0) {
       return void 0;
     }
@@ -669,12 +669,18 @@ class PagePower extends import_Page.Page {
     if (value === null) {
       return void 0;
     }
-    this.autoUnit[index] = value;
     message.icon = (_a = await (0, import_tools.getIconEntryValue)(item.icon, value >= 0, "")) != null ? _a : void 0;
     message.iconColor = (_b = await (0, import_tools.getIconEntryColor)(item.icon, value, import_Color.Color.White)) != null ? _b : void 0;
     message.name = (_c = await (0, import_tools.getEntryTextOnOff)(item.text, value >= 0)) != null ? _c : void 0;
     message.speed = (_d = await (0, import_tools.getScaledNumber)(item.speed)) != null ? _d : void 0;
-    message.value = (_e = await (0, import_tools.getValueEntryString)(item.value, value)) != null ? _e : void 0;
+    const {
+      value: newValue,
+      unit,
+      endFactor
+    } = await (0, import_tools.getValueAutoUnit)(item.value, null, 5, void 0, this.autoUnit[index]);
+    this.autoUnit[index] = endFactor || 0;
+    message.value = `${newValue}${unit ? ` ${unit}` : ""}`;
+    this.log.debug(`getElementUpdate ${value} ${newValue} ${unit} ${endFactor}1`);
     return message;
   }
   getMessage(message) {
@@ -715,6 +721,12 @@ class PagePower extends import_Page.Page {
   }
   async onStateTrigger() {
     await this.update();
+  }
+  onVisibilityChange(val) {
+    if (val) {
+      this.autoUnit = [];
+    }
+    return super.onVisibilityChange(val);
   }
   async onButtonEvent(_event) {
   }

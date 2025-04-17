@@ -97,7 +97,7 @@ async function setValueEntry(i, value, sca = true) {
     t.log.warn(t.name || "??? is not writeable");
   }
 }
-async function getValueEntryNumber(i, s = true) {
+async function getValueEntryNumber(i, s = true, options) {
   var _a, _b;
   if (!i) {
     return null;
@@ -113,7 +113,7 @@ async function getValueEntryNumber(i, s = true) {
       }
     }
     const d = (_b = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _b : null;
-    if (d !== null && d !== false) {
+    if (!(options == null ? void 0 : options.ignoreDecimal) && d !== null && d !== false) {
       res = Math.round(res * 10 ** d) / 10 ** d;
     }
     if ("negate" in i && i.negate) {
@@ -703,7 +703,7 @@ function alignText(text, size, align) {
 async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, minFactor = 0) {
   var _a, _b, _c;
   if (!i || !i.value) {
-    return null;
+    return {};
   }
   const siPrefixes = [
     // Unterhalb von 0
@@ -722,8 +722,8 @@ async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, mi
   if (v != null && unit == null || v == null && unit != null) {
     throw new Error("v and unit must be both null or both not null");
   }
-  let value = v != null ? v : await getValueEntryNumber(i);
-  const cUnit = (_b = (_a = i.unit && await i.unit.getString()) != null ? _a : i.value.common.unit) != null ? _b : "";
+  let value = v != null ? v : await getValueEntryNumber(i, void 0, { ignoreDecimal: true });
+  const cUnit = ((_b = (_a = i.unit && await i.unit.getString()) != null ? _a : i.value.common.unit) != null ? _b : "").trim();
   const decimal = (_c = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _c : null;
   const fits = false;
   let res = "";
@@ -744,21 +744,24 @@ async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, mi
     }
     value *= 10 ** (3 * factor);
     let tempValue = value / 10 ** (3 * unitFactor);
-    const d = decimal != null && decimal !== false && decimal <= 2 ? decimal : 2;
+    let d = decimal != null && decimal !== false ? decimal : 1;
+    const calSpace = space - (d ? d + 1 : 0);
+    d = calSpace > 3 ? d : d - (3 - calSpace);
+    d = d < 0 ? 0 : d;
+    let endlessCouter = 0;
     while (!fits) {
-      if (unitFactor > 5 || unitFactor < minFactor) {
-        res = "0";
-        unitFactor = 0;
+      if (unitFactor > 5 || unitFactor < minFactor || endlessCouter++ > 10) {
+        res = unitFactor < minFactor ? (value / 10 ** d / 10 ** (3 * ++unitFactor)).toFixed(d) : "error";
         break;
       }
       tempValue = Math.round(tempValue * 10 ** d) / 10 ** d;
-      if (Math.round(tempValue) === 0) {
+      if (Math.round(tempValue * 10 ** d) === 0 || tempValue < 1 * 10 ** (Math.floor(calSpace / 2) - 1)) {
         tempValue = value / 10 ** (3 * --unitFactor);
         continue;
       }
       res = tempValue.toFixed(d);
       if (res.length > space) {
-        if (tempValue > 10 ** (space - 1)) {
+        if (tempValue >= 10 ** calSpace) {
           tempValue = value / 10 ** (3 * ++unitFactor);
           continue;
         }

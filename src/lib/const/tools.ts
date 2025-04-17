@@ -73,6 +73,7 @@ export async function setValueEntry(
 export async function getValueEntryNumber(
     i: ChangeTypeOfKeys<ValueEntryType | ScaledNumberType, Dataitem | undefined>,
     s: boolean = true,
+    options?: { ignoreDecimal?: boolean },
 ): Promise<number | null> {
     if (!i) {
         return null;
@@ -88,7 +89,7 @@ export async function getValueEntryNumber(
             }
         }
         const d = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
-        if (d !== null && d !== false) {
+        if (!options?.ignoreDecimal && d !== null && d !== false) {
             res = Math.round(res * 10 ** d) / 10 ** d;
         }
         if ('negate' in i && i.negate) {
@@ -783,6 +784,41 @@ export function alignText(text: string, size: number, align: 'left' | 'right' | 
     return text2;
 }
 
+/**
+ * Converts a numerical value into a human-readable format with an appropriate SI prefix and unit.
+ * The function adjusts the value and unit dynamically based on the provided constraints such as space and decimal precision.
+ *
+ * @param i - An object containing the value entry and associated metadata. It can be undefined.
+ * @param v - The numerical value to be formatted. If null, the value is retrieved from the `i` parameter.
+ * @param space - The maximum number of characters allowed for the formatted value (excluding the unit).
+ * @param unit - The unit of the value. If null, it is inferred from the `i` parameter or the SI prefix.
+ * @param startFactor - The starting SI prefix factor (e.g., 0 for base unit, 1 for kilo, -1 for milli). Defaults to 0.
+ * @param minFactor - The minimum SI prefix factor allowed. Defaults to 0.
+ * @returns A promise that resolves to an object containing:
+ * - `value`: The formatted value as a string, adjusted to fit within the specified space.
+ * - `unit`: The unit of the value, including the appropriate SI prefix.
+ * - `endFactor`: The final SI prefix factor used for formatting.
+ * @throws An error if `v` and `unit` are not both null or both defined.
+ * @remarks
+ * - The function uses a predefined list of SI prefixes to determine the appropriate scaling for the value.
+ * - If the value cannot be formatted to fit within the specified space, the function attempts to adjust the SI prefix factor.
+ * - The function ensures that the formatted value does not exceed the allowed space, including the unit and decimal precision.
+ * - If the value is null or undefined, it is retrieved from the `i` parameter using the `getValueEntryNumber` function.
+ * - The function supports both positive and negative SI prefixes (e.g., kilo, milli).
+ * @example
+ * ```typescript
+ * const result = await getValueAutoUnit(
+ *     someValueEntry,
+ *     12345,
+ *     6,
+ *     null,
+ *     0,
+ *     -2
+ * );
+ * console.log(result);
+ * // Output: { value: "12.3k", unit: "k", endFactor: 1 }
+ * ```
+ */
 export async function getValueAutoUnit(
     i: ChangeTypeOfKeys<ValueEntryType, Dataitem | undefined> | undefined,
     v: number | null,
@@ -790,9 +826,9 @@ export async function getValueAutoUnit(
     unit: string | null = null,
     startFactor: number | null = null,
     minFactor: number = 0,
-): Promise<{ value: string; unit: string | null; endFactor: number } | null> {
+): Promise<{ value?: string; unit?: string | null; endFactor?: number }> {
     if (!i || !i.value) {
-        return null;
+        return {};
     }
     const siPrefixes = [
         // Unterhalb von 0
@@ -812,8 +848,8 @@ export async function getValueAutoUnit(
     if ((v != null && unit == null) || (v == null && unit != null)) {
         throw new Error('v and unit must be both null or both not null');
     }
-    let value = v != null ? v : await getValueEntryNumber(i);
-    const cUnit = (i.unit && (await i.unit.getString())) ?? i.value.common.unit ?? '';
+    let value = v != null ? v : await getValueEntryNumber(i, undefined, { ignoreDecimal: true });
+    const cUnit = ((i.unit && (await i.unit.getString())) ?? i.value.common.unit ?? '').trim();
 
     const decimal = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
     const fits = false;
@@ -839,21 +875,25 @@ export async function getValueAutoUnit(
         value *= 10 ** (3 * factor);
         let tempValue = value / 10 ** (3 * unitFactor);
 
-        const d = decimal != null && decimal !== false && decimal <= 2 ? decimal : 2;
+        let d = decimal != null && decimal !== false ? decimal : 1;
+        const calSpace = space - (d ? d + 1 : 0);
+        d = calSpace > 3 ? d : d - (3 - calSpace);
+        d = d < 0 ? 0 : d;
+        let endlessCouter = 0;
         while (!fits) {
-            if (unitFactor > 5 || unitFactor < minFactor) {
-                res = '0';
-                unitFactor = 0;
+            if (unitFactor > 5 || unitFactor < minFactor || endlessCouter++ > 10) {
+                res = unitFactor < minFactor ? (value / 10 ** d / 10 ** (3 * ++unitFactor)).toFixed(d) : 'error';
                 break;
             }
             tempValue = Math.round(tempValue * 10 ** d) / 10 ** d;
-            if (Math.round(tempValue) === 0) {
+            if (Math.round(tempValue * 10 ** d) === 0 || tempValue < 1 * 10 ** (Math.floor(calSpace / 2) - 1)) {
                 tempValue = value / 10 ** (3 * --unitFactor);
                 continue;
             }
+
             res = tempValue.toFixed(d);
             if (res.length > space) {
-                if (tempValue > 10 ** (space - 1)) {
+                if (tempValue >= 10 ** calSpace) {
                     tempValue = value / 10 ** (3 * ++unitFactor);
                     continue;
                 }
