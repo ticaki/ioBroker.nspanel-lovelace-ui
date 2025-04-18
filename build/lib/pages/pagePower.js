@@ -677,10 +677,10 @@ class PagePower extends import_Page.Page {
       value: newValue,
       unit,
       endFactor
-    } = await (0, import_tools.getValueAutoUnit)(item.value, null, 5, void 0, this.autoUnit[index]);
+    } = await (0, import_tools.getValueAutoUnit)(item.value, null, 5, null, this.autoUnit[index]);
     this.autoUnit[index] = endFactor || 0;
     message.value = `${newValue}${unit ? ` ${unit}` : ""}`;
-    this.log.debug(`getElementUpdate ${value} ${newValue} ${unit} ${endFactor}1`);
+    this.log.debug(`getElementUpdate ${value} ${newValue} ${unit} ${endFactor}`);
     return message;
   }
   getMessage(message) {
