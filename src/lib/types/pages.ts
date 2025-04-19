@@ -594,6 +594,7 @@ type PageChartConfig = {
 
 export type cardChartDataItemOptions = {
     card: 'cardChart';
+    index: number;
     data: ChangeTypeOfKeys<PageChartConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardChartDataItems = {

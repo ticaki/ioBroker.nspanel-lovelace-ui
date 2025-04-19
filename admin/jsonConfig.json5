@@ -2521,6 +2521,110 @@
                 }
             }
         },
+        "pageChart": {
+            "type": "panel",
+            "label": "panelPageChart",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "items": {
+                "pageChartdata": {
+                    "type": "accordion",
+                    "label": "pageChartdata",
+                    "titleAttr": "pageName",
+                    "items": [
+                        {
+                            "attr": "pageName",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "text",
+                            "label": "pageName",
+                            "default": "Unique Name"
+                        },
+                        {
+                            "attr": "headline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "text",
+                            "label": "headline",
+                            "default": ""
+                        },
+                        {
+                            "attr": "alwaysOnDisplay",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "checkbox",
+                            "label": "alwaysOnDisplay",
+                            "default": false
+                        },
+                        {
+                            "attr": "chart_color",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "color",
+                            "label": "selectColorForChart",
+                            "default": "#ffff00"
+                        },
+                        {
+                            "attr": "txtlabelYAchse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "text",
+                            "label": "labelYAchse",
+                            "default": ""
+                        },
+                        {
+                            "attr": "_oldSrciptVersion",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "checkbox",
+                            "label": "oldSrciptVersion",
+                            "default": false
+                        },
+                        {
+                            "attr": "setStateForTicks",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 8,
+                            "xl": 8,
+                            "type": "objectId",
+                            "label": "stateForTicks",
+                            "hidden": "!data._oldSrciptVersion",
+                            "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
+                        },
+                        {
+                            "attr": "setStateForValues",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 8,
+                            "lg": 8,
+                            "xl": 8,
+                            "type": "objectId",
+                            "label": "stateForValues",
+                            "hidden": "!data._oldSrciptVersion",
+                            "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
+                        }
+                    ]
+                }
+            }
+        },        
         "NavigationOverview": {
             "type": "panel",
             "label": "Navigation Overview",

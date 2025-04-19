@@ -36,6 +36,7 @@ var configManagerConst = __toESM(require("../const/config-manager-const"));
 var import_states_controller = require("../controller/states-controller");
 var import_pageQR = require("../pages/pageQR");
 var import_pagePower = require("../pages/pagePower");
+var import_pageChart = require("../pages/pageChart");
 var import_readme = require("../tools/readme");
 var import_pages = require("../types/pages");
 var Types = __toESM(require("../types/types"));
@@ -318,7 +319,7 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(page.native);
           continue;
         }
-        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR" && page.type !== "cardPower") {
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart") {
           const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!..`;
           messages.push(msg);
           this.log.warn(msg);
@@ -381,6 +382,23 @@ class ConfigManager extends import_library.BaseClass {
             continue;
           }
           panelConfig.pages.push(await import_pagePower.PagePower.getPowerPageConfig(this.adapter, index, this));
+          continue;
+        }
+        if (page.type === "cardChart") {
+          if (!Array.isArray(this.adapter.config.pageChartdata)) {
+            messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          const index = this.adapter.config.pageChartdata.findIndex(
+            (item) => item.pageName === page.uniqueName
+          );
+          if (index === -1) {
+            messages.push(`No pageChartdata found for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          panelConfig.pages.push(await import_pageChart.PageChart.getChartPageConfig(this.adapter, index, this));
           continue;
         }
         let gridItem = {
