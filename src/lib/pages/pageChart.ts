@@ -53,51 +53,55 @@ export class PageChart extends Page {
             tempConfig,
             this,
         );
+        if (tempItem) {
+            tempItem.card = 'cardChart';
+        }
         this.items = tempItem as pages.cardChartDataItems;
-        // set card because we lose it
-        this.items.card = 'cardChart';
         await super.init();
     }
 
     /**
      *
-     * @returns
+     * @returns // TODO: remove this
      */
     public async update(): Promise<void> {
         if (!this.visibility) {
             return;
         }
-        this.panel.lastCard = '';
-        this.sendType();
         const message: Partial<pages.PageChartMessage> = {};
-        const items = this.items;
-        if (!items || items.card !== 'cardChart') {
-            return;
-        }
-        const data = items.data;
+        const config = this.adapter.config.pageChartdata[this.index];
+        if (this.items && config != null) {
+            const items = this.items;
 
-        message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? this.name;
-        message.navigation = this.getNavigation();
-        message.color = await getIconEntryColor(data.color, true, Color.White);
-        message.text = (await getEntryTextOnOff(data.text, true)) ?? '';
-        message.value = (data.value && (await data.value.getString())) ?? '';
-        message.ticks = [];
-        const ticks = data.ticks && (await data.ticks.getObject());
-        if (ticks && Array.isArray(ticks)) {
-            message.ticks = ticks;
-        } else if (message.value) {
-            const timeValueRegEx = /~\d+:(\d+)/g;
-            const sorted: number[] = [...(message.value.matchAll(timeValueRegEx) || [])]
-                .map(x => parseFloat(x[1]))
-                .sort((x, y) => (x < y ? -1 : 1));
-            const minValue = sorted[0];
-            const maxValue = sorted[sorted.length - 1];
-            const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
-            let currentTick = minValue - tick;
-            while (currentTick < maxValue + tick) {
-                message.ticks.push(String(currentTick));
-                currentTick += tick;
+            message.headline = (items.data.headline && (await items.data.headline.getTranslatedString())) ?? this.name;
+            message.navigation = this.getNavigation();
+            message.color = await getIconEntryColor(items.data.color, true, Color.White);
+            message.text = (await getEntryTextOnOff(items.data.text, true)) ?? '';
+            message.value = (items.data.value && (await items.data.value.getString())) ?? '';
+            message.ticks = [];
+            const ticks = items.data.ticks && (await items.data.ticks.getObject());
+            if (ticks && Array.isArray(ticks)) {
+                message.ticks = ticks;
+            } else if (message.value) {
+                const timeValueRegEx = /~\d+:(\d+)/g;
+                const sorted: number[] = [...(message.value.matchAll(timeValueRegEx) || [])]
+                    .map(x => parseFloat(x[1]))
+                    .sort((x, y) => (x < y ? -1 : 1));
+                const minValue = sorted[0];
+                const maxValue = sorted[sorted.length - 1];
+                const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
+                let currentTick = minValue - tick;
+                while (currentTick < maxValue + tick) {
+                    message.ticks.push(String(currentTick));
+                    currentTick += tick;
+                }
             }
+        }
+        if (message.value) {
+            this.log.debug(message.value);
+        }
+        if (message.ticks) {
+            this.log.debug(`Ticks: ${message.ticks.join(',')}`);
         }
         this.sendToPanel(this.getMessage(message), false);
     }
@@ -123,12 +127,7 @@ export class PageChart extends Page {
         }
         this.adapter.setTimeout(() => this.update(), 50);
     }
-    /**
-     *a
-     *
-     * @param _event
-     * @returns
-     */
+
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         //if (event.page && event.id && this.pageItems) {
         //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
