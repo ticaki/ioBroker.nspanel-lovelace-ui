@@ -1,7 +1,9 @@
+import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
-import { getEntryTextOnOff, getIconEntryColor, getPayload } from '../const/tools';
+import { getIconEntryColor, getPayload } from '../const/tools';
+import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 
@@ -76,7 +78,7 @@ export class PageChart extends Page {
             message.headline = (items.data.headline && (await items.data.headline.getTranslatedString())) ?? this.name;
             message.navigation = this.getNavigation();
             message.color = await getIconEntryColor(items.data.color, true, Color.White);
-            message.text = (await getEntryTextOnOff(items.data.text, true)) ?? '';
+            message.text = (items.data.text && (await items.data.text.getString())) ?? '';
             message.value = (items.data.value && (await items.data.value.getString())) ?? '';
             message.ticks = [];
             const ticks = items.data.ticks && (await items.data.ticks.getObject());
@@ -104,6 +106,43 @@ export class PageChart extends Page {
             this.log.debug(`Ticks: ${message.ticks.join(',')}`);
         }
         this.sendToPanel(this.getMessage(message), false);
+    }
+
+    static async getChartPageConfig(
+        adapter: NspanelLovelaceUi,
+        index: number,
+        configManager: ConfigManager,
+    ): Promise<pages.PageBaseConfig> {
+        const config = adapter.config.pageChartdata[index];
+        let stateExistValue = '';
+        let stateExistTicks = '';
+        if (config) {
+            if (await configManager.existsState(config.setStateForValues)) {
+                stateExistValue = config.setStateForValues;
+            }
+            if (await configManager.existsState(config.setStateForTicks)) {
+                stateExistTicks = config.setStateForTicks;
+            }
+
+            const result: pages.PageBaseConfig = {
+                uniqueID: config.pageName,
+                alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
+                config: {
+                    card: 'cardChart',
+                    index: index,
+                    data: {
+                        headline: { type: 'const', constVal: config.headline || '' },
+                        text: { type: 'const', constVal: config.txtlableYAchse || '' },
+                        color: { true: { color: { type: 'const', constVal: Color.Yellow } } },
+                        ticks: { type: 'triggered', dp: stateExistTicks },
+                        value: { type: 'triggered', dp: stateExistValue },
+                    },
+                },
+                pageItems: [],
+            };
+            return result;
+        }
+        throw new Error('No config for cardQR found');
     }
 
     private getMessage(_message: Partial<pages.PageChartMessage>): string {

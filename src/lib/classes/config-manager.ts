@@ -4,6 +4,7 @@ import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PageQR } from '../pages/pageQR';
 import { PagePower } from '../pages/pagePower';
+import { PageChart } from '../pages/pageChart';
 import { getStringOrArray } from '../tools/readme';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
@@ -369,7 +370,8 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardEntities' &&
                     page.type !== 'cardThermo' &&
                     page.type !== 'cardQR' &&
-                    page.type !== 'cardPower'
+                    page.type !== 'cardPower' &&
+                    page.type !== 'cardChart'
                 ) {
                     const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!..`;
                     messages.push(msg);
@@ -436,6 +438,25 @@ export class ConfigManager extends BaseClass {
                         continue;
                     }
                     panelConfig.pages.push(await PagePower.getPowerPageConfig(this.adapter, index, this));
+                    continue;
+                }
+
+                // PageChart einlesen
+                if (page.type === 'cardChart') {
+                    if (!Array.isArray(this.adapter.config.pageChartdata)) {
+                        messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    const index = this.adapter.config.pageChartdata.findIndex(
+                        item => item.pageName === page.uniqueName,
+                    );
+                    if (index === -1) {
+                        messages.push(`No pageChartdata found for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    panelConfig.pages.push(await PageChart.getChartPageConfig(this.adapter, index, this));
                     continue;
                 }
 
