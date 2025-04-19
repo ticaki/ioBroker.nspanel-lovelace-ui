@@ -1757,11 +1757,11 @@ export const textTemplates: TemplateItems = {
             icon: {
                 true: {
                     value: { type: 'const', constVal: 'earth' },
-                    color: { type: 'const', constVal: Color.open },
+                    color: { type: 'const', constVal: Color.Green },
                 },
                 false: {
                     value: { type: 'const', constVal: 'earth-off' },
-                    color: { type: 'const', constVal: Color.close },
+                    color: { type: 'const', constVal: Color.Red },
                 },
             },
             entity1: {

@@ -1766,11 +1766,11 @@ const textTemplates = {
       icon: {
         true: {
           value: { type: "const", constVal: "earth" },
-          color: { type: "const", constVal: import_Color.Color.open }
+          color: { type: "const", constVal: import_Color.Color.Green }
         },
         false: {
           value: { type: "const", constVal: "earth-off" },
-          color: { type: "const", constVal: import_Color.Color.close }
+          color: { type: "const", constVal: import_Color.Color.Red }
         }
       },
       entity1: {
