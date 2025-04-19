@@ -1757,6 +1757,39 @@ const textTemplates = {
         false: void 0
       }
     }
+  },
+  "text.isOnline": {
+    role: "text",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "earth" },
+          color: { type: "const", constVal: import_Color.Color.open }
+        },
+        false: {
+          value: { type: "const", constVal: "earth-off" },
+          color: { type: "const", constVal: import_Color.Color.close }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: ["indicator.reachable"],
+          dp: ""
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "Internet" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "online" },
+        false: { type: "const", constVal: "offline" }
+      }
+    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:
