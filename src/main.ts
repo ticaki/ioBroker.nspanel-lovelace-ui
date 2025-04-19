@@ -13,11 +13,10 @@ import * as MQTT from './lib/classes/mqtt';
 import { testCaseConfig } from './lib/config';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
-import { genericStateObjects } from './lib/const/definition';
+import * as definition from './lib/const/definition';
 import { ConfigManager } from './lib/classes/config-manager';
 import type { panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
-import type { STATUS0 } from './lib/types/types';
 import axios from 'axios';
 import { URL } from 'url';
 import type { HttpServer } from './lib/classes/http-server';
@@ -305,16 +304,16 @@ class NspanelLovelaceUi extends utils.Adapter {
         //check config
         try {
             Icons.adapter = this;
-            await this.onMqttConnect();
-            await this.delay(2000);
             await this.library.init();
             const states = await this.getStatesAsync('*');
             await this.library.initStates(states);
+            await this.onMqttConnect();
+            await this.delay(2000);
 
             // set all .info.nspanel.isOnline to false
             for (const id in states) {
                 if (id.endsWith('.info.isOnline')) {
-                    await this.library.writedp(id, false, genericStateObjects.panel.panels.info.isOnline);
+                    await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);
                 }
             }
             this.log.debug('Check configuration!');
@@ -340,17 +339,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.config.mqttUsername,
                 this.config.mqttPassword,
                 this.config.mqttServer,
-                (topic, message) => {
+                async (topic, message) => {
                     this.log.debug(`${topic} ${message}`);
-                },
-                undefined,
-                async (): Promise<void> => {
-                    await this.setState('info.connection', false, true);
                 },
             );
             if (!this.mqttClient) {
                 return;
             }
+            await this.mqttClient.waitConnectAsync(5000);
 
             if (this.config.testCase) {
                 await this.extendForeignObjectAsync('0_userdata.0.boolean', {
@@ -376,18 +372,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.config.mqttUsername,
                     this.config.mqttPassword,
                     this.config.mqttServer,
-                    (topic, message) => {
+                    async (topic, message) => {
                         this.log.debug(`${topic} ${message}`);
                     },
                 );
-                let c = 0;
-                while (!test.ready) {
-                    this.log.debug('Wait for Test mqttClient');
-                    await this.delay(1000);
-                    if (c++ > 6) {
-                        throw new Error('Test mqttClient not ready!');
-                    }
-                }
+                await test.waitConnectAsync(5000);
 
                 await test.subscript('test/123456/cmnd/#', async (topic, message) => {
                     this.log.debug(`Testcase ${topic}`);
@@ -604,6 +593,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     obj.command = 'tftInstallSendTo';
                 }
             }
+            const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
             switch (obj.command) {
                 case 'config': {
                     const obj1 = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
@@ -661,7 +651,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
-                case 'RefreshDevices': {
+
+                /*case 'RefreshDevices': {
                     if (this.timeoutAdmin) {
                         if (obj.callback) {
                             this.sendTo(obj.from, obj.command, { error: 'sendToAdminRunning' }, obj.callback);
@@ -733,7 +724,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
 
                     break;
-                }
+                }*/
                 case 'testCase': {
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, { testSuccessful: this.testSuccessful }, obj.callback);
@@ -743,7 +734,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 case 'getTasmotaDevices': {
                     if (this.config.panels) {
                         const devices = this.config.panels.map(a => {
-                            return { label: a.ip, value: a.ip };
+                            return { label: `${a.ip} (${a.name})`, value: a.ip };
                         });
                         if (obj.callback) {
                             this.sendTo(obj.from, obj.command, devices, obj.callback);
@@ -755,7 +746,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
-                case 'tasmotaSendTo': {
+                case 'nsPanelInit': {
                     if (obj.message) {
                         try {
                             if (
@@ -775,290 +766,172 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 this.log.info(
                                     `Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP} with user ${obj.message.mqttUsername} && ${obj.message.mqttPassword}`,
                                 );
-                                const url =
+                                let u = new URL(
+                                    `http://${obj.message.tasmotaIP}/cm?` +
+                                        `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                        `&cmnd=status 5`,
+                                );
+                                let r = await axios.get(u.href);
+                                if (!r || !r.data || !r.data.StatusNET || !r.data.StatusNET.Mac) {
+                                    this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
+                                    if (obj.callback) {
+                                        this.sendTo(
+                                            obj.from,
+                                            obj.command,
+                                            { error: 'sendToDeviceNotFound' },
+                                            obj.callback,
+                                        );
+                                    }
+                                    break;
+                                }
+                                let mac = r.data.StatusNET.Mac;
+                                const topic = obj.message.tasmotaTopic;
+                                const appendix = r.data.StatusNET.Mac.replace(/:/g, '').slice(-6);
+                                const mqttClientId = `${this.library.cleandp(obj.message.tasmotaName)}-${appendix}`;
+                                const url: string =
                                     ` MqttHost ${obj.message.mqttServer ? obj.message.internalServerIp : obj.message.mqttIp};` +
                                     ` MqttPort ${obj.message.mqttPort}; MqttUser ${obj.message.mqttUsername}; MqttPassword ${obj.message.mqttPassword};` +
-                                    ` FullTopic ${`${obj.message.tasmotaTopic}/%prefix%/`.replaceAll('//', '/')};` +
+                                    ` FullTopic ${`${topic}/%prefix%/`.replaceAll('//', '/')};` +
                                     ` MqttRetry 10; FriendlyName1 ${obj.message.tasmotaName}; Hostname ${obj.message.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, '_')};` +
-                                    ` WebLog 2; template {"NAME":"${obj.message.tasmotaName}", "GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1};` +
-                                    ` Module 0; MqttClient ${this.library.cleandp(obj.message.tasmotaName)}-%06X;` +
+                                    ` MqttClient ${mqttClientId};` +
                                     ` ${obj.message.mqttServer ? 'SetOption132 1; SetOption103 1 ' : 'SetOption132 0; SetOption103 0'}; Restart 1`;
-                                const u = new URL(
+                                u = new URL(
                                     `http://${obj.message.tasmotaIP}/cm?` +
                                         `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                         `&cmnd=Backlog${encodeURIComponent(url)}`,
                                 );
                                 this.log.info(
-                                    `Sending mqtt config & base config to tasmota: ${obj.message.tasmotaIP} ${u.href}`,
+                                    `Sending mqtt config & base config to tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`,
+                                );
+                                await axios.get(u.href);
+                                this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 60000));
+
+                                u = new URL(
+                                    `http://${obj.message.tasmotaIP}/cm?` +
+                                        `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                        `&cmnd=Backlog${encodeURIComponent(
+                                            ` WebLog 2; template {"NAME":"${obj.message.tasmotaName}", "GPIO":[0,0,0,0,3872,0,0,0,0,0,32,0,0,0,0,225,0,480,224,1,0,0,0,33,0,0,0,0,0,0,0,0,0,0,4736,0],"FLAG":0,"BASE":1};` +
+                                                ` Module 0;${this.config.timezone ? definition.getTasmotaTimeZone(this.config.timezone) : ''}: restart 1`,
+                                        )}`,
                                 );
 
                                 await axios.get(u.href);
-                                const mqtt = new MQTT.MQTTClientClass(
-                                    this,
-                                    this.config.mqttIp,
-                                    this.config.mqttPort,
-                                    this.config.mqttUsername,
-                                    this.config.mqttPassword,
-                                    this.config.mqttServer,
-                                    (topic, message) => {
-                                        this.log.debug(`${topic} ${message}`);
-                                    },
+                                this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 60000));
+
+                                u = new URL(
+                                    `http://${obj.message.tasmotaIP}/cm?` +
+                                        `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                        `&cmnd=status 0`,
                                 );
-                                await this.delay(100);
-                                const checkTasmota = async (
-                                    mqtt: MQTT.MQTTClientClass,
-                                    topic: string,
-                                ): Promise<{ status: boolean; id: string; ip: string; timeoutIndex: number }> => {
-                                    return new Promise(resolve => {
-                                        const result: {
-                                            status: boolean;
-                                            id: string;
-                                            ip: string;
-                                            timeoutIndex: number;
-                                        } = {
-                                            status: false,
-                                            id: '',
-                                            ip: '',
-                                            timeoutIndex: -1,
-                                        };
-                                        if (mqtt && topic) {
-                                            void mqtt.subscript(
-                                                `${topic}/stat/STATUS0`,
-                                                (_topic: string, _message: string) => {
-                                                    const msg = JSON.parse(_message) as STATUS0;
-                                                    if (msg.StatusNET) {
-                                                        result.status = true;
-                                                    }
-                                                    if (
-                                                        result.timeoutIndex !== -1 &&
-                                                        this.intervalAdminArray[result.timeoutIndex]
-                                                    ) {
-                                                        this.clearInterval(
-                                                            this.intervalAdminArray[result.timeoutIndex],
-                                                        );
-                                                        this.intervalAdminArray[result.timeoutIndex] = null;
-                                                    }
-                                                    resolve(result);
-                                                    return;
-                                                },
-                                            );
-
-                                            this.timeoutAdminArray.push(
-                                                this.setTimeout(
-                                                    (index: number) => {
-                                                        if (index !== -1 && this.timeoutAdminArray[index]) {
-                                                            this.clearTimeout(this.timeoutAdminArray[index]);
-                                                        }
-                                                        this.timeoutAdminArray[index] = null;
-                                                        resolve(result);
-                                                    },
-                                                    20000,
-                                                    this.timeoutAdminArray.length - 1,
-                                                ),
-                                            );
-
-                                            this.intervalAdminArray[this.timeoutAdminArray.length - 1] =
-                                                this.setInterval(
-                                                    (mqtt: MQTT.MQTTClientClass, topic: string) => {
-                                                        if (this.unload) {
-                                                            return;
-                                                        }
-                                                        void mqtt.publish(`${topic}/cmnd/STATUS0`, '');
-                                                    },
-                                                    2000,
-                                                    mqtt,
-                                                    topic,
-                                                );
-                                        } else {
-                                            resolve(result);
-                                            return;
-                                        }
-                                    });
-                                };
-
-                                const result = await checkTasmota(mqtt, obj.message.tasmotaTopic);
-                                if (result.timeoutIndex !== -1) {
-                                    if (this.timeoutAdminArray[result.timeoutIndex]) {
-                                        this.clearTimeout(this.timeoutAdminArray[result.timeoutIndex]);
-                                        this.timeoutAdminArray[result.timeoutIndex] = null;
-                                    }
-                                    if (this.intervalAdminArray[result.timeoutIndex]) {
-                                        this.clearInterval(this.intervalAdminArray[result.timeoutIndex]);
-                                        this.intervalAdminArray[result.timeoutIndex] = null;
-                                    }
-                                }
-                                if (this.timeoutAdminArray.every(a => a === null)) {
-                                    this.timeoutAdminArray = [];
-                                }
-                                if (this.intervalAdminArray.every(a => a === null)) {
-                                    this.intervalAdminArray = [];
-                                }
-                                await mqtt.destroy();
-
-                                if (!result.status) {
-                                    this.log.error(`Device with topic ${obj.message.tasmotaTopic} not found!`);
+                                r = await axios.get(u.href);
+                                if (!r || !r.data || !r.data.StatusNET || !r.data.StatusNET.Mac) {
+                                    this.log.warn(`Device with topic ${obj.message.tasmotaTopic} not found!`);
                                     if (obj.callback) {
                                         this.sendTo(
                                             obj.from,
                                             obj.command,
-                                            { error: 'sendToDeviceNotFound' },
+                                            { error: 'sendToDeviceNotFound2' },
                                             obj.callback,
                                         );
                                     }
                                     break;
                                 }
-                                if (obj.callback) {
-                                    this.sendTo(obj.from, obj.command, [], obj.callback);
-                                }
-                            }
-                        } catch (e: any) {
-                            this.log.error(`Error: while sending mqtt config & base config to tasmota - ${e}`);
-                            if (obj.callback) {
-                                this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
-                            }
-                        }
-                        break;
-                    }
-                    if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
-                    }
-                    break;
-                    //Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1
-                    //Backlog UpdateDriverVersion https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1
-                }
-                case 'tasmotaAddTableSendTo': {
-                    if (obj.message) {
-                        /*if (this.timeoutAdmin2) {
-                            if (obj.callback) {
-                                this.sendTo(obj.from, obj.command, { error: 'sendToAdmin2Running' }, obj.callback);
-                                break;
-                            }
-                        }*/
-                        try {
-                            if (obj.message.tasmotaIP && obj.message.tasmotaTopic && obj.message.tasmotaName) {
                                 const config = this.config;
                                 const panels = config.panels ?? [];
                                 const index = panels.findIndex(a => a.topic === obj.message.tasmotaTopic);
-                                const item = index === -1 ? { name: '', ip: '', topic: '', id: '' } : panels[index];
-                                const nameIndex = panels.findIndex(a => a.name === obj.message.tasmotaName);
-                                if (nameIndex !== -1 && index !== -1 && nameIndex !== index) {
-                                    this.log.error('Name already exists!');
-                                    if (obj.callback) {
-                                        this.sendTo(obj.from, obj.command, { error: 'sendToNameExist' }, obj.callback);
-                                    }
-                                    break;
-                                }
-                                item.name = obj.message.tasmotaName;
-                                item.ip = obj.message.tasmotaIP;
-                                item.topic = obj.message.tasmotaTopic;
-
-                                const mqtt = new MQTT.MQTTClientClass(
-                                    this,
-                                    this.config.mqttIp,
-                                    this.config.mqttPort,
-                                    this.config.mqttUsername,
-                                    this.config.mqttPassword,
-                                    this.config.mqttServer,
-                                    (topic, message) => {
-                                        this.log.debug(`${topic} ${message}`);
-                                    },
-                                );
-                                await this.delay(250);
-                                const checkTasmota = async (
-                                    mqtt: MQTT.MQTTClientClass,
-                                    topic: string,
-                                ): Promise<{ status: boolean; id: string; ip: string; timeoutIndex: number }> => {
-                                    return new Promise(resolve => {
-                                        const result: {
-                                            status: boolean;
-                                            id: string;
-                                            ip: string;
-                                            timeoutIndex: number;
-                                        } = {
-                                            status: false,
-                                            id: '',
-                                            ip: '',
-                                            timeoutIndex: -1,
-                                        };
-                                        this.timeoutAdminArray.push(
-                                            this.setTimeout(
-                                                (index: number) => {
-                                                    this.timeoutAdminArray[index] = null;
-                                                    resolve(result);
-                                                },
-                                                5000,
-                                                this.timeoutAdminArray.length - 1,
-                                            ),
-                                        );
-                                        result.timeoutIndex = this.timeoutAdminArray.length - 1;
-                                        if (mqtt && topic) {
-                                            void mqtt.subscript(
-                                                `${topic}/stat/STATUS0`,
-                                                (_topic: string, _message: string) => {
-                                                    const msg = JSON.parse(_message) as STATUS0;
-                                                    if (msg.StatusNET) {
-                                                        result.id = this.library.cleandp(
-                                                            msg.StatusNET.Mac,
-                                                            false,
-                                                            true,
-                                                        );
-                                                        result.ip = msg.StatusNET.IPAddress;
-                                                        this.log.info(
-                                                            `Device found: id: ${result.id} ip: ${result.ip} topic: ${topic} Hostname: ${msg.StatusNET.Hostname}`,
-                                                        );
-                                                        result.status = true;
-                                                    }
-                                                    resolve(result);
-                                                    return;
-                                                },
-                                            );
-                                            void mqtt.publish(`${topic}/cmnd/STATUS0`, '');
-                                        } else {
-                                            resolve(result);
-                                            return;
-                                        }
-                                    });
-                                };
-
-                                const result = await checkTasmota(mqtt, item.topic);
-                                if (result.timeoutIndex !== -1 && this.timeoutAdminArray[result.timeoutIndex]) {
-                                    this.clearTimeout(this.timeoutAdminArray[result.timeoutIndex]);
-                                    this.timeoutAdminArray[result.timeoutIndex] = null;
-                                }
-                                if (this.timeoutAdminArray.every(a => a === null)) {
-                                    this.timeoutAdminArray = [];
-                                }
-                                await mqtt.destroy();
-
-                                if (!result.status) {
-                                    this.log.error(`Device with topic ${item.topic} not found!`);
+                                const item: (typeof this.config.panels)[number] =
+                                    index === -1 ? { name: '', ip: '', topic: '', id: '', model: '' } : panels[index];
+                                const ipIndex = panels.findIndex(a => a.ip === obj.message.tasmotaIP);
+                                let update = false;
+                                if (ipIndex === index) {
+                                    this.log.error('Topic and ip are not on the same panel!');
                                     if (obj.callback) {
                                         this.sendTo(
                                             obj.from,
                                             obj.command,
-                                            { error: 'sendToDeviceNotFound' },
+                                            { error: 'sendToIpTopicDifferent' },
                                             obj.callback,
                                         );
                                     }
                                     break;
+                                } else {
+                                    update = index !== -1;
                                 }
-                                item.id = result.id;
-                                item.ip = result.ip;
+                                mac = r.data.StatusNET.Mac;
+                                item.model = obj.message.model;
+                                item.name = obj.message.tasmotaName;
+                                item.topic = topic;
+                                item.id = this.library.cleandp(mac);
+                                item.ip = r.data.StatusNET.IPAddress;
+
                                 if (index === -1) {
                                     panels.push(item);
                                 }
-                                /*const o = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
-                                if (o && o.native) {
-                                    o.native.panels = panels;
-                                    await this.setForeignObjectAsync(`system.adapter.${this.namespace}`, o);
-                                }*/
+                                try {
+                                    const url =
+                                        `http://${obj.message.tasmotaIP}/cm?` +
+                                        `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                        `&cmnd=Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1`;
+                                    this.log.info(
+                                        `Installing berry on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`,
+                                    );
+                                    await axios.get(url);
+                                    this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20000));
+                                    await this.delay(7000);
+                                } catch (e: any) {
+                                    this.log.error(`Error: while installing berry - ${e}`);
+                                }
+                                try {
+                                    const result = await axios.get(
+                                        'https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json',
+                                    );
+                                    if (!result.data) {
+                                        this.log.error('No version found!');
+                                        if (obj.callback) {
+                                            this.sendTo(
+                                                obj.from,
+                                                obj.command,
+                                                { error: 'sendToRequestFail' },
+                                                obj.callback,
+                                            );
+                                        }
+                                        break;
+                                    }
+                                    const model = obj.message.model ? `-${obj.message.model}` : '';
+                                    const version = obj.message.useBetaTFT
+                                        ? result.data[`tft${model}-beta`].split('_')[0]
+                                        : result.data[`tft${model}`].split('_')[0];
+                                    const fileName = `nspanel-${model}v${version}.tft`;
+                                    if (this.mqttClient) {
+                                        await this.mqttClient.publish(
+                                            `${topic}/cmnd/Backlog`,
+                                            `FlashNextion http://nspanel.de/${fileName}`,
+                                        );
+                                    }
+                                    this.log.info(
+                                        `Installing tft on tasmota with IP ${obj.message.tasmotaIP} and name ${obj.message.tasmotaName}.`,
+                                    );
+                                } catch (e: any) {
+                                    this.log.error(`Error: ${e}`);
+                                    if (obj.callback) {
+                                        this.sendTo(
+                                            obj.from,
+                                            obj.command,
+                                            { error: 'sendToRequestFail' },
+                                            obj.callback,
+                                        );
+                                    }
+                                }
+                                await this.createConfigurationScript(item.name, item.topic);
 
                                 if (obj.callback) {
                                     this.sendTo(
                                         obj.from,
                                         obj.command,
                                         {
-                                            result: 'sendToDeviceFound',
+                                            result: update
+                                                ? 'sendToNSPanelUpdateDataSuccess'
+                                                : 'sendToNSPanelInitDataSuccess',
                                             native: { panels: panels },
                                             saveConfig: true,
                                         },
@@ -1078,7 +951,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                         this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
                     }
                     break;
+                    //Backlog UrlFetch https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1
+                    //Backlog UpdateDriverVersion https://raw.githubusercontent.com/joBr99/nspanel-lovelace-ui/main/tasmota/autoexec.be; Restart 1
                 }
+
                 case 'berryInstallSendTo': {
                     if (obj.message) {
                         if (obj.message.tasmotaIP) {
@@ -1126,10 +1002,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     break;
                                 }
 
+                                const model = obj.message.model ? `-${obj.message.model}` : '';
                                 const version = obj.message.useBetaTFT
-                                    ? result.data['tft-beta'].split('_')[0]
-                                    : result.data.tft.split('_')[0];
-                                const fileName = `nspanel-v${version}.tft`;
+                                    ? result.data[`tft${model}-beta`].split('_')[0]
+                                    : result.data[`tft${model}`].split('_')[0];
+                                const fileName = `nspanel-${model}v${version}.tft`;
 
                                 const url =
                                     `http://${obj.message.tasmotaIP}/cm?` +
@@ -1175,9 +1052,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     break;
                                 }
 
+                                const model = obj.message.model ? `-${obj.message.model}` : '';
                                 const version = obj.message.useBetaTFT
-                                    ? result.data['tft-beta'].split('_')[0]
-                                    : result.data.tft.split('_')[0];
+                                    ? result.data[`tft${model}-beta`].split('_')[0]
+                                    : result.data[`tft${model}`].split('_')[0];
                                 const fileName = `nspanel-v${version}.tft`;
 
                                 const cmnd = `FlashNextion http://nspanel.de/${fileName}`;
@@ -1454,11 +1332,51 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'resetTasmota': {
+                    if (obj.message) {
+                        if (obj.message.tasmotaIP /*&& obj.message.internalServerIp*/) {
+                            try {
+                                const url =
+                                    `http://${obj.message.tasmotaIP}/cm?` +
+                                    `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
+                                    `&cmnd=reset 4`;
+                                this.log.debug(`Reset to factory defaults tasmota with IP ${obj.message.tasmotaIP}`);
+                                await axios.get(url);
+
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, [], obj.callback);
+                                }
+                            } catch (e: any) {
+                                this.log.error(`Error: ${e}`);
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, { error: 'sendToRequestFail' }, obj.callback);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
+                    }
+                    break;
+                }
+
                 case 'refreshMaintainTable': {
                     const added: string[] = [];
                     let result: any[] = [];
                     const flashingText = this.library.getTranslation('Updating');
                     const flashingObj: Record<string, string> = {};
+
+                    let file = undefined;
+                    if (fs.existsSync(path.join(__dirname, '../script'))) {
+                        file = fs.readFileSync(
+                            path.join(__dirname, '../script/example_sendTo_script_iobroker.ts'),
+                            'utf8',
+                        );
+                    }
+                    const vTemp = file?.match(/const.version.+'(\d\.\d\.\d)';/) || [];
+                    const version = vTemp[1] ? vTemp[1] : '';
+
                     for (let a = 0; a < this.config.panels.length; a++) {
                         const panel = this.config.panels[a];
                         const state = this.library.readdb(`panels.${panel.id}.info.nspanel.firmwareUpdate`);
@@ -1466,15 +1384,30 @@ class NspanelLovelaceUi extends utils.Adapter {
                             flashingObj[panel.id] = `${flashingText}: ${state.val}%`;
                         }
                     }
+
                     if (this.controller?.panels) {
                         const updateText = this.library.getTranslation('updateAvailable');
                         const checkText = this.library.getTranslation('check!');
-                        const temp = this.controller.panels.map(a => {
+                        const temp = [];
+                        for (const a of this.controller.panels) {
                             let check = false;
                             let tv = '';
                             let nv = '';
+                            let sv = '';
                             const ft = flashingObj[a.name];
-
+                            const scriptId = this.library.cleandp(
+                                `${scriptPath}.${this.library.cleandp(a.friendlyName, false, true)}`,
+                            );
+                            const o = await this.getForeignObjectAsync(scriptId);
+                            if (o) {
+                                const temp = o.common.source.match(/const.version.+'(\d\.\d\.\d)';/)?.[1] ?? '';
+                                if (temp !== version) {
+                                    check = true;
+                                    sv = `${temp} (${updateText}: v${version})`;
+                                } else {
+                                    sv = temp;
+                                }
+                            }
                             if (a.info) {
                                 if (a.info.tasmota?.firmwareversion) {
                                     const temp = a.info.tasmota.firmwareversion.match(/([0-9]+\.[0-9]+\.[0-9])/);
@@ -1507,7 +1440,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             }
                             added.push(a.topic);
 
-                            return {
+                            temp.push({
                                 _check: check,
                                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? 'online' : 'offline'}`}`})`,
                                 _name: a.friendlyName,
@@ -1519,44 +1452,62 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _id: a.info?.tasmota?.net?.Mac ? a.info.tasmota.net.Mac : '',
                                 _tftVersion: nv ? nv : '???',
                                 _tasmotaVersion: tv ? tv : '???',
-                            };
-                        });
+                                _ScriptVersion: sv ? `v${sv}` : '???',
+                                _nsPanelModel: a.info?.nspanel?.model
+                                    ? a.info.nspanel.model == 'eu'
+                                        ? ''
+                                        : a.info.nspanel.model
+                                    : '',
+                            });
+                        }
                         result = result.concat(temp);
                     }
                     if (this.config.panels) {
-                        const temp = this.config.panels
-                            .filter(a => {
-                                return added.findIndex(b => b === a.topic) === -1;
-                            })
-                            .map(a => {
-                                const ft = flashingObj[a.name];
-                                return {
-                                    _check: true,
-                                    _Headline: `${a.name} (${
-                                        ft
-                                            ? ft
-                                            : `${
-                                                  this.config.Testconfig2
-                                                      ? this.config.Testconfig2.findIndex(b => b.topic === a.topic) ===
-                                                        -1
-                                                          ? 'Missing configuration!'
-                                                          : 'offline - waiting'
-                                                      : 'offline'
-                                              }`
-                                    })`,
-                                    _name: a.name,
-                                    _ip: this.config.Testconfig2
-                                        ? this.config.Testconfig2.findIndex(b => b.topic === a.topic) === -1
-                                            ? 'Missing configuration!'
-                                            : 'offline - waiting'
-                                        : 'offline',
-                                    _online: 'no',
-                                    _topic: a.topic,
-                                    _id: '',
-                                    _tftVersion: '---',
-                                    _tasmotaVersion: '---',
-                                };
+                        const temp2 = this.config.panels.filter(a => {
+                            return added.findIndex(b => b === a.topic) === -1;
+                        });
+                        const temp = [];
+                        for (const a of temp2) {
+                            const ft = flashingObj[a.name];
+                            let sv = version;
+                            const scriptId = this.library.cleandp(
+                                `${scriptPath}.${this.library.cleandp(a.name, false, true)}`,
+                            );
+                            const o = await this.getForeignObjectAsync(scriptId);
+                            if (o) {
+                                const temp = o.common.source.match(/const.version.+'(\d\.\d\.\d)';/)?.[1] ?? '';
+                                if (temp !== version) {
+                                    sv = temp ? temp : version;
+                                }
+                            }
+                            temp.push({
+                                _check: true,
+                                _Headline: `${a.name} (${
+                                    ft
+                                        ? ft
+                                        : `${
+                                              this.config.Testconfig2
+                                                  ? this.config.Testconfig2.findIndex(b => b.topic === a.topic) === -1
+                                                      ? 'Missing configuration!'
+                                                      : 'offline - waiting'
+                                                  : 'offline'
+                                          }`
+                                })`,
+                                _name: a.name,
+                                _ip: this.config.Testconfig2
+                                    ? this.config.Testconfig2.findIndex(b => b.topic === a.topic) === -1
+                                        ? 'Missing configuration!'
+                                        : 'offline - waiting'
+                                    : 'offline',
+                                _online: 'no',
+                                _topic: a.topic,
+                                _id: '',
+                                _tftVersion: '---',
+                                _tasmotaVersion: '---',
+                                _ScriptVersion: sv ? `v${sv}` : '???',
+                                _nsPanelModel: a.model,
                             });
+                        }
                         result = result.concat(temp);
                     }
                     if (result.length > 0) {
@@ -1572,70 +1523,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
                 case 'createScript': {
-                    const scriptPath = this.library.cleandp(`script.js.${this.namespace}`);
-                    const folder: ioBroker.ChannelObject = {
-                        type: 'channel',
-                        _id: scriptPath,
-                        common: {
-                            name: this.namespace,
-                            expert: true,
-                        },
-                        native: {},
-                    };
-                    await this.extendForeignObjectAsync(scriptPath, folder);
-
-                    // Skript erstellen
-                    const scriptId = this.library.cleandp(`${scriptPath}.${obj.message.name}`);
-                    this.log.debug(`Create script ${scriptId}`);
-                    if (fs.existsSync(path.join(__dirname, '../script')) && obj.message.name && obj.message.topic) {
-                        let file = fs.readFileSync(
-                            path.join(__dirname, '../script/example_sendTo_script_iobroker.ts'),
-                            'utf8',
-                        );
-                        const o = await this.getForeignObjectAsync(scriptId);
-                        if (file) {
-                            file = file.replace(`panelTopic: 'topic',`, `panelTopic: '${obj.message.topic}',`);
-                            file = file.replace(
-                                /await sendToAsync\('nspanel-lovelace-ui\.0', 'ScriptConfig',/,
-                                `await sendToAsync('${this.namespace}', 'ScriptConfig',`,
-                            );
-                            if (o) {
-                                const token =
-                                    '*  END STOP END STOP END - No more configuration - END STOP END STOP END       *';
-                                const indexFrom = file.indexOf(token);
-                                const indexTo = o.common.source.indexOf(token);
-                                if (indexFrom !== -1 && indexTo !== -1) {
-                                    this.log.info(`Update script ${scriptId}`);
-                                    file = o.common.source.substring(0, indexTo) + file.substring(indexFrom);
-                                } else {
-                                    if (obj.callback) {
-                                        this.sendTo(obj.from, obj.command, null, obj.callback);
-                                    }
-                                    this.log.warn(`Update script ${scriptId} something whent wrong!`);
-                                    break;
-                                }
-                            } else {
-                                this.log.info(`Create script ${scriptId}`);
-                            }
-                            const script: ioBroker.ScriptObject = {
-                                type: 'script',
-                                _id: scriptId,
-                                common: {
-                                    name: obj.message.name,
-                                    engineType: 'TypeScript/ts',
-                                    engine: `system.adapter.javascript.0`,
-                                    source: file,
-                                    debug: false,
-                                    verbose: false,
-                                    enabled: false,
-                                },
-                                native: {},
-                            };
-                            await this.extendForeignObjectAsync(scriptId, script);
-                        }
-                    }
+                    const result = await this.createConfigurationScript(obj.message.name, obj.message.topic);
                     if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, null, obj.callback);
+                        this.sendTo(obj.from, obj.command, result, obj.callback);
                     }
                     break;
                 }
@@ -1681,14 +1571,24 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'openTasmotaConsole':
                 case 'openLinkToTasmota': {
                     if (obj.callback) {
                         this.sendTo(
                             obj.from,
                             obj.command,
-                            { openUrl: `http://${obj.message.ip}:80`, saveConfig: false },
+                            {
+                                openUrl: `http://${obj.message.ip}:80/${obj.command === 'openTasmotaConsole' ? 'cs?' : ''}`,
+                                saveConfig: false,
+                            },
                             obj.callback,
                         );
+                    }
+                    break;
+                }
+                case 'getTimeZones': {
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, definition.tasmotaTimeZonesAdmin, obj.callback);
                     }
                     break;
                 }
@@ -1711,6 +1611,66 @@ class NspanelLovelaceUi extends utils.Adapter {
             return;
         }
         await this.setForeignStateAsync(dp, val, false);
+    }
+
+    async createConfigurationScript(panelName: string, panelTopic: string): Promise<any> {
+        const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
+
+        const folder: ioBroker.ChannelObject = {
+            type: 'channel',
+            _id: scriptPath,
+            common: {
+                name: this.namespace,
+                expert: true,
+            },
+            native: {},
+        };
+        await this.extendForeignObjectAsync(scriptPath, folder);
+
+        // Skript erstellen
+        const scriptId = this.library.cleandp(`${scriptPath}.${this.library.cleandp(panelName, false, true)}`);
+        this.log.debug(`Create script ${scriptId}`);
+        if (fs.existsSync(path.join(__dirname, '../script')) && panelName && panelTopic) {
+            let file = fs.readFileSync(path.join(__dirname, '../script/example_sendTo_script_iobroker.ts'), 'utf8');
+            const o = await this.getForeignObjectAsync(scriptId);
+            if (file) {
+                file = file.replace(`panelTopic: 'topic',`, `panelTopic: '${panelTopic}',`);
+                file = file.replace(
+                    /await sendToAsync\('nspanel-lovelace-ui\.0', 'ScriptConfig',/,
+                    `await sendToAsync('${this.namespace}', 'ScriptConfig',`,
+                );
+                if (o) {
+                    const token = '*  END STOP END STOP END - No more configuration - END STOP END STOP END       *';
+                    const indexFrom = file.indexOf(token);
+                    const indexTo = o.common.source.indexOf(token);
+                    if (indexFrom !== -1 && indexTo !== -1) {
+                        this.log.info(`Update script ${scriptId}`);
+                        file = o.common.source.substring(0, indexTo) + file.substring(indexFrom);
+                    } else {
+                        this.log.warn(`Update script ${scriptId} something whent wrong!`);
+                        return { error: `Update script ${scriptId} something whent wrong!` };
+                    }
+                } else {
+                    this.log.info(`Create script ${scriptId}`);
+                }
+                const script: ioBroker.ScriptObject = {
+                    type: 'script',
+                    _id: scriptId,
+                    common: {
+                        name: panelName,
+                        engineType: 'TypeScript/ts',
+                        engine: `system.adapter.javascript.0`,
+                        source: file,
+                        debug: false,
+                        verbose: false,
+                        enabled: false,
+                    },
+                    native: {},
+                };
+                await this.extendForeignObjectAsync(scriptId, script);
+                return [];
+            }
+        }
     }
 }
 

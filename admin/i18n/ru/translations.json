@@ -102,5 +102,13 @@
     "createScriptHelp": "Создать или обновить скрипт настроек для панели",
     "tftInstallSendToMQTTHelp": "Обновите прошивку TFT на панели.",
     "check!": "Проверять!",
-    "updateAvailable": "Обновление доступно"
+    "updateAvailable": "Обновление доступно",
+    "nsPanelInit": "NSPANEL Инициализация",
+    "nsPanelUpdate": "Обновление конфигурации NSPANEL",
+    "nsPanelModel": "Nspanel hardwaremodel",
+    "NSPanel_configuration_text": "Добавлена ​​Tasmota nspanel к адаптеру. Перезаписать настройки со значениями по умолчанию. Занимает около 40 секунд.",
+    "NSPanel_configuration_update_text": "Обновите Tasmota Nspanel. Перезаписать настройки со значениями по умолчанию. Занимает около 40 секунд.",
+    "eu-Version": "Eu-Landscape",
+    "us-l-Version": "US-Landscape",
+    "us-p-Version": "US Portrait"
 }

@@ -11,7 +11,7 @@ import { type Server } from 'net';
 import { randomUUID } from 'node:crypto';
 import * as forge from 'node-forge';
 import type { Controller } from '../controller/controller';
-export type callbackMessageType = (topic: string, message: string) => void;
+export type callbackMessageType = (topic: string, message: string) => Promise<void | boolean>;
 export type callbackConnectType = () => Promise<void>;
 
 // RSA-Schlüsselpaar erzeugen (4096 Bit für hohe Sicherheit)
@@ -23,6 +23,11 @@ export class MQTTClientClass extends BaseClass {
     public messageCallback: callbackMessageType;
     clientId: string;
     private subscriptDB: { topic: string; callback: callbackMessageType }[] = [];
+    _onConnect?: { timeout: ioBroker.Timeout | undefined; callback: (timeout: ioBroker.Timeout | undefined) => void };
+    _onDisconnect?: {
+        timeout: ioBroker.Timeout | undefined;
+        callback: (timeout: ioBroker.Timeout | undefined) => void;
+    };
 
     constructor(
         adapter: AdapterClassDefinition,
@@ -32,8 +37,6 @@ export class MQTTClientClass extends BaseClass {
         password: string,
         tls: boolean,
         callback: callbackMessageType,
-        onConnect?: callbackConnectType,
-        onDisconnect?: callbackConnectType,
     ) {
         super(adapter, 'mqttClient');
         this.clientId = `iobroker_${randomUUID()}`;
@@ -47,17 +50,19 @@ export class MQTTClientClass extends BaseClass {
         this.client.on('connect', () => {
             this.log.info(`Connection is active.`);
             this.ready = true;
-            if (onConnect) {
-                void onConnect();
+            if (this._onConnect) {
+                this._onConnect.callback(this._onConnect.timeout);
             }
+            void this.adapter.setState('info.connection', true, true);
         });
         this.client.on('disconnect', () => {
             this.log.info(`Disconnected.`);
             this.ready = false;
             this.log.debug(`disconnected`);
-            if (onDisconnect) {
-                void onDisconnect();
+            if (this._onDisconnect) {
+                void this._onDisconnect.callback(this._onDisconnect.timeout);
             }
+            void this.adapter.setState('info.connection', false, true);
         });
         this.client.on('error', err => {
             this.ready = false;
@@ -68,28 +73,87 @@ export class MQTTClientClass extends BaseClass {
         this.client.on('close', () => {
             this.ready = false;
             this.log.info(`Connection is closed.`);
-            if (onDisconnect) {
-                void onDisconnect();
+            if (this._onDisconnect) {
+                void this._onDisconnect.callback(this._onDisconnect.timeout);
             }
+            void this.adapter.setState('info.connection', false, true);
         });
 
         this.client.on('message', (topic, message) => {
-            const callbacks = this.subscriptDB.filter(i => {
-                return topic.startsWith(i.topic.replace('/#', ''));
-            });
-            /*this.log.debug(
-                `Incoming message for ${callbacks.length} subproceses. topic: ${topic} message: ${message}}`,
-            );*/
-            callbacks.forEach(c => c.callback(topic, message.toString()));
+            const _helper = async (topic: string, message: Buffer): Promise<void> => {
+                const callbacks = this.subscriptDB.filter(i => {
+                    return topic.startsWith(i.topic.replace('/#', ''));
+                });
+                if (this.adapter.config.debugLogMqtt) {
+                    this.log.debug(
+                        `Incoming message for ${callbacks.length} subproceses. topic: ${topic} message: ${message.toString()}`,
+                    );
+                }
+                const remove = [];
+                for (const c of callbacks) {
+                    if (await c.callback(topic, message.toString())) {
+                        remove.push(c);
+                    }
+                }
+                if (remove.length > 0) {
+                    remove.forEach(a => this.unsubscribe(a.topic));
+                }
+            };
+            void _helper(topic, message);
         });
     }
+    async waitConnectAsync(timeout: number): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this._onConnect = {
+                timeout: this.adapter.setTimeout(() => {
+                    reject(new Error(`Timeout for main mqttclient after ${timeout}ms`));
+                }, timeout),
+                callback: (timeout: ioBroker.Timeout | undefined) => {
+                    if (timeout) {
+                        this.adapter.clearTimeout(timeout);
+                    }
+                    this._onConnect = undefined;
+                    resolve();
+                },
+            };
+        });
+    }
+    async waitPanelConnectAsync(_topic: string, timeout: number): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const topic = `${_topic}/tele/INFO1`;
+            this.log.debug(`wait for panel connect: ${topic}`);
+            let ref: ioBroker.Timeout | undefined = undefined;
+            if (timeout > 0) {
+                ref = this.adapter.setTimeout(() => {
+                    reject(new Error(`Timeout for main mqttclient after ${timeout}ms`));
+                }, timeout);
+            }
 
+            void this.subscript(topic, async (_topic, _message) => {
+                if (ref) {
+                    this.adapter.clearTimeout(ref);
+                }
+                this.log.debug(`done connect: ${topic}`);
+                resolve();
+                return true;
+            });
+        });
+    }
     async publish(topic: string, message: string, opt?: IClientPublishOptions): Promise<void> {
-        if (!this.client.connected) {
-            //this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
-            return;
+        try {
+            if (!this.client.connected) {
+                if (this.adapter.config.debugLogMqtt) {
+                    this.log.debug(`Not connected. Can't publish topic: ${topic} with message: ${message}.`);
+                }
+                return;
+            }
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(`Publish topic: ${topic} with message: ${message}.`);
+            }
+            await this.client.publishAsync(topic, message, opt);
+        } catch (e) {
+            this.log.error(`Error in publish: ${e as string}`);
         }
-        await this.client.publishAsync(topic, message, opt);
     }
 
     unsubscribe(topic: string): void {
@@ -131,7 +195,9 @@ export class MQTTServerClass extends BaseClass {
     server: Server;
     controller: Controller | undefined;
     intervals: (ioBroker.Interval | undefined)[] = [];
+    callbacks: { [key: string]: { callback: () => void; timeout: ioBroker.Timeout | undefined } } = {};
     ready: boolean = false;
+    test: Promise<void> | undefined = undefined;
 
     static async createMQTTServer(
         adapter: AdapterClassDefinition,
@@ -141,11 +207,13 @@ export class MQTTServerClass extends BaseClass {
         path: string,
     ): Promise<MQTTServerClass> {
         let keys: Record<string, string> = {};
+
         if (
             !(await adapter.fileExistsAsync(adapter.namespace, 'keys/private-key.pem')) ||
             !(await adapter.fileExistsAsync(adapter.namespace, 'keys/public-key.pem')) ||
             !(await adapter.fileExistsAsync(adapter.namespace, 'keys/certificate.pem'))
         ) {
+            adapter.log.info(`Create new keys for MQTT server.`);
             const prekeys = forge.pki.rsa.generateKeyPair(4096);
             keys.privateKey = forge.pki.privateKeyToPem(prekeys.privateKey);
             keys.publicKey = forge.pki.publicKeyToPem(prekeys.publicKey);
@@ -228,6 +296,21 @@ export class MQTTServerClass extends BaseClass {
             callback(null, confirm);
         };
         this.aedes.on('client', (client: Client) => {
+            for (const key in this.callbacks) {
+                if (this.callbacks[key]) {
+                    if (client.id.startsWith(key)) {
+                        if (this.adapter.config.debugLogMqtt) {
+                            this.log.debug(`Client ${client.id} connected. Call callback.`);
+                        }
+                        if (this.callbacks[key].timeout) {
+                            this.adapter.clearTimeout(this.callbacks[key].timeout);
+                            this.callbacks[key].timeout = undefined;
+                        }
+                        this.callbacks[key].callback();
+                        delete this.callbacks[key];
+                    }
+                }
+            }
             const interval: ioBroker.Interval | undefined = this.adapter.setInterval(
                 index => {
                     if (this.controller) {
@@ -256,6 +339,7 @@ export class MQTTServerClass extends BaseClass {
             this.intervals.push(interval);
         });
     }
+
     destroy(): void {
         void this.delete();
         for (let a = this.intervals.length - 1; a >= 0; a--) {

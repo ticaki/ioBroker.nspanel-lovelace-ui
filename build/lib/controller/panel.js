@@ -36,7 +36,7 @@ var import_screensaver = require("../pages/screensaver");
 var Types = __toESM(require("../types/types"));
 var pages = __toESM(require("../types/pages"));
 var import_library = require("../classes/library");
-var import_definition = require("../const/definition");
+var definition = __toESM(require("../const/definition"));
 var import_pageMedia = require("../pages/pageMedia");
 var import_pageGrid = require("../pages/pageGrid");
 var import_navigation = require("../classes/navigation");
@@ -73,6 +73,7 @@ class Panel extends import_library.BaseClass {
   blockStartup = null;
   _isOnline = false;
   options;
+  flashing = false;
   screenSaver;
   lastCard = "";
   notifyIndex = -1;
@@ -91,15 +92,15 @@ class Panel extends import_library.BaseClass {
   };
   timeout;
   dim = {
-    standby: import_definition.genericStateObjects.panel.panels.cmd.dim.standby.common.def,
-    active: import_definition.genericStateObjects.panel.panels.cmd.dim.active.common.def,
-    delay: import_definition.genericStateObjects.panel.panels.cmd.dim.delay.common.def,
-    dayMode: import_definition.genericStateObjects.panel.panels.cmd.dim.dayMode.common.def,
-    nightStandby: import_definition.genericStateObjects.panel.panels.cmd.dim.nightStandby.common.def,
-    nightActive: import_definition.genericStateObjects.panel.panels.cmd.dim.nightActive.common.def,
-    nightHourStart: import_definition.genericStateObjects.panel.panels.cmd.dim.nightHourStart.common.def,
-    nightHourEnd: import_definition.genericStateObjects.panel.panels.cmd.dim.nightHourEnd.common.def,
-    schedule: import_definition.genericStateObjects.panel.panels.cmd.dim.schedule.common.def
+    standby: definition.genericStateObjects.panel.panels.cmd.dim.standby.common.def,
+    active: definition.genericStateObjects.panel.panels.cmd.dim.active.common.def,
+    delay: definition.genericStateObjects.panel.panels.cmd.dim.delay.common.def,
+    dayMode: definition.genericStateObjects.panel.panels.cmd.dim.dayMode.common.def,
+    nightStandby: definition.genericStateObjects.panel.panels.cmd.dim.nightStandby.common.def,
+    nightActive: definition.genericStateObjects.panel.panels.cmd.dim.nightActive.common.def,
+    nightHourStart: definition.genericStateObjects.panel.panels.cmd.dim.nightHourStart.common.def,
+    nightHourEnd: definition.genericStateObjects.panel.panels.cmd.dim.nightHourEnd.common.def,
+    schedule: definition.genericStateObjects.panel.panels.cmd.dim.schedule.common.def
   };
   screenSaverDoubleClick = true;
   detach = { left: false, right: false };
@@ -324,10 +325,14 @@ class Panel extends import_library.BaseClass {
   }
   init = async () => {
     var _a, _b;
+    if (this.unload) {
+      return;
+    }
+    this.log.debug(`Panel ${this.name} is initialised!`);
     await this.controller.mqttClient.subscript(`${this.topic}/tele/#`, this.onMessage);
     await this.controller.mqttClient.subscript(`${this.topic}/stat/#`, this.onMessage);
     this.isOnline = false;
-    const channelObj = this.library.cloneObject(import_definition.genericStateObjects.panel.panels._channel);
+    const channelObj = this.library.cloneObject(definition.genericStateObjects.panel.panels._channel);
     channelObj.common.name = this.friendlyName;
     channelObj.native = {
       topic: this.topic,
@@ -336,36 +341,40 @@ class Panel extends import_library.BaseClass {
       //configName: this.configName,
     };
     await this.library.writedp(`panels.${this.name}`, void 0, channelObj);
-    await this.library.writedp(`panels.${this.name}.cmd`, void 0, import_definition.genericStateObjects.panel.panels.cmd._channel);
+    await this.library.writedp(
+      `panels.${this.name}.cmd`,
+      void 0,
+      definition.genericStateObjects.panel.panels.cmd._channel
+    );
     await this.library.writedp(
       `panels.${this.name}.cmd.dim`,
       void 0,
-      import_definition.genericStateObjects.panel.panels.cmd.dim._channel
+      definition.genericStateObjects.panel.panels.cmd.dim._channel
     );
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver`,
       void 0,
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaver._channel
+      definition.genericStateObjects.panel.panels.cmd.screenSaver._channel
     );
     await this.library.writedp(
       `panels.${this.name}.alarm`,
       void 0,
-      import_definition.genericStateObjects.panel.panels.alarm._channel
+      definition.genericStateObjects.panel.panels.alarm._channel
     );
     await this.library.writedp(
       `panels.${this.name}.buttons`,
       void 0,
-      import_definition.genericStateObjects.panel.panels.buttons._channel
+      definition.genericStateObjects.panel.panels.buttons._channel
     );
     await this.library.writedp(
       `panels.${this.name}.buttons.left`,
       true,
-      import_definition.genericStateObjects.panel.panels.buttons.left
+      definition.genericStateObjects.panel.panels.buttons.left
     );
     await this.library.writedp(
       `panels.${this.name}.buttons.right`,
       true,
-      import_definition.genericStateObjects.panel.panels.buttons.right
+      definition.genericStateObjects.panel.panels.buttons.right
     );
     const keys = Object.keys(this.dim);
     for (const d of keys) {
@@ -377,7 +386,7 @@ class Panel extends import_library.BaseClass {
       await this.library.writedp(
         `panels.${this.name}.cmd.dim.${key}`,
         this.dim[key],
-        import_definition.genericStateObjects.panel.panels.cmd.dim[key]
+        definition.genericStateObjects.panel.panels.cmd.dim[key]
       );
     }
     let state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.doubleClick`);
@@ -387,19 +396,19 @@ class Panel extends import_library.BaseClass {
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.doubleClick`,
       this.screenSaverDoubleClick,
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.doubleClick
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.doubleClick
     );
     if (state && !state.val) {
       await this.library.writedp(
         `panels.${this.name}.buttons.screensaverGesture`,
         0,
-        import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+        definition.genericStateObjects.panel.panels.buttons.screensaverGesture
       );
     } else {
       await this.library.writedp(
         `panels.${this.name}.buttons.screensaverGesture`,
         void 0,
-        import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+        definition.genericStateObjects.panel.panels.buttons.screensaverGesture
       );
     }
     state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
@@ -413,12 +422,12 @@ class Panel extends import_library.BaseClass {
     await this.library.writedp(
       `panels.${this.name}.cmd.detachRight`,
       this.detach.right,
-      import_definition.genericStateObjects.panel.panels.cmd.detachRight
+      definition.genericStateObjects.panel.panels.cmd.detachRight
     );
     await this.library.writedp(
       `panels.${this.name}.cmd.detachLeft`,
       this.detach.left,
-      import_definition.genericStateObjects.panel.panels.cmd.detachLeft
+      definition.genericStateObjects.panel.panels.cmd.detachLeft
     );
     state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.timeout`);
     if (state) {
@@ -427,16 +436,16 @@ class Panel extends import_library.BaseClass {
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.timeout`,
       this.timeout,
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.timeout
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.timeout
     );
     state = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
     await this.library.writedp(
       `panels.${this.name}.info.nspanel.firmwareUpdate`,
       state && typeof state.val === "number" ? state.val >= 99 ? 100 : state.val : void 0,
-      import_definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
+      definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
     );
-    for (const id in import_definition.InternalStates.panel) {
-      const obj = import_definition.InternalStates.panel[id];
+    for (const id in definition.InternalStates.panel) {
+      const obj = definition.InternalStates.panel[id];
       await this.statesControler.setInternalState(
         `${this.name}/${id}`,
         obj.val,
@@ -447,9 +456,11 @@ class Panel extends import_library.BaseClass {
     }
     for (const page of this.pages) {
       if (page && page.name) {
-        this.log.debug(
-          `Initialisation of page ${page.name} - card: ${page.card} - pageItems: ${(page.pageItemConfig || []).length}`
-        );
+        if (this.adapter.config.debugLogPages) {
+          this.log.debug(
+            `Initialisation of page ${page.name} - card: ${page.card} - pageItems: ${(page.pageItemConfig || []).length}`
+          );
+        }
         await page.init();
       } else {
         this.log.error("Page failed or has no name!");
@@ -458,18 +469,20 @@ class Panel extends import_library.BaseClass {
     this.navigation.init();
     this.adapter.subscribeStates(`panels.${this.name}.cmd.*`);
     this.adapter.subscribeStates(`panels.${this.name}.alarm.*`);
-    this.log.debug(`Panel ${this.name} is initialised!`);
+    if (this.adapter.config.debugLogPages) {
+      this.log.debug(`Panel ${this.name} is initialised!`);
+    }
     {
       const currentPage = this.library.readdb(`panels.${this.name}.cmd.mainNavigationPoint`);
       if (currentPage && currentPage.val) {
         this.navigation.setMainPageByName(String(currentPage.val));
       }
-      import_definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint.common.states = this.navigation.buildCommonStates();
+      definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint.common.states = this.navigation.buildCommonStates();
       const page = this.navigation.getCurrentMainPoint();
       await this.library.writedp(
         `panels.${this.name}.cmd.mainNavigationPoint`,
         page,
-        import_definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint
+        definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint
       );
     }
     const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver.layout`);
@@ -487,7 +500,7 @@ class Panel extends import_library.BaseClass {
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.layout`,
       this.screenSaver && this.screenSaver.mode ? import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode) : 0,
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.layout
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.layout
     );
     state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.rotationTime`);
     let temp = 0;
@@ -500,7 +513,7 @@ class Panel extends import_library.BaseClass {
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.rotationTime`,
       temp,
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.rotationTime
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.rotationTime
     );
     state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.infoIcon`);
     if (state && typeof state.val === "string" && this.screenSaver) {
@@ -509,7 +522,7 @@ class Panel extends import_library.BaseClass {
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.infoIcon`,
       (_b = (_a = this.screenSaver) == null ? void 0 : _a.infoIcon) != null ? _b : "",
-      import_definition.genericStateObjects.panel.panels.cmd.screenSaver.infoIcon
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.infoIcon
     );
     if (this.buttons) {
       for (const b in this.buttons) {
@@ -547,9 +560,7 @@ class Panel extends import_library.BaseClass {
     state = this.library.readdb(`panels.${this.name}.info.nspanel.bigIconRight`);
     this.info.nspanel.bigIconRight = state ? !!state.val : false;
     this.initDone = true;
-    if (!this.adapter.config.mqttServer) {
-      this.restartLoops();
-    }
+    this.restartLoops();
   };
   sendToPanelClass = () => {
   };
@@ -616,7 +627,7 @@ class Panel extends import_library.BaseClass {
       void this.library.writedp(
         `panels.${this.name}.info.isOnline`,
         s,
-        import_definition.genericStateObjects.panel.panels.info.isOnline
+        definition.genericStateObjects.panel.panels.info.isOnline
       );
       if (s) {
         this.log.info("is online!");
@@ -638,10 +649,10 @@ class Panel extends import_library.BaseClass {
   onMessage = async (topic, message) => {
     for (const fn of this.reivCallbacks) {
       if (fn) {
-        fn(topic, message);
+        await fn(topic, message);
       }
     }
-    if (topic.endsWith(import_definition.ReiveTopicAppendix)) {
+    if (topic.endsWith(definition.ReiveTopicAppendix)) {
       const event = this.convertToEvent(message);
       if (event) {
         await this.HandleIncomingMessage(event);
@@ -657,11 +668,12 @@ class Panel extends import_library.BaseClass {
         }
         if ("Flashing" in msg) {
           this.isOnline = false;
+          this.flashing = msg.Flashing.complete < 99;
           this.log.info(`Flashing: ${msg.Flashing.complete}%`);
           await this.library.writedp(
             `panels.${this.name}.info.nspanel.firmwareUpdate`,
             msg.Flashing.complete >= 99 ? 100 : msg.Flashing.complete,
-            import_definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
+            definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
           );
           return;
         }
@@ -670,6 +682,8 @@ class Panel extends import_library.BaseClass {
       if (message === "Offline") {
         this.isOnline = false;
       }
+    } else if (topic.endsWith("/tele/INFO1")) {
+      this.restartLoops();
     } else {
       const command = (topic.match(/[0-9a-zA-Z]+?\/[0-9a-zA-Z]+$/g) || [])[0];
       if (command) {
@@ -678,7 +692,7 @@ class Panel extends import_library.BaseClass {
             await this.library.writedp(
               `panels.${this.name}.cmd.power2`,
               message === "ON",
-              import_definition.genericStateObjects.panel.panels.cmd.power2
+              definition.genericStateObjects.panel.panels.cmd.power2
             );
             await this.statesControler.setInternalState(`${this.name}/cmd/power2`, message === "ON", true);
             break;
@@ -687,7 +701,7 @@ class Panel extends import_library.BaseClass {
             await this.library.writedp(
               `panels.${this.name}.cmd.power1`,
               message === "ON",
-              import_definition.genericStateObjects.panel.panels.cmd.power1
+              definition.genericStateObjects.panel.panels.cmd.power1
             );
             await this.statesControler.setInternalState(`${this.name}/cmd/power1`, message === "ON", true);
             break;
@@ -711,12 +725,12 @@ class Panel extends import_library.BaseClass {
             await this.library.writedp(
               `panels.${this.name}.info`,
               void 0,
-              import_definition.genericStateObjects.panel.panels.info._channel
+              definition.genericStateObjects.panel.panels.info._channel
             );
             await this.library.writedp(
               `panels.${this.name}.info.status`,
               message,
-              import_definition.genericStateObjects.panel.panels.info.status
+              definition.genericStateObjects.panel.panels.info.status
             );
             this.info.tasmota.mqttClient = data.StatusMQT.MqttClient;
             this.info.tasmota.net = data.StatusNET;
@@ -725,6 +739,12 @@ class Panel extends import_library.BaseClass {
             this.info.tasmota.uptime = data.StatusSTS.Uptime;
             this.info.tasmota.sts = data.StatusSTS;
             await this.writeInfo();
+            break;
+          }
+          default: {
+            if (this.adapter.config.debugLogMqtt) {
+              this.log.debug(`Receive other message ${topic} with ${message}`);
+            }
           }
         }
       }
@@ -805,7 +825,7 @@ class Panel extends import_library.BaseClass {
           await this.library.writedp(
             `panels.${this.name}.cmd.dim.dayMode`,
             this.dim.dayMode,
-            import_definition.genericStateObjects.panel.panels.cmd.dim.dayMode
+            definition.genericStateObjects.panel.panels.cmd.dim.dayMode
           );
           break;
         }
@@ -817,7 +837,7 @@ class Panel extends import_library.BaseClass {
           await this.library.writedp(
             `panels.${this.name}.cmd.dim.schedule`,
             this.dim.schedule,
-            import_definition.genericStateObjects.panel.panels.cmd.dim.schedule
+            definition.genericStateObjects.panel.panels.cmd.dim.schedule
           );
           break;
         }
@@ -872,7 +892,7 @@ class Panel extends import_library.BaseClass {
             await this.library.writedp(
               `panels.${this.name}.cmd.dim.delay`,
               this.dim.delay,
-              import_definition.genericStateObjects.panel.panels.cmd.dim.delay
+              definition.genericStateObjects.panel.panels.cmd.dim.delay
             );
           }
           break;
@@ -965,7 +985,7 @@ class Panel extends import_library.BaseClass {
       void this.library.writedp(
         `panels.${this.name}.cmd.dim.dayMode`,
         this.dim.dayMode,
-        import_definition.genericStateObjects.panel.panels.cmd.dim.dayMode
+        definition.genericStateObjects.panel.panels.cmd.dim.dayMode
       );
     }
     this.sendToPanel(cmd, false);
@@ -977,7 +997,7 @@ class Panel extends import_library.BaseClass {
     this.loopTimeout = this.adapter.setTimeout(this.loop, 100);
   }
   /**
-   * Do panel work always at full minute
+   * Do panel work always at full
    *
    */
   loop = () => {
@@ -985,7 +1005,9 @@ class Panel extends import_library.BaseClass {
     let t = Math.random() * 3e4 + 1e4;
     if (!this.isOnline) {
       t = 5e3;
-      this.sendToPanel("pageType~pageStartup", false, { retain: true });
+      if (!this.flashing) {
+        this.sendToPanel("pageType~pageStartup", false, { retain: true });
+      }
     }
     if (this.unload) {
       return;
@@ -1008,7 +1030,7 @@ class Panel extends import_library.BaseClass {
     await this.library.writedp(
       `panels.${this.name}.info.isOnline`,
       false,
-      import_definition.genericStateObjects.panel.panels.info.isOnline
+      definition.genericStateObjects.panel.panels.info.isOnline
     );
     await this.panelSend.delete();
     await this.navigation.delete();
@@ -1036,7 +1058,7 @@ class Panel extends import_library.BaseClass {
     await this.library.writeFromJson(
       `panels.${this.name}.info`,
       "panel.panels.info",
-      import_definition.genericStateObjects,
+      definition.genericStateObjects,
       this.info
     );
   }
@@ -1050,7 +1072,7 @@ class Panel extends import_library.BaseClass {
     if (!event.method) {
       return;
     }
-    if (this._activePage && this._activePage.card !== "cardAlarm") {
+    if (this._activePage && this._activePage.card !== "cardAlarm" && this.adapter.config.debugLogMqtt) {
       this.log.debug(`Receive message:${JSON.stringify(event)}`);
     }
     if (!this.screenSaver) {
@@ -1125,7 +1147,7 @@ class Panel extends import_library.BaseClass {
                 await this.library.writedp(
                   `panels.${this.name}.buttons.screensaverGesture`,
                   2,
-                  import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+                  definition.genericStateObjects.panel.panels.buttons.screensaverGesture
                 );
                 break;
               }
@@ -1133,7 +1155,7 @@ class Panel extends import_library.BaseClass {
                 await this.library.writedp(
                   `panels.${this.name}.buttons.screensaverGesture`,
                   3,
-                  import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+                  definition.genericStateObjects.panel.panels.buttons.screensaverGesture
                 );
                 break;
               }
@@ -1141,7 +1163,7 @@ class Panel extends import_library.BaseClass {
                 await this.library.writedp(
                   `panels.${this.name}.buttons.screensaverGesture`,
                   4,
-                  import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+                  definition.genericStateObjects.panel.panels.buttons.screensaverGesture
                 );
                 break;
               }
@@ -1149,7 +1171,7 @@ class Panel extends import_library.BaseClass {
                 await this.library.writedp(
                   `panels.${this.name}.buttons.screensaverGesture`,
                   5,
-                  import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+                  definition.genericStateObjects.panel.panels.buttons.screensaverGesture
                 );
                 break;
               }
@@ -1157,7 +1179,7 @@ class Panel extends import_library.BaseClass {
                 await this.library.writedp(
                   `panels.${this.name}.buttons.screensaverGesture`,
                   6,
-                  import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+                  definition.genericStateObjects.panel.panels.buttons.screensaverGesture
                 );
                 break;
               }
@@ -1191,7 +1213,7 @@ class Panel extends import_library.BaseClass {
         break;
       }
       case "renderCurrentPage": {
-        this.panelSend.onMessage("/stat/RESULT", `{ "CustomSend": "${event.method}" }`);
+        await this.panelSend.onMessage("/stat/RESULT", `{ "CustomSend": "${event.method}" }`);
         break;
       }
       case "button1": {
@@ -1271,7 +1293,7 @@ class Panel extends import_library.BaseClass {
           await this.library.writeFromJson(
             `panels.${this.name}.info`,
             "panel.panels.info",
-            import_definition.genericStateObjects,
+            definition.genericStateObjects,
             this.info
           );
           break;
@@ -1282,7 +1304,7 @@ class Panel extends import_library.BaseClass {
           await this.library.writeFromJson(
             `panels.${this.name}.info`,
             "panel.panels.info",
-            import_definition.genericStateObjects,
+            definition.genericStateObjects,
             this.info
           );
           break;
@@ -1577,7 +1599,7 @@ ${this.info.tasmota.onlineVersion}`;
       await this.library.writedp(
         `panels.${this.name}.buttons.screensaverGesture`,
         !this.screenSaver.screensaverSwipe ? 0 : 1,
-        import_definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+        definition.genericStateObjects.panel.panels.buttons.screensaverGesture
       );
     }
   }

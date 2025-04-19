@@ -1658,7 +1658,7 @@ const textTemplates = {
         },
         scale: {
           type: "const",
-          constVal: { val_min: 50, val_max: 0, val_best: 10, mode: "triGradAnchor" }
+          constVal: { val_min: 60, val_max: 0, val_best: 20, mode: "triGradAnchor" }
         },
         maxBri: void 0,
         minBri: void 0
@@ -1755,6 +1755,39 @@ const textTemplates = {
           constVal: "Wind"
         },
         false: void 0
+      }
+    }
+  },
+  "text.isOnline": {
+    role: "text",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: "earth" },
+          color: { type: "const", constVal: import_Color.Color.Green }
+        },
+        false: {
+          value: { type: "const", constVal: "earth-off" },
+          color: { type: "const", constVal: import_Color.Color.Red }
+        }
+      },
+      entity1: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: ["indicator.reachable"],
+          dp: ""
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "Internet" },
+        false: void 0
+      },
+      text1: {
+        true: { type: "const", constVal: "online" },
+        false: { type: "const", constVal: "offline" }
       }
     }
   }

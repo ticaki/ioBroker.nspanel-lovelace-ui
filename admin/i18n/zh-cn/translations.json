@@ -102,5 +102,13 @@
     "createScriptHelp": "创建或更新面板的设置脚本",
     "tftInstallSendToMQTTHelp": "在面板上更新TFT固件。",
     "check!": "查看！",
-    "updateAvailable": "更新可用"
+    "updateAvailable": "更新可用",
+    "nsPanelInit": "NSPANEL初始化",
+    "nsPanelUpdate": "NSPANEL配置更新",
+    "nsPanelModel": "NSPANEL HARDWAREMODEL",
+    "NSPanel_configuration_text": "将tasmota nspanel添加到适配器中。具有默认值的覆盖设置。大约需要40秒。",
+    "NSPanel_configuration_update_text": "更新tasmota nspanel。具有默认值的覆盖设置。大约需要40秒。",
+    "eu-Version": "欧盟景观",
+    "us-l-Version": "美国景观",
+    "us-p-Version": "美国 - 波特劳"
 }

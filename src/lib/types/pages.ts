@@ -192,10 +192,12 @@ export const stateRoleArray = arrayOfAllStateRole([
     'value.timer',
     'level.mode',
     'sensor.alarm.flood',
+    'indicator.reachable',
     '',
 ]);
 
 export type StateRole =
+    | 'indicator.reachable'
     | 'sensor.alarm.flood'
     | 'level.mode'
     | 'value.timer'

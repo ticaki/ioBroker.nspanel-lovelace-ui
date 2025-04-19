@@ -151,9 +151,6 @@ export class Page extends BaseClassPage {
 
             options.type = options.type || template.type;
             options.role = options.role || template.role;
-            if (options.appendix) {
-                this.log.debug('c');
-            }
             options = deepAssign(newTemplate, options);
             if (template.template !== undefined) {
                 if (loop > 10) {

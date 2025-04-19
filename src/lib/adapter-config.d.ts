@@ -16,7 +16,7 @@ declare global {
             mediaid: string;
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             scstype: string;
-
+            timezone: string;
             useBetaTFT: boolean;
             
             fixBrokenCommonTypes: boolean;
@@ -29,7 +29,7 @@ declare global {
             useTasmotaAdmin: boolean;
             tasmotaAdmin: string;
             tasmotaAdminPassword: string;
-            panels: {name: string, topic: string, id: string, ip: string}[];
+            panels: {name: string, topic: string, id: string, ip: string, model: string}[];
             pw1: string;
 
             // PageQR
@@ -128,8 +128,16 @@ declare global {
                 power6_maxSpeedScale: number,
                 power6_reverse: boolean,
                 power7_state: string,
-                power8_state: string
+                power7_valueDecimal: number,
+                power7_valueUnit: string,
+                power8_state: string,
+                power8_valueDecimal: number,
+                power8_valueUnit: string
             }[];
+            additionalLog: boolean;
+            debugLogMqtt: boolean;
+            debugLogStates: boolean;
+            debugLogPages: boolean;
         }
     }
 }

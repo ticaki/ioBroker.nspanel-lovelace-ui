@@ -137,7 +137,7 @@ export class PageQR extends Page {
                     const temp = pageItems[a];
                     if (temp) {
                         const arr = (await temp.getPageItemPayload()).split('~');
-                        this.log.debug(`0: ${arr[0]} 1: ${arr[1]} 2: ${arr[2]} 3: ${arr[3]} 4: ${arr[4]} 5: ${arr[5]}`);
+                        //this.log.debug(`0: ${arr[0]} 1: ${arr[1]} 2: ${arr[2]} 3: ${arr[3]} 4: ${arr[4]} 5: ${arr[5]}`);
                         switch (a) {
                             case 0:
                                 message.type1 = arr[0];
@@ -162,7 +162,7 @@ export class PageQR extends Page {
             }
         }
         if (message.textQR) {
-            this.log.debug(message.textQR);
+            //this.log.debug(message.textQR);
         }
         this.sendToPanel(this.getMessage(message), false);
     }

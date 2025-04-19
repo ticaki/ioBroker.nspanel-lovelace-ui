@@ -172,11 +172,11 @@ class BaseClassTriggerd extends import_library.BaseClass {
           this.controller && await this.controller.statesControler.deactivateTrigger(this);
         }
       }
+      if (this.unload) {
+        return;
+      }
       await this.onVisibilityChange(v);
       if (this.visibility) {
-        if (this.unload) {
-          return;
-        }
         if (this.alwaysOn != "ignore") {
           if (this.alwaysOn != "none") {
             if (this.alwaysOn === "action") {
@@ -199,7 +199,12 @@ class BaseClassTriggerd extends import_library.BaseClass {
       }
     } else {
       this.visibility = v;
-      await this.onVisibilityChange(v);
+      if (this.unload) {
+        return;
+      }
+      if (this.visibility) {
+        await this.onVisibilityChange(v);
+      }
     }
   };
   /**
@@ -210,9 +215,7 @@ class BaseClassTriggerd extends import_library.BaseClass {
   async onVisibilityChange(val) {
     val;
     this.adapter.log.warn(
-      `<- instance of [${Object.getPrototypeOf(
-        this
-      )}] not react on onVisibilityChange(), or call super.onVisibilityChange()`
+      `<- instance of [${this.name}] not react on onVisibilityChange(), or call super.onVisibilityChange()`
     );
   }
 }

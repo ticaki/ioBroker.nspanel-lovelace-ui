@@ -73,6 +73,28 @@
                     "lg": 6,
                     "xl": 6
                 },
+                "useTasmotaAdmin": {
+                    "type": "checkbox",
+                    "label": "useTasmotaAdmin",
+                    "default": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "tasmotaAdminPassword": {
+                    "type": "password",
+                    "label": "tasmotaAdminPassword",
+                    "newLine": false,
+                    "hidden": "!data.useTasmotaAdmin",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "pw1": {
                     "type": "password",
                     "label": "Service-Pin (numbers only)",
@@ -194,9 +216,151 @@
         },
         "overview": {
             "type": "panel",
-            "label": "Panels",
+            "label": "nsPanelSettings",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
             "items": {
+                "_useBetaTFTText": {
+                    "type": "staticText",
+                    "label": "useBetaTFTText",
+                    "text": "useBetaTFTText",
+                    "style": {
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "hidden": "!data.useBetaTFT",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_header3": {
+                    "type": "header",
+                    "text": "nsPanelInitLabel",
+                    "size": 3,
+                    "newLine": true
+                },
+                "internalServerIp": {
+                    "type": "ip",
+                    "label": "internalServerIp",
+                    "noInternal": true,
+                    "listenOnAllPorts": false,
+                    "onlyIp4": true,
+                    "validator": "data.internalServerIp && (data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1 && data.internalServerIp !== '127.0.0.1' )",
+                    "hidden": "!data.mqttServer",
+                    "default": "",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "_tasmotaIP": {
+                    "type": "text",
+                    "label": "ipFromPanel",
+                    "validator": "typeof data._tasmotaIP === 'string' && data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
+                    "validatorErrorText": "mustBeIp",
+                    "default": "",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "_tasmotaName": {
+                    "type": "text",
+                    "label": "panelName",
+                    "validator": "",
+                    "default": "",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "_tasmotaTopic": {
+                    "type": "text",
+                    "label": "panelTopic",
+                    "validator": "data._tasmotaTopic && data._tasmotaTopic.length > 3 && data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) !== -1",
+                    "default": "",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "nsPanelModel": {
+                    "type": "select",
+                    "label": "nsPanelModel",
+                    "validator": "data.nsPanelModel != null",
+                    "default": "",
+                    "options": [
+                        {
+                            "label": "eu-Version",
+                            "value": ""
+                        },
+                        {
+                            "label": "us-l-Version",
+                            "value": "us-l"
+                        },
+                        {
+                            "label": "us-p-Version",
+                            "value": "us-p"
+                        }
+                    ],
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "timezone": {
+                    "type": "selectSendTo",
+                    "command": "getTimeZones",
+                    "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
+                    "label": "timezone",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "_nsPanelInit": {
+                    "type": "sendTo",
+                    "label": "nsPanelInit",
+                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
+                    "showProcess": true,
+                    "command": "nsPanelInit",
+                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName || data.nsPanelModel == null ",
+                    "hidden": "data.panels && data.panels.findIndex(panel => panel.topic === data._tasmotaTopic ) !== -1",
+                    "newLine": true,
+                    "variant": "contained",
+                    "useNative": true,
+                    "confirm": {
+                        "title": "nsPanelInit",
+                        "text": "NSPanel_configuration_text",
+                        "ok": "Start",
+                        "cancel": "Cancel"
+                    }
+                },
+                "_nsPanelUpdate": {
+                    "type": "sendTo",
+                    "label": "nsPanelUpdate",
+                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
+                    "showProcess": true,
+                    "command": "nsPanelInit",
+                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName || data.nsPanelModel == null ",
+                    "hidden": "!data.panels || data.panels.findIndex(panel => panel.topic === data._tasmotaTopic ) === -1",
+                    "newLine": true,
+                    "variant": "contained",
+                    "useNative": true,
+                    "confirm": {
+                        "title": "nsPanelUpdate",
+                        "text": "NSPanel_configuration_update_text",
+                        "ok": "Start",
+                        "cancel": "Cancel"
+                    }
+                },
                 "panels": {
                     "type": "table",
                     "label": "overviewOfPanels",
@@ -230,7 +394,7 @@
                             "type": "text",
                             "attr": "name",
                             "label": "panelName",
-                            "readOnly": false,
+                            "readOnly": true,
                             "validatorErrorText": "mustBeUnique"
                         },
                         {
@@ -239,40 +403,6 @@
                             "label": "panelTopic",
                             "readOnly": true,
                             "validatorErrorText": "mustBeUnique"
-                        },
-                        {
-                            "attr": "_tasmotaRestartSendTo",
-                            "type": "sendTo",
-                            "label": "Restart",
-                            "jsonData": "{ \"tasmotaIP\": \"${data.ip}\"}",
-                            "showProcess": true,
-                            "command": "tasmotaRestartSendTo",
-                            "disabled": "!data.ip",
-                            "width": "5%",
-                            "variant": "outlined",
-                            "confirm": {
-                                "title": "Tasmota restart",
-                                "text": "Restart the Tasmota NS panel.",
-                                "ok": "Restart",
-                                "cancel": "Cancel"
-                            }
-                        },
-                        {
-                            "attr": "_tasmotaSendTo",
-                            "type": "sendTo",
-                            "label": "Tasmota",
-                            "jsonData": "{ \"tasmotaName\": \"${data.name}\", \"tasmotaIP\": \"${data.ip}\", \"tasmotaTopic\":\"${data.topic}\", \"mqttServer\": \"${globalData.mqttServer}\", \"mqttIp\": \"${globalData.mqttIp}\", \"mqttPort\": ${globalData.mqttPort}, \"mqttUsername\": \"${globalData.mqttUsername}\", \"mqttPassword\": \"${globalData.mqttPassword}\", \"internalServerIp\": \"${globalData.internalServerIp}\" }",
-                            "showProcess": true,
-                            "command": "tasmotaSendTo",
-                            "disabled": "return !data.ip || (globalData.mqttServer && (!globalData.internalServerIp || globalData.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || globalData.internalServerIp === '127.0.0.1')) ||!data.ip || data.ip.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data.topic || data.topic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!globalData.mqttServer && !globalData.mqttIp ) || !globalData.mqttPort || !globalData.mqttUsername || !globalData.mqttPassword || !data.name ",
-                            "width": "5%",
-                            "variant": "outlined",
-                            "confirm": {
-                                "title": "Tasmota Configuration",
-                                "text": "Update the configuration of the Tasmota NS panel with the current settings.",
-                                "ok": "Update",
-                                "cancel": "Cancel"
-                            }
                         }
                     ]
                 },
@@ -283,109 +413,15 @@
                     "size": 3,
                     "newLine": true
                 },
-                "useTasmotaAdmin": {
-                    "type": "checkbox",
-                    "label": "useTasmotaAdmin",
-                    "default": false,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "tasmotaAdminPassword": {
-                    "type": "password",
-                    "label": "tasmotaAdminPassword",
-                    "newLine": false,
-                    "hidden": "!data.useTasmotaAdmin",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_selectTool": {
-                    "type": "select",
-                    "label": "selectTool",
-                    "default": 1,
-                    "options": [
-                        {
-                            "label": "tasmotaTool",
-                            "value": "1"
-                        },
-                        {
-                            "label": "berryTool",
-                            "value": "2"
-                        },
-                        {
-                            "label": "tftTool",
-                            "value": "3"
-                        },
-                        {
-                            "label": "openLinkToTasmota",
-                            "value": "4"
-                        }
-                    ],
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "internalServerIp": {
-                    "type": "ip",
-                    "label": "internalServerIp",
-                    "noInternal": true,
-                    "listenOnAllPorts": false,
-                    "onlyIp4": true,
-                    "newLine": true,
-                    "validator": "data.internalServerIp && (data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1 && data.internalServerIp !== '127.0.0.1' )",
-                    "hidden": "!data.mqttServer || (data._selectTool && data._selectTool != '1')",
-                    "default": "",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_tasmotaIP": {
+                "_selectIpForTools": {
                     "type": "autocompleteSendTo",
                     "command": "getTasmotaDevices",
                     "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
                     "label": "ipFromPanel",
                     "freeSolo": true,
                     "newLine": true,
-                    "validator": "typeof data._tasmotaIP === 'string' && data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
+                    "validator": "typeof data._selectIpForTools === 'string' && data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) !== -1",
                     "validatorErrorText": "mustBeIp",
-                    "hidden": "data._selectTool == '0'",
-                    "default": "",
-                    "doNotSave": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_tasmotaName": {
-                    "type": "text",
-                    "label": "panelName",
-                    "validator": "",
-                    "hidden": "data._selectTool != '1'",
-                    "default": "",
-                    "doNotSave": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_tasmotaTopic": {
-                    "type": "text",
-                    "label": "panelTopic",
-                    "validator": "data._tasmotaTopic && data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) !== -1",
-                    "hidden": "data._selectTool != '1'",
                     "default": "",
                     "xs": 12,
                     "sm": 12,
@@ -393,49 +429,50 @@
                     "lg": 4,
                     "xl": 4
                 },
-                "_tasmotaSendTo": {
+                "_tasmotaRestartSendTo": {
                     "type": "sendTo",
-                    "label": "tasmotaSendTo",
-                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\":\"${data._tasmotaTopic}\", \"mqttServer\": \"${data.mqttServer}\", \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\": ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
+                    "label": "Restart",
+                    "jsonData": "{ \"tasmotaIP\": \"${data._selectIpForTools}\"}",
                     "showProcess": true,
-                    "command": "tasmotaSendTo",
-                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 || (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
+                    "command": "tasmotaRestartSendTo",
+                    "disabled": "!data._selectIpForTools || data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
+                    "variant": "outlined",
+                    "confirm": {
+                        "title": "Tasmota restart",
+                        "text": "Restart the Tasmota NS panel.",
+                        "ok": "Restart",
+                        "cancel": "Cancel"
+                    },
                     "newLine": true,
-                    "variant": "contained",
-                    "hidden": "data._selectTool != '1'"
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
-                "_tasmotaAddTableSendTo": {
+                "_openLinkToTasmota": {
                     "type": "sendTo",
-                    "label": "tasmotaAddTableSendTo",
-                    "jsonData": "{ \"tasmotaName\": \"${data._tasmotaName}\", \"tasmotaIP\": \"${data._tasmotaIP}\", \"tasmotaTopic\": \"${data._tasmotaTopic}\", \"mqttServer\": ${data.mqttServer}, \"mqttIp\": \"${data.mqttIp}\", \"mqttPort\":  ${data.mqttPort}, \"mqttUsername\": \"${data.mqttUsername}\", \"mqttPassword\": \"${data.mqttPassword}\", \"internalServerIp\": \"${data.internalServerIp}\" }",
-                    "showProcess": true,
-                    "command": "tasmotaAddTableSendTo",
-                    "disabled": "return !data._tasmotaIP || (data.mqttServer && (!data.internalServerIp || data.internalServerIp.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || data.internalServerIp === '127.0.0.1')) ||!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1 || !data._tasmotaTopic || data._tasmotaTopic.search(/^[a-zA-Z][\\w/]+$/g) === -1 ||  (!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data._tasmotaName",
-                    "newLine": false,
-                    "useNative": true,
-                    "variant": "contained",
-                    "hidden": "data._selectTool != '1'"
+                    "label": "openLinkToTasmota",
+                    "jsonData": "{\"ip\": \"${data._selectIpForTools}\"}",
+                    "openUrl": true,
+                    "command": "openLinkToTasmota",
+                    "disabled": "!data._selectIpForTools",
+                    "variant": "outlined",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "_berryInstallSendTo": {
                     "type": "sendTo",
                     "label": "berryInstallSendTo",
-                    "jsonData": "{\"tasmotaIP\": \"${data._tasmotaIP}\"}",
+                    "jsonData": "{\"tasmotaIP\": \"${data._selectIpForTools}\"}",
                     "showProcess": true,
                     "command": "berryInstallSendTo",
-                    "disabled": "!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
-                    "newLine": true,
+                    "disabled": "!data._selectIpForTools || data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
                     "variant": "contained",
-                    "hidden": "data._selectTool != '2'"
-                },
-                "_useBetaTFTText": {
-                    "type": "staticText",
-                    "label": "useBetaTFTText",
-                    "text": "useBetaTFTText",
-                    "style": {
-                        "color": "red"
-                    },
                     "newLine": true,
-                    "hidden": "data._selectTool != '3' || !data.useBetaTFT",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -445,24 +482,42 @@
                 "_tftInstallSendTo": {
                     "type": "sendTo",
                     "label": "tftInstallSendTo",
-                    "jsonData": "{\"tasmotaIP\": \"${data._tasmotaIP}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT} }",
+                    "jsonData": "{\"tasmotaIP\": \"${data._selectIpForTools}\", \"internalServerIp\": \"${data.internalServerIp}\", \"useBetaTFT\": ${data.useBetaTFT}, \"model\": \"${data.nsPanelModel}\" }",
                     "showProcess": true,
                     "command": "tftInstallSendTo",
-                    "disabled": "!data._tasmotaIP || data._tasmotaIP.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
-                    "newLine": true,
+                    "disabled": "!data._selectIpForTools || data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
                     "variant": "contained",
-                    "hidden": "data._selectTool != '3'"
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
-                "_openLinkToTasmota":{
+                "_header": {
+                    "type": "header",
+                    "size": 5,
+                    "text": "Expert Mode",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "_resetTasmota": {
                     "type": "sendTo",
-                    "label": "openLinkToTasmota",
-                    "jsonData": "{\"ip\": \"${data._tasmotaIP}\"}",
+                    "label": "resetTasmota",
+                    "jsonData": "{\"ip\": \"${data._selectIpForTools}\"}",
                     "openUrl": true,
-                    "hidden": "data._selectTool != '4'",
-                    "command": "openLinkToTasmota",
-                    "disabled": "!data._tasmotaIP",
+                    "command": "resetTasmota",
+                    "disabled": "!data._selectIpForTools",
                     "variant": "contained",
-                    "newLine": true,
+                    "expertMode": true,
+                    "confirm": {
+                        "title": "NSPanel Reset!!!",
+                        "text": "Reset NSPanel configuration on the external device to factory defaults(Wifi not touched).",
+                        "ok": "Reset",
+                        "cancel": "Cancel"
+                    },
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -474,8 +529,10 @@
                     "label": "useBetaTFT",
                     "default": false,
                     "newLine": true,
-                    "hidden": "data._selectTool != '3'",
                     "expertMode": true,
+                    "style": {
+                        "color": "red"
+                    },
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -488,8 +545,23 @@
             "type": "panel",
             "label": "maintain",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
-            "items": {            
-                "_showIcon": {
+            "items": {
+                "_useBetaTFTText": {
+                    "type": "staticText",
+                    "label": "useBetaTFTText",
+                    "text": "useBetaTFTText",
+                    "style": {
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "hidden": "!data.useBetaTFT",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                /*"_showIcon": {
                     "type": "imageSendTo",
                     "label": "showIcon",
                     "jsonData": "{\"icon\": \"${data._IconAutocompleteSendTo}\"}",
@@ -498,8 +570,7 @@
                         "_IconAutocompleteSendTo"
                     ],
                     "newLine": false,
-                    "width": 50,
-                    "height": 50
+                    
                 },
                 "_IconAutocompleteSendTo": {
                     "type": "autocompleteSendTo",
@@ -511,7 +582,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },
+                },*/
                 "_RefreshMaintainTable": {
                     "type": "sendTo",
                     "label": "refresh",
@@ -531,7 +602,6 @@
                     "lg": 12,
                     "xl": 12,
                     "titleAttr": "_Headline",
-                    
                     "noDelete": true,
                     "items": [
                         {
@@ -633,6 +703,18 @@
                             "xl": 4
                         },
                         {
+                            "type": "text",
+                            "attr": "_ScriptVersion",
+                            "label": "vScript",
+                            "readOnly": true,
+                            "validator": "!data._ScriptVersion.endsWith(')')",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4
+                        },
+                        {
                             "attr": "_tasmotaSendTo",
                             "type": "sendTo",
                             "label": "tasmotaUpdate",
@@ -660,7 +742,7 @@
                             "type": "sendTo",
                             "label": "tftInstallSendToMQTT",
                             "tooltip": "tftInstallSendToMQTTHelp",
-                            "jsonData": "{\"tasmotaIP\": \"${data._ip}\", \"topic\": \"${data._topic}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT},\"online\": \"${data._online}\" }",
+                            "jsonData": "{\"tasmotaIP\": \"${data._ip}\", \"topic\": \"${data._topic}\", \"internalServerIp\": \"${globalData.internalServerIp}\", \"useBetaTFT\": ${globalData.useBetaTFT},\"online\": \"${data._online}\", \"model\": \"${data._nsPanelModel}\" }",
                             "showProcess": true,
                             "command": "tftInstallSendToMQTT",
                             "disabled": "data._online === 'no' || data._ip === ''",
@@ -688,12 +770,12 @@
                             "xl": 4
                         },
                         {
-                            "attr": "_openLinkToTasmota",
+                            "attr": "_openTasmotaConsole",
                             "type": "sendTo",
-                            "label": "openLinkToTasmota",
+                            "label": "openTasmotaConsole",
                             "jsonData": "{\"ip\": \"${data._ip}\"}",
                             "openUrl": true,
-                            "command": "openLinkToTasmota",
+                            "command": "openTasmotaConsole",
                             "disabled": "!data._ip",
                             "variant": "contained",
                             "newLine": true,
@@ -1048,10 +1130,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power1_more"
@@ -1063,13 +1141,28 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power1_more"
                         },
                         {
                             "attr": "power1_minSpeedScale",
+                            //"validator": "!data.power1_reverse || (data.power1_minSpeedScale <= 0 && data.power1_maxSpeedScale <= 0) || (data.power1_minSpeedScale >=0 && data.power1_maxSpeedScale >= 0)",
                             "xs": 4,
                             "sm": 4,
                             "md": 2,
@@ -1082,6 +1175,7 @@
                         },
                         {
                             "attr": "power1_maxSpeedScale",
+                            //"validator": "!data.power1_reverse || (data.power1_minSpeedScale <= 0 && data.power1_maxSpeedScale <= 0) || (data.power1_minSpeedScale >=0 && data.power1_maxSpeedScale >= 0)",
                             "xs": 4,
                             "sm": 4,
                             "md": 2,
@@ -1255,10 +1349,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power2_more"
@@ -1270,9 +1360,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power2_more"
                         },
                         {
@@ -1462,10 +1566,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power3_more"
@@ -1477,9 +1577,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power3_more"
                         },
                         {
@@ -1669,10 +1783,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power4_more"
@@ -1684,9 +1794,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power4_more"
                         },
                         {
@@ -1876,10 +2000,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power5_more"
@@ -1891,9 +2011,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power5_more"
                         },
                         {
@@ -2083,10 +2217,6 @@
                                 {
                                     "label": "0.01",
                                     "value": 2
-                                },
-                                {
-                                    "label": "0.001",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "!data._power6_more"
@@ -2098,9 +2228,23 @@
                             "md": 2,
                             "lg": 1,
                             "xl": 1,
-                            "type": "text",
+                            "type": "select",
                             "label": "valueUnit",
-                            "default": "",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
                             "hidden": "!data._power6_more"
                         },
                         {
@@ -2232,6 +2376,71 @@
                             "filterFunc": "return obj.common.type === 'number'"
                         },
                         {
+                            "attr": "_power7_more",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false,
+                            "newLine": true
+                        },
+                        {
+                            "attr": "power7_valueDecimal",
+                            "newLine": true,
+                            "xs": 6,
+                            "sm": 6,
+                            "md": 2,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "select",
+                            "label": "valueDecimal",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                }
+                            ],
+                            "hidden": "!data._power7_more"
+                        },
+                        {
+                            "attr": "power7_valueUnit",
+                            "xs": 6,
+                            "sm": 6,
+                            "md": 2,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "select",
+                            "label": "valueUnit",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
+                            "hidden": "!data._power7_more"
+                        },
+                        {
                             "newLine": true,
                             "attr": "power8_state",
                             "xs": 12,
@@ -2242,6 +2451,71 @@
                             "type": "objectId",
                             "label": "powerStateHomeBottom",
                             "filterFunc": "return obj.common.type === 'number'"
+                        },
+                        {
+                            "attr": "_power8_more",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "more",
+                            "default": false,
+                            "newLine": true
+                        },
+                        {
+                            "attr": "power8_valueDecimal",
+                            "newLine": true,
+                            "xs": 6,
+                            "sm": 6,
+                            "md": 2,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "select",
+                            "label": "valueDecimal",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "0",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "0.1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0.01",
+                                    "value": 2
+                                }
+                            ],
+                            "hidden": "!data._power8_more"
+                        },
+                        {
+                            "attr": "power8_valueUnit",
+                            "xs": 6,
+                            "sm": 6,
+                            "md": 2,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "select",
+                            "label": "valueUnit",
+                            "default": "W",
+                            "options": [
+                                {
+                                    "label": "W",
+                                    "value": "W"
+                                },
+                                {
+                                    "label": "kW",
+                                    "value": "kW"
+                                },
+                                {
+                                    "label": "MW",
+                                    "value": "MW"
+                                }
+                            ],
+                            "hidden": "!data._power8_more"
                         }
                     ]
                 }
@@ -2398,6 +2672,53 @@
                             "width": "16%"
                         }
                     ]
+                }
+            }
+        },
+        "developer": {
+            "type": "panel",
+            "label": "developer",
+            "expertMode": true,
+            "items": {
+                "additionalLog": {
+                    "type": "checkbox",
+                    "label": "additionalLog",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "debugLogMqtt": {
+                    "type": "checkbox",
+                    "label": "debugLogMqtt",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "debugLogStates": {
+                    "type": "checkbox",
+                    "label": "debugLogStates",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "debugLogPages": {
+                    "type": "checkbox",
+                    "label": "debugLogPages",
+                    "default": false,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "xl": 2
                 }
             }
         }

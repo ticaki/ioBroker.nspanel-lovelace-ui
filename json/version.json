@@ -1,5 +1,9 @@
 {
-    "tasmota": "14.5.0",
-    "tft": "4.6.2_55",
-    "tft-beta": "4.7.0_56"
+    "tasmota": "14.6.0",
+    "tft": "4.7.1",
+    "tft-us-l": "4.7.1",
+    "tft-us-p": "4.7.1",
+    "tft-beta": "4.7.2",
+    "tft-us-l-beta": "4.7.2",
+    "tft-us-p-beta": "4.7.2"
 }
