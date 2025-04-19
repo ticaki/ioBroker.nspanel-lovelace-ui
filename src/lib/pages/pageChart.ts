@@ -19,17 +19,24 @@ const PageChartMessageDefault: pages.PageChartMessage = {
  * untested
  */
 export class PageChart extends Page {
-    items: pages.PageBaseConfig['items'];
+    items: pages.cardChartDataItems | undefined;
+    index: number = 0;
     private step: number = 1;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     private nextArrow: boolean = false;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
+        if (config.card !== 'cardChart') {
+            return;
+        }
         super(config, options);
         if (options.config && options.config.card == 'cardChart') {
             this.config = options.config;
+        } else {
+            throw new Error('Missing config!');
         }
+        this.index = this.config.index;
         this.minUpdateInterval = 1000;
     }
 
