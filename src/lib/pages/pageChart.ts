@@ -39,7 +39,7 @@ export class PageChart extends Page {
             throw new Error('Missing config!');
         }
         this.index = this.config.index;
-        this.minUpdateInterval = 1000;
+        this.minUpdateInterval = 2000;
     }
 
     async init(): Promise<void> {

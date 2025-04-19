@@ -55,7 +55,7 @@ class PageChart extends import_Page.Page {
       throw new Error("Missing config!");
     }
     this.index = this.config.index;
-    this.minUpdateInterval = 1e3;
+    this.minUpdateInterval = 2e3;
   }
   async init() {
     const config = structuredClone(this.config);
