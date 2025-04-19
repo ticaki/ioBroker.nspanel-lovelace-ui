@@ -141,7 +141,7 @@ declare global {
                 headline: string,
                 alwaysOnDisplay: boolean,
                 chart_color: string,
-                txtlableYAchse: string,
+                txtlabelYAchse: string,
                 setStateForTicks: string,
                 setStateForValues: string,
             }[];

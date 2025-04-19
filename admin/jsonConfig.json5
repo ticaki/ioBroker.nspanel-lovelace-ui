@@ -2576,14 +2576,14 @@
                             "default": "#ffff00"
                         },
                         {
-                            "attr": "txtlableYAchse",
+                            "attr": "txtlabelYAchse",
                             "xs": 12,
                             "sm": 12,
                             "md": 6,
                             "lg": 4,
                             "xl": 4,
-                            "type": "number",
-                            "lable": "lableYAchse",
+                            "type": "text",
+                            "label": "labelYAchse",
                             "default": ""
                         },
                         {
@@ -2606,8 +2606,8 @@
                             "xl": 8,
                             "type": "objectId",
                             "label": "stateForTicks",
-                            "hidden": "!data.oldSrciptVersion",
-                            "filterFunc": "return obj.common.type === 'boolean' && obj.common.role === 'switch' && obj.common.write"
+                            "hidden": "!data._oldSrciptVersion",
+                            "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
                         },
                         {
                             "attr": "setStateForValues",
@@ -2618,8 +2618,8 @@
                             "xl": 8,
                             "type": "objectId",
                             "label": "stateForValues",
-                            "hidden": "!data.oldSrciptVersion",
-                            "filterFunc": "return obj.common.type === 'boolean' && obj.common.role === 'switch' && obj.common.write"
+                            "hidden": "!data._oldSrciptVersion",
+                            "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
                         }
                     ]
                 }

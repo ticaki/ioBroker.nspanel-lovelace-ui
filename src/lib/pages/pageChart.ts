@@ -132,7 +132,7 @@ export class PageChart extends Page {
                     index: index,
                     data: {
                         headline: { type: 'const', constVal: config.headline || '' },
-                        text: { type: 'const', constVal: config.txtlableYAchse || '' },
+                        text: { type: 'const', constVal: config.txtlabelYAchse || '' },
                         color: { true: { color: { type: 'const', constVal: Color.Yellow } } },
                         ticks: { type: 'triggered', dp: stateExistTicks },
                         value: { type: 'triggered', dp: stateExistValue },

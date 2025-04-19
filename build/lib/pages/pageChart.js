@@ -39,15 +39,22 @@ const PageChartMessageDefault = {
 };
 class PageChart extends import_Page.Page {
   items;
+  index = 0;
   step = 1;
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
   constructor(config, options) {
+    if (config.card !== "cardChart") {
+      return;
+    }
     super(config, options);
     if (options.config && options.config.card == "cardChart") {
       this.config = options.config;
+    } else {
+      throw new Error("Missing config!");
     }
+    this.index = this.config.index;
     this.minUpdateInterval = 1e3;
   }
   async init() {
@@ -57,49 +64,85 @@ class PageChart extends import_Page.Page {
       tempConfig,
       this
     );
+    if (tempItem) {
+      tempItem.card = "cardChart";
+    }
     this.items = tempItem;
-    this.items.card = "cardChart";
     await super.init();
   }
   /**
    *
-   * @returns
+   * @returns // TODO: remove this
    */
   async update() {
     var _a, _b, _c;
     if (!this.visibility) {
       return;
     }
-    this.panel.lastCard = "";
-    this.sendType();
     const message = {};
-    const items = this.items;
-    if (!items || items.card !== "cardChart") {
-      return;
-    }
-    const data = items.data;
-    message.headline = (_a = data.headline && await data.headline.getTranslatedString()) != null ? _a : this.name;
-    message.navigation = this.getNavigation();
-    message.color = await (0, import_tools.getIconEntryColor)(data.color, true, import_Color.Color.White);
-    message.text = (_b = await (0, import_tools.getEntryTextOnOff)(data.text, true)) != null ? _b : "";
-    message.value = (_c = data.value && await data.value.getString()) != null ? _c : "";
-    message.ticks = [];
-    const ticks = data.ticks && await data.ticks.getObject();
-    if (ticks && Array.isArray(ticks)) {
-      message.ticks = ticks;
-    } else if (message.value) {
-      const timeValueRegEx = /~\d+:(\d+)/g;
-      const sorted = [...message.value.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
-      const minValue = sorted[0];
-      const maxValue = sorted[sorted.length - 1];
-      const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
-      let currentTick = minValue - tick;
-      while (currentTick < maxValue + tick) {
-        message.ticks.push(String(currentTick));
-        currentTick += tick;
+    const config = this.adapter.config.pageChartdata[this.index];
+    if (this.items && config != null) {
+      const items = this.items;
+      message.headline = (_a = items.data.headline && await items.data.headline.getTranslatedString()) != null ? _a : this.name;
+      message.navigation = this.getNavigation();
+      message.color = await (0, import_tools.getIconEntryColor)(items.data.color, true, import_Color.Color.White);
+      message.text = (_b = items.data.text && await items.data.text.getString()) != null ? _b : "";
+      message.value = (_c = items.data.value && await items.data.value.getString()) != null ? _c : "";
+      message.ticks = [];
+      const ticks = items.data.ticks && await items.data.ticks.getObject();
+      if (ticks && Array.isArray(ticks)) {
+        message.ticks = ticks;
+      } else if (message.value) {
+        const timeValueRegEx = /~\d+:(\d+)/g;
+        const sorted = [...message.value.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
+        const minValue = sorted[0];
+        const maxValue = sorted[sorted.length - 1];
+        const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
+        let currentTick = minValue - tick;
+        while (currentTick < maxValue + tick) {
+          message.ticks.push(String(currentTick));
+          currentTick += tick;
+        }
       }
     }
+    if (message.value) {
+      this.log.debug(message.value);
+    }
+    if (message.ticks) {
+      this.log.debug(`Ticks: ${message.ticks.join(",")}`);
+    }
     this.sendToPanel(this.getMessage(message), false);
+  }
+  static async getChartPageConfig(adapter, index, configManager) {
+    const config = adapter.config.pageChartdata[index];
+    let stateExistValue = "";
+    let stateExistTicks = "";
+    if (config) {
+      if (await configManager.existsState(config.setStateForValues)) {
+        stateExistValue = config.setStateForValues;
+      }
+      if (await configManager.existsState(config.setStateForTicks)) {
+        stateExistTicks = config.setStateForTicks;
+      }
+      const result = {
+        uniqueID: config.pageName,
+        alwaysOn: config.alwaysOnDisplay ? "always" : "none",
+        config: {
+          card: "cardChart",
+          index,
+          data: {
+            headline: { type: "const", constVal: config.headline || "" },
+            text: { type: "const", constVal: config.txtlabelYAchse || "" },
+            color: { true: { color: { type: "const", constVal: import_Color.Color.Yellow } } },
+            ticks: { type: "triggered", dp: stateExistTicks },
+            value: { type: "triggered", dp: stateExistValue }
+          }
+        },
+        pageItems: []
+      };
+      return result;
+    }
+    throw new Error("No config for cardQR found");
   }
   getMessage(_message) {
     let result = PageChartMessageDefault;
@@ -121,12 +164,6 @@ class PageChart extends import_Page.Page {
     }
     this.adapter.setTimeout(() => this.update(), 50);
   }
-  /**
-   *a
-   *
-   * @param _event
-   * @returns
-   */
   async onButtonEvent(_event) {
   }
 }
