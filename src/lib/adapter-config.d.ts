@@ -142,10 +142,15 @@ declare global {
                 alwaysOnDisplay: boolean,
                 chart_color: string,
                 selChartType: 0 | 1 | 2,
-                txtlabelYAchse: string,
-                selInstanzDatasource: 0| 1 | 2 | 3 | 4,
+                selInstanceDataSource: 0| 1 | 2 | 3 | 4,
+                selInstanceAdapter: number,
                 setStateForTicks: string,
                 setStateForValues: string,
+                txtlabelYAchse: string,
+                rangeHours: number,
+                maxXAxisTicks: number,
+                maxXaxisLabels: number,
+                limitMesurements: number
             }[];
 
 
