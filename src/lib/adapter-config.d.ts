@@ -141,7 +141,9 @@ declare global {
                 headline: string,
                 alwaysOnDisplay: boolean,
                 chart_color: string,
+                selChartType: 0 | 1 | 2,
                 txtlabelYAchse: string,
+                selInstanzDatasource: 0| 1 | 2 | 3 | 4,
                 setStateForTicks: string,
                 setStateForValues: string,
             }[];

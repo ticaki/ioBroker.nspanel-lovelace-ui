@@ -2576,6 +2576,32 @@
                             "default": "#ffff00"
                         },
                         {
+                            "attr": "selChartType",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": "labelSelChartType",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "barChart",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "lineChart",
+                                    "value": 2
+                                },
+                            ]
+
+                        },
+                        {
                             "attr": "txtlabelYAchse",
                             "xs": 12,
                             "sm": 12,
@@ -2584,18 +2610,34 @@
                             "xl": 4,
                             "type": "text",
                             "label": "labelYAchse",
-                            "default": ""
+                            "default": "",
+                            "hidden": "data.selChartType < 1"
                         },
                         {
-                            "attr": "_oldSrciptVersion",
+                            "attr": "selInstanzDataSource",
                             "xs": 12,
                             "sm": 12,
                             "md": 6,
                             "lg": 4,
                             "xl": 4,
-                            "type": "checkbox",
-                            "label": "oldSrciptVersion",
-                            "default": false
+                            "type": "select",
+                            "label": "labelSelInstanzDataSource",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "History",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "Influx2",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "SQL",
+                                    "value": 2
+                                },
+                            ],
+                            "hidden": "data.selChartType < 1"
                         },
                         {
                             "attr": "setStateForTicks",
@@ -2606,7 +2648,7 @@
                             "xl": 8,
                             "type": "objectId",
                             "label": "stateForTicks",
-                            "hidden": "!data._oldSrciptVersion",
+                            "hidden": "data.selInstanzDataSource != 0 || data.selChartType < 1 ",
                             "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
                         },
                         {
@@ -2618,7 +2660,7 @@
                             "xl": 8,
                             "type": "objectId",
                             "label": "stateForValues",
-                            "hidden": "!data._oldSrciptVersion",
+                            "hidden": "data.selInstanzDataSource != 0 || data.selChartType < 1",
                             "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
                         }
                     ]
