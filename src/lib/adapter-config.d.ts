@@ -143,14 +143,15 @@ declare global {
                 chart_color: string,
                 selChartType: 0 | 1 | 2,
                 selInstanceDataSource: 0| 1 | 2 | 3 | 4,
-                selInstanceAdapter: number,
+                selInstanceAdapter: string,
                 setStateForTicks: string,
                 setStateForValues: string,
                 txtlabelYAchse: string,
                 rangeHours: number,
                 maxXAxisTicks: number,
                 maxXaxisLabels: number,
-                limitMesurements: number
+                limitMesurements: number,
+                txtNameMeasurements: string,
             }[];
 
 

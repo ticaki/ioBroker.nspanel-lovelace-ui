@@ -1,4 +1,3 @@
-import { BasePrivateKeyEncodingOptions } from 'node:crypto';
 import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
@@ -148,8 +147,6 @@ export class PageChart extends Page {
         throw new Error('No config for cardChart found');
     }
     private async getChartData(): Promise<{ ticks: string[]; values: string }> {
-        let tempTicks;
-        let tempValues;
         let ticks: string[] = [];
         let values = '';
 
@@ -159,9 +156,10 @@ export class PageChart extends Page {
             const items = this.items;
 
             switch (config.selInstanceDataSource) {
-                case 0: // oldScriptVersion
-                    tempTicks = items.data.ticks && (await items.data.ticks.getObject());
-                    tempValues = (items.data.value && (await items.data.value.getObject())) ?? '';
+                case 0: {
+                    // oldScriptVersion
+                    const tempTicks = (items.data.ticks && (await items.data.ticks.getObject())) ?? [];
+                    const tempValues = (items.data.value && (await items.data.value.getObject())) ?? '';
                     if (tempTicks && Array.isArray(tempTicks)) {
                         ticks = tempTicks;
                     } else if (typeof tempValues === 'string') {
@@ -182,12 +180,14 @@ export class PageChart extends Page {
                         values = tempValues;
                     }
                     break;
-                case 1: // History
+                }
+                case 1: {
+                    // History
                     const rangeHours = config.rangeHours;
-                    const maxXAchsisTicks = config.maxXAchsisTicks;
+                    const maxXAchsisTicks = config.maxXAxisTicks;
                     const factor = 1;
 
-                    sendTo(
+                    this.adapter.sendTo(
                         config.selInstanceAdapter,
                         'getHistory',
                         {
@@ -209,19 +209,21 @@ export class PageChart extends Page {
                                 const targetDate = new Date(Date.now() - deltaHour * 60 * 60 * 1000);
 
                                 //Check history items for requested hours
-                                for (let j = 0, targetValue = 0; j < result.result.length; j++) {
-                                    const valueDate = new Date(result.result[j].ts);
-                                    const value = Math.round((result.result[j].val / factor) * 10);
+                                if (result && result.message) {
+                                    for (let j = 0, targetValue = 0; j < result.message.length; j++) {
+                                        const valueDate = new Date(result.message[j].ts);
+                                        const value = Math.round((result.message[j].val / factor) * 10);
 
-                                    if (valueDate > targetDate) {
-                                        if (targetDate.getHours() % stepXAchsis == 0) {
-                                            cardChartString += `${targetValue}^${targetDate.getHours()}:00` + `~`;
+                                        if (valueDate > targetDate) {
+                                            if (targetDate.getHours() % stepXAchsis == 0) {
+                                                cardChartString += `${targetValue}^${targetDate.getHours()}:00` + `~`;
+                                            } else {
+                                                cardChartString += `${targetValue}~`;
+                                            }
+                                            break;
                                         } else {
-                                            cardChartString += `${targetValue}~`;
+                                            targetValue = value;
                                         }
-                                        break;
-                                    } else {
-                                        targetValue = value;
                                     }
                                 }
                             }
@@ -229,7 +231,103 @@ export class PageChart extends Page {
                             values = cardChartString.substring(0, cardChartString.length - 1);
                         },
                     );
+                    if (typeof values === 'string') {
+                        const timeValueRegEx = /~\d+:(\d+)/g;
+                        const sorted: number[] = [...(values.matchAll(timeValueRegEx) || [])]
+                            .map(x => parseFloat(x[1]))
+                            .sort((x, y) => (x < y ? -1 : 1));
+                        const minValue = sorted[0];
+                        const maxValue = sorted[sorted.length - 1];
+                        const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
+                        let currentTick = minValue - tick;
+                        while (currentTick < maxValue + tick) {
+                            ticks.push(String(currentTick));
+                            currentTick += tick;
+                        }
+                    }
                     break;
+                }
+                case 2:
+                    {
+                        // influx
+                        let idMeasurement = config.txtNameMeasurements;
+                        if (idMeasurement == '' || idMeasurement == undefined) {
+                            idMeasurement = config.setStateForValues;
+                        }
+
+                        const influxDbBucket = '';
+                        const numberOfHoursAgo = config.rangeHours;
+                        const xAxisTicksEveryM = config.maxXAxisTicks;
+                        const xAxisLabelEveryM = config.maxXaxisLabels;
+                        const query = [
+                            `from(bucket: "${influxDbBucket}")`,
+                            `|> range(start: -${numberOfHoursAgo}h)`,
+                            `|> filter(fn: (r) => r["_measurement"] == "${idMeasurement}")`,
+                            '|> filter(fn: (r) => r["_field"] == "value")',
+                            '|> drop(columns: ["from", "ack", "q"])',
+                            '|> aggregateWindow(every: 1h, fn: last, createEmpty: false)',
+                            '|> map(fn: (r) => ({ r with _rtime: int(v: r._time) - int(v: r._start)}))',
+                            '|> yield(name: "_result")',
+                        ].join('');
+
+                        console.log(`Query: ${query}`);
+
+                        const result: any = await this.adapter.sendToAsync(config.selInstanceAdapter, 'query', query);
+                        if (result.error) {
+                            console.error(result.error);
+                            ticks = [];
+                            values = '';
+                            return { ticks, values };
+                        }
+                        console.log(JSON.stringify(result));
+                        const numResults = result.result.length;
+                        let coordinates = '';
+                        for (let r = 0; r < numResults; r++) {
+                            const list: string[] = [];
+                            const numValues = result.result[r].length;
+
+                            for (let i = 0; i < numValues; i++) {
+                                const time = Math.round(result.result[r][i]._rtime / 1000 / 1000 / 1000 / 60);
+                                const value = Math.round(result.result[r][i]._value * 10);
+                                list.push(`${time}:${value}`);
+                            }
+
+                            coordinates = list.join('~');
+                            console.log(coordinates);
+                        }
+
+                        const ticksAndLabelsList: string[] = [];
+                        const date = new Date();
+                        date.setMinutes(0, 0, 0);
+                        const ts = Math.round(date.getTime() / 1000);
+                        const tsYesterday = ts - numberOfHoursAgo * 3600;
+                        console.log(`Iterate from ${tsYesterday} to ${ts} stepsize=${xAxisTicksEveryM * 60}`);
+                        for (let x = tsYesterday, i = 0; x < ts; x += xAxisTicksEveryM * 60, i += xAxisTicksEveryM) {
+                            if (i % xAxisLabelEveryM) {
+                                ticksAndLabelsList.push(`${i}`);
+                            } else {
+                                const currentDate = new Date(x * 1000);
+                                // Hours part from the timestamp
+                                const hours = `0${String(currentDate.getHours())}`;
+                                // Minutes part from the timestamp
+                                const minutes = `0${String(currentDate.getMinutes())}`;
+                                const formattedTime = `${hours.slice(-2)}:${minutes.slice(-2)}`;
+
+                                ticksAndLabelsList.push(`${String(i)}^${formattedTime}`);
+                            }
+                        }
+                        console.log(`Ticks & Label: ${ticksAndLabelsList.join(', ')}`);
+                        console.log(`Coordinates: ${coordinates}`);
+                        ticks = ticksAndLabelsList;
+                        values = coordinates;
+                    }
+                    break;
+                case 3: {
+                    break;
+                }
+                case 4: {
+                    break;
+                }
                 default:
                     break;
             }

@@ -2640,11 +2640,11 @@
                             "xl": 2,
                             "type": "select",
                             "label": "labelSelInstanceAdapter",
-                            "default": 0,
+                            "default": "",
                             "options": [
                                 {
                                     "label": "instanz 0",
-                                    "value": 0
+                                    "value": "instanz.0"
                                 }
                             ],
                             "hidden":"data.selChartType < 1 || data.selInstanceDataSource < 1"
@@ -2734,6 +2734,18 @@
                             "type": "number",
                             "label": "labelLimitMesurements",
                             "default": 35,
+                            "hidden": "data.selInstanceDataSource < 2 || data.selChartType < 2 "
+                        },
+                        {
+                            "attr": "txtNameMesurements",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "text",
+                            "label": "labeltxtNameMesurements",
+                            "default": "",
                             "hidden": "data.selInstanceDataSource < 2 || data.selChartType < 2 "
                         }
                     ]
