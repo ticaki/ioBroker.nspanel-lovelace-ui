@@ -1,3 +1,4 @@
+import { BasePrivateKeyEncodingOptions } from 'node:crypto';
 import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
@@ -74,13 +75,15 @@ export class PageChart extends Page {
         const config = this.adapter.config.pageChartdata[this.index];
         if (this.items && config != null) {
             const items = this.items;
+            const chartData = await this.getChartData();
 
             message.headline = (items.data.headline && (await items.data.headline.getTranslatedString())) ?? this.name;
             message.navigation = this.getNavigation();
             message.color = await getIconEntryColor(items.data.color, true, Color.White);
             message.text = (items.data.text && (await items.data.text.getString())) ?? '';
-            message.value = (items.data.value && (await items.data.value.getString())) ?? '';
-            message.ticks = [];
+            message.value = chartData.values;
+            message.ticks = chartData.ticks;
+            /*message.ticks = [];
             const ticks = items.data.ticks && (await items.data.ticks.getObject());
             if (ticks && Array.isArray(ticks)) {
                 message.ticks = ticks;
@@ -97,7 +100,7 @@ export class PageChart extends Page {
                     message.ticks.push(String(currentTick));
                     currentTick += tick;
                 }
-            }
+            } */
         }
         if (message.value) {
             this.log.debug(message.value);
@@ -133,7 +136,7 @@ export class PageChart extends Page {
                     data: {
                         headline: { type: 'const', constVal: config.headline || '' },
                         text: { type: 'const', constVal: config.txtlabelYAchse || '' },
-                        color: { true: { color: { type: 'const', constVal: Color.Yellow } } },
+                        color: { true: { color: { type: 'const', constVal: config.chart_color } } },
                         ticks: { type: 'triggered', dp: stateExistTicks },
                         value: { type: 'triggered', dp: stateExistValue },
                     },
@@ -142,7 +145,97 @@ export class PageChart extends Page {
             };
             return result;
         }
-        throw new Error('No config for cardQR found');
+        throw new Error('No config for cardChart found');
+    }
+    private async getChartData(): Promise<{ ticks: string[]; values: string }> {
+        let tempTicks;
+        let tempValues;
+        let ticks: string[] = [];
+        let values = '';
+
+        const config = this.adapter.config.pageChartdata[this.index];
+
+        if (this.items && config != null) {
+            const items = this.items;
+
+            switch (config.selInstanceDataSource) {
+                case 0: // oldScriptVersion
+                    tempTicks = items.data.ticks && (await items.data.ticks.getObject());
+                    tempValues = (items.data.value && (await items.data.value.getObject())) ?? '';
+                    if (tempTicks && Array.isArray(tempTicks)) {
+                        ticks = tempTicks;
+                    } else if (typeof tempValues === 'string') {
+                        const timeValueRegEx = /~\d+:(\d+)/g;
+                        const sorted: number[] = [...(tempValues.matchAll(timeValueRegEx) || [])]
+                            .map(x => parseFloat(x[1]))
+                            .sort((x, y) => (x < y ? -1 : 1));
+                        const minValue = sorted[0];
+                        const maxValue = sorted[sorted.length - 1];
+                        const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
+                        let currentTick = minValue - tick;
+                        while (currentTick < maxValue + tick) {
+                            ticks.push(String(currentTick));
+                            currentTick += tick;
+                        }
+                    }
+                    if (tempValues && typeof tempValues === 'string') {
+                        values = tempValues;
+                    }
+                    break;
+                case 1: // History
+                    const rangeHours = config.rangeHours;
+                    const maxXAchsisTicks = config.maxXAchsisTicks;
+                    const factor = 1;
+
+                    sendTo(
+                        config.selInstanceAdapter,
+                        'getHistory',
+                        {
+                            id: config.setStateForValues,
+                            options: {
+                                start: Date.now() - 60 * 60 * 1000 * rangeHours,
+                                end: Date.now(),
+                                count: rangeHours,
+                                limit: rangeHours,
+                                aggregate: 'average',
+                            },
+                        },
+                        function (result) {
+                            let cardChartString = '';
+                            const stepXAchsis = rangeHours / maxXAchsisTicks;
+
+                            for (let i = 0; i < rangeHours; i++) {
+                                const deltaHour = rangeHours - i;
+                                const targetDate = new Date(Date.now() - deltaHour * 60 * 60 * 1000);
+
+                                //Check history items for requested hours
+                                for (let j = 0, targetValue = 0; j < result.result.length; j++) {
+                                    const valueDate = new Date(result.result[j].ts);
+                                    const value = Math.round((result.result[j].val / factor) * 10);
+
+                                    if (valueDate > targetDate) {
+                                        if (targetDate.getHours() % stepXAchsis == 0) {
+                                            cardChartString += `${targetValue}^${targetDate.getHours()}:00` + `~`;
+                                        } else {
+                                            cardChartString += `${targetValue}~`;
+                                        }
+                                        break;
+                                    } else {
+                                        targetValue = value;
+                                    }
+                                }
+                            }
+
+                            values = cardChartString.substring(0, cardChartString.length - 1);
+                        },
+                    );
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return { ticks, values };
     }
 
     private getMessage(_message: Partial<pages.PageChartMessage>): string {
@@ -157,7 +250,6 @@ export class PageChart extends Page {
             result.ticks.join(':'),
             result.value,
         );
-        return '';
     }
 
     protected async onStateTrigger(_id: string): Promise<void> {
