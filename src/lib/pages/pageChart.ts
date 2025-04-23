@@ -1,4 +1,3 @@
-import { VoidCallback } from 'mqtt';
 import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
@@ -210,8 +209,10 @@ export class PageChart extends Page {
                         },
                     },
                     function (result) {
-                        for (let i = 0; i < result.result.length; i++) {
-                            console.log(`${result.result[i].val} ${new Date(result.result[i].ts).toISOString()}`);
+                        if (result && result.message) {
+                            for (let i = 0; i < result.message.length; i++) {
+                                console.log(`${result.message[i].val} ${new Date(result.message[i].ts).toISOString()}`);
+                            }
                         }
                     },
                 ),
