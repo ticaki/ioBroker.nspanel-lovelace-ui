@@ -365,6 +365,25 @@ export class PageChart extends Page {
         );
     }
 
+    protected async onVisibilityChange(val: boolean): Promise<void> {
+        const config = this.adapter.config.pageChartdata[this.index];
+        if (val) {
+            this.adapter
+                .getForeignStateAsync(`system.adapter.${config.selInstance}.alive`)
+                .then(state => {
+                    if (state && state.val) {
+                        this.log.debug(`Instance ${config.selInstance} is alive`);
+                    } else {
+                        this.log.debug(`Instance ${config.selInstance} is not alive`);
+                    }
+                })
+                .catch(e => {
+                    this.log.debug(`Instance ${config.selInstance} not found: ${e}`);
+                });
+        }
+        await super.onVisibilityChange(val);
+    }
+
     protected async onStateTrigger(_id: string): Promise<void> {
         if (this.unload) {
             return;
