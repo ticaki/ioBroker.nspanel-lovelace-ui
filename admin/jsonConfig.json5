@@ -2617,16 +2617,8 @@
                                     "value": 0
                                 },
                                 {
-                                    "label": "History",
+                                    "label": "dbAdapter ",
                                     "value": 1
-                                },
-                                {
-                                    "label": "Influx",
-                                    "value": 2
-                                },
-                                {
-                                    "label": "SQL",
-                                    "value": 3
                                 }
                             ],
                             "hidden": "data.selChartType < 1"
@@ -2642,42 +2634,6 @@
                             "type": "instance",
                             "onlyEnabled": true,
                             "adapter": "_dataSources"
-                        },
-                        {
-                            "attr": "selInstanceHistory",
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "label": "labelSelInstanceHistory",
-                            "type": "instance",
-                            "adapter": "history",
-                            "hidden":"data.selChartType < 1 || data.selInstanceDataSource !== 1"
-                        },
-                        {
-                            "attr": "selInstanceInflux",
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "label": "labelSelInstanceInflux",
-                            "type": "instance",
-                            "adapter": "influx",
-                            "hidden":"data.selChartType < 1 || data.selInstanceDataSource !== 2"
-                        },
-                        {
-                            "attr": "selInstanceSQL",
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "label": "labelSelInstanceSQL",
-                            "type": "instance",
-                            "adapter": "sql",
-                            "hidden":"data.selChartType < 1 || data.selInstanceDataSource !== 3"
                         },
                         {
                             "attr": "setStateForTicks",
@@ -2728,7 +2684,7 @@
                             "newLine": true,
                             "label": "labelrangeHours",
                             "default": 24,
-                            "hidden": "data.selInstanceDataSource < 1 || data.selChartType < 1 "
+                            "hidden": "data.selChartType < 1 "
                         },
                         {
                             "attr": "maxXAxisTicks",
@@ -2740,7 +2696,7 @@
                             "type": "number",
                             "label": "labelmaxXAxisTicks",
                             "default": 6,
-                            "hidden": "data.selInstanceDataSource < 1 || data.selChartType < 1 "
+                            "hidden": "data.selChartType < 1 "
                         },
                         {
                             "attr": "maxXAxisLabels",
@@ -2752,7 +2708,7 @@
                             "type": "number",
                             "label": "labelmaxXAxisLabels",
                             "default": 24,
-                            "hidden": "data.selInstanceDataSource < 2 || data.selChartType < 2 "
+                            "hidden": "data.selChartType < 2 "
                         },
                         {
                             "attr": "limitMesurements",
@@ -2764,7 +2720,7 @@
                             "type": "number",
                             "label": "labelLimitMesurements",
                             "default": 35,
-                            "hidden": "data.selInstanceDataSource < 2 || data.selChartType < 2 "
+                            "hidden": "data.selChartType < 2 "
                         },
                         {
                             "attr": "txtNameMesurements",
@@ -2776,7 +2732,7 @@
                             "type": "text",
                             "label": "labeltxtNameMesurements",
                             "default": "",
-                            "hidden": "data.selInstanceDataSource < 2 || data.selChartType < 2 "
+                            "hidden": "data.selChartType < 2 "
                         }
                     ]
                 }
