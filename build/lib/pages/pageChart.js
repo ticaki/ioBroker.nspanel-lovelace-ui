@@ -75,7 +75,7 @@ class PageChart extends import_Page.Page {
    * @returns // TODO: remove this
    */
   async update() {
-    var _a, _b, _c;
+    var _a, _b;
     if (!this.visibility) {
       return;
     }
@@ -83,27 +83,13 @@ class PageChart extends import_Page.Page {
     const config = this.adapter.config.pageChartdata[this.index];
     if (this.items && config != null) {
       const items = this.items;
+      const chartData = await this.getChartData();
       message.headline = (_a = items.data.headline && await items.data.headline.getTranslatedString()) != null ? _a : this.name;
       message.navigation = this.getNavigation();
       message.color = await (0, import_tools.getIconEntryColor)(items.data.color, true, import_Color.Color.White);
       message.text = (_b = items.data.text && await items.data.text.getString()) != null ? _b : "";
-      message.value = (_c = items.data.value && await items.data.value.getString()) != null ? _c : "";
-      message.ticks = [];
-      const ticks = items.data.ticks && await items.data.ticks.getObject();
-      if (ticks && Array.isArray(ticks)) {
-        message.ticks = ticks;
-      } else if (message.value) {
-        const timeValueRegEx = /~\d+:(\d+)/g;
-        const sorted = [...message.value.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
-        const minValue = sorted[0];
-        const maxValue = sorted[sorted.length - 1];
-        const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
-        let currentTick = minValue - tick;
-        while (currentTick < maxValue + tick) {
-          message.ticks.push(String(currentTick));
-          currentTick += tick;
-        }
-      }
+      message.value = chartData.values;
+      message.ticks = chartData.ticks;
     }
     if (message.value) {
       this.log.debug(message.value);
@@ -133,7 +119,7 @@ class PageChart extends import_Page.Page {
           data: {
             headline: { type: "const", constVal: config.headline || "" },
             text: { type: "const", constVal: config.txtlabelYAchse || "" },
-            color: { true: { color: { type: "const", constVal: import_Color.Color.Yellow } } },
+            color: { true: { color: { type: "const", constVal: config.chart_color } } },
             ticks: { type: "triggered", dp: stateExistTicks },
             value: { type: "triggered", dp: stateExistValue }
           }
@@ -142,7 +128,184 @@ class PageChart extends import_Page.Page {
       };
       return result;
     }
-    throw new Error("No config for cardQR found");
+    throw new Error("No config for cardChart found");
+  }
+  async getChartData() {
+    var _a, _b;
+    let ticks = [];
+    let values = "";
+    const config = this.adapter.config.pageChartdata[this.index];
+    let instanceDataSource = "";
+    switch (config.selInstanceDataSource) {
+      case 1:
+        instanceDataSource = config.selInstanceHistory;
+        break;
+      case 2:
+        instanceDataSource = config.selInstanceInflux;
+        break;
+      case 3:
+        instanceDataSource = config.selInstanceSQL;
+        break;
+      default:
+        break;
+    }
+    if (this.items && config != null) {
+      const items = this.items;
+      switch (config.selInstanceDataSource) {
+        case 0: {
+          const tempTicks = (_a = items.data.ticks && await items.data.ticks.getObject()) != null ? _a : [];
+          const tempValues = (_b = items.data.value && await items.data.value.getObject()) != null ? _b : "";
+          if (tempTicks && Array.isArray(tempTicks)) {
+            ticks = tempTicks;
+          } else if (typeof tempValues === "string") {
+            const timeValueRegEx = /~\d+:(\d+)/g;
+            const sorted = [...tempValues.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
+            const minValue = sorted[0];
+            const maxValue = sorted[sorted.length - 1];
+            const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
+            let currentTick = minValue - tick;
+            while (currentTick < maxValue + tick) {
+              ticks.push(String(currentTick));
+              currentTick += tick;
+            }
+          }
+          if (tempValues && typeof tempValues === "string") {
+            values = tempValues;
+          }
+          break;
+        }
+        case 1: {
+          const rangeHours = config.rangeHours;
+          const maxXAchsisTicks = config.maxXAxisTicks;
+          const factor = 1;
+          this.adapter.sendTo(
+            instanceDataSource,
+            "getHistory",
+            {
+              id: config.setStateForValues,
+              options: {
+                start: Date.now() - 60 * 60 * 1e3 * rangeHours,
+                end: Date.now(),
+                count: rangeHours,
+                limit: rangeHours,
+                aggregate: "average"
+              }
+            },
+            function(result) {
+              let cardChartString = "";
+              const stepXAchsis = rangeHours / maxXAchsisTicks;
+              for (let i = 0; i < rangeHours; i++) {
+                const deltaHour = rangeHours - i;
+                const targetDate = new Date(Date.now() - deltaHour * 60 * 60 * 1e3);
+                if (result && result.message) {
+                  for (let j = 0, targetValue = 0; j < result.message.length; j++) {
+                    const valueDate = new Date(result.message[j].ts);
+                    const value = Math.round(result.message[j].val / factor * 10);
+                    if (valueDate > targetDate) {
+                      if (targetDate.getHours() % stepXAchsis == 0) {
+                        cardChartString += `${targetValue}^${targetDate.getHours()}:00~`;
+                      } else {
+                        cardChartString += `${targetValue}~`;
+                      }
+                      break;
+                    } else {
+                      targetValue = value;
+                    }
+                  }
+                }
+              }
+              values = cardChartString.substring(0, cardChartString.length - 1);
+            }
+          );
+          if (typeof values === "string") {
+            const timeValueRegEx = /~\d+:(\d+)/g;
+            const sorted = [...values.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
+            const minValue = sorted[0];
+            const maxValue = sorted[sorted.length - 1];
+            const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
+            let currentTick = minValue - tick;
+            while (currentTick < maxValue + tick) {
+              ticks.push(String(currentTick));
+              currentTick += tick;
+            }
+          }
+          break;
+        }
+        case 2: {
+          let idMeasurement = config.txtNameMeasurements;
+          if (idMeasurement == "" || idMeasurement == void 0) {
+            idMeasurement = config.setStateForValues;
+          }
+          const influxDbBucket = "";
+          const numberOfHoursAgo = config.rangeHours;
+          const xAxisTicksEveryM = config.maxXAxisTicks;
+          const xAxisLabelEveryM = config.maxXaxisLabels;
+          const query = [
+            `from(bucket: "${influxDbBucket}")`,
+            `|> range(start: -${numberOfHoursAgo}h)`,
+            `|> filter(fn: (r) => r["_measurement"] == "${idMeasurement}")`,
+            '|> filter(fn: (r) => r["_field"] == "value")',
+            '|> drop(columns: ["from", "ack", "q"])',
+            "|> aggregateWindow(every: 1h, fn: last, createEmpty: false)",
+            "|> map(fn: (r) => ({ r with _rtime: int(v: r._time) - int(v: r._start)}))",
+            '|> yield(name: "_result")'
+          ].join("");
+          console.log(`Query: ${query}`);
+          const result = await this.adapter.sendToAsync(instanceDataSource, "query", query);
+          if (result.error) {
+            console.error(result.error);
+            ticks = [];
+            values = "";
+            return { ticks, values };
+          }
+          console.log(JSON.stringify(result));
+          const numResults = result.result.length;
+          let coordinates = "";
+          for (let r = 0; r < numResults; r++) {
+            const list = [];
+            const numValues = result.result[r].length;
+            for (let i = 0; i < numValues; i++) {
+              const time = Math.round(result.result[r][i]._rtime / 1e3 / 1e3 / 1e3 / 60);
+              const value = Math.round(result.result[r][i]._value * 10);
+              list.push(`${time}:${value}`);
+            }
+            coordinates = list.join("~");
+            console.log(coordinates);
+          }
+          const ticksAndLabelsList = [];
+          const date = /* @__PURE__ */ new Date();
+          date.setMinutes(0, 0, 0);
+          const ts = Math.round(date.getTime() / 1e3);
+          const tsYesterday = ts - numberOfHoursAgo * 3600;
+          console.log(`Iterate from ${tsYesterday} to ${ts} stepsize=${xAxisTicksEveryM * 60}`);
+          for (let x = tsYesterday, i = 0; x < ts; x += xAxisTicksEveryM * 60, i += xAxisTicksEveryM) {
+            if (i % xAxisLabelEveryM) {
+              ticksAndLabelsList.push(`${i}`);
+            } else {
+              const currentDate = new Date(x * 1e3);
+              const hours = `0${String(currentDate.getHours())}`;
+              const minutes = `0${String(currentDate.getMinutes())}`;
+              const formattedTime = `${hours.slice(-2)}:${minutes.slice(-2)}`;
+              ticksAndLabelsList.push(`${String(i)}^${formattedTime}`);
+            }
+          }
+          console.log(`Ticks & Label: ${ticksAndLabelsList.join(", ")}`);
+          console.log(`Coordinates: ${coordinates}`);
+          ticks = ticksAndLabelsList;
+          values = coordinates;
+          break;
+        }
+        case 3: {
+          break;
+        }
+        case 4: {
+          break;
+        }
+        default:
+          break;
+      }
+    }
+    return { ticks, values };
   }
   getMessage(_message) {
     let result = PageChartMessageDefault;
@@ -156,7 +319,6 @@ class PageChart extends import_Page.Page {
       result.ticks.join(":"),
       result.value
     );
-    return "";
   }
   async onStateTrigger(_id) {
     if (this.unload) {

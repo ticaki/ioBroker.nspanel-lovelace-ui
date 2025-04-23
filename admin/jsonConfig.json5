@@ -2632,22 +2632,52 @@
                             "hidden": "data.selChartType < 1"
                         },
                         {
-                            "attr": "selInstanceAdapter",
+                            "attr": "selInstance",
                             "xs": 4,
                             "sm": 4,
                             "md": 2,
                             "lg": 2,
                             "xl": 2,
-                            "type": "select",
-                            "label": "labelSelInstanceAdapter",
-                            "default": "",
-                            "options": [
-                                {
-                                    "label": "instanz 0",
-                                    "value": "instanz.0"
-                                }
-                            ],
-                            "hidden":"data.selChartType < 1 || data.selInstanceDataSource < 1"
+                            "label": "labelSelInstance",
+                            "type": "instance",
+                            "onlyEnabled": true,
+                            "adapter": "_dataSources"
+                        },
+                        {
+                            "attr": "selInstanceHistory",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "label": "labelSelInstanceHistory",
+                            "type": "instance",
+                            "adapter": "history",
+                            "hidden":"data.selChartType < 1 || data.selInstanceDataSource !== 1"
+                        },
+                        {
+                            "attr": "selInstanceInflux",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "label": "labelSelInstanceInflux",
+                            "type": "instance",
+                            "adapter": "influx",
+                            "hidden":"data.selChartType < 1 || data.selInstanceDataSource !== 2"
+                        },
+                        {
+                            "attr": "selInstanceSQL",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "label": "labelSelInstanceSQL",
+                            "type": "instance",
+                            "adapter": "sql",
+                            "hidden":"data.selChartType < 1 || data.selInstanceDataSource !== 3"
                         },
                         {
                             "attr": "setStateForTicks",

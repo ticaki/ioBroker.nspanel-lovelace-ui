@@ -152,6 +152,22 @@ export class PageChart extends Page {
 
         const config = this.adapter.config.pageChartdata[this.index];
 
+        let instanceDataSource = '';
+        switch (config.selInstanceDataSource) {
+            case 1:
+                instanceDataSource = config.selInstanceHistory;
+                break;
+            case 2:
+                instanceDataSource = config.selInstanceInflux;
+                break;
+            case 3:
+                instanceDataSource = config.selInstanceSQL;
+                break;
+
+            default:
+                break;
+        }
+
         if (this.items && config != null) {
             const items = this.items;
 
@@ -188,7 +204,7 @@ export class PageChart extends Page {
                     const factor = 1;
 
                     this.adapter.sendTo(
-                        config.selInstanceAdapter,
+                        instanceDataSource,
                         'getHistory',
                         {
                             id: config.setStateForValues,
@@ -247,81 +263,80 @@ export class PageChart extends Page {
                     }
                     break;
                 }
-                case 2:
-                    {
-                        // influx
-                        let idMeasurement = config.txtNameMeasurements;
-                        if (idMeasurement == '' || idMeasurement == undefined) {
-                            idMeasurement = config.setStateForValues;
-                        }
-
-                        const influxDbBucket = '';
-                        const numberOfHoursAgo = config.rangeHours;
-                        const xAxisTicksEveryM = config.maxXAxisTicks;
-                        const xAxisLabelEveryM = config.maxXaxisLabels;
-                        const query = [
-                            `from(bucket: "${influxDbBucket}")`,
-                            `|> range(start: -${numberOfHoursAgo}h)`,
-                            `|> filter(fn: (r) => r["_measurement"] == "${idMeasurement}")`,
-                            '|> filter(fn: (r) => r["_field"] == "value")',
-                            '|> drop(columns: ["from", "ack", "q"])',
-                            '|> aggregateWindow(every: 1h, fn: last, createEmpty: false)',
-                            '|> map(fn: (r) => ({ r with _rtime: int(v: r._time) - int(v: r._start)}))',
-                            '|> yield(name: "_result")',
-                        ].join('');
-
-                        console.log(`Query: ${query}`);
-
-                        const result: any = await this.adapter.sendToAsync(config.selInstanceAdapter, 'query', query);
-                        if (result.error) {
-                            console.error(result.error);
-                            ticks = [];
-                            values = '';
-                            return { ticks, values };
-                        }
-                        console.log(JSON.stringify(result));
-                        const numResults = result.result.length;
-                        let coordinates = '';
-                        for (let r = 0; r < numResults; r++) {
-                            const list: string[] = [];
-                            const numValues = result.result[r].length;
-
-                            for (let i = 0; i < numValues; i++) {
-                                const time = Math.round(result.result[r][i]._rtime / 1000 / 1000 / 1000 / 60);
-                                const value = Math.round(result.result[r][i]._value * 10);
-                                list.push(`${time}:${value}`);
-                            }
-
-                            coordinates = list.join('~');
-                            console.log(coordinates);
-                        }
-
-                        const ticksAndLabelsList: string[] = [];
-                        const date = new Date();
-                        date.setMinutes(0, 0, 0);
-                        const ts = Math.round(date.getTime() / 1000);
-                        const tsYesterday = ts - numberOfHoursAgo * 3600;
-                        console.log(`Iterate from ${tsYesterday} to ${ts} stepsize=${xAxisTicksEveryM * 60}`);
-                        for (let x = tsYesterday, i = 0; x < ts; x += xAxisTicksEveryM * 60, i += xAxisTicksEveryM) {
-                            if (i % xAxisLabelEveryM) {
-                                ticksAndLabelsList.push(`${i}`);
-                            } else {
-                                const currentDate = new Date(x * 1000);
-                                // Hours part from the timestamp
-                                const hours = `0${String(currentDate.getHours())}`;
-                                // Minutes part from the timestamp
-                                const minutes = `0${String(currentDate.getMinutes())}`;
-                                const formattedTime = `${hours.slice(-2)}:${minutes.slice(-2)}`;
-
-                                ticksAndLabelsList.push(`${String(i)}^${formattedTime}`);
-                            }
-                        }
-                        console.log(`Ticks & Label: ${ticksAndLabelsList.join(', ')}`);
-                        console.log(`Coordinates: ${coordinates}`);
-                        ticks = ticksAndLabelsList;
-                        values = coordinates;
+                case 2: {
+                    // influx
+                    let idMeasurement = config.txtNameMeasurements;
+                    if (idMeasurement == '' || idMeasurement == undefined) {
+                        idMeasurement = config.setStateForValues;
                     }
+
+                    const influxDbBucket = '';
+                    const numberOfHoursAgo = config.rangeHours;
+                    const xAxisTicksEveryM = config.maxXAxisTicks;
+                    const xAxisLabelEveryM = config.maxXaxisLabels;
+                    const query = [
+                        `from(bucket: "${influxDbBucket}")`,
+                        `|> range(start: -${numberOfHoursAgo}h)`,
+                        `|> filter(fn: (r) => r["_measurement"] == "${idMeasurement}")`,
+                        '|> filter(fn: (r) => r["_field"] == "value")',
+                        '|> drop(columns: ["from", "ack", "q"])',
+                        '|> aggregateWindow(every: 1h, fn: last, createEmpty: false)',
+                        '|> map(fn: (r) => ({ r with _rtime: int(v: r._time) - int(v: r._start)}))',
+                        '|> yield(name: "_result")',
+                    ].join('');
+
+                    console.log(`Query: ${query}`);
+
+                    const result: any = await this.adapter.sendToAsync(instanceDataSource, 'query', query);
+                    if (result.error) {
+                        console.error(result.error);
+                        ticks = [];
+                        values = '';
+                        return { ticks, values };
+                    }
+                    console.log(JSON.stringify(result));
+                    const numResults = result.result.length;
+                    let coordinates = '';
+                    for (let r = 0; r < numResults; r++) {
+                        const list: string[] = [];
+                        const numValues = result.result[r].length;
+
+                        for (let i = 0; i < numValues; i++) {
+                            const time = Math.round(result.result[r][i]._rtime / 1000 / 1000 / 1000 / 60);
+                            const value = Math.round(result.result[r][i]._value * 10);
+                            list.push(`${time}:${value}`);
+                        }
+
+                        coordinates = list.join('~');
+                        console.log(coordinates);
+                    }
+
+                    const ticksAndLabelsList: string[] = [];
+                    const date = new Date();
+                    date.setMinutes(0, 0, 0);
+                    const ts = Math.round(date.getTime() / 1000);
+                    const tsYesterday = ts - numberOfHoursAgo * 3600;
+                    console.log(`Iterate from ${tsYesterday} to ${ts} stepsize=${xAxisTicksEveryM * 60}`);
+                    for (let x = tsYesterday, i = 0; x < ts; x += xAxisTicksEveryM * 60, i += xAxisTicksEveryM) {
+                        if (i % xAxisLabelEveryM) {
+                            ticksAndLabelsList.push(`${i}`);
+                        } else {
+                            const currentDate = new Date(x * 1000);
+                            // Hours part from the timestamp
+                            const hours = `0${String(currentDate.getHours())}`;
+                            // Minutes part from the timestamp
+                            const minutes = `0${String(currentDate.getMinutes())}`;
+                            const formattedTime = `${hours.slice(-2)}:${minutes.slice(-2)}`;
+
+                            ticksAndLabelsList.push(`${String(i)}^${formattedTime}`);
+                        }
+                    }
+                    console.log(`Ticks & Label: ${ticksAndLabelsList.join(', ')}`);
+                    console.log(`Coordinates: ${coordinates}`);
+                    ticks = ticksAndLabelsList;
+                    values = coordinates;
                     break;
+                }
                 case 3: {
                     break;
                 }
