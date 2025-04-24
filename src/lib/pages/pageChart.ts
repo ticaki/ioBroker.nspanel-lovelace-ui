@@ -191,14 +191,14 @@ export class PageChart extends Page {
         return { ticks, values };
     }
 
-    getDataFromDB = async (_id: string, _rangeHours: number): Promise<void> => {
+    getDataFromDB = async (_id: string, _rangeHours: number, _instance: string): Promise<void> => {
         return new Promise(resolve => {
             setTimeout(() => {
                 resolve();
             }, 1000);
             return resolve(
                 this.adapter.sendTo(
-                    'history.0',
+                    _instance,
                     'getHistory',
                     {
                         id: _id,
