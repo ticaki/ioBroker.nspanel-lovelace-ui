@@ -2584,19 +2584,19 @@
                             "xl": 2,
                             "type": "select",
                             "label": "labelSelChartType",
-                            "default": 0,
+                            "default": "",
                             "options": [
                                 {
                                     "label": "FREE",
-                                    "value": 0
+                                    "value": ""
                                 },
                                 {
                                     "label": "barChart",
-                                    "value": 1
+                                    "value": "cardChart"
                                 },
                                 {
                                     "label": "lineChart",
-                                    "value": 2
+                                    "value": "cardLChart"
                                 }
                             ]
 

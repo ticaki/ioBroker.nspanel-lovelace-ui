@@ -142,17 +142,6 @@ class PageChart extends import_Page.Page {
           const tempValues = (_b = items.data.value && await items.data.value.getString()) != null ? _b : "";
           if (tempTicks && Array.isArray(tempTicks)) {
             ticksChart = tempTicks;
-          } else if (typeof tempValues === "string") {
-            const timeValueRegEx = /~\d+:(\d+)/g;
-            const sorted = [...tempValues.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
-            const minValue = sorted[0];
-            const maxValue = sorted[sorted.length - 1];
-            const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
-            let currentTick = minValue - tick;
-            while (currentTick < maxValue + tick) {
-              ticksChart.push(String(currentTick));
-              currentTick += tick;
-            }
           }
           if (tempValues && typeof tempValues === "string") {
             valuesChart = tempValues;
