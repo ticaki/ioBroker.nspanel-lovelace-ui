@@ -191,7 +191,7 @@ export class PageChart extends Page {
 
                             if (typeof valuesChart === 'string') {
                                 let timeValueRegEx;
-                                if (this.adminConfig.selChartType == 1) {
+                                if (this.adminConfig.selChartType === 'cardChart') {
                                     timeValueRegEx = /(?<=~)[^:^~]+/g; // Funktioniert nur bei BarChart
                                 } else {
                                     timeValueRegEx = /~\d+:(\d+)/g; // Funktioniert nur bei LineChart

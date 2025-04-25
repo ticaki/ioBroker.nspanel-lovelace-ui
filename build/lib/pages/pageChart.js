@@ -180,7 +180,7 @@ class PageChart extends import_Page.Page {
               valuesChart = valuesChart.substring(0, valuesChart.length - 1);
               if (typeof valuesChart === "string") {
                 let timeValueRegEx;
-                if (this.adminConfig.selChartType == 1) {
+                if (this.adminConfig.selChartType === "cardChart") {
                   timeValueRegEx = /(?<=~)[^:^~]+/g;
                 } else {
                   timeValueRegEx = /~\d+:(\d+)/g;
