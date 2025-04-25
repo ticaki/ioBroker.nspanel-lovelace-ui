@@ -164,16 +164,20 @@ export class PageChart extends Page {
                 }
                 case 1: {
                     // AdapterVersion
-                    const dbDaten = await this.getDataFromDB(
-                        this.adminConfig.setStateForValues,
-                        this.adminConfig.rangeHours,
-                        this.adminConfig.selInstance,
-                    );
-                    if (dbDaten && Array.isArray(dbDaten)) {
-                        this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
-                    }
                     ticks = [];
                     values = '';
+                    try {
+                        const dbDaten = await this.getDataFromDB(
+                            this.adminConfig.setStateForValues,
+                            this.adminConfig.rangeHours,
+                            this.adminConfig.selInstance,
+                        );
+                        if (dbDaten && Array.isArray(dbDaten)) {
+                            this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
+                        }
+                    } catch (error) {
+                        this.log.error(`Error fetching data from DB: ${error}`);
+                    }
                     break;
                 }
                 default:
@@ -199,13 +203,21 @@ export class PageChart extends Page {
                         },
                     },
                     function (result) {
-                        if (result && result.message) {
-                            for (let i = 0; i < result.message.length; i++) {
-                                console.log(`${result.message[i].val} ${new Date(result.message[i].ts).toISOString()}`);
+                        if (result && 'result' in result) {
+                            if (Array.isArray(result.result)) {
+                                for (let i = 0; i < result.result.length; i++) {
+                                    console.log(
+                                        `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`,
+                                    );
+                                }
+                                if (Array.isArray(result.result)) {
+                                    resolve(result.result);
+                                } else {
+                                    reject(new Error('Unexpected result format'));
+                                }
+                            } else {
+                                reject(new Error('No data found'));
                             }
-                            resolve(result.message);
-                        } else {
-                            reject(new Error('No data found'));
                         }
                     },
                 );

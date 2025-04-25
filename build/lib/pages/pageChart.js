@@ -160,6 +160,20 @@ class PageChart extends import_Page.Page {
           break;
         }
         case 1: {
+          ticks = [];
+          values = "";
+          try {
+            const dbDaten = await this.getDataFromDB(
+              this.adminConfig.setStateForValues,
+              this.adminConfig.rangeHours,
+              this.adminConfig.selInstance
+            );
+            if (dbDaten && Array.isArray(dbDaten)) {
+              this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
+            }
+          } catch (error) {
+            this.log.error(`Error fetching data from DB: ${error}`);
+          }
           break;
         }
         default:
@@ -168,12 +182,9 @@ class PageChart extends import_Page.Page {
     }
     return { ticks, values };
   }
-  getDataFromDB = async (_id, _rangeHours, _instance) => {
-    return new Promise((resolve) => {
+  async getDataFromDB(_id, _rangeHours, _instance) {
+    return new Promise((resolve, reject) => {
       setTimeout(() => {
-        resolve();
-      }, 1e3);
-      return resolve(
         this.adapter.sendTo(
           _instance,
           "getHistory",
@@ -186,16 +197,27 @@ class PageChart extends import_Page.Page {
             }
           },
           function(result) {
-            if (result && result.message) {
-              for (let i = 0; i < result.message.length; i++) {
-                console.log(`${result.message[i].val} ${new Date(result.message[i].ts).toISOString()}`);
+            if (result && "result" in result) {
+              if (Array.isArray(result.result)) {
+                for (let i = 0; i < result.result.length; i++) {
+                  console.log(
+                    `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`
+                  );
+                }
+                if (Array.isArray(result.result)) {
+                  resolve(result.result);
+                } else {
+                  reject(new Error("Unexpected result format"));
+                }
+              } else {
+                reject(new Error("No data found"));
               }
             }
           }
-        )
-      );
+        );
+      }, 1e3);
     });
-  };
+  }
   getMessage(_message) {
     let result = PageChartMessageDefault;
     result = Object.assign(result, _message);
