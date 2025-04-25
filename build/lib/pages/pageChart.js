@@ -44,6 +44,7 @@ class PageChart extends import_Page.Page {
   headlinePos = 0;
   titelPos = 0;
   nextArrow = false;
+  adminConfig = this.adapter.config.pageChartdata[this.index];
   constructor(config, options) {
     if (config.card !== "cardChart") {
       return;
@@ -80,8 +81,7 @@ class PageChart extends import_Page.Page {
       return;
     }
     const message = {};
-    const config = this.adapter.config.pageChartdata[this.index];
-    if (this.items && config != null) {
+    if (this.items && this.adminConfig != null) {
       const items = this.items;
       const chartData = await this.getChartData();
       message.headline = (_a = items.data.headline && await items.data.headline.getTranslatedString()) != null ? _a : this.name;
@@ -134,27 +134,12 @@ class PageChart extends import_Page.Page {
     var _a, _b;
     let ticks = [];
     let values = "";
-    const config = this.adapter.config.pageChartdata[this.index];
-    let instanceDataSource = "";
-    switch (config.selInstanceDataSource) {
-      case 1:
-        instanceDataSource = config.selInstanceHistory;
-        break;
-      case 2:
-        instanceDataSource = config.selInstanceInflux;
-        break;
-      case 3:
-        instanceDataSource = config.selInstanceSQL;
-        break;
-      default:
-        break;
-    }
-    if (this.items && config != null) {
+    if (this.items && this.adminConfig != null) {
       const items = this.items;
-      switch (config.selInstanceDataSource) {
+      switch (this.adminConfig.selInstanceDataSource) {
         case 0: {
           const tempTicks = (_a = items.data.ticks && await items.data.ticks.getObject()) != null ? _a : [];
-          const tempValues = (_b = items.data.value && await items.data.value.getObject()) != null ? _b : "";
+          const tempValues = (_b = items.data.value && await items.data.value.getString()) != null ? _b : "";
           if (tempTicks && Array.isArray(tempTicks)) {
             ticks = tempTicks;
           } else if (typeof tempValues === "string") {
@@ -175,130 +160,6 @@ class PageChart extends import_Page.Page {
           break;
         }
         case 1: {
-          const rangeHours = config.rangeHours;
-          const maxXAchsisTicks = config.maxXAxisTicks;
-          const factor = 1;
-          this.adapter.sendTo(
-            instanceDataSource,
-            "getHistory",
-            {
-              id: config.setStateForValues,
-              options: {
-                start: Date.now() - 60 * 60 * 1e3 * rangeHours,
-                end: Date.now(),
-                count: rangeHours,
-                limit: rangeHours,
-                aggregate: "average"
-              }
-            },
-            function(result) {
-              let cardChartString = "";
-              const stepXAchsis = rangeHours / maxXAchsisTicks;
-              for (let i = 0; i < rangeHours; i++) {
-                const deltaHour = rangeHours - i;
-                const targetDate = new Date(Date.now() - deltaHour * 60 * 60 * 1e3);
-                if (result && result.message) {
-                  for (let j = 0, targetValue = 0; j < result.message.length; j++) {
-                    const valueDate = new Date(result.message[j].ts);
-                    const value = Math.round(result.message[j].val / factor * 10);
-                    if (valueDate > targetDate) {
-                      if (targetDate.getHours() % stepXAchsis == 0) {
-                        cardChartString += `${targetValue}^${targetDate.getHours()}:00~`;
-                      } else {
-                        cardChartString += `${targetValue}~`;
-                      }
-                      break;
-                    } else {
-                      targetValue = value;
-                    }
-                  }
-                }
-              }
-              values = cardChartString.substring(0, cardChartString.length - 1);
-            }
-          );
-          if (typeof values === "string") {
-            const timeValueRegEx = /~\d+:(\d+)/g;
-            const sorted = [...values.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
-            const minValue = sorted[0];
-            const maxValue = sorted[sorted.length - 1];
-            const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
-            let currentTick = minValue - tick;
-            while (currentTick < maxValue + tick) {
-              ticks.push(String(currentTick));
-              currentTick += tick;
-            }
-          }
-          break;
-        }
-        case 2: {
-          let idMeasurement = config.txtNameMeasurements;
-          if (idMeasurement == "" || idMeasurement == void 0) {
-            idMeasurement = config.setStateForValues;
-          }
-          const influxDbBucket = "";
-          const numberOfHoursAgo = config.rangeHours;
-          const xAxisTicksEveryM = config.maxXAxisTicks;
-          const xAxisLabelEveryM = config.maxXaxisLabels;
-          const query = [
-            `from(bucket: "${influxDbBucket}")`,
-            `|> range(start: -${numberOfHoursAgo}h)`,
-            `|> filter(fn: (r) => r["_measurement"] == "${idMeasurement}")`,
-            '|> filter(fn: (r) => r["_field"] == "value")',
-            '|> drop(columns: ["from", "ack", "q"])',
-            "|> aggregateWindow(every: 1h, fn: last, createEmpty: false)",
-            "|> map(fn: (r) => ({ r with _rtime: int(v: r._time) - int(v: r._start)}))",
-            '|> yield(name: "_result")'
-          ].join("");
-          console.log(`Query: ${query}`);
-          const result = await this.adapter.sendToAsync(instanceDataSource, "query", query);
-          if (result.error) {
-            console.error(result.error);
-            ticks = [];
-            values = "";
-            return { ticks, values };
-          }
-          console.log(JSON.stringify(result));
-          const numResults = result.result.length;
-          let coordinates = "";
-          for (let r = 0; r < numResults; r++) {
-            const list = [];
-            const numValues = result.result[r].length;
-            for (let i = 0; i < numValues; i++) {
-              const time = Math.round(result.result[r][i]._rtime / 1e3 / 1e3 / 1e3 / 60);
-              const value = Math.round(result.result[r][i]._value * 10);
-              list.push(`${time}:${value}`);
-            }
-            coordinates = list.join("~");
-            console.log(coordinates);
-          }
-          const ticksAndLabelsList = [];
-          const date = /* @__PURE__ */ new Date();
-          date.setMinutes(0, 0, 0);
-          const ts = Math.round(date.getTime() / 1e3);
-          const tsYesterday = ts - numberOfHoursAgo * 3600;
-          console.log(`Iterate from ${tsYesterday} to ${ts} stepsize=${xAxisTicksEveryM * 60}`);
-          for (let x = tsYesterday, i = 0; x < ts; x += xAxisTicksEveryM * 60, i += xAxisTicksEveryM) {
-            if (i % xAxisLabelEveryM) {
-              ticksAndLabelsList.push(`${i}`);
-            } else {
-              const currentDate = new Date(x * 1e3);
-              const hours = `0${String(currentDate.getHours())}`;
-              const minutes = `0${String(currentDate.getMinutes())}`;
-              const formattedTime = `${hours.slice(-2)}:${minutes.slice(-2)}`;
-              ticksAndLabelsList.push(`${String(i)}^${formattedTime}`);
-            }
-          }
-          console.log(`Ticks & Label: ${ticksAndLabelsList.join(", ")}`);
-          console.log(`Coordinates: ${coordinates}`);
-          ticks = ticksAndLabelsList;
-          values = coordinates;
-          break;
-        }
-        case 3: {
-          break;
-        }
-        case 4: {
           break;
         }
         default:
@@ -307,6 +168,34 @@ class PageChart extends import_Page.Page {
     }
     return { ticks, values };
   }
+  getDataFromDB = async (_id, _rangeHours, _instance) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 1e3);
+      return resolve(
+        this.adapter.sendTo(
+          _instance,
+          "getHistory",
+          {
+            id: _id,
+            options: {
+              start: Date.now() - _rangeHours * 60 * 60 * 1e3,
+              end: Date.now(),
+              aggregate: "onchange"
+            }
+          },
+          function(result) {
+            if (result && result.message) {
+              for (let i = 0; i < result.message.length; i++) {
+                console.log(`${result.message[i].val} ${new Date(result.message[i].ts).toISOString()}`);
+              }
+            }
+          }
+        )
+      );
+    });
+  };
   getMessage(_message) {
     let result = PageChartMessageDefault;
     result = Object.assign(result, _message);
@@ -319,6 +208,39 @@ class PageChart extends import_Page.Page {
       result.ticks.join(":"),
       result.value
     );
+  }
+  async onVisibilityChange(val) {
+    if (val && this.adminConfig.selInstanceDataSource === 1) {
+      this.adapter.getForeignStateAsync(`system.adapter.${this.adminConfig.selInstance}.alive`).then((state) => {
+        if (state && state.val) {
+          this.log.debug(`Instance ${this.adminConfig.selInstance} is alive`);
+        } else {
+          this.log.debug(`Instance ${this.adminConfig.selInstance} is not alive`);
+        }
+      }).catch((e) => {
+        this.log.debug(`Instance ${this.adminConfig.selInstance} not found: ${e}`);
+      });
+    } else if (this.adminConfig.selInstanceDataSource === 0) {
+      this.adapter.getForeignStateAsync(this.adminConfig.setStateForValues).then((state) => {
+        if (state && state.val) {
+          this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
+        } else {
+          this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
+        }
+      }).catch((e) => {
+        this.log.debug(`State ${this.adminConfig.setStateForValues} not found: ${e}`);
+      });
+      this.adapter.getForeignStateAsync(this.adminConfig.setStateForTicks).then((state) => {
+        if (state && state.val) {
+          this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
+        } else {
+          this.log.debug(`State ${this.adminConfig.setStateForTicks} for ticks is not exists`);
+        }
+      }).catch((e) => {
+        this.log.debug(`State ${this.adminConfig.setStateForTicks} not found: ${e}`);
+      });
+    }
+    await super.onVisibilityChange(val);
   }
   async onStateTrigger(_id) {
     if (this.unload) {

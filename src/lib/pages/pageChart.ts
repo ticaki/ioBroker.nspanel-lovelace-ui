@@ -82,24 +82,6 @@ export class PageChart extends Page {
             message.text = (items.data.text && (await items.data.text.getString())) ?? '';
             message.value = chartData.values;
             message.ticks = chartData.ticks;
-            /*message.ticks = [];
-            const ticks = items.data.ticks && (await items.data.ticks.getObject());
-            if (ticks && Array.isArray(ticks)) {
-                message.ticks = ticks;
-            } else if (message.value) {
-                const timeValueRegEx = /~\d+:(\d+)/g;
-                const sorted: number[] = [...(message.value.matchAll(timeValueRegEx) || [])]
-                    .map(x => parseFloat(x[1]))
-                    .sort((x, y) => (x < y ? -1 : 1));
-                const minValue = sorted[0];
-                const maxValue = sorted[sorted.length - 1];
-                const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
-                let currentTick = minValue - tick;
-                while (currentTick < maxValue + tick) {
-                    message.ticks.push(String(currentTick));
-                    currentTick += tick;
-                }
-            } */
         }
         if (message.value) {
             this.log.debug(message.value);
@@ -146,6 +128,7 @@ export class PageChart extends Page {
         }
         throw new Error('No config for cardChart found');
     }
+
     private async getChartData(): Promise<{ ticks: string[]; values: string }> {
         let ticks: string[] = [];
         let values = '';
@@ -157,7 +140,7 @@ export class PageChart extends Page {
                 case 0: {
                     // oldScriptVersion
                     const tempTicks = (items.data.ticks && (await items.data.ticks.getObject())) ?? [];
-                    const tempValues = (items.data.value && (await items.data.value.getObject())) ?? '';
+                    const tempValues = (items.data.value && (await items.data.value.getString())) ?? '';
                     if (tempTicks && Array.isArray(tempTicks)) {
                         ticks = tempTicks;
                     } else if (typeof tempValues === 'string') {
@@ -254,9 +237,9 @@ export class PageChart extends Page {
                 .getForeignStateAsync(this.adminConfig.setStateForValues)
                 .then(state => {
                     if (state && state.val) {
-                        this.log.debug(`State ${this.adminConfig.setStateForValues} is exists`);
+                        this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
                     } else {
-                        this.log.debug(`State ${this.adminConfig.setStateForValues} is not exists`);
+                        this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
                     }
                 })
                 .catch(e => {
@@ -267,9 +250,9 @@ export class PageChart extends Page {
                 .getForeignStateAsync(this.adminConfig.setStateForTicks)
                 .then(state => {
                     if (state && state.val) {
-                        this.log.debug(`State ${this.adminConfig.setStateForTicks} is exists`);
+                        this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
                     } else {
-                        this.log.debug(`State ${this.adminConfig.setStateForTicks} is not exists`);
+                        this.log.debug(`State ${this.adminConfig.setStateForTicks} for ticks is not exists`);
                     }
                 })
                 .catch(e => {

@@ -2633,7 +2633,8 @@
                             "label": "labelSelInstance",
                             "type": "instance",
                             "onlyEnabled": true,
-                            "adapter": "_dataSources"
+                            "adapter": "_dataSources",
+                            "hidden": "data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "setStateForTicks",
@@ -2684,7 +2685,7 @@
                             "newLine": true,
                             "label": "labelrangeHours",
                             "default": 24,
-                            "hidden": "data.selChartType < 1 "
+                            "hidden": "data.selChartType < 1 || data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "maxXAxisTicks",
@@ -2696,7 +2697,7 @@
                             "type": "number",
                             "label": "labelmaxXAxisTicks",
                             "default": 6,
-                            "hidden": "data.selChartType < 1 "
+                            "hidden": "data.selChartType < 1 || data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "maxXAxisLabels",
@@ -2708,7 +2709,7 @@
                             "type": "number",
                             "label": "labelmaxXAxisLabels",
                             "default": 24,
-                            "hidden": "data.selChartType < 2 "
+                            "hidden": "data.selChartType < 2 || data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "limitMesurements",
@@ -2720,7 +2721,7 @@
                             "type": "number",
                             "label": "labelLimitMesurements",
                             "default": 35,
-                            "hidden": "data.selChartType < 2 "
+                            "hidden": "data.selChartType < 2 || data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "txtNameMesurements",
@@ -2732,7 +2733,7 @@
                             "type": "text",
                             "label": "labeltxtNameMesurements",
                             "default": "",
-                            "hidden": "data.selChartType < 2 "
+                            "hidden": "data.selChartType < 2 || data.selInstanceDataSource == 0"
                         }
                     ]
                 }
