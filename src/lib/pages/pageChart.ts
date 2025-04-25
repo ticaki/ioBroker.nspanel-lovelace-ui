@@ -1,3 +1,4 @@
+import { error } from 'node:console';
 import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
@@ -164,6 +165,16 @@ export class PageChart extends Page {
                 }
                 case 1: {
                     // AdapterVersion
+                    const dbDaten = await this.getDataFromDB(
+                        this.adminConfig.setStateForValues,
+                        this.adminConfig.rangeHours,
+                        this.adminConfig.selInstance,
+                    );
+                    if (dbDaten && Array.isArray(dbDaten)) {
+                        this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
+                    }
+                    ticks = [];
+                    values = '';
                     break;
                 }
                 default:
@@ -174,12 +185,9 @@ export class PageChart extends Page {
         return { ticks, values };
     }
 
-    getDataFromDB = async (_id: string, _rangeHours: number, _instance: string): Promise<void> => {
-        return new Promise(resolve => {
+    private async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any> {
+        return new Promise((resolve, reject) => {
             setTimeout(() => {
-                resolve();
-            }, 1000);
-            return resolve(
                 this.adapter.sendTo(
                     _instance,
                     'getHistory',
@@ -196,12 +204,15 @@ export class PageChart extends Page {
                             for (let i = 0; i < result.message.length; i++) {
                                 console.log(`${result.message[i].val} ${new Date(result.message[i].ts).toISOString()}`);
                             }
+                            resolve(result.message);
+                        } else {
+                            reject(new Error('No data found'));
                         }
                     },
-                ),
-            );
+                );
+            }, 1000);
         });
-    };
+    }
 
     private getMessage(_message: Partial<pages.PageChartMessage>): string {
         let result: pages.PageChartMessage = PageChartMessageDefault;
