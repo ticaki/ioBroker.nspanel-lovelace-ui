@@ -1,4 +1,3 @@
-import { error } from 'node:console';
 import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
