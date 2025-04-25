@@ -88,8 +88,8 @@ class PageChart extends import_Page.Page {
       message.navigation = this.getNavigation();
       message.color = await (0, import_tools.getIconEntryColor)(items.data.color, true, import_Color.Color.White);
       message.text = (_b = items.data.text && await items.data.text.getString()) != null ? _b : "";
-      message.value = chartData.values;
-      message.ticks = chartData.ticks;
+      message.value = chartData.valuesChart;
+      message.ticks = chartData.ticksChart;
     }
     if (message.value) {
       this.log.debug(message.value);
@@ -132,8 +132,8 @@ class PageChart extends import_Page.Page {
   }
   async getChartData() {
     var _a, _b;
-    let ticks = [];
-    let values = "";
+    let ticksChart = [];
+    let valuesChart = "";
     if (this.items && this.adminConfig != null) {
       const items = this.items;
       switch (this.adminConfig.selInstanceDataSource) {
@@ -141,7 +141,7 @@ class PageChart extends import_Page.Page {
           const tempTicks = (_a = items.data.ticks && await items.data.ticks.getObject()) != null ? _a : [];
           const tempValues = (_b = items.data.value && await items.data.value.getString()) != null ? _b : "";
           if (tempTicks && Array.isArray(tempTicks)) {
-            ticks = tempTicks;
+            ticksChart = tempTicks;
           } else if (typeof tempValues === "string") {
             const timeValueRegEx = /~\d+:(\d+)/g;
             const sorted = [...tempValues.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
@@ -150,26 +150,62 @@ class PageChart extends import_Page.Page {
             const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
             let currentTick = minValue - tick;
             while (currentTick < maxValue + tick) {
-              ticks.push(String(currentTick));
+              ticksChart.push(String(currentTick));
               currentTick += tick;
             }
           }
           if (tempValues && typeof tempValues === "string") {
-            values = tempValues;
+            valuesChart = tempValues;
           }
           break;
         }
         case 1: {
-          ticks = [];
-          values = "";
+          const rangeHours = this.adminConfig.rangeHours;
+          const stateValue = this.adminConfig.setStateForValues;
+          const instance = this.adminConfig.selInstance;
+          const maxXAxisTicks = this.adminConfig.maxXAxisTicks;
+          const factor = 100;
           try {
-            const dbDaten = await this.getDataFromDB(
-              this.adminConfig.setStateForValues,
-              this.adminConfig.rangeHours,
-              this.adminConfig.selInstance
-            );
+            const dbDaten = await this.getDataFromDB(stateValue, rangeHours, instance);
             if (dbDaten && Array.isArray(dbDaten)) {
               this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
+              const stepXAchsis = rangeHours / maxXAxisTicks;
+              for (let i = 0; i < rangeHours; i++) {
+                const deltaHour = rangeHours - i;
+                const targetDate = new Date(Date.now() - deltaHour * 60 * 60 * 1e3);
+                for (let j = 0, targetValue = 0; j < dbDaten.length; j++) {
+                  const valueDate = new Date(dbDaten[j].ts);
+                  const value = Math.round(dbDaten[j].val / factor * 10);
+                  if (valueDate > targetDate) {
+                    if (targetDate.getHours() % stepXAchsis == 0) {
+                      valuesChart += `${targetValue}^${targetDate.getHours()}:00~`;
+                    } else {
+                      valuesChart += `${targetValue}~`;
+                    }
+                    break;
+                  } else {
+                    targetValue = value;
+                  }
+                }
+              }
+              valuesChart = valuesChart.substring(0, valuesChart.length - 1);
+              if (typeof valuesChart === "string") {
+                let timeValueRegEx;
+                if (this.adminConfig.selChartType == 1) {
+                  timeValueRegEx = /(?<=~)[^:^~]+/g;
+                } else {
+                  timeValueRegEx = /~\d+:(\d+)/g;
+                }
+                const sorted = [...valuesChart.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
+                const minValue = sorted[0];
+                const maxValue = sorted[sorted.length - 1];
+                const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
+                let currentTick = minValue - tick;
+                while (currentTick < maxValue + tick) {
+                  ticksChart.push(String(currentTick));
+                  currentTick += tick;
+                }
+              }
             }
           } catch (error) {
             this.log.error(`Error fetching data from DB: ${error}`);
@@ -180,7 +216,7 @@ class PageChart extends import_Page.Page {
           break;
       }
     }
-    return { ticks, values };
+    return { ticksChart, valuesChart };
   }
   async getDataFromDB(_id, _rangeHours, _instance) {
     return new Promise((resolve, reject) => {
@@ -193,6 +229,9 @@ class PageChart extends import_Page.Page {
             options: {
               start: Date.now() - _rangeHours * 60 * 60 * 1e3,
               end: Date.now(),
+              count: _rangeHours,
+              limit: _rangeHours,
+              ignoreNull: true,
               aggregate: "onchange"
             }
           },
