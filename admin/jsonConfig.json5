@@ -2621,7 +2621,7 @@
                                     "value": 1
                                 }
                             ],
-                            "hidden": "data.selChartType == 'cardChart'"
+                            "hidden": "data.selChartType === ''"
                         },
                         {
                             "attr": "selInstance",
@@ -2634,7 +2634,7 @@
                             "type": "instance",
                             "onlyEnabled": true,
                             "adapter": "_dataSources",
-                            "hidden": "data.selInstanceDataSource == 0"
+                            "hidden": "data.selInstanceDataSource == 0 || data.selChartType === ''"
                         },
                         {
                             "attr": "setStateForTicks",
@@ -2646,7 +2646,7 @@
                             "newLine": true,
                             "type": "objectId",
                             "label": "stateForTicks",
-                            "hidden": "data.selInstanceDataSource > 0 || data.selChartType == '' ",
+                            "hidden": "data.selInstanceDataSource > 0 || data.selChartType === '' ",
                             "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
                         },
                         {
@@ -2658,7 +2658,7 @@
                             "xl": 8,
                             "type": "objectId",
                             "label": "stateForValues",
-                            "hidden": "data.selChartType == ''",
+                            "hidden": "data.selChartType === ''",
                             "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
                         },
                         {
@@ -2672,7 +2672,7 @@
                             "newLine": true,
                             "label": "labelYAchse",
                             "default": "",
-                            "hidden": "data.selChartType == ''"
+                            "hidden": "data.selChartType === ''"
                         },
                         {
                             "attr": "rangeHours",
@@ -2685,7 +2685,7 @@
                             "newLine": true,
                             "label": "labelrangeHours",
                             "default": 24,
-                            "hidden": "data.selChartType == '' || data.selInstanceDataSource == 0"
+                            "hidden": "data.selChartType === '' || data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "maxXAxisTicks",
@@ -2697,7 +2697,7 @@
                             "type": "number",
                             "label": "labelmaxXAxisTicks",
                             "default": 6,
-                            "hidden": "data.selChartType == '' || data.selInstanceDataSource == 0"
+                            "hidden": "data.selChartType === '' || data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "factorCardChart",
@@ -2709,7 +2709,7 @@
                             "type": "number",
                             "label": "labelFactorCradChart",
                             "default": 1,
-                            "hidden": "!data.selChartType == 'cardChart' || data.selInstanceDataSource == 0"
+                            "hidden": "data.selChartType !== 'cardChart' || data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "maxXAxisLabels",
@@ -2721,7 +2721,7 @@
                             "type": "number",
                             "label": "labelmaxXAxisLabels",
                             "default": 24,
-                            "hidden": "data.selChartType == '' || data.selInstanceDataSource == 0"
+                            "hidden": "data.selChartType !== 'cardLChart' || data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "limitMesurements",
@@ -2733,7 +2733,7 @@
                             "type": "number",
                             "label": "labelLimitMesurements",
                             "default": 35,
-                            "hidden": "!data.selChartType == 'cardLChart' || data.selInstanceDataSource == 0"
+                            "hidden": "data.selChartType !== 'cardLChart' || data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "txtNameMesurements",
@@ -2745,7 +2745,7 @@
                             "type": "text",
                             "label": "labeltxtNameMesurements",
                             "default": "",
-                            "hidden": "!data.selChartType == 'cardLChart' || data.selInstanceDataSource == 0"
+                            "hidden": "data.selChartType !== 'cardLChart' || data.selInstanceDataSource == 0"
                         }
                     ]
                 }
