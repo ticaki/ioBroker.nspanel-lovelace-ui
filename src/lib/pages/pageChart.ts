@@ -157,6 +157,8 @@ export class PageChart extends Page {
                     const instance = this.adminConfig.selInstance;
                     const maxXAxisTicks = this.adminConfig.maxXAxisTicks;
                     const factor = 100;
+                    const tempScale: number[] = [];
+                    const scaleList: string[] = [];
 
                     try {
                         const dbDaten = await this.getDataFromDB(stateValue, rangeHours, instance);
@@ -173,6 +175,7 @@ export class PageChart extends Page {
                                 for (let j = 0, targetValue = 0; j < dbDaten.length; j++) {
                                     const valueDate = new Date(dbDaten[j].ts);
                                     const value = Math.round((dbDaten[j].val / factor) * 10);
+                                    tempScale.push(value);
 
                                     if (valueDate > targetDate) {
                                         if (targetDate.getHours() % stepXAchsis == 0) {
@@ -189,24 +192,21 @@ export class PageChart extends Page {
 
                             valuesChart = valuesChart.substring(0, valuesChart.length - 1);
 
-                            if (typeof valuesChart === 'string') {
-                                let timeValueRegEx;
-                                if (this.adminConfig.selChartType === 'cardChart') {
-                                    timeValueRegEx = /(?<=~)[^:^~]+/g; // Funktioniert nur bei BarChart
-                                } else {
-                                    timeValueRegEx = /~\d+:(\d+)/g; // Funktioniert nur bei LineChart
-                                }
-                                const sorted: number[] = [...(valuesChart.matchAll(timeValueRegEx) || [])]
-                                    .map(x => parseFloat(x[1]))
-                                    .sort((x, y) => (x < y ? -1 : 1));
-                                const minValue = sorted[0];
-                                const maxValue = sorted[sorted.length - 1];
-                                const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
-                                let currentTick = minValue - tick;
-                                while (currentTick < maxValue + tick) {
-                                    ticksChart.push(String(currentTick));
-                                    currentTick += tick;
-                                }
+                            // create ticks
+                            let max = 0;
+                            let min = 0;
+                            let intervall = 0;
+
+                            max = Math.max(...tempScale);
+                            min = Math.min(...tempScale);
+                            this.log.debug(`Scale Min: ${min}, Max: ${max}`);
+
+                            intervall = Math.round(max / 4);
+                            scaleList.push(String(min));
+
+                            for (let count = 0; count < 4; count++) {
+                                min = Math.round(min + intervall);
+                                scaleList.push(String(min));
                             }
                         }
                     } catch (error) {
