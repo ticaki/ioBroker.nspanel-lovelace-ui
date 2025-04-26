@@ -68,7 +68,7 @@ export class PageChart extends Page {
         if (!this.visibility) {
             return;
         }
-        if (this.checkState) {
+        if (!this.checkState) {
             return;
         }
         const message: Partial<pages.PageChartMessage> = {};
@@ -156,9 +156,8 @@ export class PageChart extends Page {
                     const stateValue = this.adminConfig.setStateForValues;
                     const instance = this.adminConfig.selInstance;
                     const maxXAxisTicks = this.adminConfig.maxXAxisTicks;
-                    const factor = 100;
+                    const factor = this.adminConfig.factorCardChart;
                     const tempScale: number[] = [];
-                    const scaleList: string[] = [];
 
                     try {
                         const dbDaten = await this.getDataFromDB(stateValue, rangeHours, instance);
@@ -202,11 +201,11 @@ export class PageChart extends Page {
                             this.log.debug(`Scale Min: ${min}, Max: ${max}`);
 
                             intervall = Math.round(max / 4);
-                            scaleList.push(String(min));
+                            ticksChart.push(String(min));
 
                             for (let count = 0; count < 4; count++) {
                                 min = Math.round(min + intervall);
-                                scaleList.push(String(min));
+                                ticksChart.push(String(min));
                             }
                         }
                     } catch (error) {
@@ -224,41 +223,39 @@ export class PageChart extends Page {
 
     private async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
         return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                this.adapter.sendTo(
-                    _instance,
-                    'getHistory',
-                    {
-                        id: _id,
-                        options: {
-                            start: Date.now() - _rangeHours * 60 * 60 * 1000,
-                            end: Date.now(),
-                            count: _rangeHours,
-                            limit: _rangeHours,
-                            ignoreNull: true,
-                            aggregate: 'onchange',
-                        },
+            this.adapter.sendTo(
+                _instance,
+                'getHistory',
+                {
+                    id: _id,
+                    options: {
+                        start: Date.now() - _rangeHours * 60 * 60 * 1000,
+                        end: Date.now(),
+                        //count: _rangeHours,
+                        //limit: _rangeHours,
+                        //ignoreNull: true,
+                        aggregate: 'onchange',
                     },
-                    function (result) {
-                        if (result && 'result' in result) {
-                            if (Array.isArray(result.result)) {
-                                for (let i = 0; i < result.result.length; i++) {
-                                    console.log(
-                                        `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`,
-                                    );
-                                }
-                                if (Array.isArray(result.result)) {
-                                    resolve(result.result);
-                                } else {
-                                    reject(new Error('Unexpected result format'));
-                                }
-                            } else {
-                                reject(new Error('No data found'));
+                },
+                function (result) {
+                    if (result && 'result' in result) {
+                        if (Array.isArray(result.result)) {
+                            for (let i = 0; i < result.result.length; i++) {
+                                console.log(
+                                    `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`,
+                                );
                             }
+                            if (Array.isArray(result.result)) {
+                                resolve(result.result);
+                            } else {
+                                reject(new Error('Unexpected result format'));
+                            }
+                        } else {
+                            reject(new Error('No data found'));
                         }
-                    },
-                );
-            }, 1000);
+                    }
+                },
+            );
         });
     }
 
@@ -278,20 +275,22 @@ export class PageChart extends Page {
 
     protected async onVisibilityChange(val: boolean): Promise<void> {
         // check if value state exists
-        this.adapter
-            .getForeignStateAsync(this.adminConfig.setStateForValues)
-            .then(state => {
-                if (state && state.val) {
-                    this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
-                } else {
-                    this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
+        if (val) {
+            this.adapter
+                .getForeignStateAsync(this.adminConfig.setStateForValues)
+                .then(state => {
+                    if (state && state.val) {
+                        this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
+                    } else {
+                        this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
+                        this.checkState = false;
+                    }
+                })
+                .catch(e => {
+                    this.log.debug(`State ${this.adminConfig.setStateForValues} not found: ${e}`);
                     this.checkState = false;
-                }
-            })
-            .catch(e => {
-                this.log.debug(`State ${this.adminConfig.setStateForValues} not found: ${e}`);
-                this.checkState = false;
-            });
+                });
+        }
         if (val && this.adminConfig.selInstanceDataSource === 1) {
             this.adapter
                 .getForeignStateAsync(`system.adapter.${this.adminConfig.selInstance}.alive`)
@@ -307,7 +306,7 @@ export class PageChart extends Page {
                     this.log.debug(`Instance ${this.adminConfig.selInstance} not found: ${e}`);
                     this.checkState = false;
                 });
-        } else if (this.adminConfig.selInstanceDataSource === 0) {
+        } else if (val && this.adminConfig.selInstanceDataSource === 0) {
             // check if ticks state exists
             this.adapter
                 .getForeignStateAsync(this.adminConfig.setStateForTicks)

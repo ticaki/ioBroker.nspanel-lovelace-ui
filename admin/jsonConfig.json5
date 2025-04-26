@@ -2646,8 +2646,7 @@
                             "newLine": true,
                             "type": "objectId",
                             "label": "stateForTicks",
-                            "hidden": "data.selInstanceDataSource > 0 || data.selChartType === '' ",
-                            "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
+                            "hidden": "data.selInstanceDataSource > 0 || data.selChartType === '' "
                         },
                         {
                             "attr": "setStateForValues",
@@ -2658,8 +2657,7 @@
                             "xl": 8,
                             "type": "objectId",
                             "label": "stateForValues",
-                            "hidden": "data.selChartType === ''",
-                            "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
+                            "hidden": "data.selChartType === ''"
                         },
                         {
                             "attr": "txtlabelYAchse",

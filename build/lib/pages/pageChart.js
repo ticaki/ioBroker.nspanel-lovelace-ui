@@ -40,10 +40,7 @@ const PageChartMessageDefault = {
 class PageChart extends import_Page.Page {
   items;
   index = 0;
-  step = 1;
-  headlinePos = 0;
-  titelPos = 0;
-  nextArrow = false;
+  checkState = true;
   adminConfig = this.adapter.config.pageChartdata[this.index];
   constructor(config, options) {
     if (config.card !== "cardChart") {
@@ -78,6 +75,9 @@ class PageChart extends import_Page.Page {
   async update() {
     var _a, _b;
     if (!this.visibility) {
+      return;
+    }
+    if (!this.checkState) {
       return;
     }
     const message = {};
@@ -153,7 +153,8 @@ class PageChart extends import_Page.Page {
           const stateValue = this.adminConfig.setStateForValues;
           const instance = this.adminConfig.selInstance;
           const maxXAxisTicks = this.adminConfig.maxXAxisTicks;
-          const factor = 100;
+          const factor = this.adminConfig.factorCardChart;
+          const tempScale = [];
           try {
             const dbDaten = await this.getDataFromDB(stateValue, rangeHours, instance);
             if (dbDaten && Array.isArray(dbDaten)) {
@@ -165,6 +166,7 @@ class PageChart extends import_Page.Page {
                 for (let j = 0, targetValue = 0; j < dbDaten.length; j++) {
                   const valueDate = new Date(dbDaten[j].ts);
                   const value = Math.round(dbDaten[j].val / factor * 10);
+                  tempScale.push(value);
                   if (valueDate > targetDate) {
                     if (targetDate.getHours() % stepXAchsis == 0) {
                       valuesChart += `${targetValue}^${targetDate.getHours()}:00~`;
@@ -178,22 +180,17 @@ class PageChart extends import_Page.Page {
                 }
               }
               valuesChart = valuesChart.substring(0, valuesChart.length - 1);
-              if (typeof valuesChart === "string") {
-                let timeValueRegEx;
-                if (this.adminConfig.selChartType === "cardChart") {
-                  timeValueRegEx = /(?<=~)[^:^~]+/g;
-                } else {
-                  timeValueRegEx = /~\d+:(\d+)/g;
-                }
-                const sorted = [...valuesChart.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
-                const minValue = sorted[0];
-                const maxValue = sorted[sorted.length - 1];
-                const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
-                let currentTick = minValue - tick;
-                while (currentTick < maxValue + tick) {
-                  ticksChart.push(String(currentTick));
-                  currentTick += tick;
-                }
+              let max = 0;
+              let min = 0;
+              let intervall = 0;
+              max = Math.max(...tempScale);
+              min = Math.min(...tempScale);
+              this.log.debug(`Scale Min: ${min}, Max: ${max}`);
+              intervall = Math.round(max / 4);
+              ticksChart.push(String(min));
+              for (let count = 0; count < 4; count++) {
+                min = Math.round(min + intervall);
+                ticksChart.push(String(min));
               }
             }
           } catch (error) {
@@ -209,41 +206,39 @@ class PageChart extends import_Page.Page {
   }
   async getDataFromDB(_id, _rangeHours, _instance) {
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        this.adapter.sendTo(
-          _instance,
-          "getHistory",
-          {
-            id: _id,
-            options: {
-              start: Date.now() - _rangeHours * 60 * 60 * 1e3,
-              end: Date.now(),
-              count: _rangeHours,
-              limit: _rangeHours,
-              ignoreNull: true,
-              aggregate: "onchange"
-            }
-          },
-          function(result) {
-            if (result && "result" in result) {
-              if (Array.isArray(result.result)) {
-                for (let i = 0; i < result.result.length; i++) {
-                  console.log(
-                    `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`
-                  );
-                }
-                if (Array.isArray(result.result)) {
-                  resolve(result.result);
-                } else {
-                  reject(new Error("Unexpected result format"));
-                }
-              } else {
-                reject(new Error("No data found"));
+      this.adapter.sendTo(
+        _instance,
+        "getHistory",
+        {
+          id: _id,
+          options: {
+            start: Date.now() - _rangeHours * 60 * 60 * 1e3,
+            end: Date.now(),
+            //count: _rangeHours,
+            //limit: _rangeHours,
+            //ignoreNull: true,
+            aggregate: "onchange"
+          }
+        },
+        function(result) {
+          if (result && "result" in result) {
+            if (Array.isArray(result.result)) {
+              for (let i = 0; i < result.result.length; i++) {
+                console.log(
+                  `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`
+                );
               }
+              if (Array.isArray(result.result)) {
+                resolve(result.result);
+              } else {
+                reject(new Error("Unexpected result format"));
+              }
+            } else {
+              reject(new Error("No data found"));
             }
           }
-        );
-      }, 1e3);
+        }
+      );
     });
   }
   getMessage(_message) {
@@ -260,34 +255,42 @@ class PageChart extends import_Page.Page {
     );
   }
   async onVisibilityChange(val) {
+    if (val) {
+      this.adapter.getForeignStateAsync(this.adminConfig.setStateForValues).then((state) => {
+        if (state && state.val) {
+          this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
+        } else {
+          this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
+          this.checkState = false;
+        }
+      }).catch((e) => {
+        this.log.debug(`State ${this.adminConfig.setStateForValues} not found: ${e}`);
+        this.checkState = false;
+      });
+    }
     if (val && this.adminConfig.selInstanceDataSource === 1) {
       this.adapter.getForeignStateAsync(`system.adapter.${this.adminConfig.selInstance}.alive`).then((state) => {
         if (state && state.val) {
           this.log.debug(`Instance ${this.adminConfig.selInstance} is alive`);
         } else {
           this.log.debug(`Instance ${this.adminConfig.selInstance} is not alive`);
+          this.checkState = false;
         }
       }).catch((e) => {
         this.log.debug(`Instance ${this.adminConfig.selInstance} not found: ${e}`);
+        this.checkState = false;
       });
-    } else if (this.adminConfig.selInstanceDataSource === 0) {
-      this.adapter.getForeignStateAsync(this.adminConfig.setStateForValues).then((state) => {
-        if (state && state.val) {
-          this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
-        } else {
-          this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
-        }
-      }).catch((e) => {
-        this.log.debug(`State ${this.adminConfig.setStateForValues} not found: ${e}`);
-      });
+    } else if (val && this.adminConfig.selInstanceDataSource === 0) {
       this.adapter.getForeignStateAsync(this.adminConfig.setStateForTicks).then((state) => {
         if (state && state.val) {
           this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
         } else {
           this.log.debug(`State ${this.adminConfig.setStateForTicks} for ticks is not exists`);
+          this.checkState = false;
         }
       }).catch((e) => {
         this.log.debug(`State ${this.adminConfig.setStateForTicks} not found: ${e}`);
+        this.checkState = false;
       });
     }
     await super.onVisibilityChange(val);
