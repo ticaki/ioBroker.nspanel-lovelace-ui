@@ -2969,11 +2969,11 @@ class ConfigManager extends import_library.BaseClass {
       if (obj2 && obj2.type === "state") {
         entity.ScreensaverEntityIconSelect.sort((a, b) => a.value - b.value);
         obj2.read = `
-                const items = [${entity.ScreensaverEntityIconSelect.map((item) => `{${item.value}, ${item.icon}}`).join(", ")}];
-                for (let i = 1; i < items.length; i++) {
-                    if (val <= items[i].val) {return items[i].icon;}
-                }
-                return items[items.length - 1].icon;`;
+                    const items = [${entity.ScreensaverEntityIconSelect.map((item) => `{val: ${item.value}, icon: ${item.icon}}`).join(", ")}];
+                    for (let i = 1; i < items.length; i++) {
+                        if (val <= items[i].val) {return items[i].icon;}
+                    }
+                    return items[items.length - 1].icon;`;
         result.data.icon = {
           ...result.data.icon,
           true: {
