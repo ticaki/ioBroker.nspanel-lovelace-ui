@@ -3396,7 +3396,7 @@ export class ConfigManager extends BaseClass {
         }
         let obj;
         if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith('.')) {
-            obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
+            obj = await this.adapter.getForeignObjectAsync(entity.ScreensaverEntity);
             result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
             result.data.entity2.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
         }
@@ -3460,7 +3460,7 @@ export class ConfigManager extends BaseClass {
                 entity.ScreensaverEntityIconSelect.sort((a, b) => a.value - b.value);
                 // read function for icon selection
                 obj.read = `
-                    const items = [${entity.ScreensaverEntityIconSelect.map(item => `{val: ${item.value}, icon: ${item.icon}}`).join(', ')}];
+                    const items = [${entity.ScreensaverEntityIconSelect.map(item => `{val: ${item.value}, icon: "${item.icon}"}`).join(', ')}];
                     for (let i = 1; i < items.length; i++) {
                         if (val <= items[i].val) {return items[i].icon;}
                     }
