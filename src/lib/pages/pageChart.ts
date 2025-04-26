@@ -23,11 +23,8 @@ const PageChartMessageDefault: pages.PageChartMessage = {
 export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
     index: number = 0;
-    private step: number = 1;
-    private headlinePos: number = 0;
-    private titelPos: number = 0;
-    private nextArrow: boolean = false;
-    adminConfig = this.adapter.config.pageChartdata[this.index];
+    private checkState: boolean = true;
+    private adminConfig = this.adapter.config.pageChartdata[this.index];
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         if (config.card !== 'cardChart') {
@@ -69,6 +66,9 @@ export class PageChart extends Page {
      */
     public async update(): Promise<void> {
         if (!this.visibility) {
+            return;
+        }
+        if (this.checkState) {
             return;
         }
         const message: Partial<pages.PageChartMessage> = {};
@@ -277,6 +277,21 @@ export class PageChart extends Page {
     }
 
     protected async onVisibilityChange(val: boolean): Promise<void> {
+        // check if value state exists
+        this.adapter
+            .getForeignStateAsync(this.adminConfig.setStateForValues)
+            .then(state => {
+                if (state && state.val) {
+                    this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
+                } else {
+                    this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
+                    this.checkState = false;
+                }
+            })
+            .catch(e => {
+                this.log.debug(`State ${this.adminConfig.setStateForValues} not found: ${e}`);
+                this.checkState = false;
+            });
         if (val && this.adminConfig.selInstanceDataSource === 1) {
             this.adapter
                 .getForeignStateAsync(`system.adapter.${this.adminConfig.selInstance}.alive`)
@@ -285,25 +300,14 @@ export class PageChart extends Page {
                         this.log.debug(`Instance ${this.adminConfig.selInstance} is alive`);
                     } else {
                         this.log.debug(`Instance ${this.adminConfig.selInstance} is not alive`);
+                        this.checkState = false;
                     }
                 })
                 .catch(e => {
                     this.log.debug(`Instance ${this.adminConfig.selInstance} not found: ${e}`);
+                    this.checkState = false;
                 });
         } else if (this.adminConfig.selInstanceDataSource === 0) {
-            // check if value state exists
-            this.adapter
-                .getForeignStateAsync(this.adminConfig.setStateForValues)
-                .then(state => {
-                    if (state && state.val) {
-                        this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
-                    } else {
-                        this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
-                    }
-                })
-                .catch(e => {
-                    this.log.debug(`State ${this.adminConfig.setStateForValues} not found: ${e}`);
-                });
             // check if ticks state exists
             this.adapter
                 .getForeignStateAsync(this.adminConfig.setStateForTicks)
@@ -312,10 +316,12 @@ export class PageChart extends Page {
                         this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
                     } else {
                         this.log.debug(`State ${this.adminConfig.setStateForTicks} for ticks is not exists`);
+                        this.checkState = false;
                     }
                 })
                 .catch(e => {
                     this.log.debug(`State ${this.adminConfig.setStateForTicks} not found: ${e}`);
+                    this.checkState = false;
                 });
         }
         await super.onVisibilityChange(val);
