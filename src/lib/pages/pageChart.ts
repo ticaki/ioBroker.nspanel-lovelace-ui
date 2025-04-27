@@ -24,7 +24,7 @@ export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
     index: number = 0;
     private checkState: boolean = true;
-    private adminConfig = this.adapter.config.pageChartdata[this.index];
+    protected adminConfig = this.adapter.config.pageChartdata[this.index];
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         if (config.card !== 'cardChart') {
@@ -131,7 +131,7 @@ export class PageChart extends Page {
         throw new Error('No config for cardChart found');
     }
 
-    private async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
+    protected async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
         let ticksChart: string[] = [];
         let valuesChart = '';
 
@@ -223,7 +223,7 @@ export class PageChart extends Page {
         return { ticksChart, valuesChart };
     }
 
-    private async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
+    protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
         return new Promise((resolve, reject) => {
             const timeout = this.adapter.setTimeout(() => {
                 reject(new Error(`fehler im system`));
