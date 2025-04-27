@@ -1,3 +1,4 @@
+import { options } from 'axios';
 import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
@@ -6,6 +7,7 @@ import { getIconEntryColor, getPayload } from '../const/tools';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
+import { PageChartBar } from './pageChartBar';
 
 const PageChartMessageDefault: pages.PageChartMessage = {
     event: 'entityUpd',
@@ -132,10 +134,23 @@ export class PageChart extends Page {
     }
 
     protected async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
-        let ticksChart: string[] = [];
-        let valuesChart = '';
+        const ticksChart: string[] = [];
+        const valuesChart = '';
 
-        if (this.items && this.adminConfig != null) {
+        switch (this.adminConfig.selChartType) {
+            case 'cardCahrt': {
+                const page = new PageChartBar(this.config, options);
+                const { ticksChart, valuesChart } = await page.getChartData();
+                break;
+            }
+            case 'cardLChart': {
+                break;
+            }
+            default:
+                break;
+        }
+
+        /*  if (this.items && this.adminConfig != null) {
             const items = this.items;
 
             switch (this.adminConfig.selInstanceDataSource) {
@@ -218,7 +233,7 @@ export class PageChart extends Page {
                 default:
                     break;
             }
-        }
+        } */
 
         return { ticksChart, valuesChart };
     }

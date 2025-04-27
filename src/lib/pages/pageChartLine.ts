@@ -1,8 +1,9 @@
 import { PageChart } from './pageChart';
 import { type PageInterface } from '../classes/PageInterface';
 import type * as pages from '../types/pages';
+import { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 
-export class PageChartBar extends PageChart {
+export class PageChartLine extends PageChart {
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         // Aufruf des Konstruktors der Basisklasse
         super(config, options);
@@ -44,32 +45,51 @@ export class PageChartBar extends PageChart {
                         if (dbDaten && Array.isArray(dbDaten)) {
                             this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
 
-                            const stepXAchsis = rangeHours / maxXAxisTicks;
+                            let coordinates = '';
+                            for (let r = 0; r < dbDaten.length; r++) {
+                                const list: string[] = [];
+                                const numValues = dbDaten[r].length;
 
-                            for (let i = 0; i < rangeHours; i++) {
-                                const deltaHour = rangeHours - i;
-                                const targetDate = new Date(Date.now() - deltaHour * 60 * 60 * 1000);
+                                for (let i = 0; i < numValues; i++) {
+                                    const time = Math.round(dbDaten[r][i]._rtime / 1000 / 1000 / 1000 / 60);
+                                    const value = Math.round(dbDaten[r][i]._value * 10);
+                                    list.push(`${time}:${value}`);
+                                }
+                                coordinates = list.join('~');
+                                this.log.debug(coordinates);
+                            }
 
-                                //Check history items for requested hours
-                                for (let j = 0, targetValue = 0; j < dbDaten.length; j++) {
-                                    const valueDate = new Date(dbDaten[j].ts);
-                                    const value = Math.round((dbDaten[j].val / factor) * 10);
-                                    tempScale.push(value);
+                            const ticksAndLabelsList: string[] = [];
+                            const date = new Date();
+                            date.setMinutes(0, 0, 0);
+                            const ts = Math.round(date.getTime() / 1000);
+                            const tsYesterday = ts - numberOfHoursAgo * 3600;
 
-                                    if (valueDate > targetDate) {
-                                        if (targetDate.getHours() % stepXAchsis == 0) {
-                                            valuesChart += `${targetValue}^${targetDate.getHours()}:00` + `~`;
-                                        } else {
-                                            valuesChart += `${targetValue}~`;
-                                        }
-                                        break;
-                                    } else {
-                                        targetValue = value;
-                                    }
+                            this.log.debug(`Iterate from ${tsYesterday} to ${ts} stepsize=${xAxisTicksEveryM * 60}`);
+
+                            for (
+                                let x = tsYesterday, i = 0;
+                                x < ts;
+                                x += xAxisTicksEveryM * 60, i += xAxisTicksEveryM
+                            ) {
+                                if (i % xAxisLabelEveryM) {
+                                    ticksAndLabelsList.push(`${i}`);
+                                } else {
+                                    const currentDate = new Date(x * 1000);
+                                    // Hours part from the timestamp
+                                    const hours = `0${String(currentDate.getHours())}`;
+                                    // Minutes part from the timestamp
+                                    const minutes = `0${String(currentDate.getMinutes())}`;
+                                    const formattedTime = `${hours.slice(-2)}:${minutes.slice(-2)}`;
+
+                                    ticksAndLabelsList.push(`${String(i)}^${formattedTime}`);
                                 }
                             }
 
-                            valuesChart = valuesChart.substring(0, valuesChart.length - 1);
+                            this.log.debug(`Ticks & Label: ${JSON.stringify(ticksAndLabelsList)}`);
+                            this.log.debug(`Coordinates: ${coordinates}`);
+
+                            valuesChart = `${ticksAndLabelsList.join('+')}~${coordinates}`;
 
                             // create ticks
                             let max = 0;
