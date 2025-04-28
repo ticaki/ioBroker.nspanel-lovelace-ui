@@ -8,6 +8,7 @@ import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 import { PageChartBar } from './pageChartBar';
+import { PageChartLine } from './pageChartLine';
 
 const PageChartMessageDefault: pages.PageChartMessage = {
     event: 'entityUpd',
@@ -144,6 +145,8 @@ export class PageChart extends Page {
                 break;
             }
             case 'cardChartLine': {
+                const page = new PageChartLine(this.config, options);
+                const { ticksChart, valuesChart } = await page.getChartData();
                 break;
             }
             default:

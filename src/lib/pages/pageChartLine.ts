@@ -10,7 +10,7 @@ export class PageChartLine extends PageChart {
     }
 
     // Überschreiben der getChartData-Methode
-    protected async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
+    async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
         let ticksChart: string[] = [];
         let valuesChart = '';
 
