@@ -613,6 +613,7 @@ type PageLChartConfig = {
 
 export type cardLChartDataItemOptions = {
     card: 'cardLChart';
+    index: number;
     data: ChangeTypeOfKeys<PageLChartConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardLChartDataItems = {

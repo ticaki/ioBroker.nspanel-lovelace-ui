@@ -138,12 +138,12 @@ export class PageChart extends Page {
         const valuesChart = '';
 
         switch (this.adminConfig.selChartType) {
-            case 'cardCahrt': {
+            case 'cardChartBar': {
                 const page = new PageChartBar(this.config, options);
                 const { ticksChart, valuesChart } = await page.getChartData();
                 break;
             }
-            case 'cardLChart': {
+            case 'cardChartLine': {
                 break;
             }
             default:
