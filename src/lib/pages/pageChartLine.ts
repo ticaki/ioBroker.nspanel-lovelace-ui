@@ -1,7 +1,6 @@
 import { PageChart } from './pageChart';
 import { type PageInterface } from '../classes/PageInterface';
 import type * as pages from '../types/pages';
-import { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 
 export class PageChartLine extends PageChart {
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
