@@ -88,7 +88,7 @@ export class PageChart extends Page {
                 message.ticks = ticksChart;
             }
             if (message.value) {
-                this.log.debug(message.value);
+                this.log.debug(`Value: ${message.value}`);
             }
             if (message.ticks) {
                 this.log.debug(`Ticks: ${message.ticks.join(',')}`);
@@ -135,22 +135,22 @@ export class PageChart extends Page {
     }
 
     protected async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
-        const ticksChart: string[] = [];
-        const valuesChart = '';
+        let ticksChart: string[] = [];
+        let valuesChart = '';
 
         switch (this.adminConfig.selChartType) {
             case 'cardChartBar': {
                 const page = new PageChartBar(this.config, options);
-                const { ticksChart, valuesChart } = await page.getChartData();
+                return ({ ticksChart, valuesChart } = await page.getChartData());
                 break;
             }
             case 'cardChartLine': {
                 const page = new PageChartLine(this.config, options);
-                const { ticksChart, valuesChart } = await page.getChartData();
+                return ({ ticksChart, valuesChart } = await page.getChartData());
                 break;
             }
             default:
-                break;
+                return { ticksChart, valuesChart };
         }
 
         /*  if (this.items && this.adminConfig != null) {
@@ -236,9 +236,9 @@ export class PageChart extends Page {
                 default:
                     break;
             }
-        } */
+        } 
 
-        return { ticksChart, valuesChart };
+        return { ticksChart, valuesChart };*/
     }
 
     protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
