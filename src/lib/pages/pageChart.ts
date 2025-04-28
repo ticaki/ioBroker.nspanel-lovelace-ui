@@ -138,14 +138,16 @@ export class PageChart extends Page {
     protected async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
         let ticksChart: string[] = [];
         let valuesChart = '';
-
-        switch (this.adminConfig.selChartType) {
-            case 'cardChartBar': {
+        if (!this.config) {
+            return { ticksChart, valuesChart };
+        }
+        switch (this.config.card) {
+            case 'cardChart': {
                 const page = new PageChartBar(this.config, options);
                 return ({ ticksChart, valuesChart } = await page.getChartData());
                 break;
             }
-            case 'cardChartLine': {
+            case 'cardLChart': {
                 const page = new PageChartLine(this.config, options);
                 return ({ ticksChart, valuesChart } = await page.getChartData());
                 break;
