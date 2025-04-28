@@ -26,6 +26,7 @@ const PageChartMessageDefault: pages.PageChartMessage = {
 export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
     index: number = 0;
+    card: 'cardChart' | 'cardLChart' = 'cardChart';
     private checkState: boolean = true;
     protected adminConfig = this.adapter.config.pageChartdata[this.index];
 
@@ -34,7 +35,7 @@ export class PageChart extends Page {
             return;
         }
         super(config, options);
-        if (options.config && options.config.card == 'cardChart') {
+        if (options.config && (options.config.card == 'cardChart' || options.config.card == 'cardLChart')) {
             this.config = options.config;
         } else {
             throw new Error('Missing config!');
@@ -57,7 +58,7 @@ export class PageChart extends Page {
             this,
         );
         if (tempItem) {
-            tempItem.card = 'cardChart';
+            tempItem.card = this.card;
         }
         this.items = tempItem as pages.cardChartDataItems;
         await super.init();
