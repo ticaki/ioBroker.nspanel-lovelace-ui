@@ -30,7 +30,7 @@ export class PageChart extends Page {
     protected adminConfig = this.adapter.config.pageChartdata[this.index];
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        if (config.card !== 'cardChart') {
+        if (config.card !== 'cardChart' && config.card !== 'cardLChart') {
             return;
         }
         super(config, options);

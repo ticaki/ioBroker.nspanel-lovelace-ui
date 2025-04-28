@@ -495,7 +495,6 @@ export type PageBaseConfig = (
                     | cardNotify2DataItemOptions
                     | cardQRDataItemOptions
                     | cardChartDataItemOptions
-                    | cardLChartDataItemOptions
                     | cardScheduleDataItemOptions;
             }
           | {
@@ -536,7 +535,6 @@ export type PageBaseConfig = (
         | cardNotify2DataItems
         | cardQRDataItems
         | cardChartDataItems
-        | cardLChartDataItems
         | cardScheduleDataItems;
 };
 type PageNotifyConfig = {
@@ -593,32 +591,13 @@ type PageChartConfig = {
 };
 
 export type cardChartDataItemOptions = {
-    card: 'cardChart';
+    card: 'cardChart' | 'cardLChart';
     index: number;
     data: ChangeTypeOfKeys<PageChartConfig, Types.DataItemsOptions | undefined>;
 };
 export type cardChartDataItems = {
-    card: 'cardChart';
+    card: 'cardChart' | 'cardLChart';
     data: ChangeTypeOfKeys<PageChartConfig, dataItem.Dataitem | undefined>;
-};
-
-type PageLChartConfig = {
-    headline: string;
-    text: string;
-    color: typePageItem.ColorEntryTypeNew;
-    ticks: string;
-    value: string;
-    entity1: typePageItem.ValueEntryType;
-};
-
-export type cardLChartDataItemOptions = {
-    card: 'cardLChart';
-    index: number;
-    data: ChangeTypeOfKeys<PageLChartConfig, Types.DataItemsOptions | undefined>;
-};
-export type cardLChartDataItems = {
-    card: 'cardLChart';
-    data: ChangeTypeOfKeys<PageLChartConfig, dataItem.Dataitem | undefined>;
 };
 
 type PageAlarmPowerConfig = {

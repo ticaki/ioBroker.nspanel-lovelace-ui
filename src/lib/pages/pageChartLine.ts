@@ -108,7 +108,7 @@ export class PageChartLine extends PageChart {
                             }
                         }
                     } catch (error) {
-                        this.log.error(`Error fetching data from DB: ${error}`);
+                        this.log.error(`Error fetching data from DB: ${error as string}`);
                     }
                     break;
                 }
