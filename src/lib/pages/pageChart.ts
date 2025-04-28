@@ -1,4 +1,3 @@
-import { options } from 'axios';
 import type { ConfigManager } from '../classes/config-manager';
 import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
@@ -7,8 +6,6 @@ import { getIconEntryColor, getPayload } from '../const/tools';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
-import { PageChartBar } from './pageChartBar';
-import { PageChartLine } from './pageChartLine';
 
 const PageChartMessageDefault: pages.PageChartMessage = {
     event: 'entityUpd',
@@ -136,112 +133,10 @@ export class PageChart extends Page {
     }
 
     protected async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
-        let ticksChart: string[] = [];
-        let valuesChart = '';
-        if (!this.config) {
-            return { ticksChart, valuesChart };
-        }
-        switch (this.config.card) {
-            case 'cardChart': {
-                const page = new PageChartBar(this.config, options);
-                return ({ ticksChart, valuesChart } = await page.getChartData());
-                break;
-            }
-            case 'cardLChart': {
-                const page = new PageChartLine(this.config, options);
-                return ({ ticksChart, valuesChart } = await page.getChartData());
-                break;
-            }
-            default:
-                return { ticksChart, valuesChart };
-        }
+        const ticksChart: string[] = [];
+        const valuesChart = '';
 
-        /*  if (this.items && this.adminConfig != null) {
-            const items = this.items;
-
-            switch (this.adminConfig.selInstanceDataSource) {
-                case 0: {
-                    // oldScriptVersion
-                    const tempTicks = (items.data.ticks && (await items.data.ticks.getObject())) ?? [];
-                    const tempValues = (items.data.value && (await items.data.value.getString())) ?? '';
-                    if (tempTicks && Array.isArray(tempTicks)) {
-                        ticksChart = tempTicks;
-                    }
-                    if (tempValues && typeof tempValues === 'string') {
-                        valuesChart = tempValues;
-                    }
-                    break;
-                }
-                case 1: {
-                    // AdapterVersion
-
-                    const rangeHours = this.adminConfig.rangeHours;
-                    const stateValue = this.adminConfig.setStateForValues;
-                    const instance = this.adminConfig.selInstance;
-                    const maxXAxisTicks = this.adminConfig.maxXAxisTicks;
-                    const factor = this.adminConfig.factorCardChart;
-                    const tempScale: number[] = [];
-
-                    try {
-                        const dbDaten = await this.getDataFromDB(stateValue, rangeHours, instance);
-                        if (dbDaten && Array.isArray(dbDaten)) {
-                            this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
-
-                            const stepXAchsis = rangeHours / maxXAxisTicks;
-
-                            for (let i = 0; i < rangeHours; i++) {
-                                const deltaHour = rangeHours - i;
-                                const targetDate = new Date(Date.now() - deltaHour * 60 * 60 * 1000);
-
-                                //Check history items for requested hours
-                                for (let j = 0, targetValue = 0; j < dbDaten.length; j++) {
-                                    const valueDate = new Date(dbDaten[j].ts);
-                                    const value = Math.round((dbDaten[j].val / factor) * 10);
-                                    tempScale.push(value);
-
-                                    if (valueDate > targetDate) {
-                                        if (targetDate.getHours() % stepXAchsis == 0) {
-                                            valuesChart += `${targetValue}^${targetDate.getHours()}:00` + `~`;
-                                        } else {
-                                            valuesChart += `${targetValue}~`;
-                                        }
-                                        break;
-                                    } else {
-                                        targetValue = value;
-                                    }
-                                }
-                            }
-
-                            valuesChart = valuesChart.substring(0, valuesChart.length - 1);
-
-                            // create ticks
-                            let max = 0;
-                            let min = 0;
-                            let intervall = 0;
-
-                            max = Math.max(...tempScale);
-                            min = Math.min(...tempScale);
-                            this.log.debug(`Scale Min: ${min}, Max: ${max}`);
-
-                            intervall = Math.round(max / 4);
-                            ticksChart.push(String(min));
-
-                            for (let count = 0; count < 4; count++) {
-                                min = Math.round(min + intervall);
-                                ticksChart.push(String(min));
-                            }
-                        }
-                    } catch (error) {
-                        this.log.error(`Error fetching data from DB: ${error}`);
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
-        } 
-
-        return { ticksChart, valuesChart };*/
+        return { ticksChart, valuesChart };
     }
 
     protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
