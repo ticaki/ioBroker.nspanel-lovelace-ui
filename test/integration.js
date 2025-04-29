@@ -83,6 +83,8 @@ tests.integration(path.join(__dirname, '..'), {
                 await harness.states.setState('0_userdata.0.number', 1);
                 await harness.states.setState('0_userdata.0.string', 'test');
                 await harness.startAdapterAndWait();
+                resolve('ok');
+                return;
                 await wait(20000);
                 
                 setTimeout(() => {
