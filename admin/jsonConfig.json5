@@ -2584,19 +2584,15 @@
                             "xl": 2,
                             "type": "select",
                             "label": "labelSelChartType",
-                            "default": "",
+                            "default": "cardChart",
                             "options": [
                                 {
-                                    "label": "FREE",
-                                    "value": ""
-                                },
-                                {
                                     "label": "barChart",
-                                    "value": "cardChartBar"
+                                    "value": "cardChart"
                                 },
                                 {
                                     "label": "lineChart",
-                                    "value": "cardChartLine"
+                                    "value": "cardLChart"
                                 }
                             ]
 
@@ -2620,8 +2616,7 @@
                                     "label": "dbAdapter ",
                                     "value": 1
                                 }
-                            ],
-                            "hidden": "data.selChartType === ''"
+                            ]
                         },
                         {
                             "attr": "selInstance",
@@ -2634,7 +2629,7 @@
                             "type": "instance",
                             "onlyEnabled": true,
                             "adapter": "_dataSources",
-                            "hidden": "data.selInstanceDataSource == 0 || data.selChartType === ''"
+                            "hidden": "data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "setStateForTicks",
@@ -2646,7 +2641,7 @@
                             "newLine": true,
                             "type": "objectId",
                             "label": "stateForTicks",
-                            "hidden": "data.selInstanceDataSource > 0 || data.selChartType === '' "
+                            "hidden": "data.selInstanceDataSource > 0"
                         },
                         {
                             "attr": "setStateForValues",
@@ -2656,8 +2651,7 @@
                             "lg": 8,
                             "xl": 8,
                             "type": "objectId",
-                            "label": "stateForValues",
-                            "hidden": "data.selChartType === ''"
+                            "label": "stateForValues"
                         },
                         {
                             "attr": "txtlabelYAchse",
@@ -2669,8 +2663,7 @@
                             "type": "text",
                             "newLine": true,
                             "label": "labelYAchse",
-                            "default": "",
-                            "hidden": "data.selChartType === ''"
+                            "default": ""
                         },
                         {
                             "attr": "rangeHours",
@@ -2694,6 +2687,8 @@
                             "xl": 2,
                             "type": "number",
                             "label": "labelmaxXAxisTicks",
+                            "min": 2,
+                            "max": 12,
                             "default": 6,
                             "hidden": "data.selChartType === '' || data.selInstanceDataSource == 0"
                         },
@@ -2717,7 +2712,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "labelmaxXAxisLabels",
+                            "label": "labelmaxXAxisLabelsbets-testing",
                             "default": 24,
                             "hidden": "data.selChartType !== 'cardLChart' || data.selInstanceDataSource == 0"
                         },
@@ -2729,22 +2724,10 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "labelLimitMesurements",
+                            "label": "labelLimitMesurements beta-testing",
                             "default": 35,
                             "hidden": "data.selChartType !== 'cardLChart' || data.selInstanceDataSource == 0"
                         },
-                        {
-                            "attr": "txtNameMesurements",
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "text",
-                            "label": "labeltxtNameMesurements",
-                            "default": "",
-                            "hidden": "data.selChartType !== 'cardLChart' || data.selInstanceDataSource == 0"
-                        }
                     ]
                 }
             }

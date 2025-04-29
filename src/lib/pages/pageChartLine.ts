@@ -36,7 +36,7 @@ export class PageChartLine extends PageChart {
                     const stateValue = this.adminConfig.setStateForValues;
                     const instance = this.adminConfig.selInstance;
                     const maxXAxisTicks = this.adminConfig.maxXAxisTicks;
-                    const factor = this.adminConfig.factorCardChart;
+                    //const factor = this.adminConfig.factorCardChart;
                     const tempScale: number[] = [];
 
                     try {
@@ -53,6 +53,7 @@ export class PageChartLine extends PageChart {
                                     const time = Math.round(dbDaten[r][i]._rtime / 1000 / 1000 / 1000 / 60);
                                     const value = Math.round(dbDaten[r][i]._value * 10);
                                     list.push(`${time}:${value}`);
+                                    tempScale.push(value);
                                 }
                                 coordinates = list.join('~');
                                 this.log.debug(coordinates);
@@ -62,16 +63,12 @@ export class PageChartLine extends PageChart {
                             const date = new Date();
                             date.setMinutes(0, 0, 0);
                             const ts = Math.round(date.getTime() / 1000);
-                            const tsYesterday = ts - numberOfHoursAgo * 3600;
+                            const tsYesterday = ts - rangeHours * 3600;
 
-                            this.log.debug(`Iterate from ${tsYesterday} to ${ts} stepsize=${xAxisTicksEveryM * 60}`);
+                            this.log.debug(`Iterate from ${tsYesterday} to ${ts} stepsize=${maxXAxisTicks * 60}`);
 
-                            for (
-                                let x = tsYesterday, i = 0;
-                                x < ts;
-                                x += xAxisTicksEveryM * 60, i += xAxisTicksEveryM
-                            ) {
-                                if (i % xAxisLabelEveryM) {
+                            for (let x = tsYesterday, i = 0; x < ts; x += maxXAxisTicks * 60, i += maxXAxisTicks) {
+                                if (i % maxXAxisTicks) {
                                     ticksAndLabelsList.push(`${i}`);
                                 } else {
                                     const currentDate = new Date(x * 1000);
