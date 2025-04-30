@@ -843,7 +843,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     index === -1 ? { name: '', ip: '', topic: '', id: '', model: '' } : panels[index];
                                 const ipIndex = panels.findIndex(a => a.ip === obj.message.tasmotaIP);
                                 let update = false;
-                                if (ipIndex === index) {
+                                if (index !== -1 && ipIndex !== index) {
                                     this.log.error('Topic and ip are not on the same panel!');
                                     if (obj.callback) {
                                         this.sendTo(
