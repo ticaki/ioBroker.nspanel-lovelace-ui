@@ -506,7 +506,7 @@
                 "_resetTasmota": {
                     "type": "sendTo",
                     "label": "resetTasmota",
-                    "jsonData": "{\"ip\": \"${data._selectIpForTools}\"}",
+                    "jsonData": "{\"tasmotaIP\": \"${data._selectIpForTools}\"}",
                     "openUrl": true,
                     "command": "resetTasmota",
                     "disabled": "!data._selectIpForTools",
