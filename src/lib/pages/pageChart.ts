@@ -23,7 +23,6 @@ const PageChartMessageDefault: pages.PageChartMessage = {
 export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
     index: number = 0;
-    card: 'cardChart' | 'cardLChart' = 'cardChart';
     private checkState: boolean = true;
     protected adminConfig = this.adapter.config.pageChartdata[this.index];
 
@@ -42,7 +41,7 @@ export class PageChart extends Page {
     }
 
     async init(): Promise<void> {
-        const config = structuredClone(this.config);
+        /* const config = structuredClone(this.config);
         // search states for mode auto
         const tempConfig: Partial<pages.cardChartDataItemOptions> =
             this.enums || this.dpInit
@@ -56,8 +55,9 @@ export class PageChart extends Page {
         );
         if (tempItem) {
             tempItem.card = this.card;
+            this.log.debug(`init Card: ${this.card}`);
         }
-        this.items = tempItem as pages.cardChartDataItems;
+        this.items = tempItem as pages.cardChartDataItems; */
         await super.init();
     }
 
@@ -104,6 +104,8 @@ export class PageChart extends Page {
         let stateExistValue = '';
         let stateExistTicks = '';
         if (config) {
+            const card = config.selChartType;
+            console.debug(`get pageconfig Card: ${card}`);
             if (await configManager.existsState(config.setStateForValues)) {
                 stateExistValue = config.setStateForValues;
             }
@@ -115,7 +117,7 @@ export class PageChart extends Page {
                 uniqueID: config.pageName,
                 alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
                 config: {
-                    card: 'cardChart',
+                    card: card,
                     index: index,
                     data: {
                         headline: { type: 'const', constVal: config.headline || '' },
@@ -165,7 +167,7 @@ export class PageChart extends Page {
                     if (result && 'result' in result) {
                         if (Array.isArray(result.result)) {
                             for (let i = 0; i < result.result.length; i++) {
-                                console.log(
+                                this.log.debug(
                                     `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`,
                                 );
                             }

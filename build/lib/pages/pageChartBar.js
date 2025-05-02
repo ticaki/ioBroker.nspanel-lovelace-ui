@@ -26,6 +26,20 @@ class PageChartBar extends import_pageChart.PageChart {
   constructor(config, options) {
     super(config, options);
   }
+  async init() {
+    const config = structuredClone(this.config);
+    const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
+    const tempItem = await this.panel.statesControler.createDataItems(
+      tempConfig,
+      this
+    );
+    if (tempItem) {
+      tempItem.card = this.card;
+      this.log.debug(`init Card: ${this.card}`);
+    }
+    this.items = tempItem;
+    await super.init();
+  }
   // Überschreiben der getChartData-Methode
   async getChartData() {
     var _a, _b;

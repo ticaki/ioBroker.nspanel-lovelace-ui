@@ -8,6 +8,27 @@ export class PageChartLine extends PageChart {
         super(config, options);
     }
 
+    async init(): Promise<void> {
+        const config = structuredClone(this.config);
+        // search states for mode auto
+        const tempConfig: Partial<pages.cardChartDataItemOptions> =
+            this.enums || this.dpInit
+                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
+                : config;
+        // create Dataitems
+        //this.log.debug(JSON.stringify(tempConfig));
+        const tempItem: Partial<pages.cardChartDataItems> = await this.panel.statesControler.createDataItems(
+            tempConfig,
+            this,
+        );
+        if (tempItem) {
+            tempItem.card = this.card as 'cardChart';
+            this.log.debug(`init Card: ${this.card}`);
+        }
+        this.items = tempItem as pages.cardChartDataItems;
+        await super.init();
+    }
+
     // Überschreiben der getChartData-Methode
     async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
         let ticksChart: string[] = [];

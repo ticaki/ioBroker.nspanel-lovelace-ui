@@ -40,7 +40,6 @@ const PageChartMessageDefault = {
 class PageChart extends import_Page.Page {
   items;
   index = 0;
-  card = "cardChart";
   checkState = true;
   adminConfig = this.adapter.config.pageChartdata[this.index];
   constructor(config, options) {
@@ -57,16 +56,6 @@ class PageChart extends import_Page.Page {
     this.minUpdateInterval = 2e3;
   }
   async init() {
-    const config = structuredClone(this.config);
-    const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
-    const tempItem = await this.panel.statesControler.createDataItems(
-      tempConfig,
-      this
-    );
-    if (tempItem) {
-      tempItem.card = this.card;
-    }
-    this.items = tempItem;
     await super.init();
   }
   /**
@@ -105,6 +94,8 @@ class PageChart extends import_Page.Page {
     let stateExistValue = "";
     let stateExistTicks = "";
     if (config) {
+      const card = config.selChartType;
+      console.debug(`get pageconfig Card: ${card}`);
       if (await configManager.existsState(config.setStateForValues)) {
         stateExistValue = config.setStateForValues;
       }
@@ -115,7 +106,7 @@ class PageChart extends import_Page.Page {
         uniqueID: config.pageName,
         alwaysOn: config.alwaysOnDisplay ? "always" : "none",
         config: {
-          card: "cardChart",
+          card,
           index,
           data: {
             headline: { type: "const", constVal: config.headline || "" },
@@ -162,7 +153,7 @@ class PageChart extends import_Page.Page {
           if (result && "result" in result) {
             if (Array.isArray(result.result)) {
               for (let i = 0; i < result.result.length; i++) {
-                console.log(
+                this.log.debug(
                   `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`
                 );
               }
