@@ -710,6 +710,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   this.log.error(`Error: while installing berry - ${e}`);
                 }
                 try {
+                  await this.delay(3e3);
                   const result = await import_axios.default.get(
                     "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json"
                   );
