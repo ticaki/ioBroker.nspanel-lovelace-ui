@@ -141,7 +141,7 @@ declare global {
                 headline: string,
                 alwaysOnDisplay: boolean,
                 chart_color: string,
-                selChartType: string,
+                selChartType: 'cardChart' | 'cardLChart',
                 selInstanceDataSource: 0| 1,
                 selInstance: string,
                 setStateForTicks: string,

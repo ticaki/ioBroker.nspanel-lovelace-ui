@@ -22,7 +22,7 @@ export class ConfigManager extends BaseClass {
     dontWrite: boolean = false;
     extraConfigLogging: boolean = false;
 
-    readonly scriptVersion = '0.8.2';
+    readonly scriptVersion = '0.8.5';
     readonly breakingVersion = '0.6.0';
 
     statesController: StatesControler | undefined;
@@ -371,7 +371,8 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardThermo' &&
                     page.type !== 'cardQR' &&
                     page.type !== 'cardPower' &&
-                    page.type !== 'cardChart'
+                    page.type !== 'cardChart' &&
+                    page.type !== 'cardLChart'
                 ) {
                     const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!..`;
                     messages.push(msg);
@@ -442,7 +443,7 @@ export class ConfigManager extends BaseClass {
                 }
 
                 // PageChart einlesen
-                if (page.type === 'cardChart') {
+                if (page.type === 'cardChart' || page.type === 'cardLChart') {
                     if (!Array.isArray(this.adapter.config.pageChartdata)) {
                         messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
                         this.log.warn(messages[messages.length - 1]);

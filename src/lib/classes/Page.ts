@@ -265,10 +265,9 @@ export class Page extends BaseClassPage {
             if (!this.pageItems || this.pageItems.length === 0) {
                 await this.createPageItems();
             }
-            //if (this.card !== 'cardLChart' && this.card !== 'cardChart') {
-            if (this.card !== 'cardLChart') {
-                this.sendType();
-            }
+            //if (this.card !== 'cardLChart') {
+            this.sendType();
+            //}
             await this.update();
         } else {
             if (this.pageItems) {

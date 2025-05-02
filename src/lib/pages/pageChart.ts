@@ -24,14 +24,14 @@ export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
     index: number = 0;
     private checkState: boolean = true;
-    private adminConfig = this.adapter.config.pageChartdata[this.index];
+    protected adminConfig = this.adapter.config.pageChartdata[this.index];
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
-        if (config.card !== 'cardChart') {
+        if (config.card !== 'cardChart' && config.card !== 'cardLChart') {
             return;
         }
         super(config, options);
-        if (options.config && options.config.card == 'cardChart') {
+        if (options.config && (options.config.card == 'cardChart' || options.config.card == 'cardLChart')) {
             this.config = options.config;
         } else {
             throw new Error('Missing config!');
@@ -41,7 +41,7 @@ export class PageChart extends Page {
     }
 
     async init(): Promise<void> {
-        const config = structuredClone(this.config);
+        /* const config = structuredClone(this.config);
         // search states for mode auto
         const tempConfig: Partial<pages.cardChartDataItemOptions> =
             this.enums || this.dpInit
@@ -54,9 +54,10 @@ export class PageChart extends Page {
             this,
         );
         if (tempItem) {
-            tempItem.card = 'cardChart';
+            tempItem.card = this.card;
+            this.log.debug(`init Card: ${this.card}`);
         }
-        this.items = tempItem as pages.cardChartDataItems;
+        this.items = tempItem as pages.cardChartDataItems; */
         await super.init();
     }
 
@@ -85,7 +86,7 @@ export class PageChart extends Page {
                 message.ticks = ticksChart;
             }
             if (message.value) {
-                this.log.debug(message.value);
+                this.log.debug(`Value: ${message.value}`);
             }
             if (message.ticks) {
                 this.log.debug(`Ticks: ${message.ticks.join(',')}`);
@@ -103,6 +104,8 @@ export class PageChart extends Page {
         let stateExistValue = '';
         let stateExistTicks = '';
         if (config) {
+            const card = config.selChartType;
+            console.debug(`get pageconfig Card: ${card}`);
             if (await configManager.existsState(config.setStateForValues)) {
                 stateExistValue = config.setStateForValues;
             }
@@ -114,7 +117,7 @@ export class PageChart extends Page {
                 uniqueID: config.pageName,
                 alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
                 config: {
-                    card: 'cardChart',
+                    card: card,
                     index: index,
                     data: {
                         headline: { type: 'const', constVal: config.headline || '' },
@@ -131,99 +134,14 @@ export class PageChart extends Page {
         throw new Error('No config for cardChart found');
     }
 
-    private async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
-        let ticksChart: string[] = [];
-        let valuesChart = '';
-
-        if (this.items && this.adminConfig != null) {
-            const items = this.items;
-
-            switch (this.adminConfig.selInstanceDataSource) {
-                case 0: {
-                    // oldScriptVersion
-                    const tempTicks = (items.data.ticks && (await items.data.ticks.getObject())) ?? [];
-                    const tempValues = (items.data.value && (await items.data.value.getString())) ?? '';
-                    if (tempTicks && Array.isArray(tempTicks)) {
-                        ticksChart = tempTicks;
-                    }
-                    if (tempValues && typeof tempValues === 'string') {
-                        valuesChart = tempValues;
-                    }
-                    break;
-                }
-                case 1: {
-                    // AdapterVersion
-
-                    const rangeHours = this.adminConfig.rangeHours;
-                    const stateValue = this.adminConfig.setStateForValues;
-                    const instance = this.adminConfig.selInstance;
-                    const maxXAxisTicks = this.adminConfig.maxXAxisTicks;
-                    const factor = this.adminConfig.factorCardChart;
-                    const tempScale: number[] = [];
-
-                    try {
-                        const dbDaten = await this.getDataFromDB(stateValue, rangeHours, instance);
-                        if (dbDaten && Array.isArray(dbDaten)) {
-                            this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
-
-                            const stepXAchsis = rangeHours / maxXAxisTicks;
-
-                            for (let i = 0; i < rangeHours; i++) {
-                                const deltaHour = rangeHours - i;
-                                const targetDate = new Date(Date.now() - deltaHour * 60 * 60 * 1000);
-
-                                //Check history items for requested hours
-                                for (let j = 0, targetValue = 0; j < dbDaten.length; j++) {
-                                    const valueDate = new Date(dbDaten[j].ts);
-                                    const value = Math.round((dbDaten[j].val / factor) * 10);
-                                    tempScale.push(value);
-
-                                    if (valueDate > targetDate) {
-                                        if (targetDate.getHours() % stepXAchsis == 0) {
-                                            valuesChart += `${targetValue}^${targetDate.getHours()}:00` + `~`;
-                                        } else {
-                                            valuesChart += `${targetValue}~`;
-                                        }
-                                        break;
-                                    } else {
-                                        targetValue = value;
-                                    }
-                                }
-                            }
-
-                            valuesChart = valuesChart.substring(0, valuesChart.length - 1);
-
-                            // create ticks
-                            let max = 0;
-                            let min = 0;
-                            let intervall = 0;
-
-                            max = Math.max(...tempScale);
-                            min = Math.min(...tempScale);
-                            this.log.debug(`Scale Min: ${min}, Max: ${max}`);
-
-                            intervall = Math.round(max / 4);
-                            ticksChart.push(String(min));
-
-                            for (let count = 0; count < 4; count++) {
-                                min = Math.round(min + intervall);
-                                ticksChart.push(String(min));
-                            }
-                        }
-                    } catch (error) {
-                        this.log.error(`Error fetching data from DB: ${error}`);
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
+    protected async getChartData(): Promise<{ ticksChart: string[]; valuesChart: string }> {
+        const ticksChart: string[] = [];
+        const valuesChart = '';
 
         return { ticksChart, valuesChart };
     }
 
-    private async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
+    protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
         return new Promise((resolve, reject) => {
             const timeout = this.adapter.setTimeout(() => {
                 reject(new Error(`fehler im system`));
@@ -249,7 +167,7 @@ export class PageChart extends Page {
                     if (result && 'result' in result) {
                         if (Array.isArray(result.result)) {
                             for (let i = 0; i < result.result.length; i++) {
-                                console.log(
+                                this.log.debug(
                                     `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`,
                                 );
                             }

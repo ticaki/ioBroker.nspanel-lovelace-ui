@@ -21,14 +21,14 @@ import { PageEntities } from '../pages/pageEntities';
 import { PageNotify } from '../pages/pageNotification';
 import { systemNavigation, systemPages } from '../templates/system-templates';
 import { PageAlarm } from '../pages/pageAlarm';
-import { PageChart } from '../pages/pageChart';
-import { PageLChart } from '../pages/pageLChart';
 import { PageQR } from '../pages/pageQR';
 import { Dataitem } from '../classes/data-item';
 import { Color } from '../const/Color';
 import { PageSchedule } from '../pages/pageSchedule';
 import { cardTemplates } from '../templates/card';
 import { deepAssign, getRegExp } from '../const/tools';
+import { PageChartBar } from '../pages/pageChartBar';
+import { PageChartLine } from '../pages/pageChartLine';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -266,12 +266,12 @@ export class Panel extends BaseClass {
             switch (pageConfig.config.card) {
                 case 'cardChart': {
                     pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageChart(pmconfig, pageConfig);
+                    this.pages[a] = new PageChartBar(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardLChart': {
                     pageConfig = Panel.getPage(pageConfig, this);
-                    this.pages[a] = new PageLChart(pmconfig, pageConfig);
+                    this.pages[a] = new PageChartLine(pmconfig, pageConfig);
                     break;
                 }
                 case 'cardEntities': {
