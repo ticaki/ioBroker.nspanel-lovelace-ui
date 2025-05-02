@@ -97,7 +97,7 @@ Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
 
 ### Cards
 - [x] cardChart
-- [ ] cardLChart
+- [x] cardLChart
 - [x] cardEntities
 - [x] cardGrid
 - [x] cardGrid2
@@ -185,6 +185,7 @@ Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
 
 ## Eingebaut:
 - cardChart
+- cardLChart
 - cardMedia 
 - cardGrid/2
 - cardEntities
@@ -304,7 +305,7 @@ Sind natürlich alles Dataitems
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**  
-- (tt-tom17) added cardChart inkl. admin
+- (tt-tom17) added cardChart/cardLChart inkl. admin
   
 ### 0.1.11 (2025-04-12)
 - (ticaki) Admin overview revised
