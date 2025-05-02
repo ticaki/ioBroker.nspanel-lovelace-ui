@@ -211,11 +211,7 @@ class PagePower extends import_Page.Page {
     for (let i = 1; i <= 6; i++) {
       const key = `power${i}_reverse`;
       if (typeof config[key] === "boolean") {
-        if (config[key]) {
-          speedReverse.push(-1);
-        } else {
-          speedReverse.push(1);
-        }
+        speedReverse.push(config[key]);
       }
     }
     const valueDecimal = [];
@@ -711,6 +707,7 @@ class PagePower extends import_Page.Page {
     if (!i) {
       return (0, import_tools.getPayload)("", "", "", "", "", "", "");
     }
+    this.log.debug(`${i.icon} ${i.iconColor} ${i.name}  ${i.value} ${String(i.speed)}`);
     return (0, import_tools.getPayload)("", "", (_a = i.icon) != null ? _a : "", (_b = i.iconColor) != null ? _b : "", (_c = i.name) != null ? _c : "", (_d = i.value) != null ? _d : "", String((_e = i.speed) != null ? _e : ""));
   }
   async onStateTrigger() {
