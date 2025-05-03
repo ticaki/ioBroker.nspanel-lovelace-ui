@@ -273,6 +273,19 @@ export class PagePower extends Page {
             }
         }
 
+        /* if (config.power8_selInternalCalculation) {
+            const valueKey = {
+                value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
+                math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
+            };
+        } else {
+            valueKey = {
+                value: { type: 'triggered', dp: states[7] },
+                decimal: { type: 'const', constVal: valueDecimal[7] },
+                unit: { type: 'const', constVal: valueUnit[7] },
+            };
+        } */
+
         const result: pages.PageBaseConfig = {
             uniqueID: config.pageName,
             alwaysOn: config.alwaysOnDisplay ? 'always' : 'none',
