@@ -141,9 +141,18 @@ declare global {
                 headline: string,
                 alwaysOnDisplay: boolean,
                 chart_color: string,
-                txtlabelYAchse: string,
+                selChartType: 'cardChart' | 'cardLChart',
+                selInstanceDataSource: 0| 1,
+                selInstance: string,
                 setStateForTicks: string,
                 setStateForValues: string,
+                txtlabelYAchse: string,
+                rangeHours: number,
+                maxXAxisTicks: number,
+                factorCardChart: number,
+                maxXaxisLabels: number,
+                limitMesurements: number,
+                txtNameMeasurements: string,
             }[];
 
 

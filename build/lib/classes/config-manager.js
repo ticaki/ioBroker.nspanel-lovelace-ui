@@ -49,7 +49,7 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.8.2";
+  scriptVersion = "0.8.5";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -319,7 +319,7 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(page.native);
           continue;
         }
-        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart") {
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart") {
           const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!..`;
           messages.push(msg);
           this.log.warn(msg);
@@ -384,7 +384,7 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(await import_pagePower.PagePower.getPowerPageConfig(this.adapter, index, this));
           continue;
         }
-        if (page.type === "cardChart") {
+        if (page.type === "cardChart" || page.type === "cardLChart") {
           if (!Array.isArray(this.adapter.config.pageChartdata)) {
             messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
             this.log.warn(messages[messages.length - 1]);

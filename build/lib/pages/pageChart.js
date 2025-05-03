@@ -40,16 +40,14 @@ const PageChartMessageDefault = {
 class PageChart extends import_Page.Page {
   items;
   index = 0;
-  step = 1;
-  headlinePos = 0;
-  titelPos = 0;
-  nextArrow = false;
+  checkState = true;
+  adminConfig = this.adapter.config.pageChartdata[this.index];
   constructor(config, options) {
-    if (config.card !== "cardChart") {
+    if (config.card !== "cardChart" && config.card !== "cardLChart") {
       return;
     }
     super(config, options);
-    if (options.config && options.config.card == "cardChart") {
+    if (options.config && (options.config.card == "cardChart" || options.config.card == "cardLChart")) {
       this.config = options.config;
     } else {
       throw new Error("Missing config!");
@@ -58,16 +56,6 @@ class PageChart extends import_Page.Page {
     this.minUpdateInterval = 2e3;
   }
   async init() {
-    const config = structuredClone(this.config);
-    const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
-    const tempItem = await this.panel.statesControler.createDataItems(
-      tempConfig,
-      this
-    );
-    if (tempItem) {
-      tempItem.card = "cardChart";
-    }
-    this.items = tempItem;
     await super.init();
   }
   /**
@@ -75,41 +63,29 @@ class PageChart extends import_Page.Page {
    * @returns // TODO: remove this
    */
   async update() {
-    var _a, _b, _c;
+    var _a, _b;
     if (!this.visibility) {
       return;
     }
     const message = {};
-    const config = this.adapter.config.pageChartdata[this.index];
-    if (this.items && config != null) {
-      const items = this.items;
-      message.headline = (_a = items.data.headline && await items.data.headline.getTranslatedString()) != null ? _a : this.name;
-      message.navigation = this.getNavigation();
-      message.color = await (0, import_tools.getIconEntryColor)(items.data.color, true, import_Color.Color.White);
-      message.text = (_b = items.data.text && await items.data.text.getString()) != null ? _b : "";
-      message.value = (_c = items.data.value && await items.data.value.getString()) != null ? _c : "";
-      message.ticks = [];
-      const ticks = items.data.ticks && await items.data.ticks.getObject();
-      if (ticks && Array.isArray(ticks)) {
-        message.ticks = ticks;
-      } else if (message.value) {
-        const timeValueRegEx = /~\d+:(\d+)/g;
-        const sorted = [...message.value.matchAll(timeValueRegEx) || []].map((x) => parseFloat(x[1])).sort((x, y) => x < y ? -1 : 1);
-        const minValue = sorted[0];
-        const maxValue = sorted[sorted.length - 1];
-        const tick = Math.max(Number(((maxValue - minValue) / 5).toFixed()), 10);
-        let currentTick = minValue - tick;
-        while (currentTick < maxValue + tick) {
-          message.ticks.push(String(currentTick));
-          currentTick += tick;
-        }
+    message.navigation = this.getNavigation();
+    message.headline = `Error`;
+    if (this.checkState) {
+      if (this.items && this.adminConfig != null) {
+        const items = this.items;
+        const { valuesChart, ticksChart } = await this.getChartData();
+        message.headline = (_a = items.data.headline && await items.data.headline.getTranslatedString()) != null ? _a : this.name;
+        message.color = await (0, import_tools.getIconEntryColor)(items.data.color, true, import_Color.Color.White);
+        message.text = (_b = items.data.text && await items.data.text.getString()) != null ? _b : "";
+        message.value = valuesChart;
+        message.ticks = ticksChart;
       }
-    }
-    if (message.value) {
-      this.log.debug(message.value);
-    }
-    if (message.ticks) {
-      this.log.debug(`Ticks: ${message.ticks.join(",")}`);
+      if (message.value) {
+        this.log.debug(`Value: ${message.value}`);
+      }
+      if (message.ticks) {
+        this.log.debug(`Ticks: ${message.ticks.join(",")}`);
+      }
     }
     this.sendToPanel(this.getMessage(message), false);
   }
@@ -118,6 +94,8 @@ class PageChart extends import_Page.Page {
     let stateExistValue = "";
     let stateExistTicks = "";
     if (config) {
+      const card = config.selChartType;
+      console.debug(`get pageconfig Card: ${card}`);
       if (await configManager.existsState(config.setStateForValues)) {
         stateExistValue = config.setStateForValues;
       }
@@ -128,12 +106,12 @@ class PageChart extends import_Page.Page {
         uniqueID: config.pageName,
         alwaysOn: config.alwaysOnDisplay ? "always" : "none",
         config: {
-          card: "cardChart",
+          card,
           index,
           data: {
             headline: { type: "const", constVal: config.headline || "" },
             text: { type: "const", constVal: config.txtlabelYAchse || "" },
-            color: { true: { color: { type: "const", constVal: import_Color.Color.Yellow } } },
+            color: { true: { color: { type: "const", constVal: config.chart_color } } },
             ticks: { type: "triggered", dp: stateExistTicks },
             value: { type: "triggered", dp: stateExistValue }
           }
@@ -142,7 +120,50 @@ class PageChart extends import_Page.Page {
       };
       return result;
     }
-    throw new Error("No config for cardQR found");
+    throw new Error("No config for cardChart found");
+  }
+  async getChartData() {
+    const ticksChart = [];
+    const valuesChart = "";
+    return { ticksChart, valuesChart };
+  }
+  async getDataFromDB(_id, _rangeHours, _instance) {
+    return new Promise((resolve, reject) => {
+      const timeout = this.adapter.setTimeout(() => {
+        reject(new Error(`fehler im system`));
+      }, 5e3);
+      this.adapter.sendTo(
+        _instance,
+        "getHistory",
+        {
+          id: _id,
+          options: {
+            start: Date.now() - _rangeHours * 60 * 60 * 1e3,
+            end: Date.now(),
+            //count: _rangeHours,
+            //limit: _rangeHours,
+            //ignoreNull: true,
+            aggregate: "onchange"
+          }
+        },
+        (result) => {
+          if (timeout) {
+            this.adapter.clearTimeout(timeout);
+          }
+          if (result && "result" in result) {
+            if (Array.isArray(result.result)) {
+              for (let i = 0; i < result.result.length; i++) {
+                this.log.debug(
+                  `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`
+                );
+              }
+              resolve(result.result);
+            }
+          }
+          reject(new Error("No data found"));
+        }
+      );
+    });
   }
   getMessage(_message) {
     let result = PageChartMessageDefault;
@@ -156,7 +177,37 @@ class PageChart extends import_Page.Page {
       result.ticks.join(":"),
       result.value
     );
-    return "";
+  }
+  async onVisibilityChange(val) {
+    if (val) {
+      const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForValues);
+      if (state && state.val) {
+        this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
+      } else {
+        this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
+        this.checkState = false;
+      }
+    }
+    if (val && this.adminConfig.selInstanceDataSource === 1) {
+      const state = await this.adapter.getForeignStateAsync(
+        `system.adapter.${this.adminConfig.selInstance}.alive`
+      );
+      if (state && state.val) {
+        this.log.debug(`Instance ${this.adminConfig.selInstance} is alive`);
+      } else {
+        this.log.debug(`Instance ${this.adminConfig.selInstance} is not alive`);
+        this.checkState = false;
+      }
+    } else if (val && this.adminConfig.selInstanceDataSource === 0) {
+      const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForTicks);
+      if (state && state.val) {
+        this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
+      } else {
+        this.log.debug(`State ${this.adminConfig.setStateForTicks} for ticks is not exists`);
+        this.checkState = false;
+      }
+    }
+    await super.onVisibilityChange(val);
   }
   async onStateTrigger(_id) {
     if (this.unload) {

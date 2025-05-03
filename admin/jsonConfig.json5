@@ -794,7 +794,22 @@
             "label": "Page QR",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
             "items": {
+                "pageQRdataErr": {
+                    "type": "staticText",
+                    "text": "ERROR: field 'pageName' must contain unique text",
+                    "newLine": true,
+                    "hidden": "const x={}; for(let ii=0; data.pageQRdata && ii<data.pageQRdata.length; ii++){const t=data.pageQRdata[ii].pageName; if (x[t]==='x') return false; x[t]='x';}; return true;",
+                    "style": {
+                        "color": "red"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
                 "pageQRdata": {
+                
                     "type": "accordion",
                     "label": "pageQRdata",
                     "titleAttr": "pageName",
@@ -808,7 +823,9 @@
                             "xl": 4,
                             "type": "text",
                             "label": "pageName",
-                            "default": "Unique Name"
+                            "default": "Unique Name",
+                            "validator": "const x={};for (const c of globalData.pageQRdata) {if (x[c.pageName]==='x') return false; x[c.pageName]='x';}; return true;",
+                            "validatorNoSaveOnError": true
                         },
                         {
                             "attr": "headline",
@@ -1009,6 +1026,20 @@
             "label": "Page Power",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
             "items": {
+                "pagePowerdataErr": {
+                    "type": "staticText",
+                    "text": "ERROR: field 'pageName' must contain unique text",
+                    "newLine": true,
+                    "hidden": "const x={}; for(let ii=0; data.pagePowerdata && ii<data.pagePowerdata.length; ii++){const t=data.pagePowerdata[ii].pageName; if (x[t]==='x') return false; x[t]='x';}; return true;",
+                    "style": {
+                        "color": "red"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
                 "pagePowerdata": {
                     "type": "accordion",
                     "label": "pagePowerdata",
@@ -1029,7 +1060,9 @@
                             "xl": 4,
                             "type": "text",
                             "label": "pageName",
-                            "default": "Unique Name"
+                            "default": "Unique Name",
+                            "validator": "const x={};for (const c of globalData.pagePowerdata) {if (x[c.pageName]==='x') return false; x[c.pageName]='x';}; return true;",
+                            "validatorNoSaveOnError": true
                         },
                         {
                             "attr": "headline",
@@ -2099,7 +2132,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMinValueForClor",
+                            "label": "powerMinValueForColor",
                             "default": 0,
                             "hidden": "!data._power5_more || !data._power5_useColorScale"
                         },
@@ -2526,6 +2559,20 @@
             "label": "panelPageChart",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
             "items": {
+                "pageChartdataErr": {
+                    "type": "staticText",
+                    "text": "ERROR: field 'pageName' must contain unique text",
+                    "newLine": true,
+                    "hidden": "const x={}; for(let ii=0; data.pageChartdata && ii<data.pageChartdata.length; ii++){const t=data.pageChartdata[ii].pageName; if (x[t]==='x') return false; x[t]='x';}; return true;",
+                    "style": {
+                        "color": "red"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
                 "pageChartdata": {
                     "type": "accordion",
                     "label": "pageChartdata",
@@ -2540,7 +2587,9 @@
                             "xl": 4,
                             "type": "text",
                             "label": "pageName",
-                            "default": "Unique Name"
+                            "default": "Unique Name",
+                            "validator": "const x={};for (const c of globalData.pageChartdata) {if (x[c.pageName]==='x') return false; x[c.pageName]='x';}; return true;",
+                            "validatorNoSaveOnError": true
                         },
                         {
                             "attr": "headline",
@@ -2576,26 +2625,60 @@
                             "default": "#ffff00"
                         },
                         {
-                            "attr": "txtlabelYAchse",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
-                            "type": "text",
-                            "label": "labelYAchse",
-                            "default": ""
+                            "attr": "selChartType",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": "labelSelChartType",
+                            "default": "cardChart",
+                            "options": [
+                                {
+                                    "label": "barChart",
+                                    "value": "cardChart"
+                                },
+                                {
+                                    "label": "lineChart",
+                                    "value": "cardLChart"
+                                }
+                            ]
+
                         },
                         {
-                            "attr": "_oldSrciptVersion",
-                            "xs": 12,
-                            "sm": 12,
-                            "md": 6,
-                            "lg": 4,
-                            "xl": 4,
-                            "type": "checkbox",
-                            "label": "oldSrciptVersion",
-                            "default": false
+                            "attr": "selInstanceDataSource",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": "labelSelInstanceDataSource",
+                            "default": 0,
+                            "options": [
+                                {
+                                    "label": "oldScriptVersion",
+                                    "value": 0
+                                },
+                                {
+                                    "label": "dbAdapter ",
+                                    "value": 1
+                                }
+                            ]
+                        },
+                        {
+                            "attr": "selInstance",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "label": "labelSelInstance",
+                            "type": "instance",
+                            "onlyEnabled": true,
+                            "adapter": "_dataSources",
+                            "hidden": "data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "setStateForTicks",
@@ -2604,10 +2687,10 @@
                             "md": 8,
                             "lg": 8,
                             "xl": 8,
+                            "newLine": true,
                             "type": "objectId",
                             "label": "stateForTicks",
-                            "hidden": "!data._oldSrciptVersion",
-                            "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
+                            "hidden": "data.selInstanceDataSource > 0"
                         },
                         {
                             "attr": "setStateForValues",
@@ -2617,10 +2700,83 @@
                             "lg": 8,
                             "xl": 8,
                             "type": "objectId",
-                            "label": "stateForValues",
-                            "hidden": "!data._oldSrciptVersion",
-                            "filterFunc": "return obj.common.type === 'string' && obj.common.role === 'value'"
-                        }
+                            "label": "stateForValues"
+                        },
+                        {
+                            "attr": "txtlabelYAchse",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "text",
+                            "newLine": true,
+                            "label": "labelYAchse",
+                            "default": ""
+                        },
+                        {
+                            "attr": "rangeHours",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "newLine": true,
+                            "label": "labelrangeHours",
+                            "default": 24,
+                            "hidden": "data.selChartType === '' || data.selInstanceDataSource == 0"
+                        },
+                        {
+                            "attr": "maxXAxisTicks",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "labelmaxXAxisTicks",
+                            "min": 2,
+                            "max": 12,
+                            "default": 6,
+                            "hidden": "data.selChartType === '' || data.selInstanceDataSource == 0"
+                        },
+                        {
+                            "attr": "factorCardChart",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "labelFactorCradChart",
+                            "default": 1,
+                            "hidden": "data.selChartType !== 'cardChart' || data.selInstanceDataSource == 0"
+                        },
+                        {
+                            "attr": "maxXAxisLabels",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "labelmaxXAxisLabelsbets-testing",
+                            "default": 24,
+                            "hidden": "data.selChartType !== 'cardLChart' || data.selInstanceDataSource == 0"
+                        },
+                        {
+                            "attr": "limitMesurements",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "number",
+                            "label": "labelLimitMesurements beta-testing",
+                            "default": 35,
+                            "hidden": "data.selChartType !== 'cardLChart' || data.selInstanceDataSource == 0"
+                        },
                     ]
                 }
             }

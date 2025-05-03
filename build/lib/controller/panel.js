@@ -46,14 +46,14 @@ var import_pageEntities = require("../pages/pageEntities");
 var import_pageNotification = require("../pages/pageNotification");
 var import_system_templates = require("../templates/system-templates");
 var import_pageAlarm = require("../pages/pageAlarm");
-var import_pageChart = require("../pages/pageChart");
-var import_pageLChart = require("../pages/pageLChart");
 var import_pageQR = require("../pages/pageQR");
 var import_data_item = require("../classes/data-item");
 var import_Color = require("../const/Color");
 var import_pageSchedule = require("../pages/pageSchedule");
 var import_card = require("../templates/card");
 var import_tools = require("../const/tools");
+var import_pageChartBar = require("../pages/pageChartBar");
+var import_pageChartLine = require("../pages/pageChartLine");
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -233,12 +233,12 @@ class Panel extends import_library.BaseClass {
       switch (pageConfig.config.card) {
         case "cardChart": {
           pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageChart.PageChart(pmconfig, pageConfig);
+          this.pages[a] = new import_pageChartBar.PageChartBar(pmconfig, pageConfig);
           break;
         }
         case "cardLChart": {
           pageConfig = Panel.getPage(pageConfig, this);
-          this.pages[a] = new import_pageLChart.PageLChart(pmconfig, pageConfig);
+          this.pages[a] = new import_pageChartLine.PageChartLine(pmconfig, pageConfig);
           break;
         }
         case "cardEntities": {
