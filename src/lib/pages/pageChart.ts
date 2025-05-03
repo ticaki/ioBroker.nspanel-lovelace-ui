@@ -144,7 +144,7 @@ export class PageChart extends Page {
     protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
         return new Promise((resolve, reject) => {
             const timeout = this.adapter.setTimeout(() => {
-                reject(new Error(`fehler im system`));
+                reject(new Error(`error  in system`));
             }, 5000);
             this.adapter.sendTo(
                 _instance,
@@ -154,9 +154,9 @@ export class PageChart extends Page {
                     options: {
                         start: Date.now() - _rangeHours * 60 * 60 * 1000,
                         end: Date.now(),
-                        //count: _rangeHours,
-                        //limit: _rangeHours,
-                        //ignoreNull: true,
+                        count: _rangeHours,
+                        limit: _rangeHours,
+                        ignoreNull: true,
                         aggregate: 'onchange',
                     },
                 },

@@ -2748,9 +2748,27 @@
                             "md": 2,
                             "lg": 2,
                             "xl": 2,
-                            "type": "number",
+                            "type": "select",
                             "label": "labelFactorCradChart",
                             "default": 1,
+                            "options": [
+                                {
+                                    "label": "1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "0,1",
+                                    "value": 10
+                                },
+                                {
+                                    "label": "0,01",
+                                    "value": 100
+                                },
+                                {
+                                    "label": "0,001",
+                                    "value": 1000
+                                }
+                            ],
                             "hidden": "data.selChartType !== 'cardChart' || data.selInstanceDataSource == 0"
                         },
                         {
