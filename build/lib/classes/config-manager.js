@@ -36,6 +36,7 @@ var configManagerConst = __toESM(require("../const/config-manager-const"));
 var import_states_controller = require("../controller/states-controller");
 var import_pageQR = require("../pages/pageQR");
 var import_pagePower = require("../pages/pagePower");
+var import_pageChart = require("../pages/pageChart");
 var import_readme = require("../tools/readme");
 var import_pages = require("../types/pages");
 var Types = __toESM(require("../types/types"));
@@ -48,7 +49,7 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.8.2";
+  scriptVersion = "0.8.5";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -318,7 +319,7 @@ class ConfigManager extends import_library.BaseClass {
           panelConfig.pages.push(page.native);
           continue;
         }
-        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR" && page.type !== "cardPower") {
+        if (page.type !== "cardGrid" && page.type !== "cardGrid2" && page.type !== "cardGrid3" && page.type !== "cardEntities" && page.type !== "cardThermo" && page.type !== "cardQR" && page.type !== "cardPower" && page.type !== "cardChart" && page.type !== "cardLChart") {
           const msg = `${page.heading || "unknown"} with card type ${page.type} not implemented yet!..`;
           messages.push(msg);
           this.log.warn(msg);
@@ -381,6 +382,23 @@ class ConfigManager extends import_library.BaseClass {
             continue;
           }
           panelConfig.pages.push(await import_pagePower.PagePower.getPowerPageConfig(this.adapter, index, this));
+          continue;
+        }
+        if (page.type === "cardChart" || page.type === "cardLChart") {
+          if (!Array.isArray(this.adapter.config.pageChartdata)) {
+            messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          const index = this.adapter.config.pageChartdata.findIndex(
+            (item) => item.pageName === page.uniqueName
+          );
+          if (index === -1) {
+            messages.push(`No pageChartdata found for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          panelConfig.pages.push(await import_pageChart.PageChart.getChartPageConfig(this.adapter, index, this));
           continue;
         }
         let gridItem = {
@@ -2897,7 +2915,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     let obj;
     if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith(".")) {
-      obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
+      obj = await this.adapter.getForeignObjectAsync(entity.ScreensaverEntity);
       result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
       result.data.entity2.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
     }
@@ -2951,11 +2969,11 @@ class ConfigManager extends import_library.BaseClass {
       if (obj2 && obj2.type === "state") {
         entity.ScreensaverEntityIconSelect.sort((a, b) => a.value - b.value);
         obj2.read = `
-                const items = [${entity.ScreensaverEntityIconSelect.map((item) => `{${item.value}, ${item.icon}}`).join(", ")}];
-                for (let i = 1; i < items.length; i++) {
-                    if (val <= items[i].val) {return items[i].icon;}
-                }
-                return items[items.length - 1].icon;`;
+                    const items = [${entity.ScreensaverEntityIconSelect.map((item) => `{val: ${item.value}, icon: "${item.icon}"}`).join(", ")}];
+                    for (let i = 1; i < items.length; i++) {
+                        if (val <= items[i].val) {return items[i].icon;}
+                    }
+                    return items[items.length - 1].icon;`;
         result.data.icon = {
           ...result.data.icon,
           true: {

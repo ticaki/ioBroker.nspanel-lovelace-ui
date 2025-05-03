@@ -245,9 +245,7 @@ class Page extends import_baseClassPage.BaseClassPage {
       if (!this.pageItems || this.pageItems.length === 0) {
         await this.createPageItems();
       }
-      if (this.card !== "cardLChart" && this.card !== "cardChart") {
-        this.sendType();
-      }
+      this.sendType();
       await this.update();
     } else {
       if (this.pageItems) {

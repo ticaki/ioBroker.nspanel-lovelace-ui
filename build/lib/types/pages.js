@@ -193,6 +193,7 @@ const stateRoleArray = arrayOfAllStateRole([
   "value.timer",
   "level.mode",
   "sensor.alarm.flood",
+  "indicator.reachable",
   ""
 ]);
 function isStateRole(F) {

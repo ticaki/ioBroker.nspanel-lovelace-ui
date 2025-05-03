@@ -134,6 +134,28 @@ declare global {
                 power8_valueDecimal: number,
                 power8_valueUnit: string
             }[];
+
+            // PageChart
+            pageChartdata: {
+                pageName: string,
+                headline: string,
+                alwaysOnDisplay: boolean,
+                chart_color: string,
+                selChartType: 'cardChart' | 'cardLChart',
+                selInstanceDataSource: 0| 1,
+                selInstance: string,
+                setStateForTicks: string,
+                setStateForValues: string,
+                txtlabelYAchse: string,
+                rangeHours: number,
+                maxXAxisTicks: number,
+                factorCardChart: number,
+                maxXaxisLabels: number,
+                limitMesurements: number,
+                txtNameMeasurements: string,
+            }[];
+
+
             additionalLog: boolean;
             debugLogMqtt: boolean;
             debugLogStates: boolean;

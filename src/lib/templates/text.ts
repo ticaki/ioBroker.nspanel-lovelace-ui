@@ -1749,4 +1749,37 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.isOnline': {
+        role: 'text',
+        adapter: '',
+        type: 'text',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'earth' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'earth-off' },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: ['indicator.reachable'],
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Internet' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'online' },
+                false: { type: 'const', constVal: 'offline' },
+            },
+        },
+    },
 };

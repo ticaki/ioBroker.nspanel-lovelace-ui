@@ -29,6 +29,12 @@ async function configuration(): Promise<void> {
         uniqueName: 'qrCode'
     };
 
+    // Konfiguration findet im Admin statt, uniqueName muß gleich dem namen in der Adminkonfiguration sein.
+    const chartHeizung: PageType = {
+        type: 'cardChart',
+        uniqueName: 'temperatur'
+    };
+
     // Ein Beispiel für eine Gridseite mit verschiedenen Farbskalen
     const irgendeinName: PageType = {
         type: 'cardGrid',
@@ -84,6 +90,7 @@ async function configuration(): Promise<void> {
             irgendeinName,
             grid1,
             qrCode,
+            chartHeizung,
         ],
         // Unterseiten / Subpages
         subPages: [
@@ -448,7 +455,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.8.3';
+const version = '0.8.5';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -816,8 +823,7 @@ declare namespace ScriptConfig {
 
     export type PageChart = {
         type: 'cardChart' | 'cardLChart';
-        items: PageItem[];
-    } & Omit<PageBaseType, 'useColor'>;
+    } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
 
     export type PageItem = PageBaseItem | PageMediaItem | PageThermoItem;
 

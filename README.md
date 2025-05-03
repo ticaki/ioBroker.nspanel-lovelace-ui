@@ -96,8 +96,8 @@ Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
 ## Konvertierung der Skriptkonfiguration in Adapterkonfig
 
 ### Cards
-- [ ] cardChart
-- [ ] cardLChart
+- [x] cardChart
+- [x] cardLChart
 - [x] cardEntities
 - [x] cardGrid
 - [x] cardGrid2
@@ -184,6 +184,8 @@ Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
 
 
 ## Eingebaut:
+- cardChart
+- cardLChart
 - cardMedia 
 - cardGrid/2
 - cardEntities
@@ -302,6 +304,9 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**  
+- (tt-tom17) added cardChart/cardLChart inkl. admin
+  
 ### 0.1.11 (2025-04-12)
 - (ticaki) Admin overview revised
 - (ticaki) inSel could not be left fixed

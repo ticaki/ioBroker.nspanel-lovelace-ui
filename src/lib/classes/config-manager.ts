@@ -4,6 +4,7 @@ import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PageQR } from '../pages/pageQR';
 import { PagePower } from '../pages/pagePower';
+import { PageChart } from '../pages/pageChart';
 import { getStringOrArray } from '../tools/readme';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
@@ -21,7 +22,7 @@ export class ConfigManager extends BaseClass {
     dontWrite: boolean = false;
     extraConfigLogging: boolean = false;
 
-    readonly scriptVersion = '0.8.2';
+    readonly scriptVersion = '0.8.5';
     readonly breakingVersion = '0.6.0';
 
     statesController: StatesControler | undefined;
@@ -369,7 +370,9 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardEntities' &&
                     page.type !== 'cardThermo' &&
                     page.type !== 'cardQR' &&
-                    page.type !== 'cardPower'
+                    page.type !== 'cardPower' &&
+                    page.type !== 'cardChart' &&
+                    page.type !== 'cardLChart'
                 ) {
                     const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!..`;
                     messages.push(msg);
@@ -436,6 +439,25 @@ export class ConfigManager extends BaseClass {
                         continue;
                     }
                     panelConfig.pages.push(await PagePower.getPowerPageConfig(this.adapter, index, this));
+                    continue;
+                }
+
+                // PageChart einlesen
+                if (page.type === 'cardChart' || page.type === 'cardLChart') {
+                    if (!Array.isArray(this.adapter.config.pageChartdata)) {
+                        messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    const index = this.adapter.config.pageChartdata.findIndex(
+                        item => item.pageName === page.uniqueName,
+                    );
+                    if (index === -1) {
+                        messages.push(`No pageChartdata found for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    panelConfig.pages.push(await PageChart.getChartPageConfig(this.adapter, index, this));
                     continue;
                 }
 
@@ -3375,7 +3397,7 @@ export class ConfigManager extends BaseClass {
         }
         let obj;
         if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith('.')) {
-            obj = await this.adapter.getObjectAsync(entity.ScreensaverEntity);
+            obj = await this.adapter.getForeignObjectAsync(entity.ScreensaverEntity);
             result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
             result.data.entity2.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
         }
@@ -3437,12 +3459,13 @@ export class ConfigManager extends BaseClass {
             const obj = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
             if (obj && obj.type === 'state') {
                 entity.ScreensaverEntityIconSelect.sort((a, b) => a.value - b.value);
+                // read function for icon selection
                 obj.read = `
-                const items = [${entity.ScreensaverEntityIconSelect.map(item => `{${item.value}, ${item.icon}}`).join(', ')}];
-                for (let i = 1; i < items.length; i++) {
-                    if (val <= items[i].val) {return items[i].icon;}
-                }
-                return items[items.length - 1].icon;`;
+                    const items = [${entity.ScreensaverEntityIconSelect.map(item => `{val: ${item.value}, icon: "${item.icon}"}`).join(', ')}];
+                    for (let i = 1; i < items.length; i++) {
+                        if (val <= items[i].val) {return items[i].icon;}
+                    }
+                    return items[items.length - 1].icon;`;
 
                 result.data.icon = {
                     ...result.data.icon,

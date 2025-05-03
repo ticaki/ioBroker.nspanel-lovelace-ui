@@ -20,6 +20,7 @@ export type PageTemplateIdent =
     | 'thermo.script';
 
 export type TemplateIdent =
+    | 'text.isOnline'
     | 'text.hmip.windcombo'
     | 'text.sainlogic.windarrow'
     | 'button.slider'

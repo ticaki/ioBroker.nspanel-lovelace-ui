@@ -234,15 +234,11 @@ export class PagePower extends Page {
         }
 
         // array of speedReverse
-        const speedReverse: number[] = [];
+        const speedReverse: boolean[] = [];
         for (let i = 1; i <= 6; i++) {
             const key = `power${i}_reverse` as keyof typeof config;
             if (typeof config[key] === 'boolean') {
-                if (config[key]) {
-                    speedReverse.push(-1);
-                } else {
-                    speedReverse.push(1);
-                }
+                speedReverse.push(config[key]);
             }
         }
 
@@ -760,6 +756,7 @@ export class PagePower extends Page {
         if (!i) {
             return getPayload('', '', '', '', '', '', '');
         }
+        this.log.debug(`${i.icon} ${i.iconColor} ${i.name}  ${i.value} ${String(i.speed)}`);
         return getPayload('', '', i.icon ?? '', i.iconColor ?? '', i.name ?? '', i.value ?? '', String(i.speed ?? ''));
     }
     protected async onStateTrigger(): Promise<void> {
