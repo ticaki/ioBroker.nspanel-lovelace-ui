@@ -94,19 +94,16 @@ export class PageChartBar extends PageChart {
                             valuesChart = valuesChart.substring(0, valuesChart.length - 1);
 
                             // create ticks
-                            let max = 0;
-                            let min = 0;
-                            let intervall = 0;
+                            const max = Math.max(...tempScale);
+                            const min = 0;
+                            const intervall = Math.max(Number(((max - min) / 5).toFixed()), 10);
 
-                            max = Math.max(...tempScale);
-                            this.log.debug(`Scale Min: ${min}, Max: ${max}`);
+                            this.log.debug(`Scale Min: ${min}, Max: ${max} Intervall: ${intervall}`);
 
-                            intervall = Math.round(max / 4);
-                            ticksChart.push(String(min));
-
-                            for (let count = 0; count < 4; count++) {
-                                min = Math.round(min + intervall);
-                                ticksChart.push(String(min));
+                            let currentTick = min;
+                            while (currentTick < max + intervall) {
+                                ticksChart.push(String(currentTick));
+                                currentTick += intervall;
                             }
                         }
                     } catch (error) {
