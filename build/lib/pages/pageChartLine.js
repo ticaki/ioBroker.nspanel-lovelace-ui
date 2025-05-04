@@ -23,6 +23,7 @@ __export(pageChartLine_exports, {
 module.exports = __toCommonJS(pageChartLine_exports);
 var import_pageChart = require("./pageChart");
 class PageChartLine extends import_pageChart.PageChart {
+  adminConfig = this.adapter.config.pageChartdata[this.index];
   constructor(config, options) {
     super(config, options);
   }

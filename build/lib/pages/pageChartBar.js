@@ -23,6 +23,7 @@ __export(pageChartBar_exports, {
 module.exports = __toCommonJS(pageChartBar_exports);
 var import_pageChart = require("./pageChart");
 class PageChartBar extends import_pageChart.PageChart {
+  adminConfig = this.adapter.config.pageChartdata[this.index];
   constructor(config, options) {
     super(config, options);
   }
@@ -73,7 +74,7 @@ class PageChartBar extends import_pageChart.PageChart {
               const stepXAchsis = rangeHours / maxXAxisLabels;
               for (let i = 0; i < rangeHours; i++) {
                 const deltaHour = rangeHours - i;
-                const targetDate = new Date(Date.now() - deltaHour * 60 * 60 * 1e3);
+                const targetDate = new Date(Date.now() - deltaHour * 3600 * 1e3);
                 for (let j = 0, targetValue = 0; j < dbDaten.length; j++) {
                   const valueDate = new Date(dbDaten[j].ts);
                   const value = Math.round(dbDaten[j].val / factor * 10);
@@ -95,7 +96,6 @@ class PageChartBar extends import_pageChart.PageChart {
               let min = 0;
               let intervall = 0;
               max = Math.max(...tempScale);
-              min = Math.min(...tempScale);
               this.log.debug(`Scale Min: ${min}, Max: ${max}`);
               intervall = Math.round(max / 4);
               ticksChart.push(String(min));

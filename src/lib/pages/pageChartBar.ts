@@ -3,6 +3,7 @@ import { type PageInterface } from '../classes/PageInterface';
 import type * as pages from '../types/pages';
 
 export class PageChartBar extends PageChart {
+    protected adminConfig = this.adapter.config.pageChartdata[this.index];
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         // Aufruf des Konstruktors der Basisklasse
         super(config, options);
@@ -69,7 +70,7 @@ export class PageChartBar extends PageChart {
 
                             for (let i = 0; i < rangeHours; i++) {
                                 const deltaHour = rangeHours - i;
-                                const targetDate = new Date(Date.now() - deltaHour * 60 * 60 * 1000);
+                                const targetDate = new Date(Date.now() - deltaHour * 3600 * 1000);
 
                                 //Check history items for requested hours
                                 for (let j = 0, targetValue = 0; j < dbDaten.length; j++) {
@@ -98,7 +99,6 @@ export class PageChartBar extends PageChart {
                             let intervall = 0;
 
                             max = Math.max(...tempScale);
-                            min = Math.min(...tempScale);
                             this.log.debug(`Scale Min: ${min}, Max: ${max}`);
 
                             intervall = Math.round(max / 4);

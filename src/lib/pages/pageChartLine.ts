@@ -3,6 +3,7 @@ import { type PageInterface } from '../classes/PageInterface';
 import type * as pages from '../types/pages';
 
 export class PageChartLine extends PageChart {
+    protected adminConfig = this.adapter.config.pageChartdata[this.index];
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         // Aufruf des Konstruktors der Basisklasse
         super(config, options);
