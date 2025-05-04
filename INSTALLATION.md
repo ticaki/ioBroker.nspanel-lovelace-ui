@@ -26,7 +26,11 @@ mit den Tasmota-Tools kann der Berry Treiber und die TFT-Firmware installiert we
 Speichern und schliessen
 
 Nächster Schritt:
-- Dieses [Skript](script/example_sendTo_script_iobroker.ts) als RAW downloaden und ein neues TS-Skript im Javascript-Adapter anlegen [Beispiel Konfigurationsskript](script/example_sendTo_script_iobroker.ts)
+In der Seite Maintanes das Panel auswählen und über den Button `Script` die aktuelle Version des Konfig-Scriptes anlegen. Es wird im JavaScript-Adapter in einem Ordner mit dem Namen der Adapter Instanz gespeichert. Der Dateiname gleicht dem Panelnamen.
+
+- das Konfig-Script 
+
+[Beispiel Konfigurationsskript](script/example_sendTo_script_iobroker.ts)
 - Anschauen und die Konfiguration aus einem vorhandenen aktuellen Nspanel-Skript hinein kopieren.  
 **Alle Servicepages** aus dem alten Skript nicht übernehmen.
 - Der Topic hier muß identisch sein mit einem der Topics aus dem Admin.
