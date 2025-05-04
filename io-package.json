@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.1.11",
+    "version": "0.1.12",
     "news": {
+      "0.1.12": {
+        "en": "added cardChart/cardLChart inkl. admin",
+        "de": "zusatzkarte Diagramm/KarteLChart inkl. Admin",
+        "ru": "добавить карту Chart/cardLChart inkl. admin",
+        "pt": "cartão adicionado Gráfico/cardLChart inkl. admin",
+        "nl": "toegevoegde kaart Grafiek/kaartLChart inktl. admin",
+        "fr": "carte ajoutée Graphique/carteLChart inkl. admin",
+        "it": "scheda aggiunta Grafico/cardLChart inkl. admin",
+        "es": "tarjeta Chart/cardLChart inkl. admin",
+        "pl": "dodana karta Wykres / kardLChart inkl. admin",
+        "uk": "додано картку Графік/cardLChart inkl. admin",
+        "zh-cn": "添加卡片 图表/卡片 LChart 墨水管理员"
+      },
       "0.1.11": {
         "en": "Admin overview revised\ninSel could not be left fixed\nMissing navigation of a page is reported\nPage Power improved",
         "de": "Admin-Übersicht überarbeitet\ninSel konnte nicht fixiert bleiben\nFehlende Navigation einer Seite wird gemeldet\nSeite Leistung verbessert",
@@ -80,19 +93,6 @@
         "pl": "poprawki # 140\npoprawki # 141",
         "uk": "застібки #140\nфіксатори #141",
         "zh-cn": "修正 # 140\n修正 # 141"
-      },
-      "0.1.5": {
-        "en": "fixes [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfixes #133\nConfiguration is reconfigured at every start. If this fails, the saved conversion is used.\nThe raw version and a converted version are saved when the configuration is transferred.\nparent added to navigation\ncardQR added",
-        "de": "[#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfixes #133\nDie Konfiguration wird zu jedem Start neu konfiguriert. Wenn dies ausfällt, wird die gespeicherte Konvertierung verwendet.\nDie Rohversion und eine konvertierte Version werden beim Übertragen der Konfiguration gespeichert.\nzur navigation hinzugefügt\ncardQR hinzugefügt",
-        "ru": "исправления [#135] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nобсуждение #133\nКонфигурация перенастраивается на каждом старте. Если это не удается, используется сохраненное преобразование.\nНеобработанная версия и преобразованная версия сохраняются при переносе конфигурации.\nродитель добавил в навигацию\ncardQR добавлен",
-        "pt": "correções [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135))\ncorreções #133\nA configuração é reconfigurada em cada início. Se isso falhar, a conversão salva é usada.\nA versão bruta e uma versão convertida são salvas quando a configuração é transferida.\npai adicionado à navegação\ncardQR adicionado",
-        "nl": "fixes [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfixes #133\nConfiguratie wordt bij elke start aangepast. Als dit mislukt, wordt de opgeslagen conversie gebruikt.\nDe raw versie en een geconverteerde versie worden opgeslagen wanneer de configuratie wordt overgedragen.\nouder toegevoegd aan navigatie\ncardQR toegevoegd",
-        "fr": "correctifs [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\ncorrectifs #133\nLa configuration est reconfigurée à chaque début. Si cela échoue, la conversion enregistrée est utilisée.\nLa version brute et une version convertie sont enregistrées lorsque la configuration est transférée.\nparent ajouté à la navigation\ncarteQR ajoutée",
-        "it": "[#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\ncorrezioni #133\nLa configurazione viene riconfigurata in ogni inizio. Se questo fallisce, viene utilizzata la conversione salvata.\nLa versione raw e una versione convertita vengono salvate quando la configurazione viene trasferita.\ngenitore aggiunto alla navigazione\ncardQR aggiunto",
-        "es": "fijaciones [#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nfijaciones #133\nLa configuración se reconfigura en cada principio. Si esto falla, se utiliza la conversión guardada.\nLa versión cruda y una versión convertida se guardan cuando se transfiere la configuración.\npadre añadido a la navegación\ncardQR añadido",
-        "pl": "fixes [# 135] (https: / / github.com / ticaki / ioBroker.nspanel- lovelace- ui / issues / 135)\npoprawki # 133\nKonfiguracja jest rekonfigurowana na każdym początku. Jeśli to się nie uda, zostanie zastosowana zapisana konwersja.\nWersja surowa i wersja skonwertowana są zapisywane po przeniesieniu konfiguracji.\nrodzic dodany do nawigacji\nkardQR dodany",
-        "uk": "[#135](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135)\nзакріплення #133\nНалаштування переконфігурується на кожному старті. Якщо це не вдається, використовується збережена конвертація.\nПри перерахуванні на конфігурацію передається сира версія та конвертована версія.\nдодано до навігації\ncardQR додано",
-        "zh-cn": "校正 [# 135] (https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues/135) 互联网档案馆的存檔,存档日期2014-03-05\n修正 # 133\n每次启动时都会重新配置配置 。 如果失败, 则使用保存的转换 .\n原始版本和转换后的版本在配置转移时保存.\n父目录添加到导航中\n已添加卡QR"
       }
     },
     "title": "NSPanel-Lovelace-UI Next Level",
