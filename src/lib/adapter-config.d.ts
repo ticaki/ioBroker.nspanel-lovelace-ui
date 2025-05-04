@@ -150,7 +150,7 @@ declare global {
                 rangeHours: number,
                 maxXAxisTicks: number,
                 factorCardChart: number,
-                maxXaxisLabels: number,
+                maxXAxisLabels: number,
             }[];
 
 

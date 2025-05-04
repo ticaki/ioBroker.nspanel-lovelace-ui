@@ -58,7 +58,7 @@ export class PageChartLine extends PageChart {
                     const stateValue = this.adminConfig.setStateForValues;
                     const instance = this.adminConfig.selInstance;
                     const xAxisTicksEveryM = this.adminConfig.maxXAxisTicks * 60;
-                    const xAxisLabelEveryM = this.adminConfig.maxXaxisLabels * 60;
+                    const xAxisLabelEveryM = this.adminConfig.maxXAxisLabels * 60;
                     const maxX = 1440; // 24h = 1440min
 
                     const tempScale: number[] = [];

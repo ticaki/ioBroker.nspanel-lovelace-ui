@@ -65,9 +65,11 @@ class PageChartLine extends import_pageChart.PageChart {
           const stateValue = this.adminConfig.setStateForValues;
           const instance = this.adminConfig.selInstance;
           const xAxisTicksEveryM = this.adminConfig.maxXAxisTicks * 60;
-          const xAxisLabelEveryM = this.adminConfig.maxXaxisLabels * 60;
+          const xAxisLabelEveryM = this.adminConfig.maxXAxisLabels * 60;
           const maxX = 1440;
           const tempScale = [];
+          this.log.debug(`getChartData: ${xAxisLabelEveryM} ${xAxisTicksEveryM} ${maxX}`);
+          this.log.debug(`getChartData: ${stateValue} ${numberOfHoursAgo} ${instance}`);
           try {
             const dbDaten = await this.getDataFromDB(stateValue, numberOfHoursAgo, instance);
             if (dbDaten && Array.isArray(dbDaten)) {
