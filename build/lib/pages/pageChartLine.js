@@ -23,6 +23,7 @@ __export(pageChartLine_exports, {
 module.exports = __toCommonJS(pageChartLine_exports);
 var import_pageChart = require("./pageChart");
 class PageChartLine extends import_pageChart.PageChart {
+  adminConfig = this.adapter.config.pageChartdata[this.index];
   constructor(config, options) {
     super(config, options);
   }
@@ -60,48 +61,51 @@ class PageChartLine extends import_pageChart.PageChart {
           break;
         }
         case 1: {
-          const rangeHours = this.adminConfig.rangeHours;
+          const numberOfHoursAgo = this.adminConfig.rangeHours;
           const stateValue = this.adminConfig.setStateForValues;
           const instance = this.adminConfig.selInstance;
-          const maxXAxisTicks = this.adminConfig.maxXAxisTicks;
+          const xAxisTicksEveryM = this.adminConfig.maxXAxisTicks * 60;
+          const xAxisLabelEveryM = this.adminConfig.maxXAxisLabels * 60;
+          const maxX = 1440;
           const tempScale = [];
           try {
-            const dbDaten = await this.getDataFromDB(stateValue, rangeHours, instance);
+            const dbDaten = await this.getDataFromDB(stateValue, numberOfHoursAgo, instance);
             if (dbDaten && Array.isArray(dbDaten)) {
               this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
+              let ticksAndLabels = "";
               let coordinates = "";
-              for (let r = 0; r < dbDaten.length; r++) {
-                const list = [];
-                const numValues = dbDaten[r].length;
-                for (let i = 0; i < numValues; i++) {
-                  const time = Math.round(dbDaten[r][i]._rtime / 1e3 / 1e3 / 1e3 / 60);
-                  const value = Math.round(dbDaten[r][i]._value * 10);
-                  list.push(`${time}:${value}`);
-                  tempScale.push(value);
-                }
-                coordinates = list.join("~");
-                this.log.debug(coordinates);
-              }
               const ticksAndLabelsList = [];
               const date = /* @__PURE__ */ new Date();
               date.setMinutes(0, 0, 0);
               const ts = Math.round(date.getTime() / 1e3);
-              const tsYesterday = ts - rangeHours * 3600;
-              this.log.debug(`Iterate from ${tsYesterday} to ${ts} stepsize=${maxXAxisTicks * 60}`);
-              for (let x = tsYesterday, i = 0; x < ts; x += maxXAxisTicks * 60, i += maxXAxisTicks) {
-                if (i % maxXAxisTicks) {
-                  ticksAndLabelsList.push(`${i}`);
+              const tsYesterday = ts - numberOfHoursAgo * 3600;
+              for (let x = tsYesterday, i = 0; x < ts; x += xAxisTicksEveryM * 60, i += xAxisTicksEveryM) {
+                if (i % xAxisLabelEveryM) {
+                  ticksAndLabelsList.push(i);
                 } else {
                   const currentDate = new Date(x * 1e3);
-                  const hours = `0${String(currentDate.getHours())}`;
-                  const minutes = `0${String(currentDate.getMinutes())}`;
+                  const hours = `0${currentDate.getHours()}`;
+                  const minutes = `0${currentDate.getMinutes()}`;
                   const formattedTime = `${hours.slice(-2)}:${minutes.slice(-2)}`;
                   ticksAndLabelsList.push(`${String(i)}^${formattedTime}`);
                 }
               }
-              this.log.debug(`Ticks & Label: ${JSON.stringify(ticksAndLabelsList)}`);
+              ticksAndLabels = ticksAndLabelsList.join("+");
+              const list = [];
+              const offSetTime = Math.round(dbDaten[0].ts / 1e3);
+              const counter = Math.round((dbDaten[dbDaten.length - 1].ts / 1e3 - offSetTime) / maxX);
+              for (let i = 0; i < dbDaten.length; i++) {
+                const time = Math.round((dbDaten[i].ts / 1e3 - offSetTime) / counter);
+                const value = Math.round(dbDaten[i].val * 10);
+                if (value != null && value != 0) {
+                  list.push(`${time}:${value}`);
+                  tempScale.push(value);
+                }
+              }
+              coordinates = list.join("~");
+              valuesChart = `${ticksAndLabels}~${coordinates}`;
+              this.log.debug(`Ticks & Label: ${ticksAndLabels}`);
               this.log.debug(`Coordinates: ${coordinates}`);
-              valuesChart = `${ticksAndLabelsList.join("+")}~${coordinates}`;
               let max = 0;
               let min = 0;
               let intervall = 0;

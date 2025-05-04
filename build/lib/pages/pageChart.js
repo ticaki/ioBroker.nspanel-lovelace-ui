@@ -130,7 +130,7 @@ class PageChart extends import_Page.Page {
   async getDataFromDB(_id, _rangeHours, _instance) {
     return new Promise((resolve, reject) => {
       const timeout = this.adapter.setTimeout(() => {
-        reject(new Error(`fehler im system`));
+        reject(new Error(`error  in system`));
       }, 5e3);
       this.adapter.sendTo(
         _instance,
@@ -140,10 +140,11 @@ class PageChart extends import_Page.Page {
           options: {
             start: Date.now() - _rangeHours * 60 * 60 * 1e3,
             end: Date.now(),
-            //count: _rangeHours,
-            //limit: _rangeHours,
-            //ignoreNull: true,
-            aggregate: "onchange"
+            count: _rangeHours,
+            limit: _rangeHours,
+            ignoreNull: true,
+            aggregate: "average",
+            round: 1
           }
         },
         (result) => {

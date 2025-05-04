@@ -41,23 +41,6 @@ export class PageChart extends Page {
     }
 
     async init(): Promise<void> {
-        /* const config = structuredClone(this.config);
-        // search states for mode auto
-        const tempConfig: Partial<pages.cardChartDataItemOptions> =
-            this.enums || this.dpInit
-                ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, undefined, this.enums)
-                : config;
-        // create Dataitems
-        //this.log.debug(JSON.stringify(tempConfig));
-        const tempItem: Partial<pages.cardChartDataItems> = await this.panel.statesControler.createDataItems(
-            tempConfig,
-            this,
-        );
-        if (tempItem) {
-            tempItem.card = this.card;
-            this.log.debug(`init Card: ${this.card}`);
-        }
-        this.items = tempItem as pages.cardChartDataItems; */
         await super.init();
     }
 
@@ -144,7 +127,7 @@ export class PageChart extends Page {
     protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
         return new Promise((resolve, reject) => {
             const timeout = this.adapter.setTimeout(() => {
-                reject(new Error(`fehler im system`));
+                reject(new Error(`error  in system`));
             }, 5000);
             this.adapter.sendTo(
                 _instance,
@@ -154,10 +137,11 @@ export class PageChart extends Page {
                     options: {
                         start: Date.now() - _rangeHours * 60 * 60 * 1000,
                         end: Date.now(),
-                        //count: _rangeHours,
-                        //limit: _rangeHours,
-                        //ignoreNull: true,
-                        aggregate: 'onchange',
+                        count: _rangeHours,
+                        limit: _rangeHours,
+                        ignoreNull: true,
+                        aggregate: 'average',
+                        round: 1,
                     },
                 },
                 result => {
