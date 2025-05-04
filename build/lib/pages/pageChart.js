@@ -143,7 +143,8 @@ class PageChart extends import_Page.Page {
             count: _rangeHours,
             limit: _rangeHours,
             ignoreNull: true,
-            aggregate: "average"
+            aggregate: "average",
+            round: 1
           }
         },
         (result) => {

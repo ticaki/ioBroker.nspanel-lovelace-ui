@@ -141,6 +141,7 @@ export class PageChart extends Page {
                         limit: _rangeHours,
                         ignoreNull: true,
                         aggregate: 'average',
+                        round: 1,
                     },
                 },
                 result => {
