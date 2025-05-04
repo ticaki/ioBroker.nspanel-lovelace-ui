@@ -151,8 +151,6 @@ declare global {
                 maxXAxisTicks: number,
                 factorCardChart: number,
                 maxXaxisLabels: number,
-                limitMesurements: number,
-                txtNameMeasurements: string,
             }[];
 
 

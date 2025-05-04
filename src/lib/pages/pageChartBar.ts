@@ -56,7 +56,7 @@ export class PageChartBar extends PageChart {
                     const rangeHours = this.adminConfig.rangeHours;
                     const stateValue = this.adminConfig.setStateForValues;
                     const instance = this.adminConfig.selInstance;
-                    const maxXAxisTicks = this.adminConfig.maxXAxisTicks;
+                    const maxXAxisLabels = this.adminConfig.maxXaxisLabels;
                     const factor = this.adminConfig.factorCardChart;
                     const tempScale: number[] = [];
 
@@ -65,7 +65,7 @@ export class PageChartBar extends PageChart {
                         if (dbDaten && Array.isArray(dbDaten)) {
                             this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
 
-                            const stepXAchsis = rangeHours / maxXAxisTicks;
+                            const stepXAchsis = rangeHours / maxXAxisLabels;
 
                             for (let i = 0; i < rangeHours; i++) {
                                 const deltaHour = rangeHours - i;

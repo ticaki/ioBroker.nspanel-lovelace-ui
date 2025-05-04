@@ -2736,10 +2736,10 @@
                             "xl": 2,
                             "type": "number",
                             "label": "labelmaxXAxisTicks",
-                            "min": 2,
-                            "max": 12,
-                            "default": 6,
-                            "hidden": "data.selChartType === '' || data.selInstanceDataSource == 0"
+                            "min": 1,
+                            "max": 8,
+                            "default": 1,
+                            "hidden": "data.selChartType !== 'cardChart' || data.selInstanceDataSource == 0"
                         },
                         {
                             "attr": "factorCardChart",
@@ -2779,21 +2779,11 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "labelmaxXAxisLabelsbets-testing",
-                            "default": 24,
-                            "hidden": "data.selChartType !== 'cardLChart' || data.selInstanceDataSource == 0"
-                        },
-                        {
-                            "attr": "limitMesurements",
-                            "xs": 4,
-                            "sm": 4,
-                            "md": 2,
-                            "lg": 2,
-                            "xl": 2,
-                            "type": "number",
-                            "label": "labelLimitMesurements beta-testing",
-                            "default": 35,
-                            "hidden": "data.selChartType !== 'cardLChart' || data.selInstanceDataSource == 0"
+                            "label": "labelmaxXAxisLabels",
+                            "min" : 1,
+                            "max": 8,
+                            "default": 4,
+                            "hidden": "data.selChartType === '' || data.selInstanceDataSource == 0"
                         },
                     ]
                 }
