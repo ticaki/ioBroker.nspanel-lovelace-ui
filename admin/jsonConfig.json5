@@ -2749,7 +2749,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "select",
-                            "label": "labelFactorCradChart",
+                            "label": "labelFactorCardChart",
                             "default": 1,
                             "options": [
                                 {
