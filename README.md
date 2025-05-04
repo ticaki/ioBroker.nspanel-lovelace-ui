@@ -85,11 +85,11 @@ log10?: 'max' | 'min';
   
 ## Aktuelle Version  
 
-Mit der aktuellen Version 0.1.8 sind schon ein paar Test möglich.
+Mit der aktuellen Version 0.1.12 sind schon ein paar Test möglich.
 
 [Hier eine kurze Anleitung zur Installation und Startconfig](INSTALLATION.md)
 
-Bei Fragen fragen - discord, forum, hier, telegram, teams alles vorhanden :)
+Bei Fragen fragen - Discord, Forum, hier, Telegram, Teams alles vorhanden :)
 
 [Alias Tabelle](ALIAS.md)
 
