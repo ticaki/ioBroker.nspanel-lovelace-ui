@@ -64,7 +64,7 @@ class PageChartBar extends import_pageChart.PageChart {
           const rangeHours = this.adminConfig.rangeHours;
           const stateValue = this.adminConfig.setStateForValues;
           const instance = this.adminConfig.selInstance;
-          const maxXAxisLabels = this.adminConfig.maxXaxisLabels;
+          const maxXAxisLabels = this.adminConfig.maxXAxisLabels;
           const factor = this.adminConfig.factorCardChart;
           const tempScale = [];
           try {
