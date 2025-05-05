@@ -283,11 +283,11 @@ export class PagePower extends Page {
                 valueUnit.push('');
             }
         }
-
-        /* if (config.power8_selInternalCalculation) {
-            const valueKey = {
+        let valueKey = {};
+        if (config.power8_selInternalCalculation) {
+            valueKey = {
                 value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
-                math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
+                //math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
             };
         } else {
             valueKey = {
@@ -295,7 +295,7 @@ export class PagePower extends Page {
                 decimal: { type: 'const', constVal: valueDecimal[7] },
                 unit: { type: 'const', constVal: valueUnit[7] },
             };
-        } */
+        }
 
         const result: pages.PageBaseConfig = {
             uniqueID: config.pageName,
@@ -311,11 +311,7 @@ export class PagePower extends Page {
                         decimal: { type: 'const', constVal: valueDecimal[6] },
                         unit: { type: 'const', constVal: valueUnit[6] },
                     },
-                    homeValueBot: {
-                        value: { type: 'triggered', dp: states[7] },
-                        decimal: { type: 'const', constVal: valueDecimal[7] },
-                        unit: { type: 'const', constVal: valueUnit[7] },
-                    },
+                    homeValueBot: valueKey,
                     leftTop: {
                         icon: {
                             true: {
