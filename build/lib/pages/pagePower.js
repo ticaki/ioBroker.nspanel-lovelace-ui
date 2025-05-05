@@ -123,14 +123,17 @@ class PagePower extends import_Page.Page {
       const r1 = await this.getElementSum(data.rightTop, 0);
       const r2 = await this.getElementSum(data.rightMiddle, 0);
       const r3 = await this.getElementSum(data.rightBottom, 0);
-      let sum = l1 + l2 + l3 + r1 + r2 + r3;
-      if (items.data.homeValueBot && items.data.homeValueBot.math) {
-        const f = await items.data.homeValueBot.math.getString();
-        if (f) {
-          sum = new Function("l1", "l2", "l3", "r1", "r2", "r3", "Math", f)(l1, l2, l3, r1, r2, r3, Math);
+      if (this.adapter.config.pagePowerdata[this.index].power8_selInternalCalculation) {
+        const negativValue = this.adapter.config.pagePowerdata[this.index].power8_selNegativValue;
+        if (Array.isArray(negativValue) && negativValue.length > 0) {
+          const werte = [l1, l2, l3, r1, r2, r3];
+          const angepasst = werte.map((wert, index) => negativValue.includes(index + 1) ? -wert : wert);
+          const gesamt = angepasst.reduce((summe, wert) => summe + wert, 0);
+          console.log("Angepasste Summe:", gesamt);
+          return String(gesamt);
         }
+        return String(0);
       }
-      return String(sum);
     }
     return null;
   };
@@ -241,6 +244,20 @@ class PagePower extends import_Page.Page {
         valueUnit.push("");
       }
     }
+    let valueKey = {};
+    if (config.power8_selInternalCalculation) {
+      valueKey = {
+        value: { type: "internal", dp: `///${config.pageName}/powerSum` },
+        decimal: { type: "const", constVal: valueDecimal[7] },
+        unit: { type: "const", constVal: valueUnit[7] }
+      };
+    } else {
+      valueKey = {
+        value: { type: "triggered", dp: states[7] },
+        decimal: { type: "const", constVal: valueDecimal[7] },
+        unit: { type: "const", constVal: valueUnit[7] }
+      };
+    }
     const result = {
       uniqueID: config.pageName,
       alwaysOn: config.alwaysOnDisplay ? "always" : "none",
@@ -255,11 +272,7 @@ class PagePower extends import_Page.Page {
             decimal: { type: "const", constVal: valueDecimal[6] },
             unit: { type: "const", constVal: valueUnit[6] }
           },
-          homeValueBot: {
-            value: { type: "triggered", dp: states[7] },
-            decimal: { type: "const", constVal: valueDecimal[7] },
-            unit: { type: "const", constVal: valueUnit[7] }
-          },
+          homeValueBot: valueKey,
           leftTop: {
             icon: {
               true: {

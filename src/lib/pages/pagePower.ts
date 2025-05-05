@@ -142,7 +142,7 @@ export class PagePower extends Page {
 
                     // Gesamtsumme berechnen
                     const gesamt = angepasst.reduce((summe, wert) => summe + wert, 0);
-                    console.log('Angepasste Summe:', gesamt);
+                    this.log.debug(`Angepasste Summe: ${gesamt}`);
 
                     return String(gesamt);
                 }
@@ -283,11 +283,13 @@ export class PagePower extends Page {
                 valueUnit.push('');
             }
         }
+
         let valueKey = {};
         if (config.power8_selInternalCalculation) {
             valueKey = {
                 value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
-                //math: { type: 'const', constVal: 'return r1+r2+r3+l1+l2+l3 -999' },
+                decimal: { type: 'const', constVal: valueDecimal[7] },
+                unit: { type: 'const', constVal: valueUnit[7] },
             };
         } else {
             valueKey = {
@@ -742,6 +744,7 @@ export class PagePower extends Page {
 
         return message;
     }
+
     private getMessage(message: Partial<pages.PagePowerMessage>): string {
         let result: pages.PagePowerMessage = PagePowerMessageDefault;
         result = deepAssign(result, message) as pages.PagePowerMessage;
