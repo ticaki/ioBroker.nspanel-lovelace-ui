@@ -3,6 +3,7 @@ import { type PageInterface } from '../classes/PageInterface';
 import type * as pages from '../types/pages';
 
 export class PageChartBar extends PageChart {
+    protected adminConfig = this.adapter.config.pageChartdata[this.index];
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         // Aufruf des Konstruktors der Basisklasse
         super(config, options);
@@ -56,7 +57,7 @@ export class PageChartBar extends PageChart {
                     const rangeHours = this.adminConfig.rangeHours;
                     const stateValue = this.adminConfig.setStateForValues;
                     const instance = this.adminConfig.selInstance;
-                    const maxXAxisTicks = this.adminConfig.maxXAxisTicks;
+                    const maxXAxisLabels = this.adminConfig.maxXAxisLabels;
                     const factor = this.adminConfig.factorCardChart;
                     const tempScale: number[] = [];
 
@@ -65,11 +66,11 @@ export class PageChartBar extends PageChart {
                         if (dbDaten && Array.isArray(dbDaten)) {
                             this.log.debug(`Data from DB: ${JSON.stringify(dbDaten)}`);
 
-                            const stepXAchsis = rangeHours / maxXAxisTicks;
+                            const stepXAchsis = rangeHours / maxXAxisLabels;
 
                             for (let i = 0; i < rangeHours; i++) {
                                 const deltaHour = rangeHours - i;
-                                const targetDate = new Date(Date.now() - deltaHour * 60 * 60 * 1000);
+                                const targetDate = new Date(Date.now() - deltaHour * 3600 * 1000);
 
                                 //Check history items for requested hours
                                 for (let j = 0, targetValue = 0; j < dbDaten.length; j++) {
@@ -93,20 +94,16 @@ export class PageChartBar extends PageChart {
                             valuesChart = valuesChart.substring(0, valuesChart.length - 1);
 
                             // create ticks
-                            let max = 0;
-                            let min = 0;
-                            let intervall = 0;
+                            const max = Math.max(...tempScale);
+                            const min = 0;
+                            const intervall = Math.max(Number(((max - min) / 5).toFixed()), 10);
 
-                            max = Math.max(...tempScale);
-                            min = Math.min(...tempScale);
-                            this.log.debug(`Scale Min: ${min}, Max: ${max}`);
+                            this.log.debug(`Scale Min: ${min}, Max: ${max} Intervall: ${intervall}`);
 
-                            intervall = Math.round(max / 4);
-                            ticksChart.push(String(min));
-
-                            for (let count = 0; count < 4; count++) {
-                                min = Math.round(min + intervall);
-                                ticksChart.push(String(min));
+                            let currentTick = min;
+                            while (currentTick < max + intervall) {
+                                ticksChart.push(String(currentTick));
+                                currentTick += intervall;
                             }
                         }
                     } catch (error) {

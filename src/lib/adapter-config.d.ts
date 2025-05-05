@@ -152,9 +152,7 @@ declare global {
                 rangeHours: number,
                 maxXAxisTicks: number,
                 factorCardChart: number,
-                maxXaxisLabels: number,
-                limitMesurements: number,
-                txtNameMeasurements: string,
+                maxXAxisLabels: number,
             }[];
 
 

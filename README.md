@@ -304,9 +304,9 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**  
+### 0.1.12 (2025-05-04)  
 - (tt-tom17) added cardChart/cardLChart inkl. admin
-  
+
 ### 0.1.11 (2025-04-12)
 - (ticaki) Admin overview revised
 - (ticaki) inSel could not be left fixed
