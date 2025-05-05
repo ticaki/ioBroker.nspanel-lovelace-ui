@@ -130,27 +130,28 @@ export class PagePower extends Page {
             const r2 = await this.getElementSum(data.rightMiddle, 0);
             const r3 = await this.getElementSum(data.rightBottom, 0);
 
+            let gesamt = 0;
+            let angepasst: number[] = [];
+
             // Prüfen, ob die interne Berechnung aktiviert ist
             if (this.adapter.config.pagePowerdata[this.index].power8_selInternalCalculation) {
                 const negativValue = this.adapter.config.pagePowerdata[this.index].power8_selNegativValue; // Indexe (1-basiert), deren Werte negativ gezählt werden sollen
-
+                const werte = [l1, l2, l3, r1, r2, r3];
                 if (Array.isArray(negativValue) && negativValue.length > 0) {
-                    const werte = [l1, l2, l3, r1, r2, r3];
-
                     // Werte negieren, falls der Index in negativValue enthalten ist
-                    const angepasst = werte.map((wert, index) => (negativValue.includes(index + 1) ? -wert : wert));
-
-                    // Gesamtsumme berechnen
-                    const gesamt = angepasst.reduce((summe, wert) => summe + wert, 0);
-                    this.log.debug(`Angepasste Summe: ${gesamt}`);
-
-                    return String(gesamt);
+                    angepasst = werte.map((wert, index) => (negativValue.includes(index + 1) ? wert : 0));
+                } else {
+                    angepasst = werte;
                 }
-                return String(0);
+                // Gesamtsumme berechnen
+                gesamt = angepasst.reduce((summe, wert) => summe + wert, 0);
+                this.log.debug(`Angepasste Summe: ${gesamt}`);
+                return String(gesamt);
             }
         }
         return null;
     };
+
     static async getPowerPageConfig(
         adapter: NspanelLovelaceUi,
         index: number,
@@ -266,7 +267,7 @@ export class PagePower extends Page {
 
         //array of valueUnit
         const valueUnit: string[] = [];
-        for (let i = 1; i <= 8; i++) {
+        for (let i = 1; i <= 7; i++) {
             const key = `power${i}_valueUnit` as keyof typeof config;
             if (states[i - 1] != null && states[i - 1] != '' && (await configManager.existsState(states[i - 1]))) {
                 const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
@@ -275,6 +276,26 @@ export class PagePower extends Page {
                 } else {
                     if (typeof config[key] === 'string' && config[key] != '') {
                         valueUnit.push(` ${config[key]}`);
+                    } else {
+                        valueUnit.push(' W');
+                    }
+                }
+            } else {
+                valueUnit.push('');
+            }
+        }
+        // Sonderfall Power8 - ValueBottom
+        const unitPower8 = `power8_valueUnit` as keyof typeof config;
+        if (config.power8_selInternalCalculation) {
+            valueUnit.push(` ${config[unitPower8]}`);
+        } else {
+            if (states[7] != null && states[7] != '' && (await configManager.existsState(states[7]))) {
+                const o = await configManager.adapter.getForeignObjectAsync(states[7]);
+                if (o && o.common && o.common.unit) {
+                    valueUnit.push(` ${o.common.unit}`);
+                } else {
+                    if (typeof config[unitPower8] === 'string' && config[unitPower8] != '') {
+                        valueUnit.push(` ${config[unitPower8]}`);
                     } else {
                         valueUnit.push(' W');
                     }
