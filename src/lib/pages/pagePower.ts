@@ -129,14 +129,25 @@ export class PagePower extends Page {
             const r1 = await this.getElementSum(data.rightTop, 0);
             const r2 = await this.getElementSum(data.rightMiddle, 0);
             const r3 = await this.getElementSum(data.rightBottom, 0);
-            let sum = l1 + l2 + l3 + r1 + r2 + r3;
-            if (items.data.homeValueBot && items.data.homeValueBot.math) {
-                const f = await items.data.homeValueBot.math.getString();
-                if (f) {
-                    sum = new Function('l1', 'l2', 'l3', 'r1', 'r2', 'r3', 'Math', f)(l1, l2, l3, r1, r2, r3, Math);
+
+            // Prüfen, ob die interne Berechnung aktiviert ist
+            if (this.adapter.config.pagePowerdata[this.index].power8_selInternalCalculation) {
+                const negativValue = this.adapter.config.pagePowerdata[this.index].power8_selNegativValue; // Indexe (1-basiert), deren Werte negativ gezählt werden sollen
+
+                if (Array.isArray(negativValue) && negativValue.length > 0) {
+                    const werte = [l1, l2, l3, r1, r2, r3];
+
+                    // Werte negieren, falls der Index in negativValue enthalten ist
+                    const angepasst = werte.map((wert, index) => (negativValue.includes(index + 1) ? -wert : wert));
+
+                    // Gesamtsumme berechnen
+                    const gesamt = angepasst.reduce((summe, wert) => summe + wert, 0);
+                    console.log('Angepasste Summe:', gesamt);
+
+                    return String(gesamt);
                 }
+                return String(0);
             }
-            return String(sum);
         }
         return null;
     };
