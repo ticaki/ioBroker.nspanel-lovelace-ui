@@ -135,7 +135,7 @@ export class PagePower extends Page {
 
             // Prüfen, ob die interne Berechnung aktiviert ist
             if (this.adapter.config.pagePowerdata[this.index].power8_selInternalCalculation) {
-                const negativValue = this.adapter.config.pagePowerdata[this.index].power8_selNegativValue; // Indexe (1-basiert), deren Werte negativ gezählt werden sollen
+                const negativValue = this.adapter.config.pagePowerdata[this.index].power8_selPowerSupply; // Indexe (1-basiert), deren Werte negativ gezählt werden sollen
                 const werte = [l1, l2, l3, r1, r2, r3];
                 if (Array.isArray(negativValue) && negativValue.length > 0) {
                     // Werte negieren, falls der Index in negativValue enthalten ist

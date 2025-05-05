@@ -126,7 +126,7 @@ class PagePower extends import_Page.Page {
       let gesamt = 0;
       let angepasst = [];
       if (this.adapter.config.pagePowerdata[this.index].power8_selInternalCalculation) {
-        const negativValue = this.adapter.config.pagePowerdata[this.index].power8_selNegativValue;
+        const negativValue = this.adapter.config.pagePowerdata[this.index].power8_selPowerSupply;
         const werte = [l1, l2, l3, r1, r2, r3];
         if (Array.isArray(negativValue) && negativValue.length > 0) {
           angepasst = werte.map((wert, index) => negativValue.includes(index + 1) ? wert : 0);

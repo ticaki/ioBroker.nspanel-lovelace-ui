@@ -2499,14 +2499,14 @@
                             "hidden": "data.power8_selInternalCalculation"
                         },
                         {
-                            "attr": "power8_selNegativValue",
+                            "attr": "power8_selPowerSupply",
                             "xs": 10,
                             "sm": 10,
                             "md": 6,
                             "lg": 4,
                             "xl": 4,
                             "type": "select",
-                            "label": "negativValue",
+                            "label": "labelPowersupply",
                             "default": "",
                             "multiple": true,
                             "options": [
