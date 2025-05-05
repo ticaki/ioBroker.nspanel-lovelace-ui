@@ -25,8 +25,10 @@ mit den Tasmota-Tools kann der Berry Treiber und die TFT-Firmware installiert we
 ![Panel Schritt 3](Picture/Installation_Panels_3.png)
 Speichern und schliessen
 
-Nächster Schritt:
-In der Seite Maintanes das Panel auswählen und über den Button `Script` die aktuelle Version des Konfig-Scriptes anlegen. Es wird im JavaScript-Adapter in einem Ordner mit dem Namen der Adapter Instanz gespeichert. Der Dateiname gleicht dem Panelnamen.
+Nächster Schritt:  
+![Panel Schritt 4](Picture/Installation_panels_4.png)
+In der Seite Maintain das Panel auswählen und über den Button `Script` die aktuelle Version des Konfig-Scriptes anlegen. Es wird im JavaScript-Adapter in einem Ordner mit dem Namen der Adapter Instanz gespeichert. Der Dateiname gleicht dem Panelnamen.  
+![Panel Schritt 5](Picture/Installation_panels_5.png)
 
 - das Konfig-Script 
 
