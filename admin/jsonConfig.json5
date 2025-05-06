@@ -2476,6 +2476,18 @@
                             "hidden": "!data._power7_more"
                         },
                         {
+                           "attr": "power8_selInternalCalculation",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "checkbox",
+                            "label": "internalCalculation",
+                            "default": false,
+                            "newLine": true 
+                        },
+                        {
                             "newLine": true,
                             "attr": "power8_state",
                             "xs": 12,
@@ -2485,7 +2497,47 @@
                             "xl": 8,
                             "type": "objectId",
                             "label": "powerStateHomeBottom",
-                            "filterFunc": "return obj.common.type === 'number'"
+                            "filterFunc": "return obj.common.type === 'number'",
+                            "hidden": "data.power8_selInternalCalculation"
+                        },
+                        {
+                            "attr": "power8_selPowerSupply",
+                            "xs": 10,
+                            "sm": 10,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "select",
+                            "label": "labelPowersupply",
+                            "default": "",
+                            "multiple": true,
+                            "options": [
+                                {
+                                    "label": "Left Top",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "Left Middle",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "Left Bottom",
+                                    "value": 3
+                                },
+                                {
+                                    "label": "Right Top",
+                                    "value": 4
+                                },
+                                {
+                                    "label": "Right Middle",
+                                    "value": 5
+                                },
+                                {
+                                    "label": "Right Bottom",
+                                    "value": 6
+                                }
+                            ],
+                            "hidden": "!data.power8_selInternalCalculation"
                         },
                         {
                             "attr": "_power8_more",

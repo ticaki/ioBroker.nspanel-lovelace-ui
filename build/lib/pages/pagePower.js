@@ -123,14 +123,20 @@ class PagePower extends import_Page.Page {
       const r1 = await this.getElementSum(data.rightTop, 0);
       const r2 = await this.getElementSum(data.rightMiddle, 0);
       const r3 = await this.getElementSum(data.rightBottom, 0);
-      let sum = l1 + l2 + l3 + r1 + r2 + r3;
-      if (items.data.homeValueBot && items.data.homeValueBot.math) {
-        const f = await items.data.homeValueBot.math.getString();
-        if (f) {
-          sum = new Function("l1", "l2", "l3", "r1", "r2", "r3", "Math", f)(l1, l2, l3, r1, r2, r3, Math);
+      let gesamt = 0;
+      let angepasst = [];
+      if (this.adapter.config.pagePowerdata[this.index].power8_selInternalCalculation) {
+        const negativValue = this.adapter.config.pagePowerdata[this.index].power8_selPowerSupply;
+        const werte = [l1, l2, l3, r1, r2, r3];
+        if (Array.isArray(negativValue) && negativValue.length > 0) {
+          angepasst = werte.map((wert, index) => negativValue.includes(index + 1) ? wert : 0);
+        } else {
+          angepasst = werte;
         }
+        gesamt = angepasst.reduce((summe, wert) => summe + wert, 0);
+        this.log.debug(`Angepasste Summe: ${gesamt}`);
+        return String(gesamt);
       }
-      return String(sum);
     }
     return null;
   };
@@ -224,9 +230,9 @@ class PagePower extends import_Page.Page {
       }
     }
     const valueUnit = [];
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 7; i++) {
       const key = `power${i}_valueUnit`;
-      if (states[i - 1] != null && states[i - 1] != "") {
+      if (states[i - 1] != null && states[i - 1] != "" && await configManager.existsState(states[i - 1])) {
         const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
         if (o && o.common && o.common.unit) {
           valueUnit.push(` ${o.common.unit}`);
@@ -240,6 +246,39 @@ class PagePower extends import_Page.Page {
       } else {
         valueUnit.push("");
       }
+    }
+    const unitPower8 = `power8_valueUnit`;
+    if (config.power8_selInternalCalculation) {
+      valueUnit.push(` ${config[unitPower8]}`);
+    } else {
+      if (states[7] != null && states[7] != "" && await configManager.existsState(states[7])) {
+        const o = await configManager.adapter.getForeignObjectAsync(states[7]);
+        if (o && o.common && o.common.unit) {
+          valueUnit.push(` ${o.common.unit}`);
+        } else {
+          if (typeof config[unitPower8] === "string" && config[unitPower8] != "") {
+            valueUnit.push(` ${config[unitPower8]}`);
+          } else {
+            valueUnit.push(" W");
+          }
+        }
+      } else {
+        valueUnit.push("");
+      }
+    }
+    let valueKey = {};
+    if (config.power8_selInternalCalculation) {
+      valueKey = {
+        value: { type: "internal", dp: `///${config.pageName}/powerSum` },
+        decimal: { type: "const", constVal: valueDecimal[7] },
+        unit: { type: "const", constVal: valueUnit[7] }
+      };
+    } else {
+      valueKey = {
+        value: { type: "triggered", dp: states[7] },
+        decimal: { type: "const", constVal: valueDecimal[7] },
+        unit: { type: "const", constVal: valueUnit[7] }
+      };
     }
     const result = {
       uniqueID: config.pageName,
@@ -255,11 +294,7 @@ class PagePower extends import_Page.Page {
             decimal: { type: "const", constVal: valueDecimal[6] },
             unit: { type: "const", constVal: valueUnit[6] }
           },
-          homeValueBot: {
-            value: { type: "triggered", dp: states[7] },
-            decimal: { type: "const", constVal: valueDecimal[7] },
-            unit: { type: "const", constVal: valueUnit[7] }
-          },
+          homeValueBot: valueKey,
           leftTop: {
             icon: {
               true: {
@@ -656,7 +691,7 @@ class PagePower extends import_Page.Page {
     return value !== null ? value + num : num;
   }
   async getElementUpdate(item, index) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     if (item === void 0) {
       return void 0;
     }
@@ -665,12 +700,18 @@ class PagePower extends import_Page.Page {
     if (value === null) {
       return void 0;
     }
-    this.autoUnit[index] = value;
     message.icon = (_a = await (0, import_tools.getIconEntryValue)(item.icon, value >= 0, "")) != null ? _a : void 0;
     message.iconColor = (_b = await (0, import_tools.getIconEntryColor)(item.icon, value, import_Color.Color.White)) != null ? _b : void 0;
     message.name = (_c = await (0, import_tools.getEntryTextOnOff)(item.text, value >= 0)) != null ? _c : void 0;
     message.speed = (_d = await (0, import_tools.getScaledNumber)(item.speed)) != null ? _d : void 0;
-    message.value = (_e = await (0, import_tools.getValueEntryString)(item.value, value)) != null ? _e : void 0;
+    const {
+      value: newValue,
+      unit,
+      endFactor
+    } = await (0, import_tools.getValueAutoUnit)(item.value, null, 5, null, this.autoUnit[index]);
+    this.autoUnit[index] = endFactor || 0;
+    message.value = `${newValue}${unit ? ` ${unit}` : ""}`;
+    this.log.debug(`getElementUpdate ${value} ${newValue} ${unit} ${endFactor}`);
     return message;
   }
   getMessage(message) {
@@ -712,6 +753,12 @@ class PagePower extends import_Page.Page {
   }
   async onStateTrigger() {
     await this.update();
+  }
+  onVisibilityChange(val) {
+    if (val) {
+      this.autoUnit = [];
+    }
+    return super.onVisibilityChange(val);
   }
   async onButtonEvent(_event) {
   }

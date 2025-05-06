@@ -8,6 +8,7 @@ import {
     getIconEntryValue,
     getPayload,
     getScaledNumber,
+    getValueAutoUnit,
     getValueEntryNumber,
     getValueEntryString,
 } from '../const/tools';
@@ -76,7 +77,7 @@ export class PagePower extends Page {
     //items: pages.PageBaseConfig['items'];
     items: pages.cardPowerDataItems | undefined;
     index: number = 0;
-    private autoUnit: number[] = [];
+    private autoUnit: (number | undefined)[] = [];
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         super(config, options);
         if (options.config && options.config.card == 'cardPower') {
@@ -128,17 +129,29 @@ export class PagePower extends Page {
             const r1 = await this.getElementSum(data.rightTop, 0);
             const r2 = await this.getElementSum(data.rightMiddle, 0);
             const r3 = await this.getElementSum(data.rightBottom, 0);
-            let sum = l1 + l2 + l3 + r1 + r2 + r3;
-            if (items.data.homeValueBot && items.data.homeValueBot.math) {
-                const f = await items.data.homeValueBot.math.getString();
-                if (f) {
-                    sum = new Function('l1', 'l2', 'l3', 'r1', 'r2', 'r3', 'Math', f)(l1, l2, l3, r1, r2, r3, Math);
+
+            let gesamt = 0;
+            let angepasst: number[] = [];
+
+            // Prüfen, ob die interne Berechnung aktiviert ist
+            if (this.adapter.config.pagePowerdata[this.index].power8_selInternalCalculation) {
+                const negativValue = this.adapter.config.pagePowerdata[this.index].power8_selPowerSupply; // Indexe (1-basiert), deren Werte negativ gezählt werden sollen
+                const werte = [l1, l2, l3, r1, r2, r3];
+                if (Array.isArray(negativValue) && negativValue.length > 0) {
+                    // Werte negieren, falls der Index in negativValue enthalten ist
+                    angepasst = werte.map((wert, index) => (negativValue.includes(index + 1) ? wert : 0));
+                } else {
+                    angepasst = werte;
                 }
+                // Gesamtsumme berechnen
+                gesamt = angepasst.reduce((summe, wert) => summe + wert, 0);
+                this.log.debug(`Angepasste Summe: ${gesamt}`);
+                return String(gesamt);
             }
-            return String(sum);
         }
         return null;
     };
+
     static async getPowerPageConfig(
         adapter: NspanelLovelaceUi,
         index: number,
@@ -254,9 +267,9 @@ export class PagePower extends Page {
 
         //array of valueUnit
         const valueUnit: string[] = [];
-        for (let i = 1; i <= 8; i++) {
+        for (let i = 1; i <= 7; i++) {
             const key = `power${i}_valueUnit` as keyof typeof config;
-            if (states[i - 1] != null && states[i - 1] != '') {
+            if (states[i - 1] != null && states[i - 1] != '' && (await configManager.existsState(states[i - 1]))) {
                 const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
                 if (o && o.common && o.common.unit) {
                     valueUnit.push(` ${o.common.unit}`);
@@ -270,6 +283,41 @@ export class PagePower extends Page {
             } else {
                 valueUnit.push('');
             }
+        }
+        // Sonderfall Power8 - ValueBottom
+        const unitPower8 = `power8_valueUnit` as keyof typeof config;
+        if (config.power8_selInternalCalculation) {
+            valueUnit.push(` ${config[unitPower8]}`);
+        } else {
+            if (states[7] != null && states[7] != '' && (await configManager.existsState(states[7]))) {
+                const o = await configManager.adapter.getForeignObjectAsync(states[7]);
+                if (o && o.common && o.common.unit) {
+                    valueUnit.push(` ${o.common.unit}`);
+                } else {
+                    if (typeof config[unitPower8] === 'string' && config[unitPower8] != '') {
+                        valueUnit.push(` ${config[unitPower8]}`);
+                    } else {
+                        valueUnit.push(' W');
+                    }
+                }
+            } else {
+                valueUnit.push('');
+            }
+        }
+
+        let valueKey = {};
+        if (config.power8_selInternalCalculation) {
+            valueKey = {
+                value: { type: 'internal', dp: `///${config.pageName}/powerSum` },
+                decimal: { type: 'const', constVal: valueDecimal[7] },
+                unit: { type: 'const', constVal: valueUnit[7] },
+            };
+        } else {
+            valueKey = {
+                value: { type: 'triggered', dp: states[7] },
+                decimal: { type: 'const', constVal: valueDecimal[7] },
+                unit: { type: 'const', constVal: valueUnit[7] },
+            };
         }
 
         const result: pages.PageBaseConfig = {
@@ -286,11 +334,7 @@ export class PagePower extends Page {
                         decimal: { type: 'const', constVal: valueDecimal[6] },
                         unit: { type: 'const', constVal: valueUnit[6] },
                     },
-                    homeValueBot: {
-                        value: { type: 'triggered', dp: states[7] },
-                        decimal: { type: 'const', constVal: valueDecimal[7] },
-                        unit: { type: 'const', constVal: valueUnit[7] },
-                    },
+                    homeValueBot: valueKey,
                     leftTop: {
                         icon: {
                             true: {
@@ -705,16 +749,23 @@ export class PagePower extends Page {
         if (value === null) {
             return undefined;
         }
-        this.autoUnit[index] = value;
 
         message.icon = (await getIconEntryValue(item.icon, value >= 0, '')) ?? undefined;
         message.iconColor = (await getIconEntryColor(item.icon, value, Color.White)) ?? undefined;
         message.name = (await getEntryTextOnOff(item.text, value >= 0)) ?? undefined;
         message.speed = (await getScaledNumber(item.speed)) ?? undefined;
-        message.value = (await getValueEntryString(item.value, value)) ?? undefined;
+        const {
+            value: newValue,
+            unit,
+            endFactor,
+        } = await getValueAutoUnit(item.value, null, 5, null, this.autoUnit[index]);
+        this.autoUnit[index] = endFactor || 0;
+        message.value = `${newValue}${unit ? ` ${unit}` : ''}`;
+        this.log.debug(`getElementUpdate ${value} ${newValue} ${unit} ${endFactor}`);
 
         return message;
     }
+
     private getMessage(message: Partial<pages.PagePowerMessage>): string {
         let result: pages.PagePowerMessage = PagePowerMessageDefault;
         result = deepAssign(result, message) as pages.PagePowerMessage;
@@ -754,6 +805,12 @@ export class PagePower extends Page {
     }
     protected async onStateTrigger(): Promise<void> {
         await this.update();
+    }
+    protected onVisibilityChange(val: boolean): Promise<void> {
+        if (val) {
+            this.autoUnit = [];
+        }
+        return super.onVisibilityChange(val);
     }
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         //if (event.page && event.id && this.pageItems) {
