@@ -62,7 +62,7 @@ export class SystemNotifications extends BaseClass {
     public async onStateChange(id: string, _state: ioBroker.State | null | undefined): Promise<void> {
         if (id.startsWith('system.host')) {
             const hostName = id.split('.')[2];
-            this.log.info(`New notification on "${hostName}" detected`);
+            this.log.info(`Changes to the notifications on "${hostName}" detected.`);
             await this.handleIobrokerNotifications([`system.host.${hostName}`]);
         }
     }

@@ -80,7 +80,7 @@ class SystemNotifications extends import_library.BaseClass {
   async onStateChange(id, _state) {
     if (id.startsWith("system.host")) {
       const hostName = id.split(".")[2];
-      this.log.info(`New notification on "${hostName}" detected`);
+      this.log.info(`Changes to the notifications on "${hostName}" detected.`);
       await this.handleIobrokerNotifications([`system.host.${hostName}`]);
     }
   }
