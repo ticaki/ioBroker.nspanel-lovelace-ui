@@ -1206,7 +1206,7 @@
                             "type": "number",
                             "label": "powerMinValueForSpeed",
                             "default": 0,
-                            "hidden": true //"!data._power1_more"
+                            "hidden": "true" //"!data._power1_more"
                         },
                         {
                             "attr": "power1_maxSpeedScale",
@@ -1424,7 +1424,7 @@
                             "type": "number",
                             "label": "powerMinValueForSpeed",
                             "default": 0,
-                            "hidden": true //"!data._power2_more"
+                            "hidden": "true" //"!data._power2_more"
                         },
                         {
                             "attr": "power2_maxSpeedScale",
@@ -1641,7 +1641,7 @@
                             "type": "number",
                             "label": "powerMinValueForSpeed",
                             "default": 0,
-                            "hidden": true //"!data._power3_more"
+                            "hidden": "true" //"!data._power3_more"
                         },
                         {
                             "attr": "power3_maxSpeedScale",
@@ -1858,7 +1858,7 @@
                             "type": "number",
                             "label": "powerMinValueForSpeed",
                             "default": 0,
-                            "hidden": true //"!data._power4_more"
+                            "hidden": "true" //"!data._power4_more"
                         },
                         {
                             "attr": "power4_maxSpeedScale",
@@ -2075,7 +2075,7 @@
                             "type": "number",
                             "label": "powerMinValueForSpeed",
                             "default": 0,
-                            "hidden": true //"!data._power5_more"
+                            "hidden": "true" //"!data._power5_more"
                         },
                         {
                             "attr": "power5_maxSpeedScale",
@@ -2292,7 +2292,7 @@
                             "type": "number",
                             "label": "powerMinValueForSpeed",
                             "default": 0,
-                            "hidden": true //"!data._power6_more"
+                            "hidden": "true" //"!data._power6_more"
                         },
                         {
                             "attr": "power6_maxSpeedScale",
