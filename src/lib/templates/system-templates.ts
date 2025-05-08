@@ -454,7 +454,7 @@ const ScreensaverOptions: PageBaseConfig = {
     uniqueID: '///ScreensaverOptions',
     useColor: false,
     config: {
-        card: 'cardEntities',
+        card: 'cardGrid3',
         scrollType: 'page',
         data: {
             headline: {
@@ -487,7 +487,7 @@ const ScreensaverOptions: PageBaseConfig = {
                     true: { type: 'const', constVal: 'Brightness' },
                     false: undefined,
                 },
-                setNavi: { type: 'const', constVal: '///ScrensaverBrightness' },
+                setNavi: { type: 'const', constVal: '///ScreensaverBrightness' },
             },
         },
         {
@@ -513,7 +513,7 @@ const ScreensaverOptions: PageBaseConfig = {
                     true: { type: 'const', constVal: 'Layout' },
                     false: undefined,
                 },
-                setNavi: { type: 'const', constVal: '///ScrensaverLayout' },
+                setNavi: { type: 'const', constVal: '///ScreensaverLayout' },
             },
         },
     ],
@@ -523,7 +523,7 @@ const ScreensaverOptions: PageBaseConfig = {
 const ScreensaverBrightness: PageBaseConfig = {
     dpInit: '',
     alwaysOn: 'none',
-    uniqueID: '///ScrensaverBrightness',
+    uniqueID: '///ScreensaverBrightness',
     useColor: false,
     config: {
         card: 'cardEntities',
@@ -698,7 +698,7 @@ const ScreensaverBrightness: PageBaseConfig = {
 const ScreensaverLayout: PageBaseConfig = {
     dpInit: '',
     alwaysOn: 'none',
-    uniqueID: '///ScrensaverLayout',
+    uniqueID: '///ScreensaverLayout',
     useColor: false,
     config: {
         card: 'cardEntities',

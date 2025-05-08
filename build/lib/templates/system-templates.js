@@ -462,7 +462,7 @@ const ScreensaverOptions = {
   uniqueID: "///ScreensaverOptions",
   useColor: false,
   config: {
-    card: "cardEntities",
+    card: "cardGrid3",
     scrollType: "page",
     data: {
       headline: {
@@ -473,17 +473,74 @@ const ScreensaverOptions = {
   },
   pageItems: [
     {
-      role: "text.list",
+      role: "",
       type: "button",
-      template: "button.iconLeftSize",
-      dpInit: ""
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "brightness-6" },
+            color: { type: "const", constVal: import_Color.Color.Yellow }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Brightness" },
+          false: void 0
+        },
+        setNavi: { type: "const", constVal: "///ScreensaverBrightness" }
+      }
     },
     {
-      role: "text.list",
+      role: "",
       type: "button",
-      template: "button.iconRightSize",
-      dpInit: ""
-    },
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "monitor-dashboard" },
+            color: { type: "const", constVal: import_Color.Color.Yellow }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Layout" },
+          false: void 0
+        },
+        setNavi: { type: "const", constVal: "///ScreensaverLayout" }
+      }
+    }
+  ],
+  items: void 0
+};
+const ScreensaverBrightness = {
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///ScreensaverBrightness",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    scrollType: "page",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "ScreensaverBrightness"
+      }
+    }
+  },
+  pageItems: [
     {
       role: "",
       type: "switch",
@@ -503,29 +560,6 @@ const ScreensaverOptions = {
         },
         text: { true: { type: "const", constVal: "DoubleClick" }, false: void 0 },
         setValue1: { type: "internal", dp: "cmd/screenSaverDoubleClick" }
-      }
-    },
-    {
-      role: "",
-      type: "input_sel",
-      data: {
-        headline: { type: "const", constVal: "screenSaverLayout" },
-        entityInSel: {
-          value: { type: "internal", dp: "cmd/screenSaverLayout" }
-        },
-        icon: {
-          true: {
-            value: { type: "const", constVal: "monitor" },
-            color: { type: "const", constVal: import_Color.Color.Green }
-          },
-          false: void 0
-        },
-        text: { true: { type: "internal", dp: "cmd/screenSaverLayout" }, false: void 0 },
-        /**
-         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
-         */
-        //valueList: { type: 'internal', dp: 'cmd/screenSaverLayout', read: 'return val ? val.split(";") : []' },
-        valueList: { type: "const", constVal: "standard?alternate?advanced?easyview" }
       }
     },
     {
@@ -659,6 +693,60 @@ const ScreensaverOptions = {
           false: void 0
         },
         text: { true: { type: "const", constVal: "dimNightHourEnd" }, false: void 0 }
+      }
+    }
+  ],
+  items: void 0
+};
+const ScreensaverLayout = {
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: "///ScreensaverLayout",
+  useColor: false,
+  config: {
+    card: "cardEntities",
+    scrollType: "page",
+    data: {
+      headline: {
+        type: "const",
+        constVal: "ScreensaverLayout"
+      }
+    }
+  },
+  pageItems: [
+    {
+      role: "text.list",
+      type: "button",
+      template: "button.iconLeftSize",
+      dpInit: ""
+    },
+    {
+      role: "text.list",
+      type: "button",
+      template: "button.iconRightSize",
+      dpInit: ""
+    },
+    {
+      role: "",
+      type: "input_sel",
+      data: {
+        headline: { type: "const", constVal: "screenSaverLayout" },
+        entityInSel: {
+          value: { type: "internal", dp: "cmd/screenSaverLayout" }
+        },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "monitor" },
+            color: { type: "const", constVal: import_Color.Color.Green }
+          },
+          false: void 0
+        },
+        text: { true: { type: "internal", dp: "cmd/screenSaverLayout" }, false: void 0 },
+        /**
+         * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+         */
+        //valueList: { type: 'internal', dp: 'cmd/screenSaverLayout', read: 'return val ? val.split(";") : []' },
+        valueList: { type: "const", constVal: "standard?alternate?advanced?easyview" }
       }
     }
   ],
@@ -1187,6 +1275,8 @@ const systemPages = [
   AdapterNotConnectedDetail,
   AdapterUpdateDetail,
   ScreensaverOptions,
+  ScreensaverBrightness,
+  ScreensaverLayout,
   RelaisOption,
   DeviceOption,
   NetworkOption,
@@ -1247,6 +1337,22 @@ const systemNavigation = [
     //main ist die erste Seite
     page: "///ScreensaverOptions",
     left: { double: "///Overview" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///ScreensaverBrightness",
+    //main ist die erste Seite
+    page: "///ScreensaverBrightness",
+    left: { double: "///ScreensaverOptions" }
+    // Die 4 bezieht sich auf den name: 4
+    //right: { single: 'abfall1', double: 'main' },
+  },
+  {
+    name: "///ScreensaverLayout",
+    //main ist die erste Seite
+    page: "///ScreensaverLayout",
+    left: { double: "///ScreensaverOptions" }
     // Die 4 bezieht sich auf den name: 4
     //right: { single: 'abfall1', double: 'main' },
   },
