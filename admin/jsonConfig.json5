@@ -2760,15 +2760,15 @@
                             "hidden": "data.selInstanceDataSource > 0"
                         },
                         {
-                            "attr": "setStateFromDB",
+                            "attr": "setStateForDB",
                             "xs": 12,
                             "sm": 12,
                             "md": 8,
                             "lg": 8,
                             "xl": 8,
                             "type": "objectId",
-                            "label": "stateFromDB",
-                            //"filterFunc": "return obj.common.custom.${data.selInstanceDataSource}.enabled === true",
+                            "label": "stateForDB",
+                            "customFilter": {common: {custom: '_dataSources'}},
                             "hidden": "!data.selInstanceDataSource > 0"
                             //"custom": { "influxdb.0": {   "enabled": true,}}
                         },
