@@ -2527,14 +2527,14 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                     entity1: {
                         value: {
                             mode: 'auto',
-                            role: 'switch.mode.boost',
+                            role: ['switch.mode.boost', 'switch.boost'],
                             type: 'triggered',
                             dp: '',
                             regexp: /\.BOOST$/,
                         },
                         set: {
                             mode: 'auto',
-                            role: 'switch.mode.boost',
+                            role: ['switch.mode.boost', 'switch.boost'],
                             type: 'state',
                             dp: '',
                             regexp: /\.BOOST$/,
@@ -2595,7 +2595,7 @@ export const cardTemplates: Record<PageTemplateIdent, PageBaseConfigTemplate> = 
                         },
                         set: {
                             mode: 'auto',
-                            role: 'switch.mode.boost',
+                            role: ['switch.mode.boost', 'switch.boost'],
                             type: 'state',
                             dp: '',
                             regexp: /\.PARTY$/,
