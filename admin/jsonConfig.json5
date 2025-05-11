@@ -576,28 +576,55 @@
                     "lg": 4,
                     "xl": 4
                 },
-                /*"_showIcon": {
-                    "type": "imageSendTo",
-                    "label": "showIcon",
-                    "jsonData": "{\"icon\": \"${data._IconAutocompleteSendTo}\"}",
-                    "command": "getIconBase64",
-                    "alsoDependsOn": [
-                        "_IconAutocompleteSendTo"
-                    ],
-                    "newLine": false,
-                    
+                "_headerDateFormat": {
+                    "type": "header",
+                    "text": "headerDateFormat",
+                    "size": 2
                 },
-                "_IconAutocompleteSendTo": {
-                    "type": "autocompleteSendTo",
-                    "command": "getIcons",
-                    "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
-                    "label": "icon",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },*/
+                "weekdayFormat": {
+                    "type": "checkbox",
+                    "label": "longWeekdayName"
+                    "default": false,
+                    "xs": 6,
+                    "sm": 6,
+                    "md": 3,
+                    "lg": 2,
+                    "xl": 2,
+                },
+                "monthNameFormat": {
+                    "type": "checkbox",
+                    "label": "longMonthName"
+                    "default": false,
+                    "xs": 6,
+                    "sm": 6,
+                    "md": 3,
+                    "lg": 2,
+                    "xl": 2,
+                },
+                "yearFormat": {
+                    "xs": 6,
+                    "sm": 6,
+                    "md": 2,
+                    "lg": 1,
+                    "xl": 1,
+                    "type": "select",
+                    "label": "YearFormat",
+                    "default": 0,
+                    "options": [
+                        {
+                            "label": "YYYY",
+                            "value": 0
+                        },
+                        {
+                            "label": "YY",
+                            "value": 1
+                        },
+                        {
+                            "label": "null",
+                            "value": 2
+                        }
+                    ],
+                },
                 "_RefreshMaintainTable": {
                     "type": "sendTo",
                     "label": "refresh",
