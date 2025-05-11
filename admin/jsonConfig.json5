@@ -211,7 +211,20 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                }
+                },
+                "_openLinkAliasTable": {
+                    "type": "sendTo",
+                    "label": "openLinkAliasTable",
+                    "jsonData": "{\"url\": \"https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md\"}",
+                    "openUrl": true,
+                    "command": "openLinkAliasTable",
+                    "variant": "outlined",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
             }
         },
         "overview": {

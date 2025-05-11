@@ -1593,6 +1593,20 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'openLinkAliasTable': {
+                    if (obj.callback) {
+                        this.sendTo(
+                            obj.from,
+                            obj.command,
+                            {
+                                openUrl: obj.message.data,
+                                saveConfig: false,
+                            },
+                            obj.callback,
+                        );
+                    }
+                    break;
+                }
                 default: {
                     // Send response in callback if required
                     if (obj.callback) {
