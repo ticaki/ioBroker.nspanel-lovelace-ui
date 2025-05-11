@@ -3095,27 +3095,27 @@ export class ConfigManager extends BaseClass {
         this.log.debug(`Screensaver pageItems count: ${pageItems.length}`);
         // Formating the date
         let weekdayFormat = 'long';
-        let monthFormat = 'short';
+        let monthFormat = '2-digit';
         let yearFormat = 'numeric';
-        if (!this.adapter.config.weekdayNameFormat) {
+        if (!this.adapter.config.weekdayFormat) {
             weekdayFormat = 'short';
         }
-        if (!this.adapter.config.monthNameFormat) {
-            monthFormat = 'long';
+        if (!this.adapter.config.yearFormat) {
+            yearFormat = '2-digit';
         }
-        if (this.adapter.config.yearFormat != null) {
-            switch (this.adapter.config.yearFormat) {
+        if (this.adapter.config.monthFormat != null) {
+            switch (this.adapter.config.monthFormat) {
                 case 0:
-                    yearFormat = 'numeric';
+                    monthFormat = 'long';
                     break;
                 case 1:
-                    yearFormat = '2-digit';
+                    monthFormat = 'short';
                     break;
                 case 2:
-                    yearFormat = '';
+                    monthFormat = '2-digit';
                     break;
                 default:
-                    yearFormat = 'numeric';
+                    monthFormat = '2-digit';
                     break;
             }
         }

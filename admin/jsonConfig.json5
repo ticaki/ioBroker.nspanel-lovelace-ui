@@ -224,7 +224,7 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                },
+                }
             }
         },
         "overview": {
@@ -583,47 +583,47 @@
                 },
                 "weekdayFormat": {
                     "type": "checkbox",
-                    "label": "longWeekdayName"
+                    "label": "longWeekdayName",
                     "default": false,
                     "xs": 6,
                     "sm": 6,
                     "md": 3,
                     "lg": 2,
-                    "xl": 2,
+                    "xl": 2
                 },
-                "monthNameFormat": {
-                    "type": "checkbox",
-                    "label": "longMonthName"
-                    "default": false,
-                    "xs": 6,
-                    "sm": 6,
-                    "md": 3,
-                    "lg": 2,
-                    "xl": 2,
-                },
-                "yearFormat": {
+                "monthFormat": {
                     "xs": 6,
                     "sm": 6,
                     "md": 2,
                     "lg": 1,
                     "xl": 1,
                     "type": "select",
-                    "label": "YearFormat",
+                    "label": "MonthFormat",
                     "default": 0,
                     "options": [
                         {
-                            "label": "YYYY",
+                            "label": "long",
                             "value": 0
                         },
                         {
-                            "label": "YY",
+                            "label": "short",
                             "value": 1
                         },
                         {
-                            "label": "null",
+                            "label": "numeric",
                             "value": 2
                         }
-                    ],
+                    ]
+                },
+                "yearFormat": {
+                    "type": "checkbox",
+                    "label": "longYear",
+                    "default": false,
+                    "xs": 6,
+                    "sm": 6,
+                    "md": 3,
+                    "lg": 2,
+                    "xl": 2
                 },
                 "_RefreshMaintainTable": {
                     "type": "sendTo",
@@ -2878,7 +2878,7 @@
                             "max": 8,
                             "default": 4,
                             "hidden": "data.selChartType === '' || data.selInstanceDataSource == 0"
-                        },
+                        }
                     ]
                 }
             }
