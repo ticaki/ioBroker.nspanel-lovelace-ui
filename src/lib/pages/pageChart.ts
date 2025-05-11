@@ -89,8 +89,16 @@ export class PageChart extends Page {
         if (config) {
             const card = config.selChartType;
             console.debug(`get pageconfig Card: ${card}`);
-            if (await configManager.existsState(config.setStateForValues)) {
-                stateExistValue = config.setStateForValues;
+            if (config.selInstanceDataSource === 1) {
+                // AdapterVersion
+                if (await configManager.existsState(config.setStateForDB)) {
+                    stateExistValue = config.setStateForDB;
+                }
+            } else {
+                // oldScriptVersion
+                if (await configManager.existsState(config.setStateForValues)) {
+                    stateExistValue = config.setStateForValues;
+                }
             }
             if (await configManager.existsState(config.setStateForTicks)) {
                 stateExistTicks = config.setStateForTicks;
