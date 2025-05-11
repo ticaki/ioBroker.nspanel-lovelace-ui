@@ -151,6 +151,7 @@ declare global {
                 selInstance: string,
                 setStateForTicks: string,
                 setStateForValues: string,
+                setStateForDB: string,
                 txtlabelYAchse: string,
                 rangeHours: number,
                 maxXAxisTicks: number,

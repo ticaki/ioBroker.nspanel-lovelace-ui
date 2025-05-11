@@ -167,6 +167,7 @@ const stateRoleArray = arrayOfAllStateRole([
   "switch.lock",
   "switch.mode.auto",
   "switch.mode.boost",
+  "switch.boost",
   "switch.mode.manual",
   "switch.mode.party",
   "switch.mode.swing",

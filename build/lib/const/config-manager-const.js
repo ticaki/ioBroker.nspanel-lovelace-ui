@@ -514,7 +514,13 @@ const requiredScriptDataPoints = {
       },
       SET: { role: "level.temperature", type: "number", useKey: true, required: true, writeable: true },
       SET2: { role: "level.temperature", type: "number", useKey: true, required: false, writeable: true },
-      BOOST: { role: "switch.mode.boost", type: "boolean", required: false, writeable: true, trigger: true },
+      BOOST: {
+        role: ["switch.mode.boost", "switch.boost"],
+        type: "boolean",
+        required: false,
+        writeable: true,
+        trigger: true
+      },
       ERROR: { role: "indicator.error", type: "boolean", required: false, writeable: false, trigger: true },
       HUMIDITY: { role: "value.humidity", type: "number", required: false, writeable: false, trigger: true },
       MAINTAIN: {
@@ -716,7 +722,7 @@ const requiredScriptDataPoints = {
       },
       SET: { role: "level.temperature", type: "number", required: true, writeable: true },
       MODE: { role: "level.mode.thermostat", type: "number", required: false, writeable: true },
-      BOOST: { role: "switch.mode.boost", type: "boolean", required: false, writeable: true },
+      BOOST: { role: ["switch.mode.boost", "switch.boost"], type: "boolean", required: false, writeable: true },
       //AUTOMATIC: { role: 'state', type: 'boolean', required: false },
       ERROR: { role: "indicator.error", type: "boolean", required: false, writeable: false },
       LOWBAT: { role: "indicator.maintenance.lowbat", type: "boolean", required: false, writeable: false },
