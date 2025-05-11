@@ -18,6 +18,9 @@ declare global {
             scstype: string;
             timezone: string;
             useBetaTFT: boolean;
+            weekdayNameFormat:boolean;
+            monthNameFormat:boolean;
+            yearFormat: number;
             
             fixBrokenCommonTypes: boolean;
 

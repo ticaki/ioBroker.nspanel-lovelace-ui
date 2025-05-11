@@ -3093,6 +3093,33 @@ export class ConfigManager extends BaseClass {
             }
         }
         this.log.debug(`Screensaver pageItems count: ${pageItems.length}`);
+        // Formating the date
+        let weekdayFormat = 'long';
+        let monthFormat = 'short';
+        let yearFormat = 'numeric';
+        if (!this.adapter.config.weekdayNameFormat) {
+            weekdayFormat = 'short';
+        }
+        if (!this.adapter.config.monthNameFormat) {
+            monthFormat = 'long';
+        }
+        if (this.adapter.config.yearFormat != null) {
+            switch (this.adapter.config.yearFormat) {
+                case 0:
+                    yearFormat = 'numeric';
+                    break;
+                case 1:
+                    yearFormat = '2-digit';
+                    break;
+                case 2:
+                    yearFormat = '';
+                    break;
+                default:
+                    yearFormat = 'numeric';
+                    break;
+            }
+        }
+
         pageItems = pageItems.concat([
             {
                 role: 'text',
@@ -3128,9 +3155,9 @@ export class ConfigManager extends BaseClass {
                             constVal: {
                                 local: 'de',
                                 format: {
-                                    weekday: 'long',
-                                    month: 'short',
-                                    year: 'numeric',
+                                    weekday: weekdayFormat,
+                                    month: monthFormat,
+                                    year: yearFormat,
                                     day: 'numeric',
                                 },
                             },
