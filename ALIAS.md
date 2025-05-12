@@ -102,7 +102,7 @@
 | **airCondition** | ~~ACTUAL~~ | number| value.temperature  |  |  |  | 
 | **"** | SET | number| level.temperature  | X | X |  | 
 | **"** | SET2 | number| level.temperature  |  | X |  | 
-| **"** | ~~BOOST~~ | boolean| switch.mode.boost  |  | X |  | 
+| **"** | ~~BOOST~~ | boolean| switch.mode.boost, switch.boost  |  | X |  | 
 | **"** | ~~ERROR~~ | boolean| indicator.error  |  |  |  | 
 | **"** | ~~HUMIDITY~~ | number| value.humidity  |  |  |  | 
 | **"** | ~~MAINTAIN~~ | boolean| indicator.maintenance  |  |  |  | 
@@ -179,7 +179,7 @@
 | **thermostat** | ~~ACTUAL~~ | number| value.temperature  |  |  |  | 
 | **"** | ~~SET~~ | number| level.temperature  | X | X |  | 
 | **"** | ~~MODE~~ | number| level.mode.thermostat  |  | X |  | 
-| **"** | ~~BOOST~~ | boolean| switch.mode.boost  |  | X |  | 
+| **"** | ~~BOOST~~ | boolean| switch.mode.boost, switch.boost  |  | X |  | 
 | **"** | ~~ERROR~~ | boolean| indicator.error  |  |  |  | 
 | **"** | ~~LOWBAT~~ | boolean| indicator.maintenance.lowbat  |  |  |  | 
 | **"** | ~~UNREACH~~ | boolean| indicator.maintenance.unreach  |  |  |  | 
