@@ -1357,7 +1357,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               obj.from,
               obj.command,
               {
-                openUrl: obj.message.data,
+                openUrl: obj.message.url,
                 saveConfig: false
               },
               obj.callback
