@@ -2660,30 +2660,29 @@ class ConfigManager extends import_library.BaseClass {
       }
     }
     this.log.debug(`Screensaver pageItems count: ${pageItems.length}`);
-    let weekdayFormat = "long";
-    let monthFormat = "short";
-    let yearFormat = "numeric";
+    const format = {
+      weekday: "long",
+      month: "2-digit",
+      year: "numeric",
+      day: "numeric"
+    };
     if (!this.adapter.config.weekdayFormat) {
-      weekdayFormat = "short";
+      format.weekday = "short";
     }
     if (!this.adapter.config.yearFormat) {
-      yearFormat = "2-digit";
+      format.year = "2-digit";
     }
-    if (this.adapter.config.monthFormat != null) {
-      switch (this.adapter.config.monthFormat) {
-        case 0:
-          monthFormat = "long";
-          break;
-        case 1:
-          monthFormat = "short";
-          break;
-        case 2:
-          monthFormat = "numeric";
-          break;
-        default:
-          monthFormat = "numeric";
-          break;
-      }
+    switch (this.adapter.config.monthFormat) {
+      case 0:
+        format.month = "long";
+        break;
+      case 1:
+        format.month = "short";
+        break;
+      case 2:
+      default:
+        format.month = "2-digit";
+        break;
     }
     pageItems = pageItems.concat([
       {
@@ -2719,12 +2718,7 @@ class ConfigManager extends import_library.BaseClass {
               type: "const",
               constVal: {
                 local: "de",
-                format: {
-                  weekday: weekdayFormat,
-                  month: monthFormat,
-                  year: yearFormat,
-                  day: "numeric"
-                }
+                format
               }
             }
           }
