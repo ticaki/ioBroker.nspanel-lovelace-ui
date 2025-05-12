@@ -37,6 +37,7 @@ export class PageThermo extends Page {
     private step: number = 1;
     private headlinePos: number = 0;
     private titelPos: number = 0;
+    public convertValue: 1 | 10 = 1;
     private nextArrow: boolean = false;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
@@ -91,6 +92,13 @@ export class PageThermo extends Page {
         }
         this.items = tempItem as pages.cardThermoDataItems;
         await super.init();
+
+        const v = (this.items.data.maxTemp && (await this.items.data.maxTemp.getNumber())) ?? null;
+        if (v !== null) {
+            if (v < 100) {
+                this.convertValue = 10;
+            }
+        }
     }
 
     public async update(): Promise<void> {
@@ -155,7 +163,7 @@ export class PageThermo extends Page {
             }
             v = (item.data.minTemp && (await item.data.minTemp.getNumber())) ?? null;
             if (v !== null) {
-                message.minTemp = v * 10;
+                message.minTemp = v * this.convertValue;
             } else if (item.data.set1 && item.data.set1.common.min != null) {
                 message.minTemp = item.data.set1.common.min * 10;
             } else {
@@ -166,7 +174,7 @@ export class PageThermo extends Page {
             if (v !== null) {
                 message.maxTemp = v * 10;
             } else if (item.data.set1 && item.data.set1.common.max != null) {
-                message.maxTemp = item.data.set1.common.max * 10;
+                message.maxTemp = item.data.set1.common.max * this.convertValue;
             } else {
                 message.maxTemp = 300;
             }
@@ -202,7 +210,7 @@ export class PageThermo extends Page {
             }
             v = (item.data.tempStep && (await item.data.tempStep.getNumber())) ?? null;
             if (v !== null) {
-                message.tempStep = String(v);
+                message.tempStep = String(v * this.convertValue);
             } else if (item.data.set1 && item.data.set1.common.step) {
                 message.tempStep = String(item.data.set1.common.step * 10);
             } else {

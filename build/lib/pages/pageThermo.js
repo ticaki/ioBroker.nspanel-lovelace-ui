@@ -49,6 +49,7 @@ class PageThermo extends import_Page.Page {
   step = 1;
   headlinePos = 0;
   titelPos = 0;
+  convertValue = 1;
   nextArrow = false;
   constructor(config, options) {
     if (config.card !== "cardThermo") {
@@ -84,6 +85,7 @@ class PageThermo extends import_Page.Page {
     this.minUpdateInterval = 2e3;
   }
   async init() {
+    var _a;
     const config = structuredClone(this.config);
     const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
     const tempItem = await this.panel.statesControler.createDataItems(
@@ -95,6 +97,12 @@ class PageThermo extends import_Page.Page {
     }
     this.items = tempItem;
     await super.init();
+    const v = (_a = this.items.data.maxTemp && await this.items.data.maxTemp.getNumber()) != null ? _a : null;
+    if (v !== null) {
+      if (v < 100) {
+        this.convertValue = 10;
+      }
+    }
   }
   async update() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
@@ -147,7 +155,7 @@ class PageThermo extends import_Page.Page {
       }
       v = (_c = item.data.minTemp && await item.data.minTemp.getNumber()) != null ? _c : null;
       if (v !== null) {
-        message.minTemp = v * 10;
+        message.minTemp = v * this.convertValue;
       } else if (item.data.set1 && item.data.set1.common.min != null) {
         message.minTemp = item.data.set1.common.min * 10;
       } else {
@@ -157,7 +165,7 @@ class PageThermo extends import_Page.Page {
       if (v !== null) {
         message.maxTemp = v * 10;
       } else if (item.data.set1 && item.data.set1.common.max != null) {
-        message.maxTemp = item.data.set1.common.max * 10;
+        message.maxTemp = item.data.set1.common.max * this.convertValue;
       } else {
         message.maxTemp = 300;
       }
@@ -190,7 +198,7 @@ class PageThermo extends import_Page.Page {
       }
       v = (_g = item.data.tempStep && await item.data.tempStep.getNumber()) != null ? _g : null;
       if (v !== null) {
-        message.tempStep = String(v);
+        message.tempStep = String(v * this.convertValue);
       } else if (item.data.set1 && item.data.set1.common.step) {
         message.tempStep = String(item.data.set1.common.step * 10);
       } else {
