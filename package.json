@@ -37,7 +37,7 @@
     "aedes": "^0.51.3",
     "aedes-persistence-level": "^9.0.0",
     "aedes-server-factory": "^0.2.1",
-    "axios": "^1.8.4",
+    "axios": "^1.9.0",
     "colord": "^2.9.3",
     "dayjs": "^1.11.13",
     "level": "^9.0.0",
