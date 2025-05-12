@@ -211,6 +211,19 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                },
+                "_openLinkAliasTable": {
+                    "type": "sendTo",
+                    "label": "openLinkAliasTable",
+                    "jsonData": "{\"url\": \"https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md\"}",
+                    "openUrl": true,
+                    "command": "openLinkAliasTable",
+                    "variant": "outlined",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },
@@ -563,28 +576,55 @@
                     "lg": 4,
                     "xl": 4
                 },
-                /*"_showIcon": {
-                    "type": "imageSendTo",
-                    "label": "showIcon",
-                    "jsonData": "{\"icon\": \"${data._IconAutocompleteSendTo}\"}",
-                    "command": "getIconBase64",
-                    "alsoDependsOn": [
-                        "_IconAutocompleteSendTo"
-                    ],
-                    "newLine": false,
-                    
+                "_headerDateFormat": {
+                    "type": "header",
+                    "text": "headerDateFormat",
+                    "size": 2
                 },
-                "_IconAutocompleteSendTo": {
-                    "type": "autocompleteSendTo",
-                    "command": "getIcons",
-                    "jsonData": "{\"ip\": \"${data.internalServerIp}\"}",
-                    "label": "icon",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },*/
+                "weekdayFormat": {
+                    "type": "checkbox",
+                    "label": "longWeekdayName",
+                    "default": false,
+                    "xs": 6,
+                    "sm": 6,
+                    "md": 3,
+                    "lg": 2,
+                    "xl": 2
+                },
+                "monthFormat": {
+                    "xs": 6,
+                    "sm": 6,
+                    "md": 2,
+                    "lg": 1,
+                    "xl": 1,
+                    "type": "select",
+                    "label": "MonthFormat",
+                    "default": 0,
+                    "options": [
+                        {
+                            "label": "long",
+                            "value": 0
+                        },
+                        {
+                            "label": "short",
+                            "value": 1
+                        },
+                        {
+                            "label": "numeric",
+                            "value": 2
+                        }
+                    ]
+                },
+                "yearFormat": {
+                    "type": "checkbox",
+                    "label": "longYear",
+                    "default": false,
+                    "xs": 6,
+                    "sm": 6,
+                    "md": 3,
+                    "lg": 2,
+                    "xl": 2
+                },
                 "_RefreshMaintainTable": {
                     "type": "sendTo",
                     "label": "refresh",
@@ -2854,7 +2894,7 @@
                             "max": 8,
                             "default": 4,
                             "hidden": "data.selChartType === '' || data.selInstanceDataSource == 0"
-                        },
+                        }
                     ]
                 }
             }
