@@ -204,6 +204,7 @@ class PageThermo extends import_Page.Page {
       } else {
         message.tempStep = "5";
       }
+      message.tempStep = parseFloat(message.tempStep) < 1 ? "1" : message.tempStep;
       message.tCurTempLbl = this.library.getTranslation((_h = await (0, import_tools.getValueEntryString)(item.data.mixed1)) != null ? _h : "");
       message.currentTemp = this.library.getTranslation((_i = await (0, import_tools.getValueEntryString)(item.data.mixed2)) != null ? _i : "");
       message.tStateLbl = this.library.getTranslation((_j = await (0, import_tools.getValueEntryString)(item.data.mixed3)) != null ? _j : "");

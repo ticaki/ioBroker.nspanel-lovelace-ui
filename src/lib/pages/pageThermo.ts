@@ -216,6 +216,7 @@ export class PageThermo extends Page {
             } else {
                 message.tempStep = '5';
             }
+            message.tempStep = parseFloat(message.tempStep) < 1 ? '1' : message.tempStep;
 
             message.tCurTempLbl = this.library.getTranslation((await getValueEntryString(item.data.mixed1)) ?? '');
             message.currentTemp = this.library.getTranslation((await getValueEntryString(item.data.mixed2)) ?? '');
