@@ -372,7 +372,8 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardQR' &&
                     page.type !== 'cardPower' &&
                     page.type !== 'cardChart' &&
-                    page.type !== 'cardLChart'
+                    page.type !== 'cardLChart' &&
+                    page.type !== 'cardAlarm'
                 ) {
                     const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!..`;
                     messages.push(msg);
