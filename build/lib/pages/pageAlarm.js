@@ -39,7 +39,7 @@ var import_tools = require("../const/tools");
 var pages = __toESM(require("../types/pages"));
 const PageAlarmMessageDefault = {
   event: "entityUpd",
-  headline: "Page Grid",
+  headline: "Page Alarm",
   intNameEntity: "",
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
   button1: "",

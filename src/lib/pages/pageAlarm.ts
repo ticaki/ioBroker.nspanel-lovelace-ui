@@ -9,7 +9,7 @@ import type { IncomingEvent } from '../types/types';
 
 const PageAlarmMessageDefault: pages.PageAlarmMessage = {
     event: 'entityUpd',
-    headline: 'Page Grid',
+    headline: 'Page Alarm',
     intNameEntity: '',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
     button1: '',
