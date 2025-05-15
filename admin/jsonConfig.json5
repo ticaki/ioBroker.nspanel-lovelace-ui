@@ -2833,6 +2833,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
+                            "unit": "h", 
                             "newLine": true,
                             "label": "labelrangeHours",
                             "default": 24,
@@ -2846,6 +2847,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
+                            "unit": "h",
                             "label": "labelmaxXAxisTicks",
                             "min": 1,
                             "max": 8,
@@ -2890,6 +2892,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
+                            "unit": "h",
                             "label": "labelmaxXAxisLabels",
                             "min" : 1,
                             "max": 8,
@@ -2899,7 +2902,153 @@
                     ]
                 }
             }
-        },        
+        }, 
+        "pageAlarm": {
+            "type": "panel",
+            "label": "Page Alarm",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "items": {
+                "pageAlarmdataErr": {
+                    "type": "staticText",
+                    "text": "ERROR: field 'pageName' must contain unique text",
+                    "newLine": true,
+                    "hidden": "const x={}; for(let ii=0; data.pageAlarmdata && ii<data.pageAlarmdata.length; ii++){const t=data.pageAlarmdata[ii].pageName; if (x[t]==='x') return false; x[t]='x';}; return true;",
+                    "style": {
+                        "color": "red"
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "pageAlarmdata": {
+                    "type": "accordion",
+                    "label": "pageAlarmdata",
+                    "titleAttr": "pageName",
+                    "items": [
+                        {
+                            "attr": "pageName",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "text",
+                            "label": "pageName",
+                            "default": "Unique Name",
+                            "validator": "const x={};for (const c of globalData.pageAlarmdata) {if (x[c.pageName]==='x') return false; x[c.pageName]='x';}; return true;",
+                            "validatorNoSaveOnError": true
+                        },
+                        {
+                            "attr": "headline",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 4,
+                            "type": "text",
+                            "label": "headline",
+                            "default": ""
+                        },
+                        {
+                            "attr": "check_approved",
+                            "xs": 1,
+                            "sm": 1,
+                            "md": 1,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "checkbox",
+                            "label": "Approved",
+                            "default": false
+                        },
+                        {
+                            "attr": "_txtInfo",
+                            "xs": 12,
+                            "sm": 12,
+                            "md": 12,
+                            "lg": 12,
+                            "xl": 12,
+                            "type": "staticText",
+                            "label": "hier kommet der Text"
+                        },
+                        {
+                            "attr": "check_A2",
+                            "xs": 1,
+                            "sm": 1,
+                            "md": 1,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "checkbox",
+                            "label": "enabledA2",
+                            "default": false
+                        },
+                        {
+                            "attr": "state_A2",
+                            "xs": 1,
+                            "sm": 1,
+                            "md": 1,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "text",
+                            "label": "txtForA2",
+                            "default": "zuhause",
+                            "hidden": "!data.check_A2"
+                        },
+                        {
+                            "attr": "check_A3",
+                            "xs": 1,
+                            "sm": 1,
+                            "md": 1,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "checkbox",
+                            "label": "enabledA3",
+                            "default": false,
+                            "hidden": "!data.check_A2",
+                            "newLine": true
+                        },
+                        {
+                            "attr": "state_A3",
+                            "xs": 1,
+                            "sm": 1,
+                            "md": 1,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "text",
+                            "label": "txtForA3",
+                            "default": "",
+                            "hidden": "!data.check_A3"
+                        },
+                        {
+                            "attr": "check_A4",
+                            "xs": 1,
+                            "sm": 1,
+                            "md": 1,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "checkbox",
+                            "label": "enabledA4",
+                            "hidden": "!data.check_A3",
+                            "default": false,
+                            "newLine": true
+                        },
+                        {
+                            "attr": "state_A4",
+                            "xs": 1,
+                            "sm": 1,
+                            "md": 1,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "text",
+                            "label": "txtForA4",
+                            "default": "",
+                            "hidden": "!data.check_A4"
+                        }
+                    ]
+                }
+            }
+        },       
         "NavigationOverview": {
             "type": "panel",
             "label": "Navigation Overview",
