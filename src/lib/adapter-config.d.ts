@@ -159,6 +159,19 @@ declare global {
                 maxXAxisLabels: number,
             }[];
 
+            // PageAlarm
+            pageAlarmdata: {
+                pageType: string,
+                pageName: string,
+                headline: string,
+                check_approved: boolean,
+                check_A2: boolean,
+                state_A2: string,
+                check_A3: boolean,
+                state_A3: string,
+                check_A4: boolean,
+                state_A4: string,
+            }[];
 
             additionalLog: boolean;
             debugLogMqtt: boolean;

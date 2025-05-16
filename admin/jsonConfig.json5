@@ -2928,6 +2928,27 @@
                     "titleAttr": "pageName",
                     "items": [
                         {
+                            "attr": "pageType",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": "labelPageType",
+                            "default": "cardAlarm",
+                            "options": [
+                                {
+                                    "label": "Page Alarm",
+                                    "value": "cardAlarm"
+                                },
+                                {
+                                    "label": "Page Unlock",
+                                    "value": "cardUnlock"
+                                }
+                            ]
+                        },
+                        {
                             "attr": "pageName",
                             "xs": 12,
                             "sm": 12,
