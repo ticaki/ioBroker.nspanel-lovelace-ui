@@ -2991,7 +2991,8 @@
                             "lg": 12,
                             "xl": 12,
                             "type": "staticText",
-                            "label": "hier kommet der Text"
+                            "label": "hier kommet der Text",
+                            "hidden": "data.pageType == 'cardUnlock'"
                         },
                         {
                             "attr": "check_A2",
@@ -3002,7 +3003,8 @@
                             "xl": 1,
                             "type": "checkbox",
                             "label": "enabledA2",
-                            "default": false
+                            "default": false,
+                            "hidden": "data.pageType == 'cardUnlock'"
                         },
                         {
                             "attr": "state_A2",
@@ -3038,7 +3040,7 @@
                             "xl": 1,
                             "type": "text",
                             "label": "txtForA3",
-                            "default": "",
+                            "default": "Nacht",
                             "hidden": "!data.check_A3"
                         },
                         {
@@ -3063,7 +3065,7 @@
                             "xl": 1,
                             "type": "text",
                             "label": "txtForA4",
-                            "default": "",
+                            "default": "Besuch",
                             "hidden": "!data.check_A4"
                         }
                     ]

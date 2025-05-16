@@ -158,7 +158,30 @@ export class PageAlarm extends Page {
                     (data.button1 && (await data.button1.getTranslatedString())) ??
                     this.library.getTranslation('arm_away');
                 message.status1 = message.button1 ? 'A1' : '';
-                message.button2 =
+                if (this.adapter.config.pageAlarmdata[0].pageType === 'cardAlarm') {
+                    if (this.adapter.config.pageAlarmdata[0].check_A2) {
+                        message.button2 = this.adapter.config.pageAlarmdata[0].state_A2;
+                        message.status2 = 'A2';
+                    } else {
+                        message.button2 = '';
+                        message.status2 = '';
+                    }
+                    if (this.adapter.config.pageAlarmdata[0].check_A3) {
+                        message.button3 = this.adapter.config.pageAlarmdata[0].state_A3;
+                        message.status3 = 'A3';
+                    } else {
+                        message.button3 = '';
+                        message.status3 = '';
+                    }
+                    if (this.adapter.config.pageAlarmdata[0].check_A4) {
+                        message.button4 = this.adapter.config.pageAlarmdata[0].state_A4;
+                        message.status4 = 'A4';
+                    } else {
+                        message.button4 = '';
+                        message.status4 = '';
+                    }
+                }
+                /* message.button2 =
                     (data.button2 && (await data.button2.getTranslatedString())) ??
                     this.library.getTranslation('arm_home');
                 message.status2 = message.button2 ? 'A2' : '';
@@ -169,7 +192,7 @@ export class PageAlarm extends Page {
                 message.button4 =
                     (data.button4 && (await data.button4.getTranslatedString())) ??
                     this.library.getTranslation('arm_vacation');
-                message.status4 = message.button4 ? 'A4' : '';
+                message.status4 = message.button4 ? 'A4' : ''; */
             }
             if (this.status == 'armed') {
                 message.icon = Icons.GetIcon('shield-home'); //icon*~*
