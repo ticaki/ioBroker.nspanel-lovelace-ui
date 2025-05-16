@@ -163,9 +163,9 @@ class PageThermo extends import_Page.Page {
       }
       v = (_d = item.data.maxTemp && await item.data.maxTemp.getNumber()) != null ? _d : null;
       if (v !== null) {
-        message.maxTemp = v * 10;
+        message.maxTemp = v * this.convertValue;
       } else if (item.data.set1 && item.data.set1.common.max != null) {
-        message.maxTemp = item.data.set1.common.max * this.convertValue;
+        message.maxTemp = item.data.set1.common.max * 10;
       } else {
         message.maxTemp = 300;
       }
@@ -204,6 +204,7 @@ class PageThermo extends import_Page.Page {
       } else {
         message.tempStep = "5";
       }
+      message.tempStep = parseFloat(message.tempStep) < 1 ? "1" : message.tempStep;
       message.tCurTempLbl = this.library.getTranslation((_h = await (0, import_tools.getValueEntryString)(item.data.mixed1)) != null ? _h : "");
       message.currentTemp = this.library.getTranslation((_i = await (0, import_tools.getValueEntryString)(item.data.mixed2)) != null ? _i : "");
       message.tStateLbl = this.library.getTranslation((_j = await (0, import_tools.getValueEntryString)(item.data.mixed3)) != null ? _j : "");

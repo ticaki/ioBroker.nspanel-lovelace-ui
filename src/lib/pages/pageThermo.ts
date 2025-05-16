@@ -172,9 +172,9 @@ export class PageThermo extends Page {
 
             v = (item.data.maxTemp && (await item.data.maxTemp.getNumber())) ?? null;
             if (v !== null) {
-                message.maxTemp = v * 10;
+                message.maxTemp = v * this.convertValue;
             } else if (item.data.set1 && item.data.set1.common.max != null) {
-                message.maxTemp = item.data.set1.common.max * this.convertValue;
+                message.maxTemp = item.data.set1.common.max * 10;
             } else {
                 message.maxTemp = 300;
             }
@@ -216,6 +216,7 @@ export class PageThermo extends Page {
             } else {
                 message.tempStep = '5';
             }
+            message.tempStep = parseFloat(message.tempStep) < 1 ? '1' : message.tempStep;
 
             message.tCurTempLbl = this.library.getTranslation((await getValueEntryString(item.data.mixed1)) ?? '');
             message.currentTemp = this.library.getTranslation((await getValueEntryString(item.data.mixed2)) ?? '');
