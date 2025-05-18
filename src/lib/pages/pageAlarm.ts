@@ -126,7 +126,7 @@ export class PageAlarm extends Page {
 
     /**
      *
-     * @returns
+     * @returns // failback
      */
     public async update(): Promise<void> {
         if (!this.visibility) {
@@ -287,10 +287,10 @@ export class PageAlarm extends Page {
         }
     }
     /**
-     *a
      *
-     * @param _event
-     * @returns
+     *
+     * @param _event // ButtonEvent form Tasmota
+     * @returns //Failback
      */
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         const button = _event.action;
