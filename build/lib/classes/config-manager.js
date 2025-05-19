@@ -42,6 +42,7 @@ var import_pages = require("../types/pages");
 var Types = __toESM(require("../types/types"));
 var import_library = require("./library");
 var import_navigation = require("./navigation");
+var import_pageAlarm = require("../pages/pageAlarm");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   colorOn = import_Color.Color.On;
@@ -399,6 +400,23 @@ class ConfigManager extends import_library.BaseClass {
             continue;
           }
           panelConfig.pages.push(await import_pageChart.PageChart.getChartPageConfig(this.adapter, index, this));
+          continue;
+        }
+        if (page.type === "cardAlarm") {
+          if (!Array.isArray(this.adapter.config.pageAlarmdata)) {
+            messages.push(`No pageAlarm configured in Admin for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          const index = this.adapter.config.pageAlarmdata.findIndex(
+            (item) => item.pageName === page.uniqueName
+          );
+          if (index === -1) {
+            messages.push(`No pageAlarmdata found for ${page.uniqueName}`);
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          panelConfig.pages.push(await import_pageAlarm.PageAlarm.getAlarmPageConfig(this.adapter, index));
           continue;
         }
         let gridItem = {

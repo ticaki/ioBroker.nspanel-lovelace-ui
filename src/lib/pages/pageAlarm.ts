@@ -6,6 +6,7 @@ import { Icons } from '../const/icon_mapping';
 import { getPayload } from '../const/tools';
 import * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
+import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 
 const PageAlarmMessageDefault: pages.PageAlarmMessage = {
     event: 'entityUpd',
@@ -126,7 +127,7 @@ export class PageAlarm extends Page {
 
     /**
      *
-     * @returns // failback
+     * @returns // Failback
      */
     public async update(): Promise<void> {
         if (!this.visibility) {
@@ -158,30 +159,7 @@ export class PageAlarm extends Page {
                     (data.button1 && (await data.button1.getTranslatedString())) ??
                     this.library.getTranslation('arm_away');
                 message.status1 = message.button1 ? 'A1' : '';
-                if (this.adapter.config.pageAlarmdata[0].pageType === 'cardAlarm') {
-                    if (this.adapter.config.pageAlarmdata[0].check_A2) {
-                        message.button2 = this.adapter.config.pageAlarmdata[0].state_A2;
-                        message.status2 = 'A2';
-                    } else {
-                        message.button2 = '';
-                        message.status2 = '';
-                    }
-                    if (this.adapter.config.pageAlarmdata[0].check_A3) {
-                        message.button3 = this.adapter.config.pageAlarmdata[0].state_A3;
-                        message.status3 = 'A3';
-                    } else {
-                        message.button3 = '';
-                        message.status3 = '';
-                    }
-                    if (this.adapter.config.pageAlarmdata[0].check_A4) {
-                        message.button4 = this.adapter.config.pageAlarmdata[0].state_A4;
-                        message.status4 = 'A4';
-                    } else {
-                        message.button4 = '';
-                        message.status4 = '';
-                    }
-                }
-                /* message.button2 =
+                message.button2 =
                     (data.button2 && (await data.button2.getTranslatedString())) ??
                     this.library.getTranslation('arm_home');
                 message.status2 = message.button2 ? 'A2' : '';
@@ -192,7 +170,7 @@ export class PageAlarm extends Page {
                 message.button4 =
                     (data.button4 && (await data.button4.getTranslatedString())) ??
                     this.library.getTranslation('arm_vacation');
-                message.status4 = message.button4 ? 'A4' : ''; */
+                message.status4 = message.button4 ? 'A4' : '';
             }
             if (this.status == 'armed') {
                 message.icon = Icons.GetIcon('shield-home'); //icon*~*
@@ -237,6 +215,47 @@ export class PageAlarm extends Page {
         this.sendToPanel(this.getMessage(message), false);
     }
 
+    static async getAlarmPageConfig(adapter: NspanelLovelaceUi, index: number): Promise<pages.PageBaseConfig> {
+        const config = adapter.config.pageAlarmdata[index];
+        const button1Name = 'arm_away';
+        let button2Name = '';
+        let button3Name = '';
+        let button4Name = '';
+
+        if (config.check_A2 && config.state_A2 !== '') {
+            button2Name = config.state_A2;
+        }
+        if (config.check_A3 && config.state_A3 !== '') {
+            button3Name = config.state_A3;
+        }
+        if (config.check_A4 && config.state_A4 !== '') {
+            button4Name = config.state_A4;
+        }
+
+        const result: pages.PageBaseConfig = {
+            uniqueID: config.pageName,
+            alwaysOn: 'always',
+            pageItems: [],
+            config: {
+                card: 'cardAlarm',
+                //index: index,
+                data: {
+                    alarmType: { type: 'const', constVal: config.pageType },
+                    headline: { type: 'const', constVal: config.headline },
+                    entity1: undefined,
+                    button1: { type: 'const', constVal: button1Name },
+                    button2: { type: 'const', constVal: button2Name },
+                    button3: { type: 'const', constVal: button3Name },
+                    button4: { type: 'const', constVal: button4Name },
+                    icon: undefined,
+                    pin: { type: 'const', constVal: config.pageAlarmPincode },
+                    approved: { type: 'const', constVal: config.check_approved },
+                    //setNavi: { type: 'const', constVal: 'pageAlarm' },
+                },
+            },
+        };
+        return result;
+    }
     private getMessage(message: Partial<pages.PageAlarmMessage>): string {
         let result: pages.PageAlarmMessage = PageAlarmMessageDefault;
         result = Object.assign(result, message) as pages.PageAlarmMessage;
@@ -259,7 +278,14 @@ export class PageAlarm extends Page {
             result.flashing,
         );
     }
-
+    protected async onVisibilityChange(val: boolean): Promise<void> {
+        // check if value state exists
+        if (val) {
+            this.log.debug(`Alarm page ${this.name} is visible`);
+            //await this.update();
+        }
+        await super.onVisibilityChange(val);
+    }
     protected async onStateTrigger(id: string): Promise<void> {
         if (this.items && this.items.card === 'cardAlarm') {
             const approved = this.items.data && this.items.data.approved;
@@ -290,7 +316,7 @@ export class PageAlarm extends Page {
      *
      *
      * @param _event // ButtonEvent form Tasmota
-     * @returns //Failback
+     * @returns // Failback
      */
     async onButtonEvent(_event: IncomingEvent): Promise<void> {
         const button = _event.action;

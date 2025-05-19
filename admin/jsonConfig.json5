@@ -2940,11 +2940,11 @@
                             "options": [
                                 {
                                     "label": "Page Alarm",
-                                    "value": "cardAlarm"
+                                    "value": "alarm"
                                 },
                                 {
                                     "label": "Page Unlock",
-                                    "value": "cardUnlock"
+                                    "value": "unlock"
                                 }
                             ]
                         },
@@ -2980,8 +2980,22 @@
                             "lg": 1,
                             "xl": 1,
                             "type": "checkbox",
+                            "newLine": true,
                             "label": "Approved",
                             "default": false
+                        },
+                        {
+                            "attr": "pageAlarmPincode",
+                            "type": "password",
+                            "label": "Pin-Code (numbers only)",
+                            "validator": "data.pageAlarmPincode.search(/[^0-9]+/g) === -1",
+                            "validatorNoSaveOnError": true,
+                            "validatorErrorText": "mustBeNumber",
+                            "xs": 12,
+                            "sm": 8,
+                            "md": 6,
+                            "lg": 4,
+                            "xl": 3
                         },
                         {
                             "attr": "_txtInfo",

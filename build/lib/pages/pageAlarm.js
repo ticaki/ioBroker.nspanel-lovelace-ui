@@ -134,10 +134,10 @@ class PageAlarm extends import_Page.Page {
   }
   /**
    *
-   * @returns
+   * @returns // Failback
    */
   async update() {
-    var _a, _b;
+    var _a, _b, _c, _d, _e;
     if (!this.visibility) {
       return;
     }
@@ -164,29 +164,12 @@ class PageAlarm extends import_Page.Page {
       } else {
         message.button1 = (_b = data.button1 && await data.button1.getTranslatedString()) != null ? _b : this.library.getTranslation("arm_away");
         message.status1 = message.button1 ? "A1" : "";
-        if (this.adapter.config.pageAlarmdata[0].pageType === "cardAlarm") {
-          if (this.adapter.config.pageAlarmdata[0].check_A2) {
-            message.button2 = this.adapter.config.pageAlarmdata[0].state_A2;
-            message.status2 = "A2";
-          } else {
-            message.button2 = "";
-            message.status2 = "";
-          }
-          if (this.adapter.config.pageAlarmdata[0].check_A3) {
-            message.button3 = this.adapter.config.pageAlarmdata[0].state_A3;
-            message.status3 = "A3";
-          } else {
-            message.button3 = "";
-            message.status3 = "";
-          }
-          if (this.adapter.config.pageAlarmdata[0].check_A4) {
-            message.button4 = this.adapter.config.pageAlarmdata[0].state_A4;
-            message.status4 = "A4";
-          } else {
-            message.button4 = "";
-            message.status4 = "";
-          }
-        }
+        message.button2 = (_c = data.button2 && await data.button2.getTranslatedString()) != null ? _c : this.library.getTranslation("arm_home");
+        message.status2 = message.button2 ? "A2" : "";
+        message.button3 = (_d = data.button3 && await data.button3.getTranslatedString()) != null ? _d : this.library.getTranslation("arm_night");
+        message.status3 = message.button3 ? "A3" : "";
+        message.button4 = (_e = data.button4 && await data.button4.getTranslatedString()) != null ? _e : this.library.getTranslation("arm_vacation");
+        message.status4 = message.button4 ? "A4" : "";
       }
       if (this.status == "armed") {
         message.icon = import_icon_mapping.Icons.GetIcon("shield-home");
@@ -225,6 +208,45 @@ class PageAlarm extends import_Page.Page {
     }
     this.sendToPanel(this.getMessage(message), false);
   }
+  static async getAlarmPageConfig(adapter, index) {
+    const config = adapter.config.pageAlarmdata[index];
+    const button1Name = "arm_away";
+    let button2Name = "";
+    let button3Name = "";
+    let button4Name = "";
+    if (config.check_A2 && config.state_A2 !== "") {
+      button2Name = config.state_A2;
+    }
+    if (config.check_A3 && config.state_A3 !== "") {
+      button3Name = config.state_A3;
+    }
+    if (config.check_A4 && config.state_A4 !== "") {
+      button4Name = config.state_A4;
+    }
+    const result = {
+      uniqueID: config.pageName,
+      alwaysOn: "always",
+      pageItems: [],
+      config: {
+        card: "cardAlarm",
+        //index: index,
+        data: {
+          alarmType: { type: "const", constVal: config.pageType },
+          headline: { type: "const", constVal: config.headline },
+          entity1: void 0,
+          button1: { type: "const", constVal: button1Name },
+          button2: { type: "const", constVal: button2Name },
+          button3: { type: "const", constVal: button3Name },
+          button4: { type: "const", constVal: button4Name },
+          icon: void 0,
+          pin: { type: "const", constVal: config.pageAlarmPincode },
+          approved: { type: "const", constVal: config.check_approved }
+          //setNavi: { type: 'const', constVal: 'pageAlarm' },
+        }
+      }
+    };
+    return result;
+  }
   getMessage(message) {
     let result = PageAlarmMessageDefault;
     result = Object.assign(result, message);
@@ -246,6 +268,12 @@ class PageAlarm extends import_Page.Page {
       result.numpad,
       result.flashing
     );
+  }
+  async onVisibilityChange(val) {
+    if (val) {
+      this.log.debug(`Alarm page ${this.name} is visible`);
+    }
+    await super.onVisibilityChange(val);
   }
   async onStateTrigger(id) {
     if (this.items && this.items.card === "cardAlarm") {
@@ -274,10 +302,10 @@ class PageAlarm extends import_Page.Page {
     }
   }
   /**
-   *a
    *
-   * @param _event
-   * @returns
+   *
+   * @param _event // ButtonEvent form Tasmota
+   * @returns // Failback
    */
   async onButtonEvent(_event) {
     var _a;

@@ -13,6 +13,7 @@ import type * as typePageItem from '../types/type-pageItem';
 import * as Types from '../types/types';
 import { BaseClass } from './library';
 import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
+import { PageAlarm } from '../pages/pageAlarm';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -459,6 +460,25 @@ export class ConfigManager extends BaseClass {
                         continue;
                     }
                     panelConfig.pages.push(await PageChart.getChartPageConfig(this.adapter, index, this));
+                    continue;
+                }
+
+                // PageAlarm einlesen
+                if (page.type === 'cardAlarm') {
+                    if (!Array.isArray(this.adapter.config.pageAlarmdata)) {
+                        messages.push(`No pageAlarm configured in Admin for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    const index = this.adapter.config.pageAlarmdata.findIndex(
+                        item => item.pageName === page.uniqueName,
+                    );
+                    if (index === -1) {
+                        messages.push(`No pageAlarmdata found for ${page.uniqueName}`);
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    panelConfig.pages.push(await PageAlarm.getAlarmPageConfig(this.adapter, index));
                     continue;
                 }
 
