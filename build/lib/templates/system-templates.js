@@ -1014,12 +1014,12 @@ const NetworkOption = {
   },
   pageItems: [
     {
-      role: "textNotIcon",
+      role: "",
       type: "text",
       data: {
         icon: {
           true: {
-            text: { value: { type: "const", constVal: "1" } },
+            value: { type: "const", constVal: "desktop-mac" },
             color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
@@ -1045,12 +1045,12 @@ const NetworkOption = {
       }
     },
     {
-      role: "textNotIcon",
+      role: "",
       type: "text",
       data: {
         icon: {
           true: {
-            text: { value: { type: "const", constVal: "2" } },
+            value: { type: "const", constVal: "ip-network-outline" },
             color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
@@ -1076,12 +1076,12 @@ const NetworkOption = {
       }
     },
     {
-      role: "textNotIcon",
+      role: "",
       type: "text",
       data: {
         icon: {
           true: {
-            text: { value: { type: "const", constVal: "3" } },
+            value: { type: "const", constVal: "dns-outline" },
             color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
@@ -1107,12 +1107,12 @@ const NetworkOption = {
       }
     },
     {
-      role: "textNotIcon",
+      role: "",
       type: "text",
       data: {
         icon: {
           true: {
-            text: { value: { type: "const", constVal: "4" } },
+            value: { type: "const", constVal: "router-network" },
             color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
@@ -1138,12 +1138,12 @@ const NetworkOption = {
       }
     },
     {
-      role: "textNotIcon",
+      role: "",
       type: "text",
       data: {
         icon: {
           true: {
-            text: { value: { type: "const", constVal: "5" } },
+            value: { type: "const", constVal: "signal-distance-variant" },
             color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
@@ -1169,12 +1169,12 @@ const NetworkOption = {
       }
     },
     {
-      role: "textNotIcon",
+      role: "",
       type: "text",
       data: {
         icon: {
           true: {
-            text: { value: { type: "const", constVal: "6" } },
+            value: { type: "const", constVal: "signal" },
             color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
@@ -1193,19 +1193,19 @@ const NetworkOption = {
           true: {
             type: "internalState",
             dp: "info/Tasmota",
-            read: `return val ? val.sts.Wifi.RSSI : '';`
+            read: `return val ? val.sts.Wifi.RSSI + ' %' : '';`
           },
           false: void 0
         }
       }
     },
     {
-      role: "textNotIcon",
+      role: "",
       type: "text",
       data: {
         icon: {
           true: {
-            text: { value: { type: "const", constVal: "7" } },
+            value: { type: "const", constVal: "wifi-strength-2" },
             color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
@@ -1231,12 +1231,12 @@ const NetworkOption = {
       }
     },
     {
-      role: "textNotIcon",
+      role: "",
       type: "text",
       data: {
         icon: {
           true: {
-            text: { value: { type: "const", constVal: "8" } },
+            value: { type: "const", constVal: "sort-clock-ascending-outline" },
             color: { type: "const", constVal: import_Color.Color.info }
           },
           false: void 0
@@ -1256,6 +1256,99 @@ const NetworkOption = {
             type: "internalState",
             dp: "info/Tasmota",
             read: `return val ? val.sts.Wifi.Downtime : '';`
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "signal-distance-variant" },
+            color: { type: "const", constVal: import_Color.Color.info }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Mode" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internalState",
+            dp: "info/Tasmota",
+            read: `return val ? val.sts.Wifi.Mode : '';`
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "timeline-clock-outline" },
+            color: { type: "const", constVal: import_Color.Color.info }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "Channel" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internalState",
+            dp: "info/Tasmota",
+            read: `return val ? val.sts.Wifi.Channel : '';`
+          },
+          false: void 0
+        }
+      }
+    },
+    {
+      role: "",
+      type: "text",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "router-wireless-settings" },
+            color: { type: "const", constVal: import_Color.Color.info }
+          },
+          false: void 0
+        },
+        entity1: {
+          value: {
+            type: "const",
+            constVal: true
+          }
+        },
+        text: {
+          true: { type: "const", constVal: "AP" },
+          false: void 0
+        },
+        text1: {
+          true: {
+            type: "internalState",
+            dp: "info/Tasmota",
+            read: `return val ? val.sts.Wifi.AP : '';`
           },
           false: void 0
         }
