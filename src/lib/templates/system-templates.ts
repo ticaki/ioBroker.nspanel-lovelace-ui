@@ -1020,13 +1020,13 @@ const NetworkOption: PageBaseConfig = {
     },
     pageItems: [
         {
-            role: 'textNotIcon',
+            role: '',
             type: 'text',
 
             data: {
                 icon: {
                     true: {
-                        text: { value: { type: 'const', constVal: '1' } },
+                        value: { type: 'const', constVal: 'desktop-mac' },
                         color: { type: 'const', constVal: Color.info },
                     },
                     false: undefined,
@@ -1052,13 +1052,13 @@ const NetworkOption: PageBaseConfig = {
             },
         },
         {
-            role: 'textNotIcon',
+            role: '',
             type: 'text',
 
             data: {
                 icon: {
                     true: {
-                        text: { value: { type: 'const', constVal: '2' } },
+                        value: { type: 'const', constVal: 'ip-network-outline' },
                         color: { type: 'const', constVal: Color.info },
                     },
                     false: undefined,
@@ -1084,13 +1084,13 @@ const NetworkOption: PageBaseConfig = {
             },
         },
         {
-            role: 'textNotIcon',
+            role: '',
             type: 'text',
 
             data: {
                 icon: {
                     true: {
-                        text: { value: { type: 'const', constVal: '3' } },
+                        value: { type: 'const', constVal: 'dns-outline' },
                         color: { type: 'const', constVal: Color.info },
                     },
                     false: undefined,
@@ -1116,13 +1116,13 @@ const NetworkOption: PageBaseConfig = {
             },
         },
         {
-            role: 'textNotIcon',
+            role: '',
             type: 'text',
 
             data: {
                 icon: {
                     true: {
-                        text: { value: { type: 'const', constVal: '4' } },
+                        value: { type: 'const', constVal: 'router-network' },
                         color: { type: 'const', constVal: Color.info },
                     },
                     false: undefined,
@@ -1148,13 +1148,13 @@ const NetworkOption: PageBaseConfig = {
             },
         },
         {
-            role: 'textNotIcon',
+            role: '',
             type: 'text',
 
             data: {
                 icon: {
                     true: {
-                        text: { value: { type: 'const', constVal: '5' } },
+                        value: { type: 'const', constVal: 'signal-distance-variant' },
                         color: { type: 'const', constVal: Color.info },
                     },
                     false: undefined,
@@ -1180,13 +1180,13 @@ const NetworkOption: PageBaseConfig = {
             },
         },
         {
-            role: 'textNotIcon',
+            role: '',
             type: 'text',
 
             data: {
                 icon: {
                     true: {
-                        text: { value: { type: 'const', constVal: '6' } },
+                        value: { type: 'const', constVal: 'signal' },
                         color: { type: 'const', constVal: Color.info },
                     },
                     false: undefined,
@@ -1205,20 +1205,20 @@ const NetworkOption: PageBaseConfig = {
                     true: {
                         type: 'internalState',
                         dp: 'info/Tasmota',
-                        read: `return val ? val.sts.Wifi.RSSI : '';`,
+                        read: `return val ? val.sts.Wifi.RSSI + ' %' : '';`,
                     },
                     false: undefined,
                 },
             },
         },
         {
-            role: 'textNotIcon',
+            role: '',
             type: 'text',
 
             data: {
                 icon: {
                     true: {
-                        text: { value: { type: 'const', constVal: '7' } },
+                        value: { type: 'const', constVal: 'wifi-strength-2' },
                         color: { type: 'const', constVal: Color.info },
                     },
                     false: undefined,
@@ -1244,13 +1244,13 @@ const NetworkOption: PageBaseConfig = {
             },
         },
         {
-            role: 'textNotIcon',
+            role: '',
             type: 'text',
 
             data: {
                 icon: {
                     true: {
-                        text: { value: { type: 'const', constVal: '8' } },
+                        value: { type: 'const', constVal: 'sort-clock-ascending-outline' },
                         color: { type: 'const', constVal: Color.info },
                     },
                     false: undefined,
@@ -1270,6 +1270,102 @@ const NetworkOption: PageBaseConfig = {
                         type: 'internalState',
                         dp: 'info/Tasmota',
                         read: `return val ? val.sts.Wifi.Downtime : '';`,
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: '',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'signal-distance-variant' },
+                        color: { type: 'const', constVal: Color.info },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Mode' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internalState',
+                        dp: 'info/Tasmota',
+                        read: `return val ? val.sts.Wifi.Mode : '';`,
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: '',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'timeline-clock-outline' },
+                        color: { type: 'const', constVal: Color.info },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'Channel' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internalState',
+                        dp: 'info/Tasmota',
+                        read: `return val ? val.sts.Wifi.Channel : '';`,
+                    },
+                    false: undefined,
+                },
+            },
+        },
+        {
+            role: '',
+            type: 'text',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'router-wireless-settings' },
+                        color: { type: 'const', constVal: Color.info },
+                    },
+                    false: undefined,
+                },
+                entity1: {
+                    value: {
+                        type: 'const',
+                        constVal: true,
+                    },
+                },
+                text: {
+                    true: { type: 'const', constVal: 'AP' },
+                    false: undefined,
+                },
+                text1: {
+                    true: {
+                        type: 'internalState',
+                        dp: 'info/Tasmota',
+                        read: `return val ? val.sts.Wifi.AP : '';`,
                     },
                     false: undefined,
                 },
