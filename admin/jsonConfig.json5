@@ -1157,6 +1157,7 @@
                             "xl": 2,
                             "type": "autocompleteSendTo",
                             "label": "icon",
+                            "default": "solar-power-variant",
                             "command": "getIcons",
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
@@ -1376,6 +1377,7 @@
                             "xl": 2,
                             "type": "autocompleteSendTo",
                             "label": "icon",
+                            "default": "transmission-tower",
                             "command": "getIcons",
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
@@ -1593,6 +1595,7 @@
                             "xl": 2,
                             "type": "autocompleteSendTo",
                             "label": "icon",
+                            "default": "car-electric-outline",
                             "command": "getIcons",
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
@@ -1810,6 +1813,7 @@
                             "xl": 2,
                             "type": "autocompleteSendTo",
                             "label": "icon",
+                            "default": "washing-machine",
                             "command": "getIcons",
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
@@ -2027,6 +2031,7 @@
                             "xl": 2,
                             "type": "autocompleteSendTo",
                             "label": "icon",
+                            "default": "tumble-dryer",
                             "command": "getIcons",
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
@@ -2244,6 +2249,7 @@
                             "xl": 2,
                             "type": "autocompleteSendTo",
                             "label": "icon",
+                            "default": "shape",
                             "command": "getIcons",
                             "jsonData": "{\"ip\": \"${data.internalServerIp}\"}"
                         },
@@ -2434,10 +2440,10 @@
                             "hidden": "!data._power6_more"
                         },
                         {
-                            "attr": "powerHome_header",
+                            "attr": "powerHomeTop_header",
                             "type": "header",
-                            "text": "powerHome",
-                            "size": 3
+                            "text": "powerHomeTop",
+                            "size": 5
                         },
                         {
                             "newLine": true,
@@ -2517,6 +2523,12 @@
                             "hidden": "!data._power7_more"
                         },
                         {
+                            "attr": "powerHomeBottom_header",
+                            "type": "header",
+                            "text": "powerHomeBottom",
+                            "size": 5
+                        },
+                        {
                            "attr": "power8_selInternalCalculation",
                             "xs": 2,
                             "sm": 2,
@@ -2590,7 +2602,8 @@
                             "type": "checkbox",
                             "label": "more",
                             "default": false,
-                            "newLine": true
+                            "newLine": true,
+                            "hidden": "data.power8_selInternalCalculation"
                         },
                         {
                             "attr": "power8_valueDecimal",
@@ -2617,7 +2630,7 @@
                                     "value": 2
                                 }
                             ],
-                            "hidden": "!data._power8_more"
+                            "hidden": "!data._power8_more || data.power8_selInternalCalculation"
                         },
                         {
                             "attr": "power8_valueUnit",
@@ -2643,7 +2656,7 @@
                                     "value": "MW"
                                 }
                             ],
-                            "hidden": "!data._power8_more"
+                            "hidden": "!data._power8_more || data.power8_selInternalCalculation"
                         }
                     ]
                 }
