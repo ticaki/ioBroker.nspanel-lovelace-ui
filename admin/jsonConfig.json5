@@ -2949,7 +2949,7 @@
                             "xl": 2,
                             "type": "select",
                             "label": "labelPageType",
-                            "default": "cardAlarm",
+                            "default": "alarm",
                             "options": [
                                 {
                                     "label": "Page Alarm",
@@ -3019,7 +3019,7 @@
                             "xl": 12,
                             "type": "staticText",
                             "label": "hier kommet der Text",
-                            "hidden": "data.pageType == 'cardUnlock'"
+                            "hidden": "data.pageType == 'unlock'"
                         },
                         {
                             "attr": "check_A2",
@@ -3031,7 +3031,7 @@
                             "type": "checkbox",
                             "label": "enabledA2",
                             "default": false,
-                            "hidden": "data.pageType == 'cardUnlock'"
+                            "hidden": "data.pageType == 'unlock'"
                         },
                         {
                             "attr": "state_A2",
@@ -3094,6 +3094,40 @@
                             "label": "txtForA4",
                             "default": "Besuch",
                             "hidden": "!data.check_A4"
+                        },
+                        {
+                            "attr": "unlockType",
+                            "xs": 2,
+                            "sm": 2,
+                            "md": 2,
+                            "lg": 2,
+                            "xl": 2,
+                            "type": "select",
+                            "label": "labelUnlockType",
+                            "default": true,
+                            "options": [
+                                {
+                                    "label": "for Traget-Page",
+                                    "value": false
+                                },
+                                {
+                                    "label": "for hidden Pages",
+                                    "value": true
+                                }
+                            ],
+                            "newLine": true,
+                            "hidden": "data.pageType !== 'unlock'"
+                        },
+                        {
+                            "attr": "unlockTargetPage",
+                            "xs": 4,
+                            "sm": 4,
+                            "md": 1,
+                            "lg": 1,
+                            "xl": 1,
+                            "type": "text",
+                            "label": "labelTagrgetPage",
+                            "hidden": "data.unlockType || data.pageType !== 'unlock'"
                         }
                     ]
                 }
