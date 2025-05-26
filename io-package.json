@@ -152,7 +152,7 @@
     },
     "dependencies": [
       {
-        "js-controller": ">=6.0.11"
+        "js-controller": ">=7.0.7"
       }
     ],
     "globalDependencies": [
@@ -170,7 +170,8 @@
     "pageQRpwd2",
     "pageQRpwd3",
     "tasmotaAdminPassword",
-    "pw1"
+    "pw1",
+    "pageAlarmdata.pageAlarmPincode"
   ],
   "encryptedNative": [
     "mqttPassword",
@@ -179,7 +180,8 @@
     "pageQRpwd2",
     "pageQRpwd3",
     "tasmotaAdminPassword",
-    "pw1"
+    "pw1",
+    "pageAlarmdata.pageAlarmPincode"
   ],
   "native": {
     "mqttPassword": "",
