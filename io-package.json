@@ -195,7 +195,8 @@
     "pageQRssid": "",
     "pw1": "",
     "tasmotaAdminPassword": "",
-    "useBetaTFT": false
+    "useBetaTFT": false,
+    "pageAlarmdata": []
   },
   "objects": [],
   "instanceObjects": [
