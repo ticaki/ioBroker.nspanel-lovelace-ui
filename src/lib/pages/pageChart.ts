@@ -88,7 +88,7 @@ export class PageChart extends Page {
         let stateExistTicks = '';
         if (config) {
             const card = config.selChartType;
-            console.debug(`get pageconfig Card: ${card}`);
+            adapter.log.debug(`get pageconfig Card: ${card}`);
             if (config.selInstanceDataSource === 1) {
                 // AdapterVersion
                 if (await configManager.existsState(config.setStateForDB)) {
@@ -134,41 +134,45 @@ export class PageChart extends Page {
 
     protected async getDataFromDB(_id: string, _rangeHours: number, _instance: string): Promise<any[]> {
         return new Promise((resolve, reject) => {
-            const timeout = this.adapter.setTimeout(() => {
-                reject(new Error(`error  in system`));
-            }, 5000);
-            this.adapter.sendTo(
-                _instance,
-                'getHistory',
-                {
-                    id: _id,
-                    options: {
-                        start: Date.now() - _rangeHours * 60 * 60 * 1000,
-                        end: Date.now(),
-                        count: _rangeHours,
-                        limit: _rangeHours,
-                        ignoreNull: true,
-                        aggregate: 'average',
-                        round: 1,
+            try {
+                const timeout = this.adapter.setTimeout(() => {
+                    reject(new Error(`error  in system`));
+                }, 5000);
+                this.adapter.sendTo(
+                    _instance,
+                    'getHistory',
+                    {
+                        id: _id,
+                        options: {
+                            start: Date.now() - _rangeHours * 60 * 60 * 1000,
+                            end: Date.now(),
+                            count: _rangeHours,
+                            limit: _rangeHours,
+                            ignoreNull: true,
+                            aggregate: 'average',
+                            round: 1,
+                        },
                     },
-                },
-                result => {
-                    if (timeout) {
-                        this.adapter.clearTimeout(timeout);
-                    }
-                    if (result && 'result' in result) {
-                        if (Array.isArray(result.result)) {
-                            for (let i = 0; i < result.result.length; i++) {
-                                this.log.debug(
-                                    `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`,
-                                );
-                            }
-                            resolve(result.result);
+                    result => {
+                        if (timeout) {
+                            this.adapter.clearTimeout(timeout);
                         }
-                    }
-                    reject(new Error('No data found'));
-                },
-            );
+                        if (result && 'result' in result) {
+                            if (Array.isArray(result.result)) {
+                                for (let i = 0; i < result.result.length; i++) {
+                                    this.log.debug(
+                                        `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`,
+                                    );
+                                }
+                                resolve(result.result);
+                            }
+                        }
+                        reject(new Error('No data found'));
+                    },
+                );
+            } catch (error) {
+                reject(new Error(`Error in getDataFromDB: ${error}`));
+            }
         });
     }
 
