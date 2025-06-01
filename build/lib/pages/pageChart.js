@@ -190,33 +190,37 @@ class PageChart extends import_Page.Page {
     );
   }
   async onVisibilityChange(val) {
-    if (val) {
-      const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForValues);
-      if (state && state.val) {
-        this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
-      } else {
-        this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
-        this.checkState = false;
+    try {
+      if (val) {
+        const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForValues);
+        if (state && state.val) {
+          this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
+        } else {
+          this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
+          this.checkState = false;
+        }
       }
-    }
-    if (val && this.adminConfig.selInstanceDataSource === 1) {
-      const state = await this.adapter.getForeignStateAsync(
-        `system.adapter.${this.adminConfig.selInstance}.alive`
-      );
-      if (state && state.val) {
-        this.log.debug(`Instance ${this.adminConfig.selInstance} is alive`);
-      } else {
-        this.log.debug(`Instance ${this.adminConfig.selInstance} is not alive`);
-        this.checkState = false;
+      if (val && this.adminConfig.selInstanceDataSource === 1) {
+        const state = await this.adapter.getForeignStateAsync(
+          `system.adapter.${this.adminConfig.selInstance}.alive`
+        );
+        if (state && state.val) {
+          this.log.debug(`Instance ${this.adminConfig.selInstance} is alive`);
+        } else {
+          this.log.debug(`Instance ${this.adminConfig.selInstance} is not alive`);
+          this.checkState = false;
+        }
+      } else if (val && this.adminConfig.selInstanceDataSource === 0) {
+        const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForTicks);
+        if (state && state.val) {
+          this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
+        } else {
+          this.log.debug(`State ${this.adminConfig.setStateForTicks} for ticks is not exists`);
+          this.checkState = false;
+        }
       }
-    } else if (val && this.adminConfig.selInstanceDataSource === 0) {
-      const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForTicks);
-      if (state && state.val) {
-        this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
-      } else {
-        this.log.debug(`State ${this.adminConfig.setStateForTicks} for ticks is not exists`);
-        this.checkState = false;
-      }
+    } catch (error) {
+      this.log.error(`Error onVisibilityChange: ${error}`);
     }
     await super.onVisibilityChange(val);
   }
