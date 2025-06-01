@@ -196,7 +196,9 @@
     "pw1": "",
     "tasmotaAdminPassword": "",
     "useBetaTFT": false,
-    "pageAlarmdata": []
+    "pageAlarmdata": [
+      {"pageAlarmPincode":""}
+    ]
   },
   "objects": [],
   "instanceObjects": [
