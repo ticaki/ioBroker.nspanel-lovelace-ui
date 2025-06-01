@@ -171,7 +171,7 @@ export class PageChart extends Page {
                     },
                 );
             } catch (error) {
-                reject(new Error(`Error in getDataFromDB: ${error}`));
+                reject(new Error(`Error in getDataFromDB: ${error as string}`));
             }
         });
     }
