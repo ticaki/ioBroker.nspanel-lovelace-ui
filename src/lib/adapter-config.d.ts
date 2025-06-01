@@ -171,7 +171,7 @@ declare global {
                 state_A3: string,
                 check_A4: boolean,
                 state_A4: string,
-                pageAlarmPincode: number,
+                pageAlarmPincode: string,
                 unlockType: boolean,
                 unlockTargetPage: string
             }[];
