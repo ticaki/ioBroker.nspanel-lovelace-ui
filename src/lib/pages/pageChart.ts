@@ -24,7 +24,7 @@ export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
     index: number = 0;
     private checkState: boolean = true;
-    protected adminConfig = this.adapter.config.pageChartdata[this.index];
+    protected adminConfig;
 
     constructor(config: PageInterface, options: pages.PageBaseConfig) {
         if (config.card !== 'cardChart' && config.card !== 'cardLChart') {
@@ -38,6 +38,7 @@ export class PageChart extends Page {
         }
         this.index = this.config.index;
         this.minUpdateInterval = 2000;
+        this.adminConfig = this.adapter.config.pageChartdata[this.index];
     }
 
     async init(): Promise<void> {
@@ -194,31 +195,48 @@ export class PageChart extends Page {
         // check if value state exists
         try {
             if (val) {
-                const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForValues);
-                if (state && state.val) {
-                    this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
+                if (this.adminConfig) {
+                    if (this.adminConfig.setStateForValues != '' && this.adminConfig.setStateForValues != null) {
+                        const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForValues);
+                        if (state && state.val) {
+                            this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
+                        } else {
+                            this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
+                            this.checkState = false;
+                        }
+                    }
+                    if (this.adminConfig.selInstanceDataSource !== undefined) {
+                        if (this.adminConfig.selInstanceDataSource === 1) {
+                            if (this.adminConfig.selInstance != null && this.adminConfig.selInstance !== '') {
+                                const state = await this.adapter.getForeignStateAsync(
+                                    `system.adapter.${this.adminConfig.selInstance}.alive`,
+                                );
+                                if (state && state.val) {
+                                    this.log.debug(`Instance ${this.adminConfig.selInstance} is alive`);
+                                } else {
+                                    this.log.debug(`Instance ${this.adminConfig.selInstance} is not alive`);
+                                    this.checkState = false;
+                                }
+                            }
+                        } else if (this.adminConfig.selInstanceDataSource === 0) {
+                            // check if ticks state exists
+                            if (this.adminConfig.setStateForTicks == '' || this.adminConfig.setStateForTicks == null) {
+                                const state = await this.adapter.getForeignStateAsync(
+                                    this.adminConfig.setStateForTicks,
+                                );
+                                if (state && state.val) {
+                                    this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
+                                } else {
+                                    this.log.debug(
+                                        `State ${this.adminConfig.setStateForTicks} for ticks is not exists`,
+                                    );
+                                    this.checkState = false;
+                                }
+                            }
+                        }
+                    }
                 } else {
-                    this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
-                    this.checkState = false;
-                }
-            }
-            if (val && this.adminConfig.selInstanceDataSource === 1) {
-                const state = await this.adapter.getForeignStateAsync(
-                    `system.adapter.${this.adminConfig.selInstance}.alive`,
-                );
-                if (state && state.val) {
-                    this.log.debug(`Instance ${this.adminConfig.selInstance} is alive`);
-                } else {
-                    this.log.debug(`Instance ${this.adminConfig.selInstance} is not alive`);
-                    this.checkState = false;
-                }
-            } else if (val && this.adminConfig.selInstanceDataSource === 0) {
-                // check if ticks state exists
-                const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForTicks);
-                if (state && state.val) {
-                    this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
-                } else {
-                    this.log.debug(`State ${this.adminConfig.setStateForTicks} for ticks is not exists`);
+                    this.log.warn('AdminConfig is not set, cannot check states');
                     this.checkState = false;
                 }
             }

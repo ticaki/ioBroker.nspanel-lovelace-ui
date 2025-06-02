@@ -41,7 +41,7 @@ class PageChart extends import_Page.Page {
   items;
   index = 0;
   checkState = true;
-  adminConfig = this.adapter.config.pageChartdata[this.index];
+  adminConfig;
   constructor(config, options) {
     if (config.card !== "cardChart" && config.card !== "cardLChart") {
       return;
@@ -54,6 +54,7 @@ class PageChart extends import_Page.Page {
     }
     this.index = this.config.index;
     this.minUpdateInterval = 2e3;
+    this.adminConfig = this.adapter.config.pageChartdata[this.index];
   }
   async init() {
     await super.init();
@@ -192,30 +193,47 @@ class PageChart extends import_Page.Page {
   async onVisibilityChange(val) {
     try {
       if (val) {
-        const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForValues);
-        if (state && state.val) {
-          this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
+        if (this.adminConfig) {
+          if (this.adminConfig.setStateForValues != "" && this.adminConfig.setStateForValues != null) {
+            const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForValues);
+            if (state && state.val) {
+              this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is exists`);
+            } else {
+              this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
+              this.checkState = false;
+            }
+          }
+          if (this.adminConfig.selInstanceDataSource !== void 0) {
+            if (this.adminConfig.selInstanceDataSource === 1) {
+              if (this.adminConfig.selInstance != null && this.adminConfig.selInstance !== "") {
+                const state = await this.adapter.getForeignStateAsync(
+                  `system.adapter.${this.adminConfig.selInstance}.alive`
+                );
+                if (state && state.val) {
+                  this.log.debug(`Instance ${this.adminConfig.selInstance} is alive`);
+                } else {
+                  this.log.debug(`Instance ${this.adminConfig.selInstance} is not alive`);
+                  this.checkState = false;
+                }
+              }
+            } else if (this.adminConfig.selInstanceDataSource === 0) {
+              if (this.adminConfig.setStateForTicks == "" || this.adminConfig.setStateForTicks == null) {
+                const state = await this.adapter.getForeignStateAsync(
+                  this.adminConfig.setStateForTicks
+                );
+                if (state && state.val) {
+                  this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
+                } else {
+                  this.log.debug(
+                    `State ${this.adminConfig.setStateForTicks} for ticks is not exists`
+                  );
+                  this.checkState = false;
+                }
+              }
+            }
+          }
         } else {
-          this.log.debug(`State ${this.adminConfig.setStateForValues} for Values is not exists`);
-          this.checkState = false;
-        }
-      }
-      if (val && this.adminConfig.selInstanceDataSource === 1) {
-        const state = await this.adapter.getForeignStateAsync(
-          `system.adapter.${this.adminConfig.selInstance}.alive`
-        );
-        if (state && state.val) {
-          this.log.debug(`Instance ${this.adminConfig.selInstance} is alive`);
-        } else {
-          this.log.debug(`Instance ${this.adminConfig.selInstance} is not alive`);
-          this.checkState = false;
-        }
-      } else if (val && this.adminConfig.selInstanceDataSource === 0) {
-        const state = await this.adapter.getForeignStateAsync(this.adminConfig.setStateForTicks);
-        if (state && state.val) {
-          this.log.debug(`State ${this.adminConfig.setStateForTicks} for Ticks is exists`);
-        } else {
-          this.log.debug(`State ${this.adminConfig.setStateForTicks} for ticks is not exists`);
+          this.log.warn("AdminConfig is not set, cannot check states");
           this.checkState = false;
         }
       }

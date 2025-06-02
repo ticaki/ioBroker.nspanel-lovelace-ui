@@ -23,9 +23,9 @@ __export(pageChartBar_exports, {
 module.exports = __toCommonJS(pageChartBar_exports);
 var import_pageChart = require("./pageChart");
 class PageChartBar extends import_pageChart.PageChart {
-  adminConfig = this.adapter.config.pageChartdata[this.index];
   constructor(config, options) {
     super(config, options);
+    this.adminConfig = this.adapter.config.pageChartdata[this.index];
   }
   async init() {
     const config = structuredClone(this.config);
