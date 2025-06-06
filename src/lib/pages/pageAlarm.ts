@@ -39,6 +39,7 @@ export class PageAlarm extends Page {
     private status: pages.AlarmStates = 'armed';
     private alarmType: string = 'alarm';
     items: pages.PageBaseConfig['items'];
+    index: number = 0;
 
     async setMode(m: pages.AlarmButtonEvents): Promise<void> {
         await this.library.writedp(
@@ -73,7 +74,10 @@ export class PageAlarm extends Page {
         super(config, options);
         if (options.config && options.config.card == 'cardAlarm') {
             this.config = options.config;
+        } else {
+            throw new Error('Missing config cardAlarm!');
         }
+        //this.index = this.config.index;
         this.minUpdateInterval = 500;
         this.neverDeactivateTrigger = true;
     }

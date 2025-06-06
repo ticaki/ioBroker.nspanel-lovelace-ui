@@ -41,7 +41,7 @@ export class PageQR extends Page {
         if (options.config && options.config.card == 'cardQR') {
             this.config = options.config;
         } else {
-            throw new Error('Missing config!');
+            throw new Error('Missing config cardQR!');
         }
         this.index = this.config.index;
         this.minUpdateInterval = 1000;

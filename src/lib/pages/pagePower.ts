@@ -82,7 +82,10 @@ export class PagePower extends Page {
         super(config, options);
         if (options.config && options.config.card == 'cardPower') {
             this.config = options.config;
+        } else {
+            throw new Error('Missing config cardPower!');
         }
+        this.index = this.config.index;
         this.minUpdateInterval = 2000;
     }
 
