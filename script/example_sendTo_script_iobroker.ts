@@ -10,7 +10,7 @@ async function configuration(): Promise<void> {
         weatherAddDefaultItems: false,
     }
 
-    // Diese Konfiguration für den Fahrplan ist ein Beispiel was die interne Adapterkonfiguration benutzt, diese 
+    /* Diese Konfiguration für den Fahrplan ist ein Beispiel was die interne Adapterkonfiguration benutzt, diese 
     // ist recht komplex und wird nicht weiter erläutert. Da gibts später fertige Templates die man hier verwenden kann.
     // wie am Fahrplan Beispiel zu sehen ist.
     const fahrplan: any = {
@@ -71,6 +71,7 @@ async function configuration(): Promise<void> {
         type: 'cardGrid',
         useColor: true
     }
+*/
 
     const config: ScriptConfig.Config = {
         panelTopic: 'topic',
@@ -87,14 +88,14 @@ async function configuration(): Promise<void> {
         // Seiteneinteilung / Page division
         // Hauptseiten / Mainpages
         pages: [
-            irgendeinName,
-            grid1,
-            qrCode,
-            chartHeizung,
+            //irgendeinName,
+            //grid1,
+            //qrCode,
+            //chartHeizung,
         ],
         // Unterseiten / Subpages
         subPages: [
-            fahrplan
+            //fahrplan
         ],
 
         /***********************************************************************

@@ -465,7 +465,7 @@ export class ConfigManager extends BaseClass {
 
                 // PageAlarm einlesen
                 if (page.type === 'cardAlarm') {
-                    if (!Array.isArray(this.adapter.config.pageAlarmdata)) {
+                    /*if (!Array.isArray(this.adapter.config.pageAlarmdata)) {
                         messages.push(`No pageAlarm configured in Admin for ${page.uniqueName}`);
                         this.log.warn(messages[messages.length - 1]);
                         continue;
@@ -480,6 +480,9 @@ export class ConfigManager extends BaseClass {
                     }
                     panelConfig.pages.push(await PageAlarm.getAlarmPageConfig(this.adapter, index));
                     continue;
+                    */
+                    messages.push(`No pageAlarm supported yet!`);
+                    this.log.warn(messages[messages.length - 1]);
                 }
 
                 let gridItem: pages.PageBaseConfig = {
