@@ -1465,7 +1465,7 @@ export class PageItem extends BaseClassTriggerd {
                     }
                     this.timeouts.brightnessSlider = this.adapter.setTimeout(
                         async (item, value) => {
-                            if (item && item.dimmer && item.dimmer.value && item.dimmer.value.writeable) {
+                            if (item?.dimmer?.value?.writeable || item?.dimmer?.set?.writeable) {
                                 const dimmer = await tools.getScaledNumber(item.dimmer);
                                 if (dimmer !== null && String(dimmer) != value) {
                                     await tools.setScaledNumber(item.dimmer, parseInt(value));
@@ -1541,14 +1541,17 @@ export class PageItem extends BaseClassTriggerd {
                             }
                             case 'rgbSingle': {
                                 const rgb = Color.resultToRgb(value);
-                                if (Color.isRGB(rgb)) {
-                                    item.color &&
-                                        item.color.true &&
-                                        (await item.color.true.setStateAsync(JSON.stringify(rgb)));
+                                if (
+                                    Color.isRGB(rgb) &&
+                                    item?.color?.true &&
+                                    item.color.true.options.role !== 'level.color.rgb'
+                                ) {
+                                    await item.color.true.setStateAsync(JSON.stringify(rgb));
+                                    break;
                                 }
-
-                                break;
+                                // jump to next case if we have a rgb.hex
                             }
+                            // eslint-disable-next-line no-fallthrough
                             case 'rgb.hex': {
                                 const rgb = Color.resultToRgb(value);
                                 if (Color.isRGB(rgb)) {

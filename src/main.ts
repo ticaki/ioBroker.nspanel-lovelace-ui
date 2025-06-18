@@ -67,7 +67,6 @@ class NspanelLovelaceUi extends utils.Adapter {
             common: { name: { en: 'Nspanel Instance', de: 'Nspanel Instanze' }, type: 'meta.folder' },
             native: {},
         });
-        this.library = new Library(this);
 
         if (this.config.mqttServer && this.config.mqttPort && this.config.mqttUsername) {
             this.config.mqttPassword = this.config.mqttPassword || '';
