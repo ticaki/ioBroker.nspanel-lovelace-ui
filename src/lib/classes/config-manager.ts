@@ -13,7 +13,6 @@ import type * as typePageItem from '../types/type-pageItem';
 import * as Types from '../types/types';
 import { BaseClass } from './library';
 import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
-import { PageAlarm } from '../pages/pageAlarm';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
