@@ -1267,7 +1267,8 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
           this.timeouts.brightnessSlider = this.adapter.setTimeout(
             async (item2, value2) => {
-              if (item2 && item2.dimmer && item2.dimmer.value && item2.dimmer.value.writeable) {
+              var _a2, _b2, _c2, _d2;
+              if (((_b2 = (_a2 = item2 == null ? void 0 : item2.dimmer) == null ? void 0 : _a2.value) == null ? void 0 : _b2.writeable) || ((_d2 = (_c2 = item2 == null ? void 0 : item2.dimmer) == null ? void 0 : _c2.set) == null ? void 0 : _d2.writeable)) {
                 const dimmer = await tools.getScaledNumber(item2.dimmer);
                 if (dimmer !== null && String(dimmer) != value2) {
                   await tools.setScaledNumber(item2.dimmer, parseInt(value2));
