@@ -1541,11 +1541,15 @@ export class PageItem extends BaseClassTriggerd {
                             }
                             case 'rgbSingle': {
                                 const rgb = Color.resultToRgb(value);
-                                if (Color.isRGB(rgb)) {
-                                    item.color &&
-                                        item.color.true &&
-                                        (await item.color.true.setStateAsync(JSON.stringify(rgb)));
+                                if (
+                                    !Color.isRGB(rgb) ||
+                                    !item.color ||
+                                    !item.color.true ||
+                                    item.color.true.options.role === 'level.color.rgb'
+                                ) {
+                                    break;
                                 }
+                                await item.color.true.setStateAsync(JSON.stringify(rgb));
 
                                 break;
                             }

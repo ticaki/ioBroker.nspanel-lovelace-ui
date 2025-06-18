@@ -1343,9 +1343,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               }
               case "rgbSingle": {
                 const rgb = import_Color.Color.resultToRgb(value);
-                if (import_Color.Color.isRGB(rgb)) {
-                  item.color && item.color.true && await item.color.true.setStateAsync(JSON.stringify(rgb));
+                if (!import_Color.Color.isRGB(rgb) || !item.color || !item.color.true || item.color.true.options.role === "level.color.rgb") {
+                  break;
                 }
+                await item.color.true.setStateAsync(JSON.stringify(rgb));
                 break;
               }
               case "rgb.hex": {
