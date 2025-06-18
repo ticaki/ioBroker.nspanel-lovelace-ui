@@ -372,8 +372,7 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardQR' &&
                     page.type !== 'cardPower' &&
                     page.type !== 'cardChart' &&
-                    page.type !== 'cardLChart' &&
-                    page.type !== 'cardAlarm'
+                    page.type !== 'cardLChart'
                 ) {
                     const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!..`;
                     messages.push(msg);
@@ -463,8 +462,8 @@ export class ConfigManager extends BaseClass {
                 }
 
                 // PageAlarm einlesen
-                if (page.type === 'cardAlarm') {
-                    /*if (!Array.isArray(this.adapter.config.pageAlarmdata)) {
+                /*if (page.type === 'cardAlarm') {
+                    if (!Array.isArray(this.adapter.config.pageAlarmdata)) {
                         messages.push(`No pageAlarm configured in Admin for ${page.uniqueName}`);
                         this.log.warn(messages[messages.length - 1]);
                         continue;
@@ -478,11 +477,8 @@ export class ConfigManager extends BaseClass {
                         continue;
                     }
                     panelConfig.pages.push(await PageAlarm.getAlarmPageConfig(this.adapter, index));
-                    continue;
-                    */
-                    messages.push(`No pageAlarm supported yet!`);
-                    this.log.warn(messages[messages.length - 1]);
-                }
+                    continue;;
+                }*/
 
                 let gridItem: pages.PageBaseConfig = {
                     dpInit: '',
