@@ -1542,17 +1542,16 @@ export class PageItem extends BaseClassTriggerd {
                             case 'rgbSingle': {
                                 const rgb = Color.resultToRgb(value);
                                 if (
-                                    !Color.isRGB(rgb) ||
-                                    !item.color ||
-                                    !item.color.true ||
-                                    item.color.true.options.role === 'level.color.rgb'
+                                    Color.isRGB(rgb) &&
+                                    item?.color?.true &&
+                                    item.color.true.options.role !== 'level.color.rgb'
                                 ) {
+                                    await item.color.true.setStateAsync(JSON.stringify(rgb));
                                     break;
                                 }
-                                await item.color.true.setStateAsync(JSON.stringify(rgb));
-
-                                break;
+                                // jump to next case if we have a rgb.hex
                             }
+                            // eslint-disable-next-line no-fallthrough
                             case 'rgb.hex': {
                                 const rgb = Color.resultToRgb(value);
                                 if (Color.isRGB(rgb)) {

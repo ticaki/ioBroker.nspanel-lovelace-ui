@@ -1171,7 +1171,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     this.parent = void 0;
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -1344,12 +1344,12 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               }
               case "rgbSingle": {
                 const rgb = import_Color.Color.resultToRgb(value);
-                if (!import_Color.Color.isRGB(rgb) || !item.color || !item.color.true || item.color.true.options.role === "level.color.rgb") {
+                if (import_Color.Color.isRGB(rgb) && ((_f = item == null ? void 0 : item.color) == null ? void 0 : _f.true) && item.color.true.options.role !== "level.color.rgb") {
+                  await item.color.true.setStateAsync(JSON.stringify(rgb));
                   break;
                 }
-                await item.color.true.setStateAsync(JSON.stringify(rgb));
-                break;
               }
+              // eslint-disable-next-line no-fallthrough
               case "rgb.hex": {
                 const rgb = import_Color.Color.resultToRgb(value);
                 if (import_Color.Color.isRGB(rgb)) {
@@ -1639,7 +1639,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, parseInt(t), 0, 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_f = this.dataItems.data.entity1) == null ? void 0 : _f.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_g = this.dataItems.data.entity1) == null ? void 0 : _g.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
             }
             break;
           }
@@ -1649,7 +1649,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, parseInt(t), 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_g = this.dataItems.data.entity1) == null ? void 0 : _g.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_h = this.dataItems.data.entity1) == null ? void 0 : _h.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
             }
             break;
           }
@@ -1680,7 +1680,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             case "ex-timer": {
               const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)).getTime();
               if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-                ((_h = this.dataItems.data.entity1) == null ? void 0 : _h.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+                ((_i = this.dataItems.data.entity1) == null ? void 0 : _i.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
               }
               break;
             }

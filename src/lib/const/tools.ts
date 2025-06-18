@@ -799,7 +799,6 @@ export function alignText(text: string, size: number, align: 'left' | 'right' | 
  * - `unit`: The unit of the value, including the appropriate SI prefix.
  * - `endFactor`: The final SI prefix factor used for formatting.
  * @throws An error if `v` and `unit` are not both null or both defined.
- * @remarks
  * - The function uses a predefined list of SI prefixes to determine the appropriate scaling for the value.
  * - If the value cannot be formatted to fit within the specified space, the function attempts to adjust the SI prefix factor.
  * - The function ensures that the formatted value does not exceed the allowed space, including the unit and decimal precision.
