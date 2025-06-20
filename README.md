@@ -304,6 +304,9 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) Show service menu navigation even if there is only one page in pages
+
 ### 0.1.12 (2025-05-04)  
 - (tt-tom17) added cardChart/cardLChart inkl. admin
 

@@ -180,28 +180,30 @@ class ConfigManager extends import_library.BaseClass {
           nav.unshift(item);
         }
       }
-      if (panelConfig.navigation.length > 1) {
+      if (panelConfig.navigation.length > 0) {
         panelConfig.navigation = panelConfig.navigation.filter((item) => item != null);
-        panelConfig.navigation = panelConfig.navigation.map((item, index, array) => {
-          if (index === 0) {
-            return {
-              ...item,
-              left: { single: array[array.length - 1].name },
-              right: { single: array[index + 1].name }
-            };
-          } else if (index === array.length - 1) {
+        if (panelConfig.navigation.length > 1) {
+          panelConfig.navigation = panelConfig.navigation.map((item, index, array) => {
+            if (index === 0) {
+              return {
+                ...item,
+                left: { single: array[array.length - 1].name },
+                right: { single: array[index + 1].name }
+              };
+            } else if (index === array.length - 1) {
+              return {
+                ...item,
+                left: { single: array[index - 1].name },
+                right: { single: array[0].name }
+              };
+            }
             return {
               ...item,
               left: { single: array[index - 1].name },
-              right: { single: array[0].name }
+              right: { single: array[index + 1].name }
             };
-          }
-          return {
-            ...item,
-            left: { single: array[index - 1].name },
-            right: { single: array[index + 1].name }
-          };
-        });
+          });
+        }
         panelConfig.navigation[panelConfig.navigation.length - 1].right = { single: "///service" };
         panelConfig.navigation[0].left = { single: "///service" };
       }
