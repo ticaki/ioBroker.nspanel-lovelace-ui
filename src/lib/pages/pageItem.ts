@@ -833,15 +833,24 @@ export class PageItem extends BaseClassTriggerd {
                         message.buttonState = (await tools.getValueEntryBoolean(item.entity1)) ?? 'disable';
                         const dimmer = item.dimmer && item.dimmer.value && (await item.dimmer.value.getNumber());
                         if (dimmer != null && item.dimmer) {
-                            item.dimmer.minScale;
                             if (item.dimmer.minScale != undefined && item.dimmer.maxScale) {
                                 message.slider1Pos = Math.trunc(
                                     Color.scale(
                                         dimmer,
                                         await item.dimmer.minScale.getNumber(),
                                         await item.dimmer.maxScale.getNumber(),
-                                        100,
                                         0,
+                                        100,
+                                    ),
+                                );
+                            } else if (item.dimmer.value?.common?.min !== undefined && item.dimmer.value?.common?.max) {
+                                message.slider1Pos = Math.trunc(
+                                    Color.scale(
+                                        dimmer,
+                                        item.dimmer.value.common.min,
+                                        item.dimmer.value.common.max,
+                                        0,
+                                        100,
                                     ),
                                 );
                             } else {

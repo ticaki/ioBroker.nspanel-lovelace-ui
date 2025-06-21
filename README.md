@@ -305,6 +305,7 @@ Sind natürlich alles Dataitems
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) fixed Tempcolor & dimmer
 - (ticaki) Show service menu navigation even if there is only one page in pages
 
 ### 0.1.12 (2025-05-04)  

@@ -48,7 +48,7 @@ export class StatesControler extends BaseClass {
                 return;
             }
             this.objectDatabase = {};
-        }, 1800000);
+        }, 180000);
     }
     deletePageLoop = (): void => {
         const removeId = [];
