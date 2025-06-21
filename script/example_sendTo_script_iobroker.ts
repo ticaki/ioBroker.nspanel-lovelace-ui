@@ -454,6 +454,7 @@ async function configuration(): Promise<void> {
     } catch (e) {
         log(`Error in sendTo ScriptConfig: ${e}! This usually means that the adapter is not working!`, 'error');
     }
+}
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
