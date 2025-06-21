@@ -449,13 +449,15 @@ async function configuration(): Promise<void> {
      ********************************************************************************
      ********************************************************************************
      */
-
-    log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', Object.assign({...config, version}, overrideConfig)));
-}
+    try {
+        log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', Object.assign({...config, version}, overrideConfig)));
+    } catch (e) {
+        log(`Error in sendTo ScriptConfig: ${e}! This usually means that the adapter is not working!`, 'error');
+    }
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.8.5';
+const version = '0.8.6';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color

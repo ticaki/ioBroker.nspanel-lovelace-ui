@@ -49,7 +49,7 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.8.5";
+  scriptVersion = "0.8.6";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
