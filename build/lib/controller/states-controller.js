@@ -40,7 +40,7 @@ class StatesControler extends import_library.BaseClass {
         return;
       }
       this.objectDatabase = {};
-    }, 18e5);
+    }, 18e4);
   }
   deletePageLoop = () => {
     var _a, _b;
