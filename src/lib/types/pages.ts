@@ -131,6 +131,7 @@ export const stateRoleArray = arrayOfAllStateRole([
     'level.color.name',
     'level.color.red',
     'level.color.rgb',
+    'level.color.hex',
     'level.color.temperature',
     'level.color.white',
     'level.dimmer',
@@ -243,6 +244,7 @@ export type StateRole =
     | 'level.color.name'
     | 'level.color.red'
     | 'level.color.rgb'
+    | 'level.color.hex'
     | 'level.color.temperature'
     | 'level.color.white'
     | 'level.dimmer'

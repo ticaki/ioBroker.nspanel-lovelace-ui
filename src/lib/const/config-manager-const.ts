@@ -1038,7 +1038,13 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'rgbSingle',
         description: 'Farblicht ohne Farbkanäle',
         data: {
-            RGB: { role: 'level.color.rgb', type: 'string', required: true, writeable: true, trigger: true },
+            RGB: {
+                role: ['level.color.rgb', 'level.color.hex'],
+                type: 'string',
+                required: true,
+                writeable: true,
+                trigger: true,
+            },
             ON: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
             DIMMER: { role: 'level.dimmer', type: 'number', required: false, writeable: true, trigger: true },
             TEMPERATURE: {
