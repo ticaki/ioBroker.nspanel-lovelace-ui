@@ -42,9 +42,11 @@ __export(tools_exports, {
   getValueEntryBoolean: () => getValueEntryBoolean,
   getValueEntryNumber: () => getValueEntryNumber,
   getValueEntryString: () => getValueEntryString,
+  getVersionAsNumber: () => getVersionAsNumber,
   ifValueEntryIs: () => ifValueEntryIs,
   insertLinebreak: () => insertLinebreak,
   isValidDate: () => isValidDate,
+  isVersionGreaterOrEqual: () => isVersionGreaterOrEqual,
   messageItemDefault: () => messageItemDefault,
   setHuefromRGB: () => setHuefromRGB,
   setRGBThreefromRGB: () => setRGBThreefromRGB,
@@ -1002,6 +1004,14 @@ function isValidDate(d) {
   }
   return d instanceof Date && !isNaN(d.getTime());
 }
+function getVersionAsNumber(version) {
+  return version.split(".").map((item, i) => parseInt(item) * Math.pow(1e3, 2 - i)).reduce((a, b) => a + b);
+}
+function isVersionGreaterOrEqual(a, b) {
+  const aNum = getVersionAsNumber(a);
+  const bNum = getVersionAsNumber(b);
+  return aNum >= bNum;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
@@ -1028,9 +1038,11 @@ function isValidDate(d) {
   getValueEntryBoolean,
   getValueEntryNumber,
   getValueEntryString,
+  getVersionAsNumber,
   ifValueEntryIs,
   insertLinebreak,
   isValidDate,
+  isVersionGreaterOrEqual,
   messageItemDefault,
   setHuefromRGB,
   setRGBThreefromRGB,

@@ -209,6 +209,7 @@ export type SerialTypePageElements =
 export type SerialTypePopup =
     | 'button'
     | 'light'
+    | 'light2'
     | 'shutter'
     | 'text'
     | 'input_sel'

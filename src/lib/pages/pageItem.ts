@@ -71,6 +71,7 @@ export class PageItem extends BaseClassTriggerd {
             case 'button':
             case 'input_sel':
             case 'light':
+            case 'light2':
             case 'text':
             case 'fan': {
                 break;
@@ -188,14 +189,19 @@ export class PageItem extends BaseClassTriggerd {
             const message: Partial<typePageItem.MessageItem> = {};
             message.intNameEntity = this.id;
             switch (entry.type) {
-                case 'light': {
+                case 'light':
+                case 'light2': {
                     const item = entry.data;
                     message.type =
                         this.parent &&
                         this.parent.card.startsWith('cardGrid') &&
                         (this.config.role === 'light' || this.config.role === 'socket')
                             ? 'switch'
-                            : 'light';
+                            : this.panel.overrideLightPopup
+                              ? this.panel.lightPopupV2 && this.panel.meetsVersion('4.7.5')
+                                  ? 'light2'
+                                  : 'light'
+                              : entry.type;
 
                     const v = await tools.getValueEntryBoolean(item.entity1);
                     const dimmer = (item.dimmer && item.dimmer.value && (await item.dimmer.value.getNumber())) ?? null;
@@ -1017,7 +1023,7 @@ export class PageItem extends BaseClassTriggerd {
             }
             case 'popupThermo':
             case 'popupInSel': {
-                if (entry.type !== 'input_sel' && entry.type !== 'light') {
+                if (entry.type !== 'input_sel' && entry.type !== 'light' && entry.type !== 'light2') {
                     break;
                 }
                 const item = entry.data;
@@ -1454,7 +1460,7 @@ export class PageItem extends BaseClassTriggerd {
                     if (item.setValue2) {
                         await item.setValue2.setStateTrue();
                     }
-                } else if (entry.type === 'light') {
+                } else if (entry.type === 'light' || entry.type === 'light2') {
                     const item = entry.data;
                     item.entity1 && item.entity1.set && (await item.entity1.set.setStateFlip());
                     item.setValue1 && (await item.setValue1.setStateFlip());
@@ -1467,7 +1473,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'brightnessSlider': {
-                if (entry.type === 'light') {
+                if (entry.type === 'light' || entry.type === 'light2') {
                     const item = entry.data;
                     if (this.timeouts.brightnessSlider) {
                         this.adapter.clearTimeout(this.timeouts.brightnessSlider);
@@ -1491,7 +1497,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'colorTempSlider': {
-                if (entry.type === 'light') {
+                if (entry.type === 'light' || entry.type === 'light2') {
                     const item = entry.data;
                     if (this.timeouts.colorTempSlider) {
                         this.adapter.clearTimeout(this.timeouts.colorTempSlider);
@@ -1520,7 +1526,12 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'OnOff': {
-                if (entry.type === 'light' || entry.type === 'button' || entry.type === 'switch') {
+                if (
+                    entry.type === 'light' ||
+                    entry.type === 'light2' ||
+                    entry.type === 'button' ||
+                    entry.type === 'switch'
+                ) {
                     const item = entry.data;
                     if (item && item.entity1) {
                         await tools.setValueEntry(item.entity1, value === '1');
@@ -1531,7 +1542,7 @@ export class PageItem extends BaseClassTriggerd {
                 break;
             }
             case 'colorWheel': {
-                if (entry.type === 'light') {
+                if (entry.type === 'light' || entry.type === 'light2') {
                     const item = entry.data;
                     if (item && this.config) {
                         switch (this.config.role) {

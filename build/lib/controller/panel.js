@@ -78,6 +78,10 @@ class Panel extends import_library.BaseClass {
   lastCard = "";
   notifyIndex = -1;
   initDone = false;
+  lightPopupV2 = true;
+  //  Enable Light Popup v2, created in 2025.
+  overrideLightPopup = true;
+  //  Override light popup config type.
   buttons;
   navigation;
   format;
@@ -177,6 +181,13 @@ class Panel extends import_library.BaseClass {
       }
     }
   };
+  meetsVersion(version) {
+    var _a, _b;
+    if ((_b = (_a = this.info) == null ? void 0 : _a.nspanel) == null ? void 0 : _b.displayVersion) {
+      return (0, import_tools.isVersionGreaterOrEqual)(this.info.nspanel.displayVersion, version);
+    }
+    return false;
+  }
   constructor(adapter, options) {
     var _a, _b;
     super(adapter, options.name, (_a = options.friendlyName) != null ? _a : options.name);

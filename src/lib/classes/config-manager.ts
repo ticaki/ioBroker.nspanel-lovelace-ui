@@ -13,6 +13,7 @@ import type * as typePageItem from '../types/type-pageItem';
 import * as Types from '../types/types';
 import { BaseClass } from './library';
 import { isNavigationItemConfigArray, type NavigationItemConfig } from './navigation';
+import { getVersionAsNumber } from '../const/tools';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -74,20 +75,9 @@ export class ConfigManager extends BaseClass {
 
         this.log.info(`Start converting configuration for ${config.panelName || config.panelTopic}`);
 
-        const version = config.version
-            .split('.')
-            .map((item, i) => parseInt(item) * Math.pow(100, 2 - i))
-            .reduce((a, b) => a + b);
-
-        const requiredVersion = this.scriptVersion
-            .split('.')
-            .map((item, i) => parseInt(item) * Math.pow(100, 2 - i))
-            .reduce((a, b) => a + b);
-
-        const breakingVersion = this.breakingVersion
-            .split('.')
-            .map((item, i) => parseInt(item) * Math.pow(100, 2 - i))
-            .reduce((a, b) => a + b);
+        const version = getVersionAsNumber(config.version);
+        const requiredVersion = getVersionAsNumber(this.scriptVersion);
+        const breakingVersion = getVersionAsNumber(this.breakingVersion);
 
         if (version < breakingVersion) {
             messages.push(
