@@ -67,6 +67,29 @@ export type entityUpdateDetailMessage =
           | 'effect_supported',
           string
       >)
+    | ({ type: 'popupShutter2' } & Record<
+          | 'entityName'
+          | 'pos1' //
+          | 'text2'
+          | 'pos1text'
+          | 'icon'
+          | 'iconT1'
+          | 'iconM1'
+          | 'iconB1'
+          | 'statusT1' // 'disable' allowed
+          | 'statusM1' // 'disable' allowed
+          | 'statusB1' // 'disable' allowed
+          | 'iconT2'
+          | 'iconT2Color'
+          | 'iconT2Enable'
+          | 'iconM2'
+          | 'iconM2Color'
+          | 'iconM2Enable'
+          | 'iconB2'
+          | 'iconB2Color'
+          | 'iconB2Enable',
+          string
+      > & { shutterTyp: 'shutter' })
     | ({ type: 'popupShutter' } & Record<
           | 'entityName'
           | 'pos1' // 'disable' allowed
@@ -146,6 +169,7 @@ export type PageItemDataItems = Omit<PageItemUnion, 'data' | 'type'> &
         | PageItemNumberDataItems
         | PageItemButtonDataItems
         | PageItemShutterDataItems
+        | PageItemShutter2DataItems
         | PageItemInputSelDataItems
         | PageItemLightDataItems
         | PageItemTextDataItems
@@ -157,6 +181,7 @@ export type PageItemDataItemsOptionsWithOutTemplate = Omit<PageItemUnion, 'data'
     (
         | PageItemButtonDataItemsOptions
         | PageItemShutterDataItemsOptions
+        | PageItemShutter2DataItemsOptions
         | PageItemInputSelDataItemsOptions
         | PageItemLightDataItemsOptions
         | PageItemNumberDataItemsOptions
@@ -180,6 +205,7 @@ export type PageItemDataItemsOptions =
               pages.ChangeDeepPartial<
                   | PageItemButtonDataItemsOptions
                   | PageItemShutterDataItemsOptions
+                  | PageItemShutter2DataItemsOptions
                   | PageItemInputSelDataItemsOptions
                   | PageItemLightDataItemsOptions
                   | PageItemNumberDataItemsOptions
@@ -205,6 +231,7 @@ export type PageItemOptionsTemplate = {
           (
               | PageItemButtonDataItemsOptions
               | PageItemShutterDataItemsOptions
+              | PageItemShutter2DataItemsOptions
               | PageItemInputSelDataItemsOptions
               | PageItemLightDataItemsOptions
               | PageItemNumberDataItemsOptions
@@ -216,6 +243,7 @@ export type PageItemOptionsTemplate = {
           pages.ChangeTypeOfKeys<
               | PageItemButtonDataItemsOptions
               | PageItemShutterDataItemsOptions
+              | PageItemShutter2DataItemsOptions
               | PageItemInputSelDataItemsOptions
               | PageItemLightDataItemsOptions
               | PageItemNumberDataItemsOptions
@@ -396,10 +424,41 @@ export type PageItemShutterDataItems = {
     data: pages.ChangeTypeOfKeys<PageItemShutter, dataItem.Dataitem | undefined>;
 };
 
+export type PageItemShutter2 = Pick<
+    PageItemBase,
+    | 'up'
+    | 'down'
+    | 'stop'
+    | 'entity1'
+    | 'text'
+    | 'text1'
+    | 'icon'
+    | 'headline'
+    | 'entity2'
+    | 'entity3'
+    | 'entity4'
+    | 'icon2'
+    | 'icon3'
+    | 'icon4'
+>;
+
+export type PageItemShutter2DataItemsOptions = {
+    type: 'shutter2';
+    data: pages.ChangeTypeOfKeys<PageItemShutter2, Types.DataItemsOptions | undefined>;
+};
+export type PageItemShutter2DataItems = {
+    type: 'shutter2';
+    data: pages.ChangeTypeOfKeys<PageItemShutter2, dataItem.Dataitem | undefined>;
+};
+
 export type PageItemBase = {
     headline?: string;
     color?: ColorEntryType;
     icon?: IconEntryType;
+    icon1?: IconEntryType;
+    icon2?: IconEntryType;
+    icon3?: IconEntryType;
+    icon4?: IconEntryType;
     text?: TextEntryType | TextEntryType2;
     entityInSel: ValueEntryType;
     entity1?: ValueEntryType; // Readonly Werte die angezeigt werden soll. wird immer für insel verwendet

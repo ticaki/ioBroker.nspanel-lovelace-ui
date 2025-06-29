@@ -458,7 +458,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.8.6';
+const version = '0.8.7';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -929,10 +929,21 @@ declare namespace ScriptConfig {
             inSel_Alias?: string;
             iconArray?: string[];
             customIcons?: any[];
+            shutterIcons?: [shutterIcons?, shutterIcons?, shutterIcons?] | null;
             fontSize?: number;
             actionStringArray?: string[];
-        };
+            alwaysOnDisplay?: boolean;
+            shutterType?: string;
+    };
 
+    type shutterIcons = {
+        id: string;
+        icon: string;
+        icon2?: string;
+        iconOnColor?: RGB;
+        iconOffColor?: RGB;
+        buttonType: string;
+    };
     export type DimMode = {
         dimmodeOn: boolean | undefined;
         brightnessDay: number | undefined;

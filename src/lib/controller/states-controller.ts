@@ -775,9 +775,9 @@ export class StatesControler extends BaseClass {
     }
 
     async getObjectAsync(id: string): Promise<ioBroker.Object | null> {
-        if (this.objectDatabase[id] !== undefined) {
+        if (this.objectDatabase[id] != undefined) {
             return this.objectDatabase[id];
-        } else if (this.triggerDB[id] !== undefined && this.triggerDB[id].internal) {
+        } else if (this.triggerDB[id] != undefined && this.triggerDB[id].internal) {
             return { _id: '', type: 'state', common: this.triggerDB[id].common, native: {} };
         }
         const obj = await this.adapter.getForeignObjectAsync(id);

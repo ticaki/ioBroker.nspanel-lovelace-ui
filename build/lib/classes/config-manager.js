@@ -1723,7 +1723,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -2019,64 +2019,185 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "blind": {
-            const tempItem = {
-              type: "shutter",
-              role: "blind",
-              data: {
-                icon: {
-                  true: {
-                    value: {
-                      type: "const",
-                      constVal: item.icon || "window-shutter-open"
+            if (foundedStates[role].TILT_OPEN || foundedStates[role].TILT_CLOSE || foundedStates[role].TILT_STOP) {
+              const tempItem = {
+                type: "shutter",
+                role: "blind",
+                data: {
+                  icon: {
+                    true: {
+                      value: {
+                        type: "const",
+                        constVal: item.icon || "window-shutter-open"
+                      },
+                      color: await this.getIconColor(item.onColor, this.colorOn)
                     },
-                    color: await this.getIconColor(item.onColor, this.colorOn)
-                  },
-                  false: {
-                    value: {
-                      type: "const",
-                      constVal: item.icon2 || "window-shutter"
+                    false: {
+                      value: {
+                        type: "const",
+                        constVal: item.icon2 || "window-shutter"
+                      },
+                      color: await this.getIconColor(item.offColor, this.colorOff)
                     },
-                    color: await this.getIconColor(item.offColor, this.colorOff)
-                  },
-                  unstable: {
-                    value: {
+                    unstable: {
+                      value: {
+                        type: "const",
+                        constVal: item.icon3 || "window-shutter-alert"
+                      }
+                    },
+                    scale: {
                       type: "const",
-                      constVal: item.icon3 || "window-shutter-alert"
-                    }
+                      constVal: (_b = Types.isIconColorScaleElement(item.colorScale)) != null ? _b : {
+                        val_min: 0,
+                        val_max: 100
+                      }
+                    },
+                    maxBri: void 0,
+                    minBri: void 0
                   },
-                  scale: {
-                    type: "const",
-                    constVal: (_b = Types.isIconColorScaleElement(item.colorScale)) != null ? _b : {
-                      val_min: 0,
-                      val_max: 100
-                    }
+                  text: { true: { type: "const", constVal: (_c = item.secondRow) != null ? _c : "" } },
+                  headline,
+                  entity1: {
+                    value: foundedStates[role].ACTUAL,
+                    minScale: { type: "const", constVal: (_d = item.minValueLevel) != null ? _d : 0 },
+                    maxScale: { type: "const", constVal: (_e = item.maxValueLevel) != null ? _e : 100 },
+                    set: foundedStates[role].SET
                   },
-                  maxBri: void 0,
-                  minBri: void 0
-                },
-                text,
-                headline,
-                entity1: {
-                  value: foundedStates[role].ACTUAL,
-                  minScale: { type: "const", constVal: (_c = item.minValueLevel) != null ? _c : 0 },
-                  maxScale: { type: "const", constVal: (_d = item.maxValueLevel) != null ? _d : 100 },
-                  set: foundedStates[role].SET
-                },
-                entity2: {
-                  value: foundedStates[role].TILT_ACTUAL,
-                  minScale: { type: "const", constVal: (_e = item.minValueTilt) != null ? _e : 100 },
-                  maxScale: { type: "const", constVal: (_f = item.maxValueTilt) != null ? _f : 0 },
-                  set: foundedStates[role].TILT_SET
-                },
-                up: foundedStates[role].OPEN,
-                down: foundedStates[role].CLOSE,
-                stop: foundedStates[role].STOP,
-                up2: foundedStates[role].TILT_OPEN,
-                down2: foundedStates[role].TILT_CLOSE,
-                stop2: foundedStates[role].TILT_STOP
-              }
-            };
-            itemConfig = tempItem;
+                  entity2: {
+                    value: foundedStates[role].TILT_ACTUAL,
+                    minScale: { type: "const", constVal: (_f = item.minValueTilt) != null ? _f : 100 },
+                    maxScale: { type: "const", constVal: (_g = item.maxValueTilt) != null ? _g : 0 },
+                    set: foundedStates[role].TILT_SET
+                  },
+                  up: foundedStates[role].OPEN,
+                  down: foundedStates[role].CLOSE,
+                  stop: foundedStates[role].STOP,
+                  up2: foundedStates[role].TILT_OPEN,
+                  down2: foundedStates[role].TILT_CLOSE,
+                  stop2: foundedStates[role].TILT_STOP
+                }
+              };
+              itemConfig = tempItem;
+            } else {
+              const I2 = (_h = item.shutterIcons && item.shutterIcons[0]) != null ? _h : void 0;
+              const R2 = item.shutterIcons && item.shutterIcons[0] && item.shutterIcons[0].id && await this.existsState(item.shutterIcons[0].id) ? item.shutterIcons[0].id : void 0;
+              const S2 = R2 && await this.existsAndWriteableState(R2) ? R2 : void 0;
+              const I3 = (_i = item.shutterIcons && item.shutterIcons[1]) != null ? _i : void 0;
+              const R3 = item.shutterIcons && item.shutterIcons[1] && item.shutterIcons[1].id && await this.existsState(item.shutterIcons[1].id) ? item.shutterIcons[1].id : void 0;
+              const S3 = R3 && await this.existsAndWriteableState(R3) ? R3 : void 0;
+              const I4 = (_j = item.shutterIcons && item.shutterIcons[2]) != null ? _j : void 0;
+              const R4 = item.shutterIcons && item.shutterIcons[2] && item.shutterIcons[2].id && await this.existsState(item.shutterIcons[2].id) ? item.shutterIcons[2].id : void 0;
+              const S4 = R4 && await this.existsAndWriteableState(R4) ? R4 : void 0;
+              const tempItem = {
+                type: "shutter2",
+                role: "blind",
+                data: {
+                  icon: {
+                    true: {
+                      value: {
+                        type: "const",
+                        constVal: item.icon || "window-shutter-open"
+                      },
+                      color: await this.getIconColor(item.onColor, this.colorOn)
+                    },
+                    false: {
+                      value: {
+                        type: "const",
+                        constVal: item.icon2 || "window-shutter"
+                      },
+                      color: await this.getIconColor(item.offColor, this.colorOff)
+                    },
+                    unstable: {
+                      value: {
+                        type: "const",
+                        constVal: item.icon3 || "window-shutter-alert"
+                      }
+                    },
+                    scale: {
+                      type: "const",
+                      constVal: (_k = Types.isIconColorScaleElement(item.colorScale)) != null ? _k : {
+                        val_min: 0,
+                        val_max: 100
+                      }
+                    },
+                    maxBri: void 0,
+                    minBri: void 0
+                  },
+                  text: { true: { type: "const", constVal: (_l = item.secondRow) != null ? _l : "" } },
+                  headline,
+                  entity1: {
+                    value: foundedStates[role].ACTUAL,
+                    minScale: { type: "const", constVal: (_m = item.minValueLevel) != null ? _m : 0 },
+                    maxScale: { type: "const", constVal: (_n = item.maxValueLevel) != null ? _n : 100 },
+                    set: foundedStates[role].SET
+                  },
+                  entity2: R2 ? {
+                    value: { type: "triggered", dp: R2 },
+                    set: S2 ? { type: "state", dp: S2 } : void 0
+                  } : void 0,
+                  icon2: I2 ? {
+                    true: {
+                      value: {
+                        type: "const",
+                        constVal: (I2 == null ? void 0 : I2.icon) || "window-shutter"
+                      },
+                      color: await this.getIconColor(I2 == null ? void 0 : I2.iconOnColor, this.colorOn)
+                    },
+                    false: {
+                      value: {
+                        type: "const",
+                        constVal: (I2 == null ? void 0 : I2.icon2) || "window-shutter"
+                      },
+                      color: await this.getIconColor(I2 == null ? void 0 : I2.iconOffColor, this.colorOn)
+                    }
+                  } : void 0,
+                  entity3: R3 ? {
+                    value: { type: "triggered", dp: R3 },
+                    set: S3 ? { type: "state", dp: S3 } : void 0
+                  } : void 0,
+                  icon3: I3 ? {
+                    true: {
+                      value: {
+                        type: "const",
+                        constVal: (I3 == null ? void 0 : I3.icon) || "window-shutter"
+                      },
+                      color: await this.getIconColor(I3 == null ? void 0 : I3.iconOnColor, this.colorOn)
+                    },
+                    false: {
+                      value: {
+                        type: "const",
+                        constVal: (I3 == null ? void 0 : I3.icon2) || "window-shutter"
+                      },
+                      color: await this.getIconColor(I3 == null ? void 0 : I3.iconOffColor, this.colorOn)
+                    }
+                  } : void 0,
+                  entity4: R4 ? {
+                    value: { type: "triggered", dp: R4 },
+                    set: S4 ? { type: "state", dp: S4 } : void 0
+                  } : void 0,
+                  icon4: I4 ? {
+                    true: {
+                      value: {
+                        type: "const",
+                        constVal: (I4 == null ? void 0 : I4.icon) || "window-shutter"
+                      },
+                      color: await this.getIconColor(I4 == null ? void 0 : I4.iconOnColor, this.colorOn)
+                    },
+                    false: {
+                      value: {
+                        type: "const",
+                        constVal: (I4 == null ? void 0 : I4.icon2) || "window-shutter"
+                      },
+                      color: await this.getIconColor(I4 == null ? void 0 : I4.iconOffColor, this.colorOn)
+                    }
+                  } : void 0,
+                  up: foundedStates[role].OPEN,
+                  down: foundedStates[role].CLOSE,
+                  stop: foundedStates[role].STOP
+                }
+              };
+              itemConfig = tempItem;
+            }
             break;
           }
           case "gate": {
@@ -3077,6 +3198,14 @@ class ConfigManager extends import_library.BaseClass {
       return false;
     }
     return await this.adapter.getForeignStateAsync(id) != null;
+  }
+  async existsAndWriteableState(id) {
+    var _a;
+    if (!await this.existsState(id)) {
+      return false;
+    }
+    const state = await this.adapter.getForeignObjectAsync(id);
+    return state != null && ((_a = state.common) == null ? void 0 : _a.write) === true;
   }
   async delete() {
     var _a;

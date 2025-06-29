@@ -66,6 +66,7 @@ function isPopupType(F) {
     case "popupLightNew":
     case "popupNotify":
     case "popupShutter":
+    case "popupShutter2":
     case "popupThermo":
     case "popupTimer":
       return true;
