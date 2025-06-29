@@ -1167,3 +1167,16 @@ export function isValidDate(d: Date): d is Date {
     }
     return d instanceof Date && !isNaN(d.getTime());
 }
+
+export function getVersionAsNumber(version: string): number {
+    return version
+        .split('.')
+        .map((item, i) => parseInt(item) * Math.pow(1000, 2 - i))
+        .reduce((a, b) => a + b);
+}
+
+export function isVersionGreaterOrEqual(a: string, b: string): boolean {
+    const aNum = getVersionAsNumber(a);
+    const bNum = getVersionAsNumber(b);
+    return aNum >= bNum;
+}

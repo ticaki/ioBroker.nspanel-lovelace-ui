@@ -42,6 +42,7 @@ var import_pages = require("../types/pages");
 var Types = __toESM(require("../types/types"));
 var import_library = require("./library");
 var import_navigation = require("./navigation");
+var import_tools = require("../const/tools");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   colorOn = import_Color.Color.On;
@@ -89,9 +90,9 @@ class ConfigManager extends import_library.BaseClass {
     }
     let messages = [];
     this.log.info(`Start converting configuration for ${config.panelName || config.panelTopic}`);
-    const version = config.version.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
-    const requiredVersion = this.scriptVersion.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
-    const breakingVersion = this.breakingVersion.split(".").map((item, i) => parseInt(item) * Math.pow(100, 2 - i)).reduce((a, b) => a + b);
+    const version = (0, import_tools.getVersionAsNumber)(config.version);
+    const requiredVersion = (0, import_tools.getVersionAsNumber)(this.scriptVersion);
+    const breakingVersion = (0, import_tools.getVersionAsNumber)(this.breakingVersion);
     if (version < breakingVersion) {
       messages.push(
         `Update Script! Panel for Topic: ${config.panelTopic} - Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`

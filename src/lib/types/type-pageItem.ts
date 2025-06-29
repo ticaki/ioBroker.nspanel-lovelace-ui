@@ -334,11 +334,11 @@ export type PageItemLight = Pick<
     | 'setValue2'
 >;
 export type PageItemLightDataItemsOptions = {
-    type: 'light';
+    type: 'light' | 'light2';
     data: pages.ChangeTypeOfKeys<PageItemLight, Types.DataItemsOptions | undefined>;
 };
 export type PageItemLightDataItems = {
-    type: 'light';
+    type: 'light' | 'light2';
     data: pages.ChangeTypeOfKeys<PageItemLight, dataItem.Dataitem | undefined>;
 };
 

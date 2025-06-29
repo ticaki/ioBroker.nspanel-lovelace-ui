@@ -26,7 +26,7 @@ import { Dataitem } from '../classes/data-item';
 import { Color } from '../const/Color';
 import { PageSchedule } from '../pages/pageSchedule';
 import { cardTemplates } from '../templates/card';
-import { deepAssign, getRegExp } from '../const/tools';
+import { deepAssign, getRegExp, isVersionGreaterOrEqual } from '../const/tools';
 import { PageChartBar } from '../pages/pageChartBar';
 import { PageChartLine } from '../pages/pageChartLine';
 
@@ -79,6 +79,9 @@ export class Panel extends BaseClass {
     public lastCard: string = '';
     public notifyIndex: number = -1;
     public initDone: boolean = false;
+    public lightPopupV2: boolean = true; //  Enable Light Popup v2, created in 2025.
+    public overrideLightPopup: boolean = true; //  Override light popup config type.
+
     readonly buttons: panelConfigPartial['buttons'];
     readonly navigation: Navigation;
     readonly format: Partial<Intl.DateTimeFormatOptions>;
@@ -190,6 +193,13 @@ export class Panel extends BaseClass {
             },
         },
     };
+
+    meetsVersion(version: string): boolean {
+        if (this.info?.nspanel?.displayVersion) {
+            return isVersionGreaterOrEqual(this.info.nspanel.displayVersion, version);
+        }
+        return false;
+    }
 
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
         super(adapter, options.name, options.friendlyName ?? options.name);

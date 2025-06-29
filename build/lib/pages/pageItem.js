@@ -89,6 +89,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       case "button":
       case "input_sel":
       case "light":
+      case "light2":
       case "text":
       case "fan": {
         break;
@@ -177,9 +178,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       const message = {};
       message.intNameEntity = this.id;
       switch (entry.type) {
-        case "light": {
+        case "light":
+        case "light2": {
           const item = entry.data;
-          message.type = this.parent && this.parent.card.startsWith("cardGrid") && (this.config.role === "light" || this.config.role === "socket") ? "switch" : "light";
+          message.type = this.parent && this.parent.card.startsWith("cardGrid") && (this.config.role === "light" || this.config.role === "socket") ? "switch" : this.panel.overrideLightPopup ? this.panel.lightPopupV2 && this.panel.meetsVersion("4.7.5") ? "light2" : "light" : entry.type;
           const v = await tools.getValueEntryBoolean(item.entity1);
           const dimmer = (_a = item.dimmer && item.dimmer.value && await item.dimmer.value.getNumber()) != null ? _a : null;
           let rgb = (_c = (_b = await tools.getRGBfromRGBThree(item)) != null ? _b : item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _c : null;
@@ -879,7 +881,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
       }
       case "popupThermo":
       case "popupInSel": {
-        if (entry.type !== "input_sel" && entry.type !== "light") {
+        if (entry.type !== "input_sel" && entry.type !== "light" && entry.type !== "light2") {
           break;
         }
         const item = entry.data;
@@ -1256,7 +1258,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           if (item.setValue2) {
             await item.setValue2.setStateTrue();
           }
-        } else if (entry.type === "light") {
+        } else if (entry.type === "light" || entry.type === "light2") {
           const item = entry.data;
           item.entity1 && item.entity1.set && await item.entity1.set.setStateFlip();
           item.setValue1 && await item.setValue1.setStateFlip();
@@ -1269,7 +1271,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         break;
       }
       case "brightnessSlider": {
-        if (entry.type === "light") {
+        if (entry.type === "light" || entry.type === "light2") {
           const item = entry.data;
           if (this.timeouts.brightnessSlider) {
             this.adapter.clearTimeout(this.timeouts.brightnessSlider);
@@ -1294,7 +1296,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         break;
       }
       case "colorTempSlider": {
-        if (entry.type === "light") {
+        if (entry.type === "light" || entry.type === "light2") {
           const item = entry.data;
           if (this.timeouts.colorTempSlider) {
             this.adapter.clearTimeout(this.timeouts.colorTempSlider);
@@ -1323,7 +1325,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         break;
       }
       case "OnOff": {
-        if (entry.type === "light" || entry.type === "button" || entry.type === "switch") {
+        if (entry.type === "light" || entry.type === "light2" || entry.type === "button" || entry.type === "switch") {
           const item = entry.data;
           if (item && item.entity1) {
             await tools.setValueEntry(item.entity1, value === "1");
@@ -1334,7 +1336,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         break;
       }
       case "colorWheel": {
-        if (entry.type === "light") {
+        if (entry.type === "light" || entry.type === "light2") {
           const item = entry.data;
           if (item && this.config) {
             switch (this.config.role) {
