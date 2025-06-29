@@ -148,6 +148,7 @@ export function isPopupType(F: any): F is PopupType {
         case 'popupLightNew':
         case 'popupNotify':
         case 'popupShutter':
+        case 'popupShutter2':
         case 'popupThermo':
         case 'popupTimer':
             return true;
@@ -193,6 +194,7 @@ export type PopupType =
     | 'popupLightNew'
     | 'popupNotify'
     | 'popupShutter'
+    | 'popupShutter2'
     | 'popupThermo'
     | 'popupTimer';
 
@@ -200,6 +202,7 @@ export type SerialTypePageElements =
     | 'button' //~button~button.entityName~3~17299~bt-name~bt-text
     | 'light' // ~light~light.entityName~1~17299~Light1~0
     | 'shutter' // ~shutter~cover.entityName~0~17299~Shutter2~iconUp|iconStop|iconDown
+    | 'shutter2' // ~shutter2~cover.entityName~0~17299~Shutter2~iconUp|iconStop|iconDown
     | 'text' // ~text~sensor.entityName~3~17299~Temperature~content
     | 'input_sel' //~input_sel~input_select.entityName~3~17299~sel-name~sel-text
     | 'number' //~number~input_number.entityName~4~17299~Number123~value|min|max
@@ -211,6 +214,7 @@ export type SerialTypePopup =
     | 'light'
     | 'light2'
     | 'shutter'
+    | 'shutter2'
     | 'text'
     | 'input_sel'
     | 'timer'

@@ -438,9 +438,20 @@ declare namespace ScriptConfig {
         inSel_Alias?: string;
         iconArray?: string[];
         customIcons?: any[];
+        shutterIcons?: [shutterIcons?, shutterIcons?, shutterIcons?] | null;
         fontSize?: number;
         actionStringArray?: string[];
         alwaysOnDisplay?: boolean;
+        shutterType?: string;
+    };
+
+    type shutterIcons = {
+        id: string;
+        icon: string;
+        icon2?: string;
+        iconOnColor?: RGB;
+        iconOffColor?: RGB;
+        buttonType: string;
     };
 
     export type DimMode = {
