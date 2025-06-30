@@ -1046,7 +1046,6 @@ export class Panel extends BaseClass {
                     if (state && state.val != null && typeof state.val === 'number') {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/screenSaverRotationTime`,
-
                             parseInt(String(state.val)),
                             false,
                         );
@@ -1629,7 +1628,7 @@ export class Panel extends BaseClass {
             }
             case 'cmd/screenSaverRotationTime': {
                 if (this.screenSaver) {
-                    return this.screenSaver.rotationTime;
+                    return this.screenSaver.rotationTime / 1000;
                 }
                 break;
             }

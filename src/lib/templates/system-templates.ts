@@ -746,6 +746,25 @@ const ScreensaverLayout: PageBaseConfig = {
                 valueList: { type: 'const', constVal: 'standard?alternate?advanced?easyview' },
             },
         },
+        {
+            role: '',
+            type: 'number',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/screenSaverRotationTime' },
+                },
+                minValue1: { type: 'const', constVal: 0 },
+                maxValue1: { type: 'const', constVal: 60 },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'screenSaverRotationtime' }, false: undefined },
+            },
+        },
     ],
     items: undefined,
 };
