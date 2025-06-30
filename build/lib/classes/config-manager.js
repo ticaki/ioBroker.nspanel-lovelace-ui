@@ -43,6 +43,8 @@ var Types = __toESM(require("../types/types"));
 var import_library = require("./library");
 var import_navigation = require("./navigation");
 var import_tools = require("../const/tools");
+var fs = __toESM(require("fs"));
+var import_path = __toESM(require("path"));
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   colorOn = import_Color.Color.On;
@@ -50,7 +52,6 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  scriptVersion = "0.8.6";
   breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
@@ -90,8 +91,14 @@ class ConfigManager extends import_library.BaseClass {
     }
     let messages = [];
     this.log.info(`Start converting configuration for ${config.panelName || config.panelTopic}`);
+    let file = void 0;
+    if (fs.existsSync(import_path.default.join(__dirname, "../../script"))) {
+      file = fs.readFileSync(import_path.default.join(__dirname, "../../script/example_sendTo_script_iobroker.ts"), "utf8");
+    }
+    const vTemp = (file == null ? void 0 : file.match(/const.version.+'(\d\.\d\.\d)';/)) || [];
+    const scriptVersion = vTemp[1] ? vTemp[1] : "";
     const version = (0, import_tools.getVersionAsNumber)(config.version);
-    const requiredVersion = (0, import_tools.getVersionAsNumber)(this.scriptVersion);
+    const requiredVersion = (0, import_tools.getVersionAsNumber)(scriptVersion);
     const breakingVersion = (0, import_tools.getVersionAsNumber)(this.breakingVersion);
     if (version < breakingVersion) {
       messages.push(
@@ -102,12 +109,12 @@ class ConfigManager extends import_library.BaseClass {
     }
     if (version < requiredVersion) {
       messages.push(
-        `Update Script! Panel for Topic: ${config.panelTopic} Script version ${config.version} is lower than the required version ${this.scriptVersion}!`
+        `Update Script! Panel for Topic: ${config.panelTopic} Script version ${config.version} is lower than the required version ${scriptVersion}!`
       );
       this.log.warn(messages[messages.length - 1]);
     } else if (version > requiredVersion) {
       messages.push(
-        `Update Adapter! Panel for Topic: ${config.panelTopic} Script version ${config.version} is higher than the required version ${this.scriptVersion}!`
+        `Update Adapter! Panel for Topic: ${config.panelTopic} Script version ${config.version} is higher than the required version ${scriptVersion}!`
       );
       this.log.warn(messages[messages.length - 1]);
     } else {
