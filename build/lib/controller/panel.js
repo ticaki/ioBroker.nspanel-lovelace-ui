@@ -1505,7 +1505,7 @@ ${this.info.tasmota.onlineVersion}`;
       }
       case "cmd/screenSaverRotationTime": {
         if (this.screenSaver) {
-          return this.screenSaver.rotationTime;
+          return this.screenSaver.rotationTime / 1e3;
         }
         break;
       }

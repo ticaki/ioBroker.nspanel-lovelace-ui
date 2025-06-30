@@ -748,6 +748,25 @@ const ScreensaverLayout = {
         //valueList: { type: 'internal', dp: 'cmd/screenSaverLayout', read: 'return val ? val.split(";") : []' },
         valueList: { type: "const", constVal: "standard?alternate?advanced?easyview" }
       }
+    },
+    {
+      role: "",
+      type: "number",
+      data: {
+        entity1: {
+          value: { type: "internal", dp: "cmd/screenSaverRotationTime" }
+        },
+        minValue1: { type: "const", constVal: 0 },
+        maxValue1: { type: "const", constVal: 60 },
+        icon: {
+          true: {
+            value: { type: "const", constVal: "clock-time-twelve-outline" },
+            color: { type: "const", constVal: import_Color.Color.White }
+          },
+          false: void 0
+        },
+        text: { true: { type: "const", constVal: "screenSaverRotationtime" }, false: void 0 }
+      }
     }
   ],
   items: void 0
