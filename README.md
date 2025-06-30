@@ -304,7 +304,7 @@ Sind natürlich alles Dataitems
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.2.1 (2025-06-30)
 - (ticaki) Modified script version comparison
 
 ### 0.2.0 (2025-06-30)

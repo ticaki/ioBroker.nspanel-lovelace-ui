@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "news": {
+      "0.2.1": {
+        "en": "Modified script version comparison",
+        "de": "Modifizierter Skript-Versionsvergleich",
+        "ru": "Сравнение модифицированной версии сценария",
+        "pt": "Comparação de versão de script modificada",
+        "nl": "Vergelijking van de gewijzigde scriptversie",
+        "fr": "Comparaison des versions de script modifiées",
+        "it": "Confronto della versione di script modificato",
+        "es": "Comparación de versión de script modificada",
+        "pl": "Zmodyfikowane porównanie wersji skryptu",
+        "uk": "Змінено порівняння версії скриптів",
+        "zh-cn": "修改后的脚本版本比较"
+      },
       "0.2.0": {
         "en": "Additional options added to the service pages\nlight2 added\npopupShutter2 added\nfixed Tempcolor & dimmer\nShow service menu navigation even if there is only one page in pages",
         "de": "Zusätzliche Optionen auf den Serviceseiten\nlicht2 hinzugefügt\npopupShutter2 hinzugefügt\nfest Tempcolor & Dimmer\nService-Menü-Navigation anzeigen, auch wenn es nur eine Seite auf Seiten gibt",
@@ -80,19 +93,6 @@
         "pl": "dodane: przyciski hw- z akcjami\nstałe: wyzwalacz wygaszacza ekranu\nsprawdzić czy port jest wolny dla serwera mqtt\nsprawdzanie i poprawianie informacji o roli\nstałe: podmioty i ikony sieci / tekst\nnarzędzia dla tasmota dodane do admin\nczas reakcji panelu\n'przełącznik' dodany\nukończone servicepages",
         "uk": "додано: hw-buttons з діями\nфіксований: екранsaver тригер\nперевірити, чи є порт безкоштовно для сервера mqtt\nінформація про роль\nфіксована: сутності та значки сітки/текст\nінструменти для тазмоти додано до адміністратора\nчас відповіді на панель\n'switch' додано\nпослуги",
         "zh-cn": "添加:带有动作的 hw 按钮\n固定: 屏幕保护触发器\n检查 mqtt 服务器的端口是否免费\n检查和调整角色信息\n固定: 实体和网格图标/文本\n添加到管理员的 tasmota 工具\n调整面板响应时间\n添加了“ 开关 ”\n已完成的服务页"
-      },
-      "0.1.7": {
-        "en": "cardGrid Number values -> Show an icon if user has defined one, otherwise number\nfixes #143\nfixes #147\nfixes #146\nfixes #144\nfixes #148",
-        "de": "karte Grid Zahlenwerte -> Zeigen Sie ein Symbol, wenn der Benutzer eins definiert hat, andernfalls Nummer\nfixes #143\nfixes #147\nfixes #146\nfixes #144\nfixes #148",
-        "ru": "карточка Номера сетки -> Показать значок, если пользователь определил один, иначе номер\nобсуждение #143\nремонт #147\nремонт #146\nремонт #144\nобсуждение #148",
-        "pt": "cartão Valores do número de grade -> Mostrar um ícone se o usuário tiver definido um, número de outra forma\ncorreções #143\ncorreções #147\ncorreções #146\ncorreções #144\ncorreções #148",
-        "nl": "kaart Rasteraantalwaarden -> Een pictogram tonen als de gebruiker er een heeft gedefinieerd, anders nummer\nfixes #143\nfixes #147\nfixes #146\nfixes #144\nfixes #148",
-        "fr": "carte Valeurs du nombre de grilles -> Afficher une icône si l'utilisateur en a défini un, sinon numéro\ncorrige #143\ncorrige #147\ncorrige #146\ncorrectifs #144\ncorrectifs #148",
-        "it": "carta Valori numeri -> Mostra un'icona se l'utente ne ha definito uno, altrimenti numero\ncorrezioni #143\ncorrezioni #147\ncorrezioni #146\ncorrezioni #144\ncorrezioni #148",
-        "es": "tarjeta Valores de números de rejilla - título Mostrar un icono si el usuario ha definido uno, otro número\nfijaciones #143\nfijaciones #147\nfijaciones #146\nfijaciones #144\nfijaciones #148",
-        "pl": "karta Liczba siatki - > Pokaż ikonę, jeśli użytkownik zdefiniował jedną, w przeciwnym razie numer\npoprawki # 143\npoprawki # 147\npoprawki # 146\npoprawki # 144\npoprawki # 148",
-        "uk": "кошик Значення чисел Grid -> Показати іконку, якщо користувач визначився один, інший номер\nфіксатори #143\nзастібки #147\nфіксатори #146\nфіксатори #144\nфіксатори #148",
-        "zh-cn": "纸牌 网格数字值 - > 如果用户定义了图标, 显示图标, 否则数字\n修正 # 143\n修正 # 147\n修正 # 146\n修正 # 144\n修正 # 148"
       }
     },
     "title": "NSPanel-Lovelace-UI Next Level",
