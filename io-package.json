@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.1.12",
+    "version": "0.2.0",
     "news": {
+      "0.2.0": {
+        "en": "Additional options added to the service pages\nlight2 added\npopupShutter2 added\nfixed Tempcolor & dimmer\nShow service menu navigation even if there is only one page in pages",
+        "de": "Zusätzliche Optionen auf den Serviceseiten\nlicht2 hinzugefügt\npopupShutter2 hinzugefügt\nfest Tempcolor & Dimmer\nService-Menü-Navigation anzeigen, auch wenn es nur eine Seite auf Seiten gibt",
+        "ru": "Дополнительные опции добавлены на страницы сервиса\nlight2 добавлен\npopup Shutter2 добавлен\nобсуждение Tempcolor & Dimmer\nПоказать меню навигации, даже если на страницах есть только одна страница",
+        "pt": "Opções adicionais adicionadas às páginas de serviço\nluz2 adicionada\npopupShutter2 adicionado\ntempcolor & dimmer fixo\nMostrar a navegação do menu de serviço mesmo que haja apenas uma página nas páginas",
+        "nl": "Extra opties toegevoegd aan de servicepagina's\nlight2 toegevoegd\npopupShutter2 toegevoegd\nvaste tempcolor & dimmer\nDienstmenunavigatie tonen, zelfs als er maar één pagina in pagina's staat",
+        "fr": "Options supplémentaires ajoutées aux pages de service\nlumière2 ajoutée\npopupShutter2 ajouté\ntempcolor & variateur fixe\nAfficher la navigation du menu service même s'il n'y a qu'une page dans les pages",
+        "it": "Ulteriori opzioni aggiunte alle pagine di servizio\nlight2 aggiunto\npopupShutter2 aggiunto\nfisso Tempcolor & dimmer\nMostra la navigazione del menu di servizio anche se c'è solo una pagina nelle pagine",
+        "es": "Opciones adicionales agregadas a las páginas de servicio\nlight2 añadido\npopupShutter2 añadido\nfija Tempcolor & dimmer\nMostrar la navegación del menú de servicio incluso si sólo hay una página en las páginas",
+        "pl": "Dodatkowe opcje dodane do stron serwisowych\nlight2 dodany\ndodano popupShutter2\nnaprawiono & przyciemniacz Tempcolor\nPokaż nawigację menu usług, nawet jeśli na stronach jest tylko jedna strona",
+        "uk": "Додаткові параметри додані в сторінки сервісу\nlight2 додано\npopupShutter2 додано\nфіксований Tempcolor & Dimmer\nПоказати навігацію меню сервісу навіть якщо є тільки одна сторінка на сторінках",
+        "zh-cn": "在服务页上添加其他选项\n已添加光线2\n弹出 Shutter2 已添加\n固定的调色度( D)\n显示服务菜单导航, 即使页面中只有一个页面"
+      },
       "0.1.12": {
         "en": "added cardChart/cardLChart inkl. admin",
         "de": "zusatzkarte Diagramm/KarteLChart inkl. Admin",
@@ -80,19 +93,6 @@
         "pl": "karta Liczba siatki - > Pokaż ikonę, jeśli użytkownik zdefiniował jedną, w przeciwnym razie numer\npoprawki # 143\npoprawki # 147\npoprawki # 146\npoprawki # 144\npoprawki # 148",
         "uk": "кошик Значення чисел Grid -> Показати іконку, якщо користувач визначився один, інший номер\nфіксатори #143\nзастібки #147\nфіксатори #146\nфіксатори #144\nфіксатори #148",
         "zh-cn": "纸牌 网格数字值 - > 如果用户定义了图标, 显示图标, 否则数字\n修正 # 143\n修正 # 147\n修正 # 146\n修正 # 144\n修正 # 148"
-      },
-      "0.1.6": {
-        "en": "fixes #140\nfixes #141",
-        "de": "fixes #140\nfixes #141",
-        "ru": "обсуждение #140\nремонт #141",
-        "pt": "correções #140\ncorreções #141",
-        "nl": "fixes #140\nfixes #141",
-        "fr": "correctifs #140\ncorrige #141",
-        "it": "correzioni #140\ncorrezioni #141",
-        "es": "fijaciones #140\nfijaciones #141",
-        "pl": "poprawki # 140\npoprawki # 141",
-        "uk": "застібки #140\nфіксатори #141",
-        "zh-cn": "修正 # 140\n修正 # 141"
       }
     },
     "title": "NSPanel-Lovelace-UI Next Level",
