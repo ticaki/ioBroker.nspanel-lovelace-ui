@@ -872,7 +872,11 @@
                     "xl": 6
                 },
                 "pageQRdata": {
-                
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
                     "type": "accordion",
                     "label": "pageQRdata",
                     "titleAttr": "pageName",
@@ -1104,6 +1108,11 @@
                     "xl": 6
                 },
                 "pagePowerdata": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
                     "type": "accordion",
                     "label": "pagePowerdata",
                     "titleAttr": "pageName",
@@ -2702,6 +2711,11 @@
                     "xl": 6
                 },
                 "pageChartdata": {
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
                     "type": "accordion",
                     "label": "pageChartdata",
                     "titleAttr": "pageName",
