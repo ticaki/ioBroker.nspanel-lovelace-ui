@@ -601,14 +601,14 @@
                     "type": "checkbox",
                     "label": "longWeekdayName",
                     "default": false,
-                    "xs": 6,
+                    "xs": 12,
                     "sm": 6,
                     "md": 3,
                     "lg": 2,
                     "xl": 2
                 },
                 "monthFormat": {
-                    "xs": 6,
+                    "xs": 12,
                     "sm": 6,
                     "md": 2,
                     "lg": 1,
@@ -635,7 +635,7 @@
                     "type": "checkbox",
                     "label": "longYear",
                     "default": false,
-                    "xs": 6,
+                    "xs": 12,
                     "sm": 6,
                     "md": 3,
                     "lg": 2,
@@ -3040,6 +3040,11 @@
                     "uniqueColumns": [
                         "name"
                     ],
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
                     "items": [
                         {
                             "type": "text",
