@@ -2915,6 +2915,7 @@
         "NavigationOverview": {
             "type": "panel",
             "label": "Navigation Overview",
+            "expertMode": true,
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
             "items": {
                 "_selectPanel": {
