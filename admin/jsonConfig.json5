@@ -28,7 +28,12 @@
                     "newLine": true,
                     "useNative": true,
                     "variant": "contained",
-                    "hidden": "!data.mqttServer"
+                    "hidden": "!data.mqttServer",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "mqttIp": {
                     "type": "text",
