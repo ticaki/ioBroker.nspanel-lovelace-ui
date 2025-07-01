@@ -10,10 +10,17 @@ async function configuration(): Promise<void> {
         weatherAddDefaultItems: false,
     }
 
+        /***********************************************************************
+         **                                                                   **
+         **                       Page Configuration                          **
+         **                                                                   **
+         ***********************************************************************/
+
     // Diese Konfiguration für den Fahrplan ist ein Beispiel was die interne Adapterkonfiguration benutzt, diese 
     // ist recht komplex und wird nicht weiter erläutert. Da gibts später fertige Templates die man hier verwenden kann.
     // wie am Fahrplan Beispiel zu sehen ist.
-    const fahrplan: any = {
+
+    /* const fahrplan: any = {
         heading: 'Fahrplan Script',
         native: {
             card: 'cardEntities',
@@ -21,22 +28,25 @@ async function configuration(): Promise<void> {
             uniqueID: 'fahrplanrouten',
             template: 'entities.fahrplan.routes',
         }
-    };
+    }; */
 
     // Konfiguration findet im Admin statt, uniqueName muß gleich dem namen in der Adminkonfiguration sein.
-    const qrCode: PageType = {
+
+    /* const qrCode: ScriptConfig.PageQR = {
         type: 'cardQR',
         uniqueName: 'qrCode'
-    };
+    }; */
 
     // Konfiguration findet im Admin statt, uniqueName muß gleich dem namen in der Adminkonfiguration sein.
-    const chartHeizung: PageType = {
+
+    /* const chartHeizung: ScriptConfig.PageChart = {
         type: 'cardChart',
         uniqueName: 'temperatur'
-    };
+    }; */
 
     // Ein Beispiel für eine Gridseite mit verschiedenen Farbskalen
-    const irgendeinName: PageType = {
+
+    /* const irgendeinName: ScriptConfig.PageGrid = {
         type: 'cardGrid',
         uniqueName: 'main',
         heading: 'Wohnzimmer',
@@ -55,9 +65,9 @@ async function configuration(): Promise<void> {
             {id: 'alias.0.Temperatur', name: 'hue log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue', log10: 'max'}},
             {id: 'alias.0.Temperatur', name: 'cie log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie', log10: 'max'}},
         ]
-    };
+    }; */
 
-    const grid1: PageType = {
+    /* const grid1: ScriptConfig.PageGrid = {
         uniqueName: 'grid1', // keine Navigation, am besten uniqueName von config.ts übernehmen
         heading: 'Grid 1',
         items: [
@@ -70,7 +80,7 @@ async function configuration(): Promise<void> {
         ],
         type: 'cardGrid',
         useColor: true
-    }
+    } */ 
 
     const config: ScriptConfig.Config = {
         panelTopic: 'topic',
@@ -87,14 +97,14 @@ async function configuration(): Promise<void> {
         // Seiteneinteilung / Page division
         // Hauptseiten / Mainpages
         pages: [
-            irgendeinName,
-            grid1,
-            qrCode,
-            chartHeizung,
+            //irgendeinName,
+            //grid1,
+            //qrCode,
+            //chartHeizung,
         ],
         // Unterseiten / Subpages
         subPages: [
-            fahrplan
+            //fahrplan
         ],
 
         /***********************************************************************
@@ -253,6 +263,11 @@ async function configuration(): Promise<void> {
             // Some templates for the screensaver uncomment the lines to use them
             // If u use an other instance for the weather data, change the instance in the following lines
             // If you want to have them all, set weatherAddDefaultItems=true in the config and leave the following lines as they are!
+
+            // zum nutzen der Vorlagen für den Bildschirmschoner die Zeilen auskommentieren, um sie zu verwenden
+            // Wenn du eine andere Instanz für die Wetterdaten verwendest, ändere die Instanz in den folgenden Zeilen
+            // Wenn du sie alle haben willst, setze weatherAddDefaultItems=true in der Konfiguration ganz oben und lass die folgenden Zeilen so wie sie sind!
+
             /*
             // Bottom 1 - accuWeather.0. sunrise/set
             {
