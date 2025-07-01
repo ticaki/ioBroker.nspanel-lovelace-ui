@@ -354,7 +354,12 @@
                         "text": "NSPanel_configuration_text",
                         "ok": "Start",
                         "cancel": "Cancel"
-                    }
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "_nsPanelUpdate": {
                     "type": "sendTo",
@@ -372,7 +377,12 @@
                         "text": "NSPanel_configuration_update_text",
                         "ok": "Start",
                         "cancel": "Cancel"
-                    }
+                    },
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "panels": {
                     "type": "table",
@@ -633,7 +643,12 @@
                     "command": "refreshMaintainTable",
                     "variant": "outlined",
                     "useNative": true,
-                    "onLoaded": true
+                    "onLoaded": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "_maintainPanels": {
                     "type": "accordion",

@@ -95,7 +95,6 @@
         "zh-cn": "添加:带有动作的 hw 按钮\n固定: 屏幕保护触发器\n检查 mqtt 服务器的端口是否免费\n检查和调整角色信息\n固定: 实体和网格图标/文本\n添加到管理员的 tasmota 工具\n调整面板响应时间\n添加了“ 开关 ”\n已完成的服务页"
       }
     },
-    "title": "NSPanel-Lovelace-UI Next Level",
     "titleLang": {
       "en": "NSPanel-Lovelace-UI Next Level",
       "de": "NSPanel-Lovelace-UI Next Level",
@@ -136,7 +135,6 @@
       "type": "free"
     },
     "platform": "Javascript/Node.js",
-    "main": "build/main.js",
     "icon": "nspanel-lovelace-ui.png",
     "enabled": true,
     "extIcon": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/admin/nspanel-lovelace-ui.png",
