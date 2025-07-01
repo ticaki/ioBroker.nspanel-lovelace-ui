@@ -392,6 +392,7 @@
                 "panels": {
                     "type": "table",
                     "label": "overviewOfPanels",
+                    "xs": 12,
                     "sm": 12,
                     "md": 12,
                     "lg": 12,
@@ -2945,13 +2946,23 @@
                         "id": "panel"
                     },
                     "label": "selectPanel",
-                    "newLine": true
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
                 },
                 "_useNavigation": {
                     "type": "checkbox",
                     "label": "useNavigation",
                     "default": false,
-                    "newLine": true
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
                 },
                 "_loadNavigationOverview": {
                     "type": "sendTo",
