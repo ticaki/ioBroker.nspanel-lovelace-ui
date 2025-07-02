@@ -16,89 +16,44 @@
 
 NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.
 
+### Short Description  
+The NSPanel Lovelace UI is an alternative user interface for the Sonoff NSPanel, specifically designed for integration with iobroker. It typically relies on Tasmota (firmware) and MQTT (messaging protocol) to provide custom controls and displays directly on the NSPanel's small touchscreen.
 
-Entwickleränderungen / Erklärung
+### What is the NSPanel?  
+The Sonoff NSPanel is a smart wall switch with:  
+* two physical relay switches  
+* a 3.5-inch touchscreen  
+* temperature and brightness sensors  
 
-**Nicht installieren wenn da oben bei Tests failed steht**
+It was originally developed for the eWeLink app, but can be integrated much more powerfully with ioBroker using alternative firmware  
 
-Immer wenn ich Zeit und lust habe Dokumentiere ich hier Sachen.
+### What does the "NSPanel Lovelace UI" do?  
 
-Gab lange nix, daher ist der alte Kram nicht unbedingt stimming.
-**Solange das hier einfach nur Fortschritte aufzählt, ist oben neuer als unten**
-
-Fragen gerne im [Forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)
-
----
-
-Das hat sich im Skript geändert button1 und button2 gibts nicht mehr - für mehr siehe beispiel skript
-```(typescript)
-    /**
-     * Represents the configuration for a button function.
-     * This type can be one of the following modes:
-     * - 'page': Navigates to a specified page.
-     * - 'switch': Toggles the state of a datapoint.
-     * - 'button': Triggers a button datapoint with a true value.
-     * - null: Represents no configuration.
-     */
-        buttonLeft: ConfigButtonFunction;
-        /**
-     * Represents the configuration for a button function.
-     * This type can be one of the following modes:
-     * - 'page': Navigates to a specified page.
-     * - 'switch': Toggles the state of a datapoint.
-     * - 'button': Triggers a button datapoint with a true value.
-     * - null: Represents no configuration.
-     */
-        buttonRight: ConfigButtonFunction;
-```
-
-
+With this custom UI, you can:  
+* Display Lovelace-like maps on the NSPanel  
+* Display sensor values ​​(e.g., temperature, humidity)  
+* Control scenes and automations  
+* Control lights, thermostats, and other devices directly on the screen  
 
 ---
 
-Wir haben die Möglichkeit eingefügt, die Bildschirmschonerroation über States zu aktiviern.  
-`0=off`, `min=3s`, `max=3600s`   
-Damit können aktuell überall mehr Items hinzufügt werden und diese dann im Intwrvall rotiert lassen. 
+### Installation & Questions
+Adapter Wiki: https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki  
+Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)
 
 ---
 
-Der Adapter reagiert in **0_userdata.0** und **alias.0** auf jede Änderung (`ack=true` oder `ack=false`) eines abonnierten Datenpunktes. Ansonsten gilt nachfolgendes:
-- Auserhalb vom Adapter namespace(`nspanel-lovelace-ui.0`) reagiert dieser Adapter auf `ack=true` und setzt Datenpunkte mit `ack=false`
-- Innerhalb des Adapter namespace reagiert dieser Adapter auf `ack=false` und setzt Datenpunkte mit `ack=true`
+## The following HMI components are already integrated into the NSPanel adapter:
 
-Beim Farbscalieren `colorScale` gibt es diese unteren Zusatzoptionen
-```(typescrpit)
-/**
-* The color mix mode. Default is 'mixed'.
-* ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
-* 'cie': the target colour is achieved by mixing according to the CIE colour table. 
-* 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
-*/
-mode?: 'mixed' | 'hue' | 'cie';
-/**
-* The logarithm scaling to max, min or leave undefined for linear scaling.
-*/
-log10?: 'max' | 'min';
-```
-
----
-  
-## Aktuelle Version  
-
-Mit der aktuellen Version 0.1.12 sind schon ein paar Test möglich.
-
-[Hier eine kurze Anleitung zur Installation und Startconfig](INSTALLATION.md)
-
-Bei Fragen fragen - Discord, Forum, hier, Telegram, Teams alles vorhanden :)
-
-[Alias Tabelle](ALIAS.md)
-
-## Konvertierung der Skriptkonfiguration in Adapterkonfig
-
-### Cards
+### HMI Cards
+- [x] screensaver
+- [x] screensaver2
+- [x] screensaver3
 - [x] cardChart
 - [x] cardLChart
+- [ ] cardLChart2 (new - in progress)
 - [x] cardEntities
+- [x] cardSchedule
 - [x] cardGrid
 - [x] cardGrid2
 - [x] cardGrid3
@@ -109,195 +64,20 @@ Bei Fragen fragen - Discord, Forum, hier, Telegram, Teams alles vorhanden :)
 - [ ] cardAlarm
 - [x] cardPower
 
-### PageItems
-- [x] light
-- [x] socket
-- [x] dimmer
-- [x] hue
-- [x] rgb
-- [x] rgbSingle
-- [x] ct
-- [x] blind
-- [x] door
-- [x] window
-- [x] volumeGroup
-- [x] volume
-- [x] info
-- [x] humidity
-- [x] temperature
-- [x] value.temperature
-- [x] value.humidity
-- [x] thermostat
-- [ ] warning
-- [ ] cie
-- [x] gate
-- [x] motion
-- [x] buttonSensor
-- [x] button
-- [ ] value.time
-- [ ] level.timer
-- [ ] value.alarmtime
-- [ ] level.mode.fan
-- [x] lock
-- [ ] slider
-- [ ] switch.mode.wlan
-- [ ] media
-- [x] timeTable
-- [ ] airCondition
+### HMI Popups
+- [x] popupInSel
+- [x] popupFan
+- [x] popupThermo
+- [x] popupNotify
+- [x] popupShutter
+- [x] popupShutter2
+- [x] popupLight
+- [x] popupLight2
+- [x] popupTimer
+- [ ] popupSlider
+- [ ] popupColor (new - in progress)
 
-### PageItems Navigation
-- [x] light
-- [x] socket
-- [x] dimmer
-- [x] hue
-- [x] rgb
-- [x] rgbSingle
-- [x] ct
-- [x] blind
-- [x] door
-- [x] window
-- [x] volumeGroup
-- [x] volume
-- [x] info
-- [x] humidity
-- [x] temperature
-- [x] value.temperature
-- [x] value.humidity
-- [x] thermostat
-- [ ] warning
-- [ ] cie
-- [x] gate
-- [x] motion
-- [x] buttonSensor
-- [x] button
-- [ ] value.time
-- [ ] level.timer
-- [ ] value.alarmtime
-- [ ] level.mode.fan
-- [x] lock
-- [ ] slider
-- [ ] switch.mode.wlan
-- [ ] media
-- [x] timeTable
-- [ ] airCondition
-
-
-
-## Eingebaut:
-- cardChart
-- cardLChart
-- cardMedia 
-- cardGrid/2
-- cardEntities
-- cardPower
-- cardThermo
-- screensaver
-- cardMedia
-- alle Popups und PageItems
-
-## Erklärungen
-
-### Icons:
-#### Dateneingang:
-Zu Icon.x.color: (nix was mit Licht zu tun hat.)
-Eingabe geht über folgende common Eigenschaftenmöglichkeiten
-- type: number
-  - decimal
-- type: string
-  - stringify Json: {r:0,g:0,b:0} oder {red:0,green:0,blue:0}
-  - hexcolor - 7 Stellen beginned mit #
-  - css color names (role: level.color.name) https://www.tutorialrepublic.com/css-reference/css-color-names.php
-  - hsl: "hsl(0, 50%, 50%)" (role: level.color.name)
-
-#### Funktion
-##### IconEntryType
-Sollte alle Icons betreffen abgesehen vom Screensaver zum aktuellen Zeitpunkt.
-
-- true: ist der default wert sollte immer angegeben werden 
-- false: optional der Wert für boolean false
-- text: optional wird auf einer cardGrid/2 angezeigt anstelle des Icons
-- scale: siehe unten
-
-##### IconScaleElement
-scale bekommt eine eigenen Punkt: das object besteht aus folgenden typen: `{val_min: number, val_max: number, val_best?: number, log10?: 'max' | 'min';}` um es zu verwenden muß icon.true.color und icon.false.color definiert sein. Value bezeichnet einen Wert der häufig von entity1 kommt.
-- wenn nur val_min definiert ist bedeutet val_min >= Value das die Farbe bei true gewählt wird.
-- wenn nur val_max definiert ist bedeutet val_max <= Value das die Farbe bei true gewählt wird.
-- wenn val_max und val_min definiert sind, wird die Farbe von false (val_min) zu true (val_max) interpoliert
-- val_max und val_min werden getauscht, ebenso die Farben für true und false, wenn max < min ist. Falls min und max gleich sind wird die Farbe von true zurückgegeben.
-- wenn zusätzlich val_best definiert ist, ist val_best die Farbe von true und wird jeweils in die Richtungen von val_min/max zu false interpoliert
-- wenn zusätzlich log10 definiert ist, wird bei `max` ein log10() 1 false, 10 true ausgeführt, bei `min` (10-value) -> 10 false, 1 true. 
-
-### ValueEntryType
-
-besteht aus diesen Typen: `{value: string | number |boolean; decimal?: number;factor?: number; unit?: string; minScale?: number; maxScale?: number; set?: string | number |boolean; } | undefined;` 
-
-Wenn *** verlangert wird
-- boolean läd Value und doppelt verneint es.
-- number wird als nummer geladen oder konvertiert dann * `factor` und mit `minScale` und `maxScale` auf 0-100 skaliert.
-- string wird 
-  - mit `type==number` als nummer geladen und `decimal` angewendet 
-  - oder als String 
-  - `unit` wird in beiden Fällen hinzugefügt.
-
-
-Beim Schreiben:
-- erst wird `set`versucht, wenn negativ dann `value`
-
-Sind natürlich alles Dataitems
-
-### PageItems
-#### vormalig CreateEntity()
-
-##### light
-- entity1 ist der Schalter
-- icon (entity1)
-- iconColor: Leuchtmittelfarbe kommt von dem definierten RGB Wert oder von CT (kelvin/mired) oder von IconEntryType entweder  scaliert mit dimmer oder entity1 
-- dimmer ist ein Zahlenwert 
-- colorMode kann die Eigenschaft undefined | 'hue' | 'ct' haben und bestimmt welcher Modus für das Icon verwendet werden soll.
-- headline ist die Item Beschreibung 
-
-##### shutter
-- entity1 ist das level muß eine Zahl sein 0-100
-- icon & iconColor (IconEntryType)(entity1)
-- headline ist die Item Beschreibung  
-- valueList ist ein array mit 3 oder 6 Einträgen die die Iconbezeichnung enthält - '' für disable. Felder werden ebenfalls disabled wenn keine Befehlsstate gefunden wird.
-
-##### number
-- entity1 ist das level muß eine Zahl sein 0-100
-- text.true ist die Bezeichnung
-- icon & iconColor wie shutter
-
-##### text
-- entity1 kann zahl,boolean sein. Falls es nicht klappt wird von true ausgegangen.
-- entity2 oder text1 ist der text rechts in cardEntites
-- text.true ist die Bezeichnung
-- icon & iconColor wie shutter
-
-##### button
-- entity1 bestimmt den button Status oder true
-- icon & iconColor wie shutter
-- setValue1 schaltet den angegebenen State um (optional)
-- setValue2 schaltet den angegebenen State auf false (optional)
-- setNavi springt zur angegebenen NavigationsID
-
-##### input_sel
-- entityInSel als nummer oder boolean oder undefined
-- Icon/Color wie gehabt
-- headline ist die Beschreibung
-- text ist der text rechts in entities
-
-##### fan
-- entity1 ist der Schalter
-- icon...
-- headline die Beschreibung
-
-##### timer
-- im moment nur die interne Version komplett eingebaut
-- entity1 noch zu verstreichende Sekunden oder interner Zähler
-- icon...
-- text alternativer text für die anzeige rechts in entitiys standard ist Zeit.
-
-
+---
 
 ## Changelog
 <!--
