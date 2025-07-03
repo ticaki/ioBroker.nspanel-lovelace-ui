@@ -114,7 +114,6 @@
     "StateObjects.cmd": "Elementi di controllo",
     "StateObjects.panel": "Pannelli",
     "StateObjects.buttons": "Indicatori",
-    "Indicator": "Indicatore di screensaver",
     "StateObjects.buttons.left": "Pulsante sinistro",
     "StateObjects.buttons.right": "Pulsante destro",
     "StateObjects.buttons.screensaverGesture": "Gesto dello screensaver",

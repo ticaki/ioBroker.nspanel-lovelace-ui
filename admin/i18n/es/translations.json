@@ -114,7 +114,6 @@
     "StateObjects.cmd": "Elementos de control",
     "StateObjects.panel": "Paneles",
     "StateObjects.buttons": "Indicadores",
-    "Indicator": "Indicador de protector de pantalla",
     "StateObjects.buttons.left": "Botón izquierdo",
     "StateObjects.buttons.right": "Botón correcto",
     "StateObjects.buttons.screensaverGesture": "Gesto de protector de pantalla",
