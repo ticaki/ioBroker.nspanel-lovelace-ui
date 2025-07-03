@@ -597,7 +597,7 @@ class Library extends BaseClass {
     const result = {};
     for (const l of language) {
       try {
-        const i = await Promise.resolve().then(() => __toESM(require(`../../admin/i18n/${l}/translations.json`)));
+        const i = await Promise.resolve().then(() => __toESM(require(`../../../admin/i18n/${l}/translations.json`)));
         if (i[key] !== void 0) {
           result[l] = i[key];
         }

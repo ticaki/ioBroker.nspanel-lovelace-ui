@@ -316,6 +316,7 @@ export class Library extends BaseClass {
                     }
                 }
                 await this.adapter.extendObjectAsync(dp, obj);
+
                 node.init = false;
             }
         }
@@ -660,7 +661,7 @@ export class Library extends BaseClass {
         const result: Partial<Record<ioBroker.Languages, string>> = {};
         for (const l of language) {
             try {
-                const i = await import(`../../admin/i18n/${l}/translations.json`);
+                const i = await import(`../../../admin/i18n/${l}/translations.json`);
                 if (i[key] !== undefined) {
                     result[l] = i[key];
                 }
