@@ -536,6 +536,7 @@ const ScreensaverBrightness: PageBaseConfig = {
         },
     },
     pageItems: [
+        // switch Doppelklick
         {
             role: '',
             type: 'switch',
@@ -557,6 +558,7 @@ const ScreensaverBrightness: PageBaseConfig = {
                 setValue1: { type: 'internal', dp: 'cmd/screenSaverDoubleClick' },
             },
         },
+        // slider Timeout to Screensaver
         {
             role: '',
             type: 'number',
@@ -576,6 +578,7 @@ const ScreensaverBrightness: PageBaseConfig = {
                 text: { true: { type: 'const', constVal: 'screenSaverTimeout' }, false: undefined },
             },
         },
+        // slider Helligkeit Standby
         {
             role: '',
             type: 'number',
@@ -595,6 +598,7 @@ const ScreensaverBrightness: PageBaseConfig = {
                 text: { true: { type: 'const', constVal: 'dimStandby' }, false: undefined },
             },
         },
+        // slider Helligkeit aktiv
         {
             role: '',
             type: 'number',
@@ -615,25 +619,7 @@ const ScreensaverBrightness: PageBaseConfig = {
                 text: { true: { type: 'const', constVal: 'dimActive' }, false: undefined },
             },
         },
-        {
-            role: '',
-            type: 'number',
-            data: {
-                entity1: {
-                    value: { type: 'internal', dp: 'cmd/dimNightActive' },
-                },
-                minValue1: { type: 'const', constVal: 0 },
-                maxValue1: { type: 'const', constVal: 100 },
-                icon: {
-                    true: {
-                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
-                        color: { type: 'const', constVal: Color.White },
-                    },
-                    false: undefined,
-                },
-                text: { true: { type: 'const', constVal: 'dimNightActive' }, false: undefined },
-            },
-        },
+        // slider Helligkeit Nacht Standby
         {
             role: '',
             type: 'number',
@@ -653,6 +639,27 @@ const ScreensaverBrightness: PageBaseConfig = {
                 text: { true: { type: 'const', constVal: 'dimNightStandby' }, false: undefined },
             },
         },
+        // slider Helligkeit Nacht aktiv
+        {
+            role: '',
+            type: 'number',
+            data: {
+                entity1: {
+                    value: { type: 'internal', dp: 'cmd/dimNightActive' },
+                },
+                minValue1: { type: 'const', constVal: 0 },
+                maxValue1: { type: 'const', constVal: 100 },
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'clock-time-twelve-outline' },
+                        color: { type: 'const', constVal: Color.White },
+                    },
+                    false: undefined,
+                },
+                text: { true: { type: 'const', constVal: 'dimNightActive' }, false: undefined },
+            },
+        },
+        // slider Helligkeit Nacht Start
         {
             role: '',
             type: 'number',
@@ -672,6 +679,7 @@ const ScreensaverBrightness: PageBaseConfig = {
                 text: { true: { type: 'const', constVal: 'dimNightHourStart' }, false: undefined },
             },
         },
+        // slider Helligkeit Nacht Ende
         {
             role: '',
             type: 'number',
