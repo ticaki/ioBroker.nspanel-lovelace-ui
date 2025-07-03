@@ -30,7 +30,7 @@ It was originally developed for the eWeLink app, but can be integrated much more
 ### What does the "NSPanel Lovelace UI" do?  
 
 With this custom UI, you can:  
-* Display Lovelace-like maps on the NSPanel  
+* Display Lovelace-like Cards on the NSPanel  
 * Display sensor values ​​(e.g., temperature, humidity)  
 * Control scenes and automations  
 * Control lights, thermostats, and other devices directly on the screen  
