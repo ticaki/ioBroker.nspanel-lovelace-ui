@@ -430,20 +430,6 @@ const genericStateObjects = {
               def: 7
             },
             native: {}
-          },
-          delay: {
-            _id: "",
-            type: "state",
-            common: {
-              name: "StateObjects.dimDelay",
-              type: "number",
-              role: "level",
-              unit: "s",
-              read: true,
-              write: true,
-              def: 30
-            },
-            native: {}
           }
         }
       },

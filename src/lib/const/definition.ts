@@ -40,7 +40,6 @@ export const genericStateObjects: {
                     nightHourStart: ioBroker.StateObject;
                     nightHourEnd: ioBroker.StateObject;
                     schedule: ioBroker.StateObject;
-                    delay: ioBroker.StateObject;
                 };
                 screenSaver: customChannelType & {
                     infoIcon: ioBroker.StateObject;
@@ -458,20 +457,6 @@ export const genericStateObjects: {
                             unit: 'h',
                             step: 1,
                             def: 7,
-                        },
-                        native: {},
-                    },
-                    delay: {
-                        _id: '',
-                        type: 'state',
-                        common: {
-                            name: 'StateObjects.dimDelay',
-                            type: 'number',
-                            role: 'level',
-                            unit: 's',
-                            read: true,
-                            write: true,
-                            def: 30,
                         },
                         native: {},
                     },
