@@ -114,7 +114,6 @@
     "StateObjects.cmd": "Elementy kontrolne",
     "StateObjects.panel": "Panele",
     "StateObjects.buttons": "Wskaźniki",
-    "Indicator": "Wskaźnik ekranu",
     "StateObjects.buttons.left": "Lewy przycisk",
     "StateObjects.buttons.right": "Prawy przycisk",
     "StateObjects.buttons.screensaverGesture": "Gest ekranu",

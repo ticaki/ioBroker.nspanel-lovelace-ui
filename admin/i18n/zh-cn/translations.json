@@ -114,7 +114,6 @@
     "StateObjects.cmd": "控制元素",
     "StateObjects.panel": "面板",
     "StateObjects.buttons": "指标",
-    "Indicator": "屏幕保护程序指示器",
     "StateObjects.buttons.left": "左键",
     "StateObjects.buttons.right": "右按钮",
     "StateObjects.buttons.screensaverGesture": "屏幕保护程序手势",

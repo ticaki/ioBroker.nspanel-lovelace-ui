@@ -114,7 +114,6 @@
     "StateObjects.cmd": "Елементи управління",
     "StateObjects.panel": "Панелі",
     "StateObjects.buttons": "Показники",
-    "Indicator": "Індикатор екранів",
     "StateObjects.buttons.left": "Ліва кнопка",
     "StateObjects.buttons.right": "Права кнопка",
     "StateObjects.buttons.screensaverGesture": "Жест екранів",

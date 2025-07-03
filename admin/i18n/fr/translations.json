@@ -114,7 +114,6 @@
     "StateObjects.cmd": "Éléments de contrôle",
     "StateObjects.panel": "Panneaux",
     "StateObjects.buttons": "Indicateurs",
-    "Indicator": "Indicateur de l'économiseur d'écran",
     "StateObjects.buttons.left": "Bouton gauche",
     "StateObjects.buttons.right": "Bouton droit",
     "StateObjects.buttons.screensaverGesture": "Geste de l'économiseur d'écran",

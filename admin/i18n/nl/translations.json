@@ -114,7 +114,6 @@
     "StateObjects.cmd": "Controlelementen",
     "StateObjects.panel": "Panelen",
     "StateObjects.buttons": "Indicatoren",
-    "Indicator": "Schermenver -indicator",
     "StateObjects.buttons.left": "Linkerknop",
     "StateObjects.buttons.right": "Juiste knop",
     "StateObjects.buttons.screensaverGesture": "Screensaver gebaar",
