@@ -204,20 +204,20 @@ async function getSliderCTFromValue(i) {
       const max = await i.maxScale.getNumber();
       if (min !== null && max !== null) {
         if (mode === "mired") {
-          r = Math.round(import_Color.Color.scale(nval, max, min, 0, 100));
+          r = Math.round(import_Color.Color.scale(nval, min, max, 0, 100));
         } else {
           r = Math.round(import_Color.Color.scale(nval, min, max, 100, 0));
         }
       }
     } else if (i.value && i.value.common && i.value.common.min !== void 0 && i.value.common.max !== void 0) {
       if (mode === "mired") {
-        r = Math.round(import_Color.Color.scale(nval, i.value.common.max, i.value.common.min, 0, 100));
+        r = Math.round(import_Color.Color.scale(nval, i.value.common.min, i.value.common.max, 0, 100));
       } else {
         r = Math.round(import_Color.Color.scale(nval, i.value.common.min, i.value.common.max, 100, 0));
       }
     } else {
       if (mode === "mired") {
-        r = Math.round(import_Color.Color.scale(nval, 500, 153, 0, 100));
+        r = Math.round(import_Color.Color.scale(nval, 153, 500, 0, 100));
       } else {
         r = Math.round(import_Color.Color.scale(nval, 2200, 6500, 100, 0));
       }
