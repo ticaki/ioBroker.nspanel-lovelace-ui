@@ -1670,11 +1670,36 @@ class ConfigManager extends import_library.BaseClass {
         break;
       }
       //case 'cie':
-      case "sensor.alarm.flood":
-      case "level.mode.fan": {
+      case "sensor.alarm.flood": {
         throw new Error(
           `DP: ${page.uniqueName}.${item.id} - Navigation for channel: ${role} not implemented yet!!`
         );
+      }
+      case "level.mode.fan": {
+        itemConfig = {
+          type: "button",
+          dpInit: item.id,
+          role: "",
+          color: {
+            true: await this.getIconColor(item.onColor, this.colorOn),
+            false: await this.getIconColor(item.offColor, this.colorOff),
+            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
+          },
+          icon: {
+            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
+            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
+          },
+          template: "button.fan",
+          data: {
+            entity1: {
+              value: foundedStates[role].ACTUAL
+              //set: foundedStates[role].SET,
+            },
+            text,
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
       }
       default:
         (0, import_pages.exhaustiveCheck)(role);

@@ -447,4 +447,37 @@ export const buttonTemplates: TemplateItems = {
             },
         },
     },
+    'button.fan': {
+        role: '',
+        adapter: '',
+        type: 'button',
+
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'fan' },
+                    color: { type: 'const', constVal: Color.Green },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'fan-off' },
+                    color: { type: 'const', constVal: Color.Red },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'level.mode.fan',
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Speed' },
+                false: undefined,
+            },
+            text1: {
+                true: { type: 'const', constVal: 'press' },
+            },
+        },
+    },
 };

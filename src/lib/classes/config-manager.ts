@@ -1912,11 +1912,37 @@ export class ConfigManager extends BaseClass {
                 break;
             }
             //case 'cie':
-            case 'sensor.alarm.flood':
-            case 'level.mode.fan': {
+            case 'sensor.alarm.flood': {
                 throw new Error(
                     `DP: ${page.uniqueName}.${item.id} - Navigation for channel: ${role} not implemented yet!!`,
                 );
+            }
+            case 'level.mode.fan': {
+                itemConfig = {
+                    type: 'button',
+                    dpInit: item.id,
+                    role: '',
+                    color: {
+                        true: await this.getIconColor(item.onColor, this.colorOn),
+                        false: await this.getIconColor(item.offColor, this.colorOff),
+                        scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
+                    },
+                    icon: {
+                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
+                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                    },
+                    template: 'button.fan',
+                    data: {
+                        entity1: {
+                            value: foundedStates[role].ACTUAL,
+                            //set: foundedStates[role].SET,
+                        },
+                        text: text,
+
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
+                break;
             }
             default:
                 exhaustiveCheck(role);
