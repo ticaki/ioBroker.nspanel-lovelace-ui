@@ -374,6 +374,12 @@ export class Panel extends BaseClass {
             name: this.name,
             //configName: this.configName,
         };
+
+        // remove unused dim states
+        if (await this.adapter.getStateAsync(`panels.${this.name}.cmd.dim.delay`)) {
+            await this.adapter.delObjectAsync(`panels.${this.name}.cmd.dim.delay`);
+        }
+
         await this.library.writedp(`panels.${this.name}`, undefined, channelObj);
         await this.library.writedp(
             `panels.${this.name}.cmd`,
@@ -385,6 +391,7 @@ export class Panel extends BaseClass {
             undefined,
             definition.genericStateObjects.panel.panels.cmd.dim._channel,
         );
+
         await this.library.writedp(
             `panels.${this.name}.cmd.screenSaver`,
             undefined,

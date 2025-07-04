@@ -350,6 +350,9 @@ class Panel extends import_library.BaseClass {
       name: this.name
       //configName: this.configName,
     };
+    if (await this.adapter.getStateAsync(`panels.${this.name}.cmd.dim.delay`)) {
+      await this.adapter.delObjectAsync(`panels.${this.name}.cmd.dim.delay`);
+    }
     await this.library.writedp(`panels.${this.name}`, void 0, channelObj);
     await this.library.writedp(
       `panels.${this.name}.cmd`,
