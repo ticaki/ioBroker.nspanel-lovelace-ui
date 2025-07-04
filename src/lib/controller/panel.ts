@@ -98,7 +98,6 @@ export class Panel extends BaseClass {
     dim: {
         standby: number;
         active: number;
-        delay: number;
         dayMode: boolean;
         nightStandby: number;
         nightActive: number;
@@ -108,7 +107,6 @@ export class Panel extends BaseClass {
     } = {
         standby: definition.genericStateObjects.panel.panels.cmd.dim.standby.common.def,
         active: definition.genericStateObjects.panel.panels.cmd.dim.active.common.def,
-        delay: definition.genericStateObjects.panel.panels.cmd.dim.delay.common.def,
         dayMode: definition.genericStateObjects.panel.panels.cmd.dim.dayMode.common.def,
         nightStandby: definition.genericStateObjects.panel.panels.cmd.dim.nightStandby.common.def,
         nightActive: definition.genericStateObjects.panel.panels.cmd.dim.nightActive.common.def,
@@ -227,18 +225,6 @@ export class Panel extends BaseClass {
         // remove unused pages except screensaver - pages must be in navigation
 
         this.statesControler = options.controller.statesControler;
-
-        /*this.dim = {
-            standby: options.dimLow ?? 70,
-            active: options.dimHigh ?? 90,
-            delay: 5,
-            dayMode: true,
-            nightStandby: 0,
-            nightActive: 50,
-            nightHourStart: 22,
-            nightHourEnd: 6,
-            schedule: false,
-        };*/
 
         options.pages = options.pages.filter(b => {
             if (
@@ -388,6 +374,12 @@ export class Panel extends BaseClass {
             name: this.name,
             //configName: this.configName,
         };
+
+        // remove unused dim states
+        if (await this.adapter.getStateAsync(`panels.${this.name}.cmd.dim.delay`)) {
+            await this.adapter.delObjectAsync(`panels.${this.name}.cmd.dim.delay`);
+        }
+
         await this.library.writedp(`panels.${this.name}`, undefined, channelObj);
         await this.library.writedp(
             `panels.${this.name}.cmd`,
@@ -399,6 +391,7 @@ export class Panel extends BaseClass {
             undefined,
             definition.genericStateObjects.panel.panels.cmd.dim._channel,
         );
+
         await this.library.writedp(
             `panels.${this.name}.cmd.screenSaver`,
             undefined,
@@ -980,18 +973,7 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
-                case 'dim.delay': {
-                    if (state && state.val != null && typeof state.val === 'number') {
-                        this.dim.delay = state.val;
-                        this.sendDimmode();
-                        await this.library.writedp(
-                            `panels.${this.name}.cmd.dim.delay`,
-                            this.dim.delay,
-                            definition.genericStateObjects.panel.panels.cmd.dim.delay,
-                        );
-                    }
-                    break;
-                }
+
                 case 'screenSaver.infoIcon': {
                     if (state && state.val != null && typeof state.val === 'string') {
                         await this.statesControler.setInternalState(

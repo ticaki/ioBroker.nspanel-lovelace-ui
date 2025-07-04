@@ -98,7 +98,6 @@ class Panel extends import_library.BaseClass {
   dim = {
     standby: definition.genericStateObjects.panel.panels.cmd.dim.standby.common.def,
     active: definition.genericStateObjects.panel.panels.cmd.dim.active.common.def,
-    delay: definition.genericStateObjects.panel.panels.cmd.dim.delay.common.def,
     dayMode: definition.genericStateObjects.panel.panels.cmd.dim.dayMode.common.def,
     nightStandby: definition.genericStateObjects.panel.panels.cmd.dim.nightStandby.common.def,
     nightActive: definition.genericStateObjects.panel.panels.cmd.dim.nightActive.common.def,
@@ -351,6 +350,9 @@ class Panel extends import_library.BaseClass {
       name: this.name
       //configName: this.configName,
     };
+    if (await this.adapter.getStateAsync(`panels.${this.name}.cmd.dim.delay`)) {
+      await this.adapter.delObjectAsync(`panels.${this.name}.cmd.dim.delay`);
+    }
     await this.library.writedp(`panels.${this.name}`, void 0, channelObj);
     await this.library.writedp(
       `panels.${this.name}.cmd`,
@@ -893,18 +895,6 @@ class Panel extends import_library.BaseClass {
                 false
               );
             }
-          }
-          break;
-        }
-        case "dim.delay": {
-          if (state && state.val != null && typeof state.val === "number") {
-            this.dim.delay = state.val;
-            this.sendDimmode();
-            await this.library.writedp(
-              `panels.${this.name}.cmd.dim.delay`,
-              this.dim.delay,
-              definition.genericStateObjects.panel.panels.cmd.dim.delay
-            );
           }
           break;
         }
