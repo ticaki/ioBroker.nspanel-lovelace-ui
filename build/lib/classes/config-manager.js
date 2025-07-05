@@ -531,7 +531,7 @@ class ConfigManager extends import_library.BaseClass {
             unit: item.unit != null ? await this.getFieldAsDataItemConfig(item.unit) : void 0
           } : void 0,
           mixed3: foundedStates[role].HUMIDITY ? {
-            value: { type: "const", constVal: "Humidity" }
+            value: { type: "const", constVal: "Humidity2" }
           } : void 0,
           mixed4: foundedStates[role].HUMIDITY ? {
             value: foundedStates[role].HUMIDITY,

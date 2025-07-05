@@ -52,6 +52,7 @@
     "Colour temperature": "Farbtemperatur",
     "Color temperature": "Farbtemperatur",
     "Humidity": "Luftfeuchtigkeit",
+    "Humidity2": "Feuchte",
     "panelName": "Panelname (eindeutig)",
     "panelTopic": "MQTT-Topic (einzigartig)",
     "mustBeUnique": "Muss einzigartig sein",
