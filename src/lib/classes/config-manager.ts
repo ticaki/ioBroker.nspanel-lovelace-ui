@@ -596,7 +596,7 @@ export class ConfigManager extends BaseClass {
                         : undefined,
                     mixed3: foundedStates[role].HUMIDITY
                         ? {
-                              value: { type: 'const', constVal: 'Humidity' },
+                              value: { type: 'const', constVal: 'Humidity2' },
                           }
                         : undefined,
                     mixed4: foundedStates[role].HUMIDITY
