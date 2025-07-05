@@ -144,7 +144,7 @@ export class PageAlarm extends Page {
         message.navigation = this.getNavigation();
         if (this.alarmType === 'alarm') {
             if (this.status === 'armed' || this.status === 'triggered') {
-                message.button1 = 'disarm';
+                message.button1 = this.library.getTranslation('disarm');
                 message.status1 = 'D1';
                 message.button2 = '';
                 message.status2 = '';
@@ -193,7 +193,7 @@ export class PageAlarm extends Page {
                 message.flashing = 'enable'; //flashing*
             }
         } else if (this.alarmType === 'unlock') {
-            message.button1 = 'unlock';
+            message.button1 = this.library.getTranslation('unlock');
             message.status1 = 'U1';
             message.button2 = '';
             message.status2 = '';
