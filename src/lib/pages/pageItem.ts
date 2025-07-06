@@ -1093,23 +1093,34 @@ export class PageItem extends BaseClassTriggerd {
                     message.speedText = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.text, value)) ?? '',
                     );
-                    message.mode = this.library.getTranslation(
-                        (await tools.getValueEntryString(item.entityInSel)) ?? '',
-                    );
+
                     let list =
                         (item.valueList && (await item.valueList.getObject())) ??
                         (item.valueList && (await item.valueList.getString())) ??
                         '';
-
-                    /**
-                     * die Liste ist entweder ein mit ? getrennt der String oder ein Array
-                     */
                     if (list !== null) {
-                        if (Array.isArray(list)) {
-                            list = list.join('?');
+                        if (typeof list === 'string') {
+                            list = list.split('?');
                         }
+                        if (Array.isArray(list)) {
+                            list.splice(48);
+                        }
+                    } else {
+                        list = [];
                     }
-                    message.modeList = typeof list === 'string' ? list : '';
+
+                    list = (list as string[]).map((a: string) => tools.formatInSelText(this.library.getTranslation(a)));
+
+                    message.modeList = (list as string[]).join('?');
+
+                    if (message.modeList && message.modeList.length > 940) {
+                        message.modeList = message.modeList.slice(0, 940);
+                        this.log.warn('Value list has more as 940 chars!');
+                    }
+                    const n = (await tools.getValueEntryNumber(item.entityInSel)) ?? 0;
+                    if (Array.isArray(list) && n != null && n < list.length) {
+                        message.mode = list[n];
+                    }
                 }
                 break;
             }
