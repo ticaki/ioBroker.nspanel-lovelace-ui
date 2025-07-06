@@ -1412,6 +1412,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           if (item && item.switch1 && item.switch1.writeable) {
             await item.switch1.setStateFlip();
           }
+        } else if (entry.type === "fan") {
+          const item = entry.data;
+          item.entity1 && item.entity1.set && await item.entity1.set.setStateFlip();
         }
         break;
       }
@@ -1491,7 +1494,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         break;
       }
       case "OnOff": {
-        if (entry.type === "light" || entry.type === "light2" || entry.type === "button" || entry.type === "switch") {
+        if (entry.type === "light" || entry.type === "light2" || entry.type === "button" || entry.type === "switch" || entry.type === "fan") {
           const item = entry.data;
           if (item && item.entity1) {
             await tools.setValueEntry(item.entity1, value === "1");

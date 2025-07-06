@@ -1922,17 +1922,17 @@ export class ConfigManager extends BaseClass {
                     type: 'button',
                     dpInit: item.id,
                     role: '',
-                    color: {
-                        true: await this.getIconColor(item.onColor, this.colorOn),
-                        false: await this.getIconColor(item.offColor, this.colorOff),
-                        scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : undefined,
-                    },
-                    icon: {
-                        true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                        false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
-                    },
-                    template: 'button.fan',
                     data: {
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: item.icon || 'fan' },
+                                color: { type: 'const', constVal: item.onColor || Color.Green },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: item.icon2 || 'fan-off' },
+                                color: { type: 'const', constVal: item.offColor || Color.Red },
+                            },
+                        },
                         entity1: {
                             value: foundedStates[role].ACTUAL,
                             //set: foundedStates[role].SET,
@@ -3118,9 +3118,6 @@ export class ConfigManager extends BaseClass {
                                         value: { type: 'const', constVal: item.icon2 || 'fan-off' },
                                         color: { type: 'const', constVal: item.offColor || Color.Red },
                                     },
-                                    scale: undefined,
-                                    maxBri: undefined,
-                                    minBri: undefined,
                                 },
                                 entity1: {
                                     value: foundedStates[role].ACTUAL,
@@ -3128,8 +3125,7 @@ export class ConfigManager extends BaseClass {
                                 },
                                 speed: {
                                     value: foundedStates[role].SPEED,
-                                    minScale: { type: 'const', constVal: 1000 },
-                                    maxScale: { type: 'const', constVal: 3000 },
+                                    maxScale: { type: 'const', constVal: item.maxValueLevel || 100 },
                                 },
                                 headline: { type: 'const', constVal: item.name || commonName || role },
                                 text: { true: { type: 'const', constVal: 'Speed' }, false: undefined },

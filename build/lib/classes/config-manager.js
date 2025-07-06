@@ -1680,17 +1680,17 @@ class ConfigManager extends import_library.BaseClass {
           type: "button",
           dpInit: item.id,
           role: "",
-          color: {
-            true: await this.getIconColor(item.onColor, this.colorOn),
-            false: await this.getIconColor(item.offColor, this.colorOff),
-            scale: Types.isIconColorScaleElement(item.colorScale) ? item.colorScale : void 0
-          },
-          icon: {
-            true: item.icon ? { type: "const", constVal: item.icon } : void 0,
-            false: item.icon2 ? { type: "const", constVal: item.icon2 } : void 0
-          },
-          template: "button.fan",
           data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: item.icon || "fan" },
+                color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
+              },
+              false: {
+                value: { type: "const", constVal: item.icon2 || "fan-off" },
+                color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
+              }
+            },
             entity1: {
               value: foundedStates[role].ACTUAL
               //set: foundedStates[role].SET,
@@ -2671,10 +2671,7 @@ class ConfigManager extends import_library.BaseClass {
                   false: {
                     value: { type: "const", constVal: item.icon2 || "fan-off" },
                     color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
-                  },
-                  scale: void 0,
-                  maxBri: void 0,
-                  minBri: void 0
+                  }
                 },
                 entity1: {
                   value: foundedStates[role].ACTUAL,
@@ -2682,8 +2679,7 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 speed: {
                   value: foundedStates[role].SPEED,
-                  minScale: { type: "const", constVal: 1e3 },
-                  maxScale: { type: "const", constVal: 3e3 }
+                  maxScale: { type: "const", constVal: item.maxValueLevel || 100 }
                 },
                 headline: { type: "const", constVal: item.name || commonName || role },
                 text: { true: { type: "const", constVal: "Speed" }, false: void 0 },
