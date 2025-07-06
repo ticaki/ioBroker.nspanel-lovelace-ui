@@ -249,6 +249,7 @@ export type StateRole =
     | 'level.mode.airconditioner'
     | 'level.mode.fan'
     | 'level.mode.thermostat'
+    | 'level.speed'
     | 'level.temperature'
     | 'level.tilt'
     | 'level.value'
@@ -335,6 +336,7 @@ export type DeviceRole =
     | 'info'
     | 'humidity'
     | 'temperature'
+    | 'fan'
     | '';
 
 export function isStateRole(F: string): F is StateRole {

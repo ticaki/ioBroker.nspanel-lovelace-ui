@@ -454,38 +454,6 @@ const buttonTemplates = {
         true: { type: "const", constVal: "press" }
       }
     }
-  },
-  "button.fan": {
-    role: "",
-    adapter: "",
-    type: "button",
-    data: {
-      icon: {
-        true: {
-          value: { type: "const", constVal: "fan" },
-          color: { type: "const", constVal: import_Color.Color.Green }
-        },
-        false: {
-          value: { type: "const", constVal: "fan-off" },
-          color: { type: "const", constVal: import_Color.Color.Red }
-        }
-      },
-      entity1: {
-        value: {
-          type: "triggered",
-          mode: "auto",
-          role: "level.mode.fan",
-          dp: ""
-        }
-      },
-      text: {
-        true: { type: "const", constVal: "Speed" },
-        false: void 0
-      },
-      text1: {
-        true: { type: "const", constVal: "press" }
-      }
-    }
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

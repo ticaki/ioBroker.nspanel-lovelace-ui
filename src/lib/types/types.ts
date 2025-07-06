@@ -64,7 +64,6 @@ export type TemplateIdent =
     | 'text.fahrplan.departure'
     | ''
     | 'button.humidity'
-    | 'button.fan'
     | 'text.temperature'
     | 'script.light'
     | 'script.socket'

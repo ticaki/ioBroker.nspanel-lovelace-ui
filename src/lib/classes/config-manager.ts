@@ -3105,7 +3105,7 @@ export class ConfigManager extends BaseClass {
                     }
                     case 'level.mode.fan': {
                         itemConfig = {
-                            role: '',
+                            role: 'fan',
                             type: 'fan',
                             dpInit: '',
                             data: {

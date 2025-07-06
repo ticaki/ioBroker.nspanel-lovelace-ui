@@ -948,7 +948,8 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           const value = (_w = await tools.getValueEntryBoolean(item.entity1)) != null ? _w : null;
           message.icon = (_x = await tools.getIconEntryValue(item.icon, value, "")) != null ? _x : "";
           message.iconColor = (_y = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _y : "";
-          message.slider1 = String((_z = await tools.getScaledNumber(item.speed)) != null ? _z : "");
+          const speed = String((_z = await tools.getScaledNumber(item.speed)) != null ? _z : "");
+          message.slider1 = speed !== "" ? speed : "0";
           message.slider1Max = String(
             (_A = item.speed && item.speed.maxScale && await item.speed.maxScale.getNumber()) != null ? _A : "100"
           );

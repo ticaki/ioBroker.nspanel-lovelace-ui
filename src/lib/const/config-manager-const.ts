@@ -1217,9 +1217,9 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         description: '',
         data: {
             ACTUAL: { role: 'state', type: 'boolean', required: true, writeable: false, trigger: true },
-            MODE: { role: 'state', type: 'number', required: true, writeable: true, trigger: true },
+            MODE: { role: 'level.mode.fan', type: 'number', required: true, writeable: true, trigger: true },
             SET: { role: 'state', type: 'boolean', required: true, writeable: true },
-            SPEED: { role: 'state', type: 'number', required: true, writeable: true, trigger: true },
+            SPEED: { role: 'level.speed', type: 'number', required: true, writeable: true, trigger: true },
         },
     },
     lock: {
