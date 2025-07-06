@@ -1172,7 +1172,7 @@ class ConfigManager extends import_library.BaseClass {
               false: { type: "const", constVal: "off" }
             },
             text,
-            entity1: role === "dimmer" || role == "hue" ? { value: foundedStates[role].ON_ACTUAL } : { value: foundedStates[role].ACTUAL },
+            entity1: role === "dimmer" || role == "hue" || role === "rgb" || role === "rgbSingle" ? { value: foundedStates[role].ON_ACTUAL } : { value: foundedStates[role].ACTUAL },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
         };

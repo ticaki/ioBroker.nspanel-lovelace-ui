@@ -1358,7 +1358,7 @@ export class ConfigManager extends BaseClass {
                         },
                         text: text,
                         entity1:
-                            role === 'dimmer' || role == 'hue'
+                            role === 'dimmer' || role == 'hue' || role === 'rgb' || role === 'rgbSingle'
                                 ? { value: foundedStates[role].ON_ACTUAL }
                                 : { value: foundedStates[role].ACTUAL },
 
