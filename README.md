@@ -84,11 +84,14 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**  
+- (tt-tom17) popupFan added
+
 ### 0.2.1 (2025-06-30)
 - (ticaki) Modified script version comparison
 
 ### 0.2.0 (2025-06-30)
-- (TT-Tom) Additional options added to the service pages
+- (tt-tom17) Additional options added to the service pages
 - (ticaki) light2 added
 - (ticaki) popupShutter2 added
 - (ticaki) fixed Tempcolor & dimmer
