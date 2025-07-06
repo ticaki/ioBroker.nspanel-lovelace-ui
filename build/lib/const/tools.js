@@ -731,6 +731,8 @@ async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, mi
   let res = "";
   let unitFactor = startFactor != null ? startFactor : 0;
   if (value !== null && value !== void 0) {
+    const isNegativ = value < 0;
+    value = Math.abs(value);
     let factor = 0;
     if (unit == null && cUnit !== null) {
       for (const p of siPrefixes) {
@@ -771,6 +773,7 @@ async function getValueAutoUnit(i, v, space, unit = null, startFactor = null, mi
         break;
       }
     }
+    res = isNegativ ? `-${res}` : res;
   }
   const index = siPrefixes.findIndex((a) => a.factor === unitFactor);
   unit = index !== -1 ? siPrefixes[index].prefix + unit : unit;
