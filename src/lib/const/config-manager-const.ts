@@ -726,7 +726,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
     timeTable: {
         updatedVersion: true,
         name: 'timeTable',
-        description: 'Time table for the heating',
+        description: 'Time table for the Departure (Fahrplan Adapter)',
         data: {
             noNeed: {
                 role: 'state',
@@ -854,9 +854,23 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 useKey: true,
                 trigger: true,
             },
-            COLORDEC: { role: 'value.rgb', type: 'number', required: false, writeable: false, useKey: true }, //Farbcode über DP senden
-            BUTTONTEXT: { role: ['text'], type: 'string', required: false, writeable: false, useKey: true }, //Button-Text über DP senden bei cardEntity
-            USERICON: { role: 'state', type: 'string', required: false, writeable: false, useKey: true }, //Benutzerdefinierte Iconnamen über DP senden
+            COLORDEC: {
+                role: 'value.rgb',
+                type: 'number',
+                required: false,
+                writeable: false,
+                useKey: true,
+                trigger: true,
+            }, //Farbcode über DP senden
+            BUTTONTEXT: {
+                role: ['text'],
+                type: 'string',
+                required: false,
+                writeable: false,
+                useKey: true,
+                trigger: true,
+            }, //Button-Text über DP senden bei cardEntity
+            USERICON: { role: 'state', type: 'string', required: false, writeable: false, useKey: true, trigger: true }, //Benutzerdefinierte Iconnamen über DP senden
         },
     },
     blind: {
