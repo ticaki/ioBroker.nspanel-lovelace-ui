@@ -334,7 +334,7 @@ const requiredScriptDataPoints = {
   timeTable: {
     updatedVersion: true,
     name: "timeTable",
-    description: "Time table for the heating",
+    description: "Time table for the Departure (Fahrplan Adapter)",
     data: {
       noNeed: {
         role: "state",
@@ -464,11 +464,25 @@ const requiredScriptDataPoints = {
         useKey: true,
         trigger: true
       },
-      COLORDEC: { role: "value.rgb", type: "number", required: false, writeable: false, useKey: true },
+      COLORDEC: {
+        role: "value.rgb",
+        type: "number",
+        required: false,
+        writeable: false,
+        useKey: true,
+        trigger: true
+      },
       //Farbcode über DP senden
-      BUTTONTEXT: { role: ["text"], type: "string", required: false, writeable: false, useKey: true },
+      BUTTONTEXT: {
+        role: ["text"],
+        type: "string",
+        required: false,
+        writeable: false,
+        useKey: true,
+        trigger: true
+      },
       //Button-Text über DP senden bei cardEntity
-      USERICON: { role: "state", type: "string", required: false, writeable: false, useKey: true }
+      USERICON: { role: "state", type: "string", required: false, writeable: false, useKey: true, trigger: true }
       //Benutzerdefinierte Iconnamen über DP senden
     }
   },
@@ -827,9 +841,9 @@ const requiredScriptDataPoints = {
     description: "",
     data: {
       ACTUAL: { role: "state", type: "boolean", required: true, writeable: false, trigger: true },
-      MODE: { role: "state", type: "number", required: true, writeable: true, trigger: true },
+      MODE: { role: "level.mode.fan", type: "number", required: true, writeable: true, trigger: true },
       SET: { role: "state", type: "boolean", required: true, writeable: true },
-      SPEED: { role: "state", type: "number", required: true, writeable: true, trigger: true }
+      SPEED: { role: "level.speed", type: "number", required: true, writeable: true, trigger: true }
     }
   },
   lock: {
