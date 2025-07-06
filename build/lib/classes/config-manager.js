@@ -2654,9 +2654,49 @@ class ConfigManager extends import_library.BaseClass {
             };
             break;
           }
-          case "sensor.alarm.flood":
-          case "level.mode.fan": {
+          case "sensor.alarm.flood": {
             throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
+          }
+          case "level.mode.fan": {
+            itemConfig = {
+              role: "",
+              type: "fan",
+              dpInit: "",
+              data: {
+                icon: {
+                  true: {
+                    value: { type: "const", constVal: item.icon || "fan" },
+                    color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
+                  },
+                  false: {
+                    value: { type: "const", constVal: item.icon2 || "fan-off" },
+                    color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
+                  },
+                  scale: void 0,
+                  maxBri: void 0,
+                  minBri: void 0
+                },
+                entity1: {
+                  value: foundedStates[role].ACTUAL,
+                  set: foundedStates[role].SET
+                },
+                speed: {
+                  value: foundedStates[role].SPEED,
+                  minScale: { type: "const", constVal: 1e3 },
+                  maxScale: { type: "const", constVal: 3e3 }
+                },
+                headline: { type: "const", constVal: item.name || commonName || role },
+                text: { true: { type: "const", constVal: "Speed" }, false: void 0 },
+                //entityInSel: { value: { type: 'const', constVal: '2' } },
+                entityInSel: { value: foundedStates[role].MODE },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                //valueList: { type: 'const', constVal: '1?2?3?4?5' },
+                valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0
+              }
+            };
+            break;
           }
           default:
             (0, import_pages.exhaustiveCheck)(role);
