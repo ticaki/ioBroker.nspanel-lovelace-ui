@@ -53,6 +53,7 @@
     "Color temperature": "Color temperature",
     "StateObjects.buttons.indicator": "Screensaver indicator",
     "Humidity": "Humidity",
+    "Humidity2": "Humidity",
     "panelName": "Panel name (unique)",
     "panelTopic": "Mqtt topic (unique)",
     "mustBeUnique": "must be unique",

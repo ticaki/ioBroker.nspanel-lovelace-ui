@@ -212,9 +212,9 @@
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **level.mode.fan** | ~~ACTUAL~~ | boolean| state  | X |  |  | 
-| **"** | ~~MODE~~ | number| state  | X | X |  | 
+| **"** | ~~MODE~~ | number| level.mode.fan  | X | X |  | 
 | **"** | ~~SET~~ | boolean| state  | X | X |  | 
-| **"** | ~~SPEED~~ | number| state  | X | X |  | 
+| **"** | ~~SPEED~~ | number| level.speed  | X | X |  | 
 ### lock
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  

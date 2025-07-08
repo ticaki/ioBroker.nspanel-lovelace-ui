@@ -334,7 +334,7 @@ const requiredScriptDataPoints = {
   timeTable: {
     updatedVersion: true,
     name: "timeTable",
-    description: "Time table for the heating",
+    description: "Time table for the Departure (Fahrplan Adapter)",
     data: {
       noNeed: {
         role: "state",
@@ -464,11 +464,25 @@ const requiredScriptDataPoints = {
         useKey: true,
         trigger: true
       },
-      COLORDEC: { role: "value.rgb", type: "number", required: false, writeable: false, useKey: true },
+      COLORDEC: {
+        role: "value.rgb",
+        type: "number",
+        required: false,
+        writeable: false,
+        useKey: true,
+        trigger: true
+      },
       //Farbcode über DP senden
-      BUTTONTEXT: { role: ["text"], type: "string", required: false, writeable: false, useKey: true },
+      BUTTONTEXT: {
+        role: ["text"],
+        type: "string",
+        required: false,
+        writeable: false,
+        useKey: true,
+        trigger: true
+      },
       //Button-Text über DP senden bei cardEntity
-      USERICON: { role: "state", type: "string", required: false, writeable: false, useKey: true }
+      USERICON: { role: "state", type: "string", required: false, writeable: false, useKey: true, trigger: true }
       //Benutzerdefinierte Iconnamen über DP senden
     }
   },
@@ -564,9 +578,9 @@ const requiredScriptDataPoints = {
     data: {
       ACTUAL: { role: "switch", type: "boolean", required: true, writeable: false, trigger: true },
       SET: { role: "switch", type: "boolean", required: false, writeable: true },
-      COLORDEC: { role: "state", type: "number", required: false, writeable: false },
+      COLORDEC: { role: "state", type: "number", required: false, writeable: false, trigger: true },
       //Farbcode über DP steuern
-      BUTTONTEXT: { role: ["state", "text"], type: "string", required: false, writeable: false }
+      BUTTONTEXT: { role: ["state", "text"], type: "string", required: false, writeable: false, trigger: true }
       //Button-Text über DP steuern bei cardEntity
     }
   },
@@ -583,9 +597,9 @@ const requiredScriptDataPoints = {
         trigger: true
       },
       SET: { role: "switch.light", type: "boolean", required: false, writeable: true },
-      COLORDEC: { role: "state", type: "number", required: false, writeable: false },
+      COLORDEC: { role: "state", type: "number", required: false, writeable: false, trigger: true },
       //Farbcode über DP steuern
-      BUTTONTEXT: { role: "text", type: "string", required: false, writeable: false }
+      BUTTONTEXT: { role: "text", type: "string", required: false, writeable: false, trigger: true }
       //Button-Text über DP steuern bei cardEntity
     }
   },
@@ -718,24 +732,55 @@ const requiredScriptDataPoints = {
         role: "value.temperature",
         type: "number",
         required: false,
-        writeable: false
+        writeable: false,
+        trigger: true
       },
       SET: { role: "level.temperature", type: "number", required: true, writeable: true },
-      MODE: { role: "level.mode.thermostat", type: "number", required: false, writeable: true },
-      BOOST: { role: ["switch.mode.boost", "switch.boost"], type: "boolean", required: false, writeable: true },
+      MODE: { role: "level.mode.thermostat", type: "number", required: false, writeable: true, trigger: true },
+      BOOST: {
+        role: ["switch.mode.boost", "switch.boost"],
+        type: "boolean",
+        required: false,
+        writeable: true,
+        trigger: true
+      },
       //AUTOMATIC: { role: 'state', type: 'boolean', required: false },
-      ERROR: { role: "indicator.error", type: "boolean", required: false, writeable: false },
-      LOWBAT: { role: "indicator.maintenance.lowbat", type: "boolean", required: false, writeable: false },
+      ERROR: { role: "indicator.error", type: "boolean", required: false, writeable: false, trigger: true },
+      LOWBAT: {
+        role: "indicator.maintenance.lowbat",
+        type: "boolean",
+        required: false,
+        writeable: false,
+        trigger: true
+      },
       //MANUAL: { role: 'state', type: 'boolean', required: false },
-      UNREACH: { role: "indicator.maintenance.unreach", type: "boolean", required: false, writeable: false },
-      HUMIDITY: { role: "value.humidity", type: "number", required: false, writeable: false },
-      MAINTAIN: { role: "indicator.maintenance", type: "boolean", required: false, writeable: false },
-      PARTY: { role: "switch.mode.party", type: "boolean", required: false },
-      POWER: { role: "switch.power", type: "boolean", required: false, writeable: true },
-      VACATION: { role: "state", type: "boolean", useKey: true, required: false },
-      WINDOWOPEN: { role: ["state", "sensor.window"], type: "boolean", required: false, writeable: false },
-      WORKING: { role: "indicator.working", type: "boolean", required: false, writeable: false },
-      USERICON: { role: "state", type: "string", useKey: true, required: false, writeable: false }
+      UNREACH: {
+        role: "indicator.maintenance.unreach",
+        type: "boolean",
+        required: false,
+        writeable: false,
+        trigger: true
+      },
+      HUMIDITY: { role: "value.humidity", type: "number", required: false, writeable: false, trigger: true },
+      MAINTAIN: {
+        role: "indicator.maintenance",
+        type: "boolean",
+        required: false,
+        writeable: false,
+        trigger: true
+      },
+      PARTY: { role: "switch.mode.party", type: "boolean", required: false, trigger: true },
+      POWER: { role: "switch.power", type: "boolean", required: false, writeable: true, trigger: true },
+      VACATION: { role: "state", type: "boolean", useKey: true, required: false, trigger: true },
+      WINDOWOPEN: {
+        role: ["state", "sensor.window"],
+        type: "boolean",
+        required: false,
+        writeable: false,
+        trigger: true
+      },
+      WORKING: { role: "indicator.working", type: "boolean", required: false, writeable: false, trigger: true },
+      USERICON: { role: "state", type: "string", useKey: true, required: false, writeable: false, trigger: true }
       // benutzerdefinierter Iconname über DP senden
     }
   },
@@ -778,16 +823,16 @@ const requiredScriptDataPoints = {
   gate: {
     name: "gate",
     description: "",
-    data: { ACTUAL: { role: "switch.gate", type: "boolean", required: true, writeable: false } }
+    data: { ACTUAL: { role: "switch.gate", type: "boolean", required: true, writeable: false, trigger: true } }
   },
   door: {
     name: "door",
     description: "",
     data: {
-      ACTUAL: { role: "sensor.door", type: "boolean", required: true, writeable: false },
-      COLORDEC: { role: "state", type: "number", required: false, writeable: false },
+      ACTUAL: { role: "sensor.door", type: "boolean", required: true, writeable: false, trigger: true },
+      COLORDEC: { role: "state", type: "number", required: false, writeable: false, trigger: true },
       // Farbcode über DP steuern
-      BUTTONTEXT: { role: ["state", "text"], type: "string", required: false, writeable: false }
+      BUTTONTEXT: { role: ["state", "text"], type: "string", required: false, writeable: false, trigger: true }
       // Button-Text über DP steuern
     }
   },
@@ -795,10 +840,10 @@ const requiredScriptDataPoints = {
     name: "fan",
     description: "",
     data: {
-      ACTUAL: { role: "state", type: "boolean", required: true, writeable: false },
-      MODE: { role: "state", type: "number", required: true, writeable: true },
+      ACTUAL: { role: "state", type: "boolean", required: true, writeable: false, trigger: true },
+      MODE: { role: "level.mode.fan", type: "number", required: true, writeable: true, trigger: true },
       SET: { role: "state", type: "boolean", required: true, writeable: true },
-      SPEED: { role: "state", type: "number", required: true, writeable: true }
+      SPEED: { role: "level.speed", type: "number", required: true, writeable: true, trigger: true }
     }
   },
   lock: {
@@ -829,25 +874,9 @@ const requiredScriptDataPoints = {
     name: "sensor.alarm.flood",
     description: "Sensor f\xFCr Hochwasser",
     data: {
-      ACTUAL: { role: "sensor.alarm.flood", type: "boolean", required: true, writeable: false }
+      ACTUAL: { role: "sensor.alarm.flood", type: "boolean", required: true, writeable: false, trigger: true }
     }
   }
-  /*weatherforecast: {
-      name: 'weatherforecast',
-      description: '',
-      data: {
-          ICON: { role: 'weather.icon.forecast', type: 'string', required: true, writeable: false },
-          TEMP: { role: 'value.temperature', type: 'number', required: true, writeable: false },
-      },
-  },
-  WIFI: {
-      name: 'WIFI',
-      description: '',
-      data: {
-          ACTUAL: { role: 'state', type: 'string', required: true, writeable: false },
-          SWITCH: { role: 'switch', type: 'boolean', required: false, writeable: true },
-      },
-  },*/
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
