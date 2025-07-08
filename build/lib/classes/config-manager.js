@@ -1755,7 +1755,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -2658,6 +2658,13 @@ class ConfigManager extends import_library.BaseClass {
             throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
           }
           case "level.mode.fan": {
+            let states;
+            if ((_o = foundedStates[role].MODE) == null ? void 0 : _o.dp) {
+              const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
+              if ((_p = o == null ? void 0 : o.common) == null ? void 0 : _p.states) {
+                states = Object.values(o.common.states).map(String);
+              }
+            }
             itemConfig = {
               role: "fan",
               type: "fan",
@@ -2689,7 +2696,14 @@ class ConfigManager extends import_library.BaseClass {
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                  */
                 //valueList: { type: 'const', constVal: '1?2?3?4?5' },
-                valueList: item.modeList ? { type: "const", constVal: item.modeList } : void 0
+                valueList: item.modeList ? { type: "const", constVal: item.modeList } : {
+                  type: "const",
+                  constVal: Array.isArray(states) ? states.join("?") : JSON.stringify(states)
+                }
+                /* valueList: {
+                    type: 'const',
+                    constVal: Array.isArray(states) ? states.join('?') : JSON.stringify(states),
+                }, */
               }
             };
             break;

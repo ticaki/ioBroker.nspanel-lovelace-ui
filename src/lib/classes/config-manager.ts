@@ -3104,6 +3104,14 @@ export class ConfigManager extends BaseClass {
                         throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
                     }
                     case 'level.mode.fan': {
+                        //let states: string[] | Record<string, string> = ['State 1', 'State 2', 'State 3'];
+                        let states: string[] | undefined;
+                        if (foundedStates[role].MODE?.dp) {
+                            const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
+                            if (o?.common?.states) {
+                                states = Object.values(o.common.states).map(String);
+                            }
+                        }
                         itemConfig = {
                             role: 'fan',
                             type: 'fan',
@@ -3137,7 +3145,17 @@ export class ConfigManager extends BaseClass {
                                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                                  */
                                 //valueList: { type: 'const', constVal: '1?2?3?4?5' },
-                                valueList: item.modeList ? { type: 'const', constVal: item.modeList } : undefined,
+
+                                valueList: item.modeList
+                                    ? { type: 'const', constVal: item.modeList }
+                                    : {
+                                          type: 'const',
+                                          constVal: Array.isArray(states) ? states.join('?') : JSON.stringify(states),
+                                      },
+                                /* valueList: {
+                                    type: 'const',
+                                    constVal: Array.isArray(states) ? states.join('?') : JSON.stringify(states),
+                                }, */
                             },
                         };
                         break;
