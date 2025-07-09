@@ -3106,10 +3106,12 @@ export class ConfigManager extends BaseClass {
                     case 'level.mode.fan': {
                         //let states: string[] | Record<string, string> = ['State 1', 'State 2', 'State 3'];
                         let states: string[] | undefined;
+                        let keys: string[] | undefined;
                         if (foundedStates[role].MODE?.dp) {
                             const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
                             if (o?.common?.states) {
                                 states = Object.values(o.common.states).map(String);
+                                keys = Object.keys(o.common.states).map(String);
                             }
                         }
                         itemConfig = {
@@ -3150,8 +3152,11 @@ export class ConfigManager extends BaseClass {
                                     ? { type: 'const', constVal: item.modeList }
                                     : {
                                           type: 'const',
-                                          constVal: Array.isArray(states) ? states.join('?') : JSON.stringify(states),
+                                          constVal: Array.isArray(keys) ? keys : [],
                                       },
+                                valueList2: item.modeList
+                                    ? undefined
+                                    : { type: 'const', constVal: Array.isArray(states) ? states : [] },
                                 /* valueList: {
                                     type: 'const',
                                     constVal: Array.isArray(states) ? states.join('?') : JSON.stringify(states),

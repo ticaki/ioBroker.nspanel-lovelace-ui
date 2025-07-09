@@ -1094,32 +1094,58 @@ export class PageItem extends BaseClassTriggerd {
                         (await tools.getEntryTextOnOff(item.text, value)) ?? '',
                     );
 
-                    let list =
-                        (item.valueList && (await item.valueList.getObject())) ??
-                        (item.valueList && (await item.valueList.getString())) ??
-                        '';
-                    if (list !== null) {
-                        if (typeof list === 'string') {
-                            list = list.split('?');
-                        }
-                        if (Array.isArray(list)) {
-                            list.splice(48);
+                    const sList =
+                        item.entityInSel &&
+                        (await this.getListFromStates(
+                            item.entityInSel,
+                            item.valueList,
+                            entry.role,
+                            'valueList2' in item ? item.valueList2 : undefined,
+                        ));
+                    if (
+                        sList !== undefined &&
+                        sList.list !== undefined &&
+                        sList.value !== undefined &&
+                        sList.states !== undefined
+                    ) {
+                        if (sList.list.length > 0) {
+                            sList.list.splice(48);
+                            message.modeList = Array.isArray(sList.list)
+                                ? sList.list.map((a: string) => tools.formatInSelText(a)).join('?')
+                                : '';
+
+                            message.mode = tools.formatInSelText(this.library.getTranslation(sList.value));
                         }
                     } else {
-                        list = [];
-                    }
+                        let list =
+                            (item.valueList && (await item.valueList.getObject())) ??
+                            (item.valueList && (await item.valueList.getString())) ??
+                            '';
+                        if (list !== null) {
+                            if (typeof list === 'string') {
+                                list = list.split('?');
+                            }
+                            if (Array.isArray(list)) {
+                                list.splice(48);
+                            }
+                        } else {
+                            list = [];
+                        }
 
-                    list = (list as string[]).map((a: string) => tools.formatInSelText(this.library.getTranslation(a)));
+                        list = (list as string[]).map((a: string) =>
+                            tools.formatInSelText(this.library.getTranslation(a)),
+                        );
 
-                    message.modeList = (list as string[]).join('?');
+                        message.modeList = (list as string[]).join('?');
 
-                    if (message.modeList && message.modeList.length > 940) {
-                        message.modeList = message.modeList.slice(0, 940);
-                        this.log.warn('Value list has more as 940 chars!');
-                    }
-                    const n = (await tools.getValueEntryNumber(item.entityInSel)) ?? 0;
-                    if (Array.isArray(list) && n != null && n < list.length) {
-                        message.mode = list[n];
+                        if (message.modeList && message.modeList.length > 940) {
+                            message.modeList = message.modeList.slice(0, 940);
+                            this.log.warn('Value list has more as 940 chars!');
+                        }
+                        const n = (await tools.getValueEntryNumber(item.entityInSel)) ?? 0;
+                        if (Array.isArray(list) && n != null && n < list.length) {
+                            message.mode = list[n];
+                        }
                     }
                 }
                 break;
