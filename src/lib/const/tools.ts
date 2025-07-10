@@ -849,7 +849,6 @@ export async function getValueAutoUnit(
     }
     let value = v != null ? v : await getValueEntryNumber(i, undefined, { ignoreDecimal: true });
     const cUnit = ((i.unit && (await i.unit.getString())) ?? i.value.common.unit ?? '').trim();
-
     const decimal = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
     const fits = false;
 
@@ -858,6 +857,8 @@ export async function getValueAutoUnit(
     let unitFactor = startFactor ?? 0;
 
     if (value !== null && value !== undefined) {
+        const isNegativ = value < 0;
+        value = Math.abs(value);
         let factor = 0;
         if (unit == null && cUnit !== null) {
             for (const p of siPrefixes) {
@@ -904,9 +905,11 @@ export async function getValueAutoUnit(
         //if (isTextSizeEntryType(i)) {
         //    opt = String((i.textSize && (await i.textSize.getNumber())) ?? '');
         //}
+        res = isNegativ ? `-${res}` : res;
     }
     const index = siPrefixes.findIndex(a => a.factor === unitFactor);
     unit = index !== -1 ? siPrefixes[index].prefix + unit : unit;
+
     return { value: res, unit: unit, endFactor: unitFactor };
 }
 
