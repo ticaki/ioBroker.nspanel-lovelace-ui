@@ -1658,7 +1658,11 @@ export class PageItem extends BaseClassTriggerd {
                     }
                 } else if (entry.type === 'fan') {
                     const item = entry.data;
-                    item.entity1 && item.entity1.set && (await item.entity1.set.setStateFlip());
+                    if (item.entity1?.set) {
+                        await item.entity1.set.setStateFlip();
+                    } else if (item.entity1?.value?.writeable) {
+                        await item.entity1.value.setStateFlip();
+                    }
                 }
                 break;
             }

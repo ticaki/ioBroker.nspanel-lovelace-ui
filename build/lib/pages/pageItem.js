@@ -1354,7 +1354,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     this.parent = void 0;
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -1441,7 +1441,11 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
         } else if (entry.type === "fan") {
           const item = entry.data;
-          item.entity1 && item.entity1.set && await item.entity1.set.setStateFlip();
+          if ((_f = item.entity1) == null ? void 0 : _f.set) {
+            await item.entity1.set.setStateFlip();
+          } else if ((_h = (_g = item.entity1) == null ? void 0 : _g.value) == null ? void 0 : _h.writeable) {
+            await item.entity1.value.setStateFlip();
+          }
         }
         break;
       }
@@ -1482,9 +1486,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             entity = item.entity3;
           }
           if (entity && entity.set && entity.set.writeable) {
-            if (!Array.isArray(entity.set.options.role) && ((_f = entity.set.options.role) == null ? void 0 : _f.startsWith("button"))) {
+            if (!Array.isArray(entity.set.options.role) && ((_i = entity.set.options.role) == null ? void 0 : _i.startsWith("button"))) {
               await entity.set.setStateTrue();
-            } else if (!Array.isArray(entity.set.options.role) && ((_g = entity.set.options.role) == null ? void 0 : _g.startsWith("switch"))) {
+            } else if (!Array.isArray(entity.set.options.role) && ((_j = entity.set.options.role) == null ? void 0 : _j.startsWith("switch"))) {
               await entity.set.setStateFlip();
             }
           }
@@ -1551,7 +1555,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               }
               case "rgbSingle": {
                 const rgb = import_Color.Color.resultToRgb(value);
-                if (import_Color.Color.isRGB(rgb) && ((_h = item == null ? void 0 : item.color) == null ? void 0 : _h.true) && item.color.true.options.role !== "level.color.rgb") {
+                if (import_Color.Color.isRGB(rgb) && ((_k = item == null ? void 0 : item.color) == null ? void 0 : _k.true) && item.color.true.options.role !== "level.color.rgb") {
                   await item.color.true.setStateAsync(JSON.stringify(rgb));
                   break;
                 }
@@ -1848,7 +1852,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, parseInt(t), 0, 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_i = this.dataItems.data.entity1) == null ? void 0 : _i.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_l = this.dataItems.data.entity1) == null ? void 0 : _l.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
             }
             break;
           }
@@ -1858,7 +1862,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, parseInt(t), 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_j = this.dataItems.data.entity1) == null ? void 0 : _j.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_m = this.dataItems.data.entity1) == null ? void 0 : _m.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
             }
             break;
           }
@@ -1889,7 +1893,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             case "ex-timer": {
               const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)).getTime();
               if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-                ((_k = this.dataItems.data.entity1) == null ? void 0 : _k.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+                ((_n = this.dataItems.data.entity1) == null ? void 0 : _n.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
               }
               break;
             }
