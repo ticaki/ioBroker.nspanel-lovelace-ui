@@ -1093,23 +1093,60 @@ export class PageItem extends BaseClassTriggerd {
                     message.speedText = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.text, value)) ?? '',
                     );
-                    message.mode = this.library.getTranslation(
-                        (await tools.getValueEntryString(item.entityInSel)) ?? '',
-                    );
-                    let list =
-                        (item.valueList && (await item.valueList.getObject())) ??
-                        (item.valueList && (await item.valueList.getString())) ??
-                        '';
 
-                    /**
-                     * die Liste ist entweder ein mit ? getrennt der String oder ein Array
-                     */
-                    if (list !== null) {
-                        if (Array.isArray(list)) {
-                            list = list.join('?');
+                    const sList =
+                        item.entityInSel &&
+                        (await this.getListFromStates(
+                            item.entityInSel,
+                            item.valueList,
+                            entry.role,
+                            'valueList2' in item ? item.valueList2 : undefined,
+                        ));
+                    if (
+                        sList !== undefined &&
+                        sList.list !== undefined &&
+                        sList.value !== undefined &&
+                        sList.states !== undefined
+                    ) {
+                        if (sList.list.length > 0) {
+                            sList.list.splice(48);
+                            message.modeList = Array.isArray(sList.list)
+                                ? sList.list.map((a: string) => tools.formatInSelText(a)).join('?')
+                                : '';
+
+                            message.mode = tools.formatInSelText(this.library.getTranslation(sList.value));
+                        }
+                    } else {
+                        let list =
+                            (item.valueList && (await item.valueList.getObject())) ??
+                            (item.valueList && (await item.valueList.getString())) ??
+                            '';
+                        if (list !== null) {
+                            if (typeof list === 'string') {
+                                list = list.split('?');
+                            }
+                            if (Array.isArray(list)) {
+                                list.splice(48);
+                            }
+                        } else {
+                            list = [];
+                        }
+
+                        list = (list as string[]).map((a: string) =>
+                            tools.formatInSelText(this.library.getTranslation(a)),
+                        );
+
+                        message.modeList = (list as string[]).join('?');
+
+                        if (message.modeList && message.modeList.length > 940) {
+                            message.modeList = message.modeList.slice(0, 940);
+                            this.log.warn('Value list has more as 940 chars!');
+                        }
+                        const n = (await tools.getValueEntryNumber(item.entityInSel)) ?? 0;
+                        if (Array.isArray(list) && n != null && n < list.length) {
+                            message.mode = list[n];
                         }
                     }
-                    message.modeList = typeof list === 'string' ? list : '';
                 }
                 break;
             }
@@ -1619,6 +1656,9 @@ export class PageItem extends BaseClassTriggerd {
                     if (item && item.switch1 && item.switch1.writeable) {
                         await item.switch1.setStateFlip();
                     }
+                } else if (entry.type === 'fan') {
+                    const item = entry.data;
+                    item.entity1 && item.entity1.set && (await item.entity1.set.setStateFlip());
                 }
                 break;
             }
@@ -1705,7 +1745,8 @@ export class PageItem extends BaseClassTriggerd {
                     entry.type === 'light' ||
                     entry.type === 'light2' ||
                     entry.type === 'button' ||
-                    entry.type === 'switch'
+                    entry.type === 'switch' ||
+                    entry.type === 'fan'
                 ) {
                     const item = entry.data;
                     if (item && item.entity1) {

@@ -1172,7 +1172,7 @@ class ConfigManager extends import_library.BaseClass {
               false: { type: "const", constVal: "off" }
             },
             text,
-            entity1: role === "dimmer" || role == "hue" ? { value: foundedStates[role].ON_ACTUAL } : { value: foundedStates[role].ACTUAL },
+            entity1: role === "dimmer" || role == "hue" || role === "rgb" || role === "rgbSingle" ? { value: foundedStates[role].ON_ACTUAL } : { value: foundedStates[role].ACTUAL },
             setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
           }
         };
@@ -1670,11 +1670,36 @@ class ConfigManager extends import_library.BaseClass {
         break;
       }
       //case 'cie':
-      case "sensor.alarm.flood":
-      case "level.mode.fan": {
+      case "sensor.alarm.flood": {
         throw new Error(
           `DP: ${page.uniqueName}.${item.id} - Navigation for channel: ${role} not implemented yet!!`
         );
+      }
+      case "level.mode.fan": {
+        itemConfig = {
+          type: "button",
+          dpInit: item.id,
+          role: "",
+          data: {
+            icon: {
+              true: {
+                value: { type: "const", constVal: item.icon || "fan" },
+                color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
+              },
+              false: {
+                value: { type: "const", constVal: item.icon2 || "fan-off" },
+                color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
+              }
+            },
+            entity1: {
+              value: foundedStates[role].ACTUAL
+              //set: foundedStates[role].SET,
+            },
+            text,
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
       }
       default:
         (0, import_pages.exhaustiveCheck)(role);
@@ -1730,7 +1755,7 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
     let itemConfig = void 0;
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
@@ -2629,9 +2654,62 @@ class ConfigManager extends import_library.BaseClass {
             };
             break;
           }
-          case "sensor.alarm.flood":
-          case "level.mode.fan": {
+          case "sensor.alarm.flood": {
             throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
+          }
+          case "level.mode.fan": {
+            let states;
+            let keys;
+            if ((_o = foundedStates[role].MODE) == null ? void 0 : _o.dp) {
+              const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
+              if ((_p = o == null ? void 0 : o.common) == null ? void 0 : _p.states) {
+                states = Object.values(o.common.states).map(String);
+                keys = Object.keys(o.common.states).map(String);
+              }
+            }
+            itemConfig = {
+              role: "fan",
+              type: "fan",
+              dpInit: "",
+              data: {
+                icon: {
+                  true: {
+                    value: { type: "const", constVal: item.icon || "fan" },
+                    color: { type: "const", constVal: item.onColor || import_Color.Color.Green }
+                  },
+                  false: {
+                    value: { type: "const", constVal: item.icon2 || "fan-off" },
+                    color: { type: "const", constVal: item.offColor || import_Color.Color.Red }
+                  }
+                },
+                entity1: {
+                  value: foundedStates[role].ACTUAL,
+                  set: foundedStates[role].SET
+                },
+                speed: {
+                  value: foundedStates[role].SPEED,
+                  maxScale: { type: "const", constVal: item.maxValueLevel || 100 }
+                },
+                headline: { type: "const", constVal: item.name || commonName || role },
+                text: { true: { type: "const", constVal: "Speed" }, false: void 0 },
+                //entityInSel: { value: { type: 'const', constVal: '2' } },
+                entityInSel: { value: foundedStates[role].MODE },
+                /**
+                 * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
+                 */
+                //valueList: { type: 'const', constVal: '1?2?3?4?5' },
+                valueList: item.modeList ? { type: "const", constVal: item.modeList } : {
+                  type: "const",
+                  constVal: Array.isArray(keys) ? keys : []
+                },
+                valueList2: item.modeList ? void 0 : { type: "const", constVal: Array.isArray(states) ? states : [] }
+                /* valueList: {
+                    type: 'const',
+                    constVal: Array.isArray(states) ? states.join('?') : JSON.stringify(states),
+                }, */
+              }
+            };
+            break;
           }
           default:
             (0, import_pages.exhaustiveCheck)(role);

@@ -956,16 +956,43 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           message.speedText = this.library.getTranslation(
             (_B = await tools.getEntryTextOnOff(item.text, value)) != null ? _B : ""
           );
-          message.mode = this.library.getTranslation(
-            (_C = await tools.getValueEntryString(item.entityInSel)) != null ? _C : ""
+          const sList = item.entityInSel && await this.getListFromStates(
+            item.entityInSel,
+            item.valueList,
+            entry.role,
+            "valueList2" in item ? item.valueList2 : void 0
           );
-          let list = (_E = (_D = item.valueList && await item.valueList.getObject()) != null ? _D : item.valueList && await item.valueList.getString()) != null ? _E : "";
-          if (list !== null) {
-            if (Array.isArray(list)) {
-              list = list.join("?");
+          if (sList !== void 0 && sList.list !== void 0 && sList.value !== void 0 && sList.states !== void 0) {
+            if (sList.list.length > 0) {
+              sList.list.splice(48);
+              message.modeList = Array.isArray(sList.list) ? sList.list.map((a) => tools.formatInSelText(a)).join("?") : "";
+              message.mode = tools.formatInSelText(this.library.getTranslation(sList.value));
+            }
+          } else {
+            let list = (_D = (_C = item.valueList && await item.valueList.getObject()) != null ? _C : item.valueList && await item.valueList.getString()) != null ? _D : "";
+            if (list !== null) {
+              if (typeof list === "string") {
+                list = list.split("?");
+              }
+              if (Array.isArray(list)) {
+                list.splice(48);
+              }
+            } else {
+              list = [];
+            }
+            list = list.map(
+              (a) => tools.formatInSelText(this.library.getTranslation(a))
+            );
+            message.modeList = list.join("?");
+            if (message.modeList && message.modeList.length > 940) {
+              message.modeList = message.modeList.slice(0, 940);
+              this.log.warn("Value list has more as 940 chars!");
+            }
+            const n = (_E = await tools.getValueEntryNumber(item.entityInSel)) != null ? _E : 0;
+            if (Array.isArray(list) && n != null && n < list.length) {
+              message.mode = list[n];
             }
           }
-          message.modeList = typeof list === "string" ? list : "";
         }
         break;
       }
@@ -1412,6 +1439,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           if (item && item.switch1 && item.switch1.writeable) {
             await item.switch1.setStateFlip();
           }
+        } else if (entry.type === "fan") {
+          const item = entry.data;
+          item.entity1 && item.entity1.set && await item.entity1.set.setStateFlip();
         }
         break;
       }
@@ -1491,7 +1521,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         break;
       }
       case "OnOff": {
-        if (entry.type === "light" || entry.type === "light2" || entry.type === "button" || entry.type === "switch") {
+        if (entry.type === "light" || entry.type === "light2" || entry.type === "button" || entry.type === "switch" || entry.type === "fan") {
           const item = entry.data;
           if (item && item.entity1) {
             await tools.setValueEntry(item.entity1, value === "1");
