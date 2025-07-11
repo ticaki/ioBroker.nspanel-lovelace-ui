@@ -85,6 +85,8 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**  
+- (ticaki) BREAKING: alias def changed
+- (ticaki) actual-set handling changed
 - (tt-tom17) popupFan added
 
 ### 0.2.1 (2025-06-30)
