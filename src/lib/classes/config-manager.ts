@@ -1358,13 +1358,7 @@ export class ConfigManager extends BaseClass {
                             false: { type: 'const', constVal: 'off' },
                         },
                         text: text,
-                        entity1:
-                            role == 'ct' || role == 'hue' || role === 'rgb' || role === 'rgbSingle'
-                                ? { value: foundedStates[role].ON_ACTUAL }
-                                : role === 'dimmer'
-                                  ? { value: foundedStates[role].ON_ACTUAL }
-                                  : { value: foundedStates[role].ON_ACTUAL },
-
+                        entity1: { value: foundedStates[role].ON_ACTUAL },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
