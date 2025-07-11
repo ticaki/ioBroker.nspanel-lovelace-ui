@@ -524,7 +524,7 @@ type requiredDatapoints2 = {
     };
     light: {
         data: {
-            ACTUAL: Datapoint;
+            ON_ACTUAL: Datapoint;
             SET: Datapoint;
             COLORDEC: Datapoint;
             BUTTONTEXT: Datapoint;
@@ -715,6 +715,7 @@ type Datapoint = {
     writeable?: boolean;
     trigger?: boolean;
     description?: string;
+    alternate?: mydps; // für die alten Versionen
 };
 export const requiredScriptDataPoints: requiredDatapoints = {
     motion: {
@@ -760,6 +761,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: false,
                 trigger: true,
+                alternate: 'SET',
             },
             ON_SET: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
             ON_ACTUAL: {
@@ -768,6 +770,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: false,
                 trigger: true,
+                alternate: 'ON_SET',
             },
         },
     },
@@ -784,6 +787,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: false,
                 trigger: true,
+                alternate: 'ON',
             },
             TEMPERATURE: {
                 role: 'level.color.temperature',
@@ -829,6 +833,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: false,
                 trigger: true,
+                alternate: 'ON',
             },
             TEMPERATURE: {
                 role: 'level.color.temperature',
@@ -884,6 +889,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: false,
                 trigger: true,
+                alternate: 'SET',
             },
             SET: { role: 'level.blind', type: 'number', required: true, writeable: true },
             CLOSE: { role: 'button.close.blind', type: 'boolean', required: true, writeable: true },
@@ -962,8 +968,15 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'socket',
         description: 'Steckdosen, Schalter, Relais, usw. alles was man mit true/false steuern kann',
         data: {
-            ACTUAL: { role: 'switch', type: 'boolean', required: true, writeable: false, trigger: true },
-            SET: { role: 'switch', type: 'boolean', required: false, writeable: true },
+            ACTUAL: {
+                role: 'sensor.switch',
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'SET',
+            },
+            SET: { role: 'switch', type: 'boolean', required: true, writeable: true },
             COLORDEC: { role: 'state', type: 'number', required: false, writeable: false, trigger: true }, //Farbcode über DP steuern
             BUTTONTEXT: { role: ['state', 'text'], type: 'string', required: false, writeable: false, trigger: true }, //Button-Text über DP steuern bei cardEntity
         },
@@ -973,14 +986,15 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'light',
         description: 'ein Lichtschalter',
         data: {
-            ACTUAL: {
+            ON_ACTUAL: {
                 role: ['switch.light', 'sensor.light'],
                 type: 'boolean',
-                required: true,
+                required: false,
                 writeable: false,
                 trigger: true,
+                alternate: 'SET',
             },
-            SET: { role: 'switch.light', type: 'boolean', required: false, writeable: true },
+            SET: { role: 'switch.light', type: 'boolean', required: true, writeable: true },
             COLORDEC: { role: 'state', type: 'number', required: false, writeable: false, trigger: true }, //Farbcode über DP steuern
             BUTTONTEXT: { role: 'text', type: 'string', required: false, writeable: false, trigger: true }, //Button-Text über DP steuern bei cardEntity
         },
@@ -996,6 +1010,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: false,
                 trigger: true,
+                alternate: 'SET',
             },
             SET: { role: 'level.volume', type: 'number', required: true, writeable: true },
             MUTE: { role: 'media.mute', type: 'boolean', required: false, writeable: true, trigger: true },
@@ -1012,7 +1027,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             ON_ACTUAL: {
                 role: ['sensor.light', 'switch.light'],
                 type: 'boolean',
-                required: true,
+                required: false,
                 writeable: false,
                 trigger: true,
             },
@@ -1050,6 +1065,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: false,
                 trigger: true,
+                alternate: 'ON',
             },
             // VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
         },
@@ -1083,7 +1099,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 writeable: false,
                 trigger: true,
             },
-            SET: { role: 'level.mode.select', type: 'number', required: true, writeable: false, trigger: true },
+            SET: { role: 'level.mode.select', type: 'number', required: true, writeable: true, trigger: true },
         },
     },
     temperature: {
@@ -1113,6 +1129,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: false,
                 trigger: true,
+                alternate: 'SET',
             },
             SET: { role: 'level.temperature', type: 'number', required: true, writeable: true },
             MODE: { role: 'level.mode.thermostat', type: 'number', required: false, writeable: true, trigger: true },
@@ -1216,9 +1233,16 @@ export const requiredScriptDataPoints: requiredDatapoints = {
         name: 'fan',
         description: '',
         data: {
-            ACTUAL: { role: 'switch', type: 'boolean', required: true, writeable: false, trigger: true },
+            ACTUAL: {
+                role: 'state',
+                type: 'boolean',
+                required: false,
+                writeable: false,
+                trigger: true,
+                alternate: 'SET',
+            },
             MODE: { role: 'level.mode.fan', type: 'number', required: false, writeable: true, trigger: true },
-            SET: { role: 'state', type: 'boolean', required: false, writeable: true },
+            SET: { role: 'switch', type: 'boolean', required: true, writeable: true },
             SPEED: { role: 'level.speed', type: 'number', required: true, writeable: true, trigger: true },
         },
     },
@@ -1232,6 +1256,7 @@ export const requiredScriptDataPoints: requiredDatapoints = {
                 required: false,
                 writeable: false,
                 trigger: true,
+                alternate: 'SET',
             },
             OPEN: { role: 'button', type: 'boolean', required: false, writeable: true },
             SET: { role: 'switch.lock', type: 'boolean', required: true, writeable: true },

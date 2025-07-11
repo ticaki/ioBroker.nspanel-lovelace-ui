@@ -1588,8 +1588,9 @@ export class PageItem extends BaseClassTriggerd {
                 }
 
                 break;
+
             case 'button': {
-                if (entry.type === 'button') {
+                if (entry.type === 'button' || entry.type === 'switch') {
                     if (this.parent && this.parent.isScreensaver) {
                         if (!(this.parent as Screensaver).screensaverIndicatorButtons) {
                             this.panel.navigation.resetPosition();
@@ -1639,6 +1640,8 @@ export class PageItem extends BaseClassTriggerd {
                     value = (item.entity1 && item.entity1.set && (await item.entity1.set.getBoolean())) ?? null;
                     if (value !== null && item.entity1 && item.entity1.set) {
                         await item.entity1.set.setStateFlip();
+                    } else if (item.entity1?.value?.writeable) {
+                        await item.entity1.value.setStateFlip();
                     }
                     value = (item.setValue1 && (await item.setValue1.getBoolean())) ?? null;
                     if (value !== null && item.setValue1) {

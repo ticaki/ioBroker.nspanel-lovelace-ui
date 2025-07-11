@@ -196,6 +196,7 @@ const stateRoleArray = arrayOfAllStateRole([
   "level.mode",
   "sensor.alarm.flood",
   "indicator.reachable",
+  "sensor.switch",
   ""
 ]);
 function isStateRole(F) {
