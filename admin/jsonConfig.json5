@@ -641,9 +641,14 @@
                     "lg": 2,
                     "xl": 2
                 },
+                "_headerMaintain": {
+                    "type": "header",
+                    "text": "headerMaintain",
+                    "size": 2
+                },
                 "_RefreshMaintainTable": {
                     "type": "sendTo",
-                    "label": "refresh",
+                    "label": "RefreshMaintainTable",
                     "jsonData": "{ \"internalServerIp\": \"${data.internalServerIp}\" }",
                     "showProcess": true,
                     "command": "refreshMaintainTable",

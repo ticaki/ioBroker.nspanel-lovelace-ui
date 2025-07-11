@@ -277,7 +277,7 @@ export type PageItemTimerDataItems = {
 
 export type PageItemFan = Pick<
     PageItemBase,
-    'entity1' | 'speed' | 'text' | 'headline' | 'icon' | 'entityInSel' | 'valueList' | 'setList'
+    'entity1' | 'speed' | 'text' | 'headline' | 'icon' | 'entityInSel' | 'valueList' | 'valueList2' | 'setList'
 >;
 export type PageItemFanDataItemsOptions = {
     type: 'fan';

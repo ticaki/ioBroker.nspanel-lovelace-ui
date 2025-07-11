@@ -1267,6 +1267,7 @@ export class ConfigManager extends BaseClass {
             }
         }*/
 
+        item.icon2 = item.icon2 || item.icon;
         switch (role) {
             case 'socket': {
                 let icon: AllIcons | undefined;
@@ -1342,7 +1343,7 @@ export class ConfigManager extends BaseClass {
                             false: {
                                 value: {
                                     type: 'const',
-                                    constVal: item.icon2 || item.icon || 'lightbulb-outline',
+                                    constVal: item.icon2 || 'lightbulb-outline',
                                 },
                                 color: await this.getIconColor(item.offColor, this.colorOff),
                             },
@@ -1357,11 +1358,7 @@ export class ConfigManager extends BaseClass {
                             false: { type: 'const', constVal: 'off' },
                         },
                         text: text,
-                        entity1:
-                            role === 'dimmer' || role == 'hue' || role === 'rgb' || role === 'rgbSingle'
-                                ? { value: foundedStates[role].ON_ACTUAL }
-                                : { value: foundedStates[role].ACTUAL },
-
+                        entity1: { value: foundedStates[role].ON_ACTUAL },
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
@@ -1385,7 +1382,7 @@ export class ConfigManager extends BaseClass {
                             false: {
                                 value: {
                                     type: 'const',
-                                    constVal: item.icon2 || item.icon || 'gesture-tap-button',
+                                    constVal: item.icon2 || 'gesture-tap-button',
                                 },
                                 color: await this.getIconColor(item.offColor, this.colorOff),
                             },
@@ -1982,6 +1979,20 @@ export class ConfigManager extends BaseClass {
                         entry.writeable,
                         entry.type,
                     );
+                    // If the entry is not found, check for an alternate entry
+                    const alternate = entry.alternate as keyof typeof data;
+                    if (!result[role][dp2] && alternate && data[alternate]) {
+                        const entry2 = data[alternate];
+                        result[role][dp2] = await this.statesController.getIdbyAuto(
+                            `${dpInit}.`,
+                            entry2.role,
+                            '',
+                            entry2.useKey ? new RegExp(`.${dp}$`.replaceAll('.', '\\.')) : undefined,
+                            entry.trigger,
+                            entry2.writeable,
+                            entry.type,
+                        );
+                    }
 
                     if (!result[role][dp2]) {
                         if (entry.required || this.extraConfigLogging) {
@@ -2085,6 +2096,8 @@ export class ConfigManager extends BaseClass {
                 };
                 const headline = await getButtonsTextTrue(item, role || '');
 
+                item.icon2 = item.icon2 || item.icon;
+
                 switch (role) {
                     case 'timeTable': {
                         itemConfig = {
@@ -2159,7 +2172,7 @@ export class ConfigManager extends BaseClass {
                                 colorMode: { type: 'const', constVal: false },
                                 headline: headline,
                                 entity1: {
-                                    value: foundedStates[role].ACTUAL,
+                                    value: foundedStates[role].ON_ACTUAL,
                                     set: foundedStates[role].SET,
                                 },
                             },
@@ -2838,6 +2851,7 @@ export class ConfigManager extends BaseClass {
                                 commonUnit = o.common.unit;
                             }
                         }
+                        const icontemp = item.icon2 || item.icon;
                         itemConfig = {
                             template: 'number.volume',
                             dpInit: item.id,
@@ -2850,7 +2864,7 @@ export class ConfigManager extends BaseClass {
                             },
                             icon: {
                                 true: item.icon ? { type: 'const', constVal: item.icon } : undefined,
-                                false: item.icon2 ? { type: 'const', constVal: item.icon2 } : undefined,
+                                false: icontemp ? { type: 'const', constVal: icontemp } : undefined,
                             },
                             data: {
                                 entity1: {
@@ -2906,6 +2920,8 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'lock': {
+                        item.icon2 = item.icon2 || item.icon;
+
                         itemConfig = {
                             type: 'shutter',
                             role: '',
@@ -3064,6 +3080,8 @@ export class ConfigManager extends BaseClass {
                               : foundedStates[role].ACTUAL
                                 ? 'timer-off-outline'
                                 : 'timer-off';
+                        item.icon2 = item.icon2 || item.icon;
+
                         itemConfig = {
                             role: 'timer',
                             type: 'timer',
@@ -3092,7 +3110,7 @@ export class ConfigManager extends BaseClass {
                                     minBri: undefined,
                                 },
                                 entity1: { value: foundedStates[role].ACTUAL, set: foundedStates[role].SET },
-                                headline: { type: 'const', constVal: 'timer' },
+                                headline: { type: 'const', constVal: 'Timer' },
 
                                 setValue1: foundedStates[role].STATE,
                                 setValue2: foundedStates[role].STATUS,
@@ -3106,12 +3124,15 @@ export class ConfigManager extends BaseClass {
                     case 'level.mode.fan': {
                         //let states: string[] | Record<string, string> = ['State 1', 'State 2', 'State 3'];
                         let states: string[] | undefined;
+                        let keys: string[] | undefined;
                         if (foundedStates[role].MODE?.dp) {
                             const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
                             if (o?.common?.states) {
                                 states = Object.values(o.common.states).map(String);
+                                keys = Object.keys(o.common.states).map(String);
                             }
                         }
+
                         itemConfig = {
                             role: 'fan',
                             type: 'fan',
@@ -3150,8 +3171,11 @@ export class ConfigManager extends BaseClass {
                                     ? { type: 'const', constVal: item.modeList }
                                     : {
                                           type: 'const',
-                                          constVal: Array.isArray(states) ? states.join('?') : JSON.stringify(states),
+                                          constVal: Array.isArray(keys) ? keys : [],
                                       },
+                                valueList2: item.modeList
+                                    ? undefined
+                                    : { type: 'const', constVal: Array.isArray(states) ? states : [] },
                                 /* valueList: {
                                     type: 'const',
                                     constVal: Array.isArray(states) ? states.join('?') : JSON.stringify(states),

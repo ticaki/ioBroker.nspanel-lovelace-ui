@@ -956,26 +956,42 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           message.speedText = this.library.getTranslation(
             (_B = await tools.getEntryTextOnOff(item.text, value)) != null ? _B : ""
           );
-          let list = (_D = (_C = item.valueList && await item.valueList.getObject()) != null ? _C : item.valueList && await item.valueList.getString()) != null ? _D : "";
-          if (list !== null) {
-            if (typeof list === "string") {
-              list = list.split("?");
-            }
-            if (Array.isArray(list)) {
-              list.splice(48);
+          const sList = item.entityInSel && await this.getListFromStates(
+            item.entityInSel,
+            item.valueList,
+            entry.role,
+            "valueList2" in item ? item.valueList2 : void 0
+          );
+          if (sList !== void 0 && sList.list !== void 0 && sList.value !== void 0 && sList.states !== void 0) {
+            if (sList.list.length > 0) {
+              sList.list.splice(48);
+              message.modeList = Array.isArray(sList.list) ? sList.list.map((a) => tools.formatInSelText(a)).join("?") : "";
+              message.mode = tools.formatInSelText(this.library.getTranslation(sList.value));
             }
           } else {
-            list = [];
-          }
-          list = list.map((a) => tools.formatInSelText(this.library.getTranslation(a)));
-          message.modeList = list.join("?");
-          if (message.modeList && message.modeList.length > 940) {
-            message.modeList = message.modeList.slice(0, 940);
-            this.log.warn("Value list has more as 940 chars!");
-          }
-          const n = (_E = await tools.getValueEntryNumber(item.entityInSel)) != null ? _E : 0;
-          if (Array.isArray(list) && n != null && n < list.length) {
-            message.mode = list[n];
+            let list = (_D = (_C = item.valueList && await item.valueList.getObject()) != null ? _C : item.valueList && await item.valueList.getString()) != null ? _D : "";
+            if (list !== null) {
+              if (typeof list === "string") {
+                list = list.split("?");
+              }
+              if (Array.isArray(list)) {
+                list.splice(48);
+              }
+            } else {
+              list = [];
+            }
+            list = list.map(
+              (a) => tools.formatInSelText(this.library.getTranslation(a))
+            );
+            message.modeList = list.join("?");
+            if (message.modeList && message.modeList.length > 940) {
+              message.modeList = message.modeList.slice(0, 940);
+              this.log.warn("Value list has more as 940 chars!");
+            }
+            const n = (_E = await tools.getValueEntryNumber(item.entityInSel)) != null ? _E : 0;
+            if (Array.isArray(list) && n != null && n < list.length) {
+              message.mode = list[n];
+            }
           }
         }
         break;
@@ -1338,7 +1354,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     this.parent = void 0;
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -1357,7 +1373,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         }
         break;
       case "button": {
-        if (entry.type === "button") {
+        if (entry.type === "button" || entry.type === "switch") {
           if (this.parent && this.parent.isScreensaver) {
             if (!this.parent.screensaverIndicatorButtons) {
               this.panel.navigation.resetPosition();
@@ -1406,8 +1422,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           value2 = (_d = item.entity1 && item.entity1.set && await item.entity1.set.getBoolean()) != null ? _d : null;
           if (value2 !== null && item.entity1 && item.entity1.set) {
             await item.entity1.set.setStateFlip();
+          } else if ((_f = (_e = item.entity1) == null ? void 0 : _e.value) == null ? void 0 : _f.writeable) {
+            await item.entity1.value.setStateFlip();
           }
-          value2 = (_e = item.setValue1 && await item.setValue1.getBoolean()) != null ? _e : null;
+          value2 = (_g = item.setValue1 && await item.setValue1.getBoolean()) != null ? _g : null;
           if (value2 !== null && item.setValue1) {
             await item.setValue1.setStateFlip();
           }
@@ -1425,7 +1443,11 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
         } else if (entry.type === "fan") {
           const item = entry.data;
-          item.entity1 && item.entity1.set && await item.entity1.set.setStateFlip();
+          if ((_h = item.entity1) == null ? void 0 : _h.set) {
+            await item.entity1.set.setStateFlip();
+          } else if ((_j = (_i = item.entity1) == null ? void 0 : _i.value) == null ? void 0 : _j.writeable) {
+            await item.entity1.value.setStateFlip();
+          }
         }
         break;
       }
@@ -1466,9 +1488,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             entity = item.entity3;
           }
           if (entity && entity.set && entity.set.writeable) {
-            if (!Array.isArray(entity.set.options.role) && ((_f = entity.set.options.role) == null ? void 0 : _f.startsWith("button"))) {
+            if (!Array.isArray(entity.set.options.role) && ((_k = entity.set.options.role) == null ? void 0 : _k.startsWith("button"))) {
               await entity.set.setStateTrue();
-            } else if (!Array.isArray(entity.set.options.role) && ((_g = entity.set.options.role) == null ? void 0 : _g.startsWith("switch"))) {
+            } else if (!Array.isArray(entity.set.options.role) && ((_l = entity.set.options.role) == null ? void 0 : _l.startsWith("switch"))) {
               await entity.set.setStateFlip();
             }
           }
@@ -1535,7 +1557,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               }
               case "rgbSingle": {
                 const rgb = import_Color.Color.resultToRgb(value);
-                if (import_Color.Color.isRGB(rgb) && ((_h = item == null ? void 0 : item.color) == null ? void 0 : _h.true) && item.color.true.options.role !== "level.color.rgb") {
+                if (import_Color.Color.isRGB(rgb) && ((_m = item == null ? void 0 : item.color) == null ? void 0 : _m.true) && item.color.true.options.role !== "level.color.rgb") {
                   await item.color.true.setStateAsync(JSON.stringify(rgb));
                   break;
                 }
@@ -1832,7 +1854,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, parseInt(t), 0, 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_i = this.dataItems.data.entity1) == null ? void 0 : _i.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_n = this.dataItems.data.entity1) == null ? void 0 : _n.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
             }
             break;
           }
@@ -1842,7 +1864,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, parseInt(t), 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_j = this.dataItems.data.entity1) == null ? void 0 : _j.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_o = this.dataItems.data.entity1) == null ? void 0 : _o.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
             }
             break;
           }
@@ -1873,7 +1895,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             case "ex-timer": {
               const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)).getTime();
               if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-                ((_k = this.dataItems.data.entity1) == null ? void 0 : _k.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+                ((_p = this.dataItems.data.entity1) == null ? void 0 : _p.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
               }
               break;
             }
