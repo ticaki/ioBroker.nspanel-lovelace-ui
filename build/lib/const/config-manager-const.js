@@ -367,7 +367,8 @@ const requiredScriptDataPoints = {
         type: "number",
         required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        alternate: "SET"
       },
       ON_SET: { role: "switch.light", type: "boolean", required: true, writeable: true },
       ON_ACTUAL: {
@@ -375,7 +376,8 @@ const requiredScriptDataPoints = {
         type: "boolean",
         required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        alternate: "ON_SET"
       }
     }
   },
@@ -391,7 +393,8 @@ const requiredScriptDataPoints = {
         type: "boolean",
         required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        alternate: "ON"
       },
       TEMPERATURE: {
         role: "level.color.temperature",
@@ -438,7 +441,8 @@ const requiredScriptDataPoints = {
         type: "boolean",
         required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        alternate: "ON"
       },
       TEMPERATURE: {
         role: "level.color.temperature",
@@ -496,7 +500,8 @@ const requiredScriptDataPoints = {
         type: "number",
         required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        alternate: "SET"
       },
       SET: { role: "level.blind", type: "number", required: true, writeable: true },
       CLOSE: { role: "button.close.blind", type: "boolean", required: true, writeable: true },
@@ -576,8 +581,15 @@ const requiredScriptDataPoints = {
     name: "socket",
     description: "Steckdosen, Schalter, Relais, usw. alles was man mit true/false steuern kann",
     data: {
-      ACTUAL: { role: "switch", type: "boolean", required: true, writeable: false, trigger: true },
-      SET: { role: "switch", type: "boolean", required: false, writeable: true },
+      ACTUAL: {
+        role: "sensor.switch",
+        type: "boolean",
+        required: false,
+        writeable: false,
+        trigger: true,
+        alternate: "SET"
+      },
+      SET: { role: "switch", type: "boolean", required: true, writeable: true },
       COLORDEC: { role: "state", type: "number", required: false, writeable: false, trigger: true },
       //Farbcode über DP steuern
       BUTTONTEXT: { role: ["state", "text"], type: "string", required: false, writeable: false, trigger: true }
@@ -589,14 +601,15 @@ const requiredScriptDataPoints = {
     name: "light",
     description: "ein Lichtschalter",
     data: {
-      ACTUAL: {
+      ON_ACTUAL: {
         role: ["switch.light", "sensor.light"],
         type: "boolean",
-        required: true,
+        required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        alternate: "SET"
       },
-      SET: { role: "switch.light", type: "boolean", required: false, writeable: true },
+      SET: { role: "switch.light", type: "boolean", required: true, writeable: true },
       COLORDEC: { role: "state", type: "number", required: false, writeable: false, trigger: true },
       //Farbcode über DP steuern
       BUTTONTEXT: { role: "text", type: "string", required: false, writeable: false, trigger: true }
@@ -613,7 +626,8 @@ const requiredScriptDataPoints = {
         type: "number",
         required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        alternate: "SET"
       },
       SET: { role: "level.volume", type: "number", required: true, writeable: true },
       MUTE: { role: "media.mute", type: "boolean", required: false, writeable: true, trigger: true }
@@ -630,7 +644,7 @@ const requiredScriptDataPoints = {
       ON_ACTUAL: {
         role: ["sensor.light", "switch.light"],
         type: "boolean",
-        required: true,
+        required: false,
         writeable: false,
         trigger: true
       },
@@ -669,7 +683,8 @@ const requiredScriptDataPoints = {
         type: "boolean",
         required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        alternate: "ON"
       }
       // VALUE: { role: 'state', type: 'number', required: false, writeable: true }, //für popupInSel
     }
@@ -703,7 +718,7 @@ const requiredScriptDataPoints = {
         writeable: false,
         trigger: true
       },
-      SET: { role: "level.mode.select", type: "number", required: true, writeable: false, trigger: true }
+      SET: { role: "level.mode.select", type: "number", required: true, writeable: true, trigger: true }
     }
   },
   temperature: {
@@ -733,7 +748,8 @@ const requiredScriptDataPoints = {
         type: "number",
         required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        alternate: "SET"
       },
       SET: { role: "level.temperature", type: "number", required: true, writeable: true },
       MODE: { role: "level.mode.thermostat", type: "number", required: false, writeable: true, trigger: true },
@@ -840,9 +856,16 @@ const requiredScriptDataPoints = {
     name: "fan",
     description: "",
     data: {
-      ACTUAL: { role: "switch", type: "boolean", required: true, writeable: false, trigger: true },
+      ACTUAL: {
+        role: "state",
+        type: "boolean",
+        required: false,
+        writeable: false,
+        trigger: true,
+        alternate: "SET"
+      },
       MODE: { role: "level.mode.fan", type: "number", required: false, writeable: true, trigger: true },
-      SET: { role: "state", type: "boolean", required: false, writeable: true },
+      SET: { role: "switch", type: "boolean", required: true, writeable: true },
       SPEED: { role: "level.speed", type: "number", required: true, writeable: true, trigger: true }
     }
   },
@@ -855,7 +878,8 @@ const requiredScriptDataPoints = {
         type: "boolean",
         required: false,
         writeable: false,
-        trigger: true
+        trigger: true,
+        alternate: "SET"
       },
       OPEN: { role: "button", type: "boolean", required: false, writeable: true },
       SET: { role: "switch.lock", type: "boolean", required: true, writeable: true }

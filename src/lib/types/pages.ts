@@ -195,10 +195,12 @@ export const stateRoleArray = arrayOfAllStateRole([
     'level.mode',
     'sensor.alarm.flood',
     'indicator.reachable',
+    'sensor.switch',
     '',
 ]);
 
 export type StateRole =
+    | 'sensor.switch'
     | 'indicator.reachable'
     | 'sensor.alarm.flood'
     | 'level.mode'

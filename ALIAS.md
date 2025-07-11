@@ -114,15 +114,15 @@
 ### socket
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **socket** | ~~ACTUAL~~ | boolean| switch  | X |  |  | 
-| **"** | ~~SET~~ | boolean| switch  |  | X |  | 
+| **socket** | ~~ACTUAL~~ | boolean| sensor.switch  |  |  |  | 
+| **"** | ~~SET~~ | boolean| switch  | X | X |  | 
 | **"** | ~~COLORDEC~~ | number| state  |  |  |  | 
 | **"** | ~~BUTTONTEXT~~ | string| state, text  |  |  |  | 
 ### light
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **light** | ~~ACTUAL~~ | boolean| switch.light, sensor.light  | X |  |  | 
-| **"** | ~~SET~~ | boolean| switch.light  |  | X |  | 
+| **light** | ~~ON_ACTUAL~~ | boolean| switch.light, sensor.light  |  |  |  | 
+| **"** | ~~SET~~ | boolean| switch.light  | X | X |  | 
 | **"** | ~~COLORDEC~~ | number| state  |  |  |  | 
 | **"** | ~~BUTTONTEXT~~ | string| text  |  |  |  | 
 ### volume
@@ -137,7 +137,7 @@
 | **rgb** | ~~RED~~ | number| level.color.red  | X | X |  | 
 | **"** | ~~GREEN~~ | number| level.color.green  | X | X |  | 
 | **"** | ~~BLUE~~ | number| level.color.blue  | X | X |  | 
-| **"** | ~~ON_ACTUAL~~ | boolean| sensor.light, switch.light  | X |  |  | 
+| **"** | ~~ON_ACTUAL~~ | boolean| sensor.light, switch.light  |  |  |  | 
 | **"** | ~~ON~~ | boolean| switch.light  | X | X |  | 
 | **"** | ~~DIMMER~~ | number| level.dimmer  |  | X |  | 
 | **"** | ~~TEMPERATURE~~ | number| level.color.temperature  |  | X |  | 
@@ -163,7 +163,7 @@
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
 | **select** | ~~ACTUAL~~ | number| value.mode.select, level.mode.select  | X |  |  | 
-| **"** | ~~SET~~ | number| level.mode.select  | X |  |  | 
+| **"** | ~~SET~~ | number| level.mode.select  | X | X |  | 
 ### temperature
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
@@ -211,9 +211,9 @@
 ### level.mode.fan
 | Channel role | State ID | common.type | common.role | required | common.write | description |  
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |  
-| **level.mode.fan** | ~~ACTUAL~~ | boolean| switch  | X |  |  | 
+| **level.mode.fan** | ~~ACTUAL~~ | boolean| state  |  |  |  | 
 | **"** | ~~MODE~~ | number| level.mode.fan  |  | X |  | 
-| **"** | ~~SET~~ | boolean| state  |  | X |  | 
+| **"** | ~~SET~~ | boolean| switch  | X | X |  | 
 | **"** | ~~SPEED~~ | number| level.speed  | X | X |  | 
 ### lock
 | Channel role | State ID | common.type | common.role | required | common.write | description |  

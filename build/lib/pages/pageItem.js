@@ -1354,7 +1354,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
     this.parent = void 0;
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -1373,7 +1373,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
         }
         break;
       case "button": {
-        if (entry.type === "button") {
+        if (entry.type === "button" || entry.type === "switch") {
           if (this.parent && this.parent.isScreensaver) {
             if (!this.parent.screensaverIndicatorButtons) {
               this.panel.navigation.resetPosition();
@@ -1422,8 +1422,10 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           value2 = (_d = item.entity1 && item.entity1.set && await item.entity1.set.getBoolean()) != null ? _d : null;
           if (value2 !== null && item.entity1 && item.entity1.set) {
             await item.entity1.set.setStateFlip();
+          } else if ((_f = (_e = item.entity1) == null ? void 0 : _e.value) == null ? void 0 : _f.writeable) {
+            await item.entity1.value.setStateFlip();
           }
-          value2 = (_e = item.setValue1 && await item.setValue1.getBoolean()) != null ? _e : null;
+          value2 = (_g = item.setValue1 && await item.setValue1.getBoolean()) != null ? _g : null;
           if (value2 !== null && item.setValue1) {
             await item.setValue1.setStateFlip();
           }
@@ -1441,9 +1443,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
           }
         } else if (entry.type === "fan") {
           const item = entry.data;
-          if ((_f = item.entity1) == null ? void 0 : _f.set) {
+          if ((_h = item.entity1) == null ? void 0 : _h.set) {
             await item.entity1.set.setStateFlip();
-          } else if ((_h = (_g = item.entity1) == null ? void 0 : _g.value) == null ? void 0 : _h.writeable) {
+          } else if ((_j = (_i = item.entity1) == null ? void 0 : _i.value) == null ? void 0 : _j.writeable) {
             await item.entity1.value.setStateFlip();
           }
         }
@@ -1486,9 +1488,9 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             entity = item.entity3;
           }
           if (entity && entity.set && entity.set.writeable) {
-            if (!Array.isArray(entity.set.options.role) && ((_i = entity.set.options.role) == null ? void 0 : _i.startsWith("button"))) {
+            if (!Array.isArray(entity.set.options.role) && ((_k = entity.set.options.role) == null ? void 0 : _k.startsWith("button"))) {
               await entity.set.setStateTrue();
-            } else if (!Array.isArray(entity.set.options.role) && ((_j = entity.set.options.role) == null ? void 0 : _j.startsWith("switch"))) {
+            } else if (!Array.isArray(entity.set.options.role) && ((_l = entity.set.options.role) == null ? void 0 : _l.startsWith("switch"))) {
               await entity.set.setStateFlip();
             }
           }
@@ -1555,7 +1557,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
               }
               case "rgbSingle": {
                 const rgb = import_Color.Color.resultToRgb(value);
-                if (import_Color.Color.isRGB(rgb) && ((_k = item == null ? void 0 : item.color) == null ? void 0 : _k.true) && item.color.true.options.role !== "level.color.rgb") {
+                if (import_Color.Color.isRGB(rgb) && ((_m = item == null ? void 0 : item.color) == null ? void 0 : _m.true) && item.color.true.options.role !== "level.color.rgb") {
                   await item.color.true.setStateAsync(JSON.stringify(rgb));
                   break;
                 }
@@ -1852,7 +1854,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, parseInt(t), 0, 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_l = this.dataItems.data.entity1) == null ? void 0 : _l.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_n = this.dataItems.data.entity1) == null ? void 0 : _n.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
             }
             break;
           }
@@ -1862,7 +1864,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             });
             const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, parseInt(t), 0)).getTime();
             if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_m = this.dataItems.data.entity1) == null ? void 0 : _m.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+              ((_o = this.dataItems.data.entity1) == null ? void 0 : _o.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
             }
             break;
           }
@@ -1893,7 +1895,7 @@ class PageItem extends import_baseClassPage.BaseClassTriggerd {
             case "ex-timer": {
               const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)).getTime();
               if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-                ((_n = this.dataItems.data.entity1) == null ? void 0 : _n.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
+                ((_p = this.dataItems.data.entity1) == null ? void 0 : _p.set) && await this.dataItems.data.entity1.set.setStateAsync(r);
               }
               break;
             }
