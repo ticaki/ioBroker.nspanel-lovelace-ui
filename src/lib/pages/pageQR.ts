@@ -107,13 +107,13 @@ export class PageQR extends Page {
                             pass = this.adapter.config.pageQRpwd3 || '';
                             break;
                     }
-                    message.textQR = `WIFI:T:${config.wlantype};S:${config.SSIDURLTEL};P:${pass};${config.wlantype ? `H:${config.wlanhidden}` : ''};`;
+                    message.textQR = `WIFI:T:${config.wlantype};S:${config.SSIDURLTEL};P:${pass};${config.wlanhidden ? `H:${config.wlanhidden}` : `H:`};`;
                     message.optionalValue1 = config.SSIDURLTEL;
                     break;
                 }
                 case 2:
                     this.log.debug(`qrType = url`);
-                    message.textQR = `${config.SSIDURLTEL}`;
+                    message.textQR = `URL:${config.SSIDURLTEL}`;
                     message.optionalValue1 = config.SSIDURLTEL;
                     break;
                 case 3:
@@ -137,7 +137,7 @@ export class PageQR extends Page {
                     const temp = pageItems[a];
                     if (temp) {
                         const arr = (await temp.getPageItemPayload()).split('~');
-                        //this.log.debug(`0: ${arr[0]} 1: ${arr[1]} 2: ${arr[2]} 3: ${arr[3]} 4: ${arr[4]} 5: ${arr[5]}`);
+                        this.log.debug(`0: ${arr[0]} 1: ${arr[1]} 2: ${arr[2]} 3: ${arr[3]} 4: ${arr[4]} 5: ${arr[5]}`);
                         switch (a) {
                             case 0:
                                 message.type1 = arr[0];
@@ -147,12 +147,12 @@ export class PageQR extends Page {
                                 message.iconColor1 = arr[3];
                                 break;
                             case 1:
-                                message.type2 = arr[0]; //== 'button' ? 'switch' : 'text';
+                                message.type2 = arr[0] == 'button' ? 'switch' : 'text';
                                 message.displayName2 = arr[4];
                                 message.internalName2 = arr[1];
                                 message.iconId2 = arr[2];
                                 message.iconColor2 = arr[3];
-                                message.optionalValue2 = arr[0] == 'switch' ? arr[5] : config.pwdhidden ? '' : arr[5];
+                                message.optionalValue2 = arr[0] == 'button' ? arr[5] : config.pwdhidden ? '' : arr[5];
                                 break;
                             default:
                                 break;
@@ -162,7 +162,7 @@ export class PageQR extends Page {
             }
         }
         if (message.textQR) {
-            //this.log.debug(message.textQR);
+            this.log.debug(message.textQR);
         }
         this.sendToPanel(this.getMessage(message), false);
     }
@@ -174,7 +174,9 @@ export class PageQR extends Page {
         const config = adapter.config.pageQRdata[index];
         if (config) {
             let text1 = '',
-                text = '';
+                text = '',
+                icon1 = '',
+                icon2 = '';
             switch (config.selType) {
                 case 0:
                     text1 = config.SSIDURLTEL;
@@ -183,15 +185,21 @@ export class PageQR extends Page {
                 case 1: {
                     text1 = config.SSIDURLTEL;
                     text = 'SSID';
+                    icon1 = 'wifi';
+                    icon2 = 'key-wireless';
                     break;
                 }
                 case 2:
                     text1 = config.SSIDURLTEL;
-                    text = 'URL';
+                    text = 'URL / Website';
+                    icon1 = 'web';
+                    icon2 = '';
                     break;
                 case 3:
                     text1 = config.SSIDURLTEL;
-                    text = 'TEL';
+                    text = 'Telephone';
+                    icon1 = 'phone'; // phone-classic alternative
+                    icon2 = '';
                     break;
                 default:
                     break;
@@ -218,14 +226,14 @@ export class PageQR extends Page {
                         true: {
                             value: {
                                 type: 'const',
-                                constVal: 'wifi',
+                                constVal: icon1,
                             },
-                            color: await configManager.getIconColor(Color.Cyan, configManager.colorOn),
+                            color: await configManager.getIconColor(configManager.colorOn),
                         },
                         false: {
                             value: {
                                 type: 'const',
-                                constVal: 'wifi',
+                                constVal: icon1,
                             },
                             color: await configManager.getIconColor(configManager.colorOff),
                         },
@@ -296,7 +304,7 @@ export class PageQR extends Page {
                                     type: 'const',
                                     constVal: 'wifi',
                                 },
-                                color: await configManager.getIconColor(configManager.colorOn),
+                                color: await configManager.getIconColor(Color.Green, configManager.colorOn),
                             },
                             false: {
                                 value: {
@@ -338,14 +346,14 @@ export class PageQR extends Page {
                             true: {
                                 value: {
                                     type: 'const',
-                                    constVal: 'key-wireless',
+                                    constVal: icon2,
                                 },
                                 color: await configManager.getIconColor(configManager.colorOn),
                             },
                             false: {
                                 value: {
                                     type: 'const',
-                                    constVal: 'key-wireless',
+                                    constVal: icon2,
                                 },
                                 color: await configManager.getIconColor(configManager.colorOff),
                             },
