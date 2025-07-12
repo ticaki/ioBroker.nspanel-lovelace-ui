@@ -1342,7 +1342,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "number",
-                            "label": "powerMinValueForClor",
+                            "label": "powerMinValueForColor",
                             "default": 0,
                             "hidden": "!data._power1_more || !data._power1_useColorScale"
                         },
