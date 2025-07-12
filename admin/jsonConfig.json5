@@ -569,33 +569,11 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
-                }
-            }
-        },
-        "maintain": {
-            "type": "panel",
-            "label": "maintain",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
-            "items": {
-                "_useBetaTFTText": {
-                    "type": "staticText",
-                    "label": "useBetaTFTText",
-                    "text": "useBetaTFTText",
-                    "style": {
-                        "color": "red"
-                    },
-                    "newLine": true,
-                    "hidden": "!data.useBetaTFT",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
                 },
                 "_headerDateFormat": {
                     "type": "header",
                     "text": "headerDateFormat",
-                    "size": 2
+                    "size": 3
                 },
                 "weekdayFormat": {
                     "type": "checkbox",
@@ -640,6 +618,28 @@
                     "md": 3,
                     "lg": 2,
                     "xl": 2
+                }
+            }
+        },
+        "maintain": {
+            "type": "panel",
+            "label": "maintain",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "items": {
+                "_useBetaTFTText": {
+                    "type": "staticText",
+                    "label": "useBetaTFTText",
+                    "text": "useBetaTFTText",
+                    "style": {
+                        "color": "red"
+                    },
+                    "newLine": true,
+                    "hidden": "!data.useBetaTFT",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "_headerMaintain": {
                     "type": "header",
