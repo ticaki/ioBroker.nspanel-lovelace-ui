@@ -329,10 +329,6 @@ export class PageQR extends Page {
                                 type: 'triggered',
                                 dp: config.setState,
                             },
-                            set: {
-                                type: 'state',
-                                dp: config.setState,
-                            },
                         },
                     },
                 });

@@ -343,10 +343,6 @@ class PageQR extends import_Page.Page {
               value: {
                 type: "triggered",
                 dp: config.setState
-              },
-              set: {
-                type: "state",
-                dp: config.setState
               }
             }
           }
