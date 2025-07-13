@@ -13,6 +13,7 @@
     "Shutter position": "Shutter control",
     "open": "open",
     "close": "close",
+    "unlock": "unlock",
     "window": "window",
     "Temperature": "Temperature",
     "Battery": "Battery",
@@ -88,6 +89,7 @@
     "tasmotaSendTo": "Send Tasmota settings to the panel",
     "berryInstallSendTo": "Install Berry Driver",
     "tftInstallSendTo": "Install TFT Firmware",
+    "openLinkWikiPageQR": "Open Wiki page for PageQR",
     "pageQRdata": "Data for PageQR",
     "pageName": "Page name",
     "headline": "Headline",
@@ -173,6 +175,7 @@
     "vTFT": "TFT-Version",
     "vTasmota": "Tasmota-Version",
     "alwaysOnDisplay": "Always show this page",
+    "openLinkWikiPagePower": "Open Wiki page for PagePower",
     "pagePowerdata": "Parameters for PagePower",
     "power1": "Power 1",
     "power2": "Power 2",
@@ -212,7 +215,5 @@
     "labelmaxXAxisTicks": "Number of X-axis ticks",
     "labelFactorCardChart": "Factor for card chart",
     "labelmaxXAxisLabels": "Number of X-axis labels",
-    "openLinkWikiPageQR": "Open Wiki page for PageQR",
-    "openLinkWikiPagePower": "Open Wiki page for PagePower",
     "openLinkWikiPageChart": "Open Wiki page for PageChart"
 }

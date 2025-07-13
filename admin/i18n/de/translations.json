@@ -13,6 +13,7 @@
     "Shutter position": "Rollladensteuerung",
     "open": "öffnen",
     "close": "schließen",
+    "unlock": "entsperren",
     "window": "Fenster",
     "Temperature": "Temperatur",
     "Battery": "Batterie",
@@ -87,6 +88,7 @@
     "tasmotaSendTo": "Tasmota Einstellungen an das Panel senden",
     "berryInstallSendTo": "Berry Treiber installieren",
     "tftInstallSendTo": "TFT Firmware installieren",
+    "openLinkWikiPageQR": "Wiki-Seite für PageQR öffnen",
     "pageQRdata": "Daten für PageQR",
     "pageName": "Seitenname",
     "headline": "Überschrift",
@@ -173,6 +175,7 @@
     "vTFT": "TFT-Version",
     "vTasmota": "Tasmota-Version",
     "alwaysOnDisplay": "Seite dauerhaft anzeigen",
+    "openLinkWikiPagePower": "Wiki-Seite für PagePower öffnen",
     "pagePowerdata": "Daten für PagePower",
     "power1": "Leistung 1",
     "power2": "Leistung 2",
@@ -212,7 +215,5 @@
     "labelmaxXAxisTicks": "Einteilung X-Achse",
     "labelFactorCardChart": "Wertefaktor für Diagramm",
     "labelmaxXAxisLabels": "Anzahl X-Achsen-Beschriftungen",
-    "openLinkWikiPageQR": "Wiki-Seite für PageQR öffnen",
-    "openLinkWikiPagePower": "Wiki-Seite für PagePower öffnen",
     "openLinkWikiPageChart": "Wiki-Seite für PageChart öffnen"
 }
