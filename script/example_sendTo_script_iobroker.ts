@@ -473,7 +473,7 @@ async function configuration(): Promise<void> {
 setTimeout(() => {stopScript(scriptName, undefined)}, 200);
 
 
-const version = '0.8.7';
+const version = '0.8.8';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -948,7 +948,13 @@ declare namespace ScriptConfig {
             fontSize?: number;
             actionStringArray?: string[];
             alwaysOnDisplay?: boolean;
-            shutterType?: string;
+            /**
+             * Wird vom Skript verwendet um zu entscheiden welches Popup verwendet wird.
+             * Adapter verwendet immer die neuen Popups außer wenn beim popupShutter tilt vorhanden ist
+             * dann wird das alte verwendet!
+             * @deprecated unused in adapter
+             */
+            popupVersion?: number
     };
 
     type shutterIcons = {
