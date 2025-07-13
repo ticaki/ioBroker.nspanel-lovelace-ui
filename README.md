@@ -84,7 +84,8 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**  
+### **WORK IN PROGRESS** 
+- (tt-tom17) improved PageQR 
 - (ticaki) BREAKING: alias def changed
 - (ticaki) actual-set handling changed
 - (tt-tom17) popupFan added
@@ -106,7 +107,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
 - (ticaki) Admin overview revised
 - (ticaki) inSel could not be left fixed
 - (ticaki) Missing navigation of a page is reported
-- (tt-tom17) Page Power improved
+- (tt-tom17) PagePower improved
 
 ### 0.1.10 (2025-04-08)
 - (ticaki) refactoring startup
@@ -114,7 +115,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
 - (ticaki) added/fixed some pageitems
 - (ticaki) added maintain in admin
 - (ticaki) added navigation in admin
-- (tt-tom17) added cardPower incl. admin
+- (tt-tom17) added PagePower incl. admin
 
 ### 0.1.9 (2025-03-21)
 - (ticaki) added: tasmota web ui user & password Fixes #164
