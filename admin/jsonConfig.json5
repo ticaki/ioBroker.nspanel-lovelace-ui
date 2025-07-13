@@ -204,6 +204,19 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "_openLinkAdapterInsatllation": {
+                    "type": "sendTo",
+                    "label": "openLinkAdapterInsatllation",
+                    "jsonData": "{\"url\": \"https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation\"}",
+                    "openUrl": true,
+                    "command": "openLinkAliasTable",
+                    "variant": "outlined",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "doubleClickTime": {
                     "type": "number",
                     "label": "doubleClickTime",
@@ -876,6 +889,19 @@
                     "lg": 6,
                     "xl": 6
                 },
+                "_openLinkWikiPageQR": {
+                    "type": "sendTo",
+                    "label": "openLinkWikiPageQR",
+                    "jsonData": "{\"url\": \"https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PageQR\"}",
+                    "openUrl": true,
+                    "command": "openLinkAliasTable",
+                    "variant": "outlined",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "pageQRdata": {
                     "xs": 12,
                     "sm": 12,
@@ -971,7 +997,7 @@
                             "lg": 4,
                             "xl": 4,
                             "type": "checkbox",
-                            "label": "wlanHidden",
+                            "label": "wlanhidden",
                             "hidden": "data.selType !== 1",
                             "default": false
                         },
@@ -1112,6 +1138,19 @@
                     "lg": 6,
                     "xl": 6
                 },
+                "_openLinkWikiPagePower": {
+                    "type": "sendTo",
+                    "label": "openLinkWikiPagePower",
+                    "jsonData": "{\"url\": \"https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PagePower\"}",
+                    "openUrl": true,
+                    "command": "openLinkAliasTable",
+                    "variant": "outlined",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "pagePowerdata": {
                     "xs": 12,
                     "sm": 12,
@@ -1214,7 +1253,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "more",
+                            "label": "moreSetting",
                             "default": false,
                             "newLine": true
                         },
@@ -1434,7 +1473,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "more",
+                            "label": "moreSetting",
                             "default": false,
                             "newLine": true
                         },
@@ -1652,7 +1691,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "more",
+                            "label": "moreSetting",
                             "default": false,
                             "newLine": true
                         },
@@ -1870,7 +1909,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "more",
+                            "label": "moreSetting",
                             "default": false,
                             "newLine": true
                         },
@@ -2088,7 +2127,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "more",
+                            "label": "moreSetting",
                             "default": false,
                             "newLine": true
                         },
@@ -2306,7 +2345,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "more",
+                            "label": "moreSetting",
                             "default": false,
                             "newLine": true
                         },
@@ -2499,7 +2538,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "more",
+                            "label": "moreSetting",
                             "default": false,
                             "newLine": true
                         },
@@ -2634,7 +2673,7 @@
                             "lg": 2,
                             "xl": 2,
                             "type": "checkbox",
-                            "label": "more",
+                            "label": "moreSetting",
                             "default": false,
                             "newLine": true,
                             "hidden": "data.power8_selInternalCalculation"
@@ -2698,7 +2737,7 @@
         },
         "pageChart": {
             "type": "panel",
-            "label": "panelPageChart",
+            "label": "Page Chart",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
             "items": {
                 "pageChartdataErr": {
@@ -2714,6 +2753,19 @@
                     "md": 12,
                     "lg": 6,
                     "xl": 6
+                },
+                "_openLinkWikiPageChart": {
+                    "type": "sendTo",
+                    "label": "openLinkWikiPageChart",
+                    "jsonData": "{\"url\": \"https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PageChart\"}",
+                    "openUrl": true,
+                    "command": "openLinkAliasTable",
+                    "variant": "outlined",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "pageChartdata": {
                     "xs": 12,
