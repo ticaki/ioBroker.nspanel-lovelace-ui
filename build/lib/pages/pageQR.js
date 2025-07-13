@@ -430,7 +430,7 @@ class PageQR extends import_Page.Page {
     if (pages.isQRButtonEvent(button)) {
       if (this.adapter.config.pageQRdata[this.index]) {
         if (this.pageItems && this.pageItems[_event.id] && this.pageItems[_event.id].config && this.pageItems[_event.id].config.type == "button") {
-          await this.pageItems[_event.id].onCommand("button", value);
+          await this.pageItems[_event.id].onCommand("switch", value);
         }
       }
     }

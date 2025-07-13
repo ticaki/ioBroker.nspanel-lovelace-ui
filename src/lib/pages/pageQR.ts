@@ -422,7 +422,7 @@ export class PageQR extends Page {
                     this.pageItems[_event.id as any]!.config &&
                     this.pageItems[_event.id as any]!.config!.type == 'button'
                 ) {
-                    await this.pageItems[_event.id as any]!.onCommand('button', value);
+                    await this.pageItems[_event.id as any]!.onCommand('switch', value);
                 }
             }
         }
