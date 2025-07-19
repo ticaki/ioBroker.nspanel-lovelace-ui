@@ -62,31 +62,38 @@ class PageAlarm extends import_Page.Page {
   titelPos = 0;
   nextArrow = false;
   status = "armed";
+  useStates = true;
   alarmType = "alarm";
   items;
   async setMode(m) {
-    await this.library.writedp(
-      `panels.${this.panel.name}.alarm.${this.name}.mode`,
-      m,
-      import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.mode
-    );
+    if (this.useStates) {
+      await this.library.writedp(
+        `panels.${this.panel.name}.alarm.${this.name}.mode`,
+        m,
+        import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.mode
+      );
+    }
   }
   async getStatus() {
-    const state = this.adapter.library.readdb(`panels.${this.panel.name}.alarm.${this.name}.status`);
-    if (state) {
-      if (typeof state.val === "number") {
-        this.status = alarmStates[state.val];
+    if (this.useStates) {
+      const state = this.library.readdb(`panels.${this.panel.name}.alarm.${this.name}.status`);
+      if (state) {
+        if (typeof state.val === "number") {
+          this.status = alarmStates[state.val];
+        }
       }
     }
     return this.status;
   }
   async setStatus(value) {
     this.status = value;
-    await this.library.writedp(
-      `panels.${this.panel.name}.alarm.${this.name}.status`,
-      alarmStates.indexOf(this.status),
-      import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.status
-    );
+    if (this.useStates) {
+      await this.library.writedp(
+        `panels.${this.panel.name}.alarm.${this.name}.status`,
+        alarmStates.indexOf(this.status),
+        import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.status
+      );
+    }
   }
   pin = "0";
   failCount = 0;
@@ -99,7 +106,7 @@ class PageAlarm extends import_Page.Page {
     this.neverDeactivateTrigger = true;
   }
   async init() {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f;
     const config = structuredClone(this.config);
     const tempConfig = this.enums || this.dpInit ? await this.panel.statesControler.getDataItemsFromAuto(this.dpInit, config, void 0, this.enums) : config;
     const tempItem = await this.panel.statesControler.createDataItems(
@@ -108,13 +115,22 @@ class PageAlarm extends import_Page.Page {
     );
     this.items = tempItem;
     this.items.card = "cardAlarm";
-    await this.library.writedp(
-      `panels.${this.panel.name}.alarm.${this.name}`,
-      void 0,
-      import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
-    );
     await super.init();
-    this.alarmType = (_a = this.items && this.items.data && this.items.data.alarmType && await this.items.data.alarmType.getString()) != null ? _a : "alarm";
+    this.alarmType = (_c = ((_b = (_a = this.items) == null ? void 0 : _a.data) == null ? void 0 : _b.alarmType) && await this.items.data.alarmType.getString()) != null ? _c : "alarm";
+    if (this.alarmType === "unlock" && ((_e = (_d = this.items) == null ? void 0 : _d.data) == null ? void 0 : _e.setNavi)) {
+      this.useStates = false;
+    } else {
+      await this.library.writedp(
+        `panels.${this.name}.alarm`,
+        void 0,
+        import_definition.genericStateObjects.panel.panels.alarm._channel
+      );
+      await this.library.writedp(
+        `panels.${this.panel.name}.alarm.${this.name}`,
+        void 0,
+        import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
+      );
+    }
     if (this.alarmType === "alarm") {
       const status = await this.getStatus();
       if (status === "pending") {
@@ -127,7 +143,7 @@ class PageAlarm extends import_Page.Page {
     } else {
       await this.setStatus("armed");
     }
-    this.pin = (_b = this.items && this.items.data && this.items.data.pin && await this.items.data.pin.getString()) != null ? _b : "";
+    this.pin = (_f = this.items && this.items.data && this.items.data.pin && await this.items.data.pin.getString()) != null ? _f : "";
     if (this.pin == "-1") {
       this.pin = this.adapter.config.pw1 ? this.adapter.config.pw1 : "";
     }
@@ -333,9 +349,8 @@ class PageAlarm extends import_Page.Page {
           const item = entry.data;
           const value2 = (_a = item.setNavi && await item.setNavi.getString()) != null ? _a : null;
           if (value2 !== null) {
-            await this.panel.navigation.setTargetPageByName(value2);
-            break;
           }
+          await this.setStatus("disarmed");
           await this.setStatus("armed");
           break;
         }

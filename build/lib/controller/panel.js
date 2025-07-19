@@ -370,11 +370,6 @@ class Panel extends import_library.BaseClass {
       definition.genericStateObjects.panel.panels.cmd.screenSaver._channel
     );
     await this.library.writedp(
-      `panels.${this.name}.alarm`,
-      void 0,
-      definition.genericStateObjects.panel.panels.alarm._channel
-    );
-    await this.library.writedp(
       `panels.${this.name}.buttons`,
       void 0,
       definition.genericStateObjects.panel.panels.buttons._channel
@@ -1103,7 +1098,6 @@ class Panel extends import_library.BaseClass {
         this.sendScreeensaverTimeout(this.timeout);
         this.sendDimmode();
         this.navigation.resetPosition();
-        await this.adapter.delay(100);
         const i = this.pages.findIndex((a) => a && a.name === "///WelcomePopup");
         const popup = i !== -1 ? this.pages[i] : void 0;
         if (popup) {

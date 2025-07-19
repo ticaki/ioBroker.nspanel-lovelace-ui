@@ -398,11 +398,6 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.cmd.screenSaver._channel,
         );
         await this.library.writedp(
-            `panels.${this.name}.alarm`,
-            undefined,
-            definition.genericStateObjects.panel.panels.alarm._channel,
-        );
-        await this.library.writedp(
             `panels.${this.name}.buttons`,
             undefined,
             definition.genericStateObjects.panel.panels.buttons._channel,
@@ -1199,7 +1194,6 @@ export class Panel extends BaseClass {
                 this.sendScreeensaverTimeout(this.timeout);
                 this.sendDimmode();
                 this.navigation.resetPosition();
-                await this.adapter.delay(100);
                 const i = this.pages.findIndex(a => a && a.name === '///WelcomePopup');
                 const popup = i !== -1 ? this.pages[i] : undefined;
                 if (popup) {
@@ -1211,6 +1205,7 @@ export class Panel extends BaseClass {
                     }
                 }
                 await this.adapter.delay(100);
+
                 if (this.screenSaver) {
                     await this.screenSaver.createPageItems();
                     //this.controller && (await this.controller.statesControler.activateTrigger(this.screenSaver));

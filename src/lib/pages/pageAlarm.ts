@@ -36,22 +36,27 @@ export class PageAlarm extends Page {
     private titelPos: number = 0;
     private nextArrow: boolean = false;
     private status: pages.AlarmStates = 'armed';
+    private useStates = true;
     private alarmType: string = 'alarm';
     items: pages.PageBaseConfig['items'];
 
     async setMode(m: pages.AlarmButtonEvents): Promise<void> {
-        await this.library.writedp(
-            `panels.${this.panel.name}.alarm.${this.name}.mode`,
-            m,
-            genericStateObjects.panel.panels.alarm.cardAlarm.mode,
-        );
+        if (this.useStates) {
+            await this.library.writedp(
+                `panels.${this.panel.name}.alarm.${this.name}.mode`,
+                m,
+                genericStateObjects.panel.panels.alarm.cardAlarm.mode,
+            );
+        }
     }
 
     async getStatus(): Promise<pages.AlarmStates> {
-        const state = this.adapter.library.readdb(`panels.${this.panel.name}.alarm.${this.name}.status`);
-        if (state) {
-            if (typeof state.val === 'number') {
-                this.status = alarmStates[state.val];
+        if (this.useStates) {
+            const state = this.library.readdb(`panels.${this.panel.name}.alarm.${this.name}.status`);
+            if (state) {
+                if (typeof state.val === 'number') {
+                    this.status = alarmStates[state.val];
+                }
             }
         }
         return this.status;
@@ -59,11 +64,13 @@ export class PageAlarm extends Page {
 
     async setStatus(value: pages.AlarmStates): Promise<void> {
         this.status = value;
-        await this.library.writedp(
-            `panels.${this.panel.name}.alarm.${this.name}.status`,
-            alarmStates.indexOf(this.status),
-            genericStateObjects.panel.panels.alarm.cardAlarm.status,
-        );
+        if (this.useStates) {
+            await this.library.writedp(
+                `panels.${this.panel.name}.alarm.${this.name}.status`,
+                alarmStates.indexOf(this.status),
+                genericStateObjects.panel.panels.alarm.cardAlarm.status,
+            );
+        }
     }
     private pin: string = '0';
     private failCount: number = 0;
@@ -93,18 +100,23 @@ export class PageAlarm extends Page {
         this.items = tempItem as pages.cardAlarmDataItems;
         // set card because we lose it
         this.items.card = 'cardAlarm';
-        await this.library.writedp(
-            `panels.${this.panel.name}.alarm.${this.name}`,
-            undefined,
-            genericStateObjects.panel.panels.alarm.cardAlarm._channel,
-        );
+
         await super.init();
-        this.alarmType =
-            (this.items &&
-                this.items.data &&
-                this.items.data.alarmType &&
-                (await this.items.data.alarmType.getString())) ??
-            'alarm';
+        this.alarmType = (this.items?.data?.alarmType && (await this.items.data.alarmType.getString())) ?? 'alarm';
+        if (this.alarmType === 'unlock' && this.items?.data?.setNavi) {
+            this.useStates = false;
+        } else {
+            await this.library.writedp(
+                `panels.${this.name}.alarm`,
+                undefined,
+                genericStateObjects.panel.panels.alarm._channel,
+            );
+            await this.library.writedp(
+                `panels.${this.panel.name}.alarm.${this.name}`,
+                undefined,
+                genericStateObjects.panel.panels.alarm.cardAlarm._channel,
+            );
+        }
         if (this.alarmType === 'alarm') {
             const status = await this.getStatus();
             if (status === 'pending') {
@@ -348,9 +360,10 @@ export class PageAlarm extends Page {
                     const item = entry.data;
                     const value: any = (item.setNavi && (await item.setNavi.getString())) ?? null;
                     if (value !== null) {
-                        await this.panel.navigation.setTargetPageByName(value);
-                        break;
+                        //await this.panel.navigation.setTargetPageByName(value);
+                        //break;
                     }
+                    await this.setStatus('disarmed');
                     await this.setStatus('armed');
                     break;
                 }
