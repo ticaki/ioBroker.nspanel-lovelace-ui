@@ -3007,7 +3007,7 @@
         "NavigationOverview": {
             "type": "panel",
             "label": "Navigation Overview",
-            //"expertMode": true,
+            "expertMode": true,
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
             "items": {
                 "_selectPanel": {
@@ -3177,7 +3177,7 @@
         "developer": {
             "type": "panel",
             "label": "developer",
-            //"expertMode": true,
+            "expertMode": true,
             "items": {
                 "additionalLog": {
                     "type": "checkbox",
