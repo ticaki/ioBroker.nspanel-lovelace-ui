@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "news": {
+      "0.2.2": {
+        "en": "improved PageQR \nBREAKING: alias def changed\nactual-set handling changed\npopupFan added",
+        "de": "verbesserte PageQR\nBREAKING: Alias def geändert\ntatsächliche handhabung geändert\npopup Fan hinzugefügt",
+        "ru": "улучшенный PageQR\nОригинальное название: Alias Def Changed\nфактическая обработка изменилась\nвсплывающий Фан добавил",
+        "pt": "pageQR melhorado\nREPARTIÇÃO: alias def modified\no tratamento real foi alterado\npopup Fã adicionado",
+        "nl": "verbeterde PageQR\nBreaking: alias def gewijzigd\nwerkelijke ingestelde behandeling gewijzigd\npopup Ventilator toegevoegd",
+        "fr": "amélioration de la pageQR\nBREAKING: alias def changed\nchangement de gestion réelle\npopup Eventail ajouté",
+        "it": "migliorato PageQR\nBREAKING: alias def cambiato\nmovimentazione a set effettivo cambiata\npopup Fan aggiunto",
+        "es": "pageQR mejorado\nBREAKING: alias def changed\ncambios en el manejo real\npopup Fan añadido",
+        "pl": "poprawiony PageQR\nBREAKING: alias def zmienił\nzmiana obsługi zestawu aktualnego\npopup Dodano wentylator",
+        "uk": "покращений PageQR\nБРЕАКІНГ: псевдонім змінився\nзмінено фактичне обслуговування\nмастурбація Вентилятор додано",
+        "zh-cn": "已改进的页面QR\n破解:别名更改\n已更改实际处理\n弹出 风扇加了"
+      },
       "0.2.1": {
         "en": "Modified script version comparison",
         "de": "Modifizierter Skript-Versionsvergleich",
@@ -80,19 +93,6 @@
         "pl": "dodane: tasmota web ui użytkownik & hasło Fixes # 164\nBREAKING: Wewnętrzny serwer używać TLS - Nowy tasmota config dla wewnętrznego serwera.\ndodane pozycje na stronie serwisowej\ndodany zamek\nkarta Thermo with input _ sel\nDodano: Admin opcja naprawić złe wspólne. type = state in alias.0 to common .type = mixed\nWymagane punkty danych można znaleźć poprzez rolę, typ itp. Oznaczenie odgrywa rolę tylko w rzadkich przypadkach.",
         "uk": "додано: tasmota web ui користувача та пароль Виправлення #164\nBREAKING: Внутрішній сервер використання TLS - Нові налаштування тасмота для внутрішнього сервера.\nдоданий сайт\nдоданий замок\nкошик Термо з входом\nДодано: Параметри адміністратора для виправлення неправильного спільного. type=state in alias.0 до спільного.type=змішувати\nПотрібні пункти даних розміщені за допомогою функції, типу тощо. Розповідь тільки грає роль у рідкісних випадках.",
         "zh-cn": "添加: tasmota web ui 用户和密码\nBREAKING:内部服务器使用TLS - 内部服务器的新塔斯莫塔配置.\n添加的服务页项目\n添加锁定\n纸牌 带有输入的热器_ sel\n添加:管理选项来修正错误的常见. 类型=以别名.0表示为常见。类型=混合\n所需数据点通过角色,类型等查找. 指定仅在罕见的情况下发挥作用."
-      },
-      "0.1.8": {
-        "en": "added: hw-buttons with actions\nfixed: screensaver trigger\ncheck if port is free for mqtt server\ncheck and tweak role info\nfixed: entities and grid icons/text\ntools for tasmota added to admin\ntweak panel response time \n'switch' added\ncompleted servicepages",
-        "de": "hinzugefügt: hw-buttons mit aktionen\nfest: bildschirmschoner-trigger\nüberprüfen, ob der port frei für mqtt server ist\nüberprüfen und tweak rolleninfo\nfixiert: entitäten und rastersymbole/text\nwerkzeuge für tasmota zu admin hinzugefügt\ntweak panel antwortzeit\n'switch' hinzugefügt\nservicepages",
-        "ru": "добавлено: hw-кнопки с действиями\nфиксированный: screensaver trigger\nпроверьте, свободен ли порт для mqtt-сервера\nпроверьте и настройте информацию о роли\nфиксированное: объекты и значки сетки / текст\nинструменты для tasmota добавлены в admin\nвремя отклика панели\n«switch» добавлено\nзаполненные служебные страницы",
-        "pt": "adicionado: botões hw com ações\ncorrigido: gatilho screensaver\nverificar se a porta é gratuita para o servidor mqtt\ncheck and tweak role info\nfixo: entidades e ícones de grade/texto\nferramentas para tasmota adicionado ao administrador\ntempo de resposta do painel tweak\n'switch' adicionado\npáginas de serviço concluídas",
-        "nl": "toegevoegd: hw-knoppen met acties\nvast: screensaver trigger\ncontroleren of poort vrij is voor mqtt-server\nrolinformatie controleren en aanpassen\nvaste: entiteiten en rasterpictogrammen/tekst\ngereedschap voor tasmota toegevoegd aan admin\ntweak panel response time\n'switch' toegevoegd\nvoltooide servicepagina's",
-        "fr": "ajouté: boutons hw avec des actions\ncorrigé: screensaver trigger\nvérifier si le port est gratuit pour le serveur mqtt\nvérifier et modifier le rôle info\nfixe: entités et icônes de grille/texte\noutils pour tasmota ajouté à admin\ntemps de réponse du panneau\n'switch' ajouté\npages de service complétées",
-        "it": "aggiunto: hw-buttons con azioni\nfisso: screensaver trigger\ncontrollare se la porta è gratuita per il server di mqtt\ncontrollare e modificare le informazioni sul ruolo\nfisso: entità e icone della griglia/testo\nstrumenti per tasmota aggiunto a admin\ntempo di risposta del pannello tweak\n'switch' aggiunto\npagine di servizio completate",
-        "es": "añadido: hw-buttons con acciones\nfijo: disparador de salvapantallas\ncomprobar si el puerto es gratuito para el servidor mqtt\ncheck and tweak role info\nfija: entidades e iconos de rejilla/texto\nherramientas para tasmota añadido a admin\ntiempo de respuesta del panel\n'switch' añadido\nterminadas páginas de servicio",
-        "pl": "dodane: przyciski hw- z akcjami\nstałe: wyzwalacz wygaszacza ekranu\nsprawdzić czy port jest wolny dla serwera mqtt\nsprawdzanie i poprawianie informacji o roli\nstałe: podmioty i ikony sieci / tekst\nnarzędzia dla tasmota dodane do admin\nczas reakcji panelu\n'przełącznik' dodany\nukończone servicepages",
-        "uk": "додано: hw-buttons з діями\nфіксований: екранsaver тригер\nперевірити, чи є порт безкоштовно для сервера mqtt\nінформація про роль\nфіксована: сутності та значки сітки/текст\nінструменти для тазмоти додано до адміністратора\nчас відповіді на панель\n'switch' додано\nпослуги",
-        "zh-cn": "添加:带有动作的 hw 按钮\n固定: 屏幕保护触发器\n检查 mqtt 服务器的端口是否免费\n检查和调整角色信息\n固定: 实体和网格图标/文本\n添加到管理员的 tasmota 工具\n调整面板响应时间\n添加了“ 开关 ”\n已完成的服务页"
       }
     },
     "titleLang": {
